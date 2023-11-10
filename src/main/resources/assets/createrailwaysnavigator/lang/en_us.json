@@ -1,0 +1,82 @@
+{
+    "advancement.createrailwaysnavigator.root": "Thank you for traveling",
+    "advancement.createrailwaysnavigator.root.description": "Craft a Create Railways Navigator Item to look for train connections from one train station to another.",
+
+    "item.createrailwaysnavigator.navigator": "Create Railways Navigator",
+
+    "itemGroup.createrailwaysnavigatortab": "Create Railways Navigator",
+    
+    "gui.createrailwaysnavigator.loading.title": "Downloading data from server...",
+
+    "gui.createrailwaysnavigator.common.expand": "Show Details",
+    "gui.createrailwaysnavigator.common.collapse": "Hide Details",
+    "gui.createrailwaysnavigator.common.go_back": "Go Back",
+    "gui.createrailwaysnavigator.common.go_to_top": "Scroll To Top",
+    "gui.createrailwaysnavigator.common.reset_defaults": "Reset to defaults",
+    "gui.createrailwaysnavigator.common.count": "Count",
+    "gui.createrailwaysnavigator.common.true": "Yes",
+    "gui.createrailwaysnavigator.common.false": "No",
+    "gui.createrailwaysnavigator.common.server_error": "Server error while executing task. Look console for details.",
+    
+    "gui.createrailwaysnavigator.navigator.title": "Create Railways Navigator",
+    "gui.createrailwaysnavigator.navigator.no_connections": "No connections found.",
+    "gui.createrailwaysnavigator.navigator.searching": "Search for connections...",
+    "gui.createrailwaysnavigator.navigator.error_title": "Unable to navigate!",
+    "gui.createrailwaysnavigator.navigator.start_end_null": "Start or destination is empty.",
+    "gui.createrailwaysnavigator.navigator.start_end_equal": "Start and destination are equal.",
+    "gui.createrailwaysnavigator.navigator.route_entry.transfer": "Trans.",
+    "gui.createrailwaysnavigator.navigator.route_entry.station_start": "from %s",
+    "gui.createrailwaysnavigator.navigator.global_settings.tooltip": "Global Settings",
+    "gui.createrailwaysnavigator.navigator.search_settings.tooltip": "Search Settings",
+    "gui.createrailwaysnavigator.navigator.search.tooltip": "Search",
+    "gui.createrailwaysnavigator.navigator.location.tooltip": "Nearest station from current position",
+    "gui.createrailwaysnavigator.navigator.switch.tooltip": "Switch fields",
+
+    "gui.createrailwaysnavigator.route_details.title": "Route Details",
+    "gui.createrailwaysnavigator.route_details.departure": "Departure in",
+    "gui.createrailwaysnavigator.route_details.transfer": "Transfer",
+
+    "gui.createrailwaysnavigator.global_settings.title": "Global Settings",
+    "gui.createrailwaysnavigator.global_settings.option.tooltip": "Click to edit",
+    "gui.createrailwaysnavigator.global_settings.option_alias.title": "Train Station Aliases",
+    "gui.createrailwaysnavigator.global_settings.option_alias.description": "Define station aliases to threaten multi-platform stations (e.g. MyStation 1, MyStation 2, ...) as a single station (e.g. MyStation) with custom names.",
+    "gui.createrailwaysnavigator.global_settings.option_blacklist.title": "Train Station Blacklist",
+    "gui.createrailwaysnavigator.global_settings.option_blacklist.description": "Exclude Track Stations which should not appear in the navigation results. This stations will be ignored when generating routes.",
+
+    "gui.createrailwaysnavigator.alias_settings.title": "Train Station Alias Settings",
+    "gui.createrailwaysnavigator.alias_settings.summary": "Contains %s Track Stations",
+    "gui.createrailwaysnavigator.alias_settings.editor": "Last edited by %s on %s",
+    "gui.createrailwaysnavigator.alias_settings.add.tooltip": "Create new Train Station Alias",
+    "gui.createrailwaysnavigator.alias_settings.delete_alias.tooltip": "Delete Alias",
+    "gui.createrailwaysnavigator.alias_settings.delete_station.tooltip": "Remove Station",
+    "gui.createrailwaysnavigator.alias_settings.add_station.tooltip": "Add Station",
+
+    "gui.createrailwaysnavigator.blacklist.title": "Train Station Blacklist",
+    "gui.createrailwaysnavigator.blacklist.add.tooltip": "Add to blacklist",
+    "gui.createrailwaysnavigator.blacklist.delete.tooltip": "Remove from blacklist",
+    
+    "gui.createrailwaysnavigator.search_settings.title": "Search Settings",
+    "gui.createrailwaysnavigator.search_settings.filter_selection": "Sorting Criterion",
+    "gui.createrailwaysnavigator.search_settings.filter_selection.description": "The criterion by which the results are sorted.",
+    "gui.createrailwaysnavigator.search_settings.result_count": "Search Result Range",
+    "gui.createrailwaysnavigator.search_settings.result_count.description": "The set of results that will be displayed. Can be a fixed number or automatic.",    
+    "gui.createrailwaysnavigator.search_settings.next_train": "Take next departing train",
+    "gui.createrailwaysnavigator.search_settings.next_train.description": "Take the next train at the starting station. The route may be inefficient.",
+
+    "gui.createrailwaysnavigator.new_text_entry.add.tooltip": "Add",
+
+    "gui.createrailwaysnavigator.filter_criteria.transfer_count": "Transfer Count",
+    "gui.createrailwaysnavigator.filter_criteria.stopovers": "Stopovers Count",
+    "gui.createrailwaysnavigator.filter_criteria.duration": "Total Duration",
+    
+    "gui.createrailwaysnavigator.result_count.all": "All",
+    "gui.createrailwaysnavigator.result_count.best": "Best Only",
+    "gui.createrailwaysnavigator.result_count.fixed_amount": "Fixed Count",
+
+    "gui.createrailwaysnavigator.time.now": "now",
+    "gui.createrailwaysnavigator.time_format.dhm": "%s days %s hrs. %s min.",
+    "gui.createrailwaysnavigator.time_format.hm": "%s hrs. %s min.",
+    "gui.createrailwaysnavigator.time_format.m": "%s min.",
+
+    "createrailwaysnavigator.moin": "moin"
+}
