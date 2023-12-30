@@ -22,8 +22,14 @@ import net.minecraft.util.FormattedCharSequence;
 
 public class GuiUtils {
 	
+	/**
+	 * @see https://github.com/Creators-of-Create/Create/blob/mc1.18/dev/src/main/java/com/simibubi/create/foundation/gui/UIRenderHelper.java
+	 */
 	protected static CustomRenderTarget framebuffer;
 
+	/**
+	 * @see https://github.com/Creators-of-Create/Create/blob/mc1.18/dev/src/main/java/com/simibubi/create/foundation/gui/UIRenderHelper.java
+	 */
 	public static void init() {
 		RenderSystem.recordRenderCall(() -> {
 			Window mainWindow = Minecraft.getInstance().getWindow();
@@ -37,6 +43,7 @@ public class GuiUtils {
 
 	/**
 	 * Switch from src to dst, after copying the contents of src to dst.
+	 * @see https://github.com/Creators-of-Create/Create/blob/mc1.18/dev/src/main/java/com/simibubi/create/foundation/gui/UIRenderHelper.java
 	 */
 	public static void swapAndBlitColor(RenderTarget src, RenderTarget dst) {
 		GlStateManager._glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, src.frameBufferId);
@@ -46,6 +53,9 @@ public class GuiUtils {
 		GlStateManager._glBindFramebuffer(GlConst.GL_FRAMEBUFFER, dst.frameBufferId);
 	}
 
+	/**
+	 * @see https://github.com/Creators-of-Create/Create/blob/mc1.18/dev/src/main/java/com/simibubi/create/content/trains/schedule/ScheduleScreen.java
+	 */
     public static void startStencil(PoseStack matrixStack, float x, float y, float w, float h) {
 		RenderSystem.clear(GL30.GL_STENCIL_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
 
@@ -69,6 +79,9 @@ public class GuiUtils {
 		RenderSystem.stencilFunc(GL11.GL_EQUAL, 1, 0xFF);
 	}
 
+	/**
+	 * @see https://github.com/Creators-of-Create/Create/blob/mc1.18/dev/src/main/java/com/simibubi/create/content/trains/schedule/ScheduleScreen.java
+	 */
 	public static void endStencil() {
 		GL11.glDisable(GL11.GL_STENCIL_TEST);
 	}
