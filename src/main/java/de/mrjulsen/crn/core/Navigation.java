@@ -3,9 +3,16 @@ package de.mrjulsen.crn.core;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.config.ModCommonConfig;
@@ -45,6 +52,7 @@ public class Navigation {
         List<Route> routesList = new ArrayList<>();
         Collection<SimpleTrainSchedule> checkedTrains = new ArrayList<>();
         
+        long startTime = System.currentTimeMillis();
         for (DeparturePrediction pred : GlobalTrainData.getInstance().getDepartingTrainsAt(from)) {                
 
             SimpleTrainSchedule checkSchedule = GlobalTrainData.getInstance().getDirectionalSchedule(pred.getTrain());
@@ -54,6 +62,8 @@ public class Navigation {
             routesList.addAll(Navigation.navigate(pred, new TrainStop(from, pred), to));
             checkedTrains.add(checkSchedule);
         }
+        long estimatedTime = System.currentTimeMillis() - startTime;
+        ModMain.LOGGER.info(String.format("Navigation succeeded. Took %sms. Found %s possible routes.", estimatedTime, routesList.size()));
         routesList.sort((a, b) -> a.compareTo(b, filterSettings));
         return filter(routesList, filterSettings);
     }
@@ -86,18 +96,19 @@ public class Navigation {
             navigateInternal(blacklist, (route) -> {
                 ModMain.LOGGER.debug("Found possible route: " + route.toString());
                 possibilities.add(route);
-            }, new ArrayList<>(), new ArrayList<>(), train, from.getStationAlias(), to, from);
+            }, new ArrayList<>(), new ArrayList<>(), train, from.getStationAlias(), to, from,
+            null);
         }
         return possibilities;
     }
     
-    protected static void navigateInternal(GlobalSettings settings, Consumer<Route> possibleRoutes, Collection<RoutePart> currentPath, Collection<TrainStop> excludedStops, DeparturePrediction currentTrain, TrainStationAlias start, TrainStationAlias end, TrainStop routeStart) {
+    protected static void navigateInternal(GlobalSettings settings, Consumer<Route> possibleRoutes, Collection<RoutePart> currentPath, Collection<TrainStop> excludedStops, DeparturePrediction currentTrain, TrainStationAlias start, TrainStationAlias end, TrainStop routeStart, SimpleTrainSchedule pregeneratedSchedule) {
         
         if (ModCommonConfig.NAVIGATION_ITERATION_DELAY.get() > 0) {
             try { Thread.sleep(ModCommonConfig.NAVIGATION_ITERATION_DELAY.get()); } catch (InterruptedException e) {}
         }
         
-        SimpleTrainSchedule thisSchedule = GlobalTrainData.getInstance().getTrainSimpleSchedule(currentTrain.getTrain());
+        SimpleTrainSchedule thisSchedule = pregeneratedSchedule == null ? GlobalTrainData.getInstance().getTrainSimpleSchedule(currentTrain.getTrain()) : pregeneratedSchedule;
 
         if (!thisSchedule.hasStationAlias(routeStart.getStationAlias())) {
             return;
@@ -134,23 +145,26 @@ public class Navigation {
             RoutePart thisRoute = new RoutePart(currentTrain, routeStart, stop.getStationAlias());            
             stopovers.add(stop);
 
-            if (stop.isStationAlias(end)) {
-                return;
-            }
-
-            if (stopovers.stream().anyMatch(x -> excludedStops.stream().anyMatch(y -> x.equals(y)))) {
+            if (stop.isStationAlias(end) || stopovers.stream().anyMatch(x -> excludedStops.stream().anyMatch(y -> x.equals(y)))) {
                 return;
             }
             
             if (thisRoute.getStopovers().stream().anyMatch(x -> x.getStationAlias().equals(end) || excludedStops.stream().anyMatch(y -> x.equals(y)))) {
                 continue;
             }
+
+            Map<UUID, SimpleTrainSchedule> pregeneratedTrainSchedules = new ConcurrentHashMap<>();
             
-            Collection<DeparturePrediction> departingTrains = GlobalTrainData.getInstance().getDepartingTrainsAt(stop.getStationAlias()).stream().filter(x ->
-                !x.getTrain().id.equals(currentTrain.getTrain().id) 
-                && !GlobalTrainData.getInstance().getTrainSimpleSchedule(x.getTrain()).equals(thisSchedule) 
-                && TrainUtils.isTrainValid(x.getTrain())
-            ).toList();
+            Collection<DeparturePrediction> departingTrains = GlobalTrainData.getInstance().getDepartingTrainsAt(stop.getStationAlias()).stream()
+            .filter(x -> {
+                SimpleTrainSchedule schedule = GlobalTrainData.getInstance().getTrainSimpleSchedule(x.getTrain());
+                pregeneratedTrainSchedules.put(x.getTrain().id, schedule);
+
+                return !x.getTrain().id.equals(currentTrain.getTrain().id) &&
+                       !schedule.equals(thisSchedule) &&
+                       TrainUtils.isTrainValid(x.getTrain())
+                ;
+            }).collect(Collectors.toList());
 
             Collection<DeparturePrediction> trainPredictions = departingTrains.stream().map(x -> {
                 TrainStop nextStop = thisRoute.getEndStation();
@@ -189,7 +203,7 @@ public class Navigation {
                 newPath.addAll(currentPath);
                 newPath.add(thisRoute);
 
-                navigateInternal(settings, possibleRoutes, newPath, newExcludedStops, pred, start, end, thisRoute.getEndStation());
+                navigateInternal(settings, possibleRoutes, newPath, newExcludedStops, pred, start, end, thisRoute.getEndStation(), pregeneratedTrainSchedules.get(pred.getTrain().id));
                 
                 checkedTrains.add(checkSchedule);
             }
