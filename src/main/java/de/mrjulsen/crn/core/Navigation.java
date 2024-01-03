@@ -179,9 +179,11 @@ public class Navigation {
                 }
 
                 Collection<TrainStop> newExcludedStops = new ArrayList<>();
+                newExcludedStops.add(new TrainStop(start, null));
                 newExcludedStops.addAll(excludedStops);
                 newExcludedStops.addAll(stopovers);
                 newExcludedStops.addAll(thisRoute.getStopovers());
+                newExcludedStops = newExcludedStops.stream().distinct().toList();
                 
                 Collection<RoutePart> newPath = new ArrayList<>();
                 newPath.addAll(currentPath);
