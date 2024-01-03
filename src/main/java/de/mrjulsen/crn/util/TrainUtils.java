@@ -106,8 +106,7 @@ public class TrainUtils {
                !train.invalid &&
                train.navigation.destination != null &&
                !train.runtime.completed &&
-               !train.runtime.paused &&
-               train.runtime.isAutoSchedule
+               !train.runtime.paused
         ;
     }
 }
