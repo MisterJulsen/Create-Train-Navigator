@@ -16,6 +16,8 @@ import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.client.gui.ControlCollection;
 import de.mrjulsen.crn.client.gui.IForegroundRendering;
+import de.mrjulsen.crn.client.gui.overlay.HudOverlays;
+import de.mrjulsen.crn.client.gui.overlay.RouteDetailsOverlayScreen;
 import de.mrjulsen.crn.client.gui.widgets.ExpandButton;
 import de.mrjulsen.crn.data.SimpleRoute;
 import de.mrjulsen.crn.data.SimpleRoute.SimpleRoutePart;
@@ -114,6 +116,14 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering {
             public void onClick(double mouseX, double mouseY) {
                 super.onClick(mouseX, mouseY);
                 onClose();
+            }
+        });
+
+        this.addRenderableWidget(new IconButton(guiLeft + 21 + DEFAULT_ICON_BUTTON_WIDTH + 4, guiTop + 222, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, AllIcons.I_CONFIG_SAVE) {
+            @Override
+            public void onClick(double mouseX, double mouseY) {
+                super.onClick(mouseX, mouseY);
+                HudOverlays.setOverlay(new RouteDetailsOverlayScreen(10, 10, level, lastRefreshedTime, route));
             }
         });
     }

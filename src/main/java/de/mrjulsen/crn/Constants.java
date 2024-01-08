@@ -11,6 +11,8 @@ import net.minecraft.resources.ResourceLocation;
 public class Constants {
     public static final ResourceLocation GUI_WIDGETS = new ResourceLocation(ModMain.MOD_ID, "textures/gui/widgets.png");
     public static final int TICKS_PER_DAY = 24000;
+    public static final double ONE_HOUR_TICKS = Constants.TICKS_PER_DAY / 24.0D;
+    public static final double ONE_MINUTE_TICKS = Constants.ONE_HOUR_TICKS / 60.0D;
     public static final TranslatableComponent TOOLTIP_GO_BACK = new TranslatableComponent("gui." + ModMain.MOD_ID + ".common.go_back");
     public static final TranslatableComponent TOOLTIP_GO_TO_TOP = new TranslatableComponent("gui." + ModMain.MOD_ID + ".common.go_to_top");
     public static final TranslatableComponent TOOLTIP_RESET_DEFAULTS = new TranslatableComponent("gui." + ModMain.MOD_ID + ".common.reset_defaults");
