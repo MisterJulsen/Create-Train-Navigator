@@ -46,5 +46,10 @@ public class AliasName {
 
         return false;
     }
+
+    @Override
+    public int hashCode() {
+        return get().hashCode();
+    }
 }
 

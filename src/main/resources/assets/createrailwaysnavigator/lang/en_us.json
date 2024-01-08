@@ -35,6 +35,13 @@
     "gui.createrailwaysnavigator.route_details.title": "Route Details",
     "gui.createrailwaysnavigator.route_details.departure": "Departure in",
     "gui.createrailwaysnavigator.route_details.transfer": "Transfer",
+    
+    "gui.createrailwaysnavigator.route_overview.journey_begins": "Your journey begins! %s to %s, departure %s from platform %s.",
+    "gui.createrailwaysnavigator.route_overview.train_details": "%s to %s",
+    "gui.createrailwaysnavigator.route_overview.train_speed": "%s km/h",
+    "gui.createrailwaysnavigator.route_overview.next_stop": "Next Stop: %s. Estimated arrival %s",
+    "gui.createrailwaysnavigator.route_overview.transfer": "Change to %s to %s from platform %s.",
+    "gui.createrailwaysnavigator.route_overview.after_journey": "You have reached %s. Thank you for traveling and have a nice day.",
 
     "gui.createrailwaysnavigator.global_settings.title": "Global Settings",
     "gui.createrailwaysnavigator.global_settings.option.tooltip": "Click to edit",

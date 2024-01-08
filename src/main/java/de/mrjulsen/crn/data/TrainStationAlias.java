@@ -3,6 +3,7 @@ package de.mrjulsen.crn.data;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Objects;
 
 import de.mrjulsen.crn.Constants;
 import net.minecraft.nbt.CompoundTag;
@@ -36,6 +37,10 @@ public class TrainStationAlias {
 
     public TrainStationAlias(AliasName aliasName) {
         this.aliasName = aliasName;
+    }
+
+    public TrainStationAlias copy() {
+        return new TrainStationAlias(new AliasName(getAliasName().get()), new ArrayList<>(getAllStationNames()));
     }
 
 
@@ -133,6 +138,11 @@ public class TrainStationAlias {
             return getAliasName().equals(alias.getAliasName()) && getAllStationNames().size() == alias.getAllStationNames().size() && getAllStationNames().stream().allMatch(x -> alias.contains(x));
         }
         return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return 7 * Objects.hash(aliasName, stations);
     }
 
     public void update(TrainStationAlias newData) {

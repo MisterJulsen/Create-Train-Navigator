@@ -6,12 +6,18 @@ import de.mrjulsen.crn.network.packets.cts.GlobalSettingsRequestPacket;
 import de.mrjulsen.crn.network.packets.cts.GlobalSettingsUpdatePacket;
 import de.mrjulsen.crn.network.packets.cts.NavigationRequestPacket;
 import de.mrjulsen.crn.network.packets.cts.NearestStationRequestPacket;
+import de.mrjulsen.crn.network.packets.cts.NextConnectionsRequestPacket;
+import de.mrjulsen.crn.network.packets.cts.RealtimeRequestPacket;
 import de.mrjulsen.crn.network.packets.cts.TrackStationsRequestPacket;
+import de.mrjulsen.crn.network.packets.cts.TrainDataRequestPacket;
 import de.mrjulsen.crn.network.packets.stc.GlobalSettingsResponsePacket;
 import de.mrjulsen.crn.network.packets.stc.NavigationResponsePacket;
 import de.mrjulsen.crn.network.packets.stc.NearestStationResponsePacket;
+import de.mrjulsen.crn.network.packets.stc.NextConnectionsResponsePacket;
+import de.mrjulsen.crn.network.packets.stc.RealtimeResponsePacket;
 import de.mrjulsen.crn.network.packets.stc.ServerErrorPacket;
 import de.mrjulsen.crn.network.packets.stc.TrackStationResponsePacket;
+import de.mrjulsen.crn.network.packets.stc.TrainDataResponsePacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.api.distmarker.Dist;
@@ -32,12 +38,18 @@ public class NetworkManager {
         registerPacket(NavigationRequestPacket.class, new NavigationRequestPacket());
         registerPacket(TrackStationsRequestPacket.class, new TrackStationsRequestPacket());
         registerPacket(NearestStationRequestPacket.class, new NearestStationRequestPacket());
+        registerPacket(RealtimeRequestPacket.class, new RealtimeRequestPacket());
+        registerPacket(NextConnectionsRequestPacket.class, new NextConnectionsRequestPacket());
+        registerPacket(TrainDataRequestPacket.class, new TrainDataRequestPacket());
         
         registerPacket(ServerErrorPacket.class, new ServerErrorPacket());
         registerPacket(GlobalSettingsResponsePacket.class, new GlobalSettingsResponsePacket());
         registerPacket(NavigationResponsePacket.class, new NavigationResponsePacket());
         registerPacket(TrackStationResponsePacket.class, new TrackStationResponsePacket());
         registerPacket(NearestStationResponsePacket.class, new NearestStationResponsePacket());
+        registerPacket(RealtimeResponsePacket.class, new RealtimeResponsePacket());
+        registerPacket(NextConnectionsResponsePacket.class, new NextConnectionsResponsePacket());
+        registerPacket(TrainDataResponsePacket.class, new TrainDataResponsePacket());
         
     }
 

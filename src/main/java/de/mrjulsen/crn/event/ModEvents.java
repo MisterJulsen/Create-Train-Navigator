@@ -24,8 +24,6 @@ public class ModEvents {
     public static void onServerStopped(ServerStoppingEvent event) {
         TrainListener.stop();
     }
-
-
 }
 
 

@@ -2,10 +2,13 @@ package de.mrjulsen.crn.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.HashMap;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import com.simibubi.create.Create;
 import com.simibubi.create.content.trains.GlobalRailwayManager;
@@ -17,8 +20,13 @@ import com.simibubi.create.content.trains.station.GlobalStation;
 
 import de.mrjulsen.crn.data.DeparturePrediction;
 import de.mrjulsen.crn.data.GlobalSettingsManager;
+import de.mrjulsen.crn.data.GlobalTrainData;
 import de.mrjulsen.crn.data.NearestTrackStationResult;
+import de.mrjulsen.crn.data.SimpleTrainConnection;
+import de.mrjulsen.crn.data.SimpleTrainSchedule;
 import de.mrjulsen.crn.data.TrainStationAlias;
+import de.mrjulsen.crn.data.TrainStop;
+import it.unimi.dsi.fastutil.ints.IntComparator;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.Level;
 
@@ -62,6 +70,32 @@ public class TrainUtils {
         });
     }
 
+    public static Collection<DeparturePrediction> getTrainDeparturePredictions(UUID trainId) {
+        return Gott().values().stream().flatMap(x -> x.stream()).filter(x -> x.train.id.equals(trainId)).map(x -> new DeparturePrediction(x)).toList();
+    }
+
+
+
+    public static Collection<TrainStop> getTrainStopsSorted(UUID trainId) {
+        return getTrainDeparturePredictions(trainId).parallelStream().map(x -> new TrainStop(x.getNextStop(), x)).sorted(Comparator.comparingInt(x -> x.getPrediction().getTicks())).toList();
+    }
+
+    public static Set<SimpleTrainConnection> getConnectionsAt(String stationName, UUID currentTrainId, int ticksToNextStop) {
+        TrainStationAlias alias = GlobalSettingsManager.getInstance().getSettingsData().getAliasFor(stationName);
+        SimpleTrainSchedule ownSchedule = SimpleTrainSchedule.of(getTrainStopsSorted(currentTrainId));
+        GlobalTrainDisplayData.refresh();
+
+        return Gott().entrySet().stream().filter(x -> alias.contains(x.getKey())).map(x -> x.getValue())
+                .flatMap(x -> x.parallelStream().map(y -> new DeparturePrediction(y)))
+                .filter(x -> {
+                    SimpleTrainSchedule schedule = SimpleTrainSchedule.of(getTrainStopsSorted(x.getTrain().id));
+                    return !x.getTrain().id.equals(currentTrainId) &&
+                            !schedule.equals(ownSchedule) &&
+                            TrainUtils.isTrainValid(x.getTrain()) &&
+                            x.getTicks() > ticksToNextStop;
+                }).distinct().map(x -> new SimpleTrainConnection(x.getTrain().name.getString(), x.getTrain().id, x.getTrain().icon.getId(), x.getTicks(), x.getScheduleTitle())).sorted(Comparator.comparingInt(x -> x.ticks())).collect(Collectors.toSet());
+    }
+
     public static boolean GottKnows(String station) {
         return Gott().keySet().stream().anyMatch(x -> {
             String regex = x.isBlank() ? x : "\\Q" + x.replace("*", "\\E.*\\Q") + "\\E";
@@ -101,12 +135,18 @@ public class TrainUtils {
         return RAILWAY_MANAGER.trains.values();
     }
 
+    public static Train getTrain(UUID trainId) {
+        return RAILWAY_MANAGER.trains.get(trainId);
+    }
+
     public static boolean isTrainValid(Train train) {
         return !train.derailed &&
                !train.invalid &&
                train.navigation.destination != null &&
                !train.runtime.completed &&
-               !train.runtime.paused
+               !train.runtime.paused &&
+               train.runtime.getSchedule() != null &&
+               train.graph != null
         ;
     }
 }

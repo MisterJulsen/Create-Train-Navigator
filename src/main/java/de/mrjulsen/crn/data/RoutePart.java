@@ -16,7 +16,7 @@ public class RoutePart {
     
     public RoutePart(DeparturePrediction prediction, TrainStop start, TrainStationAlias end) {
         this.train = prediction.getTrain();
-        List<TrainStop> stops = new ArrayList<>(GlobalTrainData.getInstance().getAllStopoversOfTrainSortedNew(train, start.getStationAlias(), end, true));
+        List<TrainStop> stops = new ArrayList<>(GlobalTrainData.getInstance().getAllStopoversOfTrainSortedNew(train, start.getStationAlias(), end, true, true));
 
         TrainStop startStop = stops.get(0);
         if (startStop.getPrediction().getTicks() < start.getPrediction().getTicks() && startStop.getPrediction().getTrainCycleDuration() > 0) {

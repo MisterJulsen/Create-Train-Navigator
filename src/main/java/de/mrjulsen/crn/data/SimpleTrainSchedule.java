@@ -3,8 +3,11 @@ package de.mrjulsen.crn.data;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 import com.simibubi.create.content.trains.entity.Train;
 import com.simibubi.create.content.trains.station.GlobalStation;
@@ -26,6 +29,10 @@ public class SimpleTrainSchedule {
 
     public Collection<TrainStop> getAllStops() {
         return stops;
+    }
+
+    public SimpleTrainSchedule copy() {
+        return new SimpleTrainSchedule(stops.stream().map(x -> x.copy()).toList());
     }
 
     public SimpleTrainSchedule getAllStopsFrom(TrainStationAlias alias, boolean preventDuplicates) {
@@ -100,11 +107,21 @@ public class SimpleTrainSchedule {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof SimpleTrainSchedule other) {  
+            /*
             if (getAllStops().size() != other.getAllStops().size()) {
                 return false;
             }
             
             return getAllStops().stream().allMatch(x -> other.getAllStops().stream().anyMatch(y -> x.equals(y)));
+            */
+            Set<TrainStop> thisStops = new HashSet<>(getAllStops());
+            Set<TrainStop> otherStops = new HashSet<>(other.getAllStops());
+
+            if (thisStops.size() != otherStops.size()) {
+                return false;
+            }
+
+            return thisStops.containsAll(otherStops);
         }
         return false;
     }
@@ -124,6 +141,11 @@ public class SimpleTrainSchedule {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return 17 * Objects.hash(stops);
     }
 
     @Override

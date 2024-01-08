@@ -61,6 +61,7 @@ public class NavigationRequestPacket implements IPacketBase<NavigationRequestPac
         {
             Thread navigationThread = new Thread(() -> {
                 List<Route> routes = new ArrayList<>();
+                final long updateTime = context.get().getSender().level.getDayTime();
                 
                 try {
                     TrainStationAlias startAlias = GlobalSettingsManager.getInstance().getSettingsData().getAliasFor(packet.start);
@@ -71,8 +72,8 @@ public class NavigationRequestPacket implements IPacketBase<NavigationRequestPac
                     }
 
                     routes = packet.filterSettings.shouldOnlyTakeNextDepartingTrain() ? 
-                        Navigation.navigateForNext(startAlias, endAlias, packet.filterSettings) :
-                        Navigation.navigateForAll(startAlias, endAlias, packet.filterSettings);
+                        Navigation.navigateForNext(updateTime, startAlias, endAlias, packet.filterSettings) :
+                        Navigation.navigateForAll(updateTime, startAlias, endAlias, packet.filterSettings);
                     
                 } catch (Exception e) {
                     ModMain.LOGGER.error("Navigation error: ", e);

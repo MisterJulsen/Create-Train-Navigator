@@ -134,7 +134,7 @@ public class NavigatorScreen extends Screen implements IForegroundRendering {
     }
 
     private void setLastRefreshedTime() {
-        lastRefreshedTime = (int)(level.getDayTime() % Constants.TICKS_PER_DAY);
+        lastRefreshedTime = (int)(level.getDayTime()/*% Constants.TICKS_PER_DAY*/);
     }
 
     @Override

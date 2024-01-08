@@ -6,19 +6,25 @@ import java.util.Collection;
 
 public class Route {
     private Collection<RoutePart> parts = new ArrayList<>();
+    private final long refreshTime;
 
-    public Route(Collection<RoutePart> initialValues) {
+    public Route(Collection<RoutePart> initialValues, long refreshTime) {
+        this(refreshTime);
         this.parts.addAll(initialValues);
     }
 
-    public Route() {
-        
+    public Route(long refreshTime) {        
+        this.refreshTime = refreshTime;
     }
 
     public void addPart(RoutePart part) {
         if (!contains(part)) {
             parts.add(part);
         }
+    }
+
+    public long getRefreshTime() {
+        return refreshTime;
     }
     
     public boolean contains(RoutePart part) {

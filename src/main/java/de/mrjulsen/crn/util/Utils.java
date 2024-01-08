@@ -36,7 +36,7 @@ public class Utils {
         return String.format("%02d:%02d", hours, minutes);
     }
     
-    public static String parseTime(int time) {
+    public static String parseTime(long time) {
         if (DEBUG_RETURN_TICKS) {
             return String.valueOf(time);
         }
@@ -46,8 +46,8 @@ public class Utils {
         }
 
         time = (time + 6000) % Constants.TICKS_PER_DAY;
-        int hours = time / 1000;
-        int minutes = time % 1000;
+        long hours = time / 1000;
+        long minutes = time % 1000;
         minutes = (int)(minutes / (1000.0D / 60.0D));
         return String.format("%02d:%02d", hours, minutes);
     }

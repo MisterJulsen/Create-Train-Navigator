@@ -1,5 +1,7 @@
 package de.mrjulsen.crn.data;
 
+import java.util.Objects;
+
 import com.simibubi.create.content.trains.station.GlobalStation;
 
 public class TrainStop {
@@ -10,6 +12,10 @@ public class TrainStop {
     public TrainStop(TrainStationAlias station, DeparturePrediction prediction) {
         this.station = station;
         this.prediction = prediction;
+    }
+
+    public TrainStop copy() {
+        return new TrainStop(getStationAlias().copy(), getPrediction().copy());
     }
 
     public TrainStationAlias getStationAlias() {
@@ -34,6 +40,15 @@ public class TrainStop {
             return getStationAlias().equals(other.getStationAlias());
         }
         return false;        
+    }
+
+    public boolean identical(TrainStop other) {
+            return getStationAlias().equals(other.getStationAlias()) && prediction.getTicks() == other.getPrediction().getTicks();
+    }
+
+    @Override
+    public int hashCode() {
+        return 13 * Objects.hash(station);
     }
 
     @Override

@@ -14,6 +14,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import org.antlr.v4.parse.ANTLRParser.blockEntry_return;
+
 import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.data.DeparturePrediction;
@@ -31,38 +33,52 @@ import de.mrjulsen.crn.util.TrainUtils;
 
 public class Navigation {
 
-    protected static void init() {
-        GlobalTrainData.makeSnapshot();
+    protected static void init(long updateTime) {
+        GlobalTrainData.makeSnapshot(updateTime);
     }
 
-    public static List<Route> navigateForNext(TrainStationAlias from, TrainStationAlias to, UserSettings filterSettings) {
-        init();
+    public static List<Route> navigateForNext(long updateTime, TrainStationAlias from, TrainStationAlias to, UserSettings filterSettings) {
+        init(updateTime);
         Optional<DeparturePrediction> pred = GlobalTrainData.getInstance().getNextDepartingTrainAt(from);
 
         if (!pred.isPresent())
             return new ArrayList<>();
    
-        List<Route> routesList = Navigation.navigate(pred.get(), new TrainStop(from, pred.get()), to);
+        List<Route> routesList = Navigation.navigate(updateTime, pred.get(), new TrainStop(from, pred.get()), to, new HashSet<>(), new HashMap<>());
         routesList.sort((a, b) -> a.compareTo(b, filterSettings));
         return filter(routesList, filterSettings);
     }
 
-    public static List<Route> navigateForAll(TrainStationAlias from, TrainStationAlias to, UserSettings filterSettings) {
-        init();
+    public static List<Route> navigateForAll(long updateTime, TrainStationAlias from, TrainStationAlias to, UserSettings filterSettings) {
+        init(updateTime);
         List<Route> routesList = new ArrayList<>();
-        Collection<SimpleTrainSchedule> checkedTrains = new ArrayList<>();
-        
-        long startTime = System.currentTimeMillis();
-        for (DeparturePrediction pred : GlobalTrainData.getInstance().getDepartingTrainsAt(from)) {                
+        Set<SimpleTrainSchedule> checkedTrains = ConcurrentHashMap.newKeySet();       
+        Set<SimpleTrainSchedule> excludedTrainSchedules = ConcurrentHashMap.newKeySet();
+        Map<SimpleTrainSchedule, Collection<TrainStationAlias>> scheduleExclusionHitReasons = new ConcurrentHashMap<>();
 
-            SimpleTrainSchedule checkSchedule = GlobalTrainData.getInstance().getDirectionalSchedule(pred.getTrain());
-            if (checkedTrains.stream().anyMatch(x -> x.equals(checkSchedule))) {
-                continue;
+        long startTime = System.currentTimeMillis();
+        if (ModCommonConfig.PARALLEL_NAVIGATION.get()) {
+            GlobalTrainData.getInstance().getDepartingTrainsAt(from).parallelStream().forEach(pred -> {
+                SimpleTrainSchedule checkSchedule = GlobalTrainData.getInstance().getDirectionalSchedule(pred.getTrain());
+                if (checkedTrains.parallelStream().anyMatch(x -> x.equals(checkSchedule))) {
+                    return;
+                }
+                routesList.addAll(Navigation.navigate(updateTime, pred, new TrainStop(from, pred), to, excludedTrainSchedules, scheduleExclusionHitReasons));
+                checkedTrains.add(checkSchedule);
+            });
+        } else {
+            for (DeparturePrediction pred : GlobalTrainData.getInstance().getDepartingTrainsAt(from)) {                
+                SimpleTrainSchedule checkSchedule = GlobalTrainData.getInstance().getDirectionalSchedule(pred.getTrain());
+                if (checkedTrains.parallelStream().anyMatch(x -> x.equals(checkSchedule))) {
+                    continue;
+                }
+                ModMain.LOGGER.info(pred.getTrain().name.getString() + ": " + pred.getScheduleTitle());
+                routesList.addAll(Navigation.navigate(updateTime, pred, new TrainStop(from, pred), to, excludedTrainSchedules, scheduleExclusionHitReasons));
+                checkedTrains.add(checkSchedule);
             }
-            routesList.addAll(Navigation.navigate(pred, new TrainStop(from, pred), to));
-            checkedTrains.add(checkSchedule);
         }
         long estimatedTime = System.currentTimeMillis() - startTime;
+        ModMain.LOGGER.info(String.format("%s schedules excluded because of excluded stations.", scheduleExclusionHitReasons.size()));
         ModMain.LOGGER.info(String.format("Navigation succeeded. Took %sms. Found %s possible routes.", estimatedTime, routesList.size()));
         routesList.sort((a, b) -> a.compareTo(b, filterSettings));
         return filter(routesList, filterSettings);
@@ -75,35 +91,35 @@ public class Navigation {
 
         switch (filterSettings.getResultType()) {
             case BEST:
-                int minDuration = route.stream().mapToInt(x -> EFilterCriteria.getDataFromRoute(filterSettings.getFilterCriteria(), x)).min().orElse(0);
+                int minDuration = route.parallelStream().mapToInt(x -> EFilterCriteria.getDataFromRoute(filterSettings.getFilterCriteria(), x)).min().orElse(0);
                 return new ArrayList<>(route.stream().filter(x -> EFilterCriteria.getDataFromRoute(filterSettings.getFilterCriteria(), x) <= minDuration).toList());
             case FIXED_AMOUNT:
                 return new ArrayList<>(route.subList(0, Math.min(route.size(), filterSettings.getResultCount())));
             case ALL:
             default:
-                return route;
+                return new ArrayList<>(route.subList(0, Math.min(route.size(), 256)));
         }
     }
     
-    protected static List<Route> navigate(DeparturePrediction train, TrainStop from, TrainStationAlias to) {        
+    protected static List<Route> navigate(long updateTime, DeparturePrediction train, TrainStop from, TrainStationAlias to, Set<SimpleTrainSchedule> excludedTrainSchedules, Map<SimpleTrainSchedule, Collection<TrainStationAlias>> scheduleExclusionHitReasons) {        
         GlobalSettings blacklist = GlobalSettingsManager.getInstance().getSettingsData();
         if (blacklist.isBlacklisted(from.getStationAlias()) || blacklist.isBlacklisted(to)) {
             return new ArrayList<>();
         }
-
         List<Route> possibilities = new ArrayList<>();
         if (!from.getStationAlias().equals(to)) {
-            navigateInternal(blacklist, (route) -> {
-                ModMain.LOGGER.debug("Found possible route: " + route.toString());
+            navigateInternal(updateTime, blacklist, (route) -> {
+                //ModMain.LOGGER.debug("Found possible route: " + route.toString());
                 possibilities.add(route);
-            }, new ArrayList<>(), new ArrayList<>(), train, from.getStationAlias(), to, from,
-            null);
+            }, new ArrayList<>(), new HashSet<>(), train, from.getStationAlias(), to, from,
+            null, null, excludedTrainSchedules, new HashSet<>(), scheduleExclusionHitReasons);
         }
         return possibilities;
     }
-    
-    protected static void navigateInternal(GlobalSettings settings, Consumer<Route> possibleRoutes, Collection<RoutePart> currentPath, Collection<TrainStop> excludedStops, DeparturePrediction currentTrain, TrainStationAlias start, TrainStationAlias end, TrainStop routeStart, SimpleTrainSchedule pregeneratedSchedule) {
-        
+
+    protected static NavigationResult navigateInternal(long updateTime, GlobalSettings settings, Consumer<Route> possibleRoutes, Collection<RoutePart> currentPath, Set<TrainStop> excludedStops, DeparturePrediction currentTrain, TrainStationAlias start, TrainStationAlias end, TrainStop routeStart, SimpleTrainSchedule pregeneratedSchedule, SimpleTrainSchedule pregeneratedDirectionalSchedule, Set<SimpleTrainSchedule> excludedTrainSchedules, Set<TrainStationAlias> usedStations, Map<SimpleTrainSchedule, Collection<TrainStationAlias>> scheduleExclusionHitReasons) {
+        boolean targetReachable = false;
+
         if (ModCommonConfig.NAVIGATION_ITERATION_DELAY.get() > 0) {
             try { Thread.sleep(ModCommonConfig.NAVIGATION_ITERATION_DELAY.get()); } catch (InterruptedException e) {}
         }
@@ -111,62 +127,86 @@ public class Navigation {
         SimpleTrainSchedule thisSchedule = pregeneratedSchedule == null ? GlobalTrainData.getInstance().getTrainSimpleSchedule(currentTrain.getTrain()) : pregeneratedSchedule;
 
         if (!thisSchedule.hasStationAlias(routeStart.getStationAlias())) {
-            return;
+            return new NavigationResult(false, null);
         }
 
         if (settings.isBlacklisted(routeStart.getStationAlias())) {
-            return;
+            return new NavigationResult(false, Set.of(routeStart.getStationAlias()));
         }
 
         if (thisSchedule.hasStationAlias(end)) {
             RoutePart route = new RoutePart(currentTrain, routeStart, end);
-            if (route.getStopovers().stream().noneMatch(x -> excludedStops.stream().anyMatch(y -> x.equals(y)))) {
-                Collection<RoutePart> newPath = new ArrayList<>();
-                newPath.addAll(currentPath);
+            if (!route.getStartStation().identical(routeStart) && route.getStopovers().parallelStream().noneMatch(x -> excludedStops.parallelStream().anyMatch(y -> x.equals(y)))) {
+                Collection<RoutePart> newPath = new ArrayList<>(currentPath);
                 newPath.add(route);
-                possibleRoutes.accept(new Route(newPath));
+                possibleRoutes.accept(new Route(newPath, updateTime));
+                targetReachable = true;
             }
             
         }
 
-        SimpleTrainSchedule directionalSchedule = thisSchedule.getDirectionalSchedule();
-        Collection<TrainStop> stopovers = new ArrayList<>();
+        SimpleTrainSchedule directionalSchedule = pregeneratedDirectionalSchedule == null ? thisSchedule.getDirectionalSchedule() : pregeneratedDirectionalSchedule;
+        Set<TrainStop> stopovers = new HashSet<>();
+        Set<TrainStationAlias> stationFailResults = ConcurrentHashMap.newKeySet();
 
         for (TrainStop stop : directionalSchedule.getAllStops()) {
 
-            if (stop.isStationAlias(routeStart.getStationAlias()) || stop.isStationAlias(start)) {
+            if (stop.isStationAlias(routeStart.getStationAlias()) || stop.isStationAlias(start) || settings.isBlacklisted(stop.getStationAlias())) {
                 continue;
             }
+            RoutePart thisRoute = new RoutePart(currentTrain, routeStart, stop.getStationAlias());
 
-            if (settings.isBlacklisted(stop.getStationAlias())) {
-                continue;
-            }
-
-            RoutePart thisRoute = new RoutePart(currentTrain, routeStart, stop.getStationAlias());            
-            stopovers.add(stop);
-
-            if (stop.isStationAlias(end) || stopovers.stream().anyMatch(x -> excludedStops.stream().anyMatch(y -> x.equals(y)))) {
-                return;
+            
+            ModMain.LOGGER.info("Start corrected? " + thisRoute.getStartStation().identical(routeStart));
+            if (!thisRoute.getStartStation().identical(routeStart)) {
+                return new NavigationResult(targetReachable, Set.of());
             }
             
+            
+            //ModMain.LOGGER.info("Disp: " + thisRoute.getTrain().name.getString() + ", " + thisRoute.getStartStation().getPrediction().getTicks() + ", " + thisRoute.getEndStation().getStationAlias().getAliasName().get());
+            stopovers.add(stop);
+
+            if (stop.isStationAlias(end) && thisRoute.getStartStation() != stop) {
+                return new NavigationResult(targetReachable, Set.of(stop.getStationAlias()));
+            }
+
+            Set<TrainStop> excludedStopovers = stopovers.stream().filter(x -> excludedStops.stream().anyMatch(y -> x.equals(y))).collect(Collectors.toSet());
+            if (!excludedStopovers.isEmpty()) {
+                return new NavigationResult(targetReachable, excludedStopovers.stream().map(x -> x.getStationAlias()).collect(Collectors.toSet()));
+                // oder false statt targetReachable
+            }
+
             if (thisRoute.getStopovers().stream().anyMatch(x -> x.getStationAlias().equals(end) || excludedStops.stream().anyMatch(y -> x.equals(y)))) {
                 continue;
             }
 
             Map<UUID, SimpleTrainSchedule> pregeneratedTrainSchedules = new ConcurrentHashMap<>();
             
-            Collection<DeparturePrediction> departingTrains = GlobalTrainData.getInstance().getDepartingTrainsAt(stop.getStationAlias()).stream()
+            ModMain.LOGGER.info(currentTrain.getTrain().name.getString());
+            Set<DeparturePrediction> departingTrains = GlobalTrainData.getInstance().getDepartingTrainsAt(stop.getStationAlias()).stream()
             .filter(x -> {
                 SimpleTrainSchedule schedule = GlobalTrainData.getInstance().getTrainSimpleSchedule(x.getTrain());
+                
+                /*
+                ModMain.LOGGER.info("Connection: " + x.getTrain().name.getString() + ", " + x.getTicks());
+                for (TrainStop sss : schedule.getAllStops()) {
+                    ModMain.LOGGER.info("\t-> " + sss.getStationAlias().getAliasName().get() +  " " + sss.getPrediction().getTicks());
+                }
+                */
+                // Er darf nicht automatisch den nächsten Halt nehmen, sondern darf diese Option
+
+                // Es darf der Start bei RoutePart nicht korrigiert sein. Falls er korrigiert werden muss, ist diese Connections nicht gut
+                boolean b = pregeneratedTrainSchedules.values().stream().noneMatch(a -> a.exactEquals(schedule));
                 pregeneratedTrainSchedules.put(x.getTrain().id, schedule);
 
                 return !x.getTrain().id.equals(currentTrain.getTrain().id) &&
                        !schedule.equals(thisSchedule) &&
                        TrainUtils.isTrainValid(x.getTrain())
+                       //&& b
                 ;
-            }).collect(Collectors.toList());
+            }).collect(Collectors.toSet());
 
-            Collection<DeparturePrediction> trainPredictions = departingTrains.stream().map(x -> {
+            List<DeparturePrediction> trainPredictions = departingTrains.stream().map(x -> {
                 TrainStop nextStop = thisRoute.getEndStation();
                 if (x.getTicks() < nextStop.getPrediction().getTicks()) {
                     int trainCycleDuration = DeparturePrediction.getTrainCycleDuration(x.getTrain());
@@ -178,35 +218,68 @@ public class Navigation {
                     }
                 }
                 return x;
-            }).filter(x -> x.getTicks() > thisRoute.getEndStation().getPrediction().getTicks()).sorted(Comparator.comparingInt(x -> x.getTicks())).toList(); 
+            })/*.filter(x -> x.getTicks() > thisRoute.getEndStation().getPrediction().getTicks())*/.sorted(Comparator.comparingInt(x -> x.getTicks())).toList();
+            
+            //trainPredictions.sort(Comparator.comparingInt(x -> x.getTicks()));
 
-            if (trainPredictions == null || trainPredictions.size() <= 0) {
+            if (trainPredictions == null || trainPredictions.isEmpty()) {
                 continue;
             }
 
-            Collection<SimpleTrainSchedule> checkedTrains = new ArrayList<>();            
-            for (DeparturePrediction pred : trainPredictions) {                
+            for (DeparturePrediction pred : trainPredictions) {
+                //ModMain.LOGGER.info("\t-> " + pred.getTrain().name.getString() + " " + pred.getTicks());
+            }
 
-                SimpleTrainSchedule checkSchedule = GlobalTrainData.getInstance().getDirectionalSchedule(pred.getTrain());
-                if (checkedTrains.stream().anyMatch(x -> x.equals(checkSchedule))) {
+            Set<SimpleTrainSchedule> checkedTrains = ConcurrentHashMap.newKeySet();
+            for (DeparturePrediction pred : trainPredictions) {                
+                SimpleTrainSchedule checkSchedule = pregeneratedTrainSchedules.get(pred.getTrain().id).getDirectionalSchedule();
+
+                if (scheduleExclusionHitReasons.getOrDefault(checkSchedule, List.of()).stream().anyMatch(x -> usedStations.stream().anyMatch(y -> y.equals(x)))) {
+                    stationFailResults.addAll(scheduleExclusionHitReasons.get(checkSchedule));
                     continue;
                 }
 
-                Collection<TrainStop> newExcludedStops = new ArrayList<>();
+                if (checkedTrains.parallelStream().anyMatch(x -> x.equals(checkSchedule)) || excludedTrainSchedules.parallelStream().anyMatch(x -> x.equals(checkSchedule))) {
+                    continue;
+                }
+
+                /*
+                ModMain.LOGGER.info(pred.getTrain().name.getString());
+                ModMain.LOGGER.info("Nav: " + pred.getTrain().name.getString() + ", " + pred.getTicks());
+                for (TrainStop sss : pregeneratedTrainSchedules.get(pred.getTrain().id).getAllStops()) {
+                    ModMain.LOGGER.info("\t-> " + sss.getStationAlias().getAliasName().get() +  " " + sss.getPrediction().getTicks());
+                }
+                */
+
+                Set<TrainStop> newExcludedStops = new HashSet<>(excludedStops);
                 newExcludedStops.add(new TrainStop(start, null));
-                newExcludedStops.addAll(excludedStops);
                 newExcludedStops.addAll(stopovers);
                 newExcludedStops.addAll(thisRoute.getStopovers());
-                newExcludedStops = newExcludedStops.stream().distinct().toList();
                 
-                Collection<RoutePart> newPath = new ArrayList<>();
-                newPath.addAll(currentPath);
+                Collection<RoutePart> newPath = new ArrayList<>(currentPath);
                 newPath.add(thisRoute);
 
-                navigateInternal(settings, possibleRoutes, newPath, newExcludedStops, pred, start, end, thisRoute.getEndStation(), pregeneratedTrainSchedules.get(pred.getTrain().id));
+                Set<TrainStationAlias> usedStationsNew = new HashSet<>(usedStations);
+                usedStationsNew.addAll(thisRoute.getStopovers().stream().map(x -> x.getStationAlias()).toList());
+
+                NavigationResult b = navigateInternal(updateTime, settings, possibleRoutes, newPath, newExcludedStops, pred, start, end, thisRoute.getEndStation(), pregeneratedTrainSchedules.get(pred.getTrain().id), checkSchedule, excludedTrainSchedules, usedStationsNew, scheduleExclusionHitReasons);
+                targetReachable = targetReachable || b.possible();
+
+                if (!b.success() && b.failReasonStation() != null && !b.failReasonStation().isEmpty()) {
+                    // Fail wegen einer bestimmten Station. Dieser Fahrplan geht also nicht, wenn die Station schon verbraucht ist.
+                    scheduleExclusionHitReasons.put(checkSchedule, b.failReasonStation());
+                }
+
+                if (b.impossible()) {
+                    excludedTrainSchedules.add(new SimpleTrainSchedule(null));
+                }                
                 
-                checkedTrains.add(checkSchedule);
+                if (!(!b.success() && b.failReasonStation() != null && b.failReasonStation().isEmpty())) {
+                    checkedTrains.add(checkSchedule);                    
+                }
             }
         }
+
+        return new NavigationResult(targetReachable, stationFailResults);
     }
 }
