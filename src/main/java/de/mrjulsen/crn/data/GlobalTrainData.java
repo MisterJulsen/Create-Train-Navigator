@@ -99,7 +99,7 @@ public class GlobalTrainData {
     }
 
     public List<TrainStop> getAllStopoversOfTrainSortedNew(Train train, TrainStationAlias start, TrainStationAlias end, boolean includeStartEnd, boolean correctStart) {
-        Collection<TrainStop> stops = getAllStopsFrom(train, start, false).getAllStops();
+        Collection<TrainStop> stops = getAllStopsFrom(train, start, false, true).getAllStops();
         
         if (stops.parallelStream().noneMatch(x -> x.isStationAlias(start) || x.isStationAlias(end))) {
             return new ArrayList<>();
@@ -179,12 +179,25 @@ public class GlobalTrainData {
         return filteredStops;
     }
 
-    public SimpleTrainSchedule getAllStopsFrom(Train train, TrainStationAlias alias, boolean preventDuplicates) {
+    // TODO unused
+    /**
+     * Creates a {@code SimpleTrainSchedule} which contains all stations the train will arrive.
+     * @param train The train of this schedule.
+     * @param alias The station alias to start at. This is the first stop in the schedule.
+     * @param preventDuplicates If {@code true}, every station exists once.
+     * @param noLoop If {@code true}, the schedule will continue beyond the last stop.
+     * @return A new {@code SimpleTrainSchedule}
+     */
+    public SimpleTrainSchedule getAllStopsFrom(Train train, TrainStationAlias alias, boolean preventDuplicates, boolean loop) {
         List<TrainStop> newList = new ArrayList<>();
         int idx = 0;
         for (TrainStop stop : getAllStopsSorted(train)) {            
             if (preventDuplicates && newList.contains(stop)) {
-                continue;
+                if (loop) {
+                    continue;
+                } else {
+                    break;
+                }
             }
 
             if (stop.getStationAlias().equals(alias)) {
@@ -197,8 +210,9 @@ public class GlobalTrainData {
         return SimpleTrainSchedule.of(newList);
     }
 
-
-    public SimpleTrainSchedule getAllStopsDirectional(Train train, TrainStationAlias alias) {
+// TODO: unused
+/*
+    public SimpleTrainSchedule getAllStopsDirectionalFrom(Train train, TrainStationAlias alias) {
         List<TrainStop> newList = new ArrayList<>();
         for (TrainStop stop : getAllStopsFrom(train, alias, false).getAllStops()) {  
             if (newList.contains(stop)) {
@@ -209,6 +223,7 @@ public class GlobalTrainData {
         }
         return SimpleTrainSchedule.of(newList);
     }
+    */
 
     
     public SimpleTrainSchedule getDirectionalSchedule(Train train) {

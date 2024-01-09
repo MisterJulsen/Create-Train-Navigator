@@ -53,7 +53,7 @@ public class SimpleTrainSchedule {
         return SimpleTrainSchedule.of(newList);
     }
 
-    public SimpleTrainSchedule getAllStopsFromDirectional(TrainStationAlias alias) {
+    public SimpleTrainSchedule getDirectionalScheduleFrom(TrainStationAlias alias) {
         List<TrainStop> newList = new ArrayList<>();
         for (TrainStop stop : getAllStopsFrom(alias, false).getAllStops()) {     
             if (newList.contains(stop)) {

@@ -271,6 +271,7 @@ public class Navigation {
                 }
 
                 if (b.impossible()) {
+                    // TODO
                     excludedTrainSchedules.add(new SimpleTrainSchedule(null));
                 }                
                 
