@@ -25,11 +25,6 @@ public class DeparturePrediction {
         this.nextStop = nextStop;
         this.cycle = cycle;
     }
-
-
-    public DeparturePrediction() {
-
-    }
     
     public DeparturePrediction(TrainDeparturePrediction prediction) {
         this(prediction.train, prediction.ticks, prediction.scheduleTitle.getString(), prediction.destination, 0);
