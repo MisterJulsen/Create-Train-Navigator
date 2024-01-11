@@ -20,13 +20,11 @@ import com.simibubi.create.content.trains.station.GlobalStation;
 
 import de.mrjulsen.crn.data.DeparturePrediction;
 import de.mrjulsen.crn.data.GlobalSettingsManager;
-import de.mrjulsen.crn.data.GlobalTrainData;
 import de.mrjulsen.crn.data.NearestTrackStationResult;
 import de.mrjulsen.crn.data.SimpleTrainConnection;
 import de.mrjulsen.crn.data.SimpleTrainSchedule;
 import de.mrjulsen.crn.data.TrainStationAlias;
 import de.mrjulsen.crn.data.TrainStop;
-import it.unimi.dsi.fastutil.ints.IntComparator;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.Level;
 
@@ -142,8 +140,6 @@ public class TrainUtils {
     public static boolean isTrainValid(Train train) {
         return !train.derailed &&
                !train.invalid &&
-               train.navigation.destination != null &&
-               !train.runtime.completed &&
                !train.runtime.paused &&
                train.runtime.getSchedule() != null &&
                train.graph != null
