@@ -52,7 +52,7 @@ Get possible train connections in your world from one station to another using t
 [[dependencies.createrailwaysnavigator]]
     modId="minecraft"
     mandatory=true
-# This version range declares a minimum of the current minecraft version up to but not including the next major version
+    # This version range declares a minimum of the current minecraft version up to but not including the next major version
     versionRange="[1.18.2,1.19)"
     ordering="NONE"
     side="BOTH"
@@ -61,4 +61,10 @@ Get possible train connections in your world from one station to another using t
     mandatory=true
     versionRange="[0.5.1.e,)"
     ordering="NONE"
+    side="BOTH"
+[[dependencies.dragonlib]]
+    modId="dragonlib"
+    mandatory=true
+    versionRange="[1.18.2,1.19)"
+    ordering="BEFORE"
     side="BOTH"
