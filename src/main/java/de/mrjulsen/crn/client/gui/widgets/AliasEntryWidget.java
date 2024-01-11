@@ -19,6 +19,7 @@ import de.mrjulsen.crn.data.AliasName;
 import de.mrjulsen.crn.data.ClientTrainStationSnapshot;
 import de.mrjulsen.crn.data.GlobalSettingsManager;
 import de.mrjulsen.crn.data.TrainStationAlias;
+import de.mrjulsen.crn.data.TrainStationAlias.StationInfo;
 import de.mrjulsen.crn.util.GuiUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -161,7 +162,8 @@ public class AliasEntryWidget extends Button implements ITickableWidget, IForegr
             return;
         }
 
-        alias.add(name);
+        // TODO
+        alias.add(name, StationInfo.empty());
         alias.updateLastEdited(minecraft.player.getName().getString());
         GlobalSettingsManager.getInstance().getSettingsData().updateAlias(prevName, alias, () -> {
             onUpdate.run();

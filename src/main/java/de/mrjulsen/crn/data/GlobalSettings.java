@@ -2,13 +2,18 @@ package de.mrjulsen.crn.data;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.simibubi.create.content.trains.station.GlobalStation;
 
+import de.mrjulsen.crn.data.TrainStationAlias.StationInfo;
 import de.mrjulsen.crn.network.packets.cts.GlobalSettingsUpdatePacket;
 import de.mrjulsen.crn.network.packets.cts.GlobalSettingsUpdatePacket.EGlobalSettingsAction;
+import de.mrjulsen.crn.util.TrainUtils;
+import de.mrjulsen.mcdragonlib.common.Location;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -94,11 +99,13 @@ public class GlobalSettings {
     }
 
     public boolean registerAliasForStationNames(String name, Collection<String> stations, Runnable then) {
-        return registerAlias(new TrainStationAlias(AliasName.of(name), stations), then);
+        //TODO
+        return registerAlias(new TrainStationAlias(AliasName.of(name), stations.stream().collect(Collectors.toMap(x -> x, x -> StationInfo.empty()))), then);
     }
 
     public boolean registerAlias(String name, Collection<GlobalStation> stations, Runnable then) {
-        return registerAlias(new TrainStationAlias(AliasName.of(name), stations.stream().map(x -> x.name).toList()), then);
+        //TODO
+        return registerAlias(new TrainStationAlias(AliasName.of(name), stations.stream().collect(Collectors.toMap(x -> x.name, x -> StationInfo.empty()))), then);
     }
 
 
@@ -143,11 +150,13 @@ public class GlobalSettings {
     }
 
     public boolean registerAliasForStationNamesServer(String name, Collection<String> stations) {
-        return registerAliasServer(new TrainStationAlias(AliasName.of(name), stations));
+        //TODO
+        return registerAliasServer(new TrainStationAlias(AliasName.of(name), stations.stream().collect(Collectors.toMap(x -> x, x -> StationInfo.empty()))));
     }
 
     public boolean registerAliasServer(String name, Collection<GlobalStation> stations) {
-        return registerAliasServer(new TrainStationAlias(AliasName.of(name), stations.stream().map(x -> x.name).toList()));
+        //TODO
+        return registerAliasServer(new TrainStationAlias(AliasName.of(name), stations.stream().collect(Collectors.toMap(x -> x.name, x -> StationInfo.empty()))));
     }
 
 
@@ -169,8 +178,15 @@ public class GlobalSettings {
         if (a.isPresent()) {            
             return a.get();
         }
-        
-        return new TrainStationAlias(AliasName.of(stationName), List.of(stationName)); 
+
+        // TODO temp
+       if (GlobalTrainData.getInstance().getStationData(stationName) != null) {
+            GlobalStation station = GlobalTrainData.getInstance().getStationData(stationName).stream().findFirst().get();        
+            if (station != null) {
+                return new TrainStationAlias(AliasName.of(stationName), Map.of(stationName, StationInfo.with(new Location(station.blockEntityPos.getX(), station.blockEntityPos.getY(), station.blockEntityPos.getZ(), station.blockEntityDimension.location().toString())))); 
+            }
+        }
+        return new TrainStationAlias(AliasName.of(stationName), Map.of(stationName, StationInfo.with(new Location(0, 0, 0, "")))); 
     }
 
     private TrainStationAlias getOrCreateAliasForWildcard(String stationName) {
@@ -180,11 +196,20 @@ public class GlobalSettings {
             return a.get();
         }
         
-        return new TrainStationAlias(AliasName.of(stationName), List.of(stationName)); 
+        // TODO temp
+        if (GlobalTrainData.getInstance().getStationData(stationName) != null) {
+            GlobalStation station = GlobalTrainData.getInstance().getStationData(stationName).stream().findFirst().get();        
+            if (station != null) {
+                return new TrainStationAlias(AliasName.of(stationName), Map.of(stationName, StationInfo.with(new Location(station.blockEntityPos.getX(), station.blockEntityPos.getY(), station.blockEntityPos.getZ(), station.blockEntityDimension.location().toString()))));  
+        
+            }
+        } 
+            return new TrainStationAlias(AliasName.of(stationName), Map.of(stationName, StationInfo.with(new Location(0, 0, 0, ""))));
+        
     }
 
-    private Optional<TrainStationAlias> getAlias(AliasName aliasName) {
-        Optional<TrainStationAlias> a = registeredAlias.stream().filter(x -> x.getAliasName().equals(aliasName)).findFirst();
+    private Optional<TrainStationAlias> getAlias(String stationName) {
+        Optional<TrainStationAlias> a = registeredAlias.stream().filter(x -> x.getAliasName().equals(AliasName.of(stationName))).findFirst();
         return a;
     }
 
@@ -193,7 +218,7 @@ public class GlobalSettings {
     }
 
     public TrainStationAlias getAliasFor(String stationName) {
-        Optional<TrainStationAlias> a = getAlias(AliasName.of(stationName));
+        Optional<TrainStationAlias> a = getAlias(stationName);
 
         if (!a.isPresent()) {
             return getOrCreateAliasFor(stationName);

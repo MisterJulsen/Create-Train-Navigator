@@ -7,16 +7,21 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import com.simibubi.create.content.trains.entity.Train;
+import com.simibubi.create.content.trains.station.GlobalStation;
+
 import de.mrjulsen.crn.util.TrainUtils;
 
 public class GlobalTrainData {
 
     private final Collection<Train> trains;
-    private final Collection<String> stations;
+    private final Map<String, Set<GlobalStation>> stationByName;
     private final Map<String, Collection<DeparturePrediction>> aliasPredictions = new HashMap<>();
     private final Map<UUID, Collection<DeparturePrediction>> trainPredictions = new HashMap<>();
     private final long updateTime;
@@ -24,14 +29,23 @@ public class GlobalTrainData {
     private static GlobalTrainData instance = null;
 
     private GlobalTrainData(long updateTime) {
+        instance = this;
         trains = TrainUtils.getAllTrains();
-        stations = TrainUtils.getAllStations().parallelStream().map(x -> x.name).toList();
+
+        stationByName = new HashMap<>();
+        for (GlobalStation sta : TrainUtils.getAllStations()) {
+            if (stationByName.containsKey(sta.name)) {
+                stationByName.get(sta.name).add(sta);
+            } else {
+                stationByName.put(sta.name, new HashSet<>(Set.of(sta)));
+            }
+        } 
         TrainUtils.getMappedDeparturePredictions(aliasPredictions, trainPredictions);
         this.updateTime = updateTime;
     }
 
     public static GlobalTrainData makeSnapshot(long updateTime) {
-        return instance = new GlobalTrainData(updateTime);
+        return new GlobalTrainData(updateTime);
     }
 
     public static GlobalTrainData getInstance() {
@@ -51,9 +65,16 @@ public class GlobalTrainData {
         return trains;
     }
 
-    public final Collection<String> getAllStations() {
-        return stations;
+    public final Set<String> getAllStations() {
+        return stationByName.keySet();
     }
+
+    public final Set<GlobalStation> getStationData(String stationName) {
+        return stationByName.get(stationName);
+    }
+
+
+    
 
     public Collection<DeparturePrediction> getPredictionsOfTrain(Train train) {
         return trainPredictions.get(train.id);
@@ -90,7 +111,7 @@ public class GlobalTrainData {
         return getPredictionsOfTrain(train).parallelStream().map(x -> new TrainStop(x.getNextStop(), x)).toList();
     }
 
-    public Collection<TrainStop> getAllStopsSorted(Train train) {
+    public List<TrainStop> getAllStopsSorted(Train train) {
         return getAllStops(train).parallelStream().sorted(Comparator.comparingInt(x -> x.getPrediction().getTicks())).toList();
     }
 
