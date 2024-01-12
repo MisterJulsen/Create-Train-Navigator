@@ -10,11 +10,13 @@ public class Edge {
     private UUID node2Id;
 
     private int cost = -1;
+    private UUID scheduleId;
 
-    public Edge(Node node1, Node node2, UUID id) {
+    public Edge(Node node1, Node node2, UUID id, UUID scheduleId) {
         this.id = id;
         this.node1Id = node1.getId();
         this.node2Id = node2.getId();
+        this.scheduleId = scheduleId;
     }
 
     public Edge withCost(int cost, boolean overwrite) {
@@ -32,6 +34,10 @@ public class Edge {
 
     public UUID getSecondNodeId() {
         return node2Id;
+    }
+
+    public UUID getScheduleId() {
+        return scheduleId;
     }
     
     public int getCost() {
