@@ -13,6 +13,7 @@ import java.util.Set;
 import com.simibubi.create.content.trains.entity.Train;
 import com.simibubi.create.content.trains.station.GlobalStation;
 
+import de.mrjulsen.crn.data.SimulatedTrainSchedule.SimulationData;
 import de.mrjulsen.crn.event.listeners.TrainListener;
 
 public class SimpleTrainSchedule {
@@ -36,12 +37,6 @@ public class SimpleTrainSchedule {
 
     public Collection<TrainStop> getAllStopsFrom(TrainStationAlias alias) {
         final boolean[] startFound = new boolean[] { false };
-        /*return stops.stream().filter(x -> {
-            if (x.getStationAlias().equals(alias)) {
-                startFound[0] = true;
-            }
-            return startFound[0];
-        }).toList();*/
 
         return stops.stream().dropWhile(x -> {
             if (x.getStationAlias().equals(alias)) {
@@ -189,12 +184,7 @@ public class SimpleTrainSchedule {
         return TrainListener.getInstance().getApproximatedTrainDuration(train);
     }
 
-    /**
-     * Simuliert den Fahrplan für eine bestimmte Anzahl an Ticks und gibt einen geschätzten zukünftigen Fahrplan in der übergebenen Zeit zurück.
-     * @param ticks
-     * @return
-     */
-    public SimpleTrainSchedule simulate(Train train, int simulationTime, TrainStationAlias simulationTarget) {
+    public SimulatedTrainSchedule simulate(Train train, int simulationTime, TrainStationAlias simulationTarget) {
         final int cycleDuration = getTrainCycleDuration(train);
 
         int timeToTargetAfterSim = getAllStopsOf(simulationTarget).stream().mapToInt(x -> {
@@ -206,10 +196,26 @@ public class SimpleTrainSchedule {
         }).min().getAsInt();
         int simToTargetTime = simulationTime + timeToTargetAfterSim;
 
-        return new SimpleTrainSchedule(getAllStops().parallelStream().map(x -> {
+        return new SimulatedTrainSchedule(getAllStops().parallelStream().map(x -> {
             int cycle = (int)((double)(x.getPrediction().getTicks() - simToTargetTime) / cycleDuration);
             int estimatedTicks = (x.getPrediction().getTicks() - simToTargetTime) % cycleDuration;
-            if (estimatedTicks < 0) {
+            while (estimatedTicks < 0) {
+                estimatedTicks += cycleDuration;
+                cycle++;
+            }
+            cycle += x.getPrediction().getCycle();
+            return new TrainStop(x.getStationAlias(), new DeparturePrediction(x.getPrediction().getTrain(), estimatedTicks, x.getPrediction().getScheduleTitle(), x.getPrediction().getNextStopStation(), cycle));
+        }).sorted(Comparator.comparingInt(x -> x.getPrediction().getTicks())).toList(), new SimulationData(getFirstStop().get().getPrediction().getTrain(), simulationTime, timeToTargetAfterSim));
+    }
+
+    
+    public SimpleTrainSchedule simulate(Train train, int simulationTime) {
+        final int cycleDuration = getTrainCycleDuration(train);
+
+        return new SimpleTrainSchedule(getAllStops().parallelStream().map(x -> {
+            int cycle = (int)((double)(x.getPrediction().getTicks() - simulationTime) / cycleDuration);
+            int estimatedTicks = (x.getPrediction().getTicks() - simulationTime) % cycleDuration;
+            while (estimatedTicks < 0) {
                 estimatedTicks += cycleDuration;
                 cycle++;
             }
@@ -217,4 +223,5 @@ public class SimpleTrainSchedule {
             return new TrainStop(x.getStationAlias(), new DeparturePrediction(x.getPrediction().getTrain(), estimatedTicks, x.getPrediction().getScheduleTitle(), x.getPrediction().getNextStopStation(), cycle));
         }).sorted(Comparator.comparingInt(x -> x.getPrediction().getTicks())).toList());
     }
+    
 }

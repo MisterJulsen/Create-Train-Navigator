@@ -62,7 +62,7 @@ public class TrainSchedule {
             int duration = i == 0 ? cycleDuration - lastStop.getPrediction().getTicks() + stop.getPrediction().getTicks() : stop.getPrediction().getTicks() - lastStop.getPrediction().getTicks();
             Node node1 = graph.addNode(lastStop.getStationAlias());
             Node node2 = graph.addNode(stop.getStationAlias());
-            Edge edge = graph.addEdge(node1, node2).withCost(duration, false);
+            Edge edge = graph.addEdge(node1, node2, getId()).withCost(duration, false);
 
             nodes.add(node1);
             nodes.add(node2);
@@ -99,7 +99,7 @@ public class TrainSchedule {
         return 41 * Objects.hash(getEdges(), getNodes());
     }
 
-    public void print() {
+    public void debugPrint() {
         System.out.println(String.format("TRAIN SCHEDULE DETAILS (%s nodes, %s edges)", nodes.size(), edges.size()));
         System.out.println("Nodes");
         for (Node node : nodes) {

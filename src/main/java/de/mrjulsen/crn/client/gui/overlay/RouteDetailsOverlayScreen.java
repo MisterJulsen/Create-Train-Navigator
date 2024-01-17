@@ -36,6 +36,7 @@ import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.chat.NarratorChatListener;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -60,7 +61,7 @@ public class RouteDetailsOverlayScreen implements HudOverlay {
     private static final int DELAYED = 0xFF4242;
     private static final float FADE_TIME = 5;
 
-    private static final int INFO_BEFORE_NEXT_STOP = 200;
+    private static final int INFO_BEFORE_NEXT_STOP = 500;
     private static final int DELAY_TRESHOLD = 500;
 
     private long fadeStart = 0L;
@@ -225,14 +226,17 @@ public class RouteDetailsOverlayScreen implements HudOverlay {
         setSlidingText(new TranslatableComponent(keyNextStop,
             currentStation().station().getStationName(),
             Utils.parseTime( currentStation().station().getEstimatedTimeWithTreshold())
-        ));        
+        ));
         currentState = State.BEFORE_NEXT_STOP;
+
+        NarratorChatListener.INSTANCE.narrator.say(String.format("Nächster Halt: %s", currentStation().station().getStationName()), true);
 
         setPageNextConnections();
     }
 
     private void reachNextStop() {
         setSlidingText(new TextComponent(currentStation().station().getStationName()));
+        NarratorChatListener.INSTANCE.narrator.say(slidingText.getString(), true);
         currentState = State.WHILE_NEXT_STOP;
     }
 

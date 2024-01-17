@@ -12,11 +12,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
-
-import org.antlr.v4.parse.ANTLRParser.blockEntry_return;
-
-import com.simibubi.create.content.trains.graph.TrackGraph;
 
 import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.config.ModCommonConfig;
@@ -32,8 +27,8 @@ import de.mrjulsen.crn.data.TrainStationAlias;
 import de.mrjulsen.crn.data.TrainStop;
 import de.mrjulsen.crn.data.UserSettings;
 import de.mrjulsen.crn.util.TrainUtils;
-import net.minecraft.util.Graph;
 
+@Deprecated
 public class Navigation {
 
     protected static void init(long updateTime) {
@@ -130,19 +125,16 @@ public class Navigation {
         
         SimpleTrainSchedule directionalSchedule = pregeneratedDirectionalSchedule == null ? GlobalTrainData.getInstance().getDirectionalSchedule(currentTrain.getTrain()) : pregeneratedDirectionalSchedule;
 
-        // Abbrechen, wenn der Fahrplan den Start nicht enthält.
         if (!/*thisSchedule*/directionalSchedule.hasStationAlias(routeStart.getStationAlias())) {
             return new NavigationResult(false, null);
         }
 
-        // Abbrechen, wenn der Start ausgeschlossen ist.
         if (settings.isBlacklisted(routeStart.getStationAlias())) {
             return new NavigationResult(false, Set.of(routeStart.getStationAlias()));
         }
 
         if (/*directionalSchedule.isInDirection(routeStart.getStationAlias(), end) &&*/directionalSchedule.hasStationAlias(end)) {
-            RoutePart route = new RoutePart(currentTrain, routeStart.getStationAlias(), end, routeStart.getPrediction().getTicks());
-            //System.out.println(" > Is Good? " + directionalSchedule.isInDirection(routeStart.getStationAlias(), end));
+            RoutePart route = new RoutePart(currentTrain, routeStart.getStationAlias(), end, currentTrain.getTicks() );
                 
             if (route.getStopovers().stream().noneMatch(x -> excludedStops.stream().anyMatch(y -> x.equals(y)))) {
                 Collection<RoutePart> newPath = new ArrayList<>(currentPath);
@@ -163,7 +155,7 @@ public class Navigation {
                 continue;
             }
 
-            RoutePart thisRoute = new RoutePart(currentTrain, routeStart.getStationAlias(), stop.getStationAlias(), routeStart.getPrediction().getTicks());
+            RoutePart thisRoute = new RoutePart(currentTrain, routeStart.getStationAlias(), stop.getStationAlias(), currentTrain.getTicks());
 
             /*
             if (!thisRoute.getStartStation().identical(checkStartStop)) {

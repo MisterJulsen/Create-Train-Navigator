@@ -8,7 +8,6 @@ import de.mrjulsen.crn.network.packets.cts.NavigationRequestPacket;
 import de.mrjulsen.crn.network.packets.cts.NearestStationRequestPacket;
 import de.mrjulsen.crn.network.packets.cts.NextConnectionsRequestPacket;
 import de.mrjulsen.crn.network.packets.cts.RealtimeRequestPacket;
-import de.mrjulsen.crn.network.packets.cts.TestRequestPacket;
 import de.mrjulsen.crn.network.packets.cts.TrackStationsRequestPacket;
 import de.mrjulsen.crn.network.packets.cts.TrainDataRequestPacket;
 import de.mrjulsen.crn.network.packets.stc.GlobalSettingsResponsePacket;
@@ -42,7 +41,6 @@ public class NetworkManager {
         registerPacket(RealtimeRequestPacket.class, new RealtimeRequestPacket());
         registerPacket(NextConnectionsRequestPacket.class, new NextConnectionsRequestPacket());
         registerPacket(TrainDataRequestPacket.class, new TrainDataRequestPacket());
-        registerPacket(TestRequestPacket.class, new TestRequestPacket());
         
         registerPacket(ServerErrorPacket.class, new ServerErrorPacket());
         registerPacket(GlobalSettingsResponsePacket.class, new GlobalSettingsResponsePacket());

@@ -1,7 +1,6 @@
 package de.mrjulsen.crn.data;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
 import java.util.Optional;
@@ -12,8 +11,6 @@ import com.simibubi.create.content.trains.station.GlobalStation;
 import de.mrjulsen.crn.data.TrainStationAlias.StationInfo;
 import de.mrjulsen.crn.network.packets.cts.GlobalSettingsUpdatePacket;
 import de.mrjulsen.crn.network.packets.cts.GlobalSettingsUpdatePacket.EGlobalSettingsAction;
-import de.mrjulsen.crn.util.TrainUtils;
-import de.mrjulsen.mcdragonlib.common.Location;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -179,14 +176,7 @@ public class GlobalSettings {
             return a.get();
         }
 
-        // TODO temp
-       if (GlobalTrainData.getInstance().getStationData(stationName) != null) {
-            GlobalStation station = GlobalTrainData.getInstance().getStationData(stationName).stream().findFirst().get();        
-            if (station != null) {
-                return new TrainStationAlias(AliasName.of(stationName), Map.of(stationName, StationInfo.with(new Location(station.blockEntityPos.getX(), station.blockEntityPos.getY(), station.blockEntityPos.getZ(), station.blockEntityDimension.location().toString())))); 
-            }
-        }
-        return new TrainStationAlias(AliasName.of(stationName), Map.of(stationName, StationInfo.with(new Location(0, 0, 0, "")))); 
+        return new TrainStationAlias(AliasName.of(stationName), Map.of(stationName, StationInfo.empty())); 
     }
 
     private TrainStationAlias getOrCreateAliasForWildcard(String stationName) {
@@ -196,15 +186,7 @@ public class GlobalSettings {
             return a.get();
         }
         
-        // TODO temp
-        if (GlobalTrainData.getInstance().getStationData(stationName) != null) {
-            GlobalStation station = GlobalTrainData.getInstance().getStationData(stationName).stream().findFirst().get();        
-            if (station != null) {
-                return new TrainStationAlias(AliasName.of(stationName), Map.of(stationName, StationInfo.with(new Location(station.blockEntityPos.getX(), station.blockEntityPos.getY(), station.blockEntityPos.getZ(), station.blockEntityDimension.location().toString()))));  
-        
-            }
-        } 
-            return new TrainStationAlias(AliasName.of(stationName), Map.of(stationName, StationInfo.with(new Location(0, 0, 0, ""))));
+        return new TrainStationAlias(AliasName.of(stationName), Map.of(stationName, StationInfo.empty()));
         
     }
 

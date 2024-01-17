@@ -9,6 +9,7 @@ import de.mrjulsen.crn.data.SimpleRoute;
 import de.mrjulsen.crn.data.SimpleTrainConnection;
 import de.mrjulsen.crn.data.DeparturePrediction.SimpleDeparturePrediction;
 import de.mrjulsen.crn.network.packets.cts.TrainDataRequestPacket.TrainData;
+import de.mrjulsen.crn.network.packets.stc.NavigationResponsePacket.NavigationResponseData;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -17,7 +18,7 @@ import java.util.List;
 public class InstanceManager {
 
     private static final Map<Long, Runnable> CLIENT_RESPONSE_RECEIVED_ACTION = new HashMap<>();
-    private static final Map<Long, Consumer<List<SimpleRoute>>> CLIENT_NAVIGATION_RESPONSE_ACTION = new HashMap<>();
+    private static final Map<Long, BiConsumer<List<SimpleRoute>, NavigationResponseData>> CLIENT_NAVIGATION_RESPONSE_ACTION = new HashMap<>();
     private static final Map<Long, Consumer<NearestTrackStationResult>> CLIENT_NEAREST_STATION_RESPONSE_ACTION = new HashMap<>();
     private static final Map<Long, BiConsumer<Collection<SimpleDeparturePrediction>, Long>> CLIENT_REALTIME_RESPONSE_ACTION = new HashMap<>();
     private static final Map<Long, BiConsumer<Collection<SimpleTrainConnection>, Long>> CLIENT_NEXT_CONNECTIONS_RESPONSE_ACTION = new HashMap<>();
@@ -37,17 +38,17 @@ public class InstanceManager {
         }
     }
 
-    public static long registerClientNavigationResponseAction(Consumer<List<SimpleRoute>> consumer) {
+    public static long registerClientNavigationResponseAction(BiConsumer<List<SimpleRoute>, NavigationResponseData> consumer) {
         long id = System.nanoTime();
         CLIENT_NAVIGATION_RESPONSE_ACTION.put(id, consumer);
         return id;
     }
 
-    public static void runClientNavigationResponseAction(long id, List<SimpleRoute> routes) {
+    public static void runClientNavigationResponseAction(long id, List<SimpleRoute> routes, NavigationResponseData data) {
         if (CLIENT_NAVIGATION_RESPONSE_ACTION.containsKey(id)) {
-            Consumer<List<SimpleRoute>> action = CLIENT_NAVIGATION_RESPONSE_ACTION.remove(id);
+            BiConsumer<List<SimpleRoute>, NavigationResponseData> action = CLIENT_NAVIGATION_RESPONSE_ACTION.remove(id);
             if (action != null)
-                action.accept(routes);
+                action.accept(routes, data);
         }
     }
 

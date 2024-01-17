@@ -18,7 +18,6 @@ import de.mrjulsen.crn.client.gui.IForegroundRendering;
 import de.mrjulsen.crn.client.gui.widgets.ModDestinationSuggestions;
 import de.mrjulsen.crn.client.gui.widgets.RouteEntryOverviewWidget;
 import de.mrjulsen.crn.config.ModCommonConfig;
-import de.mrjulsen.crn.core.navigation.Graph;
 import de.mrjulsen.crn.data.ClientTrainStationSnapshot;
 import de.mrjulsen.crn.data.GlobalSettingsManager;
 import de.mrjulsen.crn.data.SimpleRoute;
@@ -27,7 +26,6 @@ import de.mrjulsen.crn.network.InstanceManager;
 import de.mrjulsen.crn.network.NetworkManager;
 import de.mrjulsen.crn.network.packets.cts.NavigationRequestPacket;
 import de.mrjulsen.crn.network.packets.cts.NearestStationRequestPacket;
-import de.mrjulsen.crn.network.packets.cts.TestRequestPacket;
 import de.mrjulsen.crn.util.GuiUtils;
 import de.mrjulsen.crn.util.Utils;
 import net.minecraft.client.Minecraft;
@@ -190,7 +188,7 @@ public class NavigatorScreen extends Screen implements IForegroundRendering {
 
                 isLoadingRoutes = true;
 
-                long id = InstanceManager.registerClientNavigationResponseAction((routes) -> {
+                long id = InstanceManager.registerClientNavigationResponseAction((routes, data) -> {
                     instance.routes = routes.toArray(SimpleRoute[]::new);
                     setLastRefreshedTime();
                     generateRouteEntries();
@@ -256,14 +254,6 @@ public class NavigatorScreen extends Screen implements IForegroundRendering {
             public void onClick(double mouseX, double mouseY) {
                 super.onClick(mouseX, mouseY);
                 onClose();
-            }
-        });
-
-        this.addRenderableWidget(new IconButton(guiLeft + GUI_WIDTH - 100, guiTop + 222, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, AllIcons.I_CONFIG_SAVE) {
-            @Override
-            public void onClick(double mouseX, double mouseY) {
-                super.onClick(mouseX, mouseY);
-                NetworkManager.sendToServer(new TestRequestPacket());
             }
         });
 

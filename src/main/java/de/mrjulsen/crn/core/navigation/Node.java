@@ -11,7 +11,9 @@ public class Node implements Comparable<Node> {
 
     // calc
     private long cost = Long.MAX_VALUE;
-    private Node previous = null;
+    private Node previousNode = null;
+    private Edge previousEdge = null;
+    private boolean isTransferPoint = false;
 
     public Node(TrainStationAlias alias, UUID id) {
         this.id = id;
@@ -28,7 +30,9 @@ public class Node implements Comparable<Node> {
 
     public void init() {
         this.cost = Long.MAX_VALUE;
-        this.previous = null;
+        this.previousNode = null;
+        this.previousEdge = null;
+        this.isTransferPoint = false;
     }
 
     public long getCost() {
@@ -40,13 +44,25 @@ public class Node implements Comparable<Node> {
     }
 
     public Node getPreviousNode() {
-        return previous;
+        return previousNode;
     }
 
-    public void setPreviousNode(Node node) {
-        this.previous = node;
+    public Edge getPreviousEdge() {
+        return previousEdge;
     }
 
+    public boolean isTransferPoint() {
+        return isTransferPoint;
+    }
+
+    public void setPrevious(Node node, Edge viaEdge) {
+        this.previousNode = node;
+        this.previousEdge = viaEdge;
+    }
+
+    public void setIsTransferPoint(boolean b) {
+        this.isTransferPoint = b;
+    }
 
 
     @Override
@@ -59,7 +75,7 @@ public class Node implements Comparable<Node> {
 
     @Override
     public String toString() {
-        return String.format("%s (%s)", getStationAlias(), getId());
+        return String.format("%s (%s) %s", getStationAlias(), getId(), isTransferPoint() ? "(Transfer)" : "");
     }
 
     @Override

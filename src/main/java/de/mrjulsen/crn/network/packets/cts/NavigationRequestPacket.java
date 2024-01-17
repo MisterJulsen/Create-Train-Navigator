@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.function.Supplier;
 
 import de.mrjulsen.crn.ModMain;
-import de.mrjulsen.crn.core.Navigation;
+import de.mrjulsen.crn.core.navigation.Graph;
 import de.mrjulsen.crn.data.GlobalSettingsManager;
 import de.mrjulsen.crn.data.Route;
 import de.mrjulsen.crn.data.SimpleRoute;
@@ -57,29 +57,33 @@ public class NavigationRequestPacket implements IPacketBase<NavigationRequestPac
 
     @Override
     public void handle(NavigationRequestPacket packet, Supplier<NetworkEvent.Context> context) {        
-        context.get().enqueueWork(() ->
-        {
+        context.get().enqueueWork(() -> {
             Thread navigationThread = new Thread(() -> {
                 List<Route> routes = new ArrayList<>();
                 final long updateTime = context.get().getSender().level.getDayTime();
+                final long startTime = System.currentTimeMillis();
                 
                 try {
+
                     TrainStationAlias startAlias = GlobalSettingsManager.getInstance().getSettingsData().getAliasFor(packet.start);
                     TrainStationAlias endAlias = GlobalSettingsManager.getInstance().getSettingsData().getAliasFor(packet.end);
 
                     if (startAlias == null || endAlias == null) {
                         return;
                     }
-
-                    routes = packet.filterSettings.shouldOnlyTakeNextDepartingTrain() ? 
-                        Navigation.navigateForNext(updateTime, startAlias, endAlias, packet.filterSettings) :
-                        Navigation.navigateForAll(updateTime, startAlias, endAlias, packet.filterSettings);
+                    
+                    Graph graph = new Graph(context.get().getSender().getLevel().getDayTime());
+                    routes.add(graph.navigate(startAlias, endAlias));
                     
                 } catch (Exception e) {
                     ModMain.LOGGER.error("Navigation error: ", e);
                     NetworkManager.sendToClient(new ServerErrorPacket(e.getMessage()), context.get().getSender());
-                } finally {                    
-                    NetworkManager.sendToClient(new NavigationResponsePacket(packet.id, new ArrayList<>(routes.stream().map(x -> new SimpleRoute(x)).toList())), context.get().getSender());
+                } finally {     
+                    long estimatedTime = System.currentTimeMillis() - startTime;
+                    ModMain.LOGGER.info(String.format("Route calculated. Took %sms.",
+                        estimatedTime
+                    ));               
+                    NetworkManager.sendToClient(new NavigationResponsePacket(packet.id, new ArrayList<>(routes.stream().map(x -> new SimpleRoute(x)).toList()), (int)estimatedTime, updateTime), context.get().getSender());
                 }                
             });
             navigationThread.setPriority(Thread.MIN_PRIORITY);
@@ -89,5 +93,7 @@ public class NavigationRequestPacket implements IPacketBase<NavigationRequestPac
         });
         
         context.get().setPacketHandled(true);      
-    }    
+    }
+
+    
 }

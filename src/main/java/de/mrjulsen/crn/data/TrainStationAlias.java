@@ -179,27 +179,20 @@ public class TrainStationAlias {
         this.lastEditorName = newData.lastEditorName;
     }
 
-    public static record StationInfo(String platform, Location location) {
+    public static record StationInfo(String platform) {
         private static final String NBT_PLATFORM = "Platform";
-        private static final String NBT_POS = "Pos";
 
         public static StationInfo empty() {
-            return new StationInfo("", new Location(0, 0, 0, ""));
-        }
-
-        public static StationInfo with(Location location) {
-            return new StationInfo("", location);
+            return new StationInfo("");
         }
 
         public void writeNbt(CompoundTag nbt) {
             nbt.putString(NBT_PLATFORM, platform());
-            nbt.put(NBT_POS, location().toNbt());
         }
 
         public static StationInfo fromNbt(CompoundTag nbt) {
             return new StationInfo(
-                nbt.getString(NBT_PLATFORM),
-                Location.fromNbt(nbt.getCompound(NBT_POS))
+                nbt.getString(NBT_PLATFORM)
             );
         }
     }

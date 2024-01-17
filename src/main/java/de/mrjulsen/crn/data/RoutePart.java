@@ -14,13 +14,13 @@ public class RoutePart {
     private TrainStop end;
     private Collection<TrainStop> stops;
     
-    public RoutePart(DeparturePrediction prediction, TrainStationAlias start, TrainStationAlias end, int startStopTicks) {
-        this.train = prediction.getTrain();
+    public RoutePart(Train train, TrainStationAlias start, TrainStationAlias end, int startTicks) {
+        this.train = train;
         List<TrainStop> stops = new ArrayList<>(GlobalTrainData.getInstance().getAllStopoversOfTrainSortedNew(train, start, end, true, true));
 
         TrainStop startStop = stops.get(0);
-        if (startStop.getPrediction().getTicks() < startStopTicks && startStop.getPrediction().getTrainCycleDuration() > 0) {
-            int diffTicks = startStopTicks - startStop.getPrediction().getTicks();
+        if (startStop.getPrediction().getTicks() < startTicks && startStop.getPrediction().getTrainCycleDuration() > 0) {
+            int diffTicks = startTicks - startStop.getPrediction().getTicks();
             int mul = diffTicks / startStop.getPrediction().getTrainCycleDuration() + 1;
 
             stops = new ArrayList<>(stops.stream().map(x -> new TrainStop(x.getStationAlias(), DeparturePrediction.withCycleTicks(x.getPrediction(), mul))).toList());
