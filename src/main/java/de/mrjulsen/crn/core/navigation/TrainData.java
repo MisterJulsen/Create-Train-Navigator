@@ -7,7 +7,6 @@ import com.simibubi.create.content.trains.entity.Train;
 public class TrainData {
     private UUID trainId;
     private String name;
-    private TrainSchedule schedule;
 
     public TrainData(Train train) {
         this.trainId = train.id;

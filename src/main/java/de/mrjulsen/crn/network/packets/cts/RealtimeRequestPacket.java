@@ -3,7 +3,6 @@ package de.mrjulsen.crn.network.packets.cts;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
 

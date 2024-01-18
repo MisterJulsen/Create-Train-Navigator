@@ -229,14 +229,14 @@ public class RouteDetailsOverlayScreen implements HudOverlay {
         ));
         currentState = State.BEFORE_NEXT_STOP;
 
-        NarratorChatListener.INSTANCE.narrator.say(String.format("Nächster Halt: %s", currentStation().station().getStationName()), true);
+        //NarratorChatListener.INSTANCE.narrator.say(String.format("Nächster Halt: %s", currentStation().station().getStationName()), true);
 
         setPageNextConnections();
     }
 
     private void reachNextStop() {
         setSlidingText(new TextComponent(currentStation().station().getStationName()));
-        NarratorChatListener.INSTANCE.narrator.say(slidingText.getString(), true);
+        //NarratorChatListener.INSTANCE.narrator.say(slidingText.getString(), true);
         currentState = State.WHILE_NEXT_STOP;
     }
 

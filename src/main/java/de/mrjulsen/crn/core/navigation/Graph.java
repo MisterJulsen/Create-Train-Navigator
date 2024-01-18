@@ -17,12 +17,14 @@ import java.util.stream.Collectors;
 import com.simibubi.create.content.trains.entity.Train;
 
 import de.mrjulsen.crn.ModMain;
+import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.GlobalTrainData;
 import de.mrjulsen.crn.data.Route;
 import de.mrjulsen.crn.data.RoutePart;
 import de.mrjulsen.crn.data.SimpleTrainSchedule;
 import de.mrjulsen.crn.data.SimulatedTrainSchedule;
 import de.mrjulsen.crn.data.TrainStationAlias;
+import de.mrjulsen.crn.event.listeners.TrainListener;
 import de.mrjulsen.crn.util.TrainUtils;
 
 public class Graph {
@@ -185,8 +187,14 @@ public class Graph {
     }
 
     public List<Node> searchRoute(TrainStationAlias start, TrainStationAlias end) {
+        
+        if (!nodesByStation.containsKey(start) || !nodesByStation.containsKey(end)) {
+            return List.of();
+        }
+
         Map<TrainStationAlias, Node> nodes = dijkstra(start);
-        // TODO: Fix exception when end does not exist
+
+
         Node endNode = nodes.get(end);
         endNode.setIsTransferPoint(true);
 
@@ -266,8 +274,6 @@ public class Graph {
     }
 
     protected Map<TrainStationAlias, Node> dijkstra(TrainStationAlias start) {
-        Map<UUID, SimpleTrainSchedule> schedulesByTrain = generateTrainSchedules();
-
         nodesById.values().forEach(x -> x.init());
         Node startNode = nodesByStation.get(start);
         startNode.setCost(0);
@@ -280,20 +286,7 @@ public class Graph {
 
         while (!queue.isEmpty()) {
             Node currentNode = queue.poll();
-            Map<Node, Set<Edge>> reachableNodes = edgesByNode.get(currentNode);
-            
-            /* TEST START */
-            Collection<SimulatedTrainSchedule> trainPredictions = GlobalTrainData.getInstance().getDepartingTrainsAt(currentNode.getStationAlias()).stream()
-            .filter(x -> {
-                SimpleTrainSchedule schedule = schedulesByTrain.get(x.getTrain().id);
-
-                boolean b = schedule.hasStationAlias(currentNode.getStationAlias()) &&
-                            TrainUtils.isTrainValid(x.getTrain());                    
-                return b;
-            }).map(x -> {
-                return schedulesByTrain.get(x.getTrain().id).simulate(x.getTrain(), (int)currentNode.getCost(), currentNode.getStationAlias());
-            }).toList();
-            /* TEST END */
+            Map<Node, Set<Edge>> reachableNodes = edgesByNode.get(currentNode);            
 
             reachableNodes.entrySet().stream().filter(x -> !excludedNodes.containsKey(x.getKey().getStationAlias())).forEach(y -> {
                 final Node node = y.getKey();
@@ -301,15 +294,10 @@ public class Graph {
                     Edge edge = x;
                     boolean isTransfer = currentNode.getPreviousEdge() != null && !currentNode.getPreviousEdge().getScheduleId().equals(edge.getScheduleId());
 
-                    /* TEST */
-                    Collection<SimulatedTrainSchedule> filtered = trainPredictions.stream().filter(a -> scheduleIdByTrainId.get(a.getSimulationData().train().id).equals(edge.getScheduleId())).sorted(Comparator.comparingInt(a -> a.getSimulationData().simulationCorrection())).toList();
-                    SimulatedTrainSchedule estimatedTransfer = filtered.stream().filter(a -> a.isInDirection(currentNode.getStationAlias(), node.getStationAlias())).findFirst().orElse(filtered.stream().findFirst().orElse(null));
-                    long estimatedTransferTime = 0;
-                    if (estimatedTransfer != null) {
-                        estimatedTransfer.getSimulationData().simulationCorrection();
-                    }
+                    TrainSchedule sched = schedulesById.get(edge.getScheduleId());
+                    int avgTransferTime = (int)trainIdsBySchedule.get(sched).stream().mapToInt(a -> TrainListener.getInstance().getApproximatedTrainDuration(a)).average().getAsDouble();
 
-                    long newCost = currentNode.getCost() + edge.getCost() + (isTransfer ? 5000 : 0); /*TODO Transfer cost */
+                    long newCost = currentNode.getCost() + edge.getCost() + (isTransfer ? avgTransferTime + 1000 : 0);
                     if (newCost > node.getCost()) {
                         return;
                     }

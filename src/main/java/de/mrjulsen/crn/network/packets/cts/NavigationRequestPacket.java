@@ -64,7 +64,6 @@ public class NavigationRequestPacket implements IPacketBase<NavigationRequestPac
                 final long startTime = System.currentTimeMillis();
                 
                 try {
-
                     TrainStationAlias startAlias = GlobalSettingsManager.getInstance().getSettingsData().getAliasFor(packet.start);
                     TrainStationAlias endAlias = GlobalSettingsManager.getInstance().getSettingsData().getAliasFor(packet.end);
 
@@ -73,8 +72,7 @@ public class NavigationRequestPacket implements IPacketBase<NavigationRequestPac
                     }
                     
                     Graph graph = new Graph(context.get().getSender().getLevel().getDayTime());
-                    routes.add(graph.navigate(startAlias, endAlias));
-                    
+                    routes.add(graph.navigate(startAlias, endAlias));                    
                 } catch (Exception e) {
                     ModMain.LOGGER.error("Navigation error: ", e);
                     NetworkManager.sendToClient(new ServerErrorPacket(e.getMessage()), context.get().getSender());
@@ -83,7 +81,7 @@ public class NavigationRequestPacket implements IPacketBase<NavigationRequestPac
                     ModMain.LOGGER.info(String.format("Route calculated. Took %sms.",
                         estimatedTime
                     ));               
-                    NetworkManager.sendToClient(new NavigationResponsePacket(packet.id, new ArrayList<>(routes.stream().map(x -> new SimpleRoute(x)).toList()), (int)estimatedTime, updateTime), context.get().getSender());
+                    NetworkManager.sendToClient(new NavigationResponsePacket(packet.id, new ArrayList<>(routes.stream().filter(x -> !x.isEmpty()).map(x -> new SimpleRoute(x)).toList()), (int)estimatedTime, updateTime), context.get().getSender());
                 }                
             });
             navigationThread.setPriority(Thread.MIN_PRIORITY);

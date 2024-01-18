@@ -45,7 +45,7 @@ public class SimpleRoute {
         Collection<TaggedStationEntry> stations = new ArrayList<>();
         
         final int[] index = new int[] { 0, 0 };
-        final int maxIndex = getParts().size();
+        final int maxIndex = getParts().size() - 1;
         getParts().forEach(x -> {
             final int idx = index[1];
             StationTrainDetails details = new StationTrainDetails(x.getTrainName(), x.getTrainID(), x.getScheduleTitle());

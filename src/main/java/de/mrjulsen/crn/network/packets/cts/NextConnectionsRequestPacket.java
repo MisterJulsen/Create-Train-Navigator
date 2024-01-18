@@ -1,6 +1,5 @@
 package de.mrjulsen.crn.network.packets.cts;
 
-import java.util.Collection;
 import java.util.UUID;
 import java.util.function.Supplier;
 

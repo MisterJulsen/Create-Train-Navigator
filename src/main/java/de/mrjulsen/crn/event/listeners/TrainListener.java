@@ -69,7 +69,11 @@ public class TrainListener {
     }
 
     public int getApproximatedTrainDuration(Train train) {
-        return TRAIN_DURATIONS.containsKey(train.id) ? TRAIN_DURATIONS.get(train.id).stream().mapToInt(v -> v).sum() / TRAIN_DURATIONS.get(train.id).size() : 0;
+        return getApproximatedTrainDuration(train.id);
+    }
+
+    public int getApproximatedTrainDuration(UUID trainId) {
+        return TRAIN_DURATIONS.containsKey(trainId) ? TRAIN_DURATIONS.get(trainId).stream().mapToInt(v -> v).sum() / TRAIN_DURATIONS.get(trainId).size() : 0;
     }
 
     public static TrainListener start() {

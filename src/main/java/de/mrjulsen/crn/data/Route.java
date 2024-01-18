@@ -23,6 +23,10 @@ public class Route {
         }
     }
 
+    public boolean isEmpty() {
+        return parts.size() <= 0;
+    }
+
     public long getRefreshTime() {
         return refreshTime;
     }
