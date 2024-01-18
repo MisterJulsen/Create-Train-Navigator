@@ -255,7 +255,7 @@ public class Graph {
 
                 RoutePart part = new RoutePart(selectedPrediction.getSimulationData().train(), lastNode.getStationAlias(), node.getStationAlias(), simulationTime);
                 route.addPart(part);
-                timer = /*startStop.get().getPrediction().getTicks() + */part.getEndStation().getPrediction().getTicks() + 0 /*TODO: Umstiegszeit Bonus */;
+                timer = part.getEndStation().getPrediction().getTicks() + ModClientConfig.TRANSFER_TIME.get(); /* TODO Client is not allowed on servers! */
                 excludedSchedules.add(schedulesByTrain.get(part.getTrain().id));
             }
 

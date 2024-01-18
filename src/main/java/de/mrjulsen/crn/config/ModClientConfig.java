@@ -13,6 +13,7 @@ public class ModClientConfig {
     public static final ForgeConfigSpec.ConfigValue<EResultCount> RESULT_RANGE;
     public static final ForgeConfigSpec.ConfigValue<Integer> RESULT_AMOUNT;
     public static final ForgeConfigSpec.ConfigValue<Boolean> TAKE_NEXT_DEPARTING_TRAIN;
+    public static final ForgeConfigSpec.ConfigValue<Integer> TRANSFER_TIME;
 
     static {
         BUILDER.push("Create Railways Navigator Config");
@@ -26,6 +27,8 @@ public class ModClientConfig {
             .defineInRange("result_amount", 10, 1, 999);
         TAKE_NEXT_DEPARTING_TRAIN = BUILDER.comment("If true, the navigator will take the next departing train at the starting station. The route may be inefficient.")
             .define("take_next_departing_train", false);
+            TRANSFER_TIME = BUILDER.comment("Minimum transfer duration. (Ticks)'")
+            .defineInRange("transfer_time", 1000, 0, 24000);
 
         BUILDER.pop();
         SPEC = BUILDER.build();
