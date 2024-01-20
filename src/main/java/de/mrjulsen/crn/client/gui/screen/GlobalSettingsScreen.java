@@ -53,9 +53,13 @@ public class GlobalSettingsScreen extends Screen implements IForegroundRendering
 
     // Tooltips
     private final Component optionAliasTitle = new TranslatableComponent("gui." + ModMain.MOD_ID + ".global_settings.option_alias.title");
-    private final Component optionAliasDescription = new TranslatableComponent("gui." + ModMain.MOD_ID + ".global_settings.option_alias.description");    
+    private final Component optionAliasDescription = new TranslatableComponent("gui." + ModMain.MOD_ID + ".global_settings.option_alias.description");
     private final Component optionBlacklistTitle = new TranslatableComponent("gui." + ModMain.MOD_ID + ".global_settings.option_blacklist.title");
-    private final Component optionBlacklistDescription = new TranslatableComponent("gui." + ModMain.MOD_ID + ".global_settings.option_blacklist.description");
+    private final Component optionBlacklistDescription = new TranslatableComponent("gui." + ModMain.MOD_ID + ".global_settings.option_blacklist.description");    
+    private final Component optionTrainGroupTitle = new TranslatableComponent("gui." + ModMain.MOD_ID + ".global_settings.train_group.title");
+    private final Component optionTrainGroupDescription = new TranslatableComponent("gui." + ModMain.MOD_ID + ".global_settings.train_group.description");    
+    private final Component optionTrainBlacklistTitle = new TranslatableComponent("gui." + ModMain.MOD_ID + ".global_settings.train_blacklist.title");
+    private final Component optionTrainBlacklistDescription = new TranslatableComponent("gui." + ModMain.MOD_ID + ".global_settings.train_blacklist.description");
 
     @SuppressWarnings("resource")
     public GlobalSettingsScreen(Level level, Screen lastScreen) {
@@ -81,6 +85,14 @@ public class GlobalSettingsScreen extends Screen implements IForegroundRendering
 
         optionsCollection.components.add(new SettingsOptionWidget(this, guiLeft + 26, startY + SettingsOptionWidget.HEIGHT + ENTRY_SPACING, optionBlacklistTitle, optionBlacklistDescription, (btn) -> {
             minecraft.setScreen(new StationBlacklistScreen(level, instance));
+        }));
+
+        optionsCollection.components.add(new SettingsOptionWidget(this, guiLeft + 26, startY + (SettingsOptionWidget.HEIGHT + ENTRY_SPACING) * 2, optionTrainGroupTitle, optionTrainGroupDescription, (btn) -> {
+            minecraft.setScreen(new StationBlacklistScreen(level, instance));
+        }));
+
+        optionsCollection.components.add(new SettingsOptionWidget(this, guiLeft + 26, startY + (SettingsOptionWidget.HEIGHT + ENTRY_SPACING) * 3, optionTrainBlacklistTitle, optionTrainBlacklistDescription, (btn) -> {
+            minecraft.setScreen(new TrainBlacklistScreen(level, instance));
         }));
 
         backButton = this.addRenderableWidget(new IconButton(guiLeft + 21, guiTop + 222, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, AllIcons.I_CONFIG_BACK) {

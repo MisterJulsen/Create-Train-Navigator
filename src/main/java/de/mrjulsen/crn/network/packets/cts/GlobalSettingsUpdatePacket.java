@@ -15,8 +15,8 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
 
 public class GlobalSettingsUpdatePacket implements IPacketBase<GlobalSettingsUpdatePacket> {
-    private static final String NBT_STRING = "StringValue";
-    private static final String NBT_COMPOUND_TAG = "CompoundTag";
+    private static final String NBT_STRING = "Val";
+    private static final String NBT_COMPOUND_TAG = "Tag";
 
     public long id;
     public CompoundTag data;
@@ -34,7 +34,9 @@ public class GlobalSettingsUpdatePacket implements IPacketBase<GlobalSettingsUpd
         CompoundTag nbt = new CompoundTag();
         switch (action) {
             case ADD_TO_BLACKLIST:
-            case REMOVE_FROM_BLACKLIST:
+            case REMOVE_FROM_BLACKLIST:            
+            case ADD_TRAIN_TO_BLACKLIST:
+            case REMOVE_TRAIN_FROM_BLACKLIST:
             case UNREGISTER_ALIAS_STRING:
                 nbt.putString(NBT_STRING, (String)data);
                 break;          
@@ -85,6 +87,12 @@ public class GlobalSettingsUpdatePacket implements IPacketBase<GlobalSettingsUpd
                 case REMOVE_FROM_BLACKLIST:
                     GlobalSettingsManager.getInstance().getSettingsData().removeFromBlacklistServer(packet.data.getString(NBT_STRING));
                     break;
+                case ADD_TRAIN_TO_BLACKLIST:
+                    GlobalSettingsManager.getInstance().getSettingsData().addTrainToBlacklistServer(packet.data.getString(NBT_STRING));
+                    break;
+                case REMOVE_TRAIN_FROM_BLACKLIST:
+                    GlobalSettingsManager.getInstance().getSettingsData().removeTrainFromBlacklistServer(packet.data.getString(NBT_STRING));
+                    break;
                 case UNREGISTER_ALIAS_STRING:
                     GlobalSettingsManager.getInstance().getSettingsData().unregisterAliasServer(packet.data.getString(NBT_STRING));
                     break;
@@ -112,6 +120,8 @@ public class GlobalSettingsUpdatePacket implements IPacketBase<GlobalSettingsUpd
         UNREGISTER_ALIAS,
         UPDATE_ALIAS,
         ADD_TO_BLACKLIST,
-        REMOVE_FROM_BLACKLIST;
+        REMOVE_FROM_BLACKLIST,        
+        ADD_TRAIN_TO_BLACKLIST,
+        REMOVE_TRAIN_FROM_BLACKLIST;
     }
 }

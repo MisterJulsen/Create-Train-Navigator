@@ -8,6 +8,8 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.simibubi.create.content.trains.entity.Train;
+
+import de.mrjulsen.crn.data.GlobalSettings;
 import de.mrjulsen.crn.data.GlobalTrainData;
 import de.mrjulsen.crn.data.TrainStop;
 import de.mrjulsen.crn.event.listeners.TrainListener;
@@ -20,34 +22,15 @@ public class TrainSchedule {
 
     private List<TrainStop> stops;
     
-    public TrainSchedule(Train train, UUID id) {
+    public TrainSchedule(Train train, UUID id, GlobalSettings settingsInstance) {
         this.id = id;
         nodes = ConcurrentHashMap.newKeySet();
         edges = ConcurrentHashMap.newKeySet();
-        makeSchedule(train);        
+        makeSchedule(train, settingsInstance);        
     }
 
-    private void makeSchedule(Train train) {
-        this.stops = new ArrayList<>(GlobalTrainData.getInstance().getAllStopsSorted(train));
-    }
-
-    private void makeDirectionalSchedule(Train train) {
-        List<TrainStop> newList = new ArrayList<>();
-        boolean isRepeating = false;
-        for (TrainStop stop : GlobalTrainData.getInstance().getAllStopsSorted(train)) {            
-            if (newList.contains(stop)) {
-                isRepeating = true;
-                continue;
-            }
-
-            if (isRepeating) {
-                newList.add(0, stop);
-            } else {
-                newList.add(stop);
-            }
-        }
-
-        this.stops = newList;
+    private void makeSchedule(Train train, GlobalSettings settingsInstance) {
+        this.stops = new ArrayList<>(GlobalTrainData.getInstance().getAllStopsSorted(train).stream().filter(x -> !settingsInstance.isBlacklisted(x.getStationAlias())).toList());
     }
 
     public void addToGraph(Graph graph, Train train) {

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.simibubi.create.content.trains.entity.Train;
 import com.simibubi.create.content.trains.station.GlobalStation;
 
 import de.mrjulsen.crn.data.TrainStationAlias.StationInfo;
@@ -20,9 +21,11 @@ public class GlobalSettings {
 
     private static final String NBT_ALIAS_REGISTRY = "RegisteredAliasData";
     private static final String NBT_BLACKLIST = "StationBlacklist";
+    private static final String NBT_TRAIN_BLACKLIST = "TrainBlacklist";
 
     private final Collection<TrainStationAlias> registeredAlias = new ArrayList<>();
     private final Collection<String> blacklist = new ArrayList<>();
+    private final Collection<String> trainsBlacklist = new ArrayList<>();
 
 
     protected GlobalSettings() {      
@@ -41,12 +44,19 @@ public class GlobalSettings {
             pCompoundTag.put(NBT_BLACKLIST, blacklistTag);
         }
 
+        if (trainsBlacklist != null && !trainsBlacklist.isEmpty()) {
+            ListTag blacklistTag = new ListTag();
+            blacklistTag.addAll(trainsBlacklist.stream().map(x -> StringTag.valueOf(x)).toList());       
+            pCompoundTag.put(NBT_TRAIN_BLACKLIST, blacklistTag);
+        }
+
         return pCompoundTag;
     }
 
     public static GlobalSettings fromNbt(CompoundTag tag) {
         Collection<TrainStationAlias> aliasData = new ArrayList<>();
         Collection<String> blacklistData = new ArrayList<>();
+        Collection<String> trainBlacklistData = new ArrayList<>();
 
         if (tag.contains(NBT_ALIAS_REGISTRY)) {
             aliasData = tag.getList(NBT_ALIAS_REGISTRY, Tag.TAG_COMPOUND).stream().map(x -> TrainStationAlias.fromNbt((CompoundTag)x)).toList();
@@ -55,9 +65,14 @@ public class GlobalSettings {
             blacklistData = tag.getList(NBT_BLACKLIST, Tag.TAG_STRING).stream().map(x -> ((StringTag)x).getAsString()).toList();
         }
 
+        if (tag.contains(NBT_TRAIN_BLACKLIST)) {
+            trainBlacklistData = tag.getList(NBT_TRAIN_BLACKLIST, Tag.TAG_STRING).stream().map(x -> ((StringTag)x).getAsString()).toList();
+        }
+
         GlobalSettings instance = new GlobalSettings();
         instance.registeredAlias.addAll(aliasData);
         instance.blacklist.addAll(blacklistData); 
+        instance.trainsBlacklist.addAll(trainBlacklistData); 
 
         return instance;
     }
@@ -94,6 +109,17 @@ public class GlobalSettings {
         GlobalSettingsUpdatePacket.send(name, EGlobalSettingsAction.REMOVE_FROM_BLACKLIST, then);
         return true;
     }
+
+    public boolean addTrainToBlacklist(String trainName, Runnable then) {        
+        GlobalSettingsUpdatePacket.send(trainName, EGlobalSettingsAction.ADD_TRAIN_TO_BLACKLIST, then);
+        return true;    
+    }
+
+    public boolean removeTrainFromBlacklist(String name, Runnable then) {
+        GlobalSettingsUpdatePacket.send(name, EGlobalSettingsAction.REMOVE_TRAIN_FROM_BLACKLIST, then);
+        return true;
+    }
+
 
     public boolean registerAliasForStationNames(String name, Collection<String> stations, Runnable then) {
         //TODO
@@ -133,6 +159,16 @@ public class GlobalSettings {
         return b;
     }
 
+    public boolean registerAliasForStationNamesServer(String name, Collection<String> stations) {
+        //TODO
+        return registerAliasServer(new TrainStationAlias(AliasName.of(name), stations.stream().collect(Collectors.toMap(x -> x, x -> StationInfo.empty()))));
+    }
+
+    public boolean registerAliasServer(String name, Collection<GlobalStation> stations) {
+        //TODO
+        return registerAliasServer(new TrainStationAlias(AliasName.of(name), stations.stream().collect(Collectors.toMap(x -> x.name, x -> StationInfo.empty()))));
+    }
+
     public boolean addToBlacklistServer(String station) {        
         if (!blacklist.contains(station)) {
             blacklist.add(station);
@@ -146,18 +182,22 @@ public class GlobalSettings {
         return b;
     }
 
-    public boolean registerAliasForStationNamesServer(String name, Collection<String> stations) {
-        //TODO
-        return registerAliasServer(new TrainStationAlias(AliasName.of(name), stations.stream().collect(Collectors.toMap(x -> x, x -> StationInfo.empty()))));
+    public boolean addTrainToBlacklistServer(String trainName) {        
+        if (!trainsBlacklist.contains(trainName)) {
+            trainsBlacklist.add(trainName);
+            return true;
+        }
+        return false;
     }
 
-    public boolean registerAliasServer(String name, Collection<GlobalStation> stations) {
-        //TODO
-        return registerAliasServer(new TrainStationAlias(AliasName.of(name), stations.stream().collect(Collectors.toMap(x -> x.name, x -> StationInfo.empty()))));
+    public boolean removeTrainFromBlacklistServer(String trainName) {        
+        boolean b = trainsBlacklist.removeIf(x -> x.equals(trainName));
+        return b;
     }
 
 
-    // Getters and testers
+    //### Getters and testers
+    // tags
     public boolean isAliasRegistered(String stationName) {
         return registeredAlias.stream().anyMatch(x -> x.contains(stationName));
     }
@@ -215,6 +255,7 @@ public class GlobalSettings {
 
     
 
+    // station blacklist
     public boolean isBlacklisted(String stationName) {
         return blacklist.stream().anyMatch(x -> x.toLowerCase().contains(stationName.toLowerCase()));
     }
@@ -225,6 +266,20 @@ public class GlobalSettings {
 
     public Collection<String> getBlacklist() {
         return blacklist;
+    }
+
+
+    // train blacklist
+    public boolean isTrainBlacklisted(Train train) {
+        return trainsBlacklist.stream().anyMatch(x -> x.equals(train.name.getString()));
+    }
+
+    public boolean isTrainBlacklisted(String trainName) {
+        return trainsBlacklist.stream().anyMatch(x -> x.equals(trainName));
+    }
+
+    public Collection<String> getTrainBlacklist() {
+        return trainsBlacklist;
     }
 
 }

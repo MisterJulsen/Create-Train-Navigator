@@ -45,22 +45,31 @@
 
     "gui.createrailwaysnavigator.global_settings.title": "Global Settings",
     "gui.createrailwaysnavigator.global_settings.option.tooltip": "Click to edit",
-    "gui.createrailwaysnavigator.global_settings.option_alias.title": "Train Station Aliases",
-    "gui.createrailwaysnavigator.global_settings.option_alias.description": "Define station aliases to threaten multi-platform stations (e.g. MyStation 1, MyStation 2, ...) as a single station (e.g. MyStation) with custom names.",
+    "gui.createrailwaysnavigator.global_settings.option_alias.title": "Train Station Tags",
+    "gui.createrailwaysnavigator.global_settings.option_alias.description": "Define station tags to threaten multi-platform stations (e.g. MyStation 1, MyStation 2, ...) as a single station (e.g. MyStation) with custom names.",
     "gui.createrailwaysnavigator.global_settings.option_blacklist.title": "Train Station Blacklist",
     "gui.createrailwaysnavigator.global_settings.option_blacklist.description": "Exclude Track Stations which should not appear in the navigation results. This stations will be ignored when generating routes.",
+    "gui.createrailwaysnavigator.global_settings.train_group.title": "Train Groups",
+    "gui.createrailwaysnavigator.global_settings.train_group.description": "Create train groups to organize all trains (e.g. regional services, long-distance services, ...). Users can decide which groups they want to use.",
+    "gui.createrailwaysnavigator.global_settings.train_blacklist.title": "Train Blacklist",
+    "gui.createrailwaysnavigator.global_settings.train_blacklist.description": "Exclude trains, e.g. freight trains, special trains, etc., so that they are not used in the route suggestions.",
 
-    "gui.createrailwaysnavigator.alias_settings.title": "Train Station Alias Settings",
+    "gui.createrailwaysnavigator.alias_settings.title": "Train Station Tag Settings",
     "gui.createrailwaysnavigator.alias_settings.summary": "Contains %s Track Stations",
     "gui.createrailwaysnavigator.alias_settings.editor": "Last edited by %s on %s",
-    "gui.createrailwaysnavigator.alias_settings.add.tooltip": "Create new Train Station Alias",
-    "gui.createrailwaysnavigator.alias_settings.delete_alias.tooltip": "Delete Alias",
+    "gui.createrailwaysnavigator.alias_settings.add.tooltip": "Create new Train Station Tag",
+    "gui.createrailwaysnavigator.alias_settings.delete_alias.tooltip": "Delete Tag",
     "gui.createrailwaysnavigator.alias_settings.delete_station.tooltip": "Remove Station",
     "gui.createrailwaysnavigator.alias_settings.add_station.tooltip": "Add Station",
 
     "gui.createrailwaysnavigator.blacklist.title": "Train Station Blacklist",
     "gui.createrailwaysnavigator.blacklist.add.tooltip": "Add to blacklist",
     "gui.createrailwaysnavigator.blacklist.delete.tooltip": "Remove from blacklist",
+
+    
+    "gui.createrailwaysnavigator.train_blacklist.title": "Train Blacklist",
+    "gui.createrailwaysnavigator.train_blacklist.add.tooltip": "Add to blacklist",
+    "gui.createrailwaysnavigator.train_blacklist.delete.tooltip": "Remove from blacklist",
     
     "gui.createrailwaysnavigator.search_settings.title": "Search Settings",
     "gui.createrailwaysnavigator.search_settings.filter_selection": "Sorting Criterion",

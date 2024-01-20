@@ -18,6 +18,8 @@ import com.simibubi.create.content.trains.entity.Train;
 
 import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.config.ModClientConfig;
+import de.mrjulsen.crn.data.GlobalSettings;
+import de.mrjulsen.crn.data.GlobalSettingsManager;
 import de.mrjulsen.crn.data.GlobalTrainData;
 import de.mrjulsen.crn.data.Route;
 import de.mrjulsen.crn.data.RoutePart;
@@ -39,6 +41,8 @@ public class Graph {
     private Map<TrainSchedule, Set<UUID>> trainIdsBySchedule;
     private Map<UUID, UUID> scheduleIdByTrainId;
 
+    private final GlobalSettings globalSettings;
+
     private final long lastUpdated;
 
     public Graph(long updateTime) {
@@ -56,8 +60,10 @@ public class Graph {
         this.scheduleIdByTrainId = new HashMap<>();
 
         final int[] trainCounter = new int[] { 0 };
-        TrainUtils.getAllTrains().stream().filter(x -> TrainUtils.isTrainValid(x)).forEach(x -> {
-            addTrain(x);
+        globalSettings = GlobalSettingsManager.getInstance().getSettingsData();
+
+        TrainUtils.getAllTrains().stream().filter(x -> TrainUtils.isTrainValid(x) && !globalSettings.isTrainBlacklisted(x)).forEach(x -> {
+            addTrain(x, globalSettings);
             trainCounter[0]++;
         });
         
@@ -100,7 +106,7 @@ public class Graph {
         return edge;
     }
 
-    protected TrainSchedule addTrain(Train train) {
+    protected TrainSchedule addTrain(Train train, GlobalSettings settingsInstance) {
 
         if (schedulesByTrainId.containsKey(train.id)) {
             return schedulesByTrainId.get(train.id);
@@ -111,7 +117,7 @@ public class Graph {
             id = UUID.randomUUID();
         }
 
-        TrainSchedule schedule = new TrainSchedule(train, id);
+        TrainSchedule schedule = new TrainSchedule(train, id, settingsInstance);
         schedule.addToGraph(this, train);
 
         if (trainIdsBySchedule.containsKey(schedule)) {
@@ -193,11 +199,13 @@ public class Graph {
         }
 
         Map<TrainStationAlias, Node> nodes = dijkstra(start, avoidTransfers);
-
-
         Node endNode = nodes.get(end);
-        endNode.setIsTransferPoint(true);
 
+        if (endNode == null) {
+            return List.of();
+        }
+
+        endNode.setIsTransferPoint(true);
         List<Node> route = new ArrayList<>();
 
         Node currentNode = endNode;
@@ -223,73 +231,6 @@ public class Graph {
         return GlobalTrainData.getInstance().getAllTrains().stream().filter(x -> TrainUtils.isTrainValid(x)).collect(Collectors.toMap(x -> x.id, x -> new SimpleTrainSchedule(x)));
     }
 
-    /*
-    public Collection<Route> searchTrains(List<Node> routeNodes) {
-        Map<UUID, SimpleTrainSchedule> schedulesByTrain = generateTrainSchedules();
-        Set<SimpleTrainSchedule> excludedSchedules = new HashSet<>();
-        Route route = new Route(lastUpdated);
-        Collection<Route> routes = new ArrayList<>();
-
-        int timer = 0;
-        Node lastTransfer = null;
-        UUID currentTrainId = null;
-        final Node[] filteredTransferNodes = routeNodes.stream().filter(x -> x.isTransferPoint()).toArray(Node[]::new);
-        final int len = filteredTransferNodes.length;
-
-        for (int i = 0; i < len; i++) {
-            Node node = filteredTransferNodes[i];
-
-            if (lastTransfer != null) {
-                final Node lastNode = lastTransfer;
-                final int simulationTime = timer;
-
-                Collection<SimulatedTrainSchedule> trainPredictions = GlobalTrainData.getInstance().getDepartingTrainsAt(lastNode.getStationAlias()).stream()
-                .filter(x -> {
-                    SimpleTrainSchedule schedule = schedulesByTrain.get(x.getTrain().id);
-
-                    boolean b = !x.getTrain().id.equals(currentTrainId) &&
-                                !excludedSchedules.contains(schedule) &&
-                                schedule.hasStationAlias(node.getStationAlias()) &&
-                                TrainUtils.isTrainValid(x.getTrain());                    
-                    return b;
-                }).map(x -> {
-                    return schedulesByTrain.get(x.getTrain().id).simulate(x.getTrain(), 0, lastNode.getStationAlias());
-                }).sorted(Comparator.comparingInt(x -> x.getSimulationData().simulationCorrection())).toList();
-
-                SimulatedTrainSchedule selectedPrediction = trainPredictions.stream().filter(x -> x.isInDirection(lastNode.getStationAlias(), node.getStationAlias())).findFirst().orElse(trainPredictions.stream().findFirst().orElse(null));
-                
-                if (selectedPrediction == null) {
-                    ModMain.LOGGER.warn("Route aborted! No train was found at " + lastNode.getStationAlias().getAliasName());
-                    return List.of();
-                }
-
-                Collection<SimulatedTrainSchedule> filteredSchedules = trainPredictions.stream().filter(x -> x.isInDirection(lastNode.getStationAlias(), node.getStationAlias())).toList();
-                if (true) {
-                    filteredSchedules = List.of(selectedPrediction);
-                }
-
-                for (SimulatedTrainSchedule sched : filteredSchedules) {
-                    Route r = new Route(lastUpdated);
-                    RoutePart part = new RoutePart(sched.getSimulationData().train(), lastNode.getStationAlias(), node.getStationAlias(), simulationTime);
-                    route.addPart(part);
-                    timer = part.getEndStation().getPrediction().getTicks() + ModClientConfig.TRANSFER_TIME.get();
-
-                    if (i < len) {
-                        Collection<RoutePart> parts = searchTrainsIteration(lastTransfer, schedulesByTrain, excludedSchedules, filteredTransferNodes, timer, currentTrainId);
-                        parts.forEach(a ->  r.addPart(a));
-                    }
-                    routes.add(r);
-                    excludedSchedules.add(schedulesByTrain.get(part.getTrain().id));
-                }
-            }
-
-            lastTransfer = node;
-        }
-
-        return routes;
-    }
-    */
-
     public Collection<Route> searchTrains(List<Node> routeNodes) {
         Map<UUID, SimpleTrainSchedule> schedulesByTrain = generateTrainSchedules();
         Set<SimpleTrainSchedule> excludedSchedules = new HashSet<>();
@@ -299,7 +240,6 @@ public class Graph {
         int timer = 0;
         UUID currentTrainId = null;
         final Node[] filteredTransferNodes = routeNodes.stream().filter(x -> x.isTransferPoint()).toArray(Node[]::new);
-        final int len = filteredTransferNodes.length;
 
         Node lastTransfer = filteredTransferNodes[0];
         Node node = filteredTransferNodes[1];

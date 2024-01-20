@@ -15,12 +15,14 @@ import net.minecraftforge.network.NetworkEvent;
 public class TrackStationResponsePacket implements IPacketBase<TrackStationResponsePacket> {
     public long id;
     public Collection<String> stationNames;
+    public Collection<String> trainNames;
     
     public TrackStationResponsePacket() { }
 
-    public TrackStationResponsePacket(long id, Collection<String> stationNames) {
+    public TrackStationResponsePacket(long id, Collection<String> stationNames, Collection<String> trainNames) {
         this.id = id;
         this.stationNames = stationNames;
+        this.trainNames = trainNames;
     }
 
     @Override
@@ -28,6 +30,11 @@ public class TrackStationResponsePacket implements IPacketBase<TrackStationRespo
         buffer.writeLong(packet.id);
         buffer.writeInt(packet.stationNames.size());
         for (String s : packet.stationNames) {
+            buffer.writeUtf(s);
+        }
+
+        buffer.writeInt(packet.trainNames.size());
+        for (String s : packet.trainNames) {
             buffer.writeUtf(s);
         }
     }
@@ -40,7 +47,13 @@ public class TrackStationResponsePacket implements IPacketBase<TrackStationRespo
         for (int i = 0; i < count; i++) {
             stationNames.add(buffer.readUtf());
         }
-        return new TrackStationResponsePacket(id, stationNames);
+
+        count = buffer.readInt();
+        List<String> trainNames = new ArrayList<>(count);
+        for (int i = 0; i < count; i++) {
+            trainNames.add(buffer.readUtf());
+        }
+        return new TrackStationResponsePacket(id, stationNames, trainNames);
     }
 
     @Override
@@ -48,7 +61,10 @@ public class TrackStationResponsePacket implements IPacketBase<TrackStationRespo
         context.get().enqueueWork(() ->
         {
             NetworkManager.executeOnClient(() -> {
-                ClientTrainStationSnapshot.makeNew(packet.stationNames == null || packet.stationNames.isEmpty() ? new ArrayList<>() : new ArrayList<>(packet.stationNames));
+                ClientTrainStationSnapshot.makeNew(
+                    packet.stationNames == null || packet.stationNames.isEmpty() ? new ArrayList<>() : new ArrayList<>(packet.stationNames),
+                    packet.trainNames == null || packet.trainNames.isEmpty() ? new ArrayList<>() : new ArrayList<>(packet.trainNames)
+                );
                 InstanceManager.runClientResponseReceievedAction(packet.id);
             });
         });

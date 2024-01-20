@@ -34,7 +34,11 @@ public class TrackStationsRequestPacket implements IPacketBase<TrackStationsRequ
     public void handle(TrackStationsRequestPacket packet, Supplier<NetworkEvent.Context> context) {        
         context.get().enqueueWork(() ->
         {
-            NetworkManager.sendToClient(new TrackStationResponsePacket(packet.id, TrainUtils.getAllStations().stream().map(x -> x.name).toList()), context.get().getSender());
+            NetworkManager.sendToClient(new TrackStationResponsePacket(
+                packet.id,
+                TrainUtils.getAllStations().stream().map(x -> x.name).toList(),
+                TrainUtils.getAllTrains().stream().map(x -> x.name.getString()).toList()
+            ), context.get().getSender());
         });
         
         context.get().setPacketHandled(true);      
