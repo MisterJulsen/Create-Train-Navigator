@@ -197,7 +197,7 @@ public class StationBlacklistScreen extends Screen implements IForegroundRenderi
 
         for (int i = 0; i < blacklist.length; i++) {
             String entry = blacklist[i];
-            drawString(pPoseStack, font, entry, guiLeft + AREA_X + 40, guiTop + AREA_Y + (i * ENTRY_HEIGHT) + 6, 0xFFFFFF);
+            drawString(pPoseStack, shadowlessFont, entry, guiLeft + AREA_X + 40, guiTop + AREA_Y + (i * ENTRY_HEIGHT) + 6, 0xFFFFFF);
         }
 
         pPoseStack.popPose();
