@@ -22,8 +22,8 @@ This mod adds a new item, the Create Railways Navigator, which is inspired by th
 - English (100%)
 - German (100%)
 
-## Please note ...
-... when using this mod (especially alpha versions) that it can always contain bugs that could potentially damage your world! So please make a backup of your world before embedding this mod.
+## **Please note!**
+To protect your world from damage, you should always create a backup of your world before installing an update of this mod. Alpha versions in particular may contain critical bugs!
 
-## Supported Versions
-A fabric version of this mod is currently not planned and the mod is mainly ported to newer versions. Please don't ask when the update for version X will come out as I don't know myself. The update will come when I have time for it and it's ready.
+## **Supported Versions**
+A **fabric** version of this mod is currently **not planned** and the mod is mainly ported to **newer versions**. Please don't ask when the update for version X will come out as I don't know myself. The update will come when I have time for it and it's ready.
