@@ -63,7 +63,7 @@ public class SearchSettingsScreen extends Screen implements IForegroundRendering
     // Controls
     private IconButton backButton;
     private IconButton defaultsButton;
-    private ScrollInput criteriaInput;
+    private ScrollInput transferTimeInput;
     private ScrollInput resultCountInput;
     private ScrollInput countScrollInput;
     private Label filterLabel;
@@ -74,8 +74,8 @@ public class SearchSettingsScreen extends Screen implements IForegroundRendering
     private MultiLineLabel nextTrainOptionLabel;
 
     // Tooltips
-    private final Component filterSelectionBoxText = new TranslatableComponent("gui." + ModMain.MOD_ID + ".search_settings.filter_selection");
-    private final Component filterSelectionBoxDescription = new TranslatableComponent("gui." + ModMain.MOD_ID + ".search_settings.filter_selection.description");
+    private final Component transferTimeBoxText = new TranslatableComponent("gui." + ModMain.MOD_ID + ".search_settings.transfer_time");
+    private final Component transferTimeBoxDescription = new TranslatableComponent("gui." + ModMain.MOD_ID + ".search_settings.transfer_time.description");
     private final Component resultCountText = new TranslatableComponent("gui." + ModMain.MOD_ID + ".search_settings.result_count");
     private final Component resultCountDescription = new TranslatableComponent("gui." + ModMain.MOD_ID + ".search_settings.result_count.description");    
     private final Component nextTrainText = new TranslatableComponent("gui." + ModMain.MOD_ID + ".search_settings.next_train");
@@ -116,18 +116,20 @@ public class SearchSettingsScreen extends Screen implements IForegroundRendering
         });
 
         filterLabel = addRenderableWidget(new Label(guiLeft + AREA_X + 10 + 30, guiTop + AREA_Y + ENTRIES_START_Y_OFFSET + (0 * (ENTRY_HEIGHT + ENTRY_SPACING)) + 44, Components.immutableEmpty()).withShadow());
-        criteriaInput = addRenderableWidget(new SelectionScrollInput(guiLeft + AREA_X + 10 + 25, guiTop + AREA_Y + ENTRIES_START_Y_OFFSET + (0 * (ENTRY_HEIGHT + ENTRY_SPACING)) + 39, DISPLAY_WIDTH, 18)
-            .forOptions(Arrays.stream(EFilterCriteria.values()).map(x -> new TranslatableComponent(x.getTranslationKey())).toList())
+        transferTimeInput = addRenderableWidget(new ScrollInput(guiLeft + AREA_X + 10 + 25, guiTop + AREA_Y + ENTRIES_START_Y_OFFSET + (0 * (ENTRY_HEIGHT + ENTRY_SPACING)) + 39, 60, 18)
+            .withRange(0, ModClientConfig.MAX_TRANSFER_TIME + 1)
+            .withStepFunction(x -> 500 * (x.shift ? 2 : 1))
             .writingTo(filterLabel)
-            .titled(filterSelectionBoxText.copy())
+            .titled(transferTimeBoxText.copy())
+            .format(x -> new TextComponent(Utils.parseDurationShort(x)))
             .calling((i) -> {
-                ModClientConfig.FILTER_CRITERIA.set(EFilterCriteria.getCriteriaById(i));
-                ModClientConfig.FILTER_CRITERIA.save();
+                ModClientConfig.TRANSFER_TIME.set(i);
+                ModClientConfig.TRANSFER_TIME.save();
                 ModClientConfig.SPEC.afterReload();
             })
-            .setState(ModClientConfig.FILTER_CRITERIA.get().getId()));
-        criteriaInput.onChanged();        
-        filterOptionLabel = MultiLineLabel.create(shadowlessFont, filterSelectionBoxDescription, (int)((DISPLAY_WIDTH) / 0.75f));
+            .setState(ModClientConfig.TRANSFER_TIME.get()));
+        transferTimeInput.onChanged();
+        filterOptionLabel = MultiLineLabel.create(shadowlessFont, transferTimeBoxDescription, (int)((DISPLAY_WIDTH) / 0.75f));
 
 
         countLabel = addRenderableWidget(new Label(guiLeft + AREA_X + 10 + 30 + 104, guiTop + AREA_Y + ENTRIES_START_Y_OFFSET + (1 * (ENTRY_HEIGHT + ENTRY_SPACING)) + 44, Components.immutableEmpty()).withShadow());
@@ -212,8 +214,8 @@ public class SearchSettingsScreen extends Screen implements IForegroundRendering
 
         int index = 0;
         // sorting
-        renderOptionField(pPoseStack, guiLeft + AREA_X + 10, guiTop + AREA_Y + ENTRIES_START_Y_OFFSET + (index * (ENTRY_HEIGHT + ENTRY_SPACING)), filterSelectionBoxText.getString(), filterOptionLabel);
-        renderEntryField(pPoseStack, guiLeft + AREA_X + 10 + 25, guiTop + AREA_Y + ENTRIES_START_Y_OFFSET + (index * (ENTRY_HEIGHT + ENTRY_SPACING)) + 39, DISPLAY_WIDTH);
+        renderOptionField(pPoseStack, guiLeft + AREA_X + 10, guiTop + AREA_Y + ENTRIES_START_Y_OFFSET + (index * (ENTRY_HEIGHT + ENTRY_SPACING)), transferTimeBoxText.getString(), filterOptionLabel);
+        renderEntryField(pPoseStack, guiLeft + AREA_X + 10 + 25, guiTop + AREA_Y + ENTRIES_START_Y_OFFSET + (index * (ENTRY_HEIGHT + ENTRY_SPACING)) + 39, 66);
         
         // count
         index++;

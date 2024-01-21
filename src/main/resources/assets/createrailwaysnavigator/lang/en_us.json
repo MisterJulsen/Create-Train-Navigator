@@ -72,8 +72,8 @@
     "gui.createrailwaysnavigator.train_blacklist.delete.tooltip": "Remove from blacklist",
     
     "gui.createrailwaysnavigator.search_settings.title": "Search Settings",
-    "gui.createrailwaysnavigator.search_settings.filter_selection": "Sorting Criterion",
-    "gui.createrailwaysnavigator.search_settings.filter_selection.description": "The criterion by which the results are sorted.",
+    "gui.createrailwaysnavigator.search_settings.transfer_time": "Minimum Transfer Time",
+    "gui.createrailwaysnavigator.search_settings.transfer_time.description": "The minimum time that should be available to change train. (1h ~ 50 Real Life Seconds)",
     "gui.createrailwaysnavigator.search_settings.result_count": "Search Result Range",
     "gui.createrailwaysnavigator.search_settings.result_count.description": "The set of results that will be displayed. Can be a fixed number or automatic.",    
     "gui.createrailwaysnavigator.search_settings.next_train": "Take next departing train",

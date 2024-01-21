@@ -62,7 +62,7 @@ public class SettingsOptionWidget extends Button implements IForegroundRendering
 
     @Override
     public void renderForeground(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTicks) {
-        GuiUtils.renderTooltip(parent, this, List.of(tooltipOptionText.getVisualOrderText()), pPoseStack, pMouseX, pMouseY, 0, 0);
+        GuiUtils.renderTooltip(parent, this, List.of(tooltipOptionText.getVisualOrderText()), pPoseStack, pMouseX, pMouseY, 0, (int)pPartialTicks);
     }
     
 }

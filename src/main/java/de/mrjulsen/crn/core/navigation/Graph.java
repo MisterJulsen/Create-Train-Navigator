@@ -191,7 +191,7 @@ public class Graph {
 	}
 
     public Collection<Route> navigate(TrainStationAlias start, TrainStationAlias end, boolean avoidTransfers) {
-        return searchTrains(searchRoute(start, end, avoidTransfers)).stream().sorted(Comparator.comparingInt(x -> x.getStartStation().getPrediction().getTicks())).toList();
+        return searchTrains(searchRoute(start, end, avoidTransfers)).stream().filter(x -> !x.isEmpty()).sorted(Comparator.comparingInt(x -> x.getStartStation().getPrediction().getTicks())).toList();
     }
 
     public List<Node> searchRoute(TrainStationAlias start, TrainStationAlias end, boolean avoidTransfers) {

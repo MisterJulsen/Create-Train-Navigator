@@ -143,7 +143,7 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering {
         RenderSystem.setShaderTexture(0, Constants.GUI_WIDGETS);
         blit(poseStack, x, y, 0, V, ENTRY_WIDTH, HEIGHT);
 
-        drawString(poseStack, shadowlessFont, Utils.parseTime(lastRefreshedTime + stop.getTicks()), x + ENTRY_TIME_X, y + 15, 0xFFFFFF);
+        drawString(poseStack, shadowlessFont, Utils.parseTime(lastRefreshedTime % 24000 + stop.getTicks()), x + ENTRY_TIME_X, y + 15, 0xFFFFFF);
         drawString(poseStack, shadowlessFont, stop.getStationName(), x + ENTRY_DEST_X, y + 15, 0xFFFFFF);
         drawString(poseStack, shadowlessFont, stop.getInfo().platform(), x + ENTRY_DEST_X + 129 - shadowlessFont.width(stop.getInfo().platform()), y + 15, 0xFFFFFF);
 
@@ -163,7 +163,7 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering {
         poseStack.pushPose();
         poseStack.scale(scale, scale, scale);
         drawString(poseStack, shadowlessFont, String.format("%s (%s)", part.getTrainName(), part.getTrainID().toString().split("-")[0]), (int)((x + ENTRY_DEST_X + 24) / scale), (int)((y + 7) / scale), 0xDBDBDB);
-        drawString(poseStack, shadowlessFont, String.format("→ %s", part.getScheduleTitle()), (int)((x + ENTRY_DEST_X + 24) /  scale), (int)((y + 17) / scale), 0xDBDBDB);
+        drawString(poseStack, shadowlessFont, String.format("→ %s", part.getScheduleTitle()), (int)((x + ENTRY_DEST_X + 24) / scale), (int)((y + 17) / scale), 0xDBDBDB);
         poseStack.scale(mul, mul, mul);
         poseStack.popPose();
 
@@ -177,7 +177,7 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering {
         RenderSystem.setShaderTexture(0, Constants.GUI_WIDGETS);
         blit(poseStack, x, y, 0, V, ENTRY_WIDTH, HEIGHT);
 
-        drawString(poseStack, shadowlessFont, Utils.parseTime(lastRefreshedTime + stop.getTicks()), x + ENTRY_TIME_X, y + 6, 0xFFFFFF);
+        drawString(poseStack, shadowlessFont, Utils.parseTime(lastRefreshedTime % 24000 + stop.getTicks()), x + ENTRY_TIME_X, y + 6, 0xFFFFFF);
         drawString(poseStack, shadowlessFont, stop.getStationName(), x + ENTRY_DEST_X, y + 6, 0xFFFFFF);
         drawString(poseStack, shadowlessFont, stop.getInfo().platform(), x + ENTRY_DEST_X + 129 - shadowlessFont.width(stop.getInfo().platform()), y + 6, 0xFFFFFF);
 
@@ -191,7 +191,7 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering {
         RenderSystem.setShaderTexture(0, Constants.GUI_WIDGETS);
         blit(poseStack, x, y, 0, V, ENTRY_WIDTH, HEIGHT);
 
-        drawString(poseStack, shadowlessFont, Utils.parseTime(lastRefreshedTime + stop.getTicks()), x + ENTRY_TIME_X, y + 21, 0xFFFFFF);
+        drawString(poseStack, shadowlessFont, Utils.parseTime(lastRefreshedTime % 24000 + stop.getTicks()), x + ENTRY_TIME_X, y + 21, 0xFFFFFF);
         drawString(poseStack, shadowlessFont, stop.getStationName(), x + ENTRY_DEST_X, y + 21, 0xFFFFFF);
         drawString(poseStack, shadowlessFont, stop.getInfo().platform(), x + ENTRY_DEST_X + 129 - shadowlessFont.width(stop.getInfo().platform()), y + 21, 0xFFFFFF);
 
@@ -238,7 +238,7 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering {
         pPoseStack.scale(2, 2, 2);
 
         int departureTicks = route.getStartStation().getTicks();
-        int departureTime = lastRefreshedTime + departureTicks;
+        int departureTime = lastRefreshedTime % 24000 + departureTicks;
         drawCenteredString(pPoseStack, font, departureTime - getCurrentTime() < 0 ? timeNowText.getString() : Utils.parseTimeWithoutCorrection(departureTime - getCurrentTime()), (guiLeft + GUI_WIDTH / 2) / 2, (guiTop + 31) / 2, 0xFFFFFF);
 
         pPoseStack.scale(0.5f, 0.5f, 0.5f);

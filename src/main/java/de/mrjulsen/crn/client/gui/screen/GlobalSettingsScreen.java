@@ -5,13 +5,17 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 import com.simibubi.create.foundation.gui.AllIcons;
+import com.simibubi.create.foundation.gui.UIRenderHelper;
 import com.simibubi.create.foundation.gui.widget.IconButton;
+import com.simibubi.create.foundation.utility.animation.LerpedFloat;
+import com.simibubi.create.foundation.utility.animation.LerpedFloat.Chaser;
 
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.client.gui.ControlCollection;
 import de.mrjulsen.crn.client.gui.IForegroundRendering;
 import de.mrjulsen.crn.client.gui.widgets.SettingsOptionWidget;
+import de.mrjulsen.crn.data.GlobalSettingsManager;
 import de.mrjulsen.crn.util.GuiUtils;
 import de.mrjulsen.crn.util.Utils;
 import net.minecraft.client.Minecraft;
@@ -20,6 +24,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 
 public class GlobalSettingsScreen extends Screen implements IForegroundRendering {
@@ -35,11 +40,12 @@ public class GlobalSettingsScreen extends Screen implements IForegroundRendering
     private final int ENTRY_SPACING = 4;
     
     private final int AREA_X = 16;
-    //private final int AREA_Y = 15;        
-    //private final int AREA_W = 220;
-    //private final int AREA_H = 195;
+    private final int AREA_Y = 16;        
+    private final int AREA_W = 220;
+    private final int AREA_H = 194;
 
     private int guiLeft, guiTop;    
+	private LerpedFloat scroll = LerpedFloat.linear().startWithValue(0);
 
     // Data
     private final Level level;
@@ -112,14 +118,30 @@ public class GlobalSettingsScreen extends Screen implements IForegroundRendering
     @Override
     public void tick() {
         super.tick();
+        
+		scroll.tickChaser();
     }
 
     @Override
-    public void render(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) { 
+    public void render(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) {
         renderBackground(pPoseStack);
         RenderSystem.setShaderTexture(0, GUI);
         blit(pPoseStack, guiLeft, guiTop, 0, 0, GUI_WIDTH, GUI_HEIGHT);
-        optionsCollection.performForEach(x -> x.render(pPoseStack, pMouseX, pMouseY, pPartialTick));
+
+        float scrollOffset = -scroll.getValue(pPartialTick);
+        UIRenderHelper.swapAndBlitColor(minecraft.getMainRenderTarget(), UIRenderHelper.framebuffer);
+        GuiUtils.startStencil(pPoseStack, guiLeft + AREA_X, guiTop + AREA_Y, AREA_W, AREA_H);
+        pPoseStack.pushPose();
+        pPoseStack.translate(0, scrollOffset, 0);
+        
+        optionsCollection.performForEach(x -> x.render(pPoseStack, pMouseX, (int)(pMouseY - scrollOffset), pPartialTick));
+
+        pPoseStack.popPose();
+        GuiUtils.endStencil();        
+        net.minecraftforge.client.gui.GuiUtils.drawGradientRect(pPoseStack.last().pose(), 200, guiLeft + AREA_X, guiTop + AREA_Y, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y + 10, 0x77000000, 0x00000000);
+        net.minecraftforge.client.gui.GuiUtils.drawGradientRect(pPoseStack.last().pose(), 200, guiLeft + AREA_X, guiTop + AREA_Y + AREA_H - 10, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y + AREA_H, 0x00000000, 0x77000000);
+        UIRenderHelper.swapAndBlitColor(UIRenderHelper.framebuffer, minecraft.getMainRenderTarget());
+
 
         drawString(pPoseStack, shadowlessFont, title, guiLeft + 19, guiTop + 4, 0x4F4F4F);
         String timeString = Utils.parseTime((int)(level.getDayTime() % Constants.TICKS_PER_DAY));
@@ -132,14 +154,36 @@ public class GlobalSettingsScreen extends Screen implements IForegroundRendering
 
     @Override
     public void renderForeground(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTicks) {
+		float scrollOffset = -scroll.getValue(pPartialTicks);
         GuiUtils.renderTooltip(this, backButton, List.of(Constants.TOOLTIP_GO_BACK.getVisualOrderText()), pPoseStack, pMouseX, pMouseY, 0, 0);
-        optionsCollection.performForEachOfType(IForegroundRendering.class, x -> x.renderForeground(pPoseStack, pMouseX, pMouseY, pPartialTicks));
+        optionsCollection.performForEachOfType(IForegroundRendering.class, x -> x.renderForeground(pPoseStack, pMouseX, pMouseY, -scrollOffset));
     }
 
     @Override
     public boolean mouseClicked(double pMouseX, double pMouseY, int pButton) {
-        optionsCollection.performForEach(x -> x.isMouseOver(pMouseX, pMouseY), x -> x.mouseClicked(pMouseX, pMouseY, pButton));
+        float scrollOffset = -scroll.getValue();
+        optionsCollection.performForEach(x -> x.isMouseOver(pMouseX, (int)(pMouseY - scrollOffset)), x -> x.mouseClicked(pMouseX, (int)(pMouseY - scrollOffset), pButton));
         return super.mouseClicked(pMouseX, pMouseY, pButton);
+    }
+
+    private int getMaxScrollHeight() {
+        return (SettingsOptionWidget.HEIGHT + ENTRY_SPACING) * 4 + ENTRIES_START_Y_OFFSET * 2;
+    }
+
+    @Override
+    public boolean mouseScrolled(double pMouseX, double pMouseY, double pDelta) {
+
+		float chaseTarget = scroll.getChaseTarget();		
+        float max = -AREA_H + getMaxScrollHeight();
+
+		if (max > 0) {
+			chaseTarget -= pDelta * 12;
+			chaseTarget = Mth.clamp(chaseTarget, 0, max);
+			scroll.chase((int) chaseTarget, 0.7f, Chaser.EXP);
+		} else
+			scroll.chase(0, 0.7f, Chaser.EXP);
+
+		return super.mouseScrolled(pMouseX, pMouseY, pDelta);
     }
     
 }
