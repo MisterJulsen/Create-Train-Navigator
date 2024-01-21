@@ -2,11 +2,9 @@ package de.mrjulsen.crn.data;
 
 import java.util.UUID;
 
-import org.antlr.v4.parse.ANTLRParser.ruleref_return;
-
 import com.simibubi.create.content.trains.entity.TrainIconType;
 
-import de.mrjulsen.crn.Constants;
+import de.mrjulsen.crn.data.TrainStationAlias.StationInfo;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -217,6 +215,7 @@ public class SimpleRoute {
         private static final int TRESHOLD = 167;
 
         private final String stationName;
+        private final StationInfo info;
         private final int ticks;
         private final long refreshTime;
 
@@ -224,11 +223,12 @@ public class SimpleRoute {
         private long currentRefreshTime;
 
         public StationEntry(TrainStop stop, long refreshTime) {
-            this(stop.getStationAlias().getAliasName().get(), stop.getPrediction().getTicks(), refreshTime);
+            this(stop.getStationAlias().getAliasName().get(), stop.getStationAlias().getInfoForStation(stop.getPrediction().getNextStopStation()), stop.getPrediction().getTicks(), refreshTime);
         }
 
-        private StationEntry(String stationName, int ticks, long refreshTime) {
+        private StationEntry(String stationName, StationInfo info, int ticks, long refreshTime) {
             this.stationName = stationName;
+            this.info = info;
             this.ticks = ticks;
             this.refreshTime = refreshTime;
             this.currentTicks = ticks;
@@ -253,6 +253,10 @@ public class SimpleRoute {
 
         public long getCurrentRefreshTime() {
             return currentRefreshTime;
+        }
+
+        public StationInfo getInfo() {
+            return info;
         }
 
         public void updateRealtimeData(int ticks, long refreshTime) {
@@ -282,13 +286,15 @@ public class SimpleRoute {
             CompoundTag nbt = new CompoundTag();
             nbt.putString(NBT_NAME, getStationName());
             nbt.putInt(NBT_TICKS, getTicks());
+            getInfo().writeNbt(nbt);
             return nbt;
         }
 
         public static StationEntry fromNbt(CompoundTag nbt, long refreshTime) {
             String stationName = nbt.getString(NBT_NAME);
             int ticks = nbt.getInt(NBT_TICKS);
-            return new StationEntry(stationName, ticks, refreshTime);
+            StationInfo info = StationInfo.fromNbt(nbt);
+            return new StationEntry(stationName, info, ticks, refreshTime);
         }
     }
 

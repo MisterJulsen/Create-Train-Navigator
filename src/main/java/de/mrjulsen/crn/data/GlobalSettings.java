@@ -250,14 +250,14 @@ public class GlobalSettings {
     }
 
     private boolean compareAliasAndString(TrainStationAlias alias, String name) {
-        return alias.getAliasName().get().toLowerCase().equals(name.toLowerCase());
+        return alias.getAliasName().get().equals(name);
     }
 
     
 
     // station blacklist
     public boolean isBlacklisted(String stationName) {
-        return blacklist.stream().anyMatch(x -> x.toLowerCase().contains(stationName.toLowerCase()));
+        return blacklist.stream().anyMatch(x -> x.contains(stationName));
     }
 
     public boolean isBlacklisted(TrainStationAlias station) {

@@ -118,7 +118,9 @@ public class Graph {
         }
 
         TrainSchedule schedule = new TrainSchedule(train, id, settingsInstance);
-        schedule.addToGraph(this, train);
+        if (!schedule.addToGraph(this, train)) {
+            return null;
+        }
 
         if (trainIdsBySchedule.containsKey(schedule)) {
             TrainSchedule sched = schedulesByTrainId.get(trainIdsBySchedule.get(schedule).stream().findFirst().get());
@@ -189,7 +191,7 @@ public class Graph {
 	}
 
     public Collection<Route> navigate(TrainStationAlias start, TrainStationAlias end, boolean avoidTransfers) {
-        return searchTrains(searchRoute(start, end, avoidTransfers));
+        return searchTrains(searchRoute(start, end, avoidTransfers)).stream().sorted(Comparator.comparingInt(x -> x.getStartStation().getPrediction().getTicks())).toList();
     }
 
     public List<Node> searchRoute(TrainStationAlias start, TrainStationAlias end, boolean avoidTransfers) {
@@ -228,7 +230,7 @@ public class Graph {
     }
 
     private Map<UUID, SimpleTrainSchedule> generateTrainSchedules() {
-        return GlobalTrainData.getInstance().getAllTrains().stream().filter(x -> TrainUtils.isTrainValid(x)).collect(Collectors.toMap(x -> x.id, x -> new SimpleTrainSchedule(x)));
+        return GlobalTrainData.getInstance().getAllTrains().stream().filter(x -> TrainUtils.isTrainValid(x) && !globalSettings.isTrainBlacklisted(x)).collect(Collectors.toMap(x -> x.id, x -> new SimpleTrainSchedule(x)));
     }
 
     public Collection<Route> searchTrains(List<Node> routeNodes) {
@@ -249,12 +251,16 @@ public class Graph {
 
         Collection<SimulatedTrainSchedule> trainPredictions = GlobalTrainData.getInstance().getDepartingTrainsAt(lastNode.getStationAlias()).stream()
         .filter(x -> {
+            if (globalSettings.isTrainBlacklisted(x.getTrain())) {
+                return false;
+            }
+
             SimpleTrainSchedule schedule = schedulesByTrain.get(x.getTrain().id);
 
             boolean b = !x.getTrain().id.equals(currentTrainId) &&
                         !excludedSchedules.contains(schedule) &&
                         schedule.hasStationAlias(node.getStationAlias()) &&
-                        TrainUtils.isTrainValid(x.getTrain());                    
+                        TrainUtils.isTrainValid(x.getTrain());
             return b;
         }).map(x -> {
             return schedulesByTrain.get(x.getTrain().id).simulate(x.getTrain(), simulationTime, lastNode.getStationAlias());
@@ -307,6 +313,10 @@ public class Graph {
 
                 Collection<SimulatedTrainSchedule> trainPredictions = GlobalTrainData.getInstance().getDepartingTrainsAt(lastNode.getStationAlias()).stream()
                 .filter(x -> {
+                    if (globalSettings.isTrainBlacklisted(x.getTrain())) {
+                        return false;
+                    }
+                    
                     SimpleTrainSchedule schedule = schedulesByTrain.get(x.getTrain().id);
 
                     boolean b = !x.getTrain().id.equals(currentTrainId) &&

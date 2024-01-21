@@ -50,6 +50,7 @@ public class AliasEntryWidget extends Button implements ITickableWidget, IForegr
     // Controls
     private final ModEditBox titleBox;
     private final ModEditBox newEntryBox;
+    private final ModEditBox newEntryPlatformBox;
     private final ControlCollection controls = new ControlCollection();
     private final Map<String, GuiAreaDefinition> removeStationButtons = new HashMap<>();
 
@@ -93,7 +94,7 @@ public class AliasEntryWidget extends Button implements ITickableWidget, IForegr
         controls.components.add(titleBox);
 
         
-        newEntryBox = new ModEditBox(minecraft.font, pX + 30, pY + 30, 129, 12, new TextComponent(""));
+        newEntryBox = new ModEditBox(minecraft.font, pX + 30, pY + 30, 95, 12, new TextComponent(""));
 		newEntryBox.setBordered(false);
 		newEntryBox.setMaxLength(25);
 		newEntryBox.setTextColor(0xFFFFFF);
@@ -101,7 +102,17 @@ public class AliasEntryWidget extends Button implements ITickableWidget, IForegr
         newEntryBox.setResponder(x -> {
             updateEditorSubwidgets(newEntryBox);
         });
-        controls.components.add(newEntryBox);        
+        controls.components.add(newEntryBox);
+
+        newEntryPlatformBox = new ModEditBox(minecraft.font, pX + 134, pY + 30, 25, 12, new TextComponent(""));
+		newEntryPlatformBox.setBordered(false);
+		newEntryPlatformBox.setMaxLength(25);
+		newEntryPlatformBox.setTextColor(0xFFFFFF);
+        newEntryPlatformBox.visible = expanded;
+        newEntryPlatformBox.setResponder(x -> {
+            //updateEditorSubwidgets(newEntryBox);
+        });
+        controls.components.add(newEntryPlatformBox);
 
         setY(pY);
     }    
@@ -150,20 +161,21 @@ public class AliasEntryWidget extends Button implements ITickableWidget, IForegr
         this.expanded = !expanded;
         titleBox.visible = expanded;
         newEntryBox.visible = expanded;
+        newEntryPlatformBox.visible = expanded;
     }
 
     private void deleteAlias() {
         GlobalSettingsManager.getInstance().getSettingsData().unregisterAlias(alias, onUpdate);
     }
 
-    private void addStation(String name) {
+    private void addStation(String name, StationInfo info) {
         AliasName prevName = alias.getAliasName();
         if (ClientTrainStationSnapshot.getInstance().getAllTrainStations().stream().noneMatch(x -> x.equals(name))) {
             return;
         }
 
         // TODO
-        alias.add(name, StationInfo.empty());
+        alias.add(name, info);
         alias.updateLastEdited(minecraft.player.getName().getString());
         GlobalSettingsManager.getInstance().getSettingsData().updateAlias(prevName, alias, () -> {
             onUpdate.run();
@@ -223,25 +235,36 @@ public class AliasEntryWidget extends Button implements ITickableWidget, IForegr
         blit(pPoseStack, expandButton.getX(), expandButton.getY(), expanded ? 216 : 200, 0, 16, 16); // expand button  
 
         if (expanded) {
-            String[] names = alias.getAllStationNames().toArray(String[]::new);
+            Map<String, StationInfo> names = alias.getAllStations();
             blit(pPoseStack, x + 25, y + 5, 0, 92, 139, 18); // textbox
-            newEntryBox.y = y + 26 + (names.length * STATION_ENTRY_HEIGHT) + 6;
+            newEntryBox.y = y + 26 + (names.size() * STATION_ENTRY_HEIGHT) + 6;
+            newEntryPlatformBox.y = y + 26 + (names.size() * STATION_ENTRY_HEIGHT) + 6;
 
-            for (int i = 0; i < names.length; i++) {
+            for (int i = 0; i < names.size(); i++) {
                 blit(pPoseStack, x, y + 26 + (i * STATION_ENTRY_HEIGHT), 0, 48, 200, STATION_ENTRY_HEIGHT);
             }
             
-            blit(pPoseStack, x, y + 26 + (names.length * STATION_ENTRY_HEIGHT), 0, 68, 200, 24);
-            blit(pPoseStack, x + 25, y + 26 + (names.length * STATION_ENTRY_HEIGHT) + 1, 0, 92, 139, 18); // textbox
+            blit(pPoseStack, x, y + 26 + (names.size() * STATION_ENTRY_HEIGHT), 0, 68, 200, 24);
+            blit(pPoseStack, x + 25, y + 26 + (names.size() * STATION_ENTRY_HEIGHT) + 1, 0, 92, 103, 18); // textbox
+            blit(pPoseStack, x + 25 + 102, y + 26 + (names.size() * STATION_ENTRY_HEIGHT) + 1, 138, 92, 1, 18); // textbox
+
+            blit(pPoseStack, x + 129, y + 26 + (names.size() * STATION_ENTRY_HEIGHT) + 1, 0, 92, 35, 18); // textbox
+            blit(pPoseStack, x + 129 + 34, y + 26 + (names.size() * STATION_ENTRY_HEIGHT) + 1, 138, 92, 1, 18); // textbox
             blit(pPoseStack, addButton.getX(), addButton.getY(), 200, 16, 16, 16); // add button 
 
             for (GuiAreaDefinition def : removeStationButtons.values()) { 
                 blit(pPoseStack, def.getX(), def.getY(), 232, 0, 16, 16); // delete button
             }
 
-            for (int i = 0; i < names.length; i++) {
-                String name = names[i];
+            int i = 0;
+            for (Entry<String, StationInfo> entry : names.entrySet()) {
+                String name = entry.getKey();
                 drawString(pPoseStack, shadowlessFont, name, x + 30, y + 26 + (i * STATION_ENTRY_HEIGHT) + 6, 0xFFFFFF);
+                StationInfo info = entry.getValue();
+                String platform = info.platform();
+                int platformTextWidth = shadowlessFont.width(platform);
+                drawString(pPoseStack, shadowlessFont, platform, x + 30 + 130 - platformTextWidth, y + 26 + (i * STATION_ENTRY_HEIGHT) + 6, 0xFFFFFF);
+                i++;
             }
             
         } else {
@@ -306,7 +329,7 @@ public class AliasEntryWidget extends Button implements ITickableWidget, IForegr
             toggleExpanded();
             return super.mouseClicked(pMouseX, pMouseY, pButton);
         } else if (expanded && addButton.isInBounds(pMouseX, pMouseY)) {
-            addStation(newEntryBox.getValue());
+            addStation(newEntryBox.getValue(), new StationInfo(newEntryPlatformBox.getValue()));
             newEntryBox.setValue("");
             newEntryBox.setFocused(false);
             return super.mouseClicked(pMouseX, pMouseY, pButton);

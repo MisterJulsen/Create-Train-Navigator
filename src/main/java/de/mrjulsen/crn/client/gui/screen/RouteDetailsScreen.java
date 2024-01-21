@@ -22,6 +22,7 @@ import de.mrjulsen.crn.client.gui.widgets.ExpandButton;
 import de.mrjulsen.crn.data.SimpleRoute;
 import de.mrjulsen.crn.data.SimpleRoute.SimpleRoutePart;
 import de.mrjulsen.crn.data.SimpleRoute.StationEntry;
+import de.mrjulsen.crn.data.TrainStationAlias.StationInfo;
 import de.mrjulsen.crn.util.GuiUtils;
 import de.mrjulsen.crn.util.Utils;
 import net.minecraft.client.gui.Font;
@@ -144,6 +145,7 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering {
 
         drawString(poseStack, shadowlessFont, Utils.parseTime(lastRefreshedTime + stop.getTicks()), x + ENTRY_TIME_X, y + 15, 0xFFFFFF);
         drawString(poseStack, shadowlessFont, stop.getStationName(), x + ENTRY_DEST_X, y + 15, 0xFFFFFF);
+        drawString(poseStack, shadowlessFont, stop.getInfo().platform(), x + ENTRY_DEST_X + 129 - shadowlessFont.width(stop.getInfo().platform()), y + 15, 0xFFFFFF);
 
         return HEIGHT;
     }
@@ -168,15 +170,16 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering {
         return HEIGHT;
     }
 
-    private int renderStop(PoseStack poseStack, int x, int y, int time, String destination) {
+    private int renderStop(PoseStack poseStack, int x, int y, StationEntry stop) {
         final int HEIGHT = 21;
         final int V = 78;
 
         RenderSystem.setShaderTexture(0, Constants.GUI_WIDGETS);
         blit(poseStack, x, y, 0, V, ENTRY_WIDTH, HEIGHT);
 
-        drawString(poseStack, shadowlessFont, Utils.parseTime(lastRefreshedTime + time), x + ENTRY_TIME_X, y + 6, 0xFFFFFF);
-        drawString(poseStack, shadowlessFont, destination, x + ENTRY_DEST_X, y + 6, 0xFFFFFF);
+        drawString(poseStack, shadowlessFont, Utils.parseTime(lastRefreshedTime + stop.getTicks()), x + ENTRY_TIME_X, y + 6, 0xFFFFFF);
+        drawString(poseStack, shadowlessFont, stop.getStationName(), x + ENTRY_DEST_X, y + 6, 0xFFFFFF);
+        drawString(poseStack, shadowlessFont, stop.getInfo().platform(), x + ENTRY_DEST_X + 129 - shadowlessFont.width(stop.getInfo().platform()), y + 6, 0xFFFFFF);
 
         return HEIGHT;
     }
@@ -190,6 +193,7 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering {
 
         drawString(poseStack, shadowlessFont, Utils.parseTime(lastRefreshedTime + stop.getTicks()), x + ENTRY_TIME_X, y + 21, 0xFFFFFF);
         drawString(poseStack, shadowlessFont, stop.getStationName(), x + ENTRY_DEST_X, y + 21, 0xFFFFFF);
+        drawString(poseStack, shadowlessFont, stop.getInfo().platform(), x + ENTRY_DEST_X + 129 - shadowlessFont.width(stop.getInfo().platform()), y + 21, 0xFFFFFF);
 
         return HEIGHT;
     }
@@ -265,7 +269,7 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering {
 
             if (btn.isExpanded()) {
                 for (StationEntry stop : part.getStopovers()) {
-                    yOffs += renderStop(pPoseStack, guiLeft + 16, yOffs, stop.getTicks(), stop.getStationName());
+                    yOffs += renderStop(pPoseStack, guiLeft + 16, yOffs, stop);
                 }
             }
 

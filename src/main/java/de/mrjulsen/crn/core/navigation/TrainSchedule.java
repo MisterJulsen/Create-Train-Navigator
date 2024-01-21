@@ -31,9 +31,14 @@ public class TrainSchedule {
 
     private void makeSchedule(Train train, GlobalSettings settingsInstance) {
         this.stops = new ArrayList<>(GlobalTrainData.getInstance().getAllStopsSorted(train).stream().filter(x -> !settingsInstance.isBlacklisted(x.getStationAlias())).toList());
+        System.out.println("Stop size: " + train.name.getString() + " " + stops.size());
     }
 
-    public void addToGraph(Graph graph, Train train) {
+    public boolean addToGraph(Graph graph, Train train) {
+        if (stops.isEmpty()) {
+            return false;
+        }
+
         final int cycleDuration = TrainListener.getInstance().getApproximatedTrainDuration(train);
 
         final int size = stops.size();
@@ -53,6 +58,8 @@ public class TrainSchedule {
 
             lastStop = stop;
         }
+
+        return true;
     }
 
     public UUID getId() {

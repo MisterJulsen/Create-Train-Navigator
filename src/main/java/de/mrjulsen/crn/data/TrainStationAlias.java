@@ -9,7 +9,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import de.mrjulsen.crn.Constants;
-import de.mrjulsen.mcdragonlib.common.Location;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -26,7 +25,7 @@ public class TrainStationAlias {
     private static final String NBT_STATION_ENTRY_NAME = "Name";
 
     protected AliasName aliasName;
-    protected Map<String, StationInfo> stations = new IdentityHashMap<>();
+    protected Map<String, StationInfo> stations = new HashMap<>();
     // log
     protected String lastEditorName = null;
     protected long lastEditedTime = 0;
@@ -144,6 +143,10 @@ public class TrainStationAlias {
 
     public Map<String, StationInfo> getAllStations() {
         return stations;
+    }
+
+    public StationInfo getInfoForStation(String stationName) {
+        return stations.containsKey(stationName) ? stations.get(stationName) : StationInfo.empty();
     }
 
     public void setName(AliasName name) {
