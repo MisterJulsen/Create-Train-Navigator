@@ -25,7 +25,8 @@ public class LoadingScreen extends Screen {
 
     @Override
     public void render(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) { 
-            
+        
+        renderBackground(pPoseStack);
         double offsetX = Math.sin(Math.toRadians(angle)) * 5;
         double offsetY = Math.cos(Math.toRadians(angle)) * 5; 
         
