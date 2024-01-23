@@ -94,7 +94,7 @@ public class GlobalSettingsScreen extends Screen implements IForegroundRendering
         }));
 
         optionsCollection.components.add(new SettingsOptionWidget(this, guiLeft + 26, startY + (SettingsOptionWidget.HEIGHT + ENTRY_SPACING) * 2, optionTrainGroupTitle, optionTrainGroupDescription, (btn) -> {
-            minecraft.setScreen(new StationBlacklistScreen(level, instance));
+            minecraft.setScreen(new TrainGroupScreen(level, instance));
         }));
 
         optionsCollection.components.add(new SettingsOptionWidget(this, guiLeft + 26, startY + (SettingsOptionWidget.HEIGHT + ENTRY_SPACING) * 3, optionTrainBlacklistTitle, optionTrainBlacklistDescription, (btn) -> {

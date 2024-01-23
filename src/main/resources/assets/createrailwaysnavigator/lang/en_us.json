@@ -61,11 +61,18 @@
     "gui.createrailwaysnavigator.alias_settings.delete_alias.tooltip": "Delete Tag",
     "gui.createrailwaysnavigator.alias_settings.delete_station.tooltip": "Remove Station",
     "gui.createrailwaysnavigator.alias_settings.add_station.tooltip": "Add Station",
+    
+    "gui.createrailwaysnavigator.train_group_settings.title": "Train Group Settings",
+    "gui.createrailwaysnavigator.train_group_settings.summary": "Contains %s Trains",
+    "gui.createrailwaysnavigator.train_group_settings.editor": "Last edited by %s on %s",
+    "gui.createrailwaysnavigator.train_group_settings.add.tooltip": "Create new Train Group",
+    "gui.createrailwaysnavigator.train_group_settings.delete_alias.tooltip": "Delete Group",
+    "gui.createrailwaysnavigator.train_group_settings.delete_station.tooltip": "Remove Train",
+    "gui.createrailwaysnavigator.train_group_settings.add_station.tooltip": "Add Train",
 
     "gui.createrailwaysnavigator.blacklist.title": "Train Station Blacklist",
     "gui.createrailwaysnavigator.blacklist.add.tooltip": "Add to blacklist",
     "gui.createrailwaysnavigator.blacklist.delete.tooltip": "Remove from blacklist",
-
     
     "gui.createrailwaysnavigator.train_blacklist.title": "Train Blacklist",
     "gui.createrailwaysnavigator.train_blacklist.add.tooltip": "Add to blacklist",

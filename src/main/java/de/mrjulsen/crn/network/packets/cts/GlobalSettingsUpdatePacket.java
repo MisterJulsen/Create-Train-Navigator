@@ -5,6 +5,7 @@ import java.util.function.Supplier;
 import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.data.AliasName;
 import de.mrjulsen.crn.data.GlobalSettingsManager;
+import de.mrjulsen.crn.data.TrainGroup;
 import de.mrjulsen.crn.data.TrainStationAlias;
 import de.mrjulsen.crn.network.InstanceManager;
 import de.mrjulsen.crn.network.NetworkManager;
@@ -38,16 +39,26 @@ public class GlobalSettingsUpdatePacket implements IPacketBase<GlobalSettingsUpd
             case ADD_TRAIN_TO_BLACKLIST:
             case REMOVE_TRAIN_FROM_BLACKLIST:
             case UNREGISTER_ALIAS_STRING:
+            case UNREGISTER_TRAIN_GROUP_TRAIN:
                 nbt.putString(NBT_STRING, (String)data);
-                break;          
+                break;
             case UNREGISTER_ALIAS:
             case REGISTER_ALIAS:
                 nbt = ((TrainStationAlias)data).toNbt();
+                break;                
+            case UNREGISTER_TRAIN_GROUP:
+            case REGISTER_TRAIN_GROUP:
+                nbt = ((TrainGroup)data).toNbt();
                 break;
             case UPDATE_ALIAS:
                 Object[] dataArr = (Object[])data;
                 nbt.putString(NBT_STRING, (String)dataArr[0]);
                 nbt.put(NBT_COMPOUND_TAG, ((TrainStationAlias)dataArr[1]).toNbt());
+                break;
+            case UPDATE_TRAIN_GROUP:
+                Object[] dataArr1 = (Object[])data;
+                nbt.putString(NBT_STRING, (String)dataArr1[0]);
+                nbt.put(NBT_COMPOUND_TAG, ((TrainGroup)dataArr1[1]).toNbt());
                 break;
             default:
                 return;
@@ -101,8 +112,21 @@ public class GlobalSettingsUpdatePacket implements IPacketBase<GlobalSettingsUpd
                     break;
                 case REGISTER_ALIAS:
                     GlobalSettingsManager.getInstance().getSettingsData().registerAliasServer(TrainStationAlias.fromNbt(packet.data));
+                    break;
                 case UPDATE_ALIAS:
                     GlobalSettingsManager.getInstance().getSettingsData().updateAliasServer(AliasName.of(packet.data.getString(NBT_STRING)), TrainStationAlias.fromNbt(packet.data.getCompound(NBT_COMPOUND_TAG)));
+                    break;
+                case UNREGISTER_TRAIN_GROUP_TRAIN:
+                    GlobalSettingsManager.getInstance().getSettingsData().unregisterTrainGroupServer(packet.data.getString(NBT_STRING));
+                    break;
+                case UNREGISTER_TRAIN_GROUP:
+                    GlobalSettingsManager.getInstance().getSettingsData().unregisterTrainGroupServer(TrainGroup.fromNbt(packet.data).getGroupName());
+                    break;
+                case REGISTER_TRAIN_GROUP:
+                    GlobalSettingsManager.getInstance().getSettingsData().registerTrainGroupServer(TrainGroup.fromNbt(packet.data));
+                    break;
+                case UPDATE_TRAIN_GROUP:
+                    GlobalSettingsManager.getInstance().getSettingsData().updateTrainGroupServer(packet.data.getString(NBT_STRING), TrainGroup.fromNbt(packet.data.getCompound(NBT_COMPOUND_TAG)));
                     break;
                 default:
                     return;
@@ -118,7 +142,11 @@ public class GlobalSettingsUpdatePacket implements IPacketBase<GlobalSettingsUpd
         REGISTER_ALIAS,
         UNREGISTER_ALIAS_STRING,
         UNREGISTER_ALIAS,
-        UPDATE_ALIAS,
+        UPDATE_ALIAS,        
+        REGISTER_TRAIN_GROUP,
+        UNREGISTER_TRAIN_GROUP_TRAIN,
+        UNREGISTER_TRAIN_GROUP,
+        UPDATE_TRAIN_GROUP,
         ADD_TO_BLACKLIST,
         REMOVE_FROM_BLACKLIST,        
         ADD_TRAIN_TO_BLACKLIST,

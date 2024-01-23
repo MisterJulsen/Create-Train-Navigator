@@ -17,11 +17,10 @@ import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.client.gui.ControlCollection;
 import de.mrjulsen.crn.client.gui.IForegroundRendering;
 import de.mrjulsen.crn.client.gui.ITickableWidget;
-import de.mrjulsen.crn.client.gui.widgets.AliasEntryWidget;
 import de.mrjulsen.crn.client.gui.widgets.NewTextEntryWidget;
-import de.mrjulsen.crn.data.AliasName;
+import de.mrjulsen.crn.client.gui.widgets.TrainGroupEntryWidget;
 import de.mrjulsen.crn.data.GlobalSettingsManager;
-import de.mrjulsen.crn.data.TrainStationAlias;
+import de.mrjulsen.crn.data.TrainGroup;
 import de.mrjulsen.crn.util.GuiUtils;
 import de.mrjulsen.crn.util.Utils;
 import net.minecraft.client.Minecraft;
@@ -33,7 +32,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 
-public class AliasSettingsScreen extends Screen implements IForegroundRendering {
+public class TrainGroupScreen extends Screen implements IForegroundRendering {
 
     private static final ResourceLocation GUI = new ResourceLocation(ModMain.MOD_ID, "textures/gui/settings.png");
     private static final int GUI_WIDTH = 255;
@@ -56,23 +55,23 @@ public class AliasSettingsScreen extends Screen implements IForegroundRendering 
     private final Level level;
     private final Font shadowlessFont;
     private final Screen lastScreen;
-    private final AliasSettingsScreen instance;
+    private final TrainGroupScreen instance;
     private boolean initEntries = false;
     private boolean renderingEntries = false;
 
     // Controls
     private final ControlCollection entriesCollection = new ControlCollection();
-    private NewTextEntryWidget newAliasWidget;
+    private NewTextEntryWidget newTrainGroupWidget;
     private IconButton backButton;
     private IconButton addButton;
 	private LerpedFloat scroll = LerpedFloat.linear().startWithValue(0);
 
     // Tooltips
-    private final TranslatableComponent tooltipAdd = new TranslatableComponent("gui." + ModMain.MOD_ID + ".alias_settings.add.tooltip");
+    private final TranslatableComponent tooltipAdd = new TranslatableComponent("gui." + ModMain.MOD_ID + ".train_group_settings.add.tooltip");
 
     @SuppressWarnings("resource")
-    public AliasSettingsScreen(Level level, Screen lastScreen) {
-        super(new TranslatableComponent("gui." + ModMain.MOD_ID + ".alias_settings.title"));
+    public TrainGroupScreen(Level level, Screen lastScreen) {
+        super(new TranslatableComponent("gui." + ModMain.MOD_ID + ".train_group_settings.title"));
         this.level = level;
         this.lastScreen = lastScreen;
         this.shadowlessFont = new NoShadowFontWrapper(Minecraft.getInstance().font); 
@@ -97,14 +96,15 @@ public class AliasSettingsScreen extends Screen implements IForegroundRendering 
             @Override
             public void onClick(double mouseX, double mouseY) {
                 super.onClick(mouseX, mouseY);
-                if (newAliasWidget != null) {                       
-                    removeWidget(newAliasWidget);
+                if (newTrainGroupWidget != null) {                       
+                    removeWidget(newTrainGroupWidget);
                 }
-                newAliasWidget = new NewTextEntryWidget(instance, guiLeft + AREA_X + 10, guiTop, () -> {    
-                    removeWidget(newAliasWidget);        
-                    newAliasWidget = null;
+                
+                newTrainGroupWidget = new NewTextEntryWidget(instance, guiLeft + AREA_X + 10, guiTop, () -> {    
+                    removeWidget(newTrainGroupWidget);        
+                    newTrainGroupWidget = null;
                 }, () -> refreshEntries(), () -> (int)getScrollOffset(1), value -> {
-                    GlobalSettingsManager.getInstance().getSettingsData().registerAlias(new TrainStationAlias(AliasName.of(value)), () -> refreshEntries());
+                    GlobalSettingsManager.getInstance().getSettingsData().registerTrainGroup(new TrainGroup(value), () -> refreshEntries());
                 });
                 scroll.chase(getScrollMax(), 0.7f, Chaser.EXP);
             }
@@ -126,16 +126,16 @@ public class AliasSettingsScreen extends Screen implements IForegroundRendering 
 
         int startY = guiTop + AREA_X + ENTRIES_START_Y_OFFSET; 
 
-        Collection<String> expandedAliasNames = entriesCollection.components.stream().filter(x -> x instanceof AliasEntryWidget && ((AliasEntryWidget)x).isExpanded()).map(x -> ((AliasEntryWidget)x).getAlias().getAliasName().get()).toList();
+        Collection<String> expandedGroupNames = entriesCollection.components.stream().filter(x -> x instanceof TrainGroupEntryWidget && ((TrainGroupEntryWidget)x).isExpanded()).map(x -> ((TrainGroupEntryWidget)x).getTrainGroup().getGroupName()).toList();
         entriesCollection.components.forEach(x -> removeWidget(x));
         entriesCollection.components.clear();
 
         // Entries
-        TrainStationAlias[] aliases = GlobalSettingsManager.getInstance().getSettingsData().getAliasList().toArray(TrainStationAlias[]::new);
-        for (int i = 0; i < aliases.length; i++) {
-            TrainStationAlias alias = aliases[i];
+        TrainGroup[] groups = GlobalSettingsManager.getInstance().getSettingsData().getTrainGroupsList().toArray(TrainGroup[]::new);
+        for (int i = 0; i < groups.length; i++) {
+            TrainGroup group = groups[i];
             
-            AliasEntryWidget w = new AliasEntryWidget(this, guiLeft + AREA_X + 10, startY, alias, () -> refreshEntries(), expandedAliasNames.contains(alias.getAliasName().get()));
+            TrainGroupEntryWidget w = new TrainGroupEntryWidget(this, guiLeft + AREA_X + 10, startY, group, () -> refreshEntries(), expandedGroupNames.contains(group.getGroupName()));
             entriesCollection.components.add(w);
         }
         initEntries = false;
@@ -187,7 +187,7 @@ public class AliasSettingsScreen extends Screen implements IForegroundRendering 
         // render entries
         int currentY = guiTop + AREA_X + ENTRIES_START_Y_OFFSET;
         for (int i = 0; i < entriesCollection.components.size(); i++) {
-            if (entriesCollection.components.get(i) instanceof AliasEntryWidget widget) {
+            if (entriesCollection.components.get(i) instanceof TrainGroupEntryWidget widget) {
                 widget.setY(currentY);
                 widget.calcHeight();
                 if (currentY < guiTop + AREA_Y + AREA_H - scrollOffset && currentY + widget.getHeight() > guiTop + AREA_Y - scrollOffset) {
@@ -197,9 +197,9 @@ public class AliasSettingsScreen extends Screen implements IForegroundRendering 
             }
         }
 
-        if (newAliasWidget != null) {
-            newAliasWidget.setY(currentY);
-            newAliasWidget.render(pPoseStack, pMouseX, (int)(pMouseY - scrollOffset), pPartialTick);
+        if (newTrainGroupWidget != null) {
+            newTrainGroupWidget.setY(currentY);
+            newTrainGroupWidget.render(pPoseStack, pMouseX, (int)(pMouseY - scrollOffset), pPartialTick);
         }
         renderingEntries = false;
 
@@ -236,8 +236,8 @@ public class AliasSettingsScreen extends Screen implements IForegroundRendering 
                 x.renderForeground(pPoseStack, pMouseX, pMouseY, pPartialTicks);
             }
         });
-        if (newAliasWidget != null) {
-            newAliasWidget.renderForeground(pPoseStack, pMouseX, pMouseY, pPartialTicks);
+        if (newTrainGroupWidget != null) {
+            newTrainGroupWidget.renderForeground(pPoseStack, pMouseX, pMouseY, pPartialTicks);
         }
     }
 
@@ -252,8 +252,8 @@ public class AliasSettingsScreen extends Screen implements IForegroundRendering 
                 }
             }
             
-            if (newAliasWidget != null) {
-                newAliasWidget.mouseClicked(pMouseX, pMouseY + scrollOffset, pButton);
+            if (newTrainGroupWidget != null) {
+                newTrainGroupWidget.mouseClicked(pMouseX, pMouseY + scrollOffset, pButton);
             }
         }
 
@@ -293,8 +293,8 @@ public class AliasSettingsScreen extends Screen implements IForegroundRendering 
     @Override
     public boolean keyPressed(int pKeyCode, int pScanCode, int pModifiers) {
         entriesCollection.performForEach(x -> x.keyPressed(pKeyCode, pScanCode, pModifiers));
-        if (newAliasWidget != null) {
-            newAliasWidget.keyPressed(pKeyCode, pScanCode, pModifiers);
+        if (newTrainGroupWidget != null) {
+            newTrainGroupWidget.keyPressed(pKeyCode, pScanCode, pModifiers);
         }
         return super.keyPressed(pKeyCode, pScanCode, pModifiers);
     }
@@ -302,8 +302,8 @@ public class AliasSettingsScreen extends Screen implements IForegroundRendering 
     @Override
     public boolean charTyped(char pCodePoint, int pModifiers) {
         entriesCollection.performForEach(x -> x.charTyped(pCodePoint, pModifiers));
-        if (newAliasWidget != null) {
-            newAliasWidget.charTyped(pCodePoint, pModifiers);
+        if (newTrainGroupWidget != null) {
+            newTrainGroupWidget.charTyped(pCodePoint, pModifiers);
         }
         return super.charTyped(pCodePoint, pModifiers);
     }

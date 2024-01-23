@@ -1,6 +1,7 @@
 package de.mrjulsen.crn.client.gui.widgets;
 
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -10,9 +11,6 @@ import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.client.gui.GuiAreaDefinition;
 import de.mrjulsen.crn.client.gui.IForegroundRendering;
 import de.mrjulsen.crn.client.gui.ITickableWidget;
-import de.mrjulsen.crn.data.AliasName;
-import de.mrjulsen.crn.data.GlobalSettingsManager;
-import de.mrjulsen.crn.data.TrainStationAlias;
 import de.mrjulsen.crn.util.GuiUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
@@ -29,6 +27,7 @@ public class NewTextEntryWidget extends Button implements ITickableWidget, IFore
 
     private final Runnable onUpdate;
     private final Supplier<Integer> getScrollOffset;
+    private final Consumer<String> onAccept;
     private final Screen parent;
 
     // Controls
@@ -39,13 +38,14 @@ public class NewTextEntryWidget extends Button implements ITickableWidget, IFore
     private final TranslatableComponent tooltipAdd = new TranslatableComponent("gui." + ModMain.MOD_ID + ".new_text_entry.add.tooltip");
     
 
-    public NewTextEntryWidget(Screen parent, int pX, int pY, Runnable onFocusLost, Runnable onUpdate, Supplier<Integer> scrollOffset) {
+    public NewTextEntryWidget(Screen parent, int pX, int pY, Runnable onFocusLost, Runnable onUpdate, Supplier<Integer> scrollOffset, Consumer<String> onAccept) {
         super(pX, pY, WIDTH, HEIGHT, new TextComponent(""), (btn) -> {});
         
         Minecraft minecraft = Minecraft.getInstance();
         this.onUpdate = onUpdate;
         this.parent = parent;
         this.getScrollOffset = scrollOffset;
+        this.onAccept = onAccept;
         
         newEntryBox = new ModEditBox(minecraft.font, pX + 30, pY + 30, 129, 12, new TextComponent(""));
 		newEntryBox.setBordered(false);
@@ -94,7 +94,7 @@ public class NewTextEntryWidget extends Button implements ITickableWidget, IFore
     @Override
     public boolean mouseClicked(double pMouseX, double pMouseY, int pButton) {
         if (addButton.isInBounds(pMouseX, pMouseY) && !newEntryBox.getValue().isBlank()) {
-            GlobalSettingsManager.getInstance().getSettingsData().registerAlias(new TrainStationAlias(AliasName.of(newEntryBox.getValue())), onUpdate);
+            onAccept.accept(newEntryBox.getValue());
             newEntryBox.setFocus(false);
             onUpdate.run();
             return super.mouseClicked(pMouseX, pMouseY, pButton);

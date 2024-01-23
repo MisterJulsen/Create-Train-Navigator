@@ -22,8 +22,10 @@ public class GlobalSettings {
     private static final String NBT_ALIAS_REGISTRY = "RegisteredAliasData";
     private static final String NBT_BLACKLIST = "StationBlacklist";
     private static final String NBT_TRAIN_BLACKLIST = "TrainBlacklist";
+    private static final String NBT_TRAIN_GROUP_REGISTRY = "RegisteredTrainGroups";
 
     private final Collection<TrainStationAlias> registeredAlias = new ArrayList<>();
+    private final Collection<TrainGroup> registeredTrainGroups = new ArrayList<>();
     private final Collection<String> blacklist = new ArrayList<>();
     private final Collection<String> trainsBlacklist = new ArrayList<>();
 
@@ -37,6 +39,12 @@ public class GlobalSettings {
             aliasTag.addAll(registeredAlias.stream().map(x -> x.toNbt()).toList());        
             pCompoundTag.put(NBT_ALIAS_REGISTRY, aliasTag);
         }
+
+        if (registeredTrainGroups != null && !registeredTrainGroups.isEmpty()) {
+            ListTag aliasTag = new ListTag();
+            aliasTag.addAll(registeredTrainGroups.stream().map(x -> x.toNbt()).toList());        
+            pCompoundTag.put(NBT_TRAIN_GROUP_REGISTRY, aliasTag);
+        }
         
         if (blacklist != null && !blacklist.isEmpty()) {
             ListTag blacklistTag = new ListTag();
@@ -46,7 +54,7 @@ public class GlobalSettings {
 
         if (trainsBlacklist != null && !trainsBlacklist.isEmpty()) {
             ListTag blacklistTag = new ListTag();
-            blacklistTag.addAll(trainsBlacklist.stream().map(x -> StringTag.valueOf(x)).toList());       
+            blacklistTag.addAll(trainsBlacklist.stream().map(x -> StringTag.valueOf(x)).toList());
             pCompoundTag.put(NBT_TRAIN_BLACKLIST, blacklistTag);
         }
 
@@ -55,12 +63,18 @@ public class GlobalSettings {
 
     public static GlobalSettings fromNbt(CompoundTag tag) {
         Collection<TrainStationAlias> aliasData = new ArrayList<>();
+        Collection<TrainGroup> trainGroupData = new ArrayList<>();
         Collection<String> blacklistData = new ArrayList<>();
         Collection<String> trainBlacklistData = new ArrayList<>();
 
         if (tag.contains(NBT_ALIAS_REGISTRY)) {
             aliasData = tag.getList(NBT_ALIAS_REGISTRY, Tag.TAG_COMPOUND).stream().map(x -> TrainStationAlias.fromNbt((CompoundTag)x)).toList();
         }
+
+        if (tag.contains(NBT_TRAIN_GROUP_REGISTRY)) {
+            trainGroupData = tag.getList(NBT_TRAIN_GROUP_REGISTRY, Tag.TAG_COMPOUND).stream().map(x -> TrainGroup.fromNbt((CompoundTag)x)).toList();
+        }
+
         if (tag.contains(NBT_BLACKLIST)) {
             blacklistData = tag.getList(NBT_BLACKLIST, Tag.TAG_STRING).stream().map(x -> ((StringTag)x).getAsString()).toList();
         }
@@ -72,7 +86,8 @@ public class GlobalSettings {
         GlobalSettings instance = new GlobalSettings();
         instance.registeredAlias.addAll(aliasData);
         instance.blacklist.addAll(blacklistData); 
-        instance.trainsBlacklist.addAll(trainBlacklistData); 
+        instance.trainsBlacklist.addAll(trainBlacklistData);
+        instance.registeredTrainGroups.addAll(trainGroupData);
 
         return instance;
     }
@@ -99,6 +114,30 @@ public class GlobalSettings {
         GlobalSettingsUpdatePacket.send(alias, EGlobalSettingsAction.UNREGISTER_ALIAS, then);
         return true;
     }
+
+
+
+    public boolean registerTrainGroup(TrainGroup group, Runnable then) {
+        GlobalSettingsUpdatePacket.send(group, EGlobalSettingsAction.REGISTER_TRAIN_GROUP, then);
+        return true;
+    }
+
+    public boolean updateTrainGroup(String name, TrainGroup newData, Runnable then) {
+        GlobalSettingsUpdatePacket.send(new Object[] { name, newData }, EGlobalSettingsAction.UPDATE_TRAIN_GROUP, then);
+        return true;
+    }
+
+    public boolean unregisterTrainGroupTrain(String trainName, Runnable then) {
+        GlobalSettingsUpdatePacket.send(trainName, EGlobalSettingsAction.UNREGISTER_TRAIN_GROUP_TRAIN, then);
+        return true;
+    }
+
+    public boolean unregisterTrainGroup(TrainGroup group, Runnable then) {
+        GlobalSettingsUpdatePacket.send(group, EGlobalSettingsAction.UNREGISTER_TRAIN_GROUP, then);
+        return true;
+    }
+
+
 
     public boolean addToBlacklist(String station, Runnable then) {        
         GlobalSettingsUpdatePacket.send(station, EGlobalSettingsAction.ADD_TO_BLACKLIST, then);
@@ -169,6 +208,35 @@ public class GlobalSettings {
         return registerAliasServer(new TrainStationAlias(AliasName.of(name), stations.stream().collect(Collectors.toMap(x -> x.name, x -> StationInfo.empty()))));
     }
 
+
+
+    public boolean registerTrainGroupServer(TrainGroup group) {
+        if (!registeredTrainGroups.contains(group)) {
+            registeredTrainGroups.add(group);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean updateTrainGroupServer(String name, TrainGroup newData) {        
+        if (!registeredTrainGroups.stream().anyMatch(x -> x.getGroupName().equals(name))) {
+            return false;
+        }
+        registeredTrainGroups.stream().filter(x -> x.getGroupName().equals(name)).forEach(x -> x.update(newData));
+        return true;
+    }
+
+    public boolean unregisterTrainGroupServer(String name) {        
+        boolean b = registeredTrainGroups.removeIf(x -> x.getGroupName().equals(name));
+        return b;
+    }
+
+    public boolean unregisterAliasServer(TrainGroup group) {
+        boolean b = registeredTrainGroups.removeIf(x -> x.equals(group));
+        return b;
+    }
+
+
     public boolean addToBlacklistServer(String station) {        
         if (!blacklist.contains(station)) {
             blacklist.add(station);
@@ -237,6 +305,10 @@ public class GlobalSettings {
 
     public Collection<TrainStationAlias> getAliasList() {
         return registeredAlias;
+    }
+
+    public Collection<TrainGroup> getTrainGroupsList() {
+        return registeredTrainGroups;
     }
 
     public TrainStationAlias getAliasFor(String stationName) {
