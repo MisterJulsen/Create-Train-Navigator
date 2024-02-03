@@ -16,7 +16,6 @@ import com.simibubi.create.foundation.utility.animation.LerpedFloat.Chaser;
 
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.ModMain;
-import de.mrjulsen.crn.client.gui.GuiAreaDefinition;
 import de.mrjulsen.crn.client.gui.IForegroundRendering;
 import de.mrjulsen.crn.client.gui.widgets.ModEditBox;
 import de.mrjulsen.crn.client.gui.widgets.ModStationSuggestions;
@@ -24,6 +23,7 @@ import de.mrjulsen.crn.data.ClientTrainStationSnapshot;
 import de.mrjulsen.crn.data.GlobalSettingsManager;
 import de.mrjulsen.crn.util.GuiUtils;
 import de.mrjulsen.crn.util.Utils;
+import de.mrjulsen.mcdragonlib.client.gui.GuiAreaDefinition;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.EditBox;

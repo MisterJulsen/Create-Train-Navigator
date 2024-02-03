@@ -97,21 +97,5 @@ public class Route {
     public String toString() {
         return Arrays.toString(getParts().toArray());
     }
-
-    
-    public int compareTo(Route o, UserSettings settings) {
-        int offset = settings.getFilterCriteria().getId();
-        for (int i = 0; i < EFilterCriteria.values().length; i++) {
-            int j = (i + offset) % EFilterCriteria.values().length;
-
-            EFilterCriteria criteria = EFilterCriteria.getCriteriaById(j);
-            int a = EFilterCriteria.getDataFromRoute(criteria, this);
-            int b = EFilterCriteria.getDataFromRoute(criteria, o);
-            if (a != b) {
-                return Integer.compare(a, b);
-            }
-        }
-        return 0;
-    }
     
 }

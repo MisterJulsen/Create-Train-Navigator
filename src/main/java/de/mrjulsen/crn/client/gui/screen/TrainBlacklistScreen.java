@@ -16,7 +16,7 @@ import com.simibubi.create.foundation.utility.animation.LerpedFloat.Chaser;
 
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.ModMain;
-import de.mrjulsen.crn.client.gui.GuiAreaDefinition;
+import de.mrjulsen.mcdragonlib.client.gui.GuiAreaDefinition;
 import de.mrjulsen.crn.client.gui.IForegroundRendering;
 import de.mrjulsen.crn.client.gui.widgets.ModEditBox;
 import de.mrjulsen.crn.client.gui.widgets.ModStationSuggestions;

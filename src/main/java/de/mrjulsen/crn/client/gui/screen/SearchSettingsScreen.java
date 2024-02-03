@@ -1,7 +1,12 @@
 package de.mrjulsen.crn.client.gui.screen;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Map.Entry;
+
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
@@ -10,20 +15,22 @@ import com.simibubi.create.foundation.gui.widget.AbstractSimiWidget;
 import com.simibubi.create.foundation.gui.widget.IconButton;
 import com.simibubi.create.foundation.gui.widget.Label;
 import com.simibubi.create.foundation.gui.widget.ScrollInput;
-import com.simibubi.create.foundation.gui.widget.SelectionScrollInput;
 import com.simibubi.create.foundation.utility.Components;
 
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.ModMain;
+import de.mrjulsen.crn.client.gui.DynamicWidgets;
 import de.mrjulsen.crn.client.gui.IForegroundRendering;
+import de.mrjulsen.crn.client.gui.MutableGuiAreaDefinition;
+import de.mrjulsen.crn.client.gui.DynamicWidgets.ColorShade;
+import de.mrjulsen.mcdragonlib.client.gui.GuiAreaDefinition;
 import de.mrjulsen.crn.config.ModClientConfig;
-import de.mrjulsen.crn.data.EFilterCriteria;
-import de.mrjulsen.crn.data.EResultCount;
-import de.mrjulsen.crn.util.GuiUtils;
+import de.mrjulsen.crn.data.GlobalSettingsManager;
+import de.mrjulsen.crn.data.TrainGroup;
 import de.mrjulsen.crn.util.Utils;
+import de.mrjulsen.mcdragonlib.client.gui.GuiUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.components.Checkbox;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.components.Widget;
 import net.minecraft.client.gui.screens.Screen;
@@ -47,6 +54,8 @@ public class SearchSettingsScreen extends Screen implements IForegroundRendering
     private static final int ENTRY_SPACING = 4;
     private static final int DISPLAY_WIDTH = 164;
     
+    private static final int ARRAY_ENTRY_HEIGHT = 20; 
+    
     private final int AREA_X = 16;
     private final int AREA_Y = 16;        
     //private final int AREA_W = 220;
@@ -59,27 +68,27 @@ public class SearchSettingsScreen extends Screen implements IForegroundRendering
     private final Level level;
     private final Font shadowlessFont;
     private final Screen lastScreen;
+    private final TrainGroup[] trainGroups;
+    private final Map<TrainGroup, MutableGuiAreaDefinition> areaByTrainGroup = new HashMap<>();
+
+    private boolean trainGroupsExpanded;
 
     // Controls
     private IconButton backButton;
     private IconButton defaultsButton;
     private ScrollInput transferTimeInput;
-    private ScrollInput resultCountInput;
-    private ScrollInput countScrollInput;
-    private Label filterLabel;
-    private Label resultCountLabel;
-    private Label countLabel;
-    private MultiLineLabel filterOptionLabel;
-    private MultiLineLabel resultCountOptionLabel;
-    private MultiLineLabel nextTrainOptionLabel;
+    private Label transferLabel;
+    private MultiLineLabel transferOptionLabel;
+    private MultiLineLabel trainGroupsOptionLabel;
+    
+    private GuiAreaDefinition trainGroupResetButton;
+    private GuiAreaDefinition trainGroupExpandButton;
 
     // Tooltips
     private final Component transferTimeBoxText = new TranslatableComponent("gui." + ModMain.MOD_ID + ".search_settings.transfer_time");
     private final Component transferTimeBoxDescription = new TranslatableComponent("gui." + ModMain.MOD_ID + ".search_settings.transfer_time.description");
-    private final Component resultCountText = new TranslatableComponent("gui." + ModMain.MOD_ID + ".search_settings.result_count");
-    private final Component resultCountDescription = new TranslatableComponent("gui." + ModMain.MOD_ID + ".search_settings.result_count.description");    
-    private final Component nextTrainText = new TranslatableComponent("gui." + ModMain.MOD_ID + ".search_settings.next_train");
-    private final Component nextTrainDescription = new TranslatableComponent("gui." + ModMain.MOD_ID + ".search_settings.next_train.description");
+    private final Component trainGroupsText = new TranslatableComponent("gui." + ModMain.MOD_ID + ".search_settings.train_groups");
+    private final Component trainGroupsDescription = new TranslatableComponent("gui." + ModMain.MOD_ID + ".search_settings.train_groups.description");
 
 
     @SuppressWarnings("resource")
@@ -88,6 +97,7 @@ public class SearchSettingsScreen extends Screen implements IForegroundRendering
         this.level = level;
         this.lastScreen = lastScreen;
         this.shadowlessFont = new NoShadowFontWrapper(Minecraft.getInstance().font); 
+        this.trainGroups = GlobalSettingsManager.getInstance().getSettingsData().getTrainGroupsList().toArray(TrainGroup[]::new);
     }
 
     @Override
@@ -108,18 +118,17 @@ public class SearchSettingsScreen extends Screen implements IForegroundRendering
             @Override
             public void onClick(double mouseX, double mouseY) {
                 super.onClick(mouseX, mouseY);
-                //Settings.getInstance().setDefaults();
                 ModClientConfig.reset();
                 clearWidgets();
                 init();
             }
         });
 
-        filterLabel = addRenderableWidget(new Label(guiLeft + AREA_X + 10 + 30, guiTop + AREA_Y + ENTRIES_START_Y_OFFSET + (0 * (ENTRY_HEIGHT + ENTRY_SPACING)) + 44, Components.immutableEmpty()).withShadow());
+        transferLabel = addRenderableWidget(new Label(guiLeft + AREA_X + 10 + 30, guiTop + AREA_Y + ENTRIES_START_Y_OFFSET + (0 * (ENTRY_HEIGHT + ENTRY_SPACING)) + 44, Components.immutableEmpty()).withShadow());
         transferTimeInput = addRenderableWidget(new ScrollInput(guiLeft + AREA_X + 10 + 25, guiTop + AREA_Y + ENTRIES_START_Y_OFFSET + (0 * (ENTRY_HEIGHT + ENTRY_SPACING)) + 39, 60, 18)
             .withRange(0, ModClientConfig.MAX_TRANSFER_TIME + 1)
             .withStepFunction(x -> 500 * (x.shift ? 2 : 1))
-            .writingTo(filterLabel)
+            .writingTo(transferLabel)
             .titled(transferTimeBoxText.copy())
             .format(x -> new TextComponent(Utils.parseDurationShort(x)))
             .calling((i) -> {
@@ -129,51 +138,20 @@ public class SearchSettingsScreen extends Screen implements IForegroundRendering
             })
             .setState(ModClientConfig.TRANSFER_TIME.get()));
         transferTimeInput.onChanged();
-        filterOptionLabel = MultiLineLabel.create(shadowlessFont, transferTimeBoxDescription, (int)((DISPLAY_WIDTH) / 0.75f));
+        transferOptionLabel = MultiLineLabel.create(shadowlessFont, transferTimeBoxDescription, (int)((DISPLAY_WIDTH) / 0.75f));
 
 
-        countLabel = addRenderableWidget(new Label(guiLeft + AREA_X + 10 + 30 + 104, guiTop + AREA_Y + ENTRIES_START_Y_OFFSET + (1 * (ENTRY_HEIGHT + ENTRY_SPACING)) + 44, Components.immutableEmpty()).withShadow());
-        countScrollInput = addRenderableWidget(new ScrollInput(guiLeft + AREA_X + 10 + 25 + 104, guiTop + AREA_Y + ENTRIES_START_Y_OFFSET + (1 * (ENTRY_HEIGHT + ENTRY_SPACING)) + 39, 30, 18)
-            .withRange(1, 1000)
-            .withShiftStep(10)
-            .writingTo(countLabel)
-            .titled(Constants.TEXT_COUNT.copy())
-            .calling((i) -> {
-                ModClientConfig.RESULT_AMOUNT.set(i);
-                ModClientConfig.RESULT_AMOUNT.save();
-                ModClientConfig.SPEC.afterReload();
-            })
-            .setState(ModClientConfig.RESULT_AMOUNT.get()));
-        countScrollInput.onChanged();
+        /**
+         * INSERT HERE
+         * Gui for train groups filter
+         */
+        areaByTrainGroup.clear();
+        for (int i = 0; i < trainGroups.length; i++) {
+            TrainGroup group = trainGroups[i];
+            areaByTrainGroup.put(group, new MutableGuiAreaDefinition(2, 0, 200 - 4, ARRAY_ENTRY_HEIGHT));
+        }
 
-
-        resultCountLabel = addRenderableWidget(new Label(guiLeft + AREA_X + 10 + 30, guiTop + AREA_Y + ENTRIES_START_Y_OFFSET + (1 * (ENTRY_HEIGHT + ENTRY_SPACING)) + 44, Components.immutableEmpty()).withShadow());
-        resultCountInput = addRenderableWidget(new SelectionScrollInput(guiLeft + AREA_X + 10 + 25, guiTop + AREA_Y + ENTRIES_START_Y_OFFSET + (1 * (ENTRY_HEIGHT + ENTRY_SPACING)) + 39, 100, 18)
-            .forOptions(Arrays.stream(EResultCount.values()).map(x -> new TranslatableComponent(x.getTranslationKey())).toList())
-            .writingTo(resultCountLabel)
-            .titled(resultCountText.copy())
-            .calling((i) -> {
-                EResultCount count = EResultCount.getCriteriaById(i);
-                countScrollInput.visible = count == EResultCount.FIXED_AMOUNT;
-                countLabel.visible = count == EResultCount.FIXED_AMOUNT;
-                ModClientConfig.RESULT_RANGE.set(count);
-                ModClientConfig.RESULT_RANGE.save();
-                ModClientConfig.SPEC.afterReload();
-            })
-            .setState(ModClientConfig.RESULT_RANGE.get().getId()));
-        resultCountInput.onChanged();
-        resultCountOptionLabel = MultiLineLabel.create(shadowlessFont, resultCountDescription, (int)((DISPLAY_WIDTH) / 0.75f));
-
-        nextTrainOptionLabel = MultiLineLabel.create(shadowlessFont, nextTrainDescription, (int)((DISPLAY_WIDTH) / 0.75f));
-        Checkbox box = new Checkbox(guiLeft + AREA_X + 10 + 5, guiTop + AREA_Y + ENTRIES_START_Y_OFFSET + (2 * (ENTRY_HEIGHT + ENTRY_SPACING)) + 5, 20, 20, new TextComponent(""), ModClientConfig.TAKE_NEXT_DEPARTING_TRAIN.get()) {
-            public void onPress() {
-                super.onPress();
-                ModClientConfig.TAKE_NEXT_DEPARTING_TRAIN.set(this.selected());
-                ModClientConfig.TAKE_NEXT_DEPARTING_TRAIN.save();
-                ModClientConfig.SPEC.afterReload();
-            };
-        };
-        addRenderableWidget(box);
+        trainGroupsOptionLabel = MultiLineLabel.create(shadowlessFont, trainGroupsDescription, (int)((DISPLAY_WIDTH - 32) / 0.75f));
     }
 
     @Override
@@ -188,22 +166,12 @@ public class SearchSettingsScreen extends Screen implements IForegroundRendering
         super.tick();
     }
 
-    private void renderOptionField(PoseStack pPoseStack, int x, int y, String text, MultiLineLabel label) {
-        RenderSystem.setShaderTexture(0, GUI_WIDGETS);
-        blit(pPoseStack, x, y, 0, 138, 200, ENTRY_HEIGHT);
+    private void renderDefaultOptionWidget(PoseStack pPoseStack, int x, int y, String text, MultiLineLabel label) {
         pPoseStack.pushPose();
         drawString(pPoseStack, shadowlessFont, text, x + 25, y + 6, 0xFFFFFF);
         pPoseStack.scale(0.75f, 0.75f, 0.75f);        
         label.renderLeftAligned(pPoseStack, (int)((x + 25) / 0.75f), (int)((y + 19) / 0.75f), 10, 0xDBDBDB);
-        float s = 1 / 0.75f;
-        pPoseStack.scale(s, s, s);
         pPoseStack.popPose();
-    }
-
-    private void renderEntryField(PoseStack pPoseStack, int x, int y, int w) {
-        RenderSystem.setShaderTexture(0, GUI_WIDGETS);
-        blit(pPoseStack, x, y, 0, 92, w / 2, 18);      
-        blit(pPoseStack, x + w / 2, y, 139 - w / 2, 92, w / 2, 18);
     }
 
     @Override
@@ -212,36 +180,78 @@ public class SearchSettingsScreen extends Screen implements IForegroundRendering
         RenderSystem.setShaderTexture(0, GUI);
         blit(pPoseStack, guiLeft, guiTop, 0, 0, GUI_WIDTH, GUI_HEIGHT);
 
-        int index = 0;
-        // sorting
-        renderOptionField(pPoseStack, guiLeft + AREA_X + 10, guiTop + AREA_Y + ENTRIES_START_Y_OFFSET + (index * (ENTRY_HEIGHT + ENTRY_SPACING)), transferTimeBoxText.getString(), filterOptionLabel);
-        renderEntryField(pPoseStack, guiLeft + AREA_X + 10 + 25, guiTop + AREA_Y + ENTRIES_START_Y_OFFSET + (index * (ENTRY_HEIGHT + ENTRY_SPACING)) + 39, 66);
+        final int defaultWidth = 200;
+        final int defaultDescriptionHeight = 36;
+        final int defaultOptionHeight = 26;
+        int wX = guiLeft + AREA_X + 10;
+        int wY = guiTop + AREA_Y + ENTRIES_START_Y_OFFSET;
+
+        // transfer
+        DynamicWidgets.renderDuoShadeWidget(pPoseStack, wX, wY, defaultWidth, defaultDescriptionHeight, ColorShade.LIGHT, defaultOptionHeight, ColorShade.DARK);
+        DynamicWidgets.renderTextSlotOverlay(pPoseStack, wX + 25, wY + 39, 163, 18);
+        DynamicWidgets.renderTextBox(pPoseStack, wX + 25, wY + 39, 66);
+        renderDefaultOptionWidget(pPoseStack, wX, wY, transferTimeBoxText.getString(), transferOptionLabel);
+        wY += ENTRY_SPACING + defaultOptionHeight + defaultDescriptionHeight;
+        //renderOptionField(pPoseStack, guiLeft + AREA_X + 10, guiTop + AREA_Y + ENTRIES_START_Y_OFFSET + (index * (ENTRY_HEIGHT + ENTRY_SPACING)), transferTimeBoxText.getString(), transferOptionLabel);
+        //renderEntryField(pPoseStack, guiLeft + AREA_X + 10 + 25, guiTop + AREA_Y + ENTRIES_START_Y_OFFSET + (index * (ENTRY_HEIGHT + ENTRY_SPACING)) + 39, 66);
         
-        // count
-        index++;
-        renderOptionField(pPoseStack, guiLeft + AREA_X + 10, guiTop + AREA_Y + ENTRIES_START_Y_OFFSET + (index * (ENTRY_HEIGHT + ENTRY_SPACING)), resultCountText.getString(), resultCountOptionLabel);
+        // train groups       
+        if (trainGroupsExpanded) {
+            int dY = wY;
+            DynamicWidgets.renderWidgetInner(pPoseStack, wX, dY, defaultWidth, defaultDescriptionHeight, ColorShade.LIGHT);
+            DynamicWidgets.renderWidgetTopBorder(pPoseStack, wX, dY, defaultWidth);
+            dY += defaultDescriptionHeight;
+            DynamicWidgets.renderWidgetInner(pPoseStack, wX, dY, defaultWidth, 2, ColorShade.DARK);
+            dY += 2;
+            
+            for (int i = 0; i < trainGroups.length; i++) {
+                TrainGroup group = trainGroups[i];
+                MutableGuiAreaDefinition area = areaByTrainGroup.get(group);
+                area.setXOffset(wX);
+                area.setYOffset(dY + (i * ARRAY_ENTRY_HEIGHT));
+
+                DynamicWidgets.renderWidgetInner(pPoseStack, wX, dY + (i * ARRAY_ENTRY_HEIGHT), defaultWidth, 20, ColorShade.DARK);
+                DynamicWidgets.renderTextSlotOverlay(pPoseStack, wX + 25, dY + (i * ARRAY_ENTRY_HEIGHT) + 1, 163, ARRAY_ENTRY_HEIGHT - 2);
+                drawString(pPoseStack, shadowlessFont, group.getGroupName(), wX + 30, dY + (i * ARRAY_ENTRY_HEIGHT) + 1 + 5, 0xFFFFFF);
+                
+                DynamicWidgets.renderTextSlotOverlay(pPoseStack, wX + 6, dY + (i * ARRAY_ENTRY_HEIGHT) + 1, 16, ARRAY_ENTRY_HEIGHT - 2);
+                
+                if (ModClientConfig.TRAIN_GROUP_FILTER_BLACKLIST.get().stream().noneMatch(x -> x.equals(group.getGroupName()))) {
+                    AllIcons.I_CONFIRM.render(pPoseStack, wX + 6, dY + (i * ARRAY_ENTRY_HEIGHT) + 2);
+                }
+
+                if (area.isInBounds(pMouseX, pMouseY)) {
+                    fill(pPoseStack, area.getX(), area.getY(), area.getRight(), area.getBottom(), 0x1AFFFFFF);
+                }
+            }
+            dY += trainGroups.length * ARRAY_ENTRY_HEIGHT;            
+            DynamicWidgets.renderWidgetInner(pPoseStack, wX, dY, defaultWidth, 2, ColorShade.DARK);
+            dY += 2;
+            DynamicWidgets.renderWidgetBottomBorder(pPoseStack, wX, dY, defaultWidth);
+        } else {
+            DynamicWidgets.renderDuoShadeWidget(pPoseStack, wX, wY, defaultWidth, defaultDescriptionHeight, ColorShade.LIGHT, defaultOptionHeight, ColorShade.DARK);
+        }
+        renderDefaultOptionWidget(pPoseStack, wX, wY, trainGroupsText.getString(), trainGroupsOptionLabel);
+        trainGroupExpandButton = new GuiAreaDefinition(wX + defaultWidth - 2 - 16, wY + defaultDescriptionHeight / 2 - 7, 16, 16);
+        trainGroupResetButton = new GuiAreaDefinition(wX + defaultWidth - 2 - 32, wY + defaultDescriptionHeight / 2 - 7, 16, 16);
+        AllIcons.I_REFRESH.render(pPoseStack, trainGroupResetButton.getX(), trainGroupResetButton.getY()); // delete button
+        GuiUtils.blit(GUI_WIDGETS, pPoseStack, trainGroupExpandButton.getX(), trainGroupExpandButton.getY(), trainGroupsExpanded ? 216 : 200, 0, 16, 16); // expand button 
+        // Button highlight
+        if (trainGroupExpandButton.isInBounds(pMouseX, pMouseY)) {
+            fill(pPoseStack, trainGroupExpandButton.getX(), trainGroupExpandButton.getY(), trainGroupExpandButton.getRight(), trainGroupExpandButton.getBottom(), 0x1AFFFFFF);
+        } else if (trainGroupResetButton.isInBounds(pMouseX, pMouseY)) {
+            fill(pPoseStack, trainGroupResetButton.getX(), trainGroupResetButton.getY(), trainGroupResetButton.getRight(), trainGroupResetButton.getBottom(), 0x1AFFFFFF);
+        }
+        //DynamicWidgets.renderTextSlotOverlay(pPoseStack, guiLeft + AREA_X + 10 + 25, guiTop + AREA_Y + ENTRIES_START_Y_OFFSET + (index * (ENTRY_HEIGHT + ENTRY_SPACING)) + 39, 163, 18);
+        /*
+        renderOptionField(pPoseStack, guiLeft + AREA_X + 10, guiTop + AREA_Y + ENTRIES_START_Y_OFFSET + (index * (ENTRY_HEIGHT + ENTRY_SPACING)), trainGroupsText.getString(), trainGroupsOptionLabel);
         renderEntryField(pPoseStack, guiLeft + AREA_X + 10 + 25, guiTop + AREA_Y + ENTRIES_START_Y_OFFSET + (index * (ENTRY_HEIGHT + ENTRY_SPACING)) + 39, 100);
         if (ModClientConfig.RESULT_RANGE.get() == EResultCount.FIXED_AMOUNT) {
             renderEntryField(pPoseStack, guiLeft + AREA_X + 10 + 25 + 104, guiTop + AREA_Y + ENTRIES_START_Y_OFFSET + (index * (ENTRY_HEIGHT + ENTRY_SPACING)) + 39, 30);
         }
-
-        // next train
-        index++;
-        int x = guiLeft + AREA_X + 10;
-        int y = guiTop + AREA_Y + ENTRIES_START_Y_OFFSET + (index * (ENTRY_HEIGHT + ENTRY_SPACING));
-
-        RenderSystem.setShaderTexture(0, GUI_WIDGETS);
-        blit(pPoseStack, x, y, 0, 138, 200, 36);
-        blit(pPoseStack, x, y + 36, 0, 46, 200, 2);
-        pPoseStack.pushPose();
-        drawString(pPoseStack, shadowlessFont, nextTrainText, x + 30, y + 6, 0xFFFFFF);
-        pPoseStack.scale(0.75f, 0.75f, 0.75f);        
-        nextTrainOptionLabel.renderLeftAligned(pPoseStack, (int)((x + 30) / 0.75f), (int)((y + 19) / 0.75f), 10, 0xDBDBDB);
-        float s = 1 / 0.75f;
-        pPoseStack.scale(s, s, s);
-        pPoseStack.popPose();
+        */
         
-        
+        // other
         super.render(pPoseStack, pMouseX, pMouseY, pPartialTick);
         
         drawString(pPoseStack, shadowlessFont, title, guiLeft + 19, guiTop + 4, 0x4F4F4F);
@@ -253,8 +263,8 @@ public class SearchSettingsScreen extends Screen implements IForegroundRendering
 
     @Override
     public void renderForeground(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {		
-        GuiUtils.renderTooltip(this, backButton, List.of(Constants.TOOLTIP_GO_BACK.getVisualOrderText()), matrixStack, mouseX, mouseY, 0, 0);
-        GuiUtils.renderTooltip(this, defaultsButton, List.of(Constants.TOOLTIP_RESET_DEFAULTS.getVisualOrderText()), matrixStack, mouseX, mouseY, 0, 0);
+        de.mrjulsen.crn.util.GuiUtils.renderTooltip(this, backButton, List.of(Constants.TOOLTIP_GO_BACK.getVisualOrderText()), matrixStack, mouseX, mouseY, 0, 0);
+        de.mrjulsen.crn.util.GuiUtils.renderTooltip(this, defaultsButton, List.of(Constants.TOOLTIP_RESET_DEFAULTS.getVisualOrderText()), matrixStack, mouseX, mouseY, 0, 0);
 
         for (Widget widget : renderables) {
             if (widget instanceof AbstractSimiWidget simiWidget && simiWidget.isHoveredOrFocused()
@@ -267,5 +277,35 @@ public class SearchSettingsScreen extends Screen implements IForegroundRendering
                 renderComponentTooltip(matrixStack, tooltip, ttx, tty);
             }
         }
+    }
+
+    @Override
+    public boolean mouseClicked(double pMouseX, double pMouseY, int pButton) {
+        if (trainGroupResetButton.isInBounds(pMouseX, pMouseY)) {
+            ModClientConfig.TRAIN_GROUP_FILTER_BLACKLIST.set(new ArrayList<>());
+            ModClientConfig.TRAIN_GROUP_FILTER_BLACKLIST.save();
+            ModClientConfig.SPEC.afterReload();
+            return true;
+        } else if (trainGroupExpandButton.isInBounds(pMouseX, pMouseY)) {
+            trainGroupsExpanded = !trainGroupsExpanded;
+            return true;
+        }
+
+        if (trainGroupsExpanded) {
+            Optional<Entry<TrainGroup, MutableGuiAreaDefinition>> area = areaByTrainGroup.entrySet().stream().filter(x -> x.getValue().isInBounds(pMouseX, pMouseY)).findFirst();
+            if (area.isPresent()) {
+                List<String> current = new ArrayList<>(ModClientConfig.TRAIN_GROUP_FILTER_BLACKLIST.get());
+                if (current.contains(area.get().getKey().getGroupName())) {
+                    current.removeIf(x -> x.equals(area.get().getKey().getGroupName()));
+                } else {
+                    current.add(area.get().getKey().getGroupName());                    
+                }
+                ModClientConfig.TRAIN_GROUP_FILTER_BLACKLIST.set(current);
+                ModClientConfig.TRAIN_GROUP_FILTER_BLACKLIST.save();
+                ModClientConfig.SPEC.afterReload();
+                return true;
+            }
+        }
+        return super.mouseClicked(pMouseX, pMouseY, pButton);
     }
 }

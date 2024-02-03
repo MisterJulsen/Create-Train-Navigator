@@ -1,62 +1,57 @@
 package de.mrjulsen.crn.data;
 
+import java.util.List;
+
+import com.simibubi.create.content.trains.entity.Train;
+
 import de.mrjulsen.crn.config.ModClientConfig;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
 
 public class UserSettings {
+    private static final String NBT_TRANSFER_TIME = "TransferTime";
+    private static final String NBT_TRAIN_GROUPS = "TrainGroupBlacklist";
 
-    private static final String NBT_FILTER_CRITERIA = "FilterCriteria";
-    private static final String NBT_RESULT_TYPE = "ResultType";
-    private static final String NBT_RESULT_COUNT = "ResultCount";
-    private static final String NBT_NEXT_TRAIN = "TakeNextTrain";
-
-    private final EFilterCriteria filterCriteria;
-    private final EResultCount resultType;
-    private final int resultCount;
-    private final boolean takeNextDepartingTrain;
+    private final int transferTime;
+    private final List<? extends String> trainGroupBlacklist;
 
     public UserSettings() {
-        this(ModClientConfig.FILTER_CRITERIA.get(), ModClientConfig.RESULT_RANGE.get(), ModClientConfig.RESULT_AMOUNT.get(), ModClientConfig.TAKE_NEXT_DEPARTING_TRAIN.get());
+        this(ModClientConfig.TRANSFER_TIME.get(), ModClientConfig.TRAIN_GROUP_FILTER_BLACKLIST.get());
     }
 
-    private UserSettings(EFilterCriteria filterCriteria, EResultCount resultType, int resultCount, boolean takeNextDepartingTrain) {
-        this.filterCriteria = filterCriteria;
-        this.resultType = resultType;
-        this.resultCount = resultCount;
-        this.takeNextDepartingTrain = takeNextDepartingTrain;
+    private UserSettings(int transferTime, List<? extends String> trainGroupBlacklist) {
+        this.transferTime = transferTime;
+        this.trainGroupBlacklist = trainGroupBlacklist;
     }
 
     public CompoundTag toNbt() {
         CompoundTag nbt = new CompoundTag();
-        nbt.putInt(NBT_FILTER_CRITERIA, getFilterCriteria().getId());
-        nbt.putInt(NBT_RESULT_TYPE, getResultType().getId());
-        nbt.putInt(NBT_RESULT_COUNT, getResultCount());
-        nbt.putBoolean(NBT_NEXT_TRAIN, shouldOnlyTakeNextDepartingTrain());
+        nbt.putInt(NBT_TRANSFER_TIME, getTransferTime());
+        ListTag list = new ListTag();
+        list.addAll(getTrainGroupBlacklist().stream().map(x -> StringTag.valueOf(x)).toList());
+        nbt.put(NBT_TRAIN_GROUPS, list);
         return nbt;
     }
 
     public static UserSettings fromNbt(CompoundTag nbt) {
         return new UserSettings(
-            EFilterCriteria.getCriteriaById(nbt.getInt(NBT_FILTER_CRITERIA)),
-            EResultCount.getCriteriaById(nbt.getInt(NBT_RESULT_TYPE)),
-            nbt.getInt(NBT_RESULT_COUNT),
-            nbt.getBoolean(NBT_NEXT_TRAIN)
+            nbt.getInt(NBT_TRANSFER_TIME),
+            nbt.getList(NBT_TRAIN_GROUPS, Tag.TAG_STRING).stream().map(x ->  ((StringTag)x).getAsString()).toList()
         );
     }
 
-    public EFilterCriteria getFilterCriteria() {
-        return filterCriteria;
+    public int getTransferTime() {
+        return transferTime;
     }
 
-    public EResultCount getResultType() {
-        return resultType;
+    public List<? extends String> getTrainGroupBlacklist() {
+        return trainGroupBlacklist;
     }
 
-    public int getResultCount() {
-        return resultCount;
-    }
-
-    public boolean shouldOnlyTakeNextDepartingTrain() {
-        return takeNextDepartingTrain;
+    public boolean isTrainExcluded(Train train, GlobalSettings settingsInstance) {
+        boolean b = settingsInstance.getTrainGroupsList().stream().filter(x -> getTrainGroupBlacklist().contains(x.getGroupName())).anyMatch(x -> x.contains(train));
+        return b;
     }
 }

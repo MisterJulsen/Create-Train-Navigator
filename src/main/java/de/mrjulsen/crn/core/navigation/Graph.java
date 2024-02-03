@@ -26,6 +26,7 @@ import de.mrjulsen.crn.data.RoutePart;
 import de.mrjulsen.crn.data.SimpleTrainSchedule;
 import de.mrjulsen.crn.data.SimulatedTrainSchedule;
 import de.mrjulsen.crn.data.TrainStationAlias;
+import de.mrjulsen.crn.data.UserSettings;
 import de.mrjulsen.crn.event.listeners.TrainListener;
 import de.mrjulsen.crn.util.TrainUtils;
 
@@ -42,12 +43,14 @@ public class Graph {
     private Map<UUID, UUID> scheduleIdByTrainId;
 
     private final GlobalSettings globalSettings;
+    private final UserSettings settings;
 
     private final long lastUpdated;
 
-    public Graph(long updateTime) {
+    public Graph(long updateTime, UserSettings settings) {
         long startTime = System.currentTimeMillis();
         lastUpdated = updateTime;
+        this.settings = settings;
         GlobalTrainData.makeSnapshot(updateTime);
 
         this.nodesById = new HashMap<>();
@@ -61,8 +64,8 @@ public class Graph {
 
         final int[] trainCounter = new int[] { 0 };
         globalSettings = GlobalSettingsManager.getInstance().getSettingsData();
-
-        TrainUtils.getAllTrains().stream().filter(x -> TrainUtils.isTrainValid(x) && !globalSettings.isTrainBlacklisted(x)).forEach(x -> {
+        
+        TrainUtils.getAllTrains().stream().filter(x -> TrainUtils.isTrainValid(x) && !globalSettings.isTrainBlacklisted(x) && !settings.isTrainExcluded(x, globalSettings)).forEach(x -> {
             addTrain(x, globalSettings);
             trainCounter[0]++;
         });
@@ -75,6 +78,10 @@ public class Graph {
             schedulesById.size(),
             trainCounter.length
         ));
+    }
+
+    public UserSettings getSettings() {
+        return settings;
     }
 
     protected Node addNode(TrainStationAlias alias) {
@@ -230,7 +237,7 @@ public class Graph {
     }
 
     private Map<UUID, SimpleTrainSchedule> generateTrainSchedules() {
-        return GlobalTrainData.getInstance().getAllTrains().stream().filter(x -> TrainUtils.isTrainValid(x) && !globalSettings.isTrainBlacklisted(x)).collect(Collectors.toMap(x -> x.id, x -> new SimpleTrainSchedule(x)));
+        return GlobalTrainData.getInstance().getAllTrains().stream().filter(x -> TrainUtils.isTrainValid(x) && !globalSettings.isTrainBlacklisted(x) && !settings.isTrainExcluded(x, globalSettings)).collect(Collectors.toMap(x -> x.id, x -> new SimpleTrainSchedule(x)));
     }
 
     public Collection<Route> searchTrains(List<Node> routeNodes) {
@@ -243,6 +250,10 @@ public class Graph {
         UUID currentTrainId = null;
         final Node[] filteredTransferNodes = routeNodes.stream().filter(x -> x.isTransferPoint()).toArray(Node[]::new);
 
+        if (filteredTransferNodes.length < 2) {
+            return routes;
+        }
+
         Node lastTransfer = filteredTransferNodes[0];
         Node node = filteredTransferNodes[1];
         
@@ -251,7 +262,7 @@ public class Graph {
 
         Collection<SimulatedTrainSchedule> trainPredictions = GlobalTrainData.getInstance().getDepartingTrainsAt(lastNode.getStationAlias()).stream()
         .filter(x -> {
-            if (globalSettings.isTrainBlacklisted(x.getTrain())) {
+            if (globalSettings.isTrainBlacklisted(x.getTrain()) || settings.isTrainExcluded(x.getTrain(), globalSettings)) {
                 return false;
             }
 
@@ -313,7 +324,7 @@ public class Graph {
 
                 Collection<SimulatedTrainSchedule> trainPredictions = GlobalTrainData.getInstance().getDepartingTrainsAt(lastNode.getStationAlias()).stream()
                 .filter(x -> {
-                    if (globalSettings.isTrainBlacklisted(x.getTrain())) {
+                    if (globalSettings.isTrainBlacklisted(x.getTrain()) || settings.isTrainExcluded(x.getTrain(), globalSettings)) {
                         return false;
                     }
                     

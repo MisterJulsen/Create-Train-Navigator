@@ -31,7 +31,6 @@ public class TrainSchedule {
 
     private void makeSchedule(Train train, GlobalSettings settingsInstance) {
         this.stops = new ArrayList<>(GlobalTrainData.getInstance().getAllStopsSorted(train).stream().filter(x -> !settingsInstance.isBlacklisted(x.getStationAlias())).toList());
-        System.out.println("Stop size: " + train.name.getString() + " " + stops.size());
     }
 
     public boolean addToGraph(Graph graph, Train train) {

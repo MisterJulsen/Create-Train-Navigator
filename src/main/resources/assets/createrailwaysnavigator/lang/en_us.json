@@ -81,10 +81,8 @@
     "gui.createrailwaysnavigator.search_settings.title": "Search Settings",
     "gui.createrailwaysnavigator.search_settings.transfer_time": "Minimum Transfer Time",
     "gui.createrailwaysnavigator.search_settings.transfer_time.description": "The minimum time that should be available to change train. (1h ~ 50 Real Life Seconds)",
-    "gui.createrailwaysnavigator.search_settings.result_count": "Search Result Range",
-    "gui.createrailwaysnavigator.search_settings.result_count.description": "The set of results that will be displayed. Can be a fixed number or automatic.",    
-    "gui.createrailwaysnavigator.search_settings.next_train": "Take next departing train",
-    "gui.createrailwaysnavigator.search_settings.next_train.description": "Take the next train at the starting station. The route may be inefficient.",
+    "gui.createrailwaysnavigator.search_settings.train_groups": "Train Group Filter",
+    "gui.createrailwaysnavigator.search_settings.train_groups.description": "Decide which trains from which train groups you want to use.",
 
     "gui.createrailwaysnavigator.new_text_entry.add.tooltip": "Add",
 

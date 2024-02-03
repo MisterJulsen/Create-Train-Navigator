@@ -8,10 +8,10 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 
 import de.mrjulsen.crn.ModMain;
-import de.mrjulsen.crn.client.gui.GuiAreaDefinition;
 import de.mrjulsen.crn.client.gui.IForegroundRendering;
 import de.mrjulsen.crn.client.gui.ITickableWidget;
 import de.mrjulsen.crn.util.GuiUtils;
+import de.mrjulsen.mcdragonlib.client.gui.GuiAreaDefinition;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;

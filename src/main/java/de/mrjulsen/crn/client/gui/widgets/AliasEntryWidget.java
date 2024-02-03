@@ -11,7 +11,7 @@ import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.client.gui.ControlCollection;
-import de.mrjulsen.crn.client.gui.GuiAreaDefinition;
+import de.mrjulsen.mcdragonlib.client.gui.GuiAreaDefinition;
 import de.mrjulsen.crn.client.gui.IForegroundRendering;
 import de.mrjulsen.crn.client.gui.ITickableWidget;
 import de.mrjulsen.crn.client.gui.screen.AliasSettingsScreen;

@@ -2,6 +2,7 @@ package de.mrjulsen.crn.data;
 
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -107,6 +108,11 @@ public class TrainGroup {
 
     public String getLastEditedTimeFormatted() {
         return Constants.DATE_FORMAT.format(getLastEditedTime());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, trainNames);
     }
 
     public CompoundTag toNbt() {
