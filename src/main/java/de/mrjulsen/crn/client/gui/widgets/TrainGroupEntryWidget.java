@@ -18,8 +18,7 @@ import de.mrjulsen.crn.client.gui.screen.TrainGroupScreen;
 import de.mrjulsen.crn.data.ClientTrainStationSnapshot;
 import de.mrjulsen.crn.data.GlobalSettingsManager;
 import de.mrjulsen.crn.data.TrainGroup;
-import de.mrjulsen.crn.data.TrainStationAlias.StationInfo;
-import de.mrjulsen.crn.util.GuiUtils;
+import de.mrjulsen.crn.util.ModGuiUtils;
 import de.mrjulsen.mcdragonlib.client.gui.GuiAreaDefinition;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -300,12 +299,12 @@ public class TrainGroupEntryWidget extends Button implements ITickableWidget, IF
 			matrixStack.popPose();
 		}
         
-        GuiUtils.renderTooltip(parent, deleteButton, List.of(tooltipDeleteAlias.getVisualOrderText()), matrixStack, mouseX, mouseY, 0, parent.getScrollOffset(partialTicks));
-        GuiUtils.renderTooltip(parent, expandButton, List.of(expanded ? Constants.TOOLTIP_COLLAPSE.getVisualOrderText() : Constants.TOOLTIP_EXPAND.getVisualOrderText()), matrixStack, mouseX, mouseY, 0, parent.getScrollOffset(partialTicks));
+        ModGuiUtils.renderTooltip(parent, deleteButton, List.of(tooltipDeleteAlias.getVisualOrderText()), matrixStack, mouseX, mouseY, 0, parent.getScrollOffset(partialTicks));
+        ModGuiUtils.renderTooltip(parent, expandButton, List.of(expanded ? Constants.TOOLTIP_COLLAPSE.getVisualOrderText() : Constants.TOOLTIP_EXPAND.getVisualOrderText()), matrixStack, mouseX, mouseY, 0, parent.getScrollOffset(partialTicks));
         if (expanded) {
-            GuiUtils.renderTooltip(parent, addButton, List.of(tooltipAddStation.getVisualOrderText()), matrixStack, mouseX, mouseY, 0, parent.getScrollOffset(partialTicks));        
+            ModGuiUtils.renderTooltip(parent, addButton, List.of(tooltipAddStation.getVisualOrderText()), matrixStack, mouseX, mouseY, 0, parent.getScrollOffset(partialTicks));        
             for (Entry<String, GuiAreaDefinition> entry : removeStationButtons.entrySet()) {
-                if (GuiUtils.renderTooltip(parent, entry.getValue(), List.of(tooltipDeleteStation.getVisualOrderText()), matrixStack, mouseX, mouseY, 0, parent.getScrollOffset(partialTicks))) {
+                if (ModGuiUtils.renderTooltip(parent, entry.getValue(), List.of(tooltipDeleteStation.getVisualOrderText()), matrixStack, mouseX, mouseY, 0, parent.getScrollOffset(partialTicks))) {
                     break;
                 }
             }

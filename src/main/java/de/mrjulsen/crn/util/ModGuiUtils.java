@@ -18,9 +18,11 @@ import de.mrjulsen.mcdragonlib.client.gui.GuiAreaDefinition;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.FormattedCharSequence;
 
-public class GuiUtils {
+public class ModGuiUtils {
 	
 	/**
 	 * @see https://github.com/Creators-of-Create/Create/blob/mc1.18/dev/src/main/java/com/simibubi/create/foundation/gui/UIRenderHelper.java
@@ -102,5 +104,9 @@ public class GuiUtils {
 			return true;
         }
 		return false;
+    }
+
+	public static void playButtonSound() {
+        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
     }
 }

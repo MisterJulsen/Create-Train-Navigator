@@ -10,7 +10,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.client.gui.IForegroundRendering;
 import de.mrjulsen.crn.client.gui.ITickableWidget;
-import de.mrjulsen.crn.util.GuiUtils;
+import de.mrjulsen.crn.util.ModGuiUtils;
 import de.mrjulsen.mcdragonlib.client.gui.GuiAreaDefinition;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
@@ -88,7 +88,7 @@ public class NewTextEntryWidget extends Button implements ITickableWidget, IFore
     
     @Override
     public void renderForeground(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {		
-        GuiUtils.renderTooltip(parent, addButton, List.of(tooltipAdd.getVisualOrderText()), matrixStack, mouseX, mouseY, 0, this.getScrollOffset.get()); 
+        ModGuiUtils.renderTooltip(parent, addButton, List.of(tooltipAdd.getVisualOrderText()), matrixStack, mouseX, mouseY, 0, this.getScrollOffset.get()); 
     }
     
     @Override

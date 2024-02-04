@@ -9,7 +9,7 @@ import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.client.gui.IForegroundRendering;
-import de.mrjulsen.crn.util.GuiUtils;
+import de.mrjulsen.crn.util.ModGuiUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.Button;
@@ -62,7 +62,7 @@ public class SettingsOptionWidget extends Button implements IForegroundRendering
 
     @Override
     public void renderForeground(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTicks) {
-        GuiUtils.renderTooltip(parent, this, List.of(tooltipOptionText.getVisualOrderText()), pPoseStack, pMouseX, pMouseY, 0, (int)pPartialTicks);
+        ModGuiUtils.renderTooltip(parent, this, List.of(tooltipOptionText.getVisualOrderText()), pPoseStack, pMouseX, pMouseY, 0, (int)pPartialTicks);
     }
     
 }
