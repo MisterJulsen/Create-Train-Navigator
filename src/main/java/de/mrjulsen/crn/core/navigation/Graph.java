@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
 import com.simibubi.create.content.trains.entity.Train;
 
 import de.mrjulsen.crn.ModMain;
-import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.GlobalSettings;
 import de.mrjulsen.crn.data.GlobalSettingsManager;
 import de.mrjulsen.crn.data.GlobalTrainData;
@@ -300,7 +299,7 @@ public class Graph {
             Route r = new Route(lastUpdated);
             RoutePart part = new RoutePart(sched.getSimulationData().train(), lastNode.getStationAlias(), node.getStationAlias(), simulationTime);
             r.addPart(part);
-            timer = part.getEndStation().getPrediction().getTicks() + ModClientConfig.TRANSFER_TIME.get(); /* TODO Client is not allowed on servers! */
+            timer = part.getEndStation().getPrediction().getTicks() + settings.getTransferTime();
             excludedSchedules.add(schedulesByTrain.get(part.getTrain().id));
 
             Collection<RoutePart> parts = searchTrainsInternal(schedulesByTrain, new HashSet<>(excludedSchedules), filteredTransferNodes, 2, timer, node, currentTrainId);
@@ -348,7 +347,7 @@ public class Graph {
 
                 RoutePart part = new RoutePart(selectedPrediction.getSimulationData().train(), lastNode.getStationAlias(), node.getStationAlias(), simulationTime);
                 routes.add(part);
-                timer = part.getEndStation().getPrediction().getTicks() + ModClientConfig.TRANSFER_TIME.get(); /* TODO Client is not allowed on servers! */
+                timer = part.getEndStation().getPrediction().getTicks() + settings.getTransferTime();
                 excludedSchedules.add(schedulesByTrain.get(part.getTrain().id));
             }
 
