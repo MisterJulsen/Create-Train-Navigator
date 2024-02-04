@@ -48,5 +48,9 @@ public class MutableGuiAreaDefinition extends GuiAreaDefinition {
     public boolean isInBounds(double mouseX, double mouseY) {
         return mouseX >= getLeft() && mouseX < getRight() && mouseY >= getTop() && mouseY < getBottom();
     }
+
+    public GuiAreaDefinition toGuiAreaDefinition() {
+        return new GuiAreaDefinition(getX(), getY(), getWidth(), getHeight());
+    }
 }
 

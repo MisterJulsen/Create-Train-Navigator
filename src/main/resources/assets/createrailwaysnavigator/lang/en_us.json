@@ -81,8 +81,12 @@
     "gui.createrailwaysnavigator.search_settings.title": "Search Settings",
     "gui.createrailwaysnavigator.search_settings.transfer_time": "Minimum Transfer Time",
     "gui.createrailwaysnavigator.search_settings.transfer_time.description": "The minimum time that should be available to change train. (1h ~ 50 Real Life Seconds)",
-    "gui.createrailwaysnavigator.search_settings.train_groups": "Train Group Filter",
-    "gui.createrailwaysnavigator.search_settings.train_groups.description": "Decide which trains from which train groups you want to use.",
+    "gui.createrailwaysnavigator.search_settings.train_groups": "Train Category Filter",
+    "gui.createrailwaysnavigator.search_settings.train_groups.description": "Decide which trains from which train categories you want to use.",
+    "gui.createrailwaysnavigator.search_settings.train_groups.overview": "%s categories selected",
+    "gui.createrailwaysnavigator.search_settings.train_groups.overview.all": "All",
+    "gui.createrailwaysnavigator.search_settings.train_groups.overview.none": "No",
+    "gui.createrailwaysnavigator.search_settings.train_groups.tooltip.reset": "Reset filter",
 
     "gui.createrailwaysnavigator.new_text_entry.add.tooltip": "Add",
 
