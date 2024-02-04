@@ -15,9 +15,9 @@ import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.client.gui.ControlCollection;
 import de.mrjulsen.crn.client.gui.IForegroundRendering;
 import de.mrjulsen.crn.client.gui.widgets.SettingsOptionWidget;
-import de.mrjulsen.crn.data.GlobalSettingsManager;
-import de.mrjulsen.crn.util.GuiUtils;
-import de.mrjulsen.crn.util.Utils;
+import de.mrjulsen.crn.util.ModGuiUtils;
+import de.mrjulsen.mcdragonlib.utils.TimeUtils;
+import de.mrjulsen.mcdragonlib.utils.TimeUtils.TimeFormat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.Screen;
@@ -44,7 +44,7 @@ public class GlobalSettingsScreen extends Screen implements IForegroundRendering
     private final int AREA_W = 220;
     private final int AREA_H = 194;
 
-    private int guiLeft, guiTop;    
+    private int guiLeft, guiTop;
 	private LerpedFloat scroll = LerpedFloat.linear().startWithValue(0);
 
     // Data
@@ -130,24 +130,33 @@ public class GlobalSettingsScreen extends Screen implements IForegroundRendering
 
         float scrollOffset = -scroll.getValue(pPartialTick);
         UIRenderHelper.swapAndBlitColor(minecraft.getMainRenderTarget(), UIRenderHelper.framebuffer);
-        GuiUtils.startStencil(pPoseStack, guiLeft + AREA_X, guiTop + AREA_Y, AREA_W, AREA_H);
+        ModGuiUtils.startStencil(pPoseStack, guiLeft + AREA_X, guiTop + AREA_Y, AREA_W, AREA_H);
         pPoseStack.pushPose();
         pPoseStack.translate(0, scrollOffset, 0);
         
         optionsCollection.performForEach(x -> x.render(pPoseStack, pMouseX, (int)(pMouseY - scrollOffset), pPartialTick));
 
         pPoseStack.popPose();
-        GuiUtils.endStencil();        
+        ModGuiUtils.endStencil();        
         net.minecraftforge.client.gui.GuiUtils.drawGradientRect(pPoseStack.last().pose(), 200, guiLeft + AREA_X, guiTop + AREA_Y, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y + 10, 0x77000000, 0x00000000);
         net.minecraftforge.client.gui.GuiUtils.drawGradientRect(pPoseStack.last().pose(), 200, guiLeft + AREA_X, guiTop + AREA_Y + AREA_H - 10, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y + AREA_H, 0x00000000, 0x77000000);
         UIRenderHelper.swapAndBlitColor(UIRenderHelper.framebuffer, minecraft.getMainRenderTarget());
 
 
         drawString(pPoseStack, shadowlessFont, title, guiLeft + 19, guiTop + 4, 0x4F4F4F);
-        String timeString = Utils.parseTime((int)(level.getDayTime() % Constants.TICKS_PER_DAY));
+        String timeString = TimeUtils.parseTime((int)(level.getDayTime() % Constants.TICKS_PER_DAY), TimeFormat.HOURS_24);
         drawString(pPoseStack, shadowlessFont, timeString, guiLeft + GUI_WIDTH - 22 - shadowlessFont.width(timeString), guiTop + 4, 0x4F4F4F);
 
         super.render(pPoseStack, pMouseX, pMouseY, pPartialTick);
+
+        double maxHeight = getMaxScrollHeight();
+        double aH = AREA_H + 1;
+        if (aH / maxHeight < 1) {
+            int scrollerHeight = Math.max(10, (int)(aH * (aH / maxHeight)));
+            int startY = guiTop + AREA_Y + (int)((AREA_H) * (Math.abs(scrollOffset) / maxHeight));
+
+            fill(pPoseStack, guiLeft + AREA_X + AREA_W - 3, startY, guiLeft + AREA_X + AREA_W, startY + scrollerHeight, 0x7FFFFFFF);
+        }
         
         renderForeground(pPoseStack, pMouseX, pMouseY, pPartialTick);
     }
@@ -155,7 +164,7 @@ public class GlobalSettingsScreen extends Screen implements IForegroundRendering
     @Override
     public void renderForeground(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTicks) {
 		float scrollOffset = -scroll.getValue(pPartialTicks);
-        GuiUtils.renderTooltip(this, backButton, List.of(Constants.TOOLTIP_GO_BACK.getVisualOrderText()), pPoseStack, pMouseX, pMouseY, 0, 0);
+        ModGuiUtils.renderTooltip(this, backButton, List.of(Constants.TOOLTIP_GO_BACK.getVisualOrderText()), pPoseStack, pMouseX, pMouseY, 0, 0);
         optionsCollection.performForEachOfType(IForegroundRendering.class, x -> x.renderForeground(pPoseStack, pMouseX, pMouseY, -scrollOffset));
     }
 

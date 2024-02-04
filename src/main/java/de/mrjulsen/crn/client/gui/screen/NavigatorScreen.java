@@ -26,8 +26,9 @@ import de.mrjulsen.crn.network.InstanceManager;
 import de.mrjulsen.crn.network.NetworkManager;
 import de.mrjulsen.crn.network.packets.cts.NavigationRequestPacket;
 import de.mrjulsen.crn.network.packets.cts.NearestStationRequestPacket;
-import de.mrjulsen.crn.util.GuiUtils;
-import de.mrjulsen.crn.util.Utils;
+import de.mrjulsen.crn.util.ModGuiUtils;
+import de.mrjulsen.mcdragonlib.utils.TimeUtils;
+import de.mrjulsen.mcdragonlib.utils.TimeUtils.TimeFormat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -296,7 +297,7 @@ public class NavigatorScreen extends Screen implements IForegroundRendering {
             widget.render(pPoseStack, pMouseX, pMouseY, pPartialTick);
 
         drawString(pPoseStack, shadowlessFont, title, guiLeft + 19, guiTop + 4, 0x4F4F4F);
-        String timeString = Utils.parseTime((int)(level.getDayTime() % Constants.TICKS_PER_DAY));
+        String timeString = TimeUtils.parseTime((int)(level.getDayTime() % Constants.TICKS_PER_DAY), TimeFormat.HOURS_24);
         drawString(pPoseStack, shadowlessFont, timeString, guiLeft + GUI_WIDTH - 22 - shadowlessFont.width(timeString), guiTop + 4, 0x4F4F4F);
 
         if (!isLoadingRoutes && !generatingRouteEntries) {
@@ -305,7 +306,7 @@ public class NavigatorScreen extends Screen implements IForegroundRendering {
                 AllIcons.I_ACTIVE.render(pPoseStack, (int)(guiLeft + GUI_WIDTH / 2 - 8), (int)(guiTop + GUI_HEIGHT / 2));
             } else {
                 UIRenderHelper.swapAndBlitColor(minecraft.getMainRenderTarget(), UIRenderHelper.framebuffer);
-                GuiUtils.startStencil(pPoseStack, guiLeft + AREA_X, guiTop + AREA_Y, AREA_W, AREA_H);
+                ModGuiUtils.startStencil(pPoseStack, guiLeft + AREA_X, guiTop + AREA_Y, AREA_W, AREA_H);
                 pPoseStack.pushPose();
                 pPoseStack.translate(0, scrollOffset, 0);
 
@@ -316,7 +317,7 @@ public class NavigatorScreen extends Screen implements IForegroundRendering {
                 }
 
                 pPoseStack.popPose();
-                GuiUtils.endStencil();
+                ModGuiUtils.endStencil();
                 
                 net.minecraftforge.client.gui.GuiUtils.drawGradientRect(pPoseStack.last().pose(), 200, guiLeft + AREA_X, guiTop + AREA_Y, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y + 10,
                 0x77000000, 0x00000000);
@@ -359,14 +360,14 @@ public class NavigatorScreen extends Screen implements IForegroundRendering {
 			matrixStack.popPose();
 		}
         
-        GuiUtils.renderTooltip(this, searchButton, List.of(tooltipSearch.getVisualOrderText()), matrixStack, mouseX, mouseY, 0, 0);
-        GuiUtils.renderTooltip(this, locationButton, List.of(tooltipLocation.getVisualOrderText()), matrixStack, mouseX, mouseY, 0, 0);
-        GuiUtils.renderTooltip(this, switchButtonsArea, List.of(tooltipSwitch.getVisualOrderText()), matrixStack, mouseX, mouseY, 0, 0);
-        GuiUtils.renderTooltip(this, goToTopButton, List.of(Constants.TOOLTIP_GO_TO_TOP.getVisualOrderText()), matrixStack, mouseX, mouseY, 0, 0);
-        GuiUtils.renderTooltip(this, searchSettingsButton, List.of(tooltipSearchSettings.getVisualOrderText()), matrixStack, mouseX, mouseY, 0, 0);
+        ModGuiUtils.renderTooltip(this, searchButton, List.of(tooltipSearch.getVisualOrderText()), matrixStack, mouseX, mouseY, 0, 0);
+        ModGuiUtils.renderTooltip(this, locationButton, List.of(tooltipLocation.getVisualOrderText()), matrixStack, mouseX, mouseY, 0, 0);
+        ModGuiUtils.renderTooltip(this, switchButtonsArea, List.of(tooltipSwitch.getVisualOrderText()), matrixStack, mouseX, mouseY, 0, 0);
+        ModGuiUtils.renderTooltip(this, goToTopButton, List.of(Constants.TOOLTIP_GO_TO_TOP.getVisualOrderText()), matrixStack, mouseX, mouseY, 0, 0);
+        ModGuiUtils.renderTooltip(this, searchSettingsButton, List.of(tooltipSearchSettings.getVisualOrderText()), matrixStack, mouseX, mouseY, 0, 0);
 
         if (globalSettingsButton != null) {
-            GuiUtils.renderTooltip(this, globalSettingsButton, List.of(tooltipGlobalSettings.getVisualOrderText()), matrixStack, mouseX, mouseY, 0, 0);
+            ModGuiUtils.renderTooltip(this, globalSettingsButton, List.of(tooltipGlobalSettings.getVisualOrderText()), matrixStack, mouseX, mouseY, 0, 0);
         }
     }
 

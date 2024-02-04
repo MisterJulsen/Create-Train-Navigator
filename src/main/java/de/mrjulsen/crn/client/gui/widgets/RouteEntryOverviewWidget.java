@@ -10,7 +10,8 @@ import de.mrjulsen.crn.client.gui.screen.NavigatorScreen;
 import de.mrjulsen.crn.client.gui.screen.RouteDetailsScreen;
 import de.mrjulsen.crn.data.SimpleRoute;
 import de.mrjulsen.crn.data.SimpleRoute.SimpleRoutePart;
-import de.mrjulsen.crn.util.Utils;
+import de.mrjulsen.mcdragonlib.utils.TimeUtils;
+import de.mrjulsen.mcdragonlib.utils.TimeUtils.TimeFormat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.Button;
@@ -62,11 +63,11 @@ public class RouteEntryOverviewWidget extends Button {
         Font shadowlessFont = new NoShadowFontWrapper(minecraft.font);
 
         drawString(pPoseStack, minecraft.font, String.format("%s - %s | %s %s | %s",
-            Utils.parseTime(lastRefreshedTime + route.getStartStation().getTicks()),
-            Utils.parseTime(lastRefreshedTime + route.getEndStation().getTicks()),
+            TimeUtils.parseTime(lastRefreshedTime + route.getStartStation().getTicks(), TimeFormat.HOURS_24),
+            TimeUtils.parseTime(lastRefreshedTime + route.getEndStation().getTicks(), TimeFormat.HOURS_24),
             route.getTransferCount(),
             transferText,
-            Utils.parseDurationShort(route.getTotalDuration())
+            TimeUtils.parseDurationShort(route.getTotalDuration())
         ), x + 6, y + 5, 0xFFFFFF);
 
         int routePartWidth = DISPLAY_WIDTH / parts.length;

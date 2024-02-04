@@ -25,8 +25,9 @@ import de.mrjulsen.crn.network.NetworkManager;
 import de.mrjulsen.crn.network.packets.cts.NextConnectionsRequestPacket;
 import de.mrjulsen.crn.network.packets.cts.RealtimeRequestPacket;
 import de.mrjulsen.crn.network.packets.cts.TrainDataRequestPacket;
-import de.mrjulsen.crn.util.GuiUtils;
-import de.mrjulsen.crn.util.Utils;
+import de.mrjulsen.crn.util.ModGuiUtils;
+import de.mrjulsen.mcdragonlib.utils.TimeUtils;
+import de.mrjulsen.mcdragonlib.utils.TimeUtils.TimeFormat;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
@@ -119,12 +120,12 @@ public class RouteDetailsOverlayScreen implements HudOverlay {
             new TranslatableComponent(keyJourneyBegins,
                 route.getParts().stream().findFirst().get().getTrainName(),
                 route.getParts().stream().findFirst().get().getScheduleTitle(),
-                Utils.parseTime((int)(route.getStartStation().getTicks() % Constants.TICKS_PER_DAY)),
+                TimeUtils.parseTime((int)(route.getStartStation().getTicks() % Constants.TICKS_PER_DAY), TimeFormat.HOURS_24),
                 3
             ),
             new TranslatableComponent(keyNextStop,
                 route.getStartStation().getStationName(),
-                Utils.parseTime((int)(route.getStartStation().getTicks() % Constants.TICKS_PER_DAY))
+                TimeUtils.parseTime((int)(route.getStartStation().getTicks() % Constants.TICKS_PER_DAY), TimeFormat.HOURS_24)
             )
         ));
         //setSlidingText(new TextComponent("Information zu RE1 nach Reudnitz Hbf über Neu-Donauwörth, Abfahrt 01:35 Uhr, heute circa 20 Minuten später. Grund dafür ist ein Drache auf der Strecke."));
@@ -144,7 +145,7 @@ public class RouteDetailsOverlayScreen implements HudOverlay {
         setSlidingText(new TranslatableComponent(keyJourneyBegins,
             currentStation().train().trainName(),
             currentStation().train().scheduleTitle(),
-            Utils.parseTime(currentStation().station().getEstimatedTimeWithTreshold()),
+            TimeUtils.parseTime((int)currentStation().station().getEstimatedTimeWithTreshold(), TimeFormat.HOURS_24),
             3 // TODO: platform
         ));
     }
@@ -219,7 +220,7 @@ public class RouteDetailsOverlayScreen implements HudOverlay {
     private void announceNextStop() {
         setSlidingText(new TranslatableComponent(keyNextStop,
             currentStation().station().getStationName(),
-            Utils.parseTime( currentStation().station().getEstimatedTimeWithTreshold())
+            TimeUtils.parseTime((int)currentStation().station().getEstimatedTimeWithTreshold(), TimeFormat.HOURS_24)
         ));
         currentState = State.BEFORE_NEXT_STOP;
 
@@ -369,7 +370,7 @@ public class RouteDetailsOverlayScreen implements HudOverlay {
         
         GuiComponent.drawString(poseStack, shadowlessFont, title, x + 6, y + 4, 0x4F4F4F);
         
-        String timeString = Utils.parseTime((int)(level.getDayTime() % Constants.TICKS_PER_DAY));
+        String timeString = TimeUtils.parseTime((int)(level.getDayTime() % Constants.TICKS_PER_DAY), TimeFormat.HOURS_24);
         GuiComponent.drawString(poseStack, shadowlessFont, timeString, x + GUI_WIDTH - 4 - shadowlessFont.width(timeString), y + 4, 0x4F4F4F);
         
         // Test
@@ -409,11 +410,11 @@ public class RouteDetailsOverlayScreen implements HudOverlay {
 
     private void startStencil(PoseStack poseStack, int x, int y, int w, int h) {
         UIRenderHelper.swapAndBlitColor(Minecraft.getInstance().getMainRenderTarget(), UIRenderHelper.framebuffer);
-        GuiUtils.startStencil(poseStack, x, y, w, h);
+        ModGuiUtils.startStencil(poseStack, x, y, w, h);
     }
 
     private void endStencil() {
-        GuiUtils.endStencil();
+        ModGuiUtils.endStencil();
         UIRenderHelper.swapAndBlitColor(UIRenderHelper.framebuffer, Minecraft.getInstance().getMainRenderTarget());
     }
 
@@ -479,8 +480,8 @@ public class RouteDetailsOverlayScreen implements HudOverlay {
         long timeDiff = station.station().getCurrentRefreshTime() + station.station().getCurrentTicks() - station.station().getRefreshTime() - station.station().getTicks();
 
         // text
-        GuiComponent.drawString(poseStack, shadowlessFont, new TextComponent(Utils.parseTime((int)(station.station().getRefreshTime() + station.station().getTicks()))), x + 10, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, index <= 0 ? 0xFFFFFF | fontAlpha : 0xDBDBDB | fontAlpha);
-        GuiComponent.drawString(poseStack, shadowlessFont, new TextComponent(Utils.parseTime((int)(station.station().getEstimatedTimeWithTreshold()))), x + 40, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, timeDiff < DELAY_TRESHOLD ? ON_TIME | fontAlpha : DELAYED | fontAlpha);
+        GuiComponent.drawString(poseStack, shadowlessFont, new TextComponent(TimeUtils.parseTime((int)(station.station().getRefreshTime() + station.station().getTicks()), TimeFormat.HOURS_24)), x + 10, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, index <= 0 ? 0xFFFFFF | fontAlpha : 0xDBDBDB | fontAlpha);
+        GuiComponent.drawString(poseStack, shadowlessFont, new TextComponent(TimeUtils.parseTime((int)(station.station().getEstimatedTimeWithTreshold()), TimeFormat.HOURS_24)), x + 40, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, timeDiff < DELAY_TRESHOLD ? ON_TIME | fontAlpha : DELAYED | fontAlpha);
         //GuiComponent.drawString(poseStack, shadowlessFont, new TextComponent(String.valueOf((int)(station.station().getRefreshTime() + station.station().getTicks()))), x + 10, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, index <= 0 ? 0xFFFFFF | fontAlpha : 0xDBDBDB | fontAlpha);
         //GuiComponent.drawString(poseStack, shadowlessFont, new TextComponent(String.valueOf((int)(station.station().getEstimatedTimeWithTreshold()))), x + 40, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, timeDiff < DELAY_TRESHOLD ? ON_TIME | fontAlpha : DELAYED | fontAlpha);
         
@@ -495,7 +496,7 @@ public class RouteDetailsOverlayScreen implements HudOverlay {
             }
             RenderSystem.setShaderTexture(0, GUI);
             GuiComponent.blit(poseStack, x + 75, y, 226, transferY, 7, ROUTE_LINE_HEIGHT, 256, 256);
-            GuiComponent.drawString(poseStack, shadowlessFont, new TextComponent(Utils.parseDurationShort(transferTime)).withStyle(ChatFormatting.ITALIC), x + 10, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, 0xDBDBDB | fontAlpha);
+            GuiComponent.drawString(poseStack, shadowlessFont, new TextComponent(TimeUtils.parseDurationShort(transferTime)).withStyle(ChatFormatting.ITALIC), x + 10, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, 0xDBDBDB | fontAlpha);
             GuiComponent.drawString(poseStack, shadowlessFont, new TextComponent("Umstieg").withStyle(ChatFormatting.ITALIC), x + 90, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, 0xDBDBDB | fontAlpha);
                     
             return ROUTE_LINE_HEIGHT * 2;
@@ -510,7 +511,7 @@ public class RouteDetailsOverlayScreen implements HudOverlay {
 
         SimpleTrainConnection[] conns = connections.toArray(SimpleTrainConnection[]::new);
         for (int i = connectionsSubPageIndex * CONNECTION_ENTRIES_PER_PAGE, k = 0; i < Math.min((connectionsSubPageIndex + 1) * CONNECTION_ENTRIES_PER_PAGE, connections.size()); i++, k++) {
-            GuiComponent.drawString(poseStack, shadowlessFont, new TextComponent(Utils.parseTime((int)(conns[i].ticks() % Constants.TICKS_PER_DAY))), x + 10, y + 15 + 12 * k, 0xDBDBDB | fontAlpha);
+            GuiComponent.drawString(poseStack, shadowlessFont, new TextComponent(TimeUtils.parseTime((int)(conns[i].ticks() % Constants.TICKS_PER_DAY), TimeFormat.HOURS_24)), x + 10, y + 15 + 12 * k, 0xDBDBDB | fontAlpha);
             GuiComponent.drawString(poseStack, shadowlessFont, new TextComponent(conns[i].trainName()), x + 40, y + 15 + 12 * k, 0xDBDBDB | fontAlpha);
             GuiComponent.drawString(poseStack, shadowlessFont, new TextComponent(conns[i].scheduleTitle()), x + 90, y + 15 + 12 * k, 0xDBDBDB | fontAlpha);
         }

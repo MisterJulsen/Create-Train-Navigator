@@ -22,8 +22,9 @@ import de.mrjulsen.crn.client.gui.widgets.NewTextEntryWidget;
 import de.mrjulsen.crn.data.AliasName;
 import de.mrjulsen.crn.data.GlobalSettingsManager;
 import de.mrjulsen.crn.data.TrainStationAlias;
-import de.mrjulsen.crn.util.GuiUtils;
-import de.mrjulsen.crn.util.Utils;
+import de.mrjulsen.crn.util.ModGuiUtils;
+import de.mrjulsen.mcdragonlib.utils.TimeUtils;
+import de.mrjulsen.mcdragonlib.utils.TimeUtils.TimeFormat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -167,12 +168,12 @@ public class AliasSettingsScreen extends Screen implements IForegroundRendering 
         blit(pPoseStack, guiLeft, guiTop, 0, 0, GUI_WIDTH, GUI_HEIGHT);
 
         drawString(pPoseStack, shadowlessFont, title, guiLeft + 19, guiTop + 4, 0x4F4F4F);
-        String timeString = Utils.parseTime((int)(level.getDayTime() % Constants.TICKS_PER_DAY));
+        String timeString = TimeUtils.parseTime((int)(level.getDayTime() % Constants.TICKS_PER_DAY), TimeFormat.HOURS_24);
         drawString(pPoseStack, shadowlessFont, timeString, guiLeft + GUI_WIDTH - 22 - shadowlessFont.width(timeString), guiTop + 4, 0x4F4F4F);
         
         
         UIRenderHelper.swapAndBlitColor(minecraft.getMainRenderTarget(), UIRenderHelper.framebuffer);
-        GuiUtils.startStencil(pPoseStack, guiLeft + AREA_X, guiTop + AREA_Y, AREA_W, AREA_H);
+        ModGuiUtils.startStencil(pPoseStack, guiLeft + AREA_X, guiTop + AREA_Y, AREA_W, AREA_H);
         pPoseStack.pushPose();
         pPoseStack.translate(0, scrollOffset, 0);
 
@@ -204,7 +205,7 @@ public class AliasSettingsScreen extends Screen implements IForegroundRendering 
         renderingEntries = false;
 
         pPoseStack.popPose();
-        GuiUtils.endStencil();        
+        ModGuiUtils.endStencil();        
         net.minecraftforge.client.gui.GuiUtils.drawGradientRect(pPoseStack.last().pose(), 200, guiLeft + AREA_X, guiTop + AREA_Y, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y + 10, 0x77000000, 0x00000000);
         net.minecraftforge.client.gui.GuiUtils.drawGradientRect(pPoseStack.last().pose(), 200, guiLeft + AREA_X, guiTop + AREA_Y + AREA_H - 10, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y + AREA_H, 0x00000000, 0x77000000);
         UIRenderHelper.swapAndBlitColor(UIRenderHelper.framebuffer, minecraft.getMainRenderTarget());
@@ -228,8 +229,8 @@ public class AliasSettingsScreen extends Screen implements IForegroundRendering 
     @Override
     public void renderForeground(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTicks) {  
         // Tooltips
-        GuiUtils.renderTooltip(this, addButton, List.of(tooltipAdd.getVisualOrderText()), pPoseStack, pMouseX, pMouseY, 0, 0);
-        GuiUtils.renderTooltip(this, backButton, List.of(Constants.TOOLTIP_GO_BACK.getVisualOrderText()), pPoseStack, pMouseX, pMouseY, 0, 0);
+        ModGuiUtils.renderTooltip(this, addButton, List.of(tooltipAdd.getVisualOrderText()), pPoseStack, pMouseX, pMouseY, 0, 0);
+        ModGuiUtils.renderTooltip(this, backButton, List.of(Constants.TOOLTIP_GO_BACK.getVisualOrderText()), pPoseStack, pMouseX, pMouseY, 0, 0);
 
         entriesCollection.performForEachOfType(IForegroundRendering.class, x -> {
             if (pMouseX > guiLeft + AREA_X && pMouseX < guiLeft + AREA_X + AREA_W && pMouseY > guiTop + AREA_Y && pMouseY < guiTop + AREA_Y + AREA_H) {

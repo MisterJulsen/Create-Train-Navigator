@@ -21,8 +21,9 @@ import de.mrjulsen.crn.client.gui.widgets.ModEditBox;
 import de.mrjulsen.crn.client.gui.widgets.ModStationSuggestions;
 import de.mrjulsen.crn.data.ClientTrainStationSnapshot;
 import de.mrjulsen.crn.data.GlobalSettingsManager;
-import de.mrjulsen.crn.util.GuiUtils;
-import de.mrjulsen.crn.util.Utils;
+import de.mrjulsen.crn.util.ModGuiUtils;
+import de.mrjulsen.mcdragonlib.utils.TimeUtils;
+import de.mrjulsen.mcdragonlib.utils.TimeUtils.TimeFormat;
 import de.mrjulsen.mcdragonlib.client.gui.GuiAreaDefinition;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -176,7 +177,7 @@ public class StationBlacklistScreen extends Screen implements IForegroundRenderi
         }
         
         UIRenderHelper.swapAndBlitColor(minecraft.getMainRenderTarget(), UIRenderHelper.framebuffer);
-        GuiUtils.startStencil(pPoseStack, guiLeft + AREA_X, guiTop + AREA_Y, AREA_W, AREA_H);
+        ModGuiUtils.startStencil(pPoseStack, guiLeft + AREA_X, guiTop + AREA_Y, AREA_W, AREA_H);
         pPoseStack.pushPose();
         pPoseStack.translate(0, scrollOffset, 0);
 
@@ -201,7 +202,7 @@ public class StationBlacklistScreen extends Screen implements IForegroundRenderi
         }
 
         pPoseStack.popPose();
-        GuiUtils.endStencil();        
+        ModGuiUtils.endStencil();        
         net.minecraftforge.client.gui.GuiUtils.drawGradientRect(pPoseStack.last().pose(), 200, guiLeft + AREA_X, guiTop + AREA_Y - 38, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y - 38 + 10, 0x77000000, 0x00000000);
         net.minecraftforge.client.gui.GuiUtils.drawGradientRect(pPoseStack.last().pose(), 200, guiLeft + AREA_X, guiTop + AREA_Y + AREA_H - 10, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y + AREA_H, 0x00000000, 0x77000000);
         net.minecraftforge.client.gui.GuiUtils.drawGradientRect(pPoseStack.last().pose(), 200, guiLeft + AREA_X + 10, guiTop + AREA_Y, guiLeft + AREA_X + AREA_W - 10, guiTop + AREA_Y + 10, 0x77000000, 0x00000000);
@@ -220,7 +221,7 @@ public class StationBlacklistScreen extends Screen implements IForegroundRenderi
         }
         
         drawString(pPoseStack, shadowlessFont, title, guiLeft + 19, guiTop + 4, 0x4F4F4F);
-        String timeString = Utils.parseTime((int)(level.getDayTime() % Constants.TICKS_PER_DAY));
+        String timeString = TimeUtils.parseTime((int)(level.getDayTime() % Constants.TICKS_PER_DAY), TimeFormat.HOURS_24);
         drawString(pPoseStack, shadowlessFont, timeString, guiLeft + GUI_WIDTH - 22 - shadowlessFont.width(timeString), guiTop + 4, 0x4F4F4F);
 
         renderForeground(pPoseStack, pMouseX, pMouseY, pPartialTick);
@@ -237,12 +238,12 @@ public class StationBlacklistScreen extends Screen implements IForegroundRenderi
 
 		float scrollOffset = scroll.getValue(partialTicks);
         
-        GuiUtils.renderTooltip(this, backButton, List.of(Constants.TOOLTIP_GO_BACK.getVisualOrderText()), matrixStack, mouseX, mouseY, 0, 0);
-        GuiUtils.renderTooltip(this, addButton, List.of(tooltipAdd.getVisualOrderText()), matrixStack, mouseX, mouseY, 0, 0);
+        ModGuiUtils.renderTooltip(this, backButton, List.of(Constants.TOOLTIP_GO_BACK.getVisualOrderText()), matrixStack, mouseX, mouseY, 0, 0);
+        ModGuiUtils.renderTooltip(this, addButton, List.of(tooltipAdd.getVisualOrderText()), matrixStack, mouseX, mouseY, 0, 0);
 
         if (mouseX > guiLeft + AREA_X && mouseX < guiLeft + AREA_X + AREA_W && mouseY > guiTop + AREA_Y && mouseY < guiTop + AREA_Y + AREA_H) {
             for (Entry<String, GuiAreaDefinition> entry : blacklistEntryButton.entrySet()) {
-                if (GuiUtils.renderTooltip(this, entry.getValue(), List.of(tooltipRemove.getVisualOrderText()), matrixStack, mouseX, mouseY, 0, (int)scrollOffset)) {
+                if (ModGuiUtils.renderTooltip(this, entry.getValue(), List.of(tooltipRemove.getVisualOrderText()), matrixStack, mouseX, mouseY, 0, (int)scrollOffset)) {
                     break;
                 }
             }
