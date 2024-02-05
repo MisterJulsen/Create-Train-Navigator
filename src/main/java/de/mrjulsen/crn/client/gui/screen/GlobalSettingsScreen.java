@@ -12,10 +12,11 @@ import com.simibubi.create.foundation.utility.animation.LerpedFloat.Chaser;
 
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.ModMain;
-import de.mrjulsen.crn.client.gui.ControlCollection;
 import de.mrjulsen.crn.client.gui.IForegroundRendering;
 import de.mrjulsen.crn.client.gui.widgets.SettingsOptionWidget;
 import de.mrjulsen.crn.util.ModGuiUtils;
+import de.mrjulsen.mcdragonlib.client.gui.GuiAreaDefinition;
+import de.mrjulsen.mcdragonlib.client.gui.WidgetsCollection;
 import de.mrjulsen.mcdragonlib.utils.TimeUtils;
 import de.mrjulsen.mcdragonlib.utils.TimeUtils.TimeFormat;
 import net.minecraft.client.Minecraft;
@@ -43,6 +44,7 @@ public class GlobalSettingsScreen extends Screen implements IForegroundRendering
     private final int AREA_Y = 16;        
     private final int AREA_W = 220;
     private final int AREA_H = 194;
+    private GuiAreaDefinition workingArea;
 
     private int guiLeft, guiTop;
 	private LerpedFloat scroll = LerpedFloat.linear().startWithValue(0);
@@ -55,7 +57,7 @@ public class GlobalSettingsScreen extends Screen implements IForegroundRendering
 
     // Controls
     private IconButton backButton;
-    private final ControlCollection optionsCollection = new ControlCollection();
+    private final WidgetsCollection optionsCollection = new WidgetsCollection();
 
     // Tooltips
     private final Component optionAliasTitle = new TranslatableComponent("gui." + ModMain.MOD_ID + ".global_settings.option_alias.title");
@@ -82,6 +84,7 @@ public class GlobalSettingsScreen extends Screen implements IForegroundRendering
         guiLeft = this.width / 2 - GUI_WIDTH / 2;
         guiTop = this.height / 2 - GUI_HEIGHT / 2;
         int startY = guiTop + AREA_X + ENTRIES_START_Y_OFFSET;
+        workingArea = new GuiAreaDefinition(guiLeft + AREA_X, guiTop + AREA_Y, AREA_W, AREA_H);
 
         optionsCollection.components.clear();
 
@@ -134,7 +137,7 @@ public class GlobalSettingsScreen extends Screen implements IForegroundRendering
         pPoseStack.pushPose();
         pPoseStack.translate(0, scrollOffset, 0);
         
-        optionsCollection.performForEach(x -> x.render(pPoseStack, pMouseX, (int)(pMouseY - scrollOffset), pPartialTick));
+        optionsCollection.performForEachOfType(SettingsOptionWidget.class, x -> x.renderButton(pPoseStack, pMouseX, (int)(pMouseY - scrollOffset), pPartialTick, workingArea.isInBounds(pMouseX, pMouseY)));
 
         pPoseStack.popPose();
         ModGuiUtils.endStencil();        
@@ -165,13 +168,17 @@ public class GlobalSettingsScreen extends Screen implements IForegroundRendering
     public void renderForeground(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTicks) {
 		float scrollOffset = -scroll.getValue(pPartialTicks);
         ModGuiUtils.renderTooltip(this, backButton, List.of(Constants.TOOLTIP_GO_BACK.getVisualOrderText()), pPoseStack, pMouseX, pMouseY, 0, 0);
-        optionsCollection.performForEachOfType(IForegroundRendering.class, x -> x.renderForeground(pPoseStack, pMouseX, pMouseY, -scrollOffset));
+        optionsCollection.performForEachOfType(SettingsOptionWidget.class, x -> workingArea.isInBounds(pMouseX, pMouseY), x -> x.renderForeground(pPoseStack, pMouseX, pMouseY, -scrollOffset));
     }
 
     @Override
     public boolean mouseClicked(double pMouseX, double pMouseY, int pButton) {
         float scrollOffset = -scroll.getValue();
-        optionsCollection.performForEach(x -> x.isMouseOver(pMouseX, (int)(pMouseY - scrollOffset)), x -> x.mouseClicked(pMouseX, (int)(pMouseY - scrollOffset), pButton));
+        
+        optionsCollection.performForEachOfType(SettingsOptionWidget.class,
+            x -> workingArea.isInBounds(pMouseX, pMouseY) && x.isMouseOver(pMouseX, (int)(pMouseY - scrollOffset)),
+            x -> x.mouseClicked(pMouseX, (int)(pMouseY - scrollOffset), pButton)
+        );
         return super.mouseClicked(pMouseX, pMouseY, pButton);
     }
 

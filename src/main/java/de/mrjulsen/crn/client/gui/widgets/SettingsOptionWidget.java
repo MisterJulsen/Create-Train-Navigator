@@ -2,14 +2,13 @@ package de.mrjulsen.crn.client.gui.widgets;
 
 import java.util.List;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.client.gui.IForegroundRendering;
-import de.mrjulsen.crn.util.ModGuiUtils;
+import de.mrjulsen.mcdragonlib.client.gui.GuiUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.Button;
@@ -44,13 +43,11 @@ public class SettingsOptionWidget extends Button implements IForegroundRendering
         this.messageLabel = MultiLineLabel.create(shadowlessFont, description, (int)((DISPLAY_WIDTH) / 0.75f));
     }
 
-    @Override
-    public void renderButton(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) {
+    public void renderButton(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick, boolean mouseHover) {
         
-        float l = isMouseOver(pMouseX, pMouseY) ? 0.2f : 0;
-        RenderSystem.setShaderColor(1 + l, 1 + l, 1 + l, 1);
-        RenderSystem.setShaderTexture(0, Constants.GUI_WIDGETS);
-        blit(pPoseStack, x, y, 0, 0, WIDTH, HEIGHT);
+        float l = isMouseOver(pMouseX, pMouseY) && mouseHover ? 0.2f : 0;
+        GuiUtils.setShaderColor(1 + l, 1 + l, 1 + l, 1);
+        GuiUtils.blit(Constants.GUI_WIDGETS, pPoseStack, x, y, 0, 0, WIDTH, HEIGHT);
 
 
         drawString(pPoseStack, shadowlessFont, getMessage(), x + 6, y + 5, 0xFFFFFF);
@@ -62,7 +59,7 @@ public class SettingsOptionWidget extends Button implements IForegroundRendering
 
     @Override
     public void renderForeground(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTicks) {
-        ModGuiUtils.renderTooltip(parent, this, List.of(tooltipOptionText.getVisualOrderText()), pPoseStack, pMouseX, pMouseY, 0, (int)pPartialTicks);
+        GuiUtils.renderTooltipWithScrollOffset(parent, this, List.of(tooltipOptionText), parent.width, pPoseStack, pMouseX, pMouseY, 0, (int)pPartialTicks);
     }
     
 }
