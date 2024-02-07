@@ -16,6 +16,7 @@ import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.client.gui.ControlCollection;
 import de.mrjulsen.crn.client.gui.IForegroundRendering;
+import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.overlay.HudOverlays;
 import de.mrjulsen.crn.client.gui.overlay.RouteDetailsOverlayScreen;
 import de.mrjulsen.crn.client.gui.widgets.ExpandButton;
@@ -121,7 +122,7 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering {
             }
         });
 
-        this.addRenderableWidget(new IconButton(guiLeft + 21 + DEFAULT_ICON_BUTTON_WIDTH + 4, guiTop + 222, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, AllIcons.I_CONFIG_SAVE) {
+        this.addRenderableWidget(new IconButton(guiLeft + 21 + DEFAULT_ICON_BUTTON_WIDTH + 4, guiTop + 222, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, ModGuiIcons.BOOKMARK.getAsCreateIcon()) {
             @Override
             public void onClick(double mouseX, double mouseY) {
                 super.onClick(mouseX, mouseY);
@@ -144,7 +145,7 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering {
         RenderSystem.setShaderTexture(0, Constants.GUI_WIDGETS);
         blit(poseStack, x, y, 0, V, ENTRY_WIDTH, HEIGHT);
 
-        drawString(poseStack, shadowlessFont, TimeUtils.parseTime(lastRefreshedTime % 24000 + stop.getTicks(), TimeFormat.HOURS_24), x + ENTRY_TIME_X, y + 15, 0xFFFFFF);
+        drawString(poseStack, shadowlessFont, TimeUtils.parseTime((lastRefreshedTime + Constants.TIME_SHIFT) % 24000 + stop.getTicks(), TimeFormat.HOURS_24), x + ENTRY_TIME_X, y + 15, 0xFFFFFF);
         drawString(poseStack, shadowlessFont, stop.getStationName(), x + ENTRY_DEST_X, y + 15, 0xFFFFFF);
         drawString(poseStack, shadowlessFont, stop.getInfo().platform(), x + ENTRY_DEST_X + 129 - shadowlessFont.width(stop.getInfo().platform()), y + 15, 0xFFFFFF);
 
@@ -178,7 +179,7 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering {
         RenderSystem.setShaderTexture(0, Constants.GUI_WIDGETS);
         blit(poseStack, x, y, 0, V, ENTRY_WIDTH, HEIGHT);
 
-        drawString(poseStack, shadowlessFont, TimeUtils.parseTime(lastRefreshedTime % 24000 + stop.getTicks(), TimeFormat.HOURS_24), x + ENTRY_TIME_X, y + 6, 0xFFFFFF);
+        drawString(poseStack, shadowlessFont, TimeUtils.parseTime((lastRefreshedTime + Constants.TIME_SHIFT) % 24000 + stop.getTicks(), TimeFormat.HOURS_24), x + ENTRY_TIME_X, y + 6, 0xFFFFFF);
         drawString(poseStack, shadowlessFont, stop.getStationName(), x + ENTRY_DEST_X, y + 6, 0xFFFFFF);
         drawString(poseStack, shadowlessFont, stop.getInfo().platform(), x + ENTRY_DEST_X + 129 - shadowlessFont.width(stop.getInfo().platform()), y + 6, 0xFFFFFF);
 
@@ -192,7 +193,7 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering {
         RenderSystem.setShaderTexture(0, Constants.GUI_WIDGETS);
         blit(poseStack, x, y, 0, V, ENTRY_WIDTH, HEIGHT);
 
-        drawString(poseStack, shadowlessFont, TimeUtils.parseTime(lastRefreshedTime % 24000 + stop.getTicks(), TimeFormat.HOURS_24), x + ENTRY_TIME_X, y + 21, 0xFFFFFF);
+        drawString(poseStack, shadowlessFont, TimeUtils.parseTime((lastRefreshedTime + Constants.TIME_SHIFT) % 24000 + stop.getTicks(), TimeFormat.HOURS_24), x + ENTRY_TIME_X, y + 21, 0xFFFFFF);
         drawString(poseStack, shadowlessFont, stop.getStationName(), x + ENTRY_DEST_X, y + 21, 0xFFFFFF);
         drawString(poseStack, shadowlessFont, stop.getInfo().platform(), x + ENTRY_DEST_X + 129 - shadowlessFont.width(stop.getInfo().platform()), y + 21, 0xFFFFFF);
 
@@ -230,7 +231,7 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering {
             widget.render(pPoseStack, pMouseX, pMouseY, pPartialTick);
         
         drawString(pPoseStack, shadowlessFont, title, guiLeft + 19, guiTop + 4, 0x4F4F4F);
-        String timeString = TimeUtils.parseTime((int)(level.getDayTime() % Constants.TICKS_PER_DAY), TimeFormat.HOURS_24);
+        String timeString = TimeUtils.parseTime((int)((level.getDayTime() + Constants.TIME_SHIFT) % Constants.TICKS_PER_DAY), TimeFormat.HOURS_24);
         drawString(pPoseStack, shadowlessFont, timeString, guiLeft + GUI_WIDTH - 22 - shadowlessFont.width(timeString), guiTop + 4, 0x4F4F4F);
         
         drawCenteredString(pPoseStack, font, departureText, guiLeft + GUI_WIDTH / 2, guiTop + 19, 0xFFFFFF);

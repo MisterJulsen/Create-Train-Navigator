@@ -63,8 +63,8 @@ public class RouteEntryOverviewWidget extends Button {
         Font shadowlessFont = new NoShadowFontWrapper(minecraft.font);
 
         drawString(pPoseStack, minecraft.font, String.format("%s - %s | %s %s | %s",
-            TimeUtils.parseTime(lastRefreshedTime + route.getStartStation().getTicks(), TimeFormat.HOURS_24),
-            TimeUtils.parseTime(lastRefreshedTime + route.getEndStation().getTicks(), TimeFormat.HOURS_24),
+            TimeUtils.parseTime(lastRefreshedTime + Constants.TIME_SHIFT + route.getStartStation().getTicks(), TimeFormat.HOURS_24),
+            TimeUtils.parseTime(lastRefreshedTime + Constants.TIME_SHIFT + route.getEndStation().getTicks(), TimeFormat.HOURS_24),
             route.getTransferCount(),
             transferText,
             TimeUtils.parseDurationShort(route.getTotalDuration())

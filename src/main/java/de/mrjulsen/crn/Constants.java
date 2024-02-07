@@ -25,4 +25,5 @@ public class Constants {
     public static final String DEFAULT_SETTINGS_PATH = "./config/" + ModMain.MOD_ID + "_settings.json";
     public static final Gson GSON = new Gson();
     public static final DateFormat DATE_FORMAT = new SimpleDateFormat();
+    public static final int TIME_SHIFT = 6000;
 }

@@ -31,7 +31,6 @@ import de.mrjulsen.mcdragonlib.utils.TimeUtils;
 import de.mrjulsen.mcdragonlib.utils.Utils;
 import de.mrjulsen.mcdragonlib.utils.TimeUtils.TimeFormat;
 import de.mrjulsen.mcdragonlib.client.gui.GuiUtils;
-import de.mrjulsen.mcdragonlib.client.gui.Tooltip;
 import de.mrjulsen.mcdragonlib.client.gui.wrapper.CommonScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -134,7 +133,7 @@ public class SearchSettingsScreen extends CommonScreen {
             @Override
             public void onClick(double mouseX, double mouseY) {
                 super.onClick(mouseX, mouseY);
-                ModClientConfig.reset();
+                ModClientConfig.resetSearchSettings();
                 clearWidgets();
                 init();
             }
@@ -227,6 +226,10 @@ public class SearchSettingsScreen extends CommonScreen {
             dY += 2;
             
             for (int i = 0; i < trainGroups.length; i++) {
+                if (dY + (i * ARRAY_ENTRY_HEIGHT) > workingArea.getTop() + workingArea.getHeight() - scrollOffset || dY + (i * ARRAY_ENTRY_HEIGHT) < workingArea.getTop() - ARRAY_ENTRY_HEIGHT - scrollOffset) {
+                    continue;
+                }
+
                 TrainGroup group = trainGroups[i];
                 MutableGuiAreaDefinition area = areaByTrainGroup.get(group);
                 area.setXOffset(wX);
@@ -271,7 +274,7 @@ public class SearchSettingsScreen extends CommonScreen {
         AllIcons.I_REFRESH.render(pPoseStack, trainGroupResetButton.getX(), trainGroupResetButton.getY()); // delete button
         GuiUtils.blit(GUI_WIDGETS, pPoseStack, trainGroupExpandButton.getX(), trainGroupExpandButton.getY(), trainGroupsExpanded ? 216 : 200, 0, 16, 16); // expand button 
         // Button highlight
-        if (workingArea.isInBounds(pMouseX, pMouseY)) {            
+        if (workingArea.isInBounds(pMouseX, pMouseY)) {
             if (trainGroupExpandButton.isInBounds(pMouseX, pMouseY - scrollOffset)) {
                 fill(pPoseStack, trainGroupExpandButton.getX(), trainGroupExpandButton.getY(), trainGroupExpandButton.getRight(), trainGroupExpandButton.getBottom(), 0x1AFFFFFF);
             } else if (trainGroupResetButton.isInBounds(pMouseX, pMouseY - scrollOffset)) {
@@ -300,7 +303,7 @@ public class SearchSettingsScreen extends CommonScreen {
         // SCROLLABLE AREA END
         
         drawString(pPoseStack, shadowlessFont, title, guiLeft + 19, guiTop + 4, 0x4F4F4F);
-        String timeString = TimeUtils.parseTime((int)(level.getDayTime() % Constants.TICKS_PER_DAY), TimeFormat.HOURS_24);
+        String timeString = TimeUtils.parseTime((int)((level.getDayTime() + Constants.TIME_SHIFT) % Constants.TICKS_PER_DAY), TimeFormat.HOURS_24);
         drawString(pPoseStack, shadowlessFont, timeString, guiLeft + GUI_WIDTH - 22 - shadowlessFont.width(timeString), guiTop + 4, 0x4F4F4F);
 
         double maxHeight = getMaxScrollHeight();
@@ -318,7 +321,9 @@ public class SearchSettingsScreen extends CommonScreen {
         int scrollOffset = (int)scroll.getValue(pPartialTick);
         GuiUtils.renderTooltipWithScrollOffset(this, backButton, List.of(Constants.TOOLTIP_GO_BACK), width, pPoseStack, pMouseX, pMouseY, 0, 0);
         GuiUtils.renderTooltipWithScrollOffset(this, defaultsButton, List.of(Constants.TOOLTIP_RESET_DEFAULTS), width, pPoseStack, pMouseX, pMouseY, 0, 0);
-        GuiUtils.renderTooltipWithScrollOffset(this, trainGroupResetButton, List.of(tooltipTrainGroupsReset), width, pPoseStack, pMouseX, pMouseY, 0, scrollOffset);
+        if (workingArea.isInBounds(pMouseX, pMouseY)) {
+            GuiUtils.renderTooltipWithScrollOffset(this, trainGroupResetButton, List.of(tooltipTrainGroupsReset), width, pPoseStack, pMouseX, pMouseY, 0, scrollOffset);
+        }
 
         for (Widget widget : renderables) {
             if (widget instanceof AbstractSimiWidget simiWidget && simiWidget.isHoveredOrFocused()

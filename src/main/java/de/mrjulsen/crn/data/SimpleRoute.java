@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import com.simibubi.create.content.trains.entity.TrainIconType;
 
+import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.TrainStationAlias.StationInfo;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -212,8 +213,6 @@ public class SimpleRoute {
         private static final String NBT_NAME = "Name";
         private static final String NBT_TICKS = "Ticks";
 
-        private static final int TRESHOLD = 167;
-
         private final String stationName;
         private final StationInfo info;
         private final int ticks;
@@ -255,6 +254,10 @@ public class SimpleRoute {
             return currentRefreshTime;
         }
 
+        public long getCurrentTime() {
+            return currentRefreshTime + currentTicks;
+        }
+
         public StationInfo getInfo() {
             return info;
         }
@@ -276,10 +279,9 @@ public class SimpleRoute {
             return getEstimatedTime() - getScheduleTime();
         }
 
-        public long getEstimatedTimeWithTreshold() {
-            
-            return getCurrentRefreshTime() + getCurrentTicks();
-            //return getScheduleTime() + ((long)(getDifferenceTime() / TRESHOLD) * TRESHOLD);
+        public long getEstimatedTimeWithThreshold() {            
+            //return getCurrentRefreshTime() + getCurrentTicks();
+            return getScheduleTime() + ((long)(getDifferenceTime() / ModClientConfig.REALTIME_PRECISION_THRESHOLD.get()) * ModClientConfig.REALTIME_PRECISION_THRESHOLD.get());
         }
 
         public CompoundTag toNbt() {
@@ -299,7 +301,46 @@ public class SimpleRoute {
     }
 
     public record StationTrainDetails(String trainName, UUID trainId, String scheduleTitle) {}
-    public record TaggedStationEntry(StationEntry station, StationTag tag, int index, StationTrainDetails train) {}
+    public static class TaggedStationEntry {
+
+        private final StationEntry station;
+        private final StationTag tag;
+        private final int index;
+        private final StationTrainDetails train;
+
+        private boolean departed = false;
+
+        public TaggedStationEntry(StationEntry station, StationTag tag, int index, StationTrainDetails train) {
+            this.station = station;
+            this.tag = tag;
+            this.index = index;
+            this.train = train;
+        }
+
+        public StationEntry station() {
+            return station;
+        }
+
+        public StationTag tag() {
+            return tag;
+        }
+
+        public int index() {
+            return index;
+        }
+
+        public StationTrainDetails train() {
+            return train;
+        }
+
+        public boolean isDeparted() {
+            return this.departed;
+        }
+
+        public void setDeparted(boolean b) {
+            this.departed = this.departed || b;
+        }
+    }
 
     public enum StationTag {
         TRANSIT,

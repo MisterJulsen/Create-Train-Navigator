@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -23,6 +25,7 @@ import de.mrjulsen.crn.data.GlobalSettingsManager;
 import de.mrjulsen.crn.data.NearestTrackStationResult;
 import de.mrjulsen.crn.data.SimpleTrainConnection;
 import de.mrjulsen.crn.data.SimpleTrainSchedule;
+import de.mrjulsen.crn.data.SimulatedTrainSchedule;
 import de.mrjulsen.crn.data.TrainStationAlias;
 import de.mrjulsen.crn.data.TrainStop;
 import net.minecraft.core.Vec3i;
@@ -83,15 +86,23 @@ public class TrainUtils {
         SimpleTrainSchedule ownSchedule = SimpleTrainSchedule.of(getTrainStopsSorted(currentTrainId));
         GlobalTrainDisplayData.refresh();
 
+        List<SimulatedTrainSchedule> excludedSchedules = new ArrayList<>();
+
         return Gott().entrySet().stream().filter(x -> alias.contains(x.getKey())).map(x -> x.getValue())
                 .flatMap(x -> x.parallelStream().map(y -> new DeparturePrediction(y)))
                 .filter(x -> {
                     SimpleTrainSchedule schedule = SimpleTrainSchedule.of(getTrainStopsSorted(x.getTrain().id));
+                    SimulatedTrainSchedule directionalSchedule = schedule.simulate(x.getTrain(), ticksToNextStop, alias);
+                    if (excludedSchedules.stream().anyMatch(y -> y.exactEquals(directionalSchedule))) {
+                        return false;
+                    }
+                    excludedSchedules.add(directionalSchedule);
+
                     return !x.getTrain().id.equals(currentTrainId) &&
                             !schedule.equals(ownSchedule) &&
                             TrainUtils.isTrainValid(x.getTrain()) &&
                             x.getTicks() > ticksToNextStop;
-                }).distinct().map(x -> new SimpleTrainConnection(x.getTrain().name.getString(), x.getTrain().id, x.getTrain().icon.getId(), x.getTicks(), x.getScheduleTitle())).sorted(Comparator.comparingInt(x -> x.ticks())).collect(Collectors.toSet());
+                }).map(x -> new SimpleTrainConnection(x.getTrain().name.getString(), x.getTrain().id, x.getTrain().icon.getId(), x.getTicks(), x.getScheduleTitle())).sorted(Comparator.comparingInt(x -> x.ticks())).collect(Collectors.toSet());
     }
 
     public static boolean GottKnows(String station) {

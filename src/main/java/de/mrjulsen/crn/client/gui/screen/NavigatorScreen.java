@@ -15,6 +15,7 @@ import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.client.gui.ControlCollection;
 import de.mrjulsen.mcdragonlib.client.gui.GuiAreaDefinition;
 import de.mrjulsen.crn.client.gui.IForegroundRendering;
+import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.widgets.ModDestinationSuggestions;
 import de.mrjulsen.crn.client.gui.widgets.RouteEntryOverviewWidget;
 import de.mrjulsen.crn.config.ModCommonConfig;
@@ -233,7 +234,7 @@ public class NavigatorScreen extends Screen implements IForegroundRendering {
 
         // Global Options Button
         if (minecraft.player.hasPermissions(ModCommonConfig.GLOBAL_SETTINGS_PERMISSION_LEVEL.get())) {
-            globalSettingsButton = this.addRenderableWidget(new IconButton(guiLeft + 43, guiTop + 222, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, AllIcons.I_PLACEMENT_SETTINGS) {
+            globalSettingsButton = this.addRenderableWidget(new IconButton(guiLeft + 43, guiTop + 222, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, ModGuiIcons.SETTINGS.getAsCreateIcon()) {
                 @Override
                 public void onClick(double mouseX, double mouseY) {
                     super.onClick(mouseX, mouseY);
@@ -242,7 +243,7 @@ public class NavigatorScreen extends Screen implements IForegroundRendering {
             });
         }
 
-        searchSettingsButton = this.addRenderableWidget(new IconButton(guiLeft + 21, guiTop + 222, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, AllIcons.I_VIEW_SCHEDULE) {
+        searchSettingsButton = this.addRenderableWidget(new IconButton(guiLeft + 21, guiTop + 222, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, ModGuiIcons.FILTER.getAsCreateIcon()) {
             @Override
             public void onClick(double mouseX, double mouseY) {
                 super.onClick(mouseX, mouseY);
@@ -297,7 +298,7 @@ public class NavigatorScreen extends Screen implements IForegroundRendering {
             widget.render(pPoseStack, pMouseX, pMouseY, pPartialTick);
 
         drawString(pPoseStack, shadowlessFont, title, guiLeft + 19, guiTop + 4, 0x4F4F4F);
-        String timeString = TimeUtils.parseTime((int)(level.getDayTime() % Constants.TICKS_PER_DAY), TimeFormat.HOURS_24);
+        String timeString = TimeUtils.parseTime((int)((level.getDayTime() + Constants.TIME_SHIFT) % Constants.TICKS_PER_DAY), TimeFormat.HOURS_24);
         drawString(pPoseStack, shadowlessFont, timeString, guiLeft + GUI_WIDTH - 22 - shadowlessFont.width(timeString), guiTop + 4, 0x4F4F4F);
 
         if (!isLoadingRoutes && !generatingRouteEntries) {
