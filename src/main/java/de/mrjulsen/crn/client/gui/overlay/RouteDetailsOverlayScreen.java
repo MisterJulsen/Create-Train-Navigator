@@ -56,6 +56,7 @@ public class RouteDetailsOverlayScreen implements HudOverlay {
     private static final int GUI_WIDTH = 226;
     private static final int GUI_HEIGHT = 118;
     private static final int SLIDING_TEXT_AREA_WIDTH = 220;
+    private static final int EARLY_ARRIVAL_THRESHOLD = 500;
     //private static final float getUIScale() = 0.5f;
 
     private static final int ON_TIME = 0x1AEA5F;
@@ -199,6 +200,8 @@ public class RouteDetailsOverlayScreen implements HudOverlay {
                 TaggedStationEntry e = taggedRoute[i];
                 List<SimpleDeparturePrediction> preds = predMap.get(e.train().trainId());
                 List<TaggedStationEntry> stations = mappedRoute.get(e.train().trainId());
+                System.out.println("TRAIN: " + e.train().trainName());
+        
                 updateRealtime(preds, stations, e.train().trainId(), stationIndex, time);                
             }
             List<SimpleDeparturePrediction> currentTrainSchedule = predMap.get(currentStation().train().trainId());
@@ -208,9 +211,10 @@ public class RouteDetailsOverlayScreen implements HudOverlay {
                 if (mappedRoute.size() < 2) {
                     continue;
                 }
-                long min = routePart.stream().mapToLong(x -> x.station().getCurrentTime()).min().getAsLong();
+                long min = routePart.stream().filter(x -> x.station().getCurrentTime() + EARLY_ARRIVAL_THRESHOLD > x.station().getScheduleTime()).mapToLong(x -> x.station().getCurrentTime()).min().orElse(-1);
+                long currentTime = routePart.get(0).station().getCurrentTime();
 
-                if (routePart.get(0).station().getCurrentTime() > min) {
+                if (min > 0 && currentTime > min && currentTime + EARLY_ARRIVAL_THRESHOLD > routePart.get(0).station().getScheduleTime()) {
                     routePart.get(0).setDeparted(true);
                 }
             }
@@ -224,7 +228,7 @@ public class RouteDetailsOverlayScreen implements HudOverlay {
                 }
                     
                 if (currentState != State.WHILE_TRAVELING && currentState != State.WHILE_TRANSFER// state check
-                    && !currentTrainNextStop.station().equals(currentStation().station().getStationName()) && isStationForSheduleValid(currentTrainSchedule, currentStation().train().trainId(), stationIndex + 1)) // train check
+                    && !currentTrainNextStop.station().equals(currentStation().station().getStationName()) && isStationValidForShedule(currentTrainSchedule, currentStation().train().trainId(), stationIndex + 1)) // train check
                 {                    
                     if (currentStation().tag() == StationTag.END) {
                         finishJourney();
@@ -235,7 +239,7 @@ public class RouteDetailsOverlayScreen implements HudOverlay {
             }
 
             if ((!currentState.isWaitingForNextTrainToDepart() || currentState == State.BEFORE_JOURNEY || currentState == State.WHILE_TRANSFER)
-                && isStationForSheduleValid(currentTrainSchedule, currentStation().train().trainId(), stationIndex) && time >= currentStation().station().getEstimatedTime()) {                    
+                && isStationValidForShedule(currentTrainSchedule, currentStation().train().trainId(), stationIndex) && time >= currentStation().station().getEstimatedTime()) {                    
                 if (currentStation().tag() == StationTag.PART_END) {
                     if (taggedRoute[stationIndex + 1].isDeparted()) {
                         reachTransferStopConnectionMissed();
@@ -250,7 +254,7 @@ public class RouteDetailsOverlayScreen implements HudOverlay {
         NetworkManager.sendToServer(new RealtimeRequestPacket(id, ids));
     }
 
-    private boolean isStationForSheduleValid(List<SimpleDeparturePrediction> schedule, UUID trainId, int startIndex) {
+    private boolean isStationValidForShedule(List<SimpleDeparturePrediction> schedule, UUID trainId, int startIndex) {
         List<String> filteredStationEntryList = new ArrayList<>();
         for (int i = startIndex; i < taggedRoute.length; i++) {
             TaggedStationEntry entry = taggedRoute[i];
@@ -278,7 +282,7 @@ public class RouteDetailsOverlayScreen implements HudOverlay {
 
     private void updateRealtime(List<SimpleDeparturePrediction> schedule, List<TaggedStationEntry> route, UUID trainId, int startIndex, long updateTime) {
         boolean b = false;
-        long lastTime = 0;
+        long lastTime = -1;
         for (int i = 0, k = 0; i < schedule.size() && k < route.size(); i++) {
             SimpleDeparturePrediction current = schedule.get(i);
             if (route.get(0).station().getStationName().equals(current.station())) {
@@ -287,7 +291,8 @@ public class RouteDetailsOverlayScreen implements HudOverlay {
             }
 
             if (route.get(k).station().getStationName().equals(current.station()) && b == true) {
-                if (route.get(k).station().getCurrentTime() > lastTime) {
+                System.out.println(" - " + route.get(k).station().getStationName() + ", current: " + route.get(k).station().getCurrentTime() + ", new: " + current.ticks() + updateTime + ", last: " + lastTime);
+                if (current.ticks() + updateTime > lastTime) {
                     route.get(k).station().updateRealtimeData(current.ticks(), updateTime);
                     lastTime = route.get(k).station().getCurrentTime();
                 }
@@ -621,7 +626,11 @@ public class RouteDetailsOverlayScreen implements HudOverlay {
             y += ROUTE_LINE_HEIGHT;
             long transferTime = -1;
             if (index + 1 < taggedRoute.length && !taggedRoute[index + 1].isDeparted()) {
-                transferTime = taggedRoute[index + 1].station().getCurrentTime() - taggedRoute[index].station().getCurrentTime();
+                if (taggedRoute[index + 1].station().getCurrentTime() + EARLY_ARRIVAL_THRESHOLD < taggedRoute[index + 1].station().getScheduleTime()) {
+                    transferTime = taggedRoute[index + 1].station().getScheduleTime() - taggedRoute[index].station().getScheduleTime();
+                } else {
+                    transferTime = taggedRoute[index + 1].station().getCurrentTime() - taggedRoute[index].station().getCurrentTime();
+                }
             }
             RenderSystem.setShaderTexture(0, GUI);
             GuiComponent.blit(poseStack, x + 75, y, 226, transferY, 7, ROUTE_LINE_HEIGHT, 256, 256);
@@ -634,7 +643,7 @@ public class RouteDetailsOverlayScreen implements HudOverlay {
             } else {
                 reachConnection.accept(!station.isDeparted());
                 GuiComponent.drawString(poseStack, shadowlessFont, Utils.text(TimeUtils.parseDurationShort((int)(transferTime))).withStyle(ChatFormatting.ITALIC), x + 10, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, 0xDBDBDB | fontAlpha);
-                GuiComponent.drawString(poseStack, shadowlessFont, Utils.translate(keyTransfer).withStyle(ChatFormatting.ITALIC), x + 90, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, 0xDBDBDB | fontAlpha);
+                GuiComponent.drawString(poseStack, shadowlessFont, Utils.translate(keyScheduleTransfer).withStyle(ChatFormatting.ITALIC), x + 90, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, 0xDBDBDB | fontAlpha);
             }
                     
             return ROUTE_LINE_HEIGHT * 2;
