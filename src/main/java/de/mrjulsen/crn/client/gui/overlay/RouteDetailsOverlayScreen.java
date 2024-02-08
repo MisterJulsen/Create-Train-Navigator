@@ -56,12 +56,10 @@ public class RouteDetailsOverlayScreen implements HudOverlay {
     private static final int GUI_WIDTH = 226;
     private static final int GUI_HEIGHT = 118;
     private static final int SLIDING_TEXT_AREA_WIDTH = 220;
-    private static final int EARLY_ARRIVAL_THRESHOLD = 500;
     //private static final float getUIScale() = 0.5f;
 
     private static final int ON_TIME = 0x1AEA5F;
     private static final int DELAYED = 0xFF4242;
-    private static final float FADE_TIME = 5;
 
     private static final int INFO_BEFORE_NEXT_STOP = 500;
     //private static final int DELAY_TRESHOLD = 500;
@@ -195,13 +193,12 @@ public class RouteDetailsOverlayScreen implements HudOverlay {
         long id = InstanceManager.registerClientRealtimeResponseAction((predictions, time) -> {
             Map<UUID, List<SimpleDeparturePrediction>> predMap = predictions.stream().collect(Collectors.groupingBy(SimpleDeparturePrediction::id));
             Map<UUID, List<TaggedStationEntry>> mappedRoute = Arrays.stream(taggedRoute).skip(stationIndex).collect(Collectors.groupingBy(x -> x.train().trainId(), LinkedHashMap::new, Collectors.toList()));
+            
             // Update realtime data
             for (int i = stationIndex; i < taggedRoute.length; i++) {
                 TaggedStationEntry e = taggedRoute[i];
                 List<SimpleDeparturePrediction> preds = predMap.get(e.train().trainId());
                 List<TaggedStationEntry> stations = mappedRoute.get(e.train().trainId());
-                System.out.println("TRAIN: " + e.train().trainName());
-        
                 updateRealtime(preds, stations, e.train().trainId(), stationIndex, time);                
             }
             List<SimpleDeparturePrediction> currentTrainSchedule = predMap.get(currentStation().train().trainId());
@@ -211,10 +208,11 @@ public class RouteDetailsOverlayScreen implements HudOverlay {
                 if (mappedRoute.size() < 2) {
                     continue;
                 }
-                long min = routePart.stream().filter(x -> x.station().getCurrentTime() + EARLY_ARRIVAL_THRESHOLD > x.station().getScheduleTime()).mapToLong(x -> x.station().getCurrentTime()).min().orElse(-1);
+                long min = routePart.stream().filter(x -> x.station().getCurrentTime() + ModClientConfig.TRANSFER_TIME.get() > x.station().getScheduleTime()).mapToLong(x -> x.station().getCurrentTime()).min().orElse(-1);
                 long currentTime = routePart.get(0).station().getCurrentTime();
 
-                if (min > 0 && currentTime > min && currentTime + EARLY_ARRIVAL_THRESHOLD > routePart.get(0).station().getScheduleTime()) {
+                if (min > 0 && currentTime > min && currentTime + ModClientConfig.TRANSFER_TIME.get() > routePart.get(0).station().getScheduleTime()) {
+                    //System.out.println(routePart.get(0).train().trainName() + ": " + (min > 0) + ", "  + (currentTime > min) + ", " + (currentTime + ModClientConfig.EARLY_ARRIVAL_THRESHOLD.get() > routePart.get(0).station().getScheduleTime()) + ", " + min + ", " + currentTime + ", " + currentTime + EARLY_ARRIVAL_THRESHOLD + ", " + routePart.get(0).station().getScheduleTime());
                     routePart.get(0).setDeparted(true);
                 }
             }
@@ -226,15 +224,17 @@ public class RouteDetailsOverlayScreen implements HudOverlay {
                 {                    
                     announceNextStop();
                 }
+                
+                if (currentState != State.WHILE_TRAVELING && currentState != State.WHILE_TRANSFER) // train check
+                {     
+                    while (!currentTrainNextStop.station().equals(currentStation().station().getStationName()) && currentState != State.AFTER_JOURNEY) {
+                        if (currentStation().tag() == StationTag.END) {
+                            finishJourney();
+                        } else {
+                            nextStop();
+                        }
+                    }               
                     
-                if (currentState != State.WHILE_TRAVELING && currentState != State.WHILE_TRANSFER// state check
-                    && !currentTrainNextStop.station().equals(currentStation().station().getStationName()) && isStationValidForShedule(currentTrainSchedule, currentStation().train().trainId(), stationIndex + 1)) // train check
-                {                    
-                    if (currentStation().tag() == StationTag.END) {
-                        finishJourney();
-                    } else {
-                        nextStop();
-                    }
                 }
             }
 
@@ -285,14 +285,14 @@ public class RouteDetailsOverlayScreen implements HudOverlay {
         long lastTime = -1;
         for (int i = 0, k = 0; i < schedule.size() && k < route.size(); i++) {
             SimpleDeparturePrediction current = schedule.get(i);
+            long newTime = current.ticks() + updateTime;
             if (route.get(0).station().getStationName().equals(current.station())) {
                 k = 0;
                 b = true;
             }
 
             if (route.get(k).station().getStationName().equals(current.station()) && b == true) {
-                System.out.println(" - " + route.get(k).station().getStationName() + ", current: " + route.get(k).station().getCurrentTime() + ", new: " + current.ticks() + updateTime + ", last: " + lastTime);
-                if (current.ticks() + updateTime > lastTime) {
+                if (newTime > lastTime/* && newTime + EARLY_ARRIVAL_THRESHOLD > route.get(k).station().getScheduleTime()*/) {
                     route.get(k).station().updateRealtimeData(current.ticks(), updateTime);
                     lastTime = route.get(k).station().getCurrentTime();
                 }
@@ -546,7 +546,7 @@ public class RouteDetailsOverlayScreen implements HudOverlay {
                     final boolean[] b = new boolean[] { true };
                     for (int i = stationIndex; i < Math.min(stationIndex + MAX_STATION_PER_PAGE, taggedRoute.length); i++) {
                         final int k = i;
-                        yOffset[0] += renderRouteOverview(poseStack, k, yOffset[0], alpha, fontAlpha, taggedRoute[i], b[0], (bool) -> {
+                        yOffset[0] += renderRouteOverview(poseStack, k, yOffset[0], alpha, fontAlpha, b[0], (bool) -> {
                             if (b[0]) {
                                 b[0] = bool;
                             }
@@ -566,6 +566,9 @@ public class RouteDetailsOverlayScreen implements HudOverlay {
                 fadeDoneAction.run();
             }
         }
+
+        
+        GuiComponent.drawString(poseStack, shadowlessFont, currentState.name(), x, y + 4 + GUI_HEIGHT, 0xFFFFFF);
     }
 
     public void renderSlidingText(PoseStack poseStack) {
@@ -577,12 +580,16 @@ public class RouteDetailsOverlayScreen implements HudOverlay {
         endStencil();
     }
 
-    public int renderRouteOverview(PoseStack poseStack, int index, int y, float alphaPercentage, int fontAlpha, TaggedStationEntry station, boolean valid, Consumer<Boolean> reachConnection) {
+    public int renderRouteOverview(PoseStack poseStack, int index, int y, float alphaPercentage, int fontAlpha, boolean valid, Consumer<Boolean> reachConnection) {
         RenderSystem.setShaderTexture(0, GUI);
         RenderSystem.setShaderColor(1, 1, 1, alphaPercentage);        
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         RenderSystem.enableDepthTest();
+
+        TaggedStationEntry station = taggedRoute[index];
+        TaggedStationEntry lastStation = index > stationIndex ? taggedRoute[index - 1] : null;
+        TaggedStationEntry nextStation = index < taggedRoute.length - 1 ? taggedRoute[index + 1] : null;
 
         boolean reachable = valid && !station.isDeparted();
 
@@ -606,30 +613,40 @@ public class RouteDetailsOverlayScreen implements HudOverlay {
 
         // time display
         long timeDiff = station.station().getCurrentRefreshTime() + station.station().getCurrentTicks() - station.station().getRefreshTime() - station.station().getTicks();
-        GuiComponent.drawString(poseStack, shadowlessFont, Utils.text(TimeUtils.parseTime((int)(station.station().getRefreshTime() + Constants.TIME_SHIFT + station.station().getTicks()), TimeFormat.HOURS_24)).withStyle(reachable ? ChatFormatting.RESET : ChatFormatting.STRIKETHROUGH), x + 10, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, reachable ? (index <= 0 ? 0xFFFFFF | fontAlpha : 0xDBDBDB | fontAlpha) : DELAYED | fontAlpha);
-        if (station.station().getEstimatedTimeWithThreshold() > 0 && reachable) {
+        GuiComponent.drawString(poseStack, shadowlessFont, Utils.text(TimeUtils.parseTime((int)(station.station().getScheduleTime() + Constants.TIME_SHIFT), TimeFormat.HOURS_24)).withStyle(reachable ? ChatFormatting.RESET : ChatFormatting.STRIKETHROUGH), x + 10, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, reachable ? (index <= 0 ? 0xFFFFFF | fontAlpha : 0xDBDBDB | fontAlpha) : DELAYED | fontAlpha);
+        
+        if (station.station().getEstimatedTimeWithThreshold() > 0 && reachable && (lastStation == null || lastStation.station().getEstimatedTime() < station.station().getEstimatedTime()) && (station.train().trainId().equals(currentStation().train().trainId()) || station.station().getEstimatedTime() + ModClientConfig.TRANSFER_TIME.get() + ModClientConfig.EARLY_ARRIVAL_THRESHOLD.get() > station.station().getScheduleTime())) {
             GuiComponent.drawString(poseStack, shadowlessFont, Utils.text(TimeUtils.parseTime((int)(station.station().getEstimatedTimeWithThreshold() + Constants.TIME_SHIFT), TimeFormat.HOURS_24)).withStyle(reachable ? ChatFormatting.RESET : ChatFormatting.STRIKETHROUGH), x + 40, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, timeDiff < ModClientConfig.DEVIATION_THRESHOLD.get() && reachable ? ON_TIME | fontAlpha : DELAYED | fontAlpha);
         }
 
         // station name display
+        Component platformText = Utils.text(station.station().getInfo().platform());
+        int platformTextWidth = shadowlessFont.width(platformText);
+
+        final int maxStationNameWidth = SLIDING_TEXT_AREA_WIDTH - platformTextWidth - 105;
         MutableComponent stationText = Utils.text(station.station().getStationName());
         if (index == stationIndex) stationText = stationText.withStyle(ChatFormatting.BOLD);
         if (!reachable) stationText = stationText.withStyle(ChatFormatting.STRIKETHROUGH);
+        if (shadowlessFont.width(stationText) > maxStationNameWidth) {
+            stationText = Utils.text(shadowlessFont.substrByWidth(stationText, maxStationNameWidth).getString()).append(Utils.text("...")).withStyle(stationText.getStyle());
+        }
 
         GuiComponent.drawString(poseStack, shadowlessFont, stationText, x + 90, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, reachable ? (index <= 0 ? 0xFFFFFF | fontAlpha : 0xDBDBDB | fontAlpha) : DELAYED | fontAlpha);
+        GuiComponent.drawString(poseStack, shadowlessFont, platformText, x + SLIDING_TEXT_AREA_WIDTH - platformTextWidth, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, reachable ? (index <= 0 ? 0xFFFFFF | fontAlpha : 0xDBDBDB | fontAlpha) : DELAYED | fontAlpha);
+        
         if (station.isDeparted()) {
-            ModGuiIcons.CROSS.render(poseStack, x + 10, y + ROUTE_LINE_HEIGHT - 2 - ModGuiIcons.ICON_SIZE / 2);                
+            //ModGuiIcons.CROSS.render(poseStack, x + 10, y + ROUTE_LINE_HEIGHT - 2 - ModGuiIcons.ICON_SIZE / 2);                
         }
 
         // render transfer
         if (station.tag() == StationTag.PART_END) {
             y += ROUTE_LINE_HEIGHT;
             long transferTime = -1;
-            if (index + 1 < taggedRoute.length && !taggedRoute[index + 1].isDeparted()) {
-                if (taggedRoute[index + 1].station().getCurrentTime() + EARLY_ARRIVAL_THRESHOLD < taggedRoute[index + 1].station().getScheduleTime()) {
-                    transferTime = taggedRoute[index + 1].station().getScheduleTime() - taggedRoute[index].station().getScheduleTime();
+            if (nextStation != null && !nextStation.isDeparted()) {
+                if (nextStation.station().getCurrentTime() + ModClientConfig.TRANSFER_TIME.get() < nextStation.station().getScheduleTime()) {
+                    transferTime = nextStation.station().getScheduleTime() - taggedRoute[index].station().getScheduleTime();
                 } else {
-                    transferTime = taggedRoute[index + 1].station().getCurrentTime() - taggedRoute[index].station().getCurrentTime();
+                    transferTime = nextStation.station().getCurrentTime() - taggedRoute[index].station().getCurrentTime();
                 }
             }
             RenderSystem.setShaderTexture(0, GUI);
@@ -638,7 +655,7 @@ public class RouteDetailsOverlayScreen implements HudOverlay {
                 reachConnection.accept(false);
                 ModGuiIcons.CROSS.render(poseStack, x + 10, y + ROUTE_LINE_HEIGHT - 2 - ModGuiIcons.ICON_SIZE / 2);
                 poseStack.pushPose();
-                GuiComponent.drawString(poseStack, shadowlessFont, Utils.translate(taggedRoute[index + 1].isDeparted() ? keyConnectionMissed : keyConnectionEndangered).withStyle(ChatFormatting.BOLD), x + 90, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, DELAYED | fontAlpha);
+                GuiComponent.drawString(poseStack, shadowlessFont, Utils.translate(nextStation.isDeparted() ? keyConnectionMissed : keyConnectionEndangered).withStyle(ChatFormatting.BOLD), x + 90, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, DELAYED | fontAlpha);
                 poseStack.popPose();
             } else {
                 reachConnection.accept(!station.isDeparted());
@@ -678,11 +695,39 @@ public class RouteDetailsOverlayScreen implements HudOverlay {
         }
 
     }
+
+    public void renderJourneyStart(PoseStack poseStack, int y, float alphaPercentage, int fontAlpha, StationEntry station) {
+        GuiComponent.drawString(poseStack, shadowlessFont, Utils.translate(keyNextConnections).withStyle(ChatFormatting.BOLD), x + 10, y + 4, 0xFFFFFF | fontAlpha);
+
+        SimpleTrainConnection[] conns = connections.toArray(SimpleTrainConnection[]::new);
+        for (int i = connectionsSubPageIndex * CONNECTION_ENTRIES_PER_PAGE, k = 0; i < Math.min((connectionsSubPageIndex + 1) * CONNECTION_ENTRIES_PER_PAGE, connections.size()); i++, k++) {
+            GuiComponent.drawString(poseStack, shadowlessFont, new TextComponent(TimeUtils.parseTime((int)((conns[i].ticks() + Constants.TIME_SHIFT) % Constants.TICKS_PER_DAY), TimeFormat.HOURS_24)), x + 10, y + 15 + 12 * k, 0xDBDBDB | fontAlpha);
+            GuiComponent.drawString(poseStack, shadowlessFont, new TextComponent(conns[i].trainName()), x + 40, y + 15 + 12 * k, 0xDBDBDB | fontAlpha);
+            GuiComponent.drawString(poseStack, shadowlessFont, new TextComponent(conns[i].scheduleTitle()), x + 90, y + 15 + 12 * k, 0xDBDBDB | fontAlpha);
+        }
+
+        // page
+        final int dotSize = 4;
+        final int dotY = y + 62 - 10;
+        final int startX = x + GUI_WIDTH / 2 - connectionsSubPagesCount * dotSize - dotSize;
+
+        for (int i = 0; i < connectionsSubPagesCount; i++) {
+            int s = dotSize + (i == connectionsSubPageIndex ? 2 : 0);
+            int dX = startX + i * dotSize * 3 - (i == connectionsSubPageIndex ? 1 : 0);
+            int dY = dotY - (i == connectionsSubPageIndex ? 1 : 0);
+            GuiComponent.fill(poseStack, dX, dY, dX + s, dY + s, i == connectionsSubPageIndex ? 0xFFFFFF | fontAlpha : 0xDBDBDB | fontAlpha);
+            GuiComponent.fill(poseStack, dX + 1, dY + 1, dX + s - 1, dY + s - 1, i == connectionsSubPageIndex ? 0xAAAAAA | fontAlpha : 0x888888 | fontAlpha);
+        }
+
+    }
     //#endregion
 
     protected static enum Page {
         ROUTE_OVERVIEW,
-        NEXT_CONNECTIONS;
+        NEXT_CONNECTIONS,
+        JOURNEY_START,
+        JOURNEY_END,
+        CONNECTION_MISSED;
     }
 
     protected static enum State {
