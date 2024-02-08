@@ -14,9 +14,24 @@ public enum ModGuiIcons {
     EMPTY("empty", 0, 0),
     CHECK("check", 1, 0),
     CROSS("cross", 2, 0),
+    WARN("warn", 3, 0),
     SETTINGS("settings", 0, 1),
     FILTER("filter", 1, 1),
-    BOOKMARK("bookmark", 2, 1);
+    BOOKMARK("bookmark", 2, 1),
+    PIN("pin", 3, 1),
+    UNPIN("unpin", 4, 1),
+    SOUND_ON("sound_on", 5, 1),
+    SOUND_OFF("sound_off", 6, 1),
+    SCALE("scale", 7, 1),
+    TOP_LEFT("top_left", 8, 1),
+    TOP_RIGHT("top_right", 9, 1),
+    BOTTOM_LEFT("bottom_left", 10, 1),
+    BOTTOM_RIGHT("bottom_right", 11, 1),
+    POSITION("position", 12, 1),
+    TARGET("target", 13, 1),
+    TIME("target", 14, 1),
+    WALK("walk", 15, 1),
+    INFO("info", 0, 2);
 
     private String id;
     private int u;

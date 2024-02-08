@@ -78,7 +78,6 @@ public class NavigatorScreen extends Screen implements IForegroundRendering {
 	private ModDestinationSuggestions destinationSuggestions;
     private GuiAreaDefinition switchButtonsArea; 
     private final ControlCollection routesCollection = new ControlCollection(); 
-    private final CustomIconScreenElement locationIcon = new CustomIconScreenElement(0, 210, 18, 18, 255, 255, Constants.GUI_WIDGETS);
 
     // Data
     private SimpleRoute[] routes;
@@ -161,7 +160,7 @@ public class NavigatorScreen extends Screen implements IForegroundRendering {
 
         switchButtonsArea = new GuiAreaDefinition(guiLeft + 190, guiTop + 34, 11, 12);
 
-        locationButton = this.addRenderableWidget(new IconButton(guiLeft + 208, guiTop + 20, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, locationIcon) {
+        locationButton = this.addRenderableWidget(new IconButton(guiLeft + 208, guiTop + 20, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, ModGuiIcons.POSITION.getAsCreateIcon()) {
             @Override
             public void onClick(double mouseX, double mouseY) {
                 super.onClick(mouseX, mouseY);
