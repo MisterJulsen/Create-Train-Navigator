@@ -84,7 +84,7 @@ public class AliasSettingsScreen extends Screen implements IForegroundRendering 
     protected void init() {
         super.init();        
         guiLeft = this.width / 2 - GUI_WIDTH / 2;
-        guiTop = this.height / 2 - GUI_HEIGHT / 2;      
+        guiTop = this.height / 2 - GUI_HEIGHT / 2;
 
         backButton = this.addRenderableWidget(new IconButton(guiLeft + 21, guiTop + 222, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, AllIcons.I_CONFIG_BACK) {
             @Override

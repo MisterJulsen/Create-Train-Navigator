@@ -3,6 +3,7 @@ package de.mrjulsen.crn.config;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.mrjulsen.crn.client.gui.screen.OverlayPosition;
 import net.minecraftforge.common.ForgeConfigSpec;
 
 public class ModClientConfig {
@@ -16,8 +17,13 @@ public class ModClientConfig {
     public static final ForgeConfigSpec.ConfigValue<Double> OVERLAY_SCALE;
     public static final ForgeConfigSpec.ConfigValue<Integer> TRANSFER_TIME;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> TRAIN_GROUP_FILTER_BLACKLIST;
+    public static final ForgeConfigSpec.ConfigValue<Boolean> ROUTE_NARRATOR;
+    public static final ForgeConfigSpec.ConfigValue<Boolean> ROUTE_NOTIFICATIONS;
+    public static final ForgeConfigSpec.ConfigValue<OverlayPosition> ROUTE_OVERLAY_POSITION;
 
     public static final int MAX_TRANSFER_TIME = 24000;
+    public static final double MIN_SCALE = 0.25f;
+    public static final double MAX_SCALE = 2.0f;
 
     static {
         BUILDER.push("Create Railways Navigator Config");
@@ -30,7 +36,13 @@ public class ModClientConfig {
         REALTIME_PRECISION_THRESHOLD = BUILDER.comment("This value (in ticks) indicates how accurately the real-time data should be displayed. By default, only deviations over 10 in-game minutes (167 ticks, approx. 8 real life seconds) are displayed. The lower the value, the more accurate the real-time data but also the more often deviations from the schedule occur. (Default: 167, 10 in-game minutes)")
             .defineInRange("general.realtime_precision_threshold", 167, 1, 1000);
         OVERLAY_SCALE = BUILDER.comment("Scale of the route overlay UI. (Default: 0.75)")
-            .defineInRange("ui.overlay_scale", 0.75f, 0.25f, 2.0f);
+            .defineInRange("route_overlay.scale", 0.75f, MIN_SCALE, MAX_SCALE);
+        ROUTE_NARRATOR = BUILDER.comment("If active, events during the journey (e.g. the next stop) are announced. (Default: OFF)")
+            .define("route_overlay.narrator", false);
+        ROUTE_NOTIFICATIONS = BUILDER.comment("If active, you will receive short toasts about important events on your trip, e.g. delays, changes, ... (Default: ON)")
+            .define("route_overlay.notifications", true);
+        ROUTE_OVERLAY_POSITION = BUILDER.comment("The position on your screen where you want the overlay to appear. (Default: Top Left)")
+            .defineEnum("route_overlay.position", OverlayPosition.TOP_LEFT);
         TRANSFER_TIME = BUILDER.comment("Specifies the minimum amount of time (in ticks) that must be available for changing the train. Only trains that depart later than the specified value at the transfer station will be selected. (Default: 1000, 1 in-game hour, approx. 50 real life seconds)")
             .defineInRange("search_settings.transfer_time", 1000, 0, MAX_TRANSFER_TIME);
         TRAIN_GROUP_FILTER_BLACKLIST = BUILDER.comment("List of train groups that should NOT be used in navigation. (Default: <empty>)")

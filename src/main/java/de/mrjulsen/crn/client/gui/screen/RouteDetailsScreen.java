@@ -126,7 +126,7 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering {
             @Override
             public void onClick(double mouseX, double mouseY) {
                 super.onClick(mouseX, mouseY);
-                HudOverlays.setOverlay(new RouteDetailsOverlayScreen(10, 10, level, lastRefreshedTime, route));
+                HudOverlays.setOverlay(new RouteDetailsOverlayScreen(level, lastRefreshedTime, route));
             }
         });
     }
