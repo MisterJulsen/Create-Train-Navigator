@@ -55,7 +55,7 @@ public class RealtimeRequestPacket implements IPacketBase<RealtimeRequestPacket>
                 Collection<SimpleDeparturePrediction> predictions = new ArrayList<>();
                 packet.ids.forEach(x -> predictions.addAll(TrainUtils.getTrainDeparturePredictions(x).stream().map(a -> a.simplify()).sorted(Comparator.comparingInt(a -> a.ticks())).toList()));
                 NetworkManager.sendToClient(new RealtimeResponsePacket(packet.requestId, predictions, updateTime), context.get().getSender());
-            }, "Realtime Reader").run();
+            }, "Realtime Provider").run();
         });
         
         context.get().setPacketHandled(true);

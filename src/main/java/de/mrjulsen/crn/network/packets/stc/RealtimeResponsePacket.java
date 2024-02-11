@@ -52,7 +52,9 @@ public class RealtimeResponsePacket implements IPacketBase<RealtimeResponsePacke
         context.get().enqueueWork(() ->
         {
             NetworkManager.executeOnClient(() -> {
-                InstanceManager.runClientRealtimeResponseAction(packet.id, packet.departure, packet.time);
+                new Thread(() -> {
+                    InstanceManager.runClientRealtimeResponseAction(packet.id, packet.departure, packet.time);
+                }, "Realtime Processor").run();
             });
         });
         

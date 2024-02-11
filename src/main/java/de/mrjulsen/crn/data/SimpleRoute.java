@@ -309,6 +309,7 @@ public class SimpleRoute {
         private final StationTrainDetails train;
 
         private boolean departed = false;
+        private boolean willMiss = false;
 
         public TaggedStationEntry(StationEntry station, StationTag tag, int index, StationTrainDetails train) {
             this.station = station;
@@ -339,6 +340,18 @@ public class SimpleRoute {
 
         public void setDeparted(boolean b) {
             this.departed = this.departed || b;
+        }
+
+        public void setWillMiss(boolean b) {
+            this.willMiss = b;
+        }
+
+        public boolean willMissStop() {
+            return willMiss;
+        }
+
+        public boolean reachable() {
+            return !willMissStop() && !isDeparted();
         }
     }
 

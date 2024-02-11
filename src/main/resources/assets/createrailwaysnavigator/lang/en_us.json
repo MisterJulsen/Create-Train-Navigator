@@ -55,6 +55,7 @@
     "gui.createrailwaysnavigator.route_details.departure": "Departure in",
     "gui.createrailwaysnavigator.route_details.transfer": "Transfer",
     
+    "gui.createrailwaysnavigator.route_overview.title": "Route Details",
     "gui.createrailwaysnavigator.route_overview.journey_begins": "Your journey begins! %s to %s, departure %s on platform %s",
     "gui.createrailwaysnavigator.route_overview.train_details": "%s to %s",
     "gui.createrailwaysnavigator.route_overview.train_speed": "%s km/h",
