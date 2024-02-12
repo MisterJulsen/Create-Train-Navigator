@@ -20,10 +20,14 @@ public class HudOverlays {
     private static final Map<Integer, HudOverlay> activeOverlays = new HashMap<>();
 
     public static final IIngameOverlay HUD_ROUTE_DETAILS = ((gui, poseStack, partialTicks, width, height) -> {
+        //GuiComponent.drawString(poseStack, Minecraft.getInstance().font, "Cache: " + JourneyListenerManager.getCacheSize(), 2, 2, 0xFFFFFF);
         activeOverlays.values().forEach(x -> x.render(gui, poseStack, width, height, partialTicks));
     });
 
     public static <T extends HudOverlay> T setOverlay(T overlay) {
+        if (activeOverlays.containsKey(overlay.getId())) {
+            activeOverlays.get(overlay.getId()).onClose();
+        }
         activeOverlays.remove(overlay.getId());
         activeOverlays.put(overlay.getId(), overlay);
         return overlay;
@@ -33,12 +37,29 @@ public class HudOverlays {
         return activeOverlays.containsKey(overlay.getId());
     }
 
+    public static int overlayCount() {
+        return activeOverlays.size();
+    }
+
     public static HudOverlay getOverlay(int id) {
         return activeOverlays.get(id);
     }
 
     public static void tick() {
         activeOverlays.values().forEach(x -> x.tick());
+    }
+
+    public static void remove(int id) {
+        if (activeOverlays.containsKey(id)) {
+            activeOverlays.remove(id).onClose();
+        }
+    }
+
+    public static int removeAll() {
+        int count = activeOverlays.size();
+        activeOverlays.values().forEach(x -> x.onClose());
+        activeOverlays.clear();
+        return count;
     }
 
 

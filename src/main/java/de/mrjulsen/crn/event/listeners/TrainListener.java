@@ -1,6 +1,7 @@
 package de.mrjulsen.crn.event.listeners;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +18,8 @@ public class TrainListener {
     private static TrainListener instance;
 
     private boolean isRunning;
+    private int totalTrainCount;
+    private int listeingTrainCount;
     private final Map<UUID, List<Integer>> TRAIN_DURATIONS = new HashMap<>();
     private final Map<UUID, Integer> lastTicks = new HashMap<>();
 
@@ -26,7 +29,9 @@ public class TrainListener {
         Thread t = new Thread(() -> {
             while (isRunning) {
 
-                TrainUtils.getAllTrains().forEach(train -> {
+                Collection<Train> trains = TrainUtils.getAllTrains();
+                listeingTrainCount = 0;
+                trains.forEach(train -> {
                     if (!TrainUtils.isTrainValid(train)) {
                         return;
                     }
@@ -49,8 +54,11 @@ public class TrainListener {
                             }
                         }
                         lastTicks.replace(train.id, maxTrainDuration.getAsInt());
-                    }                    
+                    }
+                    listeingTrainCount++;
                 });
+
+                this.totalTrainCount = trains.size();
 
                 try {
                     Thread.sleep(ModCommonConfig.TRAIN_LISTENER_INTERVALL.get());
@@ -92,5 +100,13 @@ public class TrainListener {
 
     private void stopInstance() {
         isRunning = false;
+    }
+
+    public int getTotalTrainCount() {
+        return this.totalTrainCount;
+    }
+
+    public int getListeningTrainCount() {
+        return this.listeingTrainCount;
     }
 }

@@ -16,18 +16,24 @@ public class TrackStationResponsePacket implements IPacketBase<TrackStationRespo
     public long id;
     public Collection<String> stationNames;
     public Collection<String> trainNames;
+    public int listingTrainCount;
+    public int totalTrainCount;
     
     public TrackStationResponsePacket() { }
 
-    public TrackStationResponsePacket(long id, Collection<String> stationNames, Collection<String> trainNames) {
+    public TrackStationResponsePacket(long id, Collection<String> stationNames, Collection<String> trainNames, int listingTrainCount, int totalTrainCount) {
         this.id = id;
         this.stationNames = stationNames;
         this.trainNames = trainNames;
+        this.listingTrainCount = listingTrainCount;
+        this.totalTrainCount = totalTrainCount;
     }
 
     @Override
     public void encode(TrackStationResponsePacket packet, FriendlyByteBuf buffer) {
         buffer.writeLong(packet.id);
+        buffer.writeInt(packet.listingTrainCount);
+        buffer.writeInt(packet.totalTrainCount);
         buffer.writeInt(packet.stationNames.size());
         for (String s : packet.stationNames) {
             buffer.writeUtf(s);
@@ -42,6 +48,8 @@ public class TrackStationResponsePacket implements IPacketBase<TrackStationRespo
     @Override
     public TrackStationResponsePacket decode(FriendlyByteBuf buffer) {
         long id = buffer.readLong();
+        int listingTrainCount = buffer.readInt();
+        int totalTrainCount = buffer.readInt();
         int count = buffer.readInt();
         List<String> stationNames = new ArrayList<>(count);
         for (int i = 0; i < count; i++) {
@@ -53,7 +61,7 @@ public class TrackStationResponsePacket implements IPacketBase<TrackStationRespo
         for (int i = 0; i < count; i++) {
             trainNames.add(buffer.readUtf());
         }
-        return new TrackStationResponsePacket(id, stationNames, trainNames);
+        return new TrackStationResponsePacket(id, stationNames, trainNames, listingTrainCount, totalTrainCount);
     }
 
     @Override
@@ -63,7 +71,9 @@ public class TrackStationResponsePacket implements IPacketBase<TrackStationRespo
             NetworkManager.executeOnClient(() -> {
                 ClientTrainStationSnapshot.makeNew(
                     packet.stationNames == null || packet.stationNames.isEmpty() ? new ArrayList<>() : new ArrayList<>(packet.stationNames),
-                    packet.trainNames == null || packet.trainNames.isEmpty() ? new ArrayList<>() : new ArrayList<>(packet.trainNames)
+                    packet.trainNames == null || packet.trainNames.isEmpty() ? new ArrayList<>() : new ArrayList<>(packet.trainNames),
+                    packet.listingTrainCount,
+                    packet.totalTrainCount
                 );
                 InstanceManager.runClientResponseReceievedAction(packet.id);
             });

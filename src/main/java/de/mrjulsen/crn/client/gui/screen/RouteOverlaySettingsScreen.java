@@ -20,6 +20,8 @@ import com.simibubi.create.foundation.utility.Components;
 import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.client.gui.DynamicWidgets;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
+import de.mrjulsen.crn.client.gui.overlay.HudOverlays;
+import de.mrjulsen.crn.client.gui.overlay.RouteDetailsOverlayScreen;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.item.ModItems;
 import de.mrjulsen.crn.util.Pair;
@@ -50,6 +52,8 @@ public class RouteOverlaySettingsScreen extends CommonScreen {
 	private final ItemStack renderedItem = new ItemStack(ModItems.NAVIGATOR.get());
     private int guiLeft, guiTop;
 
+    private final RouteDetailsOverlayScreen overlay;
+
     private IconButton backButton;
     private IconButton detailsButton;
     private IconButton removeOverlayButton;
@@ -77,9 +81,10 @@ public class RouteOverlaySettingsScreen extends CommonScreen {
     private static final Component textNotificationsDescription = Utils.translate("gui.createrailwaysnavigator.route_overlay_settings.notifications.description").withStyle(ChatFormatting.GRAY);
     
     @SuppressWarnings("resource")
-    public RouteOverlaySettingsScreen() {
+    public RouteOverlaySettingsScreen(RouteDetailsOverlayScreen overlay) {
         super(title);
         this.shadowlessFont = new NoShadowFontWrapper(Minecraft.getInstance().font);
+        this.overlay = overlay;
     }
 
     @Override
@@ -89,6 +94,7 @@ public class RouteOverlaySettingsScreen extends CommonScreen {
         super.onClose();
     }
 
+    @SuppressWarnings("resource")
     @Override
     protected void init() {
         super.init();        
@@ -105,14 +111,17 @@ public class RouteOverlaySettingsScreen extends CommonScreen {
 
         detailsButton = this.addRenderableWidget(new IconButton(guiLeft + 7, guiTop + 55, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, AllIcons.I_VIEW_SCHEDULE));
         detailsButton.withCallback(() -> {
-
+            Minecraft minecraft = Minecraft.getInstance();
+            minecraft.setScreen(new RouteDetailsScreen(this, Minecraft.getInstance().level, overlay.getListener().getListeningRoute(), overlay.getListenerId()));
         });
         detailsButton.setToolTip(textShowDetails);
         buttons.add(detailsButton);
 
         removeOverlayButton = this.addRenderableWidget(new IconButton(guiLeft + 27, guiTop + 55, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, AllIcons.I_CONFIG_DISCARD));
         removeOverlayButton.withCallback(() -> {
-
+            Minecraft minecraft = Minecraft.getInstance();
+            minecraft.setScreen(new RouteDetailsScreen(null, Minecraft.getInstance().level, overlay.getListener().getListeningRoute(), overlay.getListenerId()));
+            HudOverlays.remove(overlay.getId());
         });
         removeOverlayButton.setToolTip(textUnpin);
         buttons.add(removeOverlayButton);

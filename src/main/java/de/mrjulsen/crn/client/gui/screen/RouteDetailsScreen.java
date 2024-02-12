@@ -1,6 +1,7 @@
 package de.mrjulsen.crn.client.gui.screen;
 
 import java.util.List;
+import java.util.UUID;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -20,13 +21,17 @@ import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.overlay.HudOverlays;
 import de.mrjulsen.crn.client.gui.overlay.RouteDetailsOverlayScreen;
 import de.mrjulsen.crn.client.gui.widgets.ExpandButton;
+import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.SimpleRoute;
 import de.mrjulsen.crn.data.SimpleRoute.SimpleRoutePart;
 import de.mrjulsen.crn.data.SimpleRoute.StationEntry;
+import de.mrjulsen.crn.event.listeners.IJourneyListenerClient;
+import de.mrjulsen.crn.event.listeners.JourneyListenerManager;
 import de.mrjulsen.crn.util.ModGuiUtils;
 import de.mrjulsen.crn.util.ModTimeUtils;
 import de.mrjulsen.mcdragonlib.utils.TimeUtils;
 import de.mrjulsen.mcdragonlib.utils.TimeUtils.TimeFormat;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.Widget;
 import net.minecraft.client.gui.screens.Screen;
@@ -35,11 +40,13 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 
-public class RouteDetailsScreen extends Screen implements IForegroundRendering {
+public class RouteDetailsScreen extends Screen implements IForegroundRendering, IJourneyListenerClient {
 
     private static final int GUI_WIDTH = 255;
     private static final int GUI_HEIGHT = 247;
-    private static final ResourceLocation GUI = new ResourceLocation(ModMain.MOD_ID, "textures/gui/route_details.png");
+    private static final ResourceLocation GUI = new ResourceLocation(ModMain.MOD_ID, "textures/gui/route_details.png");    
+    private static final int ON_TIME = 0x1AEA5F;
+    private static final int DELAYED = 0xFF4242;
 
     private static final int DEFAULT_ICON_BUTTON_WIDTH = 18;
     private static final int DEFAULT_ICON_BUTTON_HEIGHT = 18;
@@ -66,25 +73,25 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering {
 
     // Data
     private final SimpleRoute route;
-    private final NavigatorScreen lastScreen;
+    private final Screen lastScreen;
     private final Font font;
     private final Font shadowlessFont;
     private final Level level;
-    private final int lastRefreshedTime;
 
     // Tooltips
     private final TranslatableComponent departureText = new TranslatableComponent("gui." + ModMain.MOD_ID + ".route_details.departure");
     private final TranslatableComponent transferText = new TranslatableComponent("gui." + ModMain.MOD_ID + ".route_details.transfer");
     private final TranslatableComponent timeNowText = new TranslatableComponent("gui." + ModMain.MOD_ID + ".time.now");
 
-    public RouteDetailsScreen(NavigatorScreen lastScreen, Level level, int lastRefreshedTime, Font font, SimpleRoute route) {
+    @SuppressWarnings("resource")
+    public RouteDetailsScreen(Screen lastScreen, Level level, SimpleRoute route, UUID listenerId) {
         super(new TranslatableComponent("gui." + ModMain.MOD_ID + ".route_details.title"));
         this.lastScreen = lastScreen;
         this.route = route;
-        this.font = font;  
+        this.font = Minecraft.getInstance().font;  
         this.shadowlessFont = new NoShadowFontWrapper(font);    
         this.level = level;
-        this.lastRefreshedTime = lastRefreshedTime;
+        JourneyListenerManager.get(listenerId, this);
 
         int count = route.getParts().size();
         expandButtons = new ExpandButton[count];
@@ -92,6 +99,11 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering {
             expandButtons[i] = new ExpandButton(font, 0, 0, false, (btn) -> {});
             expandButtonCollection.components.add(expandButtons[i]);
         }
+    }
+
+    @Override
+    public UUID getJourneyListenerClientId() {
+        return UUID.randomUUID();
     }
 
     public int getCurrentTime() {
@@ -105,7 +117,8 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering {
 
     @Override
     public void onClose() {
-        this.minecraft.setScreen(lastScreen);
+        this.minecraft.setScreen(lastScreen);        
+        JourneyListenerManager.removeClientListenerForAll(this);
     }
 
     @Override
@@ -126,7 +139,7 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering {
             @Override
             public void onClick(double mouseX, double mouseY) {
                 super.onClick(mouseX, mouseY);
-                HudOverlays.setOverlay(new RouteDetailsOverlayScreen(level, lastRefreshedTime, route));
+                HudOverlays.setOverlay(new RouteDetailsOverlayScreen(level, route));
             }
         });
     }
@@ -145,7 +158,13 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering {
         RenderSystem.setShaderTexture(0, Constants.GUI_WIDGETS);
         blit(poseStack, x, y, 0, V, ENTRY_WIDTH, HEIGHT);
 
-        drawString(poseStack, shadowlessFont, TimeUtils.parseTime((lastRefreshedTime + Constants.TIME_SHIFT) % 24000 + stop.getTicks(), TimeFormat.HOURS_24), x + ENTRY_TIME_X, y + 15, 0xFFFFFF);
+        int pY = y + 15;
+        if (stop.renderRealtime() && stop.relatimeWasUpdated()) {
+            pY -= (stop.renderRealtime() ? 5 : 0);
+            drawString(poseStack, shadowlessFont, TimeUtils.parseTime((int)(stop.getEstimatedTimeWithThreshold() % 24000 + Constants.TIME_SHIFT), TimeFormat.HOURS_24), x + ENTRY_TIME_X, pY + 10, stop.getDifferenceTime() > ModClientConfig.DEVIATION_THRESHOLD.get() ? DELAYED : ON_TIME);
+        }
+        drawString(poseStack, shadowlessFont, TimeUtils.parseTime((int)((route.getRefreshTime() + Constants.TIME_SHIFT) % 24000 + stop.getTicks()), TimeFormat.HOURS_24), x + ENTRY_TIME_X, pY, 0xFFFFFF);
+
         drawString(poseStack, shadowlessFont, stop.getStationName(), x + ENTRY_DEST_X, y + 15, 0xFFFFFF);
         drawString(poseStack, shadowlessFont, stop.getInfo().platform(), x + ENTRY_DEST_X + 129 - shadowlessFont.width(stop.getInfo().platform()), y + 15, 0xFFFFFF);
 
@@ -179,7 +198,12 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering {
         RenderSystem.setShaderTexture(0, Constants.GUI_WIDGETS);
         blit(poseStack, x, y, 0, V, ENTRY_WIDTH, HEIGHT);
 
-        drawString(poseStack, shadowlessFont, TimeUtils.parseTime((lastRefreshedTime + Constants.TIME_SHIFT) % 24000 + stop.getTicks(), TimeFormat.HOURS_24), x + ENTRY_TIME_X, y + 6, 0xFFFFFF);
+        int pY = y + 6;
+        if (stop.renderRealtime() && stop.relatimeWasUpdated()) {
+            pY -= (stop.renderRealtime() ? 5 : 0);
+            drawString(poseStack, shadowlessFont, TimeUtils.parseTime((int)(stop.getEstimatedTimeWithThreshold() % 24000 + Constants.TIME_SHIFT), TimeFormat.HOURS_24), x + ENTRY_TIME_X, pY + 10, stop.getDifferenceTime() > ModClientConfig.DEVIATION_THRESHOLD.get() ? DELAYED : ON_TIME);
+        }
+        drawString(poseStack, shadowlessFont, TimeUtils.parseTime((int)((route.getRefreshTime() + Constants.TIME_SHIFT) % 24000 + stop.getTicks()), TimeFormat.HOURS_24), x + ENTRY_TIME_X, pY, 0xFFFFFF);
         drawString(poseStack, shadowlessFont, stop.getStationName(), x + ENTRY_DEST_X, y + 6, 0xFFFFFF);
         drawString(poseStack, shadowlessFont, stop.getInfo().platform(), x + ENTRY_DEST_X + 129 - shadowlessFont.width(stop.getInfo().platform()), y + 6, 0xFFFFFF);
 
@@ -193,7 +217,12 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering {
         RenderSystem.setShaderTexture(0, Constants.GUI_WIDGETS);
         blit(poseStack, x, y, 0, V, ENTRY_WIDTH, HEIGHT);
 
-        drawString(poseStack, shadowlessFont, TimeUtils.parseTime((lastRefreshedTime + Constants.TIME_SHIFT) % 24000 + stop.getTicks(), TimeFormat.HOURS_24), x + ENTRY_TIME_X, y + 21, 0xFFFFFF);
+        int pY = y + 21;
+        if (stop.renderRealtime() && stop.relatimeWasUpdated()) {
+            pY -= (stop.renderRealtime() ? 5 : 0);
+            drawString(poseStack, shadowlessFont, TimeUtils.parseTime((int)(stop.getEstimatedTimeWithThreshold() % 24000 + Constants.TIME_SHIFT), TimeFormat.HOURS_24), x + ENTRY_TIME_X, pY + 10, stop.getDifferenceTime() > ModClientConfig.DEVIATION_THRESHOLD.get() ? DELAYED : ON_TIME);
+        }
+        drawString(poseStack, shadowlessFont, TimeUtils.parseTime((int)((route.getRefreshTime() + Constants.TIME_SHIFT) % 24000 + stop.getTicks()), TimeFormat.HOURS_24), x + ENTRY_TIME_X, pY, 0xFFFFFF);
         drawString(poseStack, shadowlessFont, stop.getStationName(), x + ENTRY_DEST_X, y + 21, 0xFFFFFF);
         drawString(poseStack, shadowlessFont, stop.getInfo().platform(), x + ENTRY_DEST_X + 129 - shadowlessFont.width(stop.getInfo().platform()), y + 21, 0xFFFFFF);
 
@@ -240,7 +269,7 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering {
         pPoseStack.scale(2, 2, 2);
 
         int departureTicks = route.getStartStation().getTicks();
-        int departureTime = lastRefreshedTime % 24000 + departureTicks;
+        int departureTime = (int)(route.getRefreshTime() % 24000 + departureTicks);
         drawCenteredString(pPoseStack, font, departureTime - getCurrentTime() < 0 ? timeNowText.getString() : ModTimeUtils.parseTimeWithoutCorrection(departureTime - getCurrentTime()), (guiLeft + GUI_WIDTH / 2) / 2, (guiTop + 31) / 2, 0xFFFFFF);
 
         pPoseStack.scale(0.5f, 0.5f, 0.5f);

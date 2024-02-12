@@ -13,7 +13,8 @@ public class ModClientConfig {
     
     public static final ForgeConfigSpec.ConfigValue<Integer> REALTIME_PRECISION_THRESHOLD;
     public static final ForgeConfigSpec.ConfigValue<Integer> DEVIATION_THRESHOLD;
-    public static final ForgeConfigSpec.ConfigValue<Integer> EARLY_ARRIVAL_THRESHOLD;
+    public static final ForgeConfigSpec.ConfigValue<Integer> NEXT_STOP_ANNOUNCEMENT;
+    public static final ForgeConfigSpec.ConfigValue<Integer> REALTIME_EARLY_ARRIVAL_THRESHOLD;
     public static final ForgeConfigSpec.ConfigValue<Double> OVERLAY_SCALE;
     public static final ForgeConfigSpec.ConfigValue<Integer> TRANSFER_TIME;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> TRAIN_GROUP_FILTER_BLACKLIST;
@@ -31,8 +32,10 @@ public class ModClientConfig {
         /* CONFIGS */
         DEVIATION_THRESHOLD = BUILDER.comment("The value indicates how much deviation from the schedule a train should be considered delayed. Delayed trains are marked red in the real-time display. (Default: 500, 30 in-game minutes)")
             .defineInRange("general.deviation_threshold", 500, 1, MAX_TRANSFER_TIME);
-        EARLY_ARRIVAL_THRESHOLD = BUILDER.comment("Specifies how early (in ticks) a train can arrive at a station before the scheduled time in order to be accepted as a connection and for the real-time data. If a train arrives earlier than specified here, its next travel cycle will be awaited. This can possibly lead to a train delay, but prevents connections from being canceled due to early arrivals or transfer times being too short. (Default: 500, 30 in-game minutes)")
-            .defineInRange("general.early_arrival_threshold", 500, 1, MAX_TRANSFER_TIME);
+        REALTIME_EARLY_ARRIVAL_THRESHOLD = BUILDER.comment("If a train departs earlier from the scheduled time than specified here, no real-time data will be displayed. Trains that depart earlier than the scheduled departure time minus the minimum transfer time are intentionally \"missed\" in order to continue to ensure the connection. (Default: 500, 30 in-game minutes)")
+            .defineInRange("general.realtime_early_arrival_threshold", 500, 1, MAX_TRANSFER_TIME);
+        NEXT_STOP_ANNOUNCEMENT = BUILDER.comment("The next stop or information about the start of the journey is announced in the specified number of ticks before the scheduled arrival at the next station. (Default: 500, 30 real life seconds)")
+            .defineInRange("general.next_stop_announcement", 500, 100, 1000);
         REALTIME_PRECISION_THRESHOLD = BUILDER.comment("This value (in ticks) indicates how accurately the real-time data should be displayed. By default, only deviations over 10 in-game minutes (167 ticks, approx. 8 real life seconds) are displayed. The lower the value, the more accurate the real-time data but also the more often deviations from the schedule occur. (Default: 167, 10 in-game minutes)")
             .defineInRange("general.realtime_precision_threshold", 167, 1, 1000);
         OVERLAY_SCALE = BUILDER.comment("Scale of the route overlay UI. (Default: 0.75)")

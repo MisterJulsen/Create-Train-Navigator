@@ -6,8 +6,17 @@ import net.minecraftforge.event.TickEvent.Type;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+
+import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.client.gui.overlay.HudOverlays;
+import de.mrjulsen.crn.data.ClientTrainStationSnapshot;
+import de.mrjulsen.crn.event.listeners.JourneyListenerManager;
+import de.mrjulsen.crn.event.listeners.TrainListener;
+import de.mrjulsen.crn.network.InstanceManager;
+import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.ClientPlayerNetworkEvent.LoggedOutEvent;
+import net.minecraftforge.client.event.RenderGameOverlayEvent;
 
 @EventBusSubscriber(Dist.CLIENT)
 public class ClientEvents {
@@ -18,5 +27,32 @@ public class ClientEvents {
             return;
         }
         HudOverlays.tick();
+        JourneyListenerManager.tick();
+    }
+
+    @SubscribeEvent
+    public static void onWorldLeave(LoggedOutEvent event) {
+        int count = HudOverlays.removeAll();
+        ModMain.LOGGER.info("Removed all " + count + " overlays.");
+
+        ClientTrainStationSnapshot.getInstance().dispose();        
+        InstanceManager.clearAll();
+    }
+
+    @SuppressWarnings("resource")
+    @SubscribeEvent
+    public static void onDebugOverlay(RenderGameOverlayEvent.Text event) {
+        boolean b1 = TrainListener.getInstance() != null;
+        boolean b2 = ClientTrainStationSnapshot.getInstance() != null;
+        
+        if (Minecraft.getInstance().options.renderDebug) {
+            event.getLeft().add(String.format("CRN | T: %s/%s, JL: %s, O: %s, I: %s",
+                b1 ? TrainListener.getInstance().getListeningTrainCount() : (b2 ? ClientTrainStationSnapshot.getInstance().getListeningTrainCount() : 0),
+                b1 ? TrainListener.getInstance().getTotalTrainCount() : (b2 ? ClientTrainStationSnapshot.getInstance().getTrainCount() : 0),
+                JourneyListenerManager.getCacheSize(),
+                HudOverlays.overlayCount(),
+                InstanceManager.getInstancesCountString()
+            ));
+        }
     }
 }

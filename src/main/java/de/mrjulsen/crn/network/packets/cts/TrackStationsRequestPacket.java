@@ -2,6 +2,7 @@ package de.mrjulsen.crn.network.packets.cts;
 
 import java.util.function.Supplier;
 
+import de.mrjulsen.crn.event.listeners.TrainListener;
 import de.mrjulsen.crn.network.NetworkManager;
 import de.mrjulsen.crn.network.packets.IPacketBase;
 import de.mrjulsen.crn.network.packets.stc.TrackStationResponsePacket;
@@ -37,7 +38,9 @@ public class TrackStationsRequestPacket implements IPacketBase<TrackStationsRequ
             NetworkManager.sendToClient(new TrackStationResponsePacket(
                 packet.id,
                 TrainUtils.getAllStations().stream().map(x -> x.name).toList(),
-                TrainUtils.getAllTrains().stream().map(x -> x.name.getString()).toList()
+                TrainUtils.getAllTrains().stream().map(x -> x.name.getString()).toList(),
+                TrainListener.getInstance().getListeningTrainCount(),
+                TrainListener.getInstance().getTotalTrainCount()
             ), context.get().getSender());
         });
         

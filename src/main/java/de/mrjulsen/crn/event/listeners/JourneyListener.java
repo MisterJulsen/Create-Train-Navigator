@@ -3,6 +3,7 @@ package de.mrjulsen.crn.event.listeners;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,14 +16,15 @@ import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.DeparturePrediction.SimpleDeparturePrediction;
 import de.mrjulsen.crn.data.SimpleRoute;
+import de.mrjulsen.crn.data.SimpleRoute.StationEntry;
 import de.mrjulsen.crn.data.SimpleRoute.StationTag;
-import de.mrjulsen.crn.data.SimpleRoute.TaggedStationEntry;
 import de.mrjulsen.crn.network.InstanceManager;
 import de.mrjulsen.crn.network.NetworkManager;
 import de.mrjulsen.crn.network.packets.cts.RealtimeRequestPacket;
 import de.mrjulsen.mcdragonlib.utils.TimeUtils;
 import de.mrjulsen.mcdragonlib.utils.TimeUtils.TimeFormat;
 import de.mrjulsen.mcdragonlib.utils.Utils;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.KeybindComponent;
 import net.minecraft.network.chat.MutableComponent;
@@ -32,13 +34,11 @@ import net.minecraft.network.chat.TranslatableComponent;
 public class JourneyListener {
 
     public static final int ID = 1;
-    private static final int INFO_BEFORE_NEXT_STOP = 500;
+    //private static final int INFO_BEFORE_NEXT_STOP = 500;
     private static final int REALTIME_REFRESH_TIME = 100;
     private static final Component TEXT_CONCAT = new TextComponent("     ***     ");
     
-    private final TaggedStationEntry[] taggedRoute;
-    private final int transferCount;
-    private final int totalDuration;
+    private final SimpleRoute route;
     private int stationIndex = 0;
     private State currentState = State.BEFORE_JOURNEY;
     private int realTimeRefreshTimer = 0;
@@ -52,29 +52,49 @@ public class JourneyListener {
     private static final String keyConnectionMissedInfo = "gui.createrailwaysnavigator.route_overview.connection_missed_info";
     private static final String keyOptionsText = "gui.createrailwaysnavigator.route_overview.options";
     private static final String keyKeybindOptions = "key.createrailwaysnavigator.route_overlay_options";
+    private static final String keyNotificationJourneyBeginsTitle = "gui.createrailwaysnavigator.route_overview.notification.journey_begins.title";
+    private static final String keyNotificationJourneyBegins = "gui.createrailwaysnavigator.route_overview.notification.journey_begins";
+    private static final String keyNotificationPlatformChangedTitle = "gui.createrailwaysnavigator.route_overview.notification.platform_changed.title";
+    private static final String keyNotificationPlatformChanged = "gui.createrailwaysnavigator.route_overview.notification.platform_changed";    
+    private static final String keyNotificationTrainDelayedTitle = "gui.createrailwaysnavigator.route_overview.notification.train_delayed.title";
+    private static final String keyNotificationTrainDelayed = "gui.createrailwaysnavigator.route_overview.notification.train_delayed";
+    private static final String keyNotificationTransferTitle = "gui.createrailwaysnavigator.route_overview.notification.transfer.title";
+    private static final String keyNotificationTransfer = "gui.createrailwaysnavigator.route_overview.notification.transfer";
+    private static final String keyNotificationConnectionEndangeredTitle = "gui.createrailwaysnavigator.route_overview.notification.connection_endangered.title";
+    private static final String keyNotificationConnectionEndangered = "gui.createrailwaysnavigator.route_overview.notification.connection_endangered";
+    private static final String keyNotificationConnectionMissedTitle = "gui.createrailwaysnavigator.route_overview.notification.connection_missed.title";
+    private static final String keyNotificationConnectionMissed = "gui.createrailwaysnavigator.route_overview.notification.connection_missed";
+    private static final String keyNotificationJourneyCompletedTitle = "gui.createrailwaysnavigator.route_overview.notification.journey_completed.title";
+    private static final String keyNotificationJourneyCompleted = "gui.createrailwaysnavigator.route_overview.notification.journey_completed";
 
     // Events
+    public static record NotificationData(State state, Component title, Component text) {}
     public static record JourneyBeginEvent(State state, Component infoText, String narratorText) {}
     public static record ReachNextStopData(State state, Component infoText, String narratorText, boolean isTransfer, boolean connectionMissed) {}
     public static record ContinueData(State state) {}
     public static record FinishJourneyData(State state, Component infoText) {}    
     public static record AnnounceNextStopData(State state, Component infoText, String narratorText, boolean isTransfer) {}
 
-    private Optional<Runnable> onUpdateRealtime = Optional.empty();
-    private Optional<Consumer<Component>> onInfoTextChange = Optional.empty();
-    private Optional<Consumer<State>> onStateChange = Optional.empty();
-    private Optional<Consumer<String>> onNarratorAnnounce = Optional.empty();
-    private Optional<Consumer<JourneyBeginEvent>> onJourneyBegin = Optional.empty();
-    private Optional<Consumer<ReachNextStopData>> onReachNextStop = Optional.empty();
-    private Optional<Consumer<ContinueData>> onContinue = Optional.empty();
-    private Optional<Consumer<FinishJourneyData>> onFinishJourney = Optional.empty();
-    private Optional<Consumer<AnnounceNextStopData>> onAnnounceNextStop = Optional.empty();
+    private Map<UUID, Optional<Runnable>> onUpdateRealtime = new HashMap<>();
+    private Map<UUID, Optional<Consumer<Component>>> onInfoTextChange = new HashMap<>();
+    private Map<UUID, Optional<Consumer<NotificationData>>> onNotificationSend = new HashMap<>();
+    private Map<UUID, Optional<Consumer<State>>> onStateChange = new HashMap<>();
+    private Map<UUID, Optional<Consumer<String>>> onNarratorAnnounce = new HashMap<>();
+    private Map<UUID, Optional<Consumer<JourneyBeginEvent>>> onJourneyBegin = new HashMap<>();
+    private Map<UUID, Optional<Consumer<ReachNextStopData>>> onReachNextStop = new HashMap<>();
+    private Map<UUID, Optional<Consumer<ContinueData>>> onContinue = new HashMap<>();
+    private Map<UUID, Optional<Consumer<FinishJourneyData>>> onFinishJourney = new HashMap<>();
+    private Map<UUID, Optional<Consumer<AnnounceNextStopData>>> onAnnounceNextStop = new HashMap<>();
+
+    private Component lastInfoText = Utils.emptyText();
+    private NotificationData lastNotification = null;
+    private String lastNarratorText = "";
+
+    private boolean beginAnnounced = false;
 
 
     public JourneyListener(SimpleRoute route) {
-        this.taggedRoute = route.getRoutePartsTagged();
-        this.transferCount = route.getTransferCount();
-        this.totalDuration = route.getTotalDuration();
+        this.route = route;
     }
 
     public static JourneyListener listenTo(SimpleRoute route) {
@@ -83,16 +103,18 @@ public class JourneyListener {
 
     public JourneyListener start() {
         Component text = new TranslatableComponent(keyJourneyBegins,
-            currentStation().train().trainName(),
-            currentStation().train().scheduleTitle(),
-            TimeUtils.parseTime((int)currentStation().station().getEstimatedTimeWithThreshold() + Constants.TIME_SHIFT, TimeFormat.HOURS_24),
-            currentStation().station().getInfo().platform()
+            currentStation().getTrain().trainName(),
+            currentStation().getTrain().scheduleTitle(),
+            TimeUtils.parseTime((int)currentStation().getEstimatedTimeWithThreshold() + Constants.TIME_SHIFT, TimeFormat.HOURS_24),
+            currentStation().getInfo().platform()
         );
         String narratorText = text.getString() + ". " + Utils.translate(keyOptionsText, new KeybindComponent(keyKeybindOptions)).getString();
 
-        if (onJourneyBegin.isPresent()) {
-            onJourneyBegin.get().accept(new JourneyBeginEvent(currentState, text, narratorText));
-        }
+        onJourneyBegin.values().forEach(x -> {
+            if (x.isPresent()) {
+                x.get().accept(new JourneyBeginEvent(currentState, text, narratorText));
+            }
+        });
 
         isStarted = true;
         return this;
@@ -103,49 +125,138 @@ public class JourneyListener {
         return this;
     }
 
-    public JourneyListener onUpdateRealtime(Runnable m) {
-        this.onUpdateRealtime = Optional.of(m);
+    public JourneyListener registerOnUpdateRealtime(IJourneyListenerClient client, Runnable m) {
+        unregisterOnUpdateRealtime(client);
+        this.onUpdateRealtime.put(client.getJourneyListenerClientId(), Optional.of(m));
         return this;
     }
 
-    public JourneyListener onStateChange(Consumer<State> m) {
-        this.onStateChange = Optional.of(m);
+    public JourneyListener registerOnStateChange(IJourneyListenerClient client, Consumer<State> m) {
+        unregisterOnUpdateRealtime(client);
+        this.onStateChange.put(client.getJourneyListenerClientId(), Optional.of(m));
         return this;
     }
 
-    public JourneyListener onNarratorAnnounce(Consumer<String> m) {
-        this.onNarratorAnnounce = Optional.of(m);
+    public JourneyListener registerOnNarratorAnnounce(IJourneyListenerClient client, Consumer<String> m) {
+        unregisterOnNarratorAnnounce(client);
+        this.onNarratorAnnounce.put(client.getJourneyListenerClientId(), Optional.of(m));
         return this;
     }
 
-    public JourneyListener onInfoTextChange(Consumer<Component> m) {
-        this.onInfoTextChange = Optional.of(m);
+    public JourneyListener registerOnInfoTextChange(IJourneyListenerClient client, Consumer<Component> m) {
+        unregisterOnInfoTextChange(client);
+        this.onInfoTextChange.put(client.getJourneyListenerClientId(), Optional.of(m));
         return this;
     }
 
-    public JourneyListener onReachNextStop(Consumer<ReachNextStopData> m) {
-        this.onReachNextStop = Optional.of(m);
+    public JourneyListener registerOnNotification(IJourneyListenerClient client, Consumer<NotificationData> m) {
+        unregisterOnNotification(client);
+        this.onNotificationSend.put(client.getJourneyListenerClientId(), Optional.of(m));
+        return this;
+    }
+
+    public JourneyListener registerOnReachNextStop(IJourneyListenerClient client, Consumer<ReachNextStopData> m) {
+        unregisterOnReachNextStop(client);
+        this.onReachNextStop.put(client.getJourneyListenerClientId(), Optional.of(m));
         return this;
     }
     
-    public JourneyListener onContinueWithJourneyAfterStop(Consumer<ContinueData> m) {
-        this.onContinue = Optional.of(m);
+    public JourneyListener registerOnContinueWithJourneyAfterStop(IJourneyListenerClient client, Consumer<ContinueData> m) {
+        unregisterOnContinueWithJourneyAfterStop(client);
+        this.onContinue.put(client.getJourneyListenerClientId(), Optional.of(m));
         return this;
     }
 
-    public JourneyListener onFinishJourney(Consumer<FinishJourneyData> m) {
-        this.onFinishJourney = Optional.of(m);
+    public JourneyListener registerOnFinishJourney(IJourneyListenerClient client, Consumer<FinishJourneyData> m) {
+        unregisterOnFinishJourney(client);
+        this.onFinishJourney.put(client.getJourneyListenerClientId(), Optional.of(m));
         return this;
     }
     
-    public JourneyListener onAnnounceNextStop(Consumer<AnnounceNextStopData> m) {
-        this.onAnnounceNextStop = Optional.of(m);
+    public JourneyListener registerOnAnnounceNextStop(IJourneyListenerClient client, Consumer<AnnounceNextStopData> m) {
+        unregisterOnAnnounceNextStop(client);
+        this.onAnnounceNextStop.put(client.getJourneyListenerClientId(), Optional.of(m));
         return this;
     }
 
-    public JourneyListener onJourneyBegin(Consumer<JourneyBeginEvent> m) {
-        this.onJourneyBegin = Optional.of(m);
+    public JourneyListener registerOnJourneyBegin(IJourneyListenerClient client, Consumer<JourneyBeginEvent> m) {
+        unregisterOnJourneyBegin(client);
+        this.onJourneyBegin.put(client.getJourneyListenerClientId(), Optional.of(m));
         return this;
+    }
+
+
+    public void unregisterOnUpdateRealtime(IJourneyListenerClient client) {
+        if (onUpdateRealtime.containsKey(client.getJourneyListenerClientId())) {
+            onUpdateRealtime.remove(client.getJourneyListenerClientId());
+        }
+    }
+
+    public void unregisterOnStateChange(IJourneyListenerClient client) {
+        if (onStateChange.containsKey(client.getJourneyListenerClientId())) {
+            onStateChange.remove(client.getJourneyListenerClientId());
+        }
+    }
+
+    public void unregisterOnNarratorAnnounce(IJourneyListenerClient client) {
+        if (onNarratorAnnounce.containsKey(client.getJourneyListenerClientId())) {
+            onNarratorAnnounce.remove(client.getJourneyListenerClientId());
+        }
+    }
+
+    public void unregisterOnNotification(IJourneyListenerClient client) {
+        if (onNotificationSend.containsKey(client.getJourneyListenerClientId())) {
+            onNotificationSend.remove(client.getJourneyListenerClientId());
+        }
+    }
+
+    public void unregisterOnInfoTextChange(IJourneyListenerClient client) {
+        if (onInfoTextChange.containsKey(client.getJourneyListenerClientId())) {
+            onInfoTextChange.remove(client.getJourneyListenerClientId());
+        }
+    }
+
+    public void unregisterOnReachNextStop(IJourneyListenerClient client) {
+        if (onReachNextStop.containsKey(client.getJourneyListenerClientId())) {
+            onReachNextStop.remove(client.getJourneyListenerClientId());
+        }
+    }
+    
+    public void unregisterOnContinueWithJourneyAfterStop(IJourneyListenerClient client) {
+        if (onContinue.containsKey(client.getJourneyListenerClientId())) {
+            onContinue.remove(client.getJourneyListenerClientId());
+        }
+    }
+
+    public void unregisterOnFinishJourney(IJourneyListenerClient client) {
+        if (onFinishJourney.containsKey(client.getJourneyListenerClientId())) {
+            onFinishJourney.remove(client.getJourneyListenerClientId());
+        }
+    }
+    
+    public void unregisterOnAnnounceNextStop(IJourneyListenerClient client) {
+        if (onAnnounceNextStop.containsKey(client.getJourneyListenerClientId())) {
+            onAnnounceNextStop.remove(client.getJourneyListenerClientId());
+        }
+    }
+
+    public void unregisterOnJourneyBegin(IJourneyListenerClient client) {
+        if (onJourneyBegin.containsKey(client.getJourneyListenerClientId())) {
+            onJourneyBegin.remove(client.getJourneyListenerClientId());
+        }
+    }
+
+    public void unregister(IJourneyListenerClient client) {
+        unregisterOnAnnounceNextStop(client);
+        unregisterOnContinueWithJourneyAfterStop(client);
+        unregisterOnFinishJourney(client);
+        unregisterOnInfoTextChange(client);
+        unregisterOnJourneyBegin(client);
+        unregisterOnNarratorAnnounce(client);
+        unregisterOnReachNextStop(client);
+        unregisterOnStateChange(client);
+        unregisterOnUpdateRealtime(client);
+        unregisterOnNotification(client);
     }
 
 
@@ -163,51 +274,32 @@ public class JourneyListener {
                 requestRealtimeData();
             }
         }
+
+        if (!beginAnnounced && firstStation().getEstimatedTime() - ModClientConfig.TRANSFER_TIME.get() < Minecraft.getInstance().level.getDayTime()) {
+            setNotificationText(new NotificationData(currentState, Utils.translate(keyNotificationJourneyBeginsTitle,
+                lastStation().getStationName()
+            ), Utils.translate(keyNotificationJourneyBegins,
+                currentStation().getTrain().trainName(),
+                currentStation().getTrain().scheduleTitle(),
+                TimeUtils.parseTime((int)currentStation().getEstimatedTimeWithThreshold() + Constants.TIME_SHIFT, TimeFormat.HOURS_24),
+                currentStation().getInfo().platform()
+            )));
+            beginAnnounced = true;
+        }
     }
     
     private void requestRealtimeData() {
-        final Collection<UUID> ids = Arrays.stream(taggedRoute).map(x -> x.train().trainId()).distinct().toList();
+        final Collection<UUID> ids = Arrays.stream(route.getStationArray()).map(x -> x.getTrain().trainId()).distinct().toList();
         long id = InstanceManager.registerClientRealtimeResponseAction((predictions, time) -> {
             Map<UUID, List<SimpleDeparturePrediction>> predMap = predictions.stream().collect(Collectors.groupingBy(SimpleDeparturePrediction::id));
-            Map<UUID, List<TaggedStationEntry>> mappedRoute = Arrays.stream(taggedRoute).skip(stationIndex).collect(Collectors.groupingBy(x -> x.train().trainId(), LinkedHashMap::new, Collectors.toList()));
             
-            // Update realtime data
-            for (int i = stationIndex; i < taggedRoute.length; i++) {
-                TaggedStationEntry e = taggedRoute[i];
-                List<SimpleDeparturePrediction> preds = predMap.get(e.train().trainId());
-                List<TaggedStationEntry> stations = mappedRoute.get(e.train().trainId());
-                updateRealtime(preds, stations, e.train().trainId(), stationIndex, time);                
-            }
-            List<SimpleDeparturePrediction> currentTrainSchedule = predMap.get(currentStation().train().trainId());
-            SimpleDeparturePrediction currentTrainNextStop = predMap.get(currentStation().train().trainId()).get(0);
+            SimpleDeparturePrediction currentTrainNextStop = predMap.get(currentStation().getTrain().trainId()).get(0);
+            List<SimpleDeparturePrediction> currentTrainSchedule = predMap.get(currentStation().getTrain().trainId());
 
-            // check if connection train has departed
-            for (List<TaggedStationEntry> routePart : mappedRoute.values()) {
-                if (mappedRoute.size() < 2) {
-                    continue;
-                }
-                long min = routePart.stream().filter(x -> x.station().getCurrentTime() + ModClientConfig.TRANSFER_TIME.get() > x.station().getScheduleTime()).mapToLong(x -> x.station().getCurrentTime()).min().orElse(-1);
-                long currentTime = routePart.get(0).station().getCurrentTime();
-
-                if (min > 0 && currentTime > min && currentTime + ModClientConfig.TRANSFER_TIME.get() > routePart.get(0).station().getScheduleTime()) {
-                    routePart.get(0).setDeparted(true);
-                }
-            }
-
-            checkStationAccessibility();
-            
-            // PROGRESS ANIMATION
-            if (currentState != State.BEFORE_JOURNEY && currentState != State.JOURNEY_INTERRUPTED) {
-                if (!currentState.nextStopAnnounced() && !currentState.isWaitingForNextTrainToDepart() // state check
-                    && time >= taggedRoute[stationIndex].station().getEstimatedTime() - INFO_BEFORE_NEXT_STOP) // train check
-                {                    
-                    announceNextStop();
-                }
-                
-                if (currentState != State.WHILE_TRAVELING && currentState != State.WHILE_TRANSFER) // train check
-                {     
-                    while (!currentTrainNextStop.station().equals(currentStation().station().getStationName()) && currentState != State.AFTER_JOURNEY) {
-                        if (currentStation().tag() == StationTag.END) {
+            if (currentState != State.BEFORE_JOURNEY && currentState != State.JOURNEY_INTERRUPTED) {                
+                if (currentState != State.WHILE_TRAVELING && currentState != State.WHILE_TRANSFER) {     
+                    while (!currentTrainNextStop.station().equals(currentStation().getStationName()) && currentState != State.AFTER_JOURNEY) {
+                        if (currentStation().getTag() == StationTag.END) {
                             finishJourney();
                         } else {
                             nextStop();
@@ -216,10 +308,10 @@ public class JourneyListener {
                 }
             }
 
-            if ((!currentState.isWaitingForNextTrainToDepart() || currentState == State.BEFORE_JOURNEY || currentState == State.WHILE_TRANSFER)
-                && isStationValidForShedule(currentTrainSchedule, currentStation().train().trainId(), stationIndex) && time >= currentStation().station().getEstimatedTime()) {                    
-                if (currentStation().tag() == StationTag.PART_END) {
-                    if (taggedRoute[stationIndex + 1].isDeparted()) {
+            if (((!currentState.isWaitingForNextTrainToDepart() || currentState == State.BEFORE_JOURNEY || currentState == State.WHILE_TRANSFER) && currentStation().renderRealtime())
+                && isStationValidForShedule(currentTrainSchedule, currentStation().getTrain().trainId(), stationIndex) && time >= currentStation().getEstimatedTime()) {                    
+                if (currentStation().getTag() == StationTag.PART_END) {
+                    if (route.getStationArray()[stationIndex + 1].isDeparted()) {
                         reachTransferStopConnectionMissed();
                     } else {
                         reachTransferStop();
@@ -229,21 +321,61 @@ public class JourneyListener {
                 }
             }
 
-            if (onUpdateRealtime.isPresent()) {
-                onUpdateRealtime.get().run();
+            if (currentState == State.AFTER_JOURNEY) {
+                return;
             }
+            
+            Map<UUID, List<StationEntry>> mappedRoute = Arrays.stream(route.getStationArray()).skip(stationIndex).collect(Collectors.groupingBy(x -> x.getTrain().trainId(), LinkedHashMap::new, Collectors.toList()));
+
+            // Update realtime data
+            for (int i = stationIndex; i < route.getStationCount(true); i++) {
+                StationEntry e = route.getStationArray()[i];
+                List<SimpleDeparturePrediction> preds = predMap.get(e.getTrain().trainId());
+                List<StationEntry> stations = mappedRoute.get(e.getTrain().trainId());
+                updateRealtime(preds, stations, e.getTrain().trainId(), stationIndex, time);                
+            }
+
+            // check if connection train has departed
+            for (List<StationEntry> routePart : mappedRoute.values()) {
+                if (mappedRoute.size() < 2) {
+                    continue;
+                }
+                long min = routePart.stream().filter(x -> x.getCurrentTime() + ModClientConfig.TRANSFER_TIME.get() > x.getScheduleTime()).mapToLong(x -> x.getCurrentTime()).min().orElse(-1);
+                long currentTime = routePart.get(0).getCurrentTime();
+
+                if (min > 0 && currentTime > min && currentTime + ModClientConfig.TRANSFER_TIME.get() > routePart.get(0).getScheduleTime()) {
+                    routePart.get(0).setDeparted(true);
+                }
+            }
+
+            checkStationAccessibility();
+            
+            // PROGRESS ANIMATION
+            if (currentState != State.BEFORE_JOURNEY && currentState != State.JOURNEY_INTERRUPTED) {
+                if (!currentState.nextStopAnnounced() && !currentState.isWaitingForNextTrainToDepart() // state check
+                    && time >= route.getStationArray()[stationIndex].getEstimatedTime() - ModClientConfig.NEXT_STOP_ANNOUNCEMENT.get()) // train check
+                {                    
+                    announceNextStop();
+                }
+            }
+
+            onUpdateRealtime.values().forEach(x -> {
+                if (x.isPresent()) {
+                    x.get().run();
+                }
+            });
         });
         NetworkManager.sendToServer(new RealtimeRequestPacket(id, ids));
     }
 
     private boolean isStationValidForShedule(List<SimpleDeparturePrediction> schedule, UUID trainId, int startIndex) {
         List<String> filteredStationEntryList = new ArrayList<>();
-        for (int i = startIndex; i < taggedRoute.length; i++) {
-            TaggedStationEntry entry = taggedRoute[i];
-            if (!entry.train().trainId().equals(trainId)) {
+        for (int i = startIndex; i < route.getStationCount(true); i++) {
+            StationEntry entry = route.getStationArray()[i];
+            if (!entry.getTrain().trainId().equals(trainId)) {
                 break;
             }
-            filteredStationEntryList.add(entry.station().getStationName());
+            filteredStationEntryList.add(entry.getStationName());
         }
         String[] filteredStationEntries = filteredStationEntryList.toArray(String[]::new);
         String[] sched = schedule.stream().map(x -> x.station()).toArray(String[]::new);
@@ -262,27 +394,58 @@ public class JourneyListener {
         return true;
     }
 
-    private void updateRealtime(List<SimpleDeparturePrediction> schedule, List<TaggedStationEntry> route, UUID trainId, int startIndex, long updateTime) {
+    private void updateRealtime(List<SimpleDeparturePrediction> schedule, List<StationEntry> route, UUID trainId, int startIndex, long updateTime) {
         boolean b = false;
         long lastTime = -1;
+
+        List<StationEntry> routePart = route.stream().filter(x -> x.getTrain().trainId().equals(trainId)).toList();
+        StationEntry first = routePart.get(0);
+        StationEntry last = routePart.get(routePart.size() - 1);
+        boolean wasDelayed = last.isDelayed();
+
         for (int i = 0, k = 0; i < schedule.size() && k < route.size(); i++) {
             SimpleDeparturePrediction current = schedule.get(i);
             long newTime = current.ticks() + updateTime;
-            if (route.get(0).station().getStationName().equals(current.station())) {
+            if (route.get(0).getStationName().equals(current.station())) {
                 k = 0;
                 b = true;
             }
 
-            if (route.get(k).station().getStationName().equals(current.station()) && b == true) {
+            if (route.get(k).getStationName().equals(current.station()) && b == true) {
                 if (newTime > lastTime/* && newTime + EARLY_ARRIVAL_THRESHOLD > route.get(k).station().getScheduleTime()*/) {
-                    route.get(k).station().updateRealtimeData(current.ticks(), updateTime);
-                    lastTime = route.get(k).station().getCurrentTime();
+                    route.get(k).updateRealtimeData(current.ticks(), updateTime, current.info(), () -> {
+
+                    });
+                    lastTime = route.get(k).getCurrentTime();
                 }
                 k++;
             } else {
                 b = false;
             }
         }
+
+        if (!wasDelayed && last.isDelayed()) {
+            setNotificationText(new NotificationData(currentState, Utils.translate(keyNotificationTrainDelayedTitle,
+                last.getTrain().trainName(),
+                TimeUtils.parseDuration((int)last.getDifferenceTime())
+            ), Utils.translate(keyNotificationTrainDelayed,
+                TimeUtils.parseTime((int)(last.getEstimatedTimeWithThreshold() % 24000) + Constants.TIME_SHIFT, TimeFormat.HOURS_24),
+                TimeUtils.parseTime((int)(last.getScheduleTime() % 24000) + Constants.TIME_SHIFT, TimeFormat.HOURS_24),
+                last.getStationName()
+            )));
+        }
+    }
+
+    public Component getLastInfoText() {
+        return lastInfoText;
+    }
+
+    public String lastNarratorText() {
+        return lastNarratorText;
+    }
+
+    public NotificationData getLastNotification() {
+        return lastNotification;
     }
 
     private Component concat(Component... components) {
@@ -297,6 +460,42 @@ public class JourneyListener {
         }
         return c;
     }
+
+    private void setState(State state) {
+        this.currentState = state;
+        onStateChange.values().forEach(x -> {            
+            if (x.isPresent()) {
+                x.get().accept(currentState);
+            }
+        });
+    }
+
+    private void setInfoText(Component text) {
+        this.lastInfoText = text;
+        onInfoTextChange.values().forEach(x -> {            
+            if (x.isPresent()) {
+                x.get().accept(text);
+            }
+        });
+    }
+
+    private void setNotificationText(NotificationData data) {
+        this.lastNotification = data;
+        onNotificationSend.values().forEach(x -> {            
+            if (x.isPresent()) {
+                x.get().accept(data);
+            }
+        });
+    }
+
+    private void setNarratorText(String text) {
+        this.lastNarratorText = text;
+        onNarratorAnnounce.values().forEach(x -> {            
+            if (x.isPresent()) {
+                x.get().accept(text);
+            }
+        });
+    }
     
 
     private void nextStop() {
@@ -304,20 +503,17 @@ public class JourneyListener {
             return;
         }
 
-        //setTrainDataSubPage(true);
-        //setPageRouteOverview();
-        currentState = State.WHILE_TRAVELING;
+        setState(State.WHILE_TRAVELING);
         
-        if (onContinue.isPresent()) {
-            onContinue.get().accept(new ContinueData(currentState));
-        }
-        if (onStateChange.isPresent()) {
-            onStateChange.get().accept(currentState);
-        }
+        onContinue.values().forEach(x -> {
+            if (x.isPresent()) {
+                x.get().accept(new ContinueData(currentState));
+            }
+        });        
     }
 
     private boolean changeCurrentStation() {
-        if (stationIndex + 1 >= taggedRoute.length) {
+        if (stationIndex + 1 >= route.getStationCount(true)) {
             finishJourney();
             return false;
         }
@@ -326,18 +522,16 @@ public class JourneyListener {
     }    
 
     private void finishJourney() {
-        Component text = Utils.translate(keyAfterJourney, taggedRoute[taggedRoute.length - 1].station().getStationName());
-        currentState = State.AFTER_JOURNEY;
-        //setPageJourneyCompleted();
-        if (onFinishJourney.isPresent()) {
-            onFinishJourney.get().accept(new FinishJourneyData(currentState, text));
-        }
-        if (onStateChange.isPresent()) {
-            onStateChange.get().accept(currentState);
-        }
-        if (onInfoTextChange.isPresent()) {
-            onInfoTextChange.get().accept(text);
-        }
+        Component text = Utils.translate(keyAfterJourney, route.getStationArray()[route.getStationCount(true) - 1].getStationName());
+        setState(State.AFTER_JOURNEY);
+        
+        onFinishJourney.values().forEach(x -> {
+            if (x.isPresent()) {
+                x.get().accept(new FinishJourneyData(currentState, text));
+            }
+        });
+        setInfoText(text);
+        setNotificationText(new NotificationData(currentState, Utils.translate(keyNotificationJourneyCompletedTitle), Utils.translate(keyNotificationJourneyCompleted)));
 
         stop();
     }
@@ -347,133 +541,105 @@ public class JourneyListener {
         Component textB = Utils.emptyText();
         Component text;
         text = textA = new TranslatableComponent(keyNextStop,
-            currentStation().station().getStationName()
+            currentStation().getStationName()
         );
-        if (currentStation().tag() == StationTag.PART_END && currentStation().index() + 1 < taggedRoute.length) {
+        if (currentStation().getTag() == StationTag.PART_END && currentStation().getIndex() + 1 < route.getStationCount(true)) {
             Component transferText = textB = new TranslatableComponent(keyTransfer,
-                nextStation().get().train().trainName(),
-                nextStation().get().train().scheduleTitle(),
-                nextStation().get().station().getInfo().platform()
+                nextStation().get().getTrain().trainName(),
+                nextStation().get().getTrain().scheduleTitle(),
+                nextStation().get().getInfo().platform()
             );
             text = concat(text, transferText);
-            currentState = State.BEFORE_TRANSFER;
+            setState(State.BEFORE_TRANSFER);
+            setNotificationText(new NotificationData(currentState, Utils.translate(keyNotificationTransferTitle), Utils.translate(keyNotificationTransfer,
+                nextStation().get().getTrain().trainName(),
+                nextStation().get().getTrain().scheduleTitle(),
+                nextStation().get().getInfo().platform()
+            )));
         } else {
-            currentState = State.BEFORE_NEXT_STOP;
+            setState(State.BEFORE_NEXT_STOP);
         }
 
         String narratorText = textA.getString() + ". " + textB.getString();
-        boolean transfer = currentStation().tag() == StationTag.PART_END && currentStation().index() + 1 < taggedRoute.length;
-        /*
-        setSlidingText(text);
-
-
-        if (ModClientConfig.ROUTE_NARRATOR.get()) {
-            NarratorChatListener.INSTANCE.narrator.say(textA.getString() + ". " + textB.getString(), true);
-        }
-
-        setPageNextConnections();
-        */
-        if (onAnnounceNextStop.isPresent()) {
-            onAnnounceNextStop.get().accept(new AnnounceNextStopData(currentState, text, narratorText, transfer));
-        }
-        if (onStateChange.isPresent()) {
-            onStateChange.get().accept(currentState);
-        }
-        if (onInfoTextChange.isPresent()) {
-            onInfoTextChange.get().accept(text);
-        }
-        if (onNarratorAnnounce.isPresent()) {
-            onNarratorAnnounce.get().accept(narratorText);
-        }
+        boolean transfer = currentStation().getTag() == StationTag.PART_END && currentStation().getIndex() + 1 < route.getStationCount(true);
+        
+        final Component fText = text;
+        onAnnounceNextStop.values().forEach(x -> {
+            if (x.isPresent()) {
+                x.get().accept(new AnnounceNextStopData(currentState, fText, narratorText, transfer));
+            }
+        });
+        setInfoText(text);
+        setNarratorText(narratorText);
     }
 
     private void reachNextStop() {
-        Component text = Utils.text(currentStation().station().getStationName());        
+        Component text = Utils.text(currentStation().getStationName());        
         String narratorText = text.getString();
-        /*
-        setSlidingText();
-        if (ModClientConfig.ROUTE_NARRATOR.get()) {
-            NarratorChatListener.INSTANCE.narrator.say(currentStation().station().getStationName(), true);
-        }
-        */
-        currentState = State.WHILE_NEXT_STOP;
-        if (onReachNextStop.isPresent()) {
-            onReachNextStop.get().accept(new ReachNextStopData(currentState, text, narratorText, false, false));
-        }
-        if (onStateChange.isPresent()) {
-            onStateChange.get().accept(currentState);
-        }
-        if (onInfoTextChange.isPresent()) {
-            onInfoTextChange.get().accept(text);
-        }
-        if (onNarratorAnnounce.isPresent()) {
-            onNarratorAnnounce.get().accept(narratorText);
-        }
+        
+        setState(State.WHILE_NEXT_STOP);
+        onReachNextStop.values().forEach(x -> {
+                if (x.isPresent()) {
+                    x.get().accept(new ReachNextStopData(currentState, text, narratorText, false, false));
+                }
+        });
+        
+        setInfoText(text);
+        setNarratorText(narratorText);
     }
 
     private void reachTransferStop() {
         Component text = nextStation().isPresent() ? new TranslatableComponent(keyTransfer,
-            nextStation().get().train().trainName(),
-            nextStation().get().train().scheduleTitle(),
-            nextStation().get().station().getInfo().platform()
+            nextStation().get().getTrain().trainName(),
+            nextStation().get().getTrain().scheduleTitle(),
+            nextStation().get().getInfo().platform()
         ) : Utils.emptyText();
         String narratorText = text.getString();
-        /*
-        setSlidingText(text);
-        if (ModClientConfig.ROUTE_NARRATOR.get()) {
-            NarratorChatListener.INSTANCE.narrator.say(text.getString(), true);
-        }
-        */
-        currentState = State.WHILE_TRANSFER;
+        
+        setState(State.WHILE_TRANSFER);
         changeCurrentStation();
-        //setPageTransfer();
-        if (onReachNextStop.isPresent()) {
-            onReachNextStop.get().accept(new ReachNextStopData(currentState, text, narratorText, true, false));
-        }
-        if (onStateChange.isPresent()) {
-            onStateChange.get().accept(currentState);
-        }
-        if (onInfoTextChange.isPresent()) {
-            onInfoTextChange.get().accept(text);
-        }
-        if (onNarratorAnnounce.isPresent()) {
-            onNarratorAnnounce.get().accept(narratorText);
-        }
+
+        onReachNextStop.values().forEach(x -> {
+            if (x.isPresent()) {
+                x.get().accept(new ReachNextStopData(currentState, text, narratorText, true, false));
+            }
+        });
+        setInfoText(text);
+        setNarratorText(narratorText);
     }
 
     private void reachTransferStopConnectionMissed() {
         Component text = concat(
-            Utils.text(currentStation().station().getStationName()),
+            Utils.text(currentStation().getStationName()),
             new TranslatableComponent(keyConnectionMissedInfo),
             new TranslatableComponent(keyJourneyInterrupted,
-                taggedRoute[taggedRoute.length - 1].station().getStationName()
+                route.getStationArray()[route.getStationCount(true) - 1].getStationName()
             )
         );
         String narratorText = "";
 
-        //setPageJourneyInterrupted();
-        currentState = State.JOURNEY_INTERRUPTED;
-        if (onReachNextStop.isPresent()) {
-            onReachNextStop.get().accept(new ReachNextStopData(currentState, text, narratorText, true, true));
-        }
-        if (onStateChange.isPresent()) {
-            onStateChange.get().accept(currentState);
-        }
-        if (onInfoTextChange.isPresent()) {
-            onInfoTextChange.get().accept(text);
-        }
-        if (onNarratorAnnounce.isPresent()) {
-            onNarratorAnnounce.get().accept(narratorText);
-        }
+        setState(State.JOURNEY_INTERRUPTED);
+        onReachNextStop.values().forEach(x -> {
+            if (x.isPresent()) {
+                x.get().accept(new ReachNextStopData(currentState, text, narratorText, true, true));
+            }
+        });
+        setInfoText(text);
+        setNarratorText(narratorText);
         
         stop();
     }
 
     private void checkStationAccessibility() {
         boolean willMiss = false;
-        for (int i = stationIndex; i < taggedRoute.length; i++) {
-            TaggedStationEntry station = taggedRoute[i];
-            TaggedStationEntry nextStation = i < taggedRoute.length - 1 ? taggedRoute[i + 1] : null;
+        for (int i = stationIndex; i < route.getStationCount(true); i++) {
+            StationEntry station = route.getStationArray()[i];
+            StationEntry nextStation = i < route.getStationCount(true) - 1 ? route.getStationArray()[i + 1] : null;
+
+            if (nextStation == null) {
+                continue;
+            }
+
             if (station.isDeparted()) {
                 willMiss = true;
             }
@@ -481,10 +647,10 @@ public class JourneyListener {
             if (!willMiss) {
                 long transferTime = -1;
                 if (nextStation != null && !nextStation.isDeparted()) {
-                    if (nextStation.station().getCurrentTime() + ModClientConfig.TRANSFER_TIME.get() < nextStation.station().getScheduleTime()) {
-                        transferTime = nextStation.station().getScheduleTime() - station.station().getScheduleTime();
+                    if (nextStation.getCurrentTime() + ModClientConfig.TRANSFER_TIME.get() < nextStation.getScheduleTime()) {
+                        transferTime = nextStation.getScheduleTime() - station.getScheduleTime();
                     } else {
-                        transferTime = nextStation.station().getCurrentTime() - station.station().getCurrentTime();
+                        transferTime = nextStation.getCurrentTime() - station.getCurrentTime();
                     }
                 }
 
@@ -493,19 +659,19 @@ public class JourneyListener {
                 }
             }
             
-            station.setWillMiss(false);
+            station.setWillMiss(willMiss);
         }
     }
 
     public long getTransferTime(int index) {
-        Optional<TaggedStationEntry> station = getEntryAt(index);
-        Optional<TaggedStationEntry> nextStation = getEntryAt(index + 1);
+        Optional<StationEntry> station = getEntryAt(index);
+        Optional<StationEntry> nextStation = getEntryAt(index + 1);
         long transferTime = -1;
         if (station.isPresent() && nextStation.isPresent() && !nextStation.get().isDeparted()) {
-            if (nextStation.get().station().getCurrentTime() + ModClientConfig.TRANSFER_TIME.get() < nextStation.get().station().getScheduleTime()) {
-                transferTime = nextStation.get().station().getScheduleTime() - station.get().station().getScheduleTime();
+            if (nextStation.get().getCurrentTime() + ModClientConfig.TRANSFER_TIME.get() < nextStation.get().getScheduleTime()) {
+                transferTime = nextStation.get().getScheduleTime() - station.get().getScheduleTime();
             } else {
-                transferTime = nextStation.get().station().getCurrentTime() - station.get().station().getCurrentTime();
+                transferTime = nextStation.get().getCurrentTime() - station.get().getCurrentTime();
             }
         }
 
@@ -515,24 +681,24 @@ public class JourneyListener {
 
 
 
-    public TaggedStationEntry currentStation() {
-        return taggedRoute[stationIndex];
+    public StationEntry currentStation() {
+        return route.getStationArray()[stationIndex];
     }
 
-    public Optional<TaggedStationEntry> nextStation() {
-        return stationIndex + 1 < taggedRoute.length ? Optional.of(taggedRoute[stationIndex + 1]) : Optional.empty();
+    public Optional<StationEntry> nextStation() {
+        return stationIndex + 1 < route.getStationCount(true) ? Optional.of(route.getStationArray()[stationIndex + 1]) : Optional.empty();
     }
 
-    public Optional<TaggedStationEntry> previousSation() {
-        return stationIndex > 0 ? Optional.of(taggedRoute[stationIndex - 1]) : Optional.empty();
+    public Optional<StationEntry> previousSation() {
+        return stationIndex > 0 ? Optional.of(route.getStationArray()[stationIndex - 1]) : Optional.empty();
     }
 
-    public TaggedStationEntry firstStation() {
-        return taggedRoute[0];
+    public StationEntry firstStation() {
+        return route.getStationArray()[0];
     }
 
-    public TaggedStationEntry lastStation() {
-        return taggedRoute[taggedRoute.length - 1];
+    public StationEntry lastStation() {
+        return route.getStationArray()[route.getStationCount(true) - 1];
     }
 
     public State getCurrentState() {
@@ -543,33 +709,21 @@ public class JourneyListener {
         return isStarted;
     }
 
-    public TaggedStationEntry[] stations() {
-        return taggedRoute;
-    }
-
-    public int getTransferCount() {
-        return transferCount;
-    }
-
-    public int getTotalDuration() {
-        return totalDuration;
-    }
-
     public long getTimeDifferenceForStation(int index) {        
-        TaggedStationEntry station = taggedRoute[index];
-        return station.station().getCurrentRefreshTime() + station.station().getCurrentTicks() - station.station().getRefreshTime() - station.station().getTicks();
+        StationEntry station = route.getStationArray()[index];
+        return station.getCurrentRefreshTime() + station.getCurrentTicks() - station.getRefreshTime() - station.getTicks();
     }    
 
     public int getIndex() {
         return stationIndex;
     }
 
-    public int getStationCount() {
-        return taggedRoute.length;
+    public SimpleRoute getListeningRoute() {
+        return route;
     }
     
-    public Optional<TaggedStationEntry> getEntryAt(int index) {
-        return index >= 0 && index < taggedRoute.length ? Optional.of(taggedRoute[index]) : Optional.empty();
+    public Optional<StationEntry> getEntryAt(int index) {
+        return index >= 0 && index < route.getStationCount(true) ? Optional.of(route.getStationArray()[index]) : Optional.empty();
     }
 
 

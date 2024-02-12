@@ -76,16 +76,16 @@ public class NavigationRequestPacket implements IPacketBase<NavigationRequestPac
                 } catch (Exception e) {
                     ModMain.LOGGER.error("Navigation error: ", e);
                     NetworkManager.sendToClient(new ServerErrorPacket(e.getMessage()), context.get().getSender());
-                } finally {     
-                    long estimatedTime = System.currentTimeMillis() - startTime;
+                } finally {         
+                    final long estimatedTime = System.currentTimeMillis() - startTime;
                     ModMain.LOGGER.info(String.format("Route calculated. Took %sms.",
                         estimatedTime
-                    ));               
-                    NetworkManager.sendToClient(new NavigationResponsePacket(packet.id, new ArrayList<>(routes.stream().filter(x -> !x.isEmpty()).map(x -> new SimpleRoute(x)).toList()), (int)estimatedTime, updateTime), context.get().getSender());
-                }                
+                    ));                          
+                    NetworkManager.sendToClient(new NavigationResponsePacket(packet.id, new ArrayList<>(routes.stream().filter(x -> !x.isEmpty()).map(x -> new SimpleRoute(x)).toList()), estimatedTime, updateTime), context.get().getSender());                    
+                }
             });
             navigationThread.setPriority(Thread.MIN_PRIORITY);
-            navigationThread.setName("Navigation Worker");
+            navigationThread.setName("Navigator");
             navigationThread.start();
 
         });

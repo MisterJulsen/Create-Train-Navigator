@@ -1,9 +1,15 @@
 package de.mrjulsen.crn.client.gui.overlay;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Optional;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -17,27 +23,19 @@ import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.screen.OverlayPosition;
-import de.mrjulsen.crn.client.gui.widgets.NavigatorToast;
 import de.mrjulsen.crn.client.input.ModKeys;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.SimpleRoute;
 import de.mrjulsen.crn.data.SimpleTrainConnection;
 import de.mrjulsen.crn.item.ModItems;
+import de.mrjulsen.crn.data.DeparturePrediction.SimpleDeparturePrediction;
 import de.mrjulsen.crn.data.SimpleRoute.StationEntry;
 import de.mrjulsen.crn.data.SimpleRoute.StationTag;
-import de.mrjulsen.crn.event.listeners.IJourneyListenerClient;
-import de.mrjulsen.crn.event.listeners.JourneyListener;
-import de.mrjulsen.crn.event.listeners.JourneyListenerManager;
-import de.mrjulsen.crn.event.listeners.JourneyListener.AnnounceNextStopData;
-import de.mrjulsen.crn.event.listeners.JourneyListener.ContinueData;
-import de.mrjulsen.crn.event.listeners.JourneyListener.FinishJourneyData;
-import de.mrjulsen.crn.event.listeners.JourneyListener.JourneyBeginEvent;
-import de.mrjulsen.crn.event.listeners.JourneyListener.NotificationData;
-import de.mrjulsen.crn.event.listeners.JourneyListener.ReachNextStopData;
-import de.mrjulsen.crn.event.listeners.JourneyListener.State;
+import de.mrjulsen.crn.data.SimpleRoute.TaggedStationEntry;
 import de.mrjulsen.crn.network.InstanceManager;
 import de.mrjulsen.crn.network.NetworkManager;
 import de.mrjulsen.crn.network.packets.cts.NextConnectionsRequestPacket;
+import de.mrjulsen.crn.network.packets.cts.RealtimeRequestPacket;
 import de.mrjulsen.crn.network.packets.cts.TrainDataRequestPacket;
 import de.mrjulsen.crn.util.ModGuiUtils;
 import de.mrjulsen.mcdragonlib.utils.TimeUtils;
@@ -60,19 +58,22 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.client.gui.ForgeIngameGui;
 
-public class RouteDetailsOverlayScreen implements HudOverlay, IJourneyListenerClient {
+public class RouteDetailsOverlayScreen implements HudOverlay {
 
     public static final int ID = 1;
 
     private static final ResourceLocation GUI = new ResourceLocation(ModMain.MOD_ID, "textures/gui/overview.png");
-    private static final Component title = Utils.translate("gui.createrailwaysnavigator.route_overview.title");
     private static final int GUI_WIDTH = 226;
     private static final int GUI_HEIGHT = 118;
     private static final int SLIDING_TEXT_AREA_WIDTH = 220;
+    //private static final float getUIScale() = 0.5f;
 
     private static final int ON_TIME = 0x1AEA5F;
     private static final int DELAYED = 0xFF4242;
     private static final int COLOR_WARN = 16755200;
+
+    private static final int INFO_BEFORE_NEXT_STOP = 500;
+    //private static final int DELAY_TRESHOLD = 500;
 
     private long fadeStart = 0L;
     private boolean fading = false;
@@ -84,8 +85,13 @@ public class RouteDetailsOverlayScreen implements HudOverlay, IJourneyListenerCl
     private final Level level;
     
     private static final int MAX_STATION_PER_PAGE = 4;
+    private final TaggedStationEntry[] taggedRoute;
+    private final int transferCount;
+    private final int totalDuration;
+    private int stationIndex = 0;
 
     private Page currentPage = Page.ROUTE_OVERVIEW;
+    private State currentState = State.BEFORE_JOURNEY;
 
     private Collection<SimpleTrainConnection> connections;
     private static final int CONNECTION_ENTRIES_PER_PAGE = 3;
@@ -99,19 +105,26 @@ public class RouteDetailsOverlayScreen implements HudOverlay, IJourneyListenerCl
     private int trainDataSubPageTime = 0;
     private int trainDataSubPageIndex = 0;
 
+    private static final Component title = new TextComponent("Route Details");
+    private static final Component textConcat = new TextComponent("     ***     ");
     private final Font shadowlessFont;
 
-    private Component slidingText =Utils.emptyText();
+    private Component slidingText;
     private float slidingTextOffset = 0;
     private int slidingTextWidth = 0;
+
+    private static final int REALTIME_REFRESH_TIME = 100;
+    private int realTimeRefreshTimer = 0;
     
     private MultiLineLabel messageLabel;
 
     private LerpedFloat xPos = LerpedFloat.linear().startWithValue(0);
     private LerpedFloat yPos = LerpedFloat.linear().startWithValue(0);
     
+    private static final String keyJourneyBegins = "gui.createrailwaysnavigator.route_overview.journey_begins";
     private static final String keyTrainDetails = "gui.createrailwaysnavigator.route_overview.train_details";
     private static final String keyTrainSpeed = "gui.createrailwaysnavigator.route_overview.train_speed";
+    private static final String keyNextStop = "gui.createrailwaysnavigator.route_overview.next_stop";
     private static final String keyTransfer = "gui.createrailwaysnavigator.route_overview.transfer";
     private static final String keyTransferCount = "gui.createrailwaysnavigator.navigator.route_entry.transfer";
     private static final String keyAfterJourney = "gui.createrailwaysnavigator.route_overview.after_journey";
@@ -120,62 +133,39 @@ public class RouteDetailsOverlayScreen implements HudOverlay, IJourneyListenerCl
     private static final String keyScheduleTransfer = "gui.createrailwaysnavigator.route_overview.schedule_transfer";
     private static final String keyConnectionEndangered = "gui.createrailwaysnavigator.route_overview.connection_endangered";
     private static final String keyConnectionMissed = "gui.createrailwaysnavigator.route_overview.connection_missed";
+    private static final String keyJourneyInterrupted = "gui.createrailwaysnavigator.route_overview.journey_interrupted";
+    private static final String keyConnectionMissedInfo = "gui.createrailwaysnavigator.route_overview.connection_missed_info";
     private static final String keyConnectionMissedPageText = "gui.createrailwaysnavigator.route_overview.journey_interrupted_info";
     private static final String keyDepartureIn = "gui.createrailwaysnavigator.route_details.departure";
     private static final String keyTimeNow = "gui.createrailwaysnavigator.time.now";
     private static final String keyOptionsText = "gui.createrailwaysnavigator.route_overview.options";
     private static final String keyKeybindOptions = "key.createrailwaysnavigator.route_overlay_options";
 
-    private final UUID listenerId;
-    private JourneyListener listener;
-    private final UUID clientId = UUID.randomUUID();
-
-
-
     @SuppressWarnings("resource")
-    public RouteDetailsOverlayScreen(Level level, SimpleRoute route) {
+    public RouteDetailsOverlayScreen(Level level, int lastRefreshedTime, SimpleRoute route) {
         this.level = level;
         this.shadowlessFont = new NoShadowFontWrapper(Minecraft.getInstance().font);
-        this.listenerId = route.getListenerId();
+        this.taggedRoute = route.getRoutePartsTagged();
+        this.transferCount = route.getTransferCount();
+        this.totalDuration = route.getTotalDuration();
 
-        getListener()
-            .registerOnNarratorAnnounce(this, this::narratorAnnouncement)
-            .registerOnAnnounceNextStop(this, this::announceNextStop)
-            .registerOnContinueWithJourneyAfterStop(this, this::nextStop)
-            .registerOnFinishJourney(this, this::finishJourney)
-            .registerOnReachNextStop(this, this::reachNextStop)
-            .registerOnJourneyBegin(this, this::journeyBegin)
-            .registerOnNotification(this, this::notificationReceive)
-        ;
-
-        setSlidingText(getListener().getLastInfoText());
-        if (getListener().getCurrentState() == State.BEFORE_JOURNEY && getListener().getLastNotification() != null) {
-            notificationReceive(getListener().getLastNotification());
-        }
         setPageJourneyStart();
+        
+        Component text = new TranslatableComponent(keyJourneyBegins,
+            currentStation().train().trainName(),
+            currentStation().train().scheduleTitle(),
+            TimeUtils.parseTime((int)currentStation().station().getEstimatedTimeWithThreshold() + Constants.TIME_SHIFT, TimeFormat.HOURS_24),
+            currentStation().station().getInfo().platform()
+        );
+        setSlidingText(text);
+
+        if (ModClientConfig.ROUTE_NARRATOR.get()) {
+            NarratorChatListener.INSTANCE.narrator.say(text.getString() + ". " + Utils.translate(keyOptionsText, new KeybindComponent(keyKeybindOptions)).getString(), true);
+        }
     }
 
     private float getUIScale() {
         return (float)ModClientConfig.OVERLAY_SCALE.get().doubleValue();
-    }
-
-    public JourneyListener getListener() {
-        return listener == null ? listener = JourneyListenerManager.get(listenerId, this) : listener;
-    }
-
-    public UUID getListenerId() {
-        return listenerId;
-    }
-
-    @Override
-    public UUID getJourneyListenerClientId() {
-        return clientId;
-    }
-
-    @Override
-    public void onClose() {
-        getListener().unregister(this);
-        JourneyListenerManager.removeClientListenerForAll(this);
     }
 
 
@@ -183,7 +173,7 @@ public class RouteDetailsOverlayScreen implements HudOverlay, IJourneyListenerCl
     public void tick() {
 
         if (ModKeys.keyRouteOverlayOptions.isDown() && Minecraft.getInstance().player.getInventory().hasAnyOf(Set.of(ModItems.NAVIGATOR.get()))) {
-            ClientWrapper.showRouteOverlaySettingsGui(this);
+            ClientWrapper.showRouteOverlaySettingsGui();
         }
 
         xPos.tickChaser();
@@ -198,7 +188,7 @@ public class RouteDetailsOverlayScreen implements HudOverlay, IJourneyListenerCl
         }
         
         // train info while traveling
-        if (getListener() != null && getListener().getCurrentState() == JourneyListener.State.WHILE_TRAVELING) {
+        if (currentState == State.WHILE_TRAVELING) {
             trainDataSubPageTime++;
             if ((slidingTextWidth <= SLIDING_TEXT_AREA_WIDTH && trainDataSubPageTime > TIME_PER_TRAIN_DATA_SUBPAGE) || slidingTextOffset < -(slidingTextWidth / 2)) {
                 setTrainDataSubPage(false);
@@ -220,12 +210,142 @@ public class RouteDetailsOverlayScreen implements HudOverlay, IJourneyListenerCl
             default:
                 break; 
         }
+
+        // refresh data loop (core)
+        if (currentState != State.AFTER_JOURNEY && currentState != State.JOURNEY_INTERRUPTED) {
+            realTimeRefreshTimer++;
+            if (realTimeRefreshTimer > REALTIME_REFRESH_TIME) {
+                realTimeRefreshTimer = 0;
+                requestRealtimeData();
+            }
+        }
+    }
+
+    /**
+     * Core
+     */
+    private void requestRealtimeData() {
+        final Collection<UUID> ids = Arrays.stream(taggedRoute).map(x -> x.train().trainId()).distinct().toList();
+        long id = InstanceManager.registerClientRealtimeResponseAction((predictions, time) -> {
+            Map<UUID, List<SimpleDeparturePrediction>> predMap = predictions.stream().collect(Collectors.groupingBy(SimpleDeparturePrediction::id));
+            Map<UUID, List<TaggedStationEntry>> mappedRoute = Arrays.stream(taggedRoute).skip(stationIndex).collect(Collectors.groupingBy(x -> x.train().trainId(), LinkedHashMap::new, Collectors.toList()));
+            
+            // Update realtime data
+            for (int i = stationIndex; i < taggedRoute.length; i++) {
+                TaggedStationEntry e = taggedRoute[i];
+                List<SimpleDeparturePrediction> preds = predMap.get(e.train().trainId());
+                List<TaggedStationEntry> stations = mappedRoute.get(e.train().trainId());
+                updateRealtime(preds, stations, e.train().trainId(), stationIndex, time);                
+            }
+            List<SimpleDeparturePrediction> currentTrainSchedule = predMap.get(currentStation().train().trainId());
+            SimpleDeparturePrediction currentTrainNextStop = predMap.get(currentStation().train().trainId()).get(0);
+            // check if connection train has departed
+            for (List<TaggedStationEntry> routePart : mappedRoute.values()) {
+                if (mappedRoute.size() < 2) {
+                    continue;
+                }
+                long min = routePart.stream().filter(x -> x.station().getCurrentTime() + ModClientConfig.TRANSFER_TIME.get() > x.station().getScheduleTime()).mapToLong(x -> x.station().getCurrentTime()).min().orElse(-1);
+                long currentTime = routePart.get(0).station().getCurrentTime();
+
+                if (min > 0 && currentTime > min && currentTime + ModClientConfig.TRANSFER_TIME.get() > routePart.get(0).station().getScheduleTime()) {
+                    routePart.get(0).setDeparted(true);
+                }
+            }
+            
+            // PROGRESS ANIMATION
+            if (currentState != State.BEFORE_JOURNEY && currentState != State.JOURNEY_INTERRUPTED) {
+                if (!currentState.nextStopAnnounced() && !currentState.isWaitingForNextTrainToDepart() // state check
+                    && time >= taggedRoute[stationIndex].station().getEstimatedTime() - INFO_BEFORE_NEXT_STOP) // train check
+                {                    
+                    announceNextStop();
+                }
+                
+                if (currentState != State.WHILE_TRAVELING && currentState != State.WHILE_TRANSFER) // train check
+                {     
+                    while (!currentTrainNextStop.station().equals(currentStation().station().getStationName()) && currentState != State.AFTER_JOURNEY) {
+                        if (currentStation().tag() == StationTag.END) {
+                            finishJourney();
+                        } else {
+                            nextStop();
+                        }
+                    }               
+                    
+                }
+            }
+
+            if ((!currentState.isWaitingForNextTrainToDepart() || currentState == State.BEFORE_JOURNEY || currentState == State.WHILE_TRANSFER)
+                && isStationValidForShedule(currentTrainSchedule, currentStation().train().trainId(), stationIndex) && time >= currentStation().station().getEstimatedTime()) {                    
+                if (currentStation().tag() == StationTag.PART_END) {
+                    if (taggedRoute[stationIndex + 1].isDeparted()) {
+                        reachTransferStopConnectionMissed();
+                    } else {
+                        reachTransferStop();
+                    }
+                } else {
+                    reachNextStop();
+                }
+            }            
+        });
+        NetworkManager.sendToServer(new RealtimeRequestPacket(id, ids));
+    }
+
+    private boolean isStationValidForShedule(List<SimpleDeparturePrediction> schedule, UUID trainId, int startIndex) {
+        List<String> filteredStationEntryList = new ArrayList<>();
+        for (int i = startIndex; i < taggedRoute.length; i++) {
+            TaggedStationEntry entry = taggedRoute[i];
+            if (!entry.train().trainId().equals(trainId)) {
+                break;
+            }
+            filteredStationEntryList.add(entry.station().getStationName());
+        }
+        String[] filteredStationEntries = filteredStationEntryList.toArray(String[]::new);
+        String[] sched = schedule.stream().map(x -> x.station()).toArray(String[]::new);
+        
+        int k = 0;
+        for (int i = 0; i < filteredStationEntries.length; i++) {
+            if (!filteredStationEntries[i].equals(sched[k])) {
+                return false;
+            }
+
+            k++;
+            if (k > sched.length) {
+                k = 0;
+            }
+        }
+        return true;
+    }
+
+    private void updateRealtime(List<SimpleDeparturePrediction> schedule, List<TaggedStationEntry> route, UUID trainId, int startIndex, long updateTime) {
+        boolean b = false;
+        long lastTime = -1;
+        for (int i = 0, k = 0; i < schedule.size() && k < route.size(); i++) {
+            SimpleDeparturePrediction current = schedule.get(i);
+            long newTime = current.ticks() + updateTime;
+            if (route.get(0).station().getStationName().equals(current.station())) {
+                k = 0;
+                b = true;
+            }
+
+            if (route.get(k).station().getStationName().equals(current.station()) && b == true) {
+                if (newTime > lastTime/* && newTime + EARLY_ARRIVAL_THRESHOLD > route.get(k).station().getScheduleTime()*/) {
+                    route.get(k).station().updateRealtimeData(current.ticks(), updateTime);
+                    lastTime = route.get(k).station().getCurrentTime();
+                }
+                k++;
+            } else {
+                b = false;
+            }
+        }
     }
 
     //#region FUNCTIONS    
     @Override
     public int getId() {
         return ID;
+    }
+    
+    private TaggedStationEntry currentStation() {
+        return taggedRoute[stationIndex];
     }
 
     private void fadeIn(Runnable andThen) {
@@ -253,6 +373,19 @@ public class RouteDetailsOverlayScreen implements HudOverlay, IJourneyListenerCl
             slidingTextOffset = (int)(SLIDING_TEXT_AREA_WIDTH * 0.75f / 2);
         }
     }
+
+    private Component concat(Component... components) {
+        if (components.length <= 0) {
+            return new TextComponent("");
+        }
+
+        MutableComponent c = components[0].copy();
+        for (int i = 1; i < components.length; i++) {
+            c.append(textConcat);
+            c.append(components[i]);
+        }
+        return c;
+    }
     
     private void startStencil(PoseStack poseStack, int x, int y, int w, int h) {
         UIRenderHelper.swapAndBlitColor(Minecraft.getInstance().getMainRenderTarget(), UIRenderHelper.framebuffer);
@@ -266,46 +399,94 @@ public class RouteDetailsOverlayScreen implements HudOverlay, IJourneyListenerCl
     //#endregion
 
     //#region ACTIONS
+    private void nextStop() {
+        if (!changeCurrentStation()) {
+            return;
+        }
 
-    private void notificationReceive(NotificationData data) {
-        Minecraft.getInstance().getToasts().addToast(NavigatorToast.multiline(data.title(), data.text()));   
-    }
-
-    private void journeyBegin(JourneyBeginEvent data) {
-        setSlidingText(data.infoText());
-        setPageJourneyStart();
-    }
-
-    private void nextStop(ContinueData data) {
         setTrainDataSubPage(true);
         setPageRouteOverview();
+        currentState = State.WHILE_TRAVELING;
     }
 
-    private void finishJourney(FinishJourneyData data) {
-        setSlidingText(data.infoText());
+    private boolean changeCurrentStation() {
+        if (stationIndex + 1 >= taggedRoute.length) {
+            finishJourney();
+            return false;
+        }
+        stationIndex++;
+        return true;
+    }
+
+    private void finishJourney() {
+        setSlidingText(new TranslatableComponent(keyAfterJourney,
+            taggedRoute[taggedRoute.length - 1].station().getStationName()
+        ));
+        currentState = State.AFTER_JOURNEY;
         setPageJourneyCompleted();
     }
 
-    private void announceNextStop(AnnounceNextStopData data) {
-        setSlidingText(data.infoText());
+    private void announceNextStop() {
+        Component textA = Utils.emptyText();
+        Component textB = Utils.emptyText();
+        Component display;
+        display = textA = new TranslatableComponent(keyNextStop,
+            currentStation().station().getStationName()
+        );
+        if (currentStation().tag() == StationTag.PART_END && currentStation().index() + 1 < taggedRoute.length) {
+            Component transferText = textB = new TranslatableComponent(keyTransfer,
+                taggedRoute[stationIndex + 1].train().trainName(),
+                taggedRoute[stationIndex + 1].train().scheduleTitle(),
+                taggedRoute[stationIndex + 1].station().getInfo().platform()
+            );
+            display = concat(display, transferText);
+            currentState = State.BEFORE_TRANSFER;
+        } else {
+            currentState = State.BEFORE_NEXT_STOP;
+        }
+        setSlidingText(display);
+
+        if (ModClientConfig.ROUTE_NARRATOR.get()) {
+            NarratorChatListener.INSTANCE.narrator.say(textA.getString() + ". " + textB.getString(), true);
+        }
+
         setPageNextConnections();
     }
 
-    private void reachNextStop(ReachNextStopData data) {
-        setSlidingText(data.infoText());
-        if (data.connectionMissed()) {
-            setPageJourneyInterrupted();
-        } else if (data.isTransfer()) {
-            setPageTransfer();
-        }
-    }
-
-    private void narratorAnnouncement(String text) {
+    private void reachNextStop() {
+        setSlidingText(new TextComponent(currentStation().station().getStationName()));
         if (ModClientConfig.ROUTE_NARRATOR.get()) {
-            NarratorChatListener.INSTANCE.narrator.say(text, true);
+            NarratorChatListener.INSTANCE.narrator.say(currentStation().station().getStationName(), true);
         }
+        currentState = State.WHILE_NEXT_STOP;
     }
 
+    private void reachTransferStop() {
+        Component text = new TranslatableComponent(keyTransfer,
+            taggedRoute[stationIndex + 1].train().trainName(),
+            taggedRoute[stationIndex + 1].train().scheduleTitle(),
+            taggedRoute[stationIndex + 1].station().getInfo().platform()
+        );
+        setSlidingText(text);
+        if (ModClientConfig.ROUTE_NARRATOR.get()) {
+            NarratorChatListener.INSTANCE.narrator.say(text.getString(), true);
+        }
+        currentState = State.WHILE_TRANSFER;
+        changeCurrentStation();
+        setPageTransfer();
+    }
+
+    private void reachTransferStopConnectionMissed() {
+        setSlidingText(concat(
+            Utils.text(currentStation().station().getStationName()),
+            new TranslatableComponent(keyConnectionMissedInfo),
+            new TranslatableComponent(keyJourneyInterrupted,
+                taggedRoute[taggedRoute.length - 1].station().getStationName()
+            )
+        ));
+        setPageJourneyInterrupted();
+        currentState = State.JOURNEY_INTERRUPTED;
+    }
     //#endregion
 
     //#region PAGE MANAGEMENT
@@ -325,15 +506,12 @@ public class RouteDetailsOverlayScreen implements HudOverlay, IJourneyListenerCl
 
     private void setPageTransfer() {
         fadeOut(() -> {
-            currentPage = Page.TRANSFER;  
-            Optional<StationEntry> station = getListener().nextStation();          
-            if (station.isPresent()) {
-                this.messageLabel = MultiLineLabel.create(shadowlessFont, new TranslatableComponent(keyTransfer,
-                    station.get().getTrain().trainName(),
-                    station.get().getTrain().scheduleTitle(),
-                    station.get().getInfo().platform()
-                ), SLIDING_TEXT_AREA_WIDTH - (15 + ModGuiIcons.ICON_SIZE));
-            }
+            currentPage = Page.TRANSFER;            
+            this.messageLabel = MultiLineLabel.create(shadowlessFont, new TranslatableComponent(keyTransfer,
+                taggedRoute[stationIndex + 1].train().trainName(),
+                taggedRoute[stationIndex + 1].train().scheduleTitle(),
+                taggedRoute[stationIndex + 1].station().getInfo().platform()
+            ), SLIDING_TEXT_AREA_WIDTH - (15 + ModGuiIcons.ICON_SIZE));
             fadeIn(null);
         });
     }
@@ -341,10 +519,7 @@ public class RouteDetailsOverlayScreen implements HudOverlay, IJourneyListenerCl
     private void setPageJourneyInterrupted() {
         fadeOut(() -> {
             currentPage = Page.CONNECTION_MISSED;
-            Optional<StationEntry> station = getListener().previousSation();
-            if (station.isPresent()) {
-                this.messageLabel = MultiLineLabel.create(shadowlessFont, new TranslatableComponent(keyConnectionMissedPageText, station.get().getStationName()), SLIDING_TEXT_AREA_WIDTH - 10);
-            }
+            this.messageLabel = MultiLineLabel.create(shadowlessFont, new TranslatableComponent(keyConnectionMissedPageText, taggedRoute[taggedRoute.length - 1].station().getStationName()), SLIDING_TEXT_AREA_WIDTH - 10);
             fadeIn(null);
         });
     }
@@ -352,10 +527,7 @@ public class RouteDetailsOverlayScreen implements HudOverlay, IJourneyListenerCl
     private void setPageJourneyCompleted() {
         fadeOut(() -> {
             currentPage = Page.JOURNEY_END;
-            Optional<StationEntry> station = getListener().previousSation();
-            if (station.isPresent()) {
-                this.messageLabel = MultiLineLabel.create(shadowlessFont, new TranslatableComponent(keyAfterJourney, station.get().getStationName()), SLIDING_TEXT_AREA_WIDTH - 10);
-            }
+            this.messageLabel = MultiLineLabel.create(shadowlessFont, new TranslatableComponent(keyAfterJourney, taggedRoute[taggedRoute.length - 1].station().getStationName()), SLIDING_TEXT_AREA_WIDTH - 10);
             fadeIn(null);
         });
     }
@@ -373,7 +545,7 @@ public class RouteDetailsOverlayScreen implements HudOverlay, IJourneyListenerCl
                 });
             }
         });
-        NetworkManager.sendToServer(new NextConnectionsRequestPacket(id, getListener().currentStation().getTrain().trainId(), getListener().currentStation().getStationName(), getListener().currentStation().getTicks()));
+        NetworkManager.sendToServer(new NextConnectionsRequestPacket(id, currentStation().train().trainId(), currentStation().station().getStationName(), currentStation().station().getTicks()));
     }
 
     private void setNextConnectionsSubPage() {
@@ -402,8 +574,8 @@ public class RouteDetailsOverlayScreen implements HudOverlay, IJourneyListenerCl
             default:
             case 0:
                 setSlidingText(new TranslatableComponent(keyTrainDetails,
-                    getListener().currentStation().getTrain().trainName(),
-                    getListener().currentStation().getTrain().scheduleTitle()
+                    currentStation().train().trainName(),
+                    currentStation().train().scheduleTitle()
                 ));
                 trainDataSubPageTime = 0;
                 break;
@@ -414,7 +586,7 @@ public class RouteDetailsOverlayScreen implements HudOverlay, IJourneyListenerCl
                     ));
                     trainDataSubPageTime = 0;
                 });
-                NetworkManager.sendToServer(new TrainDataRequestPacket(id, getListener().currentStation().getTrain().trainId()));
+                NetworkManager.sendToServer(new TrainDataRequestPacket(id, currentStation().train().trainId()));
                 break;
         }
     }
@@ -444,7 +616,7 @@ public class RouteDetailsOverlayScreen implements HudOverlay, IJourneyListenerCl
 
         poseStack.scale(getUIScale(), getUIScale(), getUIScale());
         RenderSystem.setShaderTexture(0, GUI);
-        GuiComponent.blit(poseStack, x, y, 0, getListener().getCurrentState().important() ? 138 : 0, GUI_WIDTH, GUI_HEIGHT, 256, 256);
+        GuiComponent.blit(poseStack, x, y, 0, currentState.important() ? 138 : 0, GUI_WIDTH, GUI_HEIGHT, 256, 256);
         
         GuiComponent.drawString(poseStack, shadowlessFont, title, x + 6, y + 4, 0x4F4F4F);
         GuiComponent.drawString(poseStack, shadowlessFont, Utils.translate(keyOptionsText, new KeybindComponent(keyKeybindOptions).withStyle(ChatFormatting.BOLD)), x + 6, y + GUI_HEIGHT - 2 - shadowlessFont.lineHeight, 0x4F4F4F);
@@ -479,9 +651,14 @@ public class RouteDetailsOverlayScreen implements HudOverlay, IJourneyListenerCl
                 case ROUTE_OVERVIEW:
                 default:
                     final int[] yOffset = new int[] { y + 40 - 1 };
-                    for (int i = getListener().getIndex(); i < Math.min(getListener().getIndex() + MAX_STATION_PER_PAGE, getListener().getListeningRoute().getStationCount(true)); i++) {
+                    final boolean[] b = new boolean[] { true };
+                    for (int i = stationIndex; i < Math.min(stationIndex + MAX_STATION_PER_PAGE, taggedRoute.length); i++) {
                         final int k = i;
-                        yOffset[0] += renderRouteOverview(poseStack, k, x, yOffset[0], alpha, fontAlpha);
+                        yOffset[0] += renderRouteOverview(poseStack, k, x, yOffset[0], alpha, fontAlpha, b[0], (bool) -> {
+                            if (b[0]) {
+                                b[0] = bool;
+                            }
+                        });
                     }                    
                     break;
             }
@@ -497,6 +674,9 @@ public class RouteDetailsOverlayScreen implements HudOverlay, IJourneyListenerCl
                 fadeDoneAction.run();
             }
         }
+
+        
+        GuiComponent.drawString(poseStack, shadowlessFont, currentState.name(), x, y + 4 + GUI_HEIGHT, 0xFFFFFF);
     }
 
     public void renderSlidingText(PoseStack poseStack, int x, int y) {
@@ -508,28 +688,23 @@ public class RouteDetailsOverlayScreen implements HudOverlay, IJourneyListenerCl
         endStencil();
     }
 
-    public int renderRouteOverview(PoseStack poseStack, int index, int x, int y, float alphaPercentage, int fontAlpha) {
+    public int renderRouteOverview(PoseStack poseStack, int index, int x, int y, float alphaPercentage, int fontAlpha, boolean valid, Consumer<Boolean> reachConnection) {
         RenderSystem.setShaderTexture(0, GUI);
         RenderSystem.setShaderColor(1, 1, 1, alphaPercentage);        
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         RenderSystem.enableDepthTest();
 
-        Optional<StationEntry> stationOptional = getListener().getEntryAt(index);
-        Optional<StationEntry> lastStation = index > getListener().getIndex() ? getListener().getEntryAt(index - 1) : Optional.empty();
-        Optional<StationEntry> nextStation = getListener().getEntryAt(index + 1);
+        TaggedStationEntry station = taggedRoute[index];
+        TaggedStationEntry lastStation = index > stationIndex ? taggedRoute[index - 1] : null;
+        TaggedStationEntry nextStation = index < taggedRoute.length - 1 ? taggedRoute[index + 1] : null;
 
-        if (!stationOptional.isPresent()) {
-            return y;
-        }
-        StationEntry station = stationOptional.get();
-
-        boolean reachable = station.reachable();
+        boolean reachable = valid && !station.isDeparted();
 
         // Icon
         int dY = index <= 0 ? 0 : ROUTE_LINE_HEIGHT;
         int transferY = ROUTE_LINE_HEIGHT * 3;
-        switch (station.getTag()) {
+        switch (station.tag()) {
             case PART_START:
                 dY = ROUTE_LINE_HEIGHT * 2;
                 break;
@@ -540,40 +715,53 @@ public class RouteDetailsOverlayScreen implements HudOverlay, IJourneyListenerCl
                 break;
         }        
         GuiComponent.blit(poseStack, x + 75, y, 226, dY, 7, ROUTE_LINE_HEIGHT, 256, 256);
-        if (index >= MAX_STATION_PER_PAGE - 1 && station.getTag() != StationTag.END) {            
+        if (index >= MAX_STATION_PER_PAGE - 1 && station.tag() != StationTag.END) {            
             GuiComponent.blit(poseStack, x + 75, y + ROUTE_LINE_HEIGHT, 226, ROUTE_LINE_HEIGHT, 7, ROUTE_LINE_HEIGHT, 256, 256);
         }
 
         // time display
-        long timeDiff = station.getDifferenceTime();
-        GuiComponent.drawString(poseStack, shadowlessFont, Utils.text(TimeUtils.parseTime((int)(station.getScheduleTime() + Constants.TIME_SHIFT), TimeFormat.HOURS_24)).withStyle(reachable ? ChatFormatting.RESET : ChatFormatting.STRIKETHROUGH), x + 10, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, reachable ? (index <= getListener().getIndex() ? 0xFFFFFF | fontAlpha : 0xDBDBDB | fontAlpha) : DELAYED | fontAlpha);
+        long timeDiff = station.station().getCurrentRefreshTime() + station.station().getCurrentTicks() - station.station().getRefreshTime() - station.station().getTicks();
+        GuiComponent.drawString(poseStack, shadowlessFont, Utils.text(TimeUtils.parseTime((int)(station.station().getScheduleTime() + Constants.TIME_SHIFT), TimeFormat.HOURS_24)).withStyle(reachable ? ChatFormatting.RESET : ChatFormatting.STRIKETHROUGH), x + 10, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, reachable ? (index <= stationIndex ? 0xFFFFFF | fontAlpha : 0xDBDBDB | fontAlpha) : DELAYED | fontAlpha);
         
-        if (station.getEstimatedTimeWithThreshold() > 0 && reachable && station.renderRealtime() && (!lastStation.isPresent() || lastStation.get().getEstimatedTime() < station.getEstimatedTime()) && (station.getTrain().trainId().equals(station.getTrain().trainId()))) {
-            GuiComponent.drawString(poseStack, shadowlessFont, Utils.text(TimeUtils.parseTime((int)(station.getEstimatedTimeWithThreshold() + Constants.TIME_SHIFT), TimeFormat.HOURS_24)).withStyle(reachable ? ChatFormatting.RESET : ChatFormatting.STRIKETHROUGH), x + 40, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, timeDiff < ModClientConfig.DEVIATION_THRESHOLD.get() && reachable ? ON_TIME | fontAlpha : DELAYED | fontAlpha);
+        if (station.station().getEstimatedTimeWithThreshold() > 0 && reachable && (lastStation == null || lastStation.station().getEstimatedTime() < station.station().getEstimatedTime()) && (station.train().trainId().equals(currentStation().train().trainId()) || station.station().getEstimatedTime() + ModClientConfig.TRANSFER_TIME.get() + ModClientConfig.EARLY_ARRIVAL_THRESHOLD.get() > station.station().getScheduleTime())) {
+            GuiComponent.drawString(poseStack, shadowlessFont, Utils.text(TimeUtils.parseTime((int)(station.station().getEstimatedTimeWithThreshold() + Constants.TIME_SHIFT), TimeFormat.HOURS_24)).withStyle(reachable ? ChatFormatting.RESET : ChatFormatting.STRIKETHROUGH), x + 40, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, timeDiff < ModClientConfig.DEVIATION_THRESHOLD.get() && reachable ? ON_TIME | fontAlpha : DELAYED | fontAlpha);
         }
 
         // station name display
-        Component platformText = Utils.text(station.getInfo().platform());
+        Component platformText = Utils.text(station.station().getInfo().platform());
         int platformTextWidth = shadowlessFont.width(platformText);
 
         final int maxStationNameWidth = SLIDING_TEXT_AREA_WIDTH - platformTextWidth - 105;
-        MutableComponent stationText = Utils.text(station.getStationName());
-        if (index == getListener().getIndex()) stationText = stationText.withStyle(ChatFormatting.BOLD);
+        MutableComponent stationText = Utils.text(station.station().getStationName());
+        if (index == stationIndex) stationText = stationText.withStyle(ChatFormatting.BOLD);
         if (!reachable) stationText = stationText.withStyle(ChatFormatting.STRIKETHROUGH);
         if (shadowlessFont.width(stationText) > maxStationNameWidth) {
             stationText = Utils.text(shadowlessFont.substrByWidth(stationText, maxStationNameWidth).getString()).append(Utils.text("...")).withStyle(stationText.getStyle());
         }
 
-        GuiComponent.drawString(poseStack, shadowlessFont, stationText, x + 90, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, reachable ? (index <= getListener().getIndex() ? 0xFFFFFF | fontAlpha : 0xDBDBDB | fontAlpha) : DELAYED | fontAlpha);
-        GuiComponent.drawString(poseStack, shadowlessFont, platformText, x + SLIDING_TEXT_AREA_WIDTH - platformTextWidth, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, reachable && !station.stationInfoChanged() ? (index <= getListener().getIndex() ? 0xFFFFFF | fontAlpha : 0xDBDBDB | fontAlpha) : DELAYED | fontAlpha);
+        GuiComponent.drawString(poseStack, shadowlessFont, stationText, x + 90, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, reachable ? (index <= 0 ? 0xFFFFFF | fontAlpha : 0xDBDBDB | fontAlpha) : DELAYED | fontAlpha);
+        GuiComponent.drawString(poseStack, shadowlessFont, platformText, x + SLIDING_TEXT_AREA_WIDTH - platformTextWidth, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, reachable ? (index <= 0 ? 0xFFFFFF | fontAlpha : 0xDBDBDB | fontAlpha) : DELAYED | fontAlpha);
         
+        if (station.isDeparted()) {
+            //ModGuiIcons.CROSS.render(poseStack, x + 10, y + ROUTE_LINE_HEIGHT - 2 - ModGuiIcons.ICON_SIZE / 2);                
+        }
+
         // render transfer
-        if (station.getTag() == StationTag.PART_END) {
+        if (station.tag() == StationTag.PART_END) {
             y += ROUTE_LINE_HEIGHT;
+            long transferTime = -1;
+            if (nextStation != null && !nextStation.isDeparted()) {
+                if (nextStation.station().getCurrentTime() + ModClientConfig.TRANSFER_TIME.get() < nextStation.station().getScheduleTime()) {
+                    transferTime = nextStation.station().getScheduleTime() - taggedRoute[index].station().getScheduleTime();
+                } else {
+                    transferTime = nextStation.station().getCurrentTime() - taggedRoute[index].station().getCurrentTime();
+                }
+            }
             RenderSystem.setShaderTexture(0, GUI);
             GuiComponent.blit(poseStack, x + 75, y, 226, transferY, 7, ROUTE_LINE_HEIGHT, 256, 256);
-            if (nextStation.isPresent() && nextStation.get().willMissStop()) {
-                if (nextStation.get().isDeparted()) {
+            if (transferTime < 0) {
+                reachConnection.accept(false);
+                if (nextStation.isDeparted()) {
                     ModGuiIcons.CROSS.render(poseStack, x + 10, y + ROUTE_LINE_HEIGHT - 2 - ModGuiIcons.ICON_SIZE / 2);
                     GuiComponent.drawString(poseStack, shadowlessFont, Utils.translate(keyConnectionMissed).withStyle(ChatFormatting.BOLD), x + 90, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, DELAYED | fontAlpha);
                 } else {
@@ -581,11 +769,14 @@ public class RouteDetailsOverlayScreen implements HudOverlay, IJourneyListenerCl
                     GuiComponent.drawString(poseStack, shadowlessFont, Utils.translate(keyConnectionEndangered).withStyle(ChatFormatting.BOLD), x + 90, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, COLOR_WARN | fontAlpha);
                 }
             } else {
-                GuiComponent.drawString(poseStack, shadowlessFont, Utils.text(TimeUtils.parseDurationShort((int)(getListener().getTransferTime(index)))).withStyle(ChatFormatting.ITALIC), x + 10, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, 0xDBDBDB | fontAlpha);
+                reachConnection.accept(!station.isDeparted());
+                GuiComponent.drawString(poseStack, shadowlessFont, Utils.text(TimeUtils.parseDurationShort((int)(transferTime))).withStyle(ChatFormatting.ITALIC), x + 10, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, 0xDBDBDB | fontAlpha);
                 GuiComponent.drawString(poseStack, shadowlessFont, Utils.translate(keyScheduleTransfer).withStyle(ChatFormatting.ITALIC), x + 90, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, 0xDBDBDB | fontAlpha);
             }
                     
             return ROUTE_LINE_HEIGHT * 2;
+        } else {            
+            reachConnection.accept(!station.isDeparted());
         }
         return ROUTE_LINE_HEIGHT;
         
@@ -617,19 +808,19 @@ public class RouteDetailsOverlayScreen implements HudOverlay, IJourneyListenerCl
     }
 
     public void renderPageJourneyStart(PoseStack poseStack, int x, int y, float alphaPercentage, int fontAlpha) {
-        y += 3 + renderRouteOverview(poseStack, getListener().getIndex(), x, y - 3, alphaPercentage, fontAlpha);
+        y += 3 + renderRouteOverview(poseStack, stationIndex, x, y - 3, alphaPercentage, fontAlpha, true, (bool) -> {});
         GuiComponent.fill(poseStack, x + 3, y, x + 3 + SLIDING_TEXT_AREA_WIDTH, y + 1, 0xDBDBDB | fontAlpha);
         
         // Title
         ModGuiIcons.TIME.render(poseStack, x + 10, y + 3);
-        long time = getListener().currentStation().getEstimatedTimeWithThreshold() - level.getDayTime();
+        long time = currentStation().station().getEstimatedTimeWithThreshold() - level.getDayTime();
         GuiComponent.drawString(poseStack, shadowlessFont, Utils.translate(keyDepartureIn).append(" ").append(time > 0 ? Utils.text(TimeUtils.parseTime((int)(time % 24000), TimeFormat.HOURS_24)) : Utils.translate(keyTimeNow)).withStyle(ChatFormatting.BOLD), x + 15 + ModGuiIcons.ICON_SIZE, y + 3 + ModGuiIcons.ICON_SIZE / 2 - shadowlessFont.lineHeight / 2, 0xFFFFFF | fontAlpha);
         y += 5 + ModGuiIcons.ICON_SIZE;
         
         // Details
         final int detailsLineHeight = 12;
-        //StationEntry station = taggedRoute[0];
-        StationEntry endStation = getListener().lastStation();
+        //StationEntry station = taggedRoute[0].station();
+        StationEntry endStation = taggedRoute[taggedRoute.length - 1].station();
 
         Component platformText = Utils.text(endStation.getInfo().platform());
         int platformTextWidth = shadowlessFont.width(platformText);
@@ -641,24 +832,31 @@ public class RouteDetailsOverlayScreen implements HudOverlay, IJourneyListenerCl
 
         ModGuiIcons.TARGET.render(poseStack, x + 10, y + shadowlessFont.lineHeight / 2 - ModGuiIcons.ICON_SIZE / 2);
         GuiComponent.drawString(poseStack, shadowlessFont, stationText, x + 15 + ModGuiIcons.ICON_SIZE, y, 0xDBDBDB | fontAlpha);
-        GuiComponent.drawString(poseStack, shadowlessFont, platformText, x + SLIDING_TEXT_AREA_WIDTH - platformTextWidth, y, endStation.stationInfoChanged() ? DELAYED | fontAlpha : 0xDBDBDB | fontAlpha);
+        GuiComponent.drawString(poseStack, shadowlessFont, platformText, x + SLIDING_TEXT_AREA_WIDTH - platformTextWidth, y, 0xDBDBDB | fontAlpha);
         ModGuiIcons.INFO.render(poseStack, x + 10, y + detailsLineHeight + shadowlessFont.lineHeight / 2 - ModGuiIcons.ICON_SIZE / 2);
         GuiComponent.drawString(poseStack, shadowlessFont, Utils.text(String.format("%s %s | %s",
-            getListener().getListeningRoute().getTransferCount(),
+            transferCount,
             Utils.translate(keyTransferCount).getString(),
-            TimeUtils.parseDurationShort(getListener().getListeningRoute().getTotalDuration())
+            TimeUtils.parseDurationShort(totalDuration)
         )), x + 15 + ModGuiIcons.ICON_SIZE, y + detailsLineHeight, 0xDBDBDB | fontAlpha);
     }
 
     public void renderPageTransfer(PoseStack poseStack, int x, int y, float alphaPercentage, int fontAlpha, StationEntry station) {
-        y += 3 + renderRouteOverview(poseStack, getListener().getIndex(), x, y - 3, alphaPercentage, fontAlpha);
+        y += 3 + renderRouteOverview(poseStack, stationIndex, x, y - 3, alphaPercentage, fontAlpha, true, (bool) -> {});
         GuiComponent.fill(poseStack, x + 3, y, x + 3 + SLIDING_TEXT_AREA_WIDTH, y + 1, 0xDBDBDB | fontAlpha);
         
         // Title
         ModGuiIcons.WALK.render(poseStack, x + 10, y + 3);
         
-        //Optional<StationEntry> nextStation = getListener().nextStation();
-        long transferTime = getListener().getTransferTime(getListener().getIndex());
+        TaggedStationEntry nextStation = stationIndex < taggedRoute.length - 1 ? taggedRoute[stationIndex + 1] : null;
+        long transferTime = -1;
+        if (nextStation != null && !nextStation.isDeparted()) {
+            if (nextStation.station().getCurrentTime() + ModClientConfig.TRANSFER_TIME.get() < nextStation.station().getScheduleTime()) {
+                transferTime = nextStation.station().getScheduleTime() - taggedRoute[stationIndex].station().getScheduleTime();
+            } else {
+                transferTime = nextStation.station().getCurrentTime() - taggedRoute[stationIndex].station().getCurrentTime();
+            }
+        }
         GuiComponent.drawString(poseStack, shadowlessFont, Utils.translate(keyScheduleTransfer).append(" ").append(Utils.text(TimeUtils.parseDurationShort((int)transferTime))).withStyle(ChatFormatting.BOLD), x + 15 + ModGuiIcons.ICON_SIZE, y + 3 + ModGuiIcons.ICON_SIZE / 2 - shadowlessFont.lineHeight / 2, 0xFFFFFF | fontAlpha);
         y += 5 + ModGuiIcons.ICON_SIZE;
         
@@ -694,5 +892,40 @@ public class RouteDetailsOverlayScreen implements HudOverlay, IJourneyListenerCl
         JOURNEY_END,
         TRANSFER,
         CONNECTION_MISSED;
+    }
+
+    protected static enum State {
+        BEFORE_JOURNEY,
+        WHILE_TRAVELING,
+        BEFORE_NEXT_STOP,
+        WHILE_NEXT_STOP,
+        BEFORE_TRANSFER,
+        WHILE_TRANSFER,
+        AFTER_JOURNEY,
+        JOURNEY_INTERRUPTED;
+
+        public boolean nextStopAnnounced() {
+            return this == BEFORE_NEXT_STOP || this == BEFORE_TRANSFER;
+        }
+
+        public boolean isWhileTraveling() {
+            return this == WHILE_TRAVELING;
+        }
+
+        public boolean isTranferring() {
+            return this == WHILE_TRANSFER;
+        }
+
+        public boolean isAtNextStop() {
+            return this == WHILE_NEXT_STOP;
+        }
+
+        public boolean isWaitingForNextTrainToDepart() {
+            return isTranferring() || isAtNextStop();
+        }
+
+        public boolean important() {
+            return this == State.WHILE_TRANSFER || this == State.BEFORE_TRANSFER || this == State.AFTER_JOURNEY || this == State.BEFORE_JOURNEY ||this == JOURNEY_INTERRUPTED;
+        }
     }
 }

@@ -36,4 +36,6 @@ public interface HudOverlay {
     default boolean charTyped(char pCodePoint, int pModifiers) {        
         return false;
     }
+
+    void onClose();
 }

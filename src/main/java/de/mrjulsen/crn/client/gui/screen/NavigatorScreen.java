@@ -1,6 +1,8 @@
 package de.mrjulsen.crn.client.gui.screen;
 
 import java.util.List;
+import java.util.UUID;
+
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
@@ -23,6 +25,8 @@ import de.mrjulsen.crn.data.ClientTrainStationSnapshot;
 import de.mrjulsen.crn.data.GlobalSettingsManager;
 import de.mrjulsen.crn.data.SimpleRoute;
 import de.mrjulsen.crn.data.TrainStationAlias;
+import de.mrjulsen.crn.event.listeners.IJourneyListenerClient;
+import de.mrjulsen.crn.event.listeners.JourneyListenerManager;
 import de.mrjulsen.crn.network.InstanceManager;
 import de.mrjulsen.crn.network.NetworkManager;
 import de.mrjulsen.crn.network.packets.cts.NavigationRequestPacket;
@@ -46,7 +50,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 
-public class NavigatorScreen extends Screen implements IForegroundRendering {
+public class NavigatorScreen extends Screen implements IForegroundRendering, IJourneyListenerClient {
 
     private static final ResourceLocation GUI = new ResourceLocation(ModMain.MOD_ID, "textures/gui/navigator.png");
     private static final int GUI_WIDTH = 255;
@@ -105,12 +109,19 @@ public class NavigatorScreen extends Screen implements IForegroundRendering {
     private final TranslatableComponent tooltipGlobalSettings = new TranslatableComponent("gui." + ModMain.MOD_ID + ".navigator.global_settings.tooltip");
     private final TranslatableComponent tooltipSearchSettings = new TranslatableComponent("gui." + ModMain.MOD_ID + ".navigator.search_settings.tooltip");
 
+    private final UUID clientId = UUID.randomUUID();
+
     @SuppressWarnings("resource")
     public NavigatorScreen(Level level) {
         super(new TranslatableComponent("gui." + ModMain.MOD_ID + ".navigator.title"));
         this.instance = this;
         this.level = level;
         this.shadowlessFont = new NoShadowFontWrapper(Minecraft.getInstance().font); 
+    }
+
+    @Override
+    public UUID getJourneyListenerClientId() {
+        return clientId;
     }
 
     private void generateRouteEntries() {
@@ -141,6 +152,12 @@ public class NavigatorScreen extends Screen implements IForegroundRendering {
     @Override
     public boolean isPauseScreen() {
         return false;
+    }
+
+    @Override
+    public void onClose() {
+        JourneyListenerManager.removeClientListenerForAll(this);
+        super.onClose();
     }
 
     private void switchButtonClick() {
@@ -190,10 +207,17 @@ public class NavigatorScreen extends Screen implements IForegroundRendering {
                 isLoadingRoutes = true;
 
                 long id = InstanceManager.registerClientNavigationResponseAction((routes, data) -> {
+                    JourneyListenerManager.removeClientListenerForAll(instance);
+
                     instance.routes = routes.toArray(SimpleRoute[]::new);
                     setLastRefreshedTime();
                     generateRouteEntries();
                     isLoadingRoutes = false;
+
+                    for (SimpleRoute route : instance.routes) {
+                        UUID listenerId = route.listen(instance);
+                        JourneyListenerManager.get(listenerId, instance).start();
+                    }
                 });
                 scroll.chase(0, 0.7f, Chaser.EXP);
                 NetworkManager.sendToServer(new NavigationRequestPacket(id, stationFrom, stationTo));

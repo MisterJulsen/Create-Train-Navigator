@@ -47,7 +47,7 @@ public class RouteEntryOverviewWidget extends Button {
     public void onClick(double pMouseX, double pMouseY) {
         super.onClick(pMouseX, pMouseY);
         Minecraft minecraft = Minecraft.getInstance();
-        minecraft.setScreen(new RouteDetailsScreen(parent, level, lastRefreshedTime, minecraft.font, route));
+        minecraft.setScreen(new RouteDetailsScreen(parent, level, route, null));
     }
 
     @Override

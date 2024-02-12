@@ -198,6 +198,14 @@ public class TrainStationAlias {
                 nbt.getString(NBT_PLATFORM)
             );
         }
+
+        @Override
+        public final boolean equals(Object obj) {
+            if (obj instanceof StationInfo other) {
+                return platform().equals(other.platform());
+            }
+            return false;
+        }
     }
 
 }

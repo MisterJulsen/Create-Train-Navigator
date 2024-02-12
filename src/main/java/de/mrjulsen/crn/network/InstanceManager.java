@@ -23,6 +23,26 @@ public class InstanceManager {
     private static final Map<Long, BiConsumer<Collection<SimpleDeparturePrediction>, Long>> CLIENT_REALTIME_RESPONSE_ACTION = new HashMap<>();
     private static final Map<Long, BiConsumer<Collection<SimpleTrainConnection>, Long>> CLIENT_NEXT_CONNECTIONS_RESPONSE_ACTION = new HashMap<>();
     private static final Map<Long, BiConsumer<TrainData, Long>> CLIENT_NEXT_TRAIN_DATA_RESPONSE_ACTION = new HashMap<>();
+
+    public static String getInstancesCountString() {
+        return String.format("[%s, %s, %s, %s, %s, %s]",
+            CLIENT_RESPONSE_RECEIVED_ACTION.size(),
+            CLIENT_NAVIGATION_RESPONSE_ACTION.size(),
+            CLIENT_NEAREST_STATION_RESPONSE_ACTION.size(),
+            CLIENT_REALTIME_RESPONSE_ACTION.size(),
+            CLIENT_NEXT_CONNECTIONS_RESPONSE_ACTION.size(),
+            CLIENT_NEXT_TRAIN_DATA_RESPONSE_ACTION.size()
+        );
+    }
+
+    public static void clearAll() {
+        CLIENT_RESPONSE_RECEIVED_ACTION.clear();
+        CLIENT_NAVIGATION_RESPONSE_ACTION.clear();
+        CLIENT_NEAREST_STATION_RESPONSE_ACTION.clear();
+        CLIENT_REALTIME_RESPONSE_ACTION.clear();
+        CLIENT_NEXT_CONNECTIONS_RESPONSE_ACTION.clear();
+        CLIENT_NEXT_TRAIN_DATA_RESPONSE_ACTION.clear();
+    }
     
     public static long registerClientResponseReceievedAction(Runnable runnable) {
         long id = System.nanoTime();

@@ -204,7 +204,7 @@ public class SimpleTrainSchedule {
                 cycle++;
             }
             cycle += x.getPrediction().getCycle();
-            return new TrainStop(x.getStationAlias(), new DeparturePrediction(x.getPrediction().getTrain(), estimatedTicks, x.getPrediction().getScheduleTitle(), x.getPrediction().getNextStopStation(), cycle));
+            return new TrainStop(x.getStationAlias(), new DeparturePrediction(x.getPrediction().getTrain(), estimatedTicks, x.getPrediction().getScheduleTitle(), x.getPrediction().getNextStopStation(), cycle, x.getPrediction().getInfo()));
         }).sorted(Comparator.comparingInt(x -> x.getPrediction().getTicks())).toList(), new SimulationData(getFirstStop().get().getPrediction().getTrain(), simulationTime, timeToTargetAfterSim));
     }
 
@@ -220,7 +220,7 @@ public class SimpleTrainSchedule {
                 cycle++;
             }
             cycle += x.getPrediction().getCycle();
-            return new TrainStop(x.getStationAlias(), new DeparturePrediction(x.getPrediction().getTrain(), estimatedTicks, x.getPrediction().getScheduleTitle(), x.getPrediction().getNextStopStation(), cycle));
+            return new TrainStop(x.getStationAlias(), new DeparturePrediction(x.getPrediction().getTrain(), estimatedTicks, x.getPrediction().getScheduleTitle(), x.getPrediction().getNextStopStation(), cycle, x.getPrediction().getInfo()));
         }).sorted(Comparator.comparingInt(x -> x.getPrediction().getTicks())).toList());
     }
     

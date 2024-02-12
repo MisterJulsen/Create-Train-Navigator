@@ -14,12 +14,12 @@ import net.minecraftforge.network.NetworkEvent;
 public class NavigationResponsePacket implements IPacketBase<NavigationResponsePacket> {
     public long id;
     public List<SimpleRoute> routes; 
-    public int duration;
+    public long duration;
     public long lastUpdated;
     
     public NavigationResponsePacket() { }
 
-    public NavigationResponsePacket(long id, List<SimpleRoute> routes, int duration, long lastUpdated) {
+    public NavigationResponsePacket(long id, List<SimpleRoute> routes, long duration, long lastUpdated) {
         this.id = id;
         this.routes = routes;
         this.duration = duration;
@@ -29,7 +29,7 @@ public class NavigationResponsePacket implements IPacketBase<NavigationResponseP
     @Override
     public void encode(NavigationResponsePacket packet, FriendlyByteBuf buffer) {
         buffer.writeLong(packet.id);
-        buffer.writeInt(packet.duration);
+        buffer.writeLong(packet.duration);
         buffer.writeLong(packet.lastUpdated);
         buffer.writeInt(packet.routes.size());
         for (SimpleRoute route : packet.routes) {
@@ -40,7 +40,7 @@ public class NavigationResponsePacket implements IPacketBase<NavigationResponseP
     @Override
     public NavigationResponsePacket decode(FriendlyByteBuf buffer) {
         long id = buffer.readLong();
-        int duration = buffer.readInt();
+        long duration = buffer.readLong();
         long lastUpdated = buffer.readLong();
         int routesCount = buffer.readInt();        
         List<SimpleRoute> routes = new ArrayList<>(routesCount);
@@ -54,7 +54,7 @@ public class NavigationResponsePacket implements IPacketBase<NavigationResponseP
     public void handle(NavigationResponsePacket packet, Supplier<NetworkEvent.Context> context) {        
         context.get().enqueueWork(() ->
         {
-            NetworkManager.executeOnClient(() -> {
+            NetworkManager.executeOnClient(() -> {                
                 InstanceManager.runClientNavigationResponseAction(packet.id, packet.routes, new NavigationResponseData(packet.lastUpdated, packet.duration));
             });
         });
@@ -62,6 +62,6 @@ public class NavigationResponsePacket implements IPacketBase<NavigationResponseP
         context.get().setPacketHandled(true);      
     }
 
-    public static record NavigationResponseData(long lastUpdated, int duration) {}
+    public static record NavigationResponseData(long lastUpdated, long calculationTime) {}
 }
 

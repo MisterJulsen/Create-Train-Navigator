@@ -3,6 +3,7 @@ package de.mrjulsen.crn.client;
 import java.util.function.Supplier;
 
 import de.mrjulsen.crn.Constants;
+import de.mrjulsen.crn.client.gui.overlay.RouteDetailsOverlayScreen;
 import de.mrjulsen.crn.client.gui.screen.LoadingScreen;
 import de.mrjulsen.crn.client.gui.screen.NavigatorScreen;
 import de.mrjulsen.crn.client.gui.screen.RouteOverlaySettingsScreen;
@@ -27,8 +28,8 @@ public class ClientWrapper {
         });
     }
 
-    public static void showRouteOverlaySettingsGui() {
-        Minecraft.getInstance().setScreen(new RouteOverlaySettingsScreen());
+    public static void showRouteOverlaySettingsGui(RouteDetailsOverlayScreen overlay) {
+        Minecraft.getInstance().setScreen(new RouteOverlaySettingsScreen(overlay));
     }
 
     public static void handleErrorMessagePacket(ServerErrorPacket packet, Supplier<NetworkEvent.Context> ctx) {        
