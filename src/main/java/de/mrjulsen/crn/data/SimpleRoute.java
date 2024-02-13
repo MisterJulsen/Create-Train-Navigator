@@ -272,6 +272,7 @@ public class SimpleRoute implements AutoCloseable {
 
         protected boolean departed = false;
         protected boolean willMiss = false;
+        protected boolean trainCancelled = false;
 
         protected int currentTicks;
         protected long currentRefreshTime;
@@ -364,9 +365,11 @@ public class SimpleRoute implements AutoCloseable {
             return tag;
         }
 
-        public boolean isDeparted() {
-            return this.departed;
+        public boolean isDelayed() {
+            return getEstimatedTime() - ModClientConfig.DEVIATION_THRESHOLD.get() > getScheduleTime();
         }
+
+        
 
         public void setDeparted(boolean b) {
             this.departed = this.departed || b;
@@ -376,20 +379,33 @@ public class SimpleRoute implements AutoCloseable {
             this.willMiss = b;
         }
 
+        public void setTrainCancelled(boolean b) {
+            this.trainCancelled = b;
+        }
+
+        public boolean isDeparted() {
+            return this.departed;
+        }
+
         public boolean willMissStop() {
             return willMiss;
         }
 
-        public boolean reachable() {
-            return !willMissStop() && !isDeparted();
+        public boolean isTrainCancelled() {
+            return trainCancelled;
         }
 
-        public boolean isDelayed() {
-            return getEstimatedTime() - ModClientConfig.DEVIATION_THRESHOLD.get() > getScheduleTime();
+        /**
+         * Returns true if this station is reachable. Returns false if the train at this station already departed.
+         * @param safeConnection If true this station will no longer be considered as reachable if it may not be reachable due to a delay. But this doesn't mean that the train already departed.
+         * @return
+         */
+        public boolean reachable(boolean safeConnection) {
+            return (!safeConnection || !willMissStop()) && !isDeparted() && !isTrainCancelled();
         }
 
-        public boolean renderRealtime() {
-            return getEstimatedTime() + ModClientConfig.TRANSFER_TIME.get() + ModClientConfig.REALTIME_EARLY_ARRIVAL_THRESHOLD.get() > getScheduleTime();
+        public boolean shouldRenderRealtime() {
+            return relatimeWasUpdated() && (getEstimatedTime() + ModClientConfig.TRANSFER_TIME.get() + ModClientConfig.REALTIME_EARLY_ARRIVAL_THRESHOLD.get() > getScheduleTime());
         }
 
         public boolean relatimeWasUpdated() {

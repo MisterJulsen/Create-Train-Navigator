@@ -22,6 +22,7 @@ import de.mrjulsen.crn.client.gui.DynamicWidgets;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.overlay.HudOverlays;
 import de.mrjulsen.crn.client.gui.overlay.RouteDetailsOverlayScreen;
+import de.mrjulsen.crn.client.gui.widgets.NavigatorToast;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.item.ModItems;
 import de.mrjulsen.crn.util.Pair;
@@ -70,7 +71,9 @@ public class RouteOverlaySettingsScreen extends CommonScreen {
     private final WidgetsCollection buttons = new WidgetsCollection();
 
     private static final Component narratorOn = Utils.translate("gui.createrailwaysnavigator.route_overlay_settings.narrator.on");
-    private static final Component narratorOff = Utils.translate("gui.createrailwaysnavigator.route_overlay_settings.narrator.off");
+    private static final Component narratorOff = Utils.translate("gui.createrailwaysnavigator.route_overlay_settings.narrator.off");    
+    private static final Component notificationsOn = Utils.translate("gui.createrailwaysnavigator.route_overlay_settings.notifications.on");
+    private static final Component notificationsOff = Utils.translate("gui.createrailwaysnavigator.route_overlay_settings.notifications.off");
     private static final MutableComponent textScale = Utils.translate("gui.createrailwaysnavigator.route_overlay_settings.scale");
     private static final MutableComponent textShowDetails = Utils.translate("gui.createrailwaysnavigator.route_overlay_settings.show_details");
     private static final MutableComponent textUnpin = Utils.translate("gui.createrailwaysnavigator.route_overlay_settings.unpin");
@@ -121,7 +124,7 @@ public class RouteOverlaySettingsScreen extends CommonScreen {
         removeOverlayButton.withCallback(() -> {
             Minecraft minecraft = Minecraft.getInstance();
             minecraft.setScreen(new RouteDetailsScreen(null, Minecraft.getInstance().level, overlay.getListener().getListeningRoute(), overlay.getListenerId()));
-            HudOverlays.remove(overlay.getId());
+            HudOverlays.remove(overlay.getId());            
         });
         removeOverlayButton.setToolTip(textUnpin);
         buttons.add(removeOverlayButton);
@@ -164,6 +167,12 @@ public class RouteOverlaySettingsScreen extends CommonScreen {
         notificationsButton = this.addRenderableWidget(new IconButton(guiLeft + 28, guiTop + 26, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, ModGuiIcons.INFO.getAsCreateIcon()));
         notificationsButton.withCallback(() -> {
             ModClientConfig.ROUTE_NOTIFICATIONS.set(!ModClientConfig.ROUTE_NOTIFICATIONS.get());
+
+            if (ModClientConfig.ROUTE_NOTIFICATIONS.get()) {
+                Minecraft.getInstance().getToasts().addToast(NavigatorToast.multiline(notificationsOn, Utils.emptyText()));
+            } else {
+                Minecraft.getInstance().getToasts().addToast(NavigatorToast.multiline(notificationsOff, Utils.emptyText()));
+            }
         });
         buttons.add(notificationsButton);
         buttonTooltips.put(notificationsButton, Pair.of(textNotifications, textNotificationsDescription));
