@@ -17,13 +17,17 @@ public class DynamicWidgets {
     private static final int COLOR_TEXTBOX_COLOR_BG = 0xFFa3a3a3;
     private static final int COLOR_TEXTBOX_COLOR_ACCENT = 0xFF8b8b8b;
 
-    public static void renderWidgetInner(PoseStack poseStack, int x, int y, int w, int h, ColorShade color) {
-        GuiComponent.fill(poseStack, x, y, x + w, y + h, color.getColor()); // plane
+    public static void renderWidgetInner(PoseStack poseStack, int x, int y, int w, int h, int color) {
+        GuiComponent.fill(poseStack, x, y, x + w, y + h, color); // plane
         
         GuiComponent.fill(poseStack, x, y, x + 1, y + h, ColorShade.LIGHT.getColor()); // left border
         GuiComponent.fill(poseStack, x + 1, y, x + 2, y + h, COLOR_BORDER); // left border
         GuiComponent.fill(poseStack, x + w - 1, y, x + w, y + h, ColorShade.LIGHT.getColor()); // right border
         GuiComponent.fill(poseStack, x + w - 2, y, x + w - 1, y + h, COLOR_BORDER); // right border
+    }
+
+    public static void renderWidgetInner(PoseStack poseStack, int x, int y, int w, int h, ColorShade color) {
+        renderWidgetInner(poseStack, x, y, w, h, color.getColor());
     }
 
     public static void renderWidgetTopBorder(PoseStack poseStack, int x, int y, int w) {
@@ -36,17 +40,25 @@ public class DynamicWidgets {
         GuiComponent.fill(poseStack, x + 1, y, x + w - 1, y + 1, COLOR_BORDER); // left border
     }
 
-    public static void renderSingleShadeWidget(PoseStack poseStack, int x, int y, int w, int h, ColorShade color) {
+    public static void renderSingleShadeWidget(PoseStack poseStack, int x, int y, int w, int h, int color) {
         renderWidgetInner(poseStack, x, y, w, h, color);
         renderWidgetTopBorder(poseStack, x, y, w);
         renderWidgetBottomBorder(poseStack, x, y + h - BORDER_WEIGHT, w);
     }
 
-    public static void renderDuoShadeWidget(PoseStack poseStack, int x, int y, int w, int h1, ColorShade color1, int h2, ColorShade color2) {
+    public static void renderSingleShadeWidget(PoseStack poseStack, int x, int y, int w, int h, ColorShade color) {
+        renderSingleShadeWidget(poseStack, x, y, w, h, color.getColor());
+    }
+
+    public static void renderDuoShadeWidget(PoseStack poseStack, int x, int y, int w, int h1, int color1, int h2, int color2) {
         renderWidgetInner(poseStack, x, y, w, h1, color1);
         renderWidgetInner(poseStack, x, y + h1, w, h2, color2);        
         renderWidgetTopBorder(poseStack, x, y, w);
         renderWidgetBottomBorder(poseStack, x, y + h1 + h2 - BORDER_WEIGHT, w);
+    }
+
+    public static void renderDuoShadeWidget(PoseStack poseStack, int x, int y, int w, int h1, ColorShade color1, int h2, ColorShade color2) {
+        renderDuoShadeWidget(poseStack, x, y, w, h1, color1.getColor(), h2, color2.getColor());
     }
 
     public static void renderTextSlotOverlay(PoseStack poseStack, int x, int y, int w, int h) {
@@ -72,6 +84,11 @@ public class DynamicWidgets {
         GuiComponent.fill(poseStack, x + w - 1, y, x + w, y + h, COLOR_TEXTBOX_3D_LIGHT); // right
         GuiComponent.fill(poseStack, x + w - 1, y, x + w, y + 1, COLOR_TEXTBOX_3D_NEUTRAL); // top right
         GuiComponent.fill(poseStack, x, y + h - 1, x + 1, y + h, COLOR_TEXTBOX_3D_NEUTRAL); // bottom left
+    }
+
+    public static void renderHorizontalSeparator(PoseStack poseStack, int x, int y, int w) {
+        GuiComponent.fill(poseStack, x + 1, y, x + w, y + 1, ColorShade.LIGHT.getColor());
+        GuiComponent.fill(poseStack, x, y + 1, x + w - 1, y + 2, COLOR_BORDER);
     }
 
     public static enum ColorShade {
