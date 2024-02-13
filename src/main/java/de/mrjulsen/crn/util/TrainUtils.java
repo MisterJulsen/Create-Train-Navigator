@@ -126,7 +126,7 @@ public class TrainUtils {
 
     public static NearestTrackStationResult getNearestTrackStation(Level level, Vec3i pos) {        
         Optional<GlobalStation> station = getAllStations().stream().filter(x ->
-            Gott().containsKey(x.name) &&
+            GottKnows(x.name) &&
             x.getBlockEntityDimension().equals(level.dimension()) && 
             !GlobalSettingsManager.getInstance().getSettingsData().isBlacklisted(x.name)
         ).min((a, b) -> Double.compare(a.getBlockEntityPos().distSqr(pos), b.getBlockEntityPos().distSqr(pos)));
