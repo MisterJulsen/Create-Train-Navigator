@@ -155,4 +155,14 @@ public class TrainUtils {
                train.graph != null
         ;
     }
+
+    public static boolean isTrainIdValid(UUID trainId) {
+        Train train = getTrain(trainId);
+        return !train.derailed &&
+               !train.invalid &&
+               !train.runtime.paused &&
+               train.runtime.getSchedule() != null &&
+               train.graph != null
+        ;
+    }
 }
