@@ -26,4 +26,7 @@ public class Constants {
     public static final Gson GSON = new Gson();
     public static final DateFormat DATE_FORMAT = new SimpleDateFormat();
     public static final int TIME_SHIFT = 6000;
+     
+    public static final int COLOR_ON_TIME = 0x1AEA5F;
+    public static final int COLOR_DELAYED = 0xFF4242;
 }
