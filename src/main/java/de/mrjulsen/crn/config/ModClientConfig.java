@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.mrjulsen.crn.client.gui.screen.OverlayPosition;
+import de.mrjulsen.mcdragonlib.utils.TimeUtils.TimeFormat;
 import net.minecraftforge.common.ForgeConfigSpec;
 
 public class ModClientConfig {
@@ -21,6 +22,7 @@ public class ModClientConfig {
     public static final ForgeConfigSpec.ConfigValue<Boolean> ROUTE_NARRATOR;
     public static final ForgeConfigSpec.ConfigValue<Boolean> ROUTE_NOTIFICATIONS;
     public static final ForgeConfigSpec.ConfigValue<OverlayPosition> ROUTE_OVERLAY_POSITION;
+    public static final ForgeConfigSpec.ConfigValue<TimeFormat> TIME_FORMAT;
 
     public static final int MAX_TRANSFER_TIME = 24000;
     public static final double MIN_SCALE = 0.25f;
@@ -50,6 +52,9 @@ public class ModClientConfig {
             .defineInRange("search_settings.transfer_time", 1000, 0, MAX_TRANSFER_TIME);
         TRAIN_GROUP_FILTER_BLACKLIST = BUILDER.comment("List of train groups that should NOT be used in navigation. (Default: <empty>)")
             .defineList("search_settings.train_group_blacklist", new ArrayList<String>(), x -> x instanceof String);
+
+        TIME_FORMAT = BUILDER.comment("Display Time Format. (Default: Hours 24)")
+            .defineEnum("time_format", TimeFormat.HOURS_24);
 
         BUILDER.pop();
         SPEC = BUILDER.build();

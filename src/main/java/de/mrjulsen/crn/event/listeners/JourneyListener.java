@@ -23,7 +23,6 @@ import de.mrjulsen.crn.network.InstanceManager;
 import de.mrjulsen.crn.network.NetworkManager;
 import de.mrjulsen.crn.network.packets.cts.RealtimeRequestPacket;
 import de.mrjulsen.mcdragonlib.utils.TimeUtils;
-import de.mrjulsen.mcdragonlib.utils.TimeUtils.TimeFormat;
 import de.mrjulsen.mcdragonlib.utils.Utils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
@@ -116,7 +115,7 @@ public class JourneyListener {
         Component text = Utils.translate(keyJourneyBegins,
             currentStation().getTrain().trainName(),
             currentStation().getTrain().scheduleTitle(),
-            TimeUtils.parseTime((int)currentStation().getEstimatedTimeWithThreshold() + Constants.TIME_SHIFT, TimeFormat.HOURS_24),
+            TimeUtils.parseTime((int)currentStation().getEstimatedTimeWithThreshold() + Constants.TIME_SHIFT, ModClientConfig.TIME_FORMAT.get()),
             currentStation().getInfo().platform()
         );
         String narratorText = text.getString() + ". " + Utils.translate(keyOptionsText, new KeybindComponent(keyKeybindOptions)).getString();
@@ -307,7 +306,7 @@ public class JourneyListener {
             ), Utils.translate(keyNotificationJourneyBegins,
                 currentStation().getTrain().trainName(),
                 currentStation().getTrain().scheduleTitle(),
-                TimeUtils.parseTime((int)currentStation().getEstimatedTimeWithThreshold() + Constants.TIME_SHIFT, TimeFormat.HOURS_24),
+                TimeUtils.parseTime((int)currentStation().getEstimatedTimeWithThreshold() + Constants.TIME_SHIFT, ModClientConfig.TIME_FORMAT.get()),
                 currentStation().getInfo().platform()
             )));
             beginAnnounced = true;
@@ -479,8 +478,8 @@ public class JourneyListener {
                 last.getTrain().trainName(),
                 TimeUtils.parseDuration((int)last.getDifferenceTime())
             ), Utils.translate(keyNotificationTrainDelayed,
-                TimeUtils.parseTime((int)(last.getEstimatedTimeWithThreshold() % 24000) + Constants.TIME_SHIFT, TimeFormat.HOURS_24),
-                TimeUtils.parseTime((int)(last.getScheduleTime() % 24000) + Constants.TIME_SHIFT, TimeFormat.HOURS_24),
+                TimeUtils.parseTime((int)(last.getEstimatedTimeWithThreshold() % 24000) + Constants.TIME_SHIFT, ModClientConfig.TIME_FORMAT.get()),
+                TimeUtils.parseTime((int)(last.getScheduleTime() % 24000) + Constants.TIME_SHIFT, ModClientConfig.TIME_FORMAT.get()),
                 last.getStationName()
             )));
         }

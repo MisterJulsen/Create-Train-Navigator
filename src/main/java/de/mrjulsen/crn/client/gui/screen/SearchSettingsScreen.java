@@ -29,7 +29,6 @@ import de.mrjulsen.crn.data.TrainGroup;
 import de.mrjulsen.crn.util.ModGuiUtils;
 import de.mrjulsen.mcdragonlib.utils.TimeUtils;
 import de.mrjulsen.mcdragonlib.utils.Utils;
-import de.mrjulsen.mcdragonlib.utils.TimeUtils.TimeFormat;
 import de.mrjulsen.mcdragonlib.client.gui.GuiUtils;
 import de.mrjulsen.mcdragonlib.client.gui.wrapper.CommonScreen;
 import net.minecraft.client.Minecraft;
@@ -303,7 +302,7 @@ public class SearchSettingsScreen extends CommonScreen {
         // SCROLLABLE AREA END
         
         drawString(pPoseStack, shadowlessFont, title, guiLeft + 19, guiTop + 4, 0x4F4F4F);
-        String timeString = TimeUtils.parseTime((int)((level.getDayTime() + Constants.TIME_SHIFT) % Constants.TICKS_PER_DAY), TimeFormat.HOURS_24);
+        String timeString = TimeUtils.parseTime((int)((level.getDayTime() + Constants.TIME_SHIFT) % Constants.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get());
         drawString(pPoseStack, shadowlessFont, timeString, guiLeft + GUI_WIDTH - 22 - shadowlessFont.width(timeString), guiTop + 4, 0x4F4F4F);
 
         double maxHeight = getMaxScrollHeight();

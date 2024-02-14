@@ -43,7 +43,6 @@ import de.mrjulsen.crn.network.packets.cts.TrainDataRequestPacket;
 import de.mrjulsen.crn.util.ModGuiUtils;
 import de.mrjulsen.mcdragonlib.utils.TimeUtils;
 import de.mrjulsen.mcdragonlib.utils.Utils;
-import de.mrjulsen.mcdragonlib.utils.TimeUtils.TimeFormat;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
@@ -116,7 +115,7 @@ public class RouteDetailsOverlayScreen implements HudOverlay, IJourneyListenerCl
     private static final String keyTrainSpeed = "gui.createrailwaysnavigator.route_overview.train_speed";
     private static final String keyTransfer = "gui.createrailwaysnavigator.route_overview.transfer";
     private static final String keyTransferCount = "gui.createrailwaysnavigator.navigator.route_entry.transfer";
-    private static final String keyTrainCancelled = "gui.createrailwaysnavigator.route_overview.train_cancelled";
+    private static final String keyTrainCancelled = "gui.createrailwaysnavigator.route_overview.stop_cancelled";
     private static final String keyAfterJourney = "gui.createrailwaysnavigator.route_overview.after_journey";
     private static final String keyJourneyCompleted = "gui.createrailwaysnavigator.route_overview.journey_completed";
     private static final String keyNextConnections = "gui.createrailwaysnavigator.route_overview.next_connections";
@@ -477,7 +476,7 @@ public class RouteDetailsOverlayScreen implements HudOverlay, IJourneyListenerCl
         GuiComponent.drawString(poseStack, shadowlessFont, title, x + 6, y + 4, 0x4F4F4F);
         GuiComponent.drawString(poseStack, shadowlessFont, Utils.translate(keyOptionsText, new KeybindComponent(keyKeybindOptions).withStyle(ChatFormatting.BOLD)), x + 6, y + GUI_HEIGHT - 2 - shadowlessFont.lineHeight, 0x4F4F4F);
         
-        String timeString = TimeUtils.parseTime((int)((level.getDayTime() + Constants.TIME_SHIFT) % Constants.TICKS_PER_DAY), TimeFormat.HOURS_24);
+        String timeString = TimeUtils.parseTime((int)((level.getDayTime() + Constants.TIME_SHIFT) % Constants.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get());
         GuiComponent.drawString(poseStack, shadowlessFont, timeString, x + GUI_WIDTH - 4 - shadowlessFont.width(timeString), y + 4, 0x4F4F4F);
         
         // Test
@@ -577,11 +576,11 @@ public class RouteDetailsOverlayScreen implements HudOverlay, IJourneyListenerCl
             GuiComponent.drawString(poseStack, shadowlessFont, Utils.translate(keyTrainCancelled), x + 10, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, DELAYED | fontAlpha);  
         } else {
             long timeDiff = station.getDifferenceTime();
-            GuiComponent.drawString(poseStack, shadowlessFont, Utils.text(TimeUtils.parseTime((int)(station.getScheduleTime() + Constants.TIME_SHIFT), TimeFormat.HOURS_24)).withStyle(reachable ? ChatFormatting.RESET : ChatFormatting.STRIKETHROUGH), x + 10, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, reachable ? (index <= getListener().getIndex() ? 0xFFFFFF | fontAlpha : 0xDBDBDB | fontAlpha) : DELAYED | fontAlpha);
+            GuiComponent.drawString(poseStack, shadowlessFont, Utils.text(TimeUtils.parseTime((int)(station.getScheduleTime() + Constants.TIME_SHIFT), ModClientConfig.TIME_FORMAT.get())).withStyle(reachable ? ChatFormatting.RESET : ChatFormatting.STRIKETHROUGH), x + 10, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, reachable ? (index <= getListener().getIndex() ? 0xFFFFFF | fontAlpha : 0xDBDBDB | fontAlpha) : DELAYED | fontAlpha);
             
             //if (station.getEstimatedTimeWithThreshold() > 0 && reachable && station.shouldRenderRealtime() && (!lastStation.isPresent() || lastStation.get().getEstimatedTime() < station.getEstimatedTime()) && (station.getTrain().trainId().equals(station.getTrain().trainId()))) {
             if (station.reachable(false) && station.shouldRenderRealtime()) {
-                GuiComponent.drawString(poseStack, shadowlessFont, Utils.text(TimeUtils.parseTime((int)(station.getEstimatedTimeWithThreshold() + Constants.TIME_SHIFT), TimeFormat.HOURS_24)).withStyle(reachable ? ChatFormatting.RESET : ChatFormatting.STRIKETHROUGH), x + 40, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, timeDiff < ModClientConfig.DEVIATION_THRESHOLD.get() && reachable ? ON_TIME | fontAlpha : DELAYED | fontAlpha);
+                GuiComponent.drawString(poseStack, shadowlessFont, Utils.text(TimeUtils.parseTime((int)(station.getEstimatedTimeWithThreshold() + Constants.TIME_SHIFT), ModClientConfig.TIME_FORMAT.get())).withStyle(reachable ? ChatFormatting.RESET : ChatFormatting.STRIKETHROUGH), x + 40, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, timeDiff < ModClientConfig.DEVIATION_THRESHOLD.get() && reachable ? ON_TIME | fontAlpha : DELAYED | fontAlpha);
             }
         }
 
@@ -629,7 +628,7 @@ public class RouteDetailsOverlayScreen implements HudOverlay, IJourneyListenerCl
 
         SimpleTrainConnection[] conns = connections.toArray(SimpleTrainConnection[]::new);
         for (int i = connectionsSubPageIndex * CONNECTION_ENTRIES_PER_PAGE, k = 0; i < Math.min((connectionsSubPageIndex + 1) * CONNECTION_ENTRIES_PER_PAGE, connections.size()); i++, k++) {
-            GuiComponent.drawString(poseStack, shadowlessFont, new TextComponent(TimeUtils.parseTime((int)((conns[i].ticks() + Constants.TIME_SHIFT) % Constants.TICKS_PER_DAY), TimeFormat.HOURS_24)), x + 10, y + 15 + 12 * k, 0xDBDBDB | fontAlpha);
+            GuiComponent.drawString(poseStack, shadowlessFont, new TextComponent(TimeUtils.parseTime((int)((conns[i].ticks() + Constants.TIME_SHIFT) % Constants.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get())), x + 10, y + 15 + 12 * k, 0xDBDBDB | fontAlpha);
             GuiComponent.drawString(poseStack, shadowlessFont, new TextComponent(conns[i].trainName()), x + 40, y + 15 + 12 * k, 0xDBDBDB | fontAlpha);
             GuiComponent.drawString(poseStack, shadowlessFont, new TextComponent(conns[i].scheduleTitle()), x + 90, y + 15 + 12 * k, 0xDBDBDB | fontAlpha);
         }
@@ -656,7 +655,7 @@ public class RouteDetailsOverlayScreen implements HudOverlay, IJourneyListenerCl
         // Title
         ModGuiIcons.TIME.render(poseStack, x + 10, y + 3);
         long time = getListener().currentStation().getEstimatedTimeWithThreshold() - level.getDayTime();
-        GuiComponent.drawString(poseStack, shadowlessFont, Utils.translate(keyDepartureIn).append(" ").append(time > 0 ? Utils.text(TimeUtils.parseTime((int)(time % 24000), TimeFormat.HOURS_24)) : Utils.translate(keyTimeNow)).withStyle(ChatFormatting.BOLD), x + 15 + ModGuiIcons.ICON_SIZE, y + 3 + ModGuiIcons.ICON_SIZE / 2 - shadowlessFont.lineHeight / 2, 0xFFFFFF | fontAlpha);
+        GuiComponent.drawString(poseStack, shadowlessFont, Utils.translate(keyDepartureIn).append(" ").append(time > 0 ? Utils.text(TimeUtils.parseTime((int)(time % 24000), ModClientConfig.TIME_FORMAT.get())) : Utils.translate(keyTimeNow)).withStyle(ChatFormatting.BOLD), x + 15 + ModGuiIcons.ICON_SIZE, y + 3 + ModGuiIcons.ICON_SIZE / 2 - shadowlessFont.lineHeight / 2, 0xFFFFFF | fontAlpha);
         y += 5 + ModGuiIcons.ICON_SIZE;
         
         // Details
@@ -667,7 +666,7 @@ public class RouteDetailsOverlayScreen implements HudOverlay, IJourneyListenerCl
         Component platformText = Utils.text(endStation.getInfo().platform());
         int platformTextWidth = shadowlessFont.width(platformText);
         final int maxStationNameWidth = SLIDING_TEXT_AREA_WIDTH - platformTextWidth - 10 - 5;
-        MutableComponent stationText = Utils.text(TimeUtils.parseTime((int)(endStation.getEstimatedTimeWithThreshold() + Constants.TIME_SHIFT % 24000), TimeFormat.HOURS_24)).append(Utils.text(" " + endStation.getStationName()));
+        MutableComponent stationText = Utils.text(TimeUtils.parseTime((int)(endStation.getEstimatedTimeWithThreshold() + Constants.TIME_SHIFT % 24000), ModClientConfig.TIME_FORMAT.get())).append(Utils.text(" " + endStation.getStationName()));
         if (shadowlessFont.width(stationText) > maxStationNameWidth) {
             stationText = Utils.text(shadowlessFont.substrByWidth(stationText, maxStationNameWidth).getString()).append(Utils.text("...")).withStyle(stationText.getStyle());
         }

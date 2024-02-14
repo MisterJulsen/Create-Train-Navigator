@@ -2,36 +2,27 @@ package de.mrjulsen.crn.util;
 
 import java.util.Objects;
 
-public class Pair<T, S> {
-    protected T value1;
-    protected S value2;
+public class Pair<A, B> extends Single<A> {
+    protected B value2;
 
-    public Pair(T value1, S value2) {
-        this.value1 = value1;
+    public Pair(A value1, B value2) {
+        super(value1);
         this.value2 = value2;
     }
 
-    public static <T, S> Pair<T, S>of(T first, S second) {
-        return new Pair<T,S>(first, second);
+    public static <A, B> Pair<A, B>of(A first, B second) {
+        return new Pair<A, B>(first, second);
     }
 
-    public T getFirst() {
-        return value1;
-    }
-
-    public S getSecond() {
+    public B getSecond() {
         return value2;
     }
 
-    protected void setFirst(T value) {
-        this.value1 = value;
-    }
-
-    protected void setSecond(S value) {
+    protected void setSecond(B value) {
         this.value2 = value;
     }
 
-    public Pair<T, S> swap(Pair<T, S> pair) {
+    public Pair<A, B> swap(Pair<A, B> pair) {
         return Pair.of(pair.getFirst(), pair.getSecond());
     }
 
@@ -53,19 +44,19 @@ public class Pair<T, S> {
         return String.format("(%s, %s)", getFirst(), getSecond());
     }
 
-    public static class MutablePair<T, S> extends Pair<T, S> {
+    public static class MutablePair<A, B> extends Pair<A, B> {
 
-        public MutablePair(T value1, S value2) {
+        public MutablePair(A value1, B value2) {
             super(value1, value2);
         }
 
         @Override
-        public void setFirst(T value) {
+        protected void setFirst(A value) {
             super.setFirst(value);
         }
 
         @Override
-        public void setSecond(S value) {
+        public void setSecond(B value) {
             super.setSecond(value);
         }        
     }

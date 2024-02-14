@@ -14,11 +14,11 @@ import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.client.gui.IForegroundRendering;
 import de.mrjulsen.crn.client.gui.widgets.SettingsOptionWidget;
+import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.util.ModGuiUtils;
 import de.mrjulsen.mcdragonlib.client.gui.GuiAreaDefinition;
 import de.mrjulsen.mcdragonlib.client.gui.WidgetsCollection;
 import de.mrjulsen.mcdragonlib.utils.TimeUtils;
-import de.mrjulsen.mcdragonlib.utils.TimeUtils.TimeFormat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.Screen;
@@ -147,7 +147,7 @@ public class GlobalSettingsScreen extends Screen implements IForegroundRendering
 
 
         drawString(pPoseStack, shadowlessFont, title, guiLeft + 19, guiTop + 4, 0x4F4F4F);
-        String timeString = TimeUtils.parseTime((int)((level.getDayTime() + Constants.TIME_SHIFT) % Constants.TICKS_PER_DAY), TimeFormat.HOURS_24);
+        String timeString = TimeUtils.parseTime((int)((level.getDayTime() + Constants.TIME_SHIFT) % Constants.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get());
         drawString(pPoseStack, shadowlessFont, timeString, guiLeft + GUI_WIDTH - 22 - shadowlessFont.width(timeString), guiTop + 4, 0x4F4F4F);
 
         super.render(pPoseStack, pMouseX, pMouseY, pPartialTick);

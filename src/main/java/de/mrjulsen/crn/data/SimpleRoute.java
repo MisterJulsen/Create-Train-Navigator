@@ -30,6 +30,7 @@ public class SimpleRoute implements AutoCloseable {
     protected StationEntry startStation = null;
     protected StationEntry endStation = null;
     protected StationEntry[] stationArray = null;
+    protected boolean valid = true;
 
     // listener
     protected UUID listenerId;
@@ -42,6 +43,7 @@ public class SimpleRoute implements AutoCloseable {
         this.parts = new ArrayList<>(parts);
         this.refreshTime = refreshTime;
 
+        parts.forEach(x -> x.setParent(this));
         tagAll();
     }
 
@@ -110,6 +112,14 @@ public class SimpleRoute implements AutoCloseable {
         return getEndStation().getTicks() - getStartStation().getTicks();
     }
 
+    protected void setValid(boolean b) {
+        this.valid = valid && b;
+    }
+
+    public boolean isValid() {
+        return valid;
+    }
+
     public StationEntry getStartStation() {
         return startStation == null ? startStation = getParts().stream().findFirst().get().getStartStation() : startStation;
     }
@@ -138,7 +148,9 @@ public class SimpleRoute implements AutoCloseable {
     public static SimpleRoute fromNbt(CompoundTag nbt) {
         long refreshTime = nbt.getLong(NBT_REFRESH_TIME);
         List<SimpleRoutePart> parts = new ArrayList<>(nbt.getList(NBT_PARTS, Tag.TAG_COMPOUND).stream().map(x -> SimpleRoutePart.fromNbt((CompoundTag)x, refreshTime)).toList());
-        return new SimpleRoute(parts, refreshTime);
+        SimpleRoute route = new SimpleRoute(parts, refreshTime);
+        parts.forEach(x -> x.setParent(route));
+        return route;
     }
 
     @Override
@@ -154,6 +166,8 @@ public class SimpleRoute implements AutoCloseable {
         private static final String NBT_START_STATION = "StartStation";
         private static final String NBT_END_STATION = "EndStation";
         private static final String NBT_STOPOVERS = "Stopovers";
+
+        protected SimpleRoute parent;
 
         protected final String trainName;
         protected final UUID trainId;
@@ -186,6 +200,16 @@ public class SimpleRoute implements AutoCloseable {
             this.start = start;
             this.end = end;
             this.stopovers = stopovers;
+
+            getStations().forEach(x -> x.setParent(this));
+        }
+
+        protected void setParent(SimpleRoute parent) {
+            this.parent = parent;
+        }
+
+        protected SimpleRoute getParent() {
+            return parent;
         }
 
         public String getTrainName() {
@@ -253,7 +277,11 @@ public class SimpleRoute implements AutoCloseable {
             StationEntry end = StationEntry.fromNbt(nbt.getCompound(NBT_END_STATION), refreshTime);
             Collection<StationEntry> stopovers = nbt.getList(NBT_STOPOVERS, Tag.TAG_COMPOUND).stream().map(x -> StationEntry.fromNbt((CompoundTag)x, refreshTime)).toList();
 
-            return new SimpleRoutePart(trainName, trainId, trainIconId, scheduleTitle, start, end, stopovers);
+            SimpleRoutePart part = new SimpleRoutePart(trainName, trainId, trainIconId, scheduleTitle, start, end, stopovers);
+            start.setParent(part);
+            end.setParent(part);
+            stopovers.forEach(x -> x.setParent(part));
+            return part;
         }
     }
 
@@ -279,8 +307,14 @@ public class SimpleRoute implements AutoCloseable {
         protected StationInfo updatedStationInfo;
         protected boolean wasUpdated = false;
 
+        protected SimpleRoutePart parent;
+
         public StationEntry(TrainStop stop, long refreshTime) {
-            this(stop.getStationAlias().getAliasName().get(), stop.getStationAlias().getInfoForStation(stop.getPrediction().getNextStopStation()), stop.getPrediction().getTicks(), refreshTime);
+            this(
+                stop.getStationAlias().getAliasName().get(),
+                stop.getStationAlias().getInfoForStation(stop.getPrediction().getNextStopStation()),
+                stop.getPrediction().getTicks(), refreshTime
+            );
         }
 
         protected StationEntry(String stationName, StationInfo info, int ticks, long refreshTime) {
@@ -291,6 +325,14 @@ public class SimpleRoute implements AutoCloseable {
             this.currentTicks = ticks;
             this.currentRefreshTime = refreshTime;
             this.updatedStationInfo = info;
+        }
+
+        protected void setParent(SimpleRoutePart parent) {
+            this.parent = parent;
+        }
+
+        protected SimpleRoutePart getParent() {
+            return parent;
         }
 
         public String getStationName() {
@@ -380,6 +422,9 @@ public class SimpleRoute implements AutoCloseable {
         }
 
         public void setTrainCancelled(boolean b) {
+            if (b) {
+                getParent().getParent().setValid(false);
+            }
             this.trainCancelled = b;
         }
 
@@ -405,7 +450,7 @@ public class SimpleRoute implements AutoCloseable {
         }
 
         public boolean shouldRenderRealtime() {
-            return relatimeWasUpdated() && (getEstimatedTime() + ModClientConfig.TRANSFER_TIME.get() + ModClientConfig.REALTIME_EARLY_ARRIVAL_THRESHOLD.get() > getScheduleTime());
+            return !isDeparted() && !isTrainCancelled() && relatimeWasUpdated() && (getEstimatedTime() + ModClientConfig.TRANSFER_TIME.get() + ModClientConfig.REALTIME_EARLY_ARRIVAL_THRESHOLD.get() > getScheduleTime());
         }
 
         public boolean relatimeWasUpdated() {

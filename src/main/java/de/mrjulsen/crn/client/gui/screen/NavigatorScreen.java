@@ -20,6 +20,7 @@ import de.mrjulsen.crn.client.gui.IForegroundRendering;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.widgets.ModDestinationSuggestions;
 import de.mrjulsen.crn.client.gui.widgets.RouteEntryOverviewWidget;
+import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.data.ClientTrainStationSnapshot;
 import de.mrjulsen.crn.data.GlobalSettingsManager;
@@ -33,7 +34,6 @@ import de.mrjulsen.crn.network.packets.cts.NavigationRequestPacket;
 import de.mrjulsen.crn.network.packets.cts.NearestStationRequestPacket;
 import de.mrjulsen.crn.util.ModGuiUtils;
 import de.mrjulsen.mcdragonlib.utils.TimeUtils;
-import de.mrjulsen.mcdragonlib.utils.TimeUtils.TimeFormat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -321,7 +321,7 @@ public class NavigatorScreen extends Screen implements IForegroundRendering, IJo
             widget.render(pPoseStack, pMouseX, pMouseY, pPartialTick);
 
         drawString(pPoseStack, shadowlessFont, title, guiLeft + 19, guiTop + 4, 0x4F4F4F);
-        String timeString = TimeUtils.parseTime((int)((level.getDayTime() + Constants.TIME_SHIFT) % Constants.TICKS_PER_DAY), TimeFormat.HOURS_24);
+        String timeString = TimeUtils.parseTime((int)((level.getDayTime() + Constants.TIME_SHIFT) % Constants.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get());
         drawString(pPoseStack, shadowlessFont, timeString, guiLeft + GUI_WIDTH - 22 - shadowlessFont.width(timeString), guiTop + 4, 0x4F4F4F);
 
         if (!isLoadingRoutes && !generatingRouteEntries) {

@@ -2,7 +2,6 @@ package de.mrjulsen.crn.client.gui.screen;
 
 import java.util.List;
 import java.util.UUID;
-
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.content.trains.entity.TrainIconType;
@@ -29,9 +28,9 @@ import de.mrjulsen.crn.event.listeners.IJourneyListenerClient;
 import de.mrjulsen.crn.event.listeners.JourneyListenerManager;
 import de.mrjulsen.crn.util.ModGuiUtils;
 import de.mrjulsen.crn.util.ModTimeUtils;
+import de.mrjulsen.crn.util.Pair;
 import de.mrjulsen.mcdragonlib.utils.TimeUtils;
 import de.mrjulsen.mcdragonlib.utils.Utils;
-import de.mrjulsen.mcdragonlib.utils.TimeUtils.TimeFormat;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -87,6 +86,7 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering, 
     private final MutableComponent timeNowText = Utils.translate("gui." + ModMain.MOD_ID + ".time.now");    
     private final MutableComponent textConnectionEndangered = Utils.translate("gui.createrailwaysnavigator.route_overview.connection_endangered").withStyle(ChatFormatting.GOLD).withStyle(ChatFormatting.BOLD);
     private final MutableComponent textConnectionMissed = Utils.translate("gui.createrailwaysnavigator.route_overview.connection_missed").withStyle(ChatFormatting.RED).withStyle(ChatFormatting.BOLD);
+    private final MutableComponent textTrainCancelled = Utils.translate("gui.createrailwaysnavigator.route_overview.train_cancelled").withStyle(ChatFormatting.RED).withStyle(ChatFormatting.BOLD);
 
     @SuppressWarnings("resource")
     public RouteDetailsScreen(Screen lastScreen, Level level, SimpleRoute route, UUID listenerId) {
@@ -156,6 +156,18 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering, 
         super.tick();
     }
 
+    private Pair<MutableComponent, MutableComponent> getStationInfo(StationEntry station) {
+        final boolean reachable = station.reachable(true);
+        MutableComponent timeText = Utils.text(TimeUtils.parseTime((int)((route.getRefreshTime() + Constants.TIME_SHIFT) % 24000 + station.getTicks()), ModClientConfig.TIME_FORMAT.get()));
+        MutableComponent stationText = Utils.text(station.getStationName());
+        if (!reachable) {
+            timeText = timeText.withStyle(ChatFormatting.RED).withStyle(ChatFormatting.STRIKETHROUGH);
+            stationText = stationText.withStyle(ChatFormatting.RED).withStyle(ChatFormatting.STRIKETHROUGH);
+        }
+
+        return Pair.of(timeText, stationText);
+    } 
+
     private int renderRouteStart(PoseStack poseStack, int x, int y, StationEntry stop) {
         final int HEIGHT = 30;
         final int V = 48;
@@ -163,13 +175,20 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering, 
         RenderSystem.setShaderTexture(0, Constants.GUI_WIDGETS);
         blit(poseStack, x, y, 0, V, ENTRY_WIDTH, HEIGHT);
 
+        
+
+        Pair<MutableComponent, MutableComponent> text = getStationInfo(stop);
+        drawString(poseStack, shadowlessFont, text.getSecond(), x + ENTRY_DEST_X, y + 15, 0xFFFFFF);
+        float scale = shadowlessFont.width(text.getFirst()) > 30 ? 0.75f : 1;
+        poseStack.pushPose();
+        poseStack.scale(scale, 1, 1);
         int pY = y + 15;
         if (stop.shouldRenderRealtime() && stop.relatimeWasUpdated()) {
             pY -= (stop.shouldRenderRealtime() ? 5 : 0);
-            drawString(poseStack, shadowlessFont, TimeUtils.parseTime((int)(stop.getEstimatedTimeWithThreshold() % 24000 + Constants.TIME_SHIFT), TimeFormat.HOURS_24), x + ENTRY_TIME_X, pY + 10, stop.getDifferenceTime() > ModClientConfig.DEVIATION_THRESHOLD.get() ? DELAYED : ON_TIME);
+            drawString(poseStack, shadowlessFont, TimeUtils.parseTime((int)(stop.getEstimatedTimeWithThreshold() % 24000 + Constants.TIME_SHIFT), ModClientConfig.TIME_FORMAT.get()), (int)((x + ENTRY_TIME_X) / scale), pY + 10, stop.getDifferenceTime() > ModClientConfig.DEVIATION_THRESHOLD.get() ? DELAYED : ON_TIME);
         }
-        drawString(poseStack, shadowlessFont, TimeUtils.parseTime((int)((route.getRefreshTime() + Constants.TIME_SHIFT) % 24000 + stop.getTicks()), TimeFormat.HOURS_24), x + ENTRY_TIME_X, pY, 0xFFFFFF);
-        drawString(poseStack, shadowlessFont, stop.getStationName(), x + ENTRY_DEST_X, y + 15, 0xFFFFFF);
+        drawString(poseStack, shadowlessFont, text.getFirst(), (int)((x + ENTRY_TIME_X) / scale), pY, 0xFFFFFF);
+        poseStack.popPose();
 
         Component platformText = Utils.text(stop.getUpdatedInfo().platform());
         drawString(poseStack, shadowlessFont, platformText, x + ENTRY_DEST_X + 129 - shadowlessFont.width(platformText), y + 15, stop.stationInfoChanged() ? DELAYED : 0xFFFFFF);
@@ -204,13 +223,20 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering, 
         RenderSystem.setShaderTexture(0, Constants.GUI_WIDGETS);
         blit(poseStack, x, y, 0, V, ENTRY_WIDTH, HEIGHT);
 
+
+
+        Pair<MutableComponent, MutableComponent> text = getStationInfo(stop);
+        drawString(poseStack, shadowlessFont, text.getSecond(), x + ENTRY_DEST_X, y + 6, 0xFFFFFF);
+        float scale = shadowlessFont.width(text.getFirst()) > 30 ? 0.75f : 1;
+        poseStack.pushPose();
+        poseStack.scale(scale, 1, 1);
         int pY = y + 6;
         if (stop.shouldRenderRealtime() && stop.relatimeWasUpdated()) {
             pY -= (stop.shouldRenderRealtime() ? 5 : 0);
-            drawString(poseStack, shadowlessFont, TimeUtils.parseTime((int)(stop.getEstimatedTimeWithThreshold() % 24000 + Constants.TIME_SHIFT), TimeFormat.HOURS_24), x + ENTRY_TIME_X, pY + 10, stop.getDifferenceTime() > ModClientConfig.DEVIATION_THRESHOLD.get() ? DELAYED : ON_TIME);
+            drawString(poseStack, shadowlessFont, TimeUtils.parseTime((int)(stop.getEstimatedTimeWithThreshold() % 24000 + Constants.TIME_SHIFT), ModClientConfig.TIME_FORMAT.get()), (int)((x + ENTRY_TIME_X) / scale), pY + 10, stop.getDifferenceTime() > ModClientConfig.DEVIATION_THRESHOLD.get() ? DELAYED : ON_TIME);
         }
-        drawString(poseStack, shadowlessFont, TimeUtils.parseTime((int)((route.getRefreshTime() + Constants.TIME_SHIFT) % 24000 + stop.getTicks()), TimeFormat.HOURS_24), x + ENTRY_TIME_X, pY, 0xFFFFFF);
-        drawString(poseStack, shadowlessFont, stop.getStationName(), x + ENTRY_DEST_X, y + 6, 0xFFFFFF);
+        drawString(poseStack, shadowlessFont, text.getFirst(), (int)((x + ENTRY_TIME_X) / scale), pY, 0xFFFFFF);
+        poseStack.popPose();
 
         Component platformText = Utils.text(stop.getUpdatedInfo().platform());
         drawString(poseStack, shadowlessFont, platformText, x + ENTRY_DEST_X + 129 - shadowlessFont.width(platformText), y + 6, stop.stationInfoChanged() ? DELAYED : 0xFFFFFF);
@@ -225,13 +251,19 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering, 
         RenderSystem.setShaderTexture(0, Constants.GUI_WIDGETS);
         blit(poseStack, x, y, 0, V, ENTRY_WIDTH, HEIGHT);
 
+        
+        Pair<MutableComponent, MutableComponent> text = getStationInfo(stop);
+        drawString(poseStack, shadowlessFont, text.getSecond(), x + ENTRY_DEST_X, y + 21, 0xFFFFFF);
+        float scale = shadowlessFont.width(text.getFirst()) > 30 ? 0.75f : 1;
+        poseStack.pushPose();
+        poseStack.scale(scale, 1, 1);
         int pY = y + 21;
         if (stop.shouldRenderRealtime() && stop.relatimeWasUpdated()) {
             pY -= (stop.shouldRenderRealtime() ? 5 : 0);
-            drawString(poseStack, shadowlessFont, TimeUtils.parseTime((int)(stop.getEstimatedTimeWithThreshold() % 24000 + Constants.TIME_SHIFT), TimeFormat.HOURS_24), x + ENTRY_TIME_X, pY + 10, stop.getDifferenceTime() > ModClientConfig.DEVIATION_THRESHOLD.get() ? DELAYED : ON_TIME);
+            drawString(poseStack, shadowlessFont, TimeUtils.parseTime((int)(stop.getEstimatedTimeWithThreshold() % 24000 + Constants.TIME_SHIFT), ModClientConfig.TIME_FORMAT.get()), (int)((x + ENTRY_TIME_X) / scale), pY + 10, stop.getDifferenceTime() > ModClientConfig.DEVIATION_THRESHOLD.get() ? DELAYED : ON_TIME);
         }
-        drawString(poseStack, shadowlessFont, TimeUtils.parseTime((int)((route.getRefreshTime() + Constants.TIME_SHIFT) % 24000 + stop.getTicks()), TimeFormat.HOURS_24), x + ENTRY_TIME_X, pY, 0xFFFFFF);
-        drawString(poseStack, shadowlessFont, stop.getStationName(), x + ENTRY_DEST_X, y + 21, 0xFFFFFF);
+        drawString(poseStack, shadowlessFont, text.getFirst(), (int)((x + ENTRY_TIME_X) / scale), pY, 0xFFFFFF);
+        poseStack.popPose();
 
         Component platformText = Utils.text(stop.getUpdatedInfo().platform());
         drawString(poseStack, shadowlessFont, platformText, x + ENTRY_DEST_X + 129 - shadowlessFont.width(platformText), y + 21, stop.stationInfoChanged() ? DELAYED : 0xFFFFFF);
@@ -254,7 +286,10 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering, 
         }
 
         if (nextStation != null && !nextStation.reachable(true)) {
-            if (nextStation.isDeparted()) {                
+            if (nextStation.isTrainCancelled()) {                
+                ModGuiIcons.CROSS.render(poseStack, x + ENTRY_TIME_X, y + 13 - ModGuiIcons.ICON_SIZE / 2);
+                drawString(poseStack, shadowlessFont, textTrainCancelled, x + ENTRY_TIME_X + ModGuiIcons.ICON_SIZE + 4, y + 8, 0xFFFFFF);
+            } else if (nextStation.isDeparted()) {                
                 ModGuiIcons.CROSS.render(poseStack, x + ENTRY_TIME_X, y + 13 - ModGuiIcons.ICON_SIZE / 2);
                 drawString(poseStack, shadowlessFont, textConnectionMissed, x + ENTRY_TIME_X + ModGuiIcons.ICON_SIZE + 4, y + 8, 0xFFFFFF);
             } else {
@@ -280,7 +315,7 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering, 
             widget.render(pPoseStack, pMouseX, pMouseY, pPartialTick);
         
         drawString(pPoseStack, shadowlessFont, title, guiLeft + 19, guiTop + 4, 0x4F4F4F);
-        String timeString = TimeUtils.parseTime((int)((level.getDayTime() + Constants.TIME_SHIFT) % Constants.TICKS_PER_DAY), TimeFormat.HOURS_24);
+        String timeString = TimeUtils.parseTime((int)((level.getDayTime() + Constants.TIME_SHIFT) % Constants.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get());
         drawString(pPoseStack, shadowlessFont, timeString, guiLeft + GUI_WIDTH - 22 - shadowlessFont.width(timeString), guiTop + 4, 0x4F4F4F);
         
         drawCenteredString(pPoseStack, font, departureText, guiLeft + GUI_WIDTH / 2, guiTop + 19, 0xFFFFFF);
