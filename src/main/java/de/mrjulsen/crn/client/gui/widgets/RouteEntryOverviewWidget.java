@@ -39,7 +39,7 @@ public class RouteEntryOverviewWidget extends Button {
 
     private static final String transferText = Utils.translate("gui." + ModMain.MOD_ID + ".navigator.route_entry.transfer").getString();
     private static final MutableComponent connectionInPast = Utils.translate("gui." + ModMain.MOD_ID + ".navigator.route_entry.connection_in_past");
-    private static final MutableComponent trainCancelled = Utils.translate("gui.createrailwaysnavigator.route_overview.stop_cancelled");
+    private static final MutableComponent trainCanceled = Utils.translate("gui.createrailwaysnavigator.route_overview.stop_canceled");
 
     public RouteEntryOverviewWidget(NavigatorScreen parent, Level level, int lastRefreshedTime, int pX, int pY, SimpleRoute route, OnPress pOnPress) {
         super(pX, pY, WIDTH, HEIGHT, new TextComponent(route.getName()), pOnPress); // 48
@@ -54,7 +54,7 @@ public class RouteEntryOverviewWidget extends Button {
     public void onClick(double pMouseX, double pMouseY) {
         super.onClick(pMouseX, pMouseY);
         Minecraft minecraft = Minecraft.getInstance();
-        minecraft.setScreen(new RouteDetailsScreen(parent, level, route, null));
+        minecraft.setScreen(new RouteDetailsScreen(parent, level, route, route.getListenerId()));
     }
 
     @Override
@@ -62,7 +62,8 @@ public class RouteEntryOverviewWidget extends Button {
         
         final float scale = 0.75f;
         float l = isMouseOver(pMouseX, pMouseY) ? 0.1f : 0;
-        boolean beforeJourney = JourneyListenerManager.get(route.getListenerId(), null) != null && JourneyListenerManager.get(route.getListenerId(), null).getCurrentState() == State.BEFORE_JOURNEY;
+        boolean isActive = JourneyListenerManager.get(route.getListenerId(), null) != null;
+        boolean beforeJourney = isActive && JourneyListenerManager.get(route.getListenerId(), null).getCurrentState() == State.BEFORE_JOURNEY;
         
         int color = ModGuiUtils.lightenColor(ColorShade.DARK.getColor(), l);
         if (!beforeJourney) {
@@ -116,7 +117,7 @@ public class RouteEntryOverviewWidget extends Button {
         }
 
         if (!route.isValid()) {
-            drawString(pPoseStack, shadowlessFont, trainCancelled, (int)((x + WIDTH - 5) / scale) - shadowlessFont.width(trainCancelled), (int)((y + 15) / scale), Constants.COLOR_DELAYED);        
+            drawString(pPoseStack, shadowlessFont, trainCanceled, (int)((x + WIDTH - 5) / scale) - shadowlessFont.width(trainCanceled), (int)((y + 15) / scale), Constants.COLOR_DELAYED);        
         } else if (!beforeJourney) {
             drawString(pPoseStack, shadowlessFont, connectionInPast, (int)((x + WIDTH - 5) / scale) - shadowlessFont.width(connectionInPast), (int)((y + 15) / scale), Constants.COLOR_DELAYED);        
         }

@@ -51,7 +51,8 @@ public class HudOverlays {
 
     public static void remove(int id) {
         if (activeOverlays.containsKey(id)) {
-            activeOverlays.remove(id).onClose();
+            activeOverlays.get(id).onClose();
+            activeOverlays.remove(id);
         }
     }
 

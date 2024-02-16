@@ -14,12 +14,12 @@ public class NextConnectionsRequestPacket implements IPacketBase<NextConnections
 
     public long requestId;
     public UUID trainId;
-    public int ticksToNextStop;
+    public long ticksToNextStop;
     public String currentStationName;
 
     public NextConnectionsRequestPacket() { }
     
-    public NextConnectionsRequestPacket(long requestId, UUID trainId, String currentStationName, int ticksToNextStop) {
+    public NextConnectionsRequestPacket(long requestId, UUID trainId, String currentStationName, long ticksToNextStop) {
         this.requestId = requestId;
         this.trainId = trainId;
         this.ticksToNextStop = ticksToNextStop;
@@ -30,7 +30,7 @@ public class NextConnectionsRequestPacket implements IPacketBase<NextConnections
     public void encode(NextConnectionsRequestPacket packet, FriendlyByteBuf buffer) {
         buffer.writeLong(packet.requestId);
         buffer.writeUUID(packet.trainId);
-        buffer.writeInt(packet.ticksToNextStop);
+        buffer.writeLong(packet.ticksToNextStop);
         buffer.writeUtf(packet.currentStationName);
     }
 
@@ -38,7 +38,7 @@ public class NextConnectionsRequestPacket implements IPacketBase<NextConnections
     public NextConnectionsRequestPacket decode(FriendlyByteBuf buffer) {
         long requestId = buffer.readLong();
         UUID trainId = buffer.readUUID();
-        int ticksToNextStop = buffer.readInt();
+        long ticksToNextStop = buffer.readLong();
         String currentStationName = buffer.readUtf();
         
         return new NextConnectionsRequestPacket(requestId, trainId, currentStationName, ticksToNextStop);
@@ -50,7 +50,7 @@ public class NextConnectionsRequestPacket implements IPacketBase<NextConnections
         {
             new Thread(() -> {
                 final long updateTime = context.get().getSender().level.getDayTime();
-                NetworkManager.sendToClient(new NextConnectionsResponsePacket(packet.requestId, TrainUtils.getConnectionsAt(packet.currentStationName, packet.trainId, packet.ticksToNextStop), updateTime), context.get().getSender());
+                NetworkManager.sendToClient(new NextConnectionsResponsePacket(packet.requestId, TrainUtils.getConnectionsAt(packet.currentStationName, packet.trainId, (int)packet.ticksToNextStop), updateTime), context.get().getSender());
             }, "Connections Loader").run();
         });
         

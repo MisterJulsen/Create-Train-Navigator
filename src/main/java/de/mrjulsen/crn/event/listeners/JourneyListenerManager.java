@@ -35,24 +35,30 @@ public class JourneyListenerManager {
 
     public static JourneyListener get(UUID id, IJourneyListenerClient addListener) {
         if (addListener != null) {
-            dataListeners.put(id, new HashSet<>(Set.of(addListener.getJourneyListenerClientId())));
+            if (dataListeners.containsKey(id)) {
+                dataListeners.get(id).add(addListener.getJourneyListenerClientId());
+            } else {
+                dataListeners.put(id, new HashSet<>(Set.of(addListener.getJourneyListenerClientId())));
+            }
         }
         return journeyListenerCache.get(id);
     }
 
+    /*
     public static void remove(UUID id) {
         journeyListenerCache.remove(id);
         dataListeners.remove(id);
     }
+    */
 
-    public static void removeClientListener(UUID journeListenerId, IJourneyListenerClient client) {
-        if (dataListeners.containsKey(journeListenerId)) {
-            dataListeners.get(journeListenerId).removeIf(x -> x.equals(client.getJourneyListenerClientId()));
+    public static void removeClientListener(UUID listenerId, IJourneyListenerClient client) {
+        if (dataListeners.containsKey(listenerId)) {
+            dataListeners.get(listenerId).removeIf(x -> x.equals(client.getJourneyListenerClientId()));
         }
     }
 
     public static void removeClientListenerForAll(IJourneyListenerClient client) {
-        dataListeners.entrySet().removeIf(x -> x.getValue().contains(client.getJourneyListenerClientId()));
+        dataListeners.values().forEach(x -> x.removeIf(a -> a.equals(client.getJourneyListenerClientId())));
     }
 
 
@@ -61,7 +67,7 @@ public class JourneyListenerManager {
 
         cleanupTimer++;
         cleanupTimer = cleanupTimer % CLEANUP_INTERVALL;
-        if (cleanupTimer == 0) {                  
+        if (cleanupTimer == 0) {   
             dataListeners.entrySet().removeIf(x -> x.getValue().isEmpty());
             journeyListenerCache.entrySet().removeIf(e -> !dataListeners.containsKey(e.getKey()) || e.getValue().getCurrentState() == State.AFTER_JOURNEY);
         }

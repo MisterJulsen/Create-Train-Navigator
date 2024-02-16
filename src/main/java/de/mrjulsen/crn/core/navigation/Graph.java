@@ -236,7 +236,11 @@ public class Graph {
     }
 
     private Map<UUID, SimpleTrainSchedule> generateTrainSchedules() {
-        return GlobalTrainData.getInstance().getAllTrains().stream().filter(x -> TrainUtils.isTrainValid(x) && !globalSettings.isTrainBlacklisted(x) && !settings.isTrainExcluded(x, globalSettings)).collect(Collectors.toMap(x -> x.id, x -> new SimpleTrainSchedule(x)));
+        return GlobalTrainData.getInstance().getAllTrains().stream().filter(x -> 
+            TrainUtils.isTrainValid(x) &&
+            !globalSettings.isTrainBlacklisted(x) &&
+            !settings.isTrainExcluded(x, globalSettings)
+        ).collect(Collectors.toMap(x -> x.id, x -> new SimpleTrainSchedule(x)));
     }
 
     public Collection<Route> searchTrains(List<Node> routeNodes) {
@@ -271,6 +275,7 @@ public class Graph {
                         !excludedSchedules.contains(schedule) &&
                         schedule.hasStationAlias(node.getStationAlias()) &&
                         TrainUtils.isTrainValid(x.getTrain());
+
             return b;
         }).map(x -> {
             return schedulesByTrain.get(x.getTrain().id).simulate(x.getTrain(), simulationTime, lastNode.getStationAlias());

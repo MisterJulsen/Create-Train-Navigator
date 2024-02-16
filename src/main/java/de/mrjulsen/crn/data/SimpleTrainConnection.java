@@ -2,10 +2,11 @@ package de.mrjulsen.crn.data;
 
 import java.util.UUID;
 
+import de.mrjulsen.crn.data.TrainStationAlias.StationInfo;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 
-public record SimpleTrainConnection(String trainName, UUID trainId, ResourceLocation trainIconId, int ticks, String scheduleTitle) {
+public record SimpleTrainConnection(String trainName, UUID trainId, ResourceLocation trainIconId, int ticks, String scheduleTitle, StationInfo stationDetails) {
 
     private static final String NBT_TRAIN_NAME = "TrainName";
     private static final String NBT_TRAIN_ID = "Id";
@@ -21,6 +22,7 @@ public record SimpleTrainConnection(String trainName, UUID trainId, ResourceLoca
         nbt.putString(NBT_TRAIN_ICON, trainIconId.getPath());
         nbt.putInt(NBT_TICKS, ticks);
         nbt.putString(NBT_SCHEDULE_TITLE, scheduleTitle);
+        stationDetails().writeNbt(nbt);
 
         return nbt;
     }
@@ -31,7 +33,8 @@ public record SimpleTrainConnection(String trainName, UUID trainId, ResourceLoca
             nbt.getUUID(NBT_TRAIN_ID),
             new ResourceLocation(nbt.getString(NBT_TRAIN_ICON)),
             nbt.getInt(NBT_TICKS),
-            nbt.getString(NBT_SCHEDULE_TITLE)
+            nbt.getString(NBT_SCHEDULE_TITLE),
+            StationInfo.fromNbt(nbt)
         );
     }
 }

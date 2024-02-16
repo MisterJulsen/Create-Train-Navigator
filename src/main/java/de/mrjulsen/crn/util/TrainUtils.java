@@ -86,22 +86,36 @@ public class TrainUtils {
         GlobalTrainDisplayData.refresh();
 
         List<SimulatedTrainSchedule> excludedSchedules = new ArrayList<>();
+        Map<DeparturePrediction, SimpleTrainSchedule> scheduleByPrediction = new HashMap<>();
+        Map<DeparturePrediction, SimulatedTrainSchedule> simulatedScheduleByPrediction = new HashMap<>();
 
         return Gott().entrySet().stream().filter(x -> alias.contains(x.getKey())).map(x -> x.getValue())
                 .flatMap(x -> x.parallelStream().map(y -> new DeparturePrediction(y)))
-                .filter(x -> {
+                .peek(x -> {
                     SimpleTrainSchedule schedule = SimpleTrainSchedule.of(getTrainStopsSorted(x.getTrain().id));
-                    SimulatedTrainSchedule directionalSchedule = schedule.simulate(x.getTrain(), ticksToNextStop, alias);
+                    scheduleByPrediction.put(x, schedule);
+                    simulatedScheduleByPrediction.put(x, schedule.simulate(x.getTrain(), ticksToNextStop, alias));
+                })
+                .sorted(Comparator.comparingInt(x -> simulatedScheduleByPrediction.get(x).getSimulationData().simulationCorrection()))
+                .filter(x -> {
+                    SimpleTrainSchedule schedule = scheduleByPrediction.get(x);
+                    SimulatedTrainSchedule directionalSchedule = simulatedScheduleByPrediction.get(x);
+
                     if (excludedSchedules.stream().anyMatch(y -> y.exactEquals(directionalSchedule))) {
                         return false;
                     }
-                    excludedSchedules.add(directionalSchedule);
 
-                    return !x.getTrain().id.equals(currentTrainId) &&
+                    boolean b = !x.getTrain().id.equals(currentTrainId) &&
                             !schedule.equals(ownSchedule) &&
-                            TrainUtils.isTrainValid(x.getTrain()) &&
-                            x.getTicks() > ticksToNextStop;
-                }).map(x -> new SimpleTrainConnection(x.getTrain().name.getString(), x.getTrain().id, x.getTrain().icon.getId(), x.getTicks(), x.getScheduleTitle())).sorted(Comparator.comparingInt(x -> x.ticks())).collect(Collectors.toSet());
+                            TrainUtils.isTrainValid(x.getTrain());
+
+                    if (b) {
+                        excludedSchedules.add(directionalSchedule);
+                    }
+
+                    return b;
+                }).map(x -> new SimpleTrainConnection(x.getTrain().name.getString(), x.getTrain().id, x.getTrain().icon.getId(), x.getTicks() + simulatedScheduleByPrediction.get(x).getSimulationData().simulationCorrection(), x.getScheduleTitle(), x.getInfo())).sorted(Comparator.comparingInt(x -> x.ticks())).collect(Collectors.toSet());
+                
     }
 
     public static boolean GottKnows(String station) {
@@ -157,12 +171,6 @@ public class TrainUtils {
     }
 
     public static boolean isTrainIdValid(UUID trainId) {
-        Train train = getTrain(trainId);
-        return !train.derailed &&
-               !train.invalid &&
-               !train.runtime.paused &&
-               train.runtime.getSchedule() != null &&
-               train.graph != null
-        ;
+        return isTrainValid(getTrain(trainId));
     }
 }

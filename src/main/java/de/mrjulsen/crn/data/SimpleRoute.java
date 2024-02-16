@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class SimpleRoute implements AutoCloseable {
+public class SimpleRoute {
 
     private static final String NBT_PARTS = "Parts";
     private static final String NBT_REFRESH_TIME = "RefreshTime";
@@ -31,6 +31,8 @@ public class SimpleRoute implements AutoCloseable {
     protected StationEntry endStation = null;
     protected StationEntry[] stationArray = null;
     protected boolean valid = true;
+    protected String invalidationReason = "";
+    protected String invalidationTrainName = "";
 
     // listener
     protected UUID listenerId;
@@ -48,14 +50,7 @@ public class SimpleRoute implements AutoCloseable {
     }
 
     public UUID listen(IJourneyListenerClient initialListener) {
-        dispose();
         return listenerId = JourneyListenerManager.create(this, initialListener);
-    }
-
-    public void dispose() {
-        if (listenerId != null) {
-            JourneyListenerManager.remove(listenerId);
-        }
     }
 
     public UUID getListenerId() {
@@ -112,12 +107,22 @@ public class SimpleRoute implements AutoCloseable {
         return getEndStation().getTicks() - getStartStation().getTicks();
     }
 
-    protected void setValid(boolean b) {
-        this.valid = valid && b;
+    protected void invalidate(String reason, String trainName) {
+        this.valid = false;
+        this.invalidationReason = reason;
+        this.invalidationTrainName = trainName;
     }
 
     public boolean isValid() {
         return valid;
+    }
+
+    public String getInvalidationReason() {
+        return invalidationReason;
+    }
+
+    public String getInvalidationTrainName() {
+        return invalidationTrainName;
     }
 
     public StationEntry getStartStation() {
@@ -151,11 +156,6 @@ public class SimpleRoute implements AutoCloseable {
         SimpleRoute route = new SimpleRoute(parts, refreshTime);
         parts.forEach(x -> x.setParent(route));
         return route;
-    }
-
-    @Override
-    public void close() throws Exception {
-        dispose();
     }
     
     public static class SimpleRoutePart {
@@ -300,7 +300,7 @@ public class SimpleRoute implements AutoCloseable {
 
         protected boolean departed = false;
         protected boolean willMiss = false;
-        protected boolean trainCancelled = false;
+        protected boolean trainCanceled = false;
 
         protected int currentTicks;
         protected long currentRefreshTime;
@@ -331,7 +331,7 @@ public class SimpleRoute implements AutoCloseable {
             this.parent = parent;
         }
 
-        protected SimpleRoutePart getParent() {
+        public SimpleRoutePart getParent() {
             return parent;
         }
 
@@ -421,11 +421,11 @@ public class SimpleRoute implements AutoCloseable {
             this.willMiss = b;
         }
 
-        public void setTrainCancelled(boolean b) {
+        public void setTrainCanceled(boolean b, String reason, String trainName) {
             if (b) {
-                getParent().getParent().setValid(false);
+                getParent().getParent().invalidate(reason, trainName);
             }
-            this.trainCancelled = b;
+            this.trainCanceled = b;
         }
 
         public boolean isDeparted() {
@@ -436,8 +436,8 @@ public class SimpleRoute implements AutoCloseable {
             return willMiss;
         }
 
-        public boolean isTrainCancelled() {
-            return trainCancelled;
+        public boolean isTrainCanceled() {
+            return trainCanceled;
         }
 
         /**
@@ -446,11 +446,11 @@ public class SimpleRoute implements AutoCloseable {
          * @return
          */
         public boolean reachable(boolean safeConnection) {
-            return (!safeConnection || !willMissStop()) && !isDeparted() && !isTrainCancelled();
+            return (!safeConnection || !willMissStop()) && !isDeparted() && !isTrainCanceled();
         }
 
         public boolean shouldRenderRealtime() {
-            return !isDeparted() && !isTrainCancelled() && relatimeWasUpdated() && (getEstimatedTime() + ModClientConfig.TRANSFER_TIME.get() + ModClientConfig.REALTIME_EARLY_ARRIVAL_THRESHOLD.get() > getScheduleTime());
+            return !isDeparted() && !isTrainCanceled() && relatimeWasUpdated() && (getEstimatedTime() + ModClientConfig.TRANSFER_TIME.get() + ModClientConfig.REALTIME_EARLY_ARRIVAL_THRESHOLD.get() > getScheduleTime());
         }
 
         public boolean relatimeWasUpdated() {

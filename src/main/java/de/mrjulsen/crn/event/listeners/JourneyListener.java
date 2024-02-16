@@ -47,8 +47,8 @@ public class JourneyListener {
     private static final String keyNextStop = "gui.createrailwaysnavigator.route_overview.next_stop";
     private static final String keyTransfer = "gui.createrailwaysnavigator.route_overview.transfer";
     private static final String keyAfterJourney = "gui.createrailwaysnavigator.route_overview.after_journey";
-    private static final String keyJourneyInterruptedTitle = "gui.createrailwaysnavigator.route_overview.train_cancelled_title";
-    private static final String keyJourneyInterrupted = "gui.createrailwaysnavigator.route_overview.train_cancelled_info";
+    private static final String keyJourneyInterruptedTitle = "gui.createrailwaysnavigator.route_overview.train_canceled_title";
+    private static final String keyJourneyInterrupted = "gui.createrailwaysnavigator.route_overview.train_canceled_info";
     private static final String keyConnectionMissedInfo = "gui.createrailwaysnavigator.route_overview.connection_missed_info";
     private static final String keyOptionsText = "gui.createrailwaysnavigator.route_overview.options";
     private static final String keyKeybindOptions = "key.createrailwaysnavigator.route_overlay_options";
@@ -338,7 +338,7 @@ public class JourneyListener {
                 if (((!currentState.isWaitingForNextTrainToDepart() || currentState == State.BEFORE_JOURNEY || currentState == State.WHILE_TRANSFER) && currentStation().shouldRenderRealtime())
                     && isStationValidForShedule(currentTrainSchedule, currentStation().getTrain().trainId(), stationIndex) && time >= currentStation().getEstimatedTime()) {                    
                     if (currentStation().getTag() == StationTag.PART_END) {
-                        if (route.getStationArray()[stationIndex + 1].isTrainCancelled()) {
+                        if (route.getStationArray()[stationIndex + 1].isTrainCanceled()) {
                             journeyInterrupt(route.getStationArray()[stationIndex + 1]);
                         } else if (route.getStationArray()[stationIndex + 1].isDeparted()) {
                             reachTransferStopConnectionMissed();
@@ -363,8 +363,8 @@ public class JourneyListener {
             // Update realtime data
             for (int i = stationIndex; i < route.getStationCount(true); i++) {
                 StationEntry e = route.getStationArray()[i];
-                if (!predMap.containsKey(e.getTrain().trainId()) || e.isTrainCancelled()) {
-                    e.setTrainCancelled(true);
+                if (!predMap.containsKey(e.getTrain().trainId()) || e.isTrainCanceled()) {
+                    e.setTrainCanceled(true, "", e.getTrain().trainName()); // TODO: Invalidation reason
                     continue;                    
                 }
 
@@ -373,16 +373,24 @@ public class JourneyListener {
                 updateRealtime(preds, stations, e.getTrain().trainId(), stationIndex, time);                
             }
 
+            boolean departed = false;
             // check if connection train has departed
-            for (List<StationEntry> routePart : mappedRoute.values()) {
+            for (List<StationEntry> routePart : mappedRoute.values()) {                
                 if (mappedRoute.size() < 2) {
                     continue;
                 }
+
+                if (departed) {
+                    routePart.forEach(x -> x.setDeparted(true));
+                    continue;
+                }
+
                 long min = routePart.stream().filter(x -> x.getCurrentTime() + ModClientConfig.TRANSFER_TIME.get() > x.getScheduleTime()).mapToLong(x -> x.getCurrentTime()).min().orElse(-1);
                 long currentTime = routePart.get(0).getCurrentTime();
 
                 if (min > 0 && currentTime > min && currentTime + ModClientConfig.TRANSFER_TIME.get() > routePart.get(0).getScheduleTime()) {
-                    routePart.get(0).setDeparted(true);
+                    routePart.forEach(x -> x.setDeparted(true));
+                    departed = true;
                 }
             }
 

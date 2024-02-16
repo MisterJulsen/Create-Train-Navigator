@@ -24,13 +24,16 @@ import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.SimpleRoute;
 import de.mrjulsen.crn.data.SimpleRoute.SimpleRoutePart;
 import de.mrjulsen.crn.data.SimpleRoute.StationEntry;
+import de.mrjulsen.crn.data.SimpleRoute.StationTag;
 import de.mrjulsen.crn.event.listeners.IJourneyListenerClient;
+import de.mrjulsen.crn.event.listeners.JourneyListener;
 import de.mrjulsen.crn.event.listeners.JourneyListenerManager;
 import de.mrjulsen.crn.util.ModGuiUtils;
-import de.mrjulsen.crn.util.ModTimeUtils;
 import de.mrjulsen.crn.util.Pair;
+import de.mrjulsen.mcdragonlib.client.gui.GuiUtils;
 import de.mrjulsen.mcdragonlib.utils.TimeUtils;
 import de.mrjulsen.mcdragonlib.utils.Utils;
+import de.mrjulsen.mcdragonlib.utils.TimeUtils.TimeFormat;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -81,12 +84,17 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering, 
     private final Level level;
 
     // Tooltips
-    private final MutableComponent departureText = Utils.translate("gui." + ModMain.MOD_ID + ".route_details.departure");
+    private final MutableComponent textDeparture = Utils.translate("gui." + ModMain.MOD_ID + ".route_details.departure");
+    private final MutableComponent textTransferIn = Utils.translate("gui." + ModMain.MOD_ID + ".route_details.next_transfer_time");
     private final MutableComponent transferText = Utils.translate("gui." + ModMain.MOD_ID + ".route_details.transfer");
+    private final MutableComponent textJourneyCompleted = Utils.translate("gui.createrailwaysnavigator.route_overview.journey_completed");
     private final MutableComponent timeNowText = Utils.translate("gui." + ModMain.MOD_ID + ".time.now");    
     private final MutableComponent textConnectionEndangered = Utils.translate("gui.createrailwaysnavigator.route_overview.connection_endangered").withStyle(ChatFormatting.GOLD).withStyle(ChatFormatting.BOLD);
     private final MutableComponent textConnectionMissed = Utils.translate("gui.createrailwaysnavigator.route_overview.connection_missed").withStyle(ChatFormatting.RED).withStyle(ChatFormatting.BOLD);
-    private final MutableComponent textTrainCancelled = Utils.translate("gui.createrailwaysnavigator.route_overview.train_cancelled").withStyle(ChatFormatting.RED).withStyle(ChatFormatting.BOLD);
+    private final MutableComponent textTrainCanceled = Utils.translate("gui.createrailwaysnavigator.route_overview.train_canceled").withStyle(ChatFormatting.RED).withStyle(ChatFormatting.BOLD);
+    private final String keyTrainCancellationReason = "gui.createrailwaysnavigator.route_overview.train_cancellation_info";
+
+    private final UUID clientId = UUID.randomUUID();
 
     @SuppressWarnings("resource")
     public RouteDetailsScreen(Screen lastScreen, Level level, SimpleRoute route, UUID listenerId) {
@@ -108,7 +116,7 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering, 
 
     @Override
     public UUID getJourneyListenerClientId() {
-        return UUID.randomUUID();
+        return clientId;
     }
 
     public int getCurrentTime() {
@@ -132,6 +140,9 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering, 
         guiLeft = this.width / 2 - GUI_WIDTH / 2;
         guiTop = this.height / 2 - GUI_HEIGHT / 2;
 
+        final int fWidth = width;
+        final int fHeight = height;
+
         backButton = this.addRenderableWidget(new IconButton(guiLeft + 21, guiTop + 222, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, AllIcons.I_CONFIG_BACK) {
             @Override
             public void onClick(double mouseX, double mouseY) {
@@ -144,7 +155,7 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering, 
             @Override
             public void onClick(double mouseX, double mouseY) {
                 super.onClick(mouseX, mouseY);
-                HudOverlays.setOverlay(new RouteDetailsOverlayScreen(level, route));
+                HudOverlays.setOverlay(new RouteDetailsOverlayScreen(level, route, fWidth, fHeight));
             }
         });
     }
@@ -157,7 +168,7 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering, 
     }
 
     private Pair<MutableComponent, MutableComponent> getStationInfo(StationEntry station) {
-        final boolean reachable = station.reachable(true);
+        final boolean reachable = station.reachable(false);
         MutableComponent timeText = Utils.text(TimeUtils.parseTime((int)((route.getRefreshTime() + Constants.TIME_SHIFT) % 24000 + station.getTicks()), ModClientConfig.TIME_FORMAT.get()));
         MutableComponent stationText = Utils.text(station.getStationName());
         if (!reachable) {
@@ -175,15 +186,13 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering, 
         RenderSystem.setShaderTexture(0, Constants.GUI_WIDGETS);
         blit(poseStack, x, y, 0, V, ENTRY_WIDTH, HEIGHT);
 
-        
-
         Pair<MutableComponent, MutableComponent> text = getStationInfo(stop);
         drawString(poseStack, shadowlessFont, text.getSecond(), x + ENTRY_DEST_X, y + 15, 0xFFFFFF);
         float scale = shadowlessFont.width(text.getFirst()) > 30 ? 0.75f : 1;
         poseStack.pushPose();
         poseStack.scale(scale, 1, 1);
         int pY = y + 15;
-        if (stop.shouldRenderRealtime() && stop.relatimeWasUpdated()) {
+        if (stop.shouldRenderRealtime() && stop.reachable(false)) {
             pY -= (stop.shouldRenderRealtime() ? 5 : 0);
             drawString(poseStack, shadowlessFont, TimeUtils.parseTime((int)(stop.getEstimatedTimeWithThreshold() % 24000 + Constants.TIME_SHIFT), ModClientConfig.TIME_FORMAT.get()), (int)((x + ENTRY_TIME_X) / scale), pY + 10, stop.getDifferenceTime() > ModClientConfig.DEVIATION_THRESHOLD.get() ? DELAYED : ON_TIME);
         }
@@ -224,14 +233,13 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering, 
         blit(poseStack, x, y, 0, V, ENTRY_WIDTH, HEIGHT);
 
 
-
         Pair<MutableComponent, MutableComponent> text = getStationInfo(stop);
         drawString(poseStack, shadowlessFont, text.getSecond(), x + ENTRY_DEST_X, y + 6, 0xFFFFFF);
         float scale = shadowlessFont.width(text.getFirst()) > 30 ? 0.75f : 1;
         poseStack.pushPose();
         poseStack.scale(scale, 1, 1);
         int pY = y + 6;
-        if (stop.shouldRenderRealtime() && stop.relatimeWasUpdated()) {
+        if (stop.shouldRenderRealtime() && stop.reachable(false)) {
             pY -= (stop.shouldRenderRealtime() ? 5 : 0);
             drawString(poseStack, shadowlessFont, TimeUtils.parseTime((int)(stop.getEstimatedTimeWithThreshold() % 24000 + Constants.TIME_SHIFT), ModClientConfig.TIME_FORMAT.get()), (int)((x + ENTRY_TIME_X) / scale), pY + 10, stop.getDifferenceTime() > ModClientConfig.DEVIATION_THRESHOLD.get() ? DELAYED : ON_TIME);
         }
@@ -258,7 +266,7 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering, 
         poseStack.pushPose();
         poseStack.scale(scale, 1, 1);
         int pY = y + 21;
-        if (stop.shouldRenderRealtime() && stop.relatimeWasUpdated()) {
+        if (stop.shouldRenderRealtime() && stop.reachable(false)) {
             pY -= (stop.shouldRenderRealtime() ? 5 : 0);
             drawString(poseStack, shadowlessFont, TimeUtils.parseTime((int)(stop.getEstimatedTimeWithThreshold() % 24000 + Constants.TIME_SHIFT), ModClientConfig.TIME_FORMAT.get()), (int)((x + ENTRY_TIME_X) / scale), pY + 10, stop.getDifferenceTime() > ModClientConfig.DEVIATION_THRESHOLD.get() ? DELAYED : ON_TIME);
         }
@@ -271,14 +279,45 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering, 
         return HEIGHT;
     }
 
-    private int renderTransfer(PoseStack poseStack, int x, int y, int a, int b, StationEntry nextStation) {
+    private void renderHeadline(PoseStack poseStack, int pMouseX, int pMouseY) {
+        Component titleInfo = Utils.emptyText();
+        Component headline = Utils.emptyText();
+        JourneyListener listener = JourneyListenerManager.get(route.getListenerId(), null);
+
+        // Title
+        if (!route.isValid()) {
+            titleInfo = Utils.translate(keyTrainCancellationReason, route.getInvalidationTrainName()).withStyle(ChatFormatting.RED);
+            headline = textTrainCanceled;
+        } else if (listener != null && listener.getIndex() > 0) {
+            titleInfo = textTransferIn;
+            long arrivalTime = listener.currentStation().getParent().getEndStation().getEstimatedTimeWithThreshold();
+            int time = (int)(arrivalTime % 24000 - getCurrentTime());
+            headline = time < 0 || listener.currentStation().getTag() == StationTag.PART_START ? timeNowText : Utils.text(TimeUtils.parseTime(time, TimeFormat.HOURS_24));
+        } else if (listener == null) {
+            titleInfo = Utils.text("");
+            headline = textJourneyCompleted.withStyle(ChatFormatting.GREEN);            
+        } else {            
+            titleInfo = textDeparture;
+            int departureTicks = route.getStartStation().getTicks();
+            int departureTime = (int)(route.getRefreshTime() % 24000 + departureTicks);
+            headline = departureTime - getCurrentTime() < 0 ? timeNowText : Utils.text(TimeUtils.parseTime(departureTime - getCurrentTime(), TimeFormat.HOURS_24));
+        }
+
+        drawCenteredString(poseStack, font, titleInfo, guiLeft + GUI_WIDTH / 2, guiTop + 19, 0xFFFFFF);
+        poseStack.pushPose();
+        poseStack.scale(2, 2, 2);
+        drawCenteredString(poseStack, font, headline, (guiLeft + GUI_WIDTH / 2) / 2, (guiTop + 31) / 2, 0xFFFFFF);
+        poseStack.popPose();
+    }
+
+    private int renderTransfer(PoseStack poseStack, int x, int y, long a, long b, StationEntry nextStation) {
         final int HEIGHT = 24;
         final int V = 186;
 
         RenderSystem.setShaderTexture(0, Constants.GUI_WIDGETS);
         blit(poseStack, x, y, 0, V, ENTRY_WIDTH, HEIGHT);
 
-        int time = -1;
+        long time = -1;
         if (a < 0 || b < 0) {
             time = -1;
         } else {
@@ -286,9 +325,9 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering, 
         }
 
         if (nextStation != null && !nextStation.reachable(true)) {
-            if (nextStation.isTrainCancelled()) {                
+            if (nextStation.isTrainCanceled()) {                
                 ModGuiIcons.CROSS.render(poseStack, x + ENTRY_TIME_X, y + 13 - ModGuiIcons.ICON_SIZE / 2);
-                drawString(poseStack, shadowlessFont, textTrainCancelled, x + ENTRY_TIME_X + ModGuiIcons.ICON_SIZE + 4, y + 8, 0xFFFFFF);
+                drawString(poseStack, shadowlessFont, textTrainCanceled, x + ENTRY_TIME_X + ModGuiIcons.ICON_SIZE + 4, y + 8, 0xFFFFFF);
             } else if (nextStation.isDeparted()) {                
                 ModGuiIcons.CROSS.render(poseStack, x + ENTRY_TIME_X, y + 13 - ModGuiIcons.ICON_SIZE / 2);
                 drawString(poseStack, shadowlessFont, textConnectionMissed, x + ENTRY_TIME_X + ModGuiIcons.ICON_SIZE + 4, y + 8, 0xFFFFFF);
@@ -297,7 +336,7 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering, 
                 drawString(poseStack, shadowlessFont, textConnectionEndangered, x + ENTRY_TIME_X + ModGuiIcons.ICON_SIZE + 4, y + 8, 0xFFFFFF);
             }
         } else {
-            drawString(poseStack, shadowlessFont, transferText.getString() + " " + (time < 0 ? "" : "(" + TimeUtils.parseDuration(time) + ")"), x + ENTRY_TIME_X, y + 8, 0xFFFFFF);
+            drawString(poseStack, shadowlessFont, transferText.getString() + " " + (time < 0 ? "" : "(" + TimeUtils.parseDuration((int)time) + ")"), x + ENTRY_TIME_X, y + 8, 0xFFFFFF);
         }
 
         return HEIGHT;
@@ -318,24 +357,16 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering, 
         String timeString = TimeUtils.parseTime((int)((level.getDayTime() + Constants.TIME_SHIFT) % Constants.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get());
         drawString(pPoseStack, shadowlessFont, timeString, guiLeft + GUI_WIDTH - 22 - shadowlessFont.width(timeString), guiTop + 4, 0x4F4F4F);
         
-        drawCenteredString(pPoseStack, font, departureText, guiLeft + GUI_WIDTH / 2, guiTop + 19, 0xFFFFFF);
-
-        pPoseStack.pushPose();
-        pPoseStack.scale(2, 2, 2);
-
-        int departureTicks = route.getStartStation().getTicks();
-        int departureTime = (int)(route.getRefreshTime() % 24000 + departureTicks);
-        drawCenteredString(pPoseStack, font, departureTime - getCurrentTime() < 0 ? timeNowText.getString() : ModTimeUtils.parseTimeWithoutCorrection(departureTime - getCurrentTime()), (guiLeft + GUI_WIDTH / 2) / 2, (guiTop + 31) / 2, 0xFFFFFF);
-
-        pPoseStack.scale(0.5f, 0.5f, 0.5f);
-        pPoseStack.popPose();
+        renderHeadline(pPoseStack, pMouseX, pMouseY);
 
         UIRenderHelper.swapAndBlitColor(minecraft.getMainRenderTarget(), UIRenderHelper.framebuffer);
         ModGuiUtils.startStencil(pPoseStack, guiLeft + AREA_X, guiTop + AREA_Y, AREA_W, AREA_H);
         pPoseStack.pushPose();
         pPoseStack.translate(0, scrollOffset, 0);
 
-        int yOffs = guiTop + 45 + ENTRIES_START_Y_OFFSET;
+        int yOffs = guiTop + 45;
+        GuiUtils.blit(Constants.GUI_WIDGETS, pPoseStack, guiLeft + 16, yOffs, 22, ENTRIES_START_Y_OFFSET, 0, 48, 22, 1, 256, 256);
+        yOffs +=  + ENTRIES_START_Y_OFFSET;
         SimpleRoutePart[] partsArray = route.getParts().toArray(SimpleRoutePart[]::new);
         for (int i = 0; i < partsArray.length; i++) {
             SimpleRoutePart part = partsArray[i];
@@ -364,12 +395,13 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering, 
             if (i < partsArray.length - 1) {
                 StationEntry currentStation = part.getEndStation();
                 StationEntry nextStation = partsArray[i + 1].getStartStation();
-                int a = currentStation.getTicks();
-                int b = nextStation.getTicks();
+                long a = currentStation.shouldRenderRealtime() ? currentStation.getCurrentTime() : currentStation.getScheduleTime();
+                long b = nextStation.shouldRenderRealtime() ? nextStation.getCurrentTime() : nextStation.getScheduleTime();
                 yOffs += renderTransfer(pPoseStack, guiLeft + 16, yOffs, a, b, nextStation);
             }
         }
-        scrollMax = yOffs - guiTop - 45;
+        scrollMax = yOffs - guiTop - 45;        
+        GuiUtils.blit(Constants.GUI_WIDGETS, pPoseStack, guiLeft + 16, yOffs, 22, AREA_H, 0, 48, 22, 1, 256, 256);
         pPoseStack.popPose();
         ModGuiUtils.endStencil();
         
