@@ -1,8 +1,7 @@
 package de.mrjulsen.crn.client.gui.screen;
 
-import java.util.List;
 import java.util.UUID;
-import com.mojang.blaze3d.systems.RenderSystem;
+
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.content.trains.entity.TrainIconType;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
@@ -15,7 +14,6 @@ import com.simibubi.create.foundation.utility.animation.LerpedFloat.Chaser;
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.client.gui.ControlCollection;
-import de.mrjulsen.crn.client.gui.IForegroundRendering;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.overlay.HudOverlays;
 import de.mrjulsen.crn.client.gui.overlay.RouteDetailsOverlayScreen;
@@ -31,6 +29,8 @@ import de.mrjulsen.crn.event.listeners.JourneyListenerManager;
 import de.mrjulsen.crn.util.ModGuiUtils;
 import de.mrjulsen.crn.util.Pair;
 import de.mrjulsen.mcdragonlib.client.gui.GuiUtils;
+import de.mrjulsen.mcdragonlib.client.gui.Tooltip;
+import de.mrjulsen.mcdragonlib.client.gui.wrapper.CommonScreen;
 import de.mrjulsen.mcdragonlib.utils.TimeUtils;
 import de.mrjulsen.mcdragonlib.utils.Utils;
 import de.mrjulsen.mcdragonlib.utils.TimeUtils.TimeFormat;
@@ -45,13 +45,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 
-public class RouteDetailsScreen extends Screen implements IForegroundRendering, IJourneyListenerClient {
+public class RouteDetailsScreen extends CommonScreen implements IJourneyListenerClient {
 
+    private static final ResourceLocation GUI = new ResourceLocation(ModMain.MOD_ID, "textures/gui/route_details.png");  
     private static final int GUI_WIDTH = 255;
     private static final int GUI_HEIGHT = 247;
-    private static final ResourceLocation GUI = new ResourceLocation(ModMain.MOD_ID, "textures/gui/route_details.png");    
-    private static final int ON_TIME = 0x1AEA5F;
-    private static final int DELAYED = 0xFF4242;
 
     private static final int DEFAULT_ICON_BUTTON_WIDTH = 18;
     private static final int DEFAULT_ICON_BUTTON_HEIGHT = 18;
@@ -150,6 +148,7 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering, 
                 onClose();
             }
         });
+        addTooltip(Tooltip.of(Constants.TOOLTIP_GO_BACK).assignedTo(backButton));
 
         this.addRenderableWidget(new IconButton(guiLeft + 21 + DEFAULT_ICON_BUTTON_WIDTH + 4, guiTop + 222, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, ModGuiIcons.BOOKMARK.getAsCreateIcon()) {
             @Override
@@ -162,9 +161,8 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering, 
 
     @Override
     public void tick() {
-		scroll.tickChaser();
-
         super.tick();
+		scroll.tickChaser();
     }
 
     private Pair<MutableComponent, MutableComponent> getStationInfo(StationEntry station) {
@@ -183,8 +181,7 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering, 
         final int HEIGHT = 30;
         final int V = 48;
 
-        RenderSystem.setShaderTexture(0, Constants.GUI_WIDGETS);
-        blit(poseStack, x, y, 0, V, ENTRY_WIDTH, HEIGHT);
+        GuiUtils.blit(Constants.GUI_WIDGETS, poseStack, x, y, 0, V, ENTRY_WIDTH, HEIGHT);
 
         Pair<MutableComponent, MutableComponent> text = getStationInfo(stop);
         drawString(poseStack, shadowlessFont, text.getSecond(), x + ENTRY_DEST_X, y + 15, 0xFFFFFF);
@@ -194,13 +191,13 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering, 
         int pY = y + 15;
         if (stop.shouldRenderRealtime() && stop.reachable(false)) {
             pY -= (stop.shouldRenderRealtime() ? 5 : 0);
-            drawString(poseStack, shadowlessFont, TimeUtils.parseTime((int)(stop.getEstimatedTimeWithThreshold() % 24000 + Constants.TIME_SHIFT), ModClientConfig.TIME_FORMAT.get()), (int)((x + ENTRY_TIME_X) / scale), pY + 10, stop.getDifferenceTime() > ModClientConfig.DEVIATION_THRESHOLD.get() ? DELAYED : ON_TIME);
+            drawString(poseStack, shadowlessFont, TimeUtils.parseTime((int)(stop.getEstimatedTimeWithThreshold() % 24000 + Constants.TIME_SHIFT), ModClientConfig.TIME_FORMAT.get()), (int)((x + ENTRY_TIME_X) / scale), pY + 10, stop.getDifferenceTime() > ModClientConfig.DEVIATION_THRESHOLD.get() ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME);
         }
         drawString(poseStack, shadowlessFont, text.getFirst(), (int)((x + ENTRY_TIME_X) / scale), pY, 0xFFFFFF);
         poseStack.popPose();
 
         Component platformText = Utils.text(stop.getUpdatedInfo().platform());
-        drawString(poseStack, shadowlessFont, platformText, x + ENTRY_DEST_X + 129 - shadowlessFont.width(platformText), y + 15, stop.stationInfoChanged() ? DELAYED : 0xFFFFFF);
+        drawString(poseStack, shadowlessFont, platformText, x + ENTRY_DEST_X + 129 - shadowlessFont.width(platformText), y + 15, stop.stationInfoChanged() ? Constants.COLOR_DELAYED : 0xFFFFFF);
 
         return HEIGHT;
     }
@@ -211,8 +208,7 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering, 
         final float scale = 0.75f;
         final float mul = 1 / scale;
 
-        RenderSystem.setShaderTexture(0, Constants.GUI_WIDGETS);
-        blit(poseStack, x, y, 0, V, ENTRY_WIDTH, HEIGHT);
+        GuiUtils.blit(Constants.GUI_WIDGETS, poseStack, x, y, 0, V, ENTRY_WIDTH, HEIGHT);
         part.getTrainIcon().render(TrainIconType.ENGINE, poseStack, x + ENTRY_DEST_X, y + 7);
 
         poseStack.pushPose();
@@ -229,9 +225,7 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering, 
         final int HEIGHT = 21;
         final int V = 78;
 
-        RenderSystem.setShaderTexture(0, Constants.GUI_WIDGETS);
-        blit(poseStack, x, y, 0, V, ENTRY_WIDTH, HEIGHT);
-
+        GuiUtils.blit(Constants.GUI_WIDGETS, poseStack, x, y, 0, V, ENTRY_WIDTH, HEIGHT);
 
         Pair<MutableComponent, MutableComponent> text = getStationInfo(stop);
         drawString(poseStack, shadowlessFont, text.getSecond(), x + ENTRY_DEST_X, y + 6, 0xFFFFFF);
@@ -241,13 +235,13 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering, 
         int pY = y + 6;
         if (stop.shouldRenderRealtime() && stop.reachable(false)) {
             pY -= (stop.shouldRenderRealtime() ? 5 : 0);
-            drawString(poseStack, shadowlessFont, TimeUtils.parseTime((int)(stop.getEstimatedTimeWithThreshold() % 24000 + Constants.TIME_SHIFT), ModClientConfig.TIME_FORMAT.get()), (int)((x + ENTRY_TIME_X) / scale), pY + 10, stop.getDifferenceTime() > ModClientConfig.DEVIATION_THRESHOLD.get() ? DELAYED : ON_TIME);
+            drawString(poseStack, shadowlessFont, TimeUtils.parseTime((int)(stop.getEstimatedTimeWithThreshold() % 24000 + Constants.TIME_SHIFT), ModClientConfig.TIME_FORMAT.get()), (int)((x + ENTRY_TIME_X) / scale), pY + 10, stop.getDifferenceTime() > ModClientConfig.DEVIATION_THRESHOLD.get() ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME);
         }
         drawString(poseStack, shadowlessFont, text.getFirst(), (int)((x + ENTRY_TIME_X) / scale), pY, 0xFFFFFF);
         poseStack.popPose();
 
         Component platformText = Utils.text(stop.getUpdatedInfo().platform());
-        drawString(poseStack, shadowlessFont, platformText, x + ENTRY_DEST_X + 129 - shadowlessFont.width(platformText), y + 6, stop.stationInfoChanged() ? DELAYED : 0xFFFFFF);
+        drawString(poseStack, shadowlessFont, platformText, x + ENTRY_DEST_X + 129 - shadowlessFont.width(platformText), y + 6, stop.stationInfoChanged() ? Constants.COLOR_DELAYED : 0xFFFFFF);
 
         return HEIGHT;
     }
@@ -256,9 +250,7 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering, 
         final int HEIGHT = 44;
         final int V = 142;
 
-        RenderSystem.setShaderTexture(0, Constants.GUI_WIDGETS);
-        blit(poseStack, x, y, 0, V, ENTRY_WIDTH, HEIGHT);
-
+        GuiUtils.blit(Constants.GUI_WIDGETS, poseStack, x, y, 0, V, ENTRY_WIDTH, HEIGHT);
         
         Pair<MutableComponent, MutableComponent> text = getStationInfo(stop);
         drawString(poseStack, shadowlessFont, text.getSecond(), x + ENTRY_DEST_X, y + 21, 0xFFFFFF);
@@ -268,13 +260,13 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering, 
         int pY = y + 21;
         if (stop.shouldRenderRealtime() && stop.reachable(false)) {
             pY -= (stop.shouldRenderRealtime() ? 5 : 0);
-            drawString(poseStack, shadowlessFont, TimeUtils.parseTime((int)(stop.getEstimatedTimeWithThreshold() % 24000 + Constants.TIME_SHIFT), ModClientConfig.TIME_FORMAT.get()), (int)((x + ENTRY_TIME_X) / scale), pY + 10, stop.getDifferenceTime() > ModClientConfig.DEVIATION_THRESHOLD.get() ? DELAYED : ON_TIME);
+            drawString(poseStack, shadowlessFont, TimeUtils.parseTime((int)(stop.getEstimatedTimeWithThreshold() % 24000 + Constants.TIME_SHIFT), ModClientConfig.TIME_FORMAT.get()), (int)((x + ENTRY_TIME_X) / scale), pY + 10, stop.getDifferenceTime() > ModClientConfig.DEVIATION_THRESHOLD.get() ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME);
         }
         drawString(poseStack, shadowlessFont, text.getFirst(), (int)((x + ENTRY_TIME_X) / scale), pY, 0xFFFFFF);
         poseStack.popPose();
 
         Component platformText = Utils.text(stop.getUpdatedInfo().platform());
-        drawString(poseStack, shadowlessFont, platformText, x + ENTRY_DEST_X + 129 - shadowlessFont.width(platformText), y + 21, stop.stationInfoChanged() ? DELAYED : 0xFFFFFF);
+        drawString(poseStack, shadowlessFont, platformText, x + ENTRY_DEST_X + 129 - shadowlessFont.width(platformText), y + 21, stop.stationInfoChanged() ? Constants.COLOR_DELAYED : 0xFFFFFF);
 
         return HEIGHT;
     }
@@ -314,8 +306,7 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering, 
         final int HEIGHT = 24;
         final int V = 186;
 
-        RenderSystem.setShaderTexture(0, Constants.GUI_WIDGETS);
-        blit(poseStack, x, y, 0, V, ENTRY_WIDTH, HEIGHT);
+        GuiUtils.blit(Constants.GUI_WIDGETS, poseStack, x, y, 0, V, ENTRY_WIDTH, HEIGHT);
 
         long time = -1;
         if (a < 0 || b < 0) {
@@ -343,13 +334,12 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering, 
     }
 
     @Override
-    public void render(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) { 
+    public void renderBg(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) { 
         
 		float scrollOffset = -scroll.getValue(pPartialTick);
 
         renderBackground(pPoseStack);
-        RenderSystem.setShaderTexture(0, GUI);
-        blit(pPoseStack, guiLeft, guiTop, 0, 0, GUI_WIDTH, GUI_HEIGHT);
+        GuiUtils.blit(GUI, pPoseStack, guiLeft, guiTop, 0, 0, GUI_WIDTH, GUI_HEIGHT);
         for (Widget widget : this.renderables)
             widget.render(pPoseStack, pMouseX, pMouseY, pPartialTick);
         
@@ -421,13 +411,6 @@ public class RouteDetailsScreen extends Screen implements IForegroundRendering, 
 
             fill(pPoseStack, guiLeft + AREA_X + AREA_W - 3, startY, guiLeft + AREA_X + AREA_W, startY + scrollerHeight, 0x7FFFFFFF);
         }
-        
-        renderForeground(pPoseStack, pMouseX, pMouseY, pPartialTick);
-    }
-
-    @Override
-    public void renderForeground(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTicks) {
-        ModGuiUtils.renderTooltip(this, backButton, List.of(Constants.TOOLTIP_GO_BACK.getVisualOrderText()), pPoseStack, pMouseX, pMouseY, 0, 0);        
     }
 
     @Override

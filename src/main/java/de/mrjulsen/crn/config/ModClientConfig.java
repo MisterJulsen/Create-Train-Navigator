@@ -3,7 +3,7 @@ package de.mrjulsen.crn.config;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.mrjulsen.crn.client.gui.screen.OverlayPosition;
+import de.mrjulsen.crn.data.OverlayPosition;
 import de.mrjulsen.mcdragonlib.utils.TimeUtils.TimeFormat;
 import net.minecraftforge.common.ForgeConfigSpec;
 

@@ -17,14 +17,13 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 @EventBusSubscriber(Dist.CLIENT)
 public class HudOverlays {
 
-    private static final Map<Integer, HudOverlay> activeOverlays = new HashMap<>();
+    private static final Map<Integer, IHudOverlay> activeOverlays = new HashMap<>();
 
     public static final IIngameOverlay HUD_ROUTE_DETAILS = ((gui, poseStack, partialTicks, width, height) -> {
-        //GuiComponent.drawString(poseStack, Minecraft.getInstance().font, "Cache: " + JourneyListenerManager.getCacheSize(), 2, 2, 0xFFFFFF);
         activeOverlays.values().forEach(x -> x.render(gui, poseStack, width, height, partialTicks));
     });
 
-    public static <T extends HudOverlay> T setOverlay(T overlay) {
+    public static <T extends IHudOverlay> T setOverlay(T overlay) {
         if (activeOverlays.containsKey(overlay.getId())) {
             activeOverlays.get(overlay.getId()).onClose();
         }
@@ -33,7 +32,7 @@ public class HudOverlays {
         return overlay;
     }
 
-    public static boolean hasOverlay(HudOverlay overlay) {
+    public static boolean hasOverlay(IHudOverlay overlay) {
         return activeOverlays.containsKey(overlay.getId());
     }
 
@@ -41,7 +40,7 @@ public class HudOverlays {
         return activeOverlays.size();
     }
 
-    public static HudOverlay getOverlay(int id) {
+    public static IHudOverlay getOverlay(int id) {
         return activeOverlays.get(id);
     }
 

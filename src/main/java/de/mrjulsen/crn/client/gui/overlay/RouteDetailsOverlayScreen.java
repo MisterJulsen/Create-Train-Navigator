@@ -16,10 +16,10 @@ import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
-import de.mrjulsen.crn.client.gui.screen.OverlayPosition;
-import de.mrjulsen.crn.client.gui.widgets.NavigatorToast;
+import de.mrjulsen.crn.client.gui.NavigatorToast;
 import de.mrjulsen.crn.client.input.ModKeys;
 import de.mrjulsen.crn.config.ModClientConfig;
+import de.mrjulsen.crn.data.OverlayPosition;
 import de.mrjulsen.crn.data.SimpleRoute;
 import de.mrjulsen.crn.data.SimpleTrainConnection;
 import de.mrjulsen.crn.item.ModItems;
@@ -60,7 +60,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.client.gui.ForgeIngameGui;
 
-public class RouteDetailsOverlayScreen implements HudOverlay, IJourneyListenerClient {
+public class RouteDetailsOverlayScreen implements IHudOverlay, IJourneyListenerClient {
 
     public static final int ID = 1;
 

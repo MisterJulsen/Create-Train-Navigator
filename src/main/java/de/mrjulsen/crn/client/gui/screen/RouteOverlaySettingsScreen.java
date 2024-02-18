@@ -20,10 +20,11 @@ import com.simibubi.create.foundation.utility.Components;
 import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.client.gui.DynamicWidgets;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
+import de.mrjulsen.crn.client.gui.NavigatorToast;
 import de.mrjulsen.crn.client.gui.overlay.HudOverlays;
 import de.mrjulsen.crn.client.gui.overlay.RouteDetailsOverlayScreen;
-import de.mrjulsen.crn.client.gui.widgets.NavigatorToast;
 import de.mrjulsen.crn.config.ModClientConfig;
+import de.mrjulsen.crn.data.OverlayPosition;
 import de.mrjulsen.crn.item.ModItems;
 import de.mrjulsen.crn.util.Pair;
 import de.mrjulsen.mcdragonlib.DragonLibConstants;
@@ -70,18 +71,18 @@ public class RouteOverlaySettingsScreen extends CommonScreen {
     private final WidgetsCollection positionButtons = new WidgetsCollection();
     private final WidgetsCollection buttons = new WidgetsCollection();
 
-    private static final Component narratorOn = Utils.translate("gui.createrailwaysnavigator.route_overlay_settings.narrator.on");
-    private static final Component narratorOff = Utils.translate("gui.createrailwaysnavigator.route_overlay_settings.narrator.off");    
-    private static final Component notificationsOn = Utils.translate("gui.createrailwaysnavigator.route_overlay_settings.notifications.on");
-    private static final Component notificationsOff = Utils.translate("gui.createrailwaysnavigator.route_overlay_settings.notifications.off");
+    private static final MutableComponent narratorOn = Utils.translate("gui.createrailwaysnavigator.route_overlay_settings.narrator.on");
+    private static final MutableComponent narratorOff = Utils.translate("gui.createrailwaysnavigator.route_overlay_settings.narrator.off");    
+    private static final MutableComponent notificationsOn = Utils.translate("gui.createrailwaysnavigator.route_overlay_settings.notifications.on");
+    private static final MutableComponent notificationsOff = Utils.translate("gui.createrailwaysnavigator.route_overlay_settings.notifications.off");
     private static final MutableComponent textScale = Utils.translate("gui.createrailwaysnavigator.route_overlay_settings.scale");
     private static final MutableComponent textShowDetails = Utils.translate("gui.createrailwaysnavigator.route_overlay_settings.show_details");
     private static final MutableComponent textUnpin = Utils.translate("gui.createrailwaysnavigator.route_overlay_settings.unpin");
 
-    private static final Component textNarrator = Utils.translate("gui.createrailwaysnavigator.route_overlay_settings.narrator");
-    private static final Component textNarratorDescription = Utils.translate("gui.createrailwaysnavigator.route_overlay_settings.narrator.description").withStyle(ChatFormatting.GRAY);
-    private static final Component textNotifications = Utils.translate("gui.createrailwaysnavigator.route_overlay_settings.notifications");
-    private static final Component textNotificationsDescription = Utils.translate("gui.createrailwaysnavigator.route_overlay_settings.notifications.description").withStyle(ChatFormatting.GRAY);
+    private static final MutableComponent textNarrator = Utils.translate("gui.createrailwaysnavigator.route_overlay_settings.narrator");
+    private static final MutableComponent textNarratorDescription = Utils.translate("gui.createrailwaysnavigator.route_overlay_settings.narrator.description").withStyle(ChatFormatting.GRAY);
+    private static final MutableComponent textNotifications = Utils.translate("gui.createrailwaysnavigator.route_overlay_settings.notifications");
+    private static final MutableComponent textNotificationsDescription = Utils.translate("gui.createrailwaysnavigator.route_overlay_settings.notifications.description").withStyle(ChatFormatting.GRAY);
     
     @SuppressWarnings("resource")
     public RouteOverlaySettingsScreen(RouteDetailsOverlayScreen overlay) {
@@ -191,6 +192,11 @@ public class RouteOverlaySettingsScreen extends CommonScreen {
             .setState((int)(ModClientConfig.OVERLAY_SCALE.get() * 100)));
             scaleInput.onChanged();
         buttons.add(scaleInput);        
+    }
+
+    @Override
+    public boolean isPauseScreen() {
+        return false;
     }
 
     @Override

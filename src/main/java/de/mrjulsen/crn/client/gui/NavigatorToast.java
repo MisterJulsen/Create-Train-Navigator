@@ -1,4 +1,4 @@
-package de.mrjulsen.crn.client.gui.widgets;
+package de.mrjulsen.crn.client.gui;
 
 import java.util.List;
 

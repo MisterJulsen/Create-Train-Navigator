@@ -3,15 +3,15 @@ package de.mrjulsen.crn.client.gui.screen;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.foundation.gui.AllIcons;
 import de.mrjulsen.crn.ModMain;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.TranslatableComponent;
+import de.mrjulsen.mcdragonlib.client.gui.wrapper.CommonScreen;
+import de.mrjulsen.mcdragonlib.utils.Utils;
 
-public class LoadingScreen extends Screen {
+public class LoadingScreen extends CommonScreen {
 
     int angle = 0;
     
     public LoadingScreen() {
-        super(new TranslatableComponent("gui." + ModMain.MOD_ID + ".loading.title"));
+        super(Utils.translate("gui." + ModMain.MOD_ID + ".loading.title"));
     }
 
     @Override

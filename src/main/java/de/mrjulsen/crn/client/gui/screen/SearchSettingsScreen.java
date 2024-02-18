@@ -30,6 +30,7 @@ import de.mrjulsen.crn.util.ModGuiUtils;
 import de.mrjulsen.mcdragonlib.utils.TimeUtils;
 import de.mrjulsen.mcdragonlib.utils.Utils;
 import de.mrjulsen.mcdragonlib.client.gui.GuiUtils;
+import de.mrjulsen.mcdragonlib.client.gui.Tooltip;
 import de.mrjulsen.mcdragonlib.client.gui.wrapper.CommonScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -37,8 +38,7 @@ import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.components.Widget;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
@@ -46,7 +46,6 @@ import net.minecraft.world.level.Level;
 public class SearchSettingsScreen extends CommonScreen {
 
     private static final ResourceLocation GUI = new ResourceLocation(ModMain.MOD_ID, "textures/gui/settings.png");
-    private static final ResourceLocation GUI_WIDGETS = new ResourceLocation(ModMain.MOD_ID, "textures/gui/settings_widgets.png");
     private static final int GUI_WIDTH = 255;
     private static final int GUI_HEIGHT = 247;
 
@@ -81,7 +80,7 @@ public class SearchSettingsScreen extends CommonScreen {
 
     private boolean trainGroupsExpanded;
 
-    // Controls
+    // Widgets
     private IconButton backButton;
     private IconButton defaultsButton;
     private ScrollInput transferTimeInput;
@@ -93,19 +92,19 @@ public class SearchSettingsScreen extends CommonScreen {
     private MutableGuiAreaDefinition trainGroupExpandButton;
 
     // Tooltips
-    private final Component transferTimeBoxText = new TranslatableComponent("gui." + ModMain.MOD_ID + ".search_settings.transfer_time");
-    private final Component transferTimeBoxDescription = new TranslatableComponent("gui." + ModMain.MOD_ID + ".search_settings.transfer_time.description");
-    private final Component trainGroupsText = new TranslatableComponent("gui." + ModMain.MOD_ID + ".search_settings.train_groups");
-    private final Component trainGroupsDescription = new TranslatableComponent("gui." + ModMain.MOD_ID + ".search_settings.train_groups.description");
-    private final Component trainGroupsOverviewAll = new TranslatableComponent("gui." + ModMain.MOD_ID + ".search_settings.train_groups.overview.all");
-    private final Component trainGroupsOverviewNone = new TranslatableComponent("gui." + ModMain.MOD_ID + ".search_settings.train_groups.overview.none");
-    private final Component tooltipTrainGroupsReset = new TranslatableComponent("gui." + ModMain.MOD_ID + ".search_settings.train_groups.tooltip.reset");
+    private final MutableComponent transferTimeBoxText = Utils.translate("gui." + ModMain.MOD_ID + ".search_settings.transfer_time");
+    private final MutableComponent transferTimeBoxDescription = Utils.translate("gui." + ModMain.MOD_ID + ".search_settings.transfer_time.description");
+    private final MutableComponent trainGroupsText = Utils.translate("gui." + ModMain.MOD_ID + ".search_settings.train_groups");
+    private final MutableComponent trainGroupsDescription = Utils.translate("gui." + ModMain.MOD_ID + ".search_settings.train_groups.description");
+    private final MutableComponent trainGroupsOverviewAll = Utils.translate("gui." + ModMain.MOD_ID + ".search_settings.train_groups.overview.all");
+    private final MutableComponent trainGroupsOverviewNone = Utils.translate("gui." + ModMain.MOD_ID + ".search_settings.train_groups.overview.none");
+    private final MutableComponent tooltipTrainGroupsReset = Utils.translate("gui." + ModMain.MOD_ID + ".search_settings.train_groups.tooltip.reset");
     private final String trainGroupsOverviewKey = "gui." + ModMain.MOD_ID + ".search_settings.train_groups.overview";
 
 
     @SuppressWarnings("resource")
     public SearchSettingsScreen(Level level, Screen lastScreen) {
-        super(new TranslatableComponent("gui." + ModMain.MOD_ID + ".search_settings.title"));
+        super(Utils.translate("gui." + ModMain.MOD_ID + ".search_settings.title"));
         this.level = level;
         this.lastScreen = lastScreen;
         this.shadowlessFont = new NoShadowFontWrapper(Minecraft.getInstance().font); 
@@ -127,6 +126,7 @@ public class SearchSettingsScreen extends CommonScreen {
                 onClose();
             }
         });
+        addTooltip(Tooltip.of(Constants.TOOLTIP_GO_BACK).assignedTo(backButton));
 
         defaultsButton = this.addRenderableWidget(new IconButton(guiLeft + 43, guiTop + 222, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, AllIcons.I_REFRESH) {
             @Override
@@ -137,6 +137,7 @@ public class SearchSettingsScreen extends CommonScreen {
                 init();
             }
         });
+        addTooltip(Tooltip.of(Constants.TOOLTIP_RESET_DEFAULTS).assignedTo(defaultsButton));
 
         transferTimeLabelInitialY = guiTop + AREA_Y + ENTRIES_START_Y_OFFSET + (0 * (ENTRY_HEIGHT + ENTRY_SPACING)) + 44;
         transferTimeInputInitialY = guiTop + AREA_Y + ENTRIES_START_Y_OFFSET + (0 * (ENTRY_HEIGHT + ENTRY_SPACING)) + 39;
@@ -148,7 +149,7 @@ public class SearchSettingsScreen extends CommonScreen {
                 ModClientConfig.TRANSFER_TIME.set(i);
                 ModClientConfig.TRANSFER_TIME.save();
                 ModClientConfig.SPEC.afterReload();
-                transferLabel = new TextComponent(TimeUtils.parseDurationShort(transferTimeInput.getState()));
+                transferLabel = Utils.text(TimeUtils.parseDurationShort(transferTimeInput.getState()));
             })
             .setState(ModClientConfig.TRANSFER_TIME.get()));
         transferTimeInput.onChanged();
@@ -185,6 +186,30 @@ public class SearchSettingsScreen extends CommonScreen {
         pPoseStack.scale(0.75f, 0.75f, 0.75f);        
         label.renderLeftAligned(pPoseStack, (int)((x + 25) / 0.75f), (int)((y + 19) / 0.75f), 10, 0xDBDBDB);
         pPoseStack.popPose();
+    }
+
+    private void modifyTrainGroupFilter(TrainGroup group) {
+        List<String> current = new ArrayList<>(ModClientConfig.TRAIN_GROUP_FILTER_BLACKLIST.get());
+        if (current.contains(group.getGroupName())) {
+            current.removeIf(x -> x.equals(group.getGroupName()));
+        } else {
+            current.add(group.getGroupName());                    
+        }
+        ModClientConfig.TRAIN_GROUP_FILTER_BLACKLIST.set(current);
+        ModClientConfig.TRAIN_GROUP_FILTER_BLACKLIST.save();
+        ModClientConfig.SPEC.afterReload();
+        ModGuiUtils.playButtonSound();
+    }
+
+    private void resetTrainGroupFilter() {
+        ModClientConfig.TRAIN_GROUP_FILTER_BLACKLIST.set(new ArrayList<>());
+        ModClientConfig.TRAIN_GROUP_FILTER_BLACKLIST.save();
+        ModClientConfig.SPEC.afterReload();
+        ModGuiUtils.playButtonSound();
+    }   
+
+    private int getMaxScrollHeight() {
+        return maxY;
     }
 
 
@@ -271,7 +296,7 @@ public class SearchSettingsScreen extends CommonScreen {
         trainGroupResetButton.setXOffset(wX + defaultWidth - 2 - 32);
         trainGroupResetButton.setYOffset(wY + defaultDescriptionHeight / 2 - 7);
         AllIcons.I_REFRESH.render(pPoseStack, trainGroupResetButton.getX(), trainGroupResetButton.getY()); // delete button
-        GuiUtils.blit(GUI_WIDGETS, pPoseStack, trainGroupExpandButton.getX(), trainGroupExpandButton.getY(), trainGroupsExpanded ? 216 : 200, 0, 16, 16); // expand button 
+        GuiUtils.blit(Constants.GUI_WIDGETS, pPoseStack, trainGroupExpandButton.getX(), trainGroupExpandButton.getY(), trainGroupsExpanded ? 216 : 200, 0, 16, 16); // expand button 
         // Button highlight
         if (workingArea.isInBounds(pMouseX, pMouseY)) {
             if (trainGroupExpandButton.isInBounds(pMouseX, pMouseY - scrollOffset)) {
@@ -284,13 +309,9 @@ public class SearchSettingsScreen extends CommonScreen {
         wY += ENTRY_SPACING + dY;
 
         pPoseStack.popPose();
-        GuiUtils.endStencil();
-        
-        net.minecraftforge.client.gui.GuiUtils.drawGradientRect(pPoseStack.last().pose(), 200, guiLeft + AREA_X, guiTop + AREA_Y, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y + 10,
-        0x77000000, 0x00000000);
-        net.minecraftforge.client.gui.GuiUtils.drawGradientRect(pPoseStack.last().pose(), 200, guiLeft + AREA_X, guiTop + AREA_Y + AREA_H - 10, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y + AREA_H,
-        0x00000000, 0x77000000);
-
+        GuiUtils.endStencil();        
+        net.minecraftforge.client.gui.GuiUtils.drawGradientRect(pPoseStack.last().pose(), 200, guiLeft + AREA_X, guiTop + AREA_Y, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y + 10, 0x77000000, 0x00000000);
+        net.minecraftforge.client.gui.GuiUtils.drawGradientRect(pPoseStack.last().pose(), 200, guiLeft + AREA_X, guiTop + AREA_Y + AREA_H - 10, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y + AREA_H, 0x00000000, 0x77000000);
         UIRenderHelper.swapAndBlitColor(UIRenderHelper.framebuffer, minecraft.getMainRenderTarget());
 
         // widgets y offset
@@ -318,8 +339,7 @@ public class SearchSettingsScreen extends CommonScreen {
     @Override
     public void renderFg(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) {
         int scrollOffset = (int)scroll.getValue(pPartialTick);
-        GuiUtils.renderTooltipWithScrollOffset(this, backButton, List.of(Constants.TOOLTIP_GO_BACK), width, pPoseStack, pMouseX, pMouseY, 0, 0);
-        GuiUtils.renderTooltipWithScrollOffset(this, defaultsButton, List.of(Constants.TOOLTIP_RESET_DEFAULTS), width, pPoseStack, pMouseX, pMouseY, 0, 0);
+
         if (workingArea.isInBounds(pMouseX, pMouseY)) {
             GuiUtils.renderTooltipWithScrollOffset(this, trainGroupResetButton, List.of(tooltipTrainGroupsReset), width, pPoseStack, pMouseX, pMouseY, 0, scrollOffset);
         }
@@ -343,9 +363,7 @@ public class SearchSettingsScreen extends CommonScreen {
         float scrollOffset = -scroll.getValue(0);
         if (workingArea.isInBounds(pMouseX, pMouseY)) {
             if (trainGroupResetButton.isInBounds(pMouseX, pMouseY - scrollOffset)) {
-                ModClientConfig.TRAIN_GROUP_FILTER_BLACKLIST.set(new ArrayList<>());
-                ModClientConfig.TRAIN_GROUP_FILTER_BLACKLIST.save();
-                ModClientConfig.SPEC.afterReload();
+                resetTrainGroupFilter();
                 ModGuiUtils.playButtonSound();
                 return true;
             } else if (trainGroupExpandButton.isInBounds(pMouseX, pMouseY - scrollOffset)) {
@@ -357,16 +375,7 @@ public class SearchSettingsScreen extends CommonScreen {
             if (trainGroupsExpanded) {
                 Optional<Entry<TrainGroup, MutableGuiAreaDefinition>> area = areaByTrainGroup.entrySet().stream().filter(x -> x.getValue().isInBounds(pMouseX, pMouseY - scrollOffset)).findFirst();
                 if (area.isPresent()) {
-                    List<String> current = new ArrayList<>(ModClientConfig.TRAIN_GROUP_FILTER_BLACKLIST.get());
-                    if (current.contains(area.get().getKey().getGroupName())) {
-                        current.removeIf(x -> x.equals(area.get().getKey().getGroupName()));
-                    } else {
-                        current.add(area.get().getKey().getGroupName());                    
-                    }
-                    ModClientConfig.TRAIN_GROUP_FILTER_BLACKLIST.set(current);
-                    ModClientConfig.TRAIN_GROUP_FILTER_BLACKLIST.save();
-                    ModClientConfig.SPEC.afterReload();
-                    ModGuiUtils.playButtonSound();
+                    modifyTrainGroupFilter(area.get().getKey());
                     return true;
                 }
             }
@@ -374,9 +383,6 @@ public class SearchSettingsScreen extends CommonScreen {
         return super.mouseClicked(pMouseX, pMouseY, pButton);
     }
 
-    private int getMaxScrollHeight() {
-        return maxY;
-    }
 
     @Override
     public boolean mouseScrolled(double pMouseX, double pMouseY, double pDelta) {

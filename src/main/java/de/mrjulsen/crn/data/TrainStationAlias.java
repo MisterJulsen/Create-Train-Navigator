@@ -118,6 +118,12 @@ public class TrainStationAlias {
         return this.aliasName;
     }
 
+    public void updateInfoForStation(String station, StationInfo info) {
+        if (stations.containsKey(station)) {
+            stations.replace(station, info);
+        }
+    }
+
     public void add(String station, StationInfo info) {
         if (!stations.containsKey(station)) {
             stations.put(station, info);

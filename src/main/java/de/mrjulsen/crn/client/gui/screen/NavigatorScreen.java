@@ -3,7 +3,6 @@ package de.mrjulsen.crn.client.gui.screen;
 import java.util.List;
 import java.util.UUID;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 import com.simibubi.create.foundation.gui.AllIcons;
@@ -16,7 +15,9 @@ import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.client.gui.ControlCollection;
 import de.mrjulsen.mcdragonlib.client.gui.GuiAreaDefinition;
-import de.mrjulsen.crn.client.gui.IForegroundRendering;
+import de.mrjulsen.mcdragonlib.client.gui.GuiUtils;
+import de.mrjulsen.mcdragonlib.client.gui.Tooltip;
+import de.mrjulsen.mcdragonlib.client.gui.wrapper.CommonScreen;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.widgets.ModDestinationSuggestions;
 import de.mrjulsen.crn.client.gui.widgets.RouteEntryOverviewWidget;
@@ -34,6 +35,7 @@ import de.mrjulsen.crn.network.packets.cts.NavigationRequestPacket;
 import de.mrjulsen.crn.network.packets.cts.NearestStationRequestPacket;
 import de.mrjulsen.crn.util.ModGuiUtils;
 import de.mrjulsen.mcdragonlib.utils.TimeUtils;
+import de.mrjulsen.mcdragonlib.utils.Utils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -41,16 +43,15 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Widget;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.components.toasts.SystemToast.SystemToastIds;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 
-public class NavigatorScreen extends Screen implements IForegroundRendering, IJourneyListenerClient {
+public class NavigatorScreen extends CommonScreen implements IJourneyListenerClient {
 
     private static final ResourceLocation GUI = new ResourceLocation(ModMain.MOD_ID, "textures/gui/navigator.png");
     private static final int GUI_WIDTH = 255;
@@ -91,29 +92,29 @@ public class NavigatorScreen extends Screen implements IForegroundRendering, IJo
     private final NavigatorScreen instance;
     private final Level level;
     private final Font shadowlessFont;
+    private final UUID clientId = UUID.randomUUID();
 
     // var
     private boolean isLoadingRoutes = false;
     private boolean generatingRouteEntries = false;
 
     // Tooltips
-    private final TranslatableComponent searchingText = new TranslatableComponent("gui." + ModMain.MOD_ID + ".navigator.searching");
-    private final TranslatableComponent noConnectionsText = new TranslatableComponent("gui." + ModMain.MOD_ID + ".navigator.no_connections");
-    private final TranslatableComponent errorTitle = new TranslatableComponent("gui." + ModMain.MOD_ID + ".navigator.error_title");
-    private final TranslatableComponent startEndEqualText = new TranslatableComponent("gui." + ModMain.MOD_ID + ".navigator.start_end_equal");
-    private final TranslatableComponent startEndNullText = new TranslatableComponent("gui." + ModMain.MOD_ID + ".navigator.start_end_null");
+    private final MutableComponent searchingText = Utils.translate("gui." + ModMain.MOD_ID + ".navigator.searching");
+    private final MutableComponent noConnectionsText = Utils.translate("gui." + ModMain.MOD_ID + ".navigator.no_connections");
+    private final MutableComponent errorTitle = Utils.translate("gui." + ModMain.MOD_ID + ".navigator.error_title");
+    private final MutableComponent startEndEqualText = Utils.translate("gui." + ModMain.MOD_ID + ".navigator.start_end_equal");
+    private final MutableComponent startEndNullText = Utils.translate("gui." + ModMain.MOD_ID + ".navigator.start_end_null");
 
-    private final TranslatableComponent tooltipSearch = new TranslatableComponent("gui." + ModMain.MOD_ID + ".navigator.search.tooltip");
-    private final TranslatableComponent tooltipLocation = new TranslatableComponent("gui." + ModMain.MOD_ID + ".navigator.location.tooltip");
-    private final TranslatableComponent tooltipSwitch = new TranslatableComponent("gui." + ModMain.MOD_ID + ".navigator.switch.tooltip");
-    private final TranslatableComponent tooltipGlobalSettings = new TranslatableComponent("gui." + ModMain.MOD_ID + ".navigator.global_settings.tooltip");
-    private final TranslatableComponent tooltipSearchSettings = new TranslatableComponent("gui." + ModMain.MOD_ID + ".navigator.search_settings.tooltip");
+    private final MutableComponent tooltipSearch = Utils.translate("gui." + ModMain.MOD_ID + ".navigator.search.tooltip");
+    private final MutableComponent tooltipLocation = Utils.translate("gui." + ModMain.MOD_ID + ".navigator.location.tooltip");
+    private final MutableComponent tooltipSwitch = Utils.translate("gui." + ModMain.MOD_ID + ".navigator.switch.tooltip");
+    private final MutableComponent tooltipGlobalSettings = Utils.translate("gui." + ModMain.MOD_ID + ".navigator.global_settings.tooltip");
+    private final MutableComponent tooltipSearchSettings = Utils.translate("gui." + ModMain.MOD_ID + ".navigator.search_settings.tooltip");
 
-    private final UUID clientId = UUID.randomUUID();
 
     @SuppressWarnings("resource")
     public NavigatorScreen(Level level) {
-        super(new TranslatableComponent("gui." + ModMain.MOD_ID + ".navigator.title"));
+        super(Utils.translate("gui." + ModMain.MOD_ID + ".navigator.title"));
         this.instance = this;
         this.level = level;
         this.shadowlessFont = new NoShadowFontWrapper(Minecraft.getInstance().font); 
@@ -146,7 +147,7 @@ public class NavigatorScreen extends Screen implements IForegroundRendering, IJo
     }
 
     private void setLastRefreshedTime() {
-        lastRefreshedTime = (int)(level.getDayTime()/*% Constants.TICKS_PER_DAY*/);
+        lastRefreshedTime = (int)(level.getDayTime());
     }
 
     @Override
@@ -176,6 +177,7 @@ public class NavigatorScreen extends Screen implements IForegroundRendering, IJo
         guiTop = this.height / 2 - GUI_HEIGHT / 2;
 
         switchButtonsArea = new GuiAreaDefinition(guiLeft + 190, guiTop + 34, 11, 12);
+        addTooltip(Tooltip.of(tooltipSwitch).assignedTo(switchButtonsArea));
 
         locationButton = this.addRenderableWidget(new IconButton(guiLeft + 208, guiTop + 20, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, ModGuiIcons.POSITION.getAsCreateIcon()) {
             @Override
@@ -189,6 +191,8 @@ public class NavigatorScreen extends Screen implements IForegroundRendering, IJo
                 NetworkManager.sendToServer(new NearestStationRequestPacket(id, minecraft.player.position()));
             }
         });
+        addTooltip(Tooltip.of(tooltipLocation).assignedTo(locationButton));
+
         searchButton = this.addRenderableWidget(new IconButton(guiLeft + 208, guiTop + 42, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, AllIcons.I_MTD_SCAN) {
             @Override
             public void onClick(double mouseX, double mouseY) {
@@ -224,6 +228,7 @@ public class NavigatorScreen extends Screen implements IForegroundRendering, IJo
                
             }
         });
+        addTooltip(Tooltip.of(tooltipSearch).assignedTo(searchButton));
 
         fromBox = new EditBox(font, guiLeft + 50, guiTop + 25, 157, 12, new TextComponent(""));
 		fromBox.setBordered(false);
@@ -254,6 +259,7 @@ public class NavigatorScreen extends Screen implements IForegroundRendering, IJo
                 scroll.chase(0, 0.7f, Chaser.EXP);
             }
         });
+        addTooltip(Tooltip.of(Constants.TOOLTIP_GO_TO_TOP).assignedTo(goToTopButton));
 
         // Global Options Button
         if (minecraft.player.hasPermissions(ModCommonConfig.GLOBAL_SETTINGS_PERMISSION_LEVEL.get())) {
@@ -264,6 +270,7 @@ public class NavigatorScreen extends Screen implements IForegroundRendering, IJo
                     minecraft.setScreen(new GlobalSettingsScreen(level, instance));
                 }
             });
+            addTooltip(Tooltip.of(tooltipGlobalSettings).assignedTo(globalSettingsButton));
         }
 
         searchSettingsButton = this.addRenderableWidget(new IconButton(guiLeft + 21, guiTop + 222, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, ModGuiIcons.FILTER.getAsCreateIcon()) {
@@ -273,6 +280,7 @@ public class NavigatorScreen extends Screen implements IForegroundRendering, IJo
                 minecraft.setScreen(new SearchSettingsScreen(level, instance));
             }
         });
+        addTooltip(Tooltip.of(tooltipSearchSettings).assignedTo(searchSettingsButton));
 
         this.addRenderableWidget(new IconButton(guiLeft + GUI_WIDTH - 42, guiTop + 222, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, AllIcons.I_MTD_CLOSE) {
             @Override
@@ -284,6 +292,23 @@ public class NavigatorScreen extends Screen implements IForegroundRendering, IJo
 
         generateRouteEntries();
     }
+
+    protected void updateEditorSubwidgets(EditBox field) {
+        clearSuggestions();
+
+		destinationSuggestions = new ModDestinationSuggestions(this.minecraft, this, field, this.font, getViableStations(field), field.getHeight() + 2 + field.y);
+        destinationSuggestions.setAllowSuggestions(true);
+        destinationSuggestions.updateCommandInfo();
+	}
+
+    private List<TrainStationAlias> getViableStations(EditBox field) {
+        return ClientTrainStationSnapshot.getInstance().getAllTrainStations().stream()
+            .map(x -> GlobalSettingsManager.getInstance().getSettingsData().getAliasFor(x))
+            .distinct()
+            .filter(x -> !GlobalSettingsManager.getInstance().getSettingsData().isBlacklisted(x))
+            .sorted((a, b) -> a.getAliasName().get().compareTo(b.getAliasName().get()))
+            .toList();
+	}
 
     @Override
     public void tick() {
@@ -310,13 +335,12 @@ public class NavigatorScreen extends Screen implements IForegroundRendering, IJo
     }
 
     @Override
-    public void render(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) { 
+    public void renderBg(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) { 
         
 		float scrollOffset = -scroll.getValue(pPartialTick);
 
         renderBackground(pPoseStack);
-        RenderSystem.setShaderTexture(0, GUI);
-        blit(pPoseStack, guiLeft, guiTop, 0, 0, GUI_WIDTH, GUI_HEIGHT);
+        GuiUtils.blit(GUI, pPoseStack, guiLeft, guiTop, 0, 0, GUI_WIDTH, GUI_HEIGHT);
         for (Widget widget : this.renderables)
             widget.render(pPoseStack, pMouseX, pMouseY, pPartialTick);
 
@@ -341,13 +365,9 @@ public class NavigatorScreen extends Screen implements IForegroundRendering, IJo
                 }
 
                 pPoseStack.popPose();
-                ModGuiUtils.endStencil();
-                
-                net.minecraftforge.client.gui.GuiUtils.drawGradientRect(pPoseStack.last().pose(), 200, guiLeft + AREA_X, guiTop + AREA_Y, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y + 10,
-                0x77000000, 0x00000000);
-                net.minecraftforge.client.gui.GuiUtils.drawGradientRect(pPoseStack.last().pose(), 200, guiLeft + AREA_X, guiTop + AREA_Y + AREA_H - 10, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y + AREA_H,
-                0x00000000, 0x77000000);
-
+                ModGuiUtils.endStencil();                
+                net.minecraftforge.client.gui.GuiUtils.drawGradientRect(pPoseStack.last().pose(), 200, guiLeft + AREA_X, guiTop + AREA_Y, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y + 10, 0x77000000, 0x00000000);
+                net.minecraftforge.client.gui.GuiUtils.drawGradientRect(pPoseStack.last().pose(), 200, guiLeft + AREA_X, guiTop + AREA_Y + AREA_H - 10, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y + AREA_H, 0x00000000, 0x77000000);
                 UIRenderHelper.swapAndBlitColor(UIRenderHelper.framebuffer, minecraft.getMainRenderTarget());
 
                 // Scrollbar
@@ -371,46 +391,18 @@ public class NavigatorScreen extends Screen implements IForegroundRendering, IJo
         if (switchButtonsArea.isInBounds(pMouseX, pMouseY)) {
             fill(pPoseStack, switchButtonsArea.getLeft(), switchButtonsArea.getTop(), switchButtonsArea.getRight(), switchButtonsArea.getBottom(), 0x3FFFFFFF);
         }
-
-        renderForeground(pPoseStack, pMouseX, pMouseY, pPartialTick);
     }
 
     @Override
-	public void renderForeground(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+	public void renderFg(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
 		if (destinationSuggestions != null) {
 			matrixStack.pushPose();
 			matrixStack.translate(0, 0, 500);
 			destinationSuggestions.render(matrixStack, mouseX, mouseY);
 			matrixStack.popPose();
 		}
-        
-        ModGuiUtils.renderTooltip(this, searchButton, List.of(tooltipSearch.getVisualOrderText()), matrixStack, mouseX, mouseY, 0, 0);
-        ModGuiUtils.renderTooltip(this, locationButton, List.of(tooltipLocation.getVisualOrderText()), matrixStack, mouseX, mouseY, 0, 0);
-        ModGuiUtils.renderTooltip(this, switchButtonsArea, List.of(tooltipSwitch.getVisualOrderText()), matrixStack, mouseX, mouseY, 0, 0);
-        ModGuiUtils.renderTooltip(this, goToTopButton, List.of(Constants.TOOLTIP_GO_TO_TOP.getVisualOrderText()), matrixStack, mouseX, mouseY, 0, 0);
-        ModGuiUtils.renderTooltip(this, searchSettingsButton, List.of(tooltipSearchSettings.getVisualOrderText()), matrixStack, mouseX, mouseY, 0, 0);
-
-        if (globalSettingsButton != null) {
-            ModGuiUtils.renderTooltip(this, globalSettingsButton, List.of(tooltipGlobalSettings.getVisualOrderText()), matrixStack, mouseX, mouseY, 0, 0);
-        }
+        super.renderFg(matrixStack, mouseX, mouseY, partialTicks);
     }
-
-    protected void updateEditorSubwidgets(EditBox field) {
-        clearSuggestions();
-
-		destinationSuggestions = new ModDestinationSuggestions(this.minecraft, this, field, this.font, getViableStations(field), field.getHeight() + 2 + field.y);
-        destinationSuggestions.setAllowSuggestions(true);
-        destinationSuggestions.updateCommandInfo();
-	}
-
-    private List<TrainStationAlias> getViableStations(EditBox field) {
-        return ClientTrainStationSnapshot.getInstance().getAllTrainStations().stream()
-            .map(x -> GlobalSettingsManager.getInstance().getSettingsData().getAliasFor(x))
-            .distinct()
-            .filter(x -> !GlobalSettingsManager.getInstance().getSettingsData().isBlacklisted(x))
-            .sorted((a, b) -> a.getAliasName().get().compareTo(b.getAliasName().get()))
-            .toList();
-	}
 
     @Override
     public boolean mouseClicked(double pMouseX, double pMouseY, int pButton) {

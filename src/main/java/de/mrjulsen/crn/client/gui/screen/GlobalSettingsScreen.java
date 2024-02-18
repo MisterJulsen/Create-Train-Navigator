@@ -1,7 +1,5 @@
 package de.mrjulsen.crn.client.gui.screen;
 
-import java.util.List;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 import com.simibubi.create.foundation.gui.AllIcons;
@@ -12,23 +10,25 @@ import com.simibubi.create.foundation.utility.animation.LerpedFloat.Chaser;
 
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.ModMain;
-import de.mrjulsen.crn.client.gui.IForegroundRendering;
 import de.mrjulsen.crn.client.gui.widgets.SettingsOptionWidget;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.util.ModGuiUtils;
 import de.mrjulsen.mcdragonlib.client.gui.GuiAreaDefinition;
+import de.mrjulsen.mcdragonlib.client.gui.GuiUtils;
+import de.mrjulsen.mcdragonlib.client.gui.Tooltip;
 import de.mrjulsen.mcdragonlib.client.gui.WidgetsCollection;
+import de.mrjulsen.mcdragonlib.client.gui.wrapper.CommonScreen;
 import de.mrjulsen.mcdragonlib.utils.TimeUtils;
+import de.mrjulsen.mcdragonlib.utils.Utils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 
-public class GlobalSettingsScreen extends Screen implements IForegroundRendering {
+public class GlobalSettingsScreen extends CommonScreen {
 
     private static final ResourceLocation GUI = new ResourceLocation(ModMain.MOD_ID, "textures/gui/settings.png");
     private static final int GUI_WIDTH = 255;
@@ -60,18 +60,18 @@ public class GlobalSettingsScreen extends Screen implements IForegroundRendering
     private final WidgetsCollection optionsCollection = new WidgetsCollection();
 
     // Tooltips
-    private final Component optionAliasTitle = new TranslatableComponent("gui." + ModMain.MOD_ID + ".global_settings.option_alias.title");
-    private final Component optionAliasDescription = new TranslatableComponent("gui." + ModMain.MOD_ID + ".global_settings.option_alias.description");
-    private final Component optionBlacklistTitle = new TranslatableComponent("gui." + ModMain.MOD_ID + ".global_settings.option_blacklist.title");
-    private final Component optionBlacklistDescription = new TranslatableComponent("gui." + ModMain.MOD_ID + ".global_settings.option_blacklist.description");    
-    private final Component optionTrainGroupTitle = new TranslatableComponent("gui." + ModMain.MOD_ID + ".global_settings.train_group.title");
-    private final Component optionTrainGroupDescription = new TranslatableComponent("gui." + ModMain.MOD_ID + ".global_settings.train_group.description");    
-    private final Component optionTrainBlacklistTitle = new TranslatableComponent("gui." + ModMain.MOD_ID + ".global_settings.train_blacklist.title");
-    private final Component optionTrainBlacklistDescription = new TranslatableComponent("gui." + ModMain.MOD_ID + ".global_settings.train_blacklist.description");
+    private final Component optionAliasTitle = Utils.translate("gui." + ModMain.MOD_ID + ".global_settings.option_alias.title");
+    private final Component optionAliasDescription = Utils.translate("gui." + ModMain.MOD_ID + ".global_settings.option_alias.description");
+    private final Component optionBlacklistTitle = Utils.translate("gui." + ModMain.MOD_ID + ".global_settings.option_blacklist.title");
+    private final Component optionBlacklistDescription = Utils.translate("gui." + ModMain.MOD_ID + ".global_settings.option_blacklist.description");    
+    private final Component optionTrainGroupTitle = Utils.translate("gui." + ModMain.MOD_ID + ".global_settings.train_group.title");
+    private final Component optionTrainGroupDescription = Utils.translate("gui." + ModMain.MOD_ID + ".global_settings.train_group.description");    
+    private final Component optionTrainBlacklistTitle = Utils.translate("gui." + ModMain.MOD_ID + ".global_settings.train_blacklist.title");
+    private final Component optionTrainBlacklistDescription = Utils.translate("gui." + ModMain.MOD_ID + ".global_settings.train_blacklist.description");
 
     @SuppressWarnings("resource")
     public GlobalSettingsScreen(Level level, Screen lastScreen) {
-        super(new TranslatableComponent("gui." + ModMain.MOD_ID + ".global_settings.title"));
+        super(Utils.translate("gui." + ModMain.MOD_ID + ".global_settings.title"));
         this.level = level;
         this.lastScreen = lastScreen;
         this.shadowlessFont = new NoShadowFontWrapper(Minecraft.getInstance().font); 
@@ -111,6 +111,11 @@ public class GlobalSettingsScreen extends Screen implements IForegroundRendering
                 onClose();
             }
         });
+        addTooltip(Tooltip.of(Constants.TOOLTIP_GO_BACK).assignedTo(backButton));
+    }
+    
+    private int getMaxScrollHeight() {
+        return (SettingsOptionWidget.HEIGHT + ENTRY_SPACING) * 4 + ENTRIES_START_Y_OFFSET * 2;
     }
 
     @Override
@@ -126,16 +131,20 @@ public class GlobalSettingsScreen extends Screen implements IForegroundRendering
     }
 
     @Override
-    public void render(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) {
-        renderBackground(pPoseStack);
-        RenderSystem.setShaderTexture(0, GUI);
-        blit(pPoseStack, guiLeft, guiTop, 0, 0, GUI_WIDTH, GUI_HEIGHT);
-
+    public void renderBg(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) {
         float scrollOffset = -scroll.getValue(pPartialTick);
+
+        renderBackground(pPoseStack);
+        GuiUtils.blit(GUI, pPoseStack, guiLeft, guiTop, 0, 0, GUI_WIDTH, GUI_HEIGHT);          
+        drawString(pPoseStack, shadowlessFont, title, guiLeft + 19, guiTop + 4, 0x4F4F4F);
+        String timeString = TimeUtils.parseTime((int)((level.getDayTime() + Constants.TIME_SHIFT) % Constants.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get());
+        drawString(pPoseStack, shadowlessFont, timeString, guiLeft + GUI_WIDTH - 22 - shadowlessFont.width(timeString), guiTop + 4, 0x4F4F4F);
+
+        // CONTENT
         UIRenderHelper.swapAndBlitColor(minecraft.getMainRenderTarget(), UIRenderHelper.framebuffer);
         ModGuiUtils.startStencil(pPoseStack, guiLeft + AREA_X, guiTop + AREA_Y, AREA_W, AREA_H);
         pPoseStack.pushPose();
-        pPoseStack.translate(0, scrollOffset, 0);
+        pPoseStack.translate(0, scrollOffset, 0);      
         
         optionsCollection.performForEachOfType(SettingsOptionWidget.class, x -> x.renderButton(pPoseStack, pMouseX, (int)(pMouseY - scrollOffset), pPartialTick, workingArea.isInBounds(pMouseX, pMouseY)));
 
@@ -146,12 +155,9 @@ public class GlobalSettingsScreen extends Screen implements IForegroundRendering
         UIRenderHelper.swapAndBlitColor(UIRenderHelper.framebuffer, minecraft.getMainRenderTarget());
 
 
-        drawString(pPoseStack, shadowlessFont, title, guiLeft + 19, guiTop + 4, 0x4F4F4F);
-        String timeString = TimeUtils.parseTime((int)((level.getDayTime() + Constants.TIME_SHIFT) % Constants.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get());
-        drawString(pPoseStack, shadowlessFont, timeString, guiLeft + GUI_WIDTH - 22 - shadowlessFont.width(timeString), guiTop + 4, 0x4F4F4F);
+        super.renderBg(pPoseStack, pMouseX, pMouseY, pPartialTick);
 
-        super.render(pPoseStack, pMouseX, pMouseY, pPartialTick);
-
+        // Scrollbar
         double maxHeight = getMaxScrollHeight();
         double aH = AREA_H + 1;
         if (aH / maxHeight < 1) {
@@ -160,15 +166,13 @@ public class GlobalSettingsScreen extends Screen implements IForegroundRendering
 
             fill(pPoseStack, guiLeft + AREA_X + AREA_W - 3, startY, guiLeft + AREA_X + AREA_W, startY + scrollerHeight, 0x7FFFFFFF);
         }
-        
-        renderForeground(pPoseStack, pMouseX, pMouseY, pPartialTick);
     }
 
     @Override
-    public void renderForeground(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTicks) {
+    public void renderFg(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTicks) {
 		float scrollOffset = -scroll.getValue(pPartialTicks);
-        ModGuiUtils.renderTooltip(this, backButton, List.of(Constants.TOOLTIP_GO_BACK.getVisualOrderText()), pPoseStack, pMouseX, pMouseY, 0, 0);
         optionsCollection.performForEachOfType(SettingsOptionWidget.class, x -> workingArea.isInBounds(pMouseX, pMouseY), x -> x.renderForeground(pPoseStack, pMouseX, pMouseY, -scrollOffset));
+        super.renderFg(pPoseStack, pMouseX, pMouseY, pPartialTicks);
     }
 
     @Override
@@ -180,10 +184,6 @@ public class GlobalSettingsScreen extends Screen implements IForegroundRendering
             x -> x.mouseClicked(pMouseX, (int)(pMouseY - scrollOffset), pButton)
         );
         return super.mouseClicked(pMouseX, pMouseY, pButton);
-    }
-
-    private int getMaxScrollHeight() {
-        return (SettingsOptionWidget.HEIGHT + ENTRY_SPACING) * 4 + ENTRIES_START_Y_OFFSET * 2;
     }
 
     @Override

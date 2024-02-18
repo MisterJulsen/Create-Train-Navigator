@@ -15,12 +15,12 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.foundation.gui.UIRenderHelper.CustomRenderTarget;
 
 import de.mrjulsen.mcdragonlib.client.gui.GuiAreaDefinition;
+import de.mrjulsen.mcdragonlib.client.gui.GuiUtils;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.network.chat.FormattedText;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.util.FormattedCharSequence;
 
 public class ModGuiUtils {
 	
@@ -89,22 +89,14 @@ public class ModGuiUtils {
 	}
 
 	@SuppressWarnings("resource")
-    public static <W extends AbstractWidget> boolean renderTooltip(Screen s, W w, List<FormattedCharSequence> lines, PoseStack stack, int mouseX, int mouseY, int xOffset, int yOffset) {
-        if (w.isMouseOver(mouseX + xOffset, mouseY + yOffset)) {
-            s.renderTooltip(stack, lines, mouseX, mouseY, s.getMinecraft().font);
+	public static <T extends FormattedText> boolean renderTooltipAtFixedPos(Screen screen, GuiAreaDefinition area, List<T> lines, int maxWidth, PoseStack stack, int mouseX, int mouseY, int xOffset, int yOffset, int xPos, int yPos) {
+		if (area.isInBounds((double)(mouseX + xOffset), (double)(mouseY + yOffset))) {
+			screen.renderComponentTooltip(stack, GuiUtils.getTooltipData(screen, lines, maxWidth), xPos - 8, yPos + 16, screen.getMinecraft().font);
 			return true;
-        }
-		return false;
-    }
-
-	@SuppressWarnings("resource")
-    public static boolean renderTooltip(Screen s, GuiAreaDefinition w, List<FormattedCharSequence> lines, PoseStack stack, int mouseX, int mouseY, int xOffset, int yOffset) {
-        if (w.isInBounds(mouseX + xOffset, mouseY + yOffset)) {
-            s.renderTooltip(stack, lines, mouseX, mouseY, s.getMinecraft().font);
-			return true;
-        }
-		return false;
-    }
+		} else {
+			return false;
+		}
+   	}
 
 	public static void playButtonSound() {
         Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
