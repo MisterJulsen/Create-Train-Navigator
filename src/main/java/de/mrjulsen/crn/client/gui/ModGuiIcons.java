@@ -31,7 +31,11 @@ public enum ModGuiIcons {
     TARGET("target", 13, 1),
     TIME("target", 14, 1),
     WALK("walk", 15, 1),
-    INFO("info", 0, 2);
+    INFO("info", 0, 2),
+    EXPAND("expand", 1, 2),
+    COLLAPSE("collapse", 2, 2),
+    DELETE("delete", 3, 2),
+    ADD("add", 4, 2);
 
     private String id;
     private int u;

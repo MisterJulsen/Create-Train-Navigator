@@ -144,8 +144,6 @@ public class RouteDetailsOverlayScreen implements IHudOverlay, IJourneyListenerC
 
         xPos = LerpedFloat.linear().startWithValue(width / 2 - (ModClientConfig.OVERLAY_SCALE.get() * (GUI_WIDTH / 2)));
         yPos = LerpedFloat.linear().startWithValue(height / 2 - (ModClientConfig.OVERLAY_SCALE.get() * (GUI_HEIGHT / 2)));
-        //xPos.setValueNoUpdate(100);
-        //yPos.setValueNoUpdate(100);
 
         getListener()
             .registerOnNarratorAnnounce(this, this::narratorAnnouncement)
@@ -204,7 +202,7 @@ public class RouteDetailsOverlayScreen implements IHudOverlay, IJourneyListenerC
         yPos.tickChaser();
 
         // Sliding text
-        if (slidingTextWidth > SLIDING_TEXT_AREA_WIDTH * getUIScale()) {
+        if (slidingTextWidth > SLIDING_TEXT_AREA_WIDTH * 0.75f) {
             slidingTextOffset--;
             if (slidingTextOffset < -(slidingTextWidth / 2)) {
                 slidingTextOffset = (int)((SLIDING_TEXT_AREA_WIDTH + slidingTextWidth / 2) + 20);                
@@ -261,7 +259,7 @@ public class RouteDetailsOverlayScreen implements IHudOverlay, IJourneyListenerC
         slidingText = component;
         slidingTextWidth = shadowlessFont.width(component);
 
-        if (slidingTextWidth > SLIDING_TEXT_AREA_WIDTH * getUIScale()) {
+        if (slidingTextWidth > SLIDING_TEXT_AREA_WIDTH * 0.75f) {
             slidingTextOffset = (int)((SLIDING_TEXT_AREA_WIDTH + slidingTextWidth / 2) + 20);
         } else {
             slidingTextOffset = (int)(SLIDING_TEXT_AREA_WIDTH * 0.75f / 2);

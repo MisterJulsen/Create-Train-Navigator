@@ -20,6 +20,7 @@ import com.simibubi.create.foundation.utility.animation.LerpedFloat.Chaser;
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.client.gui.DynamicWidgets;
+import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.MutableGuiAreaDefinition;
 import de.mrjulsen.crn.client.gui.DynamicWidgets.ColorShade;
 import de.mrjulsen.mcdragonlib.client.gui.GuiAreaDefinition;
@@ -198,14 +199,12 @@ public class SearchSettingsScreen extends CommonScreen {
         ModClientConfig.TRAIN_GROUP_FILTER_BLACKLIST.set(current);
         ModClientConfig.TRAIN_GROUP_FILTER_BLACKLIST.save();
         ModClientConfig.SPEC.afterReload();
-        ModGuiUtils.playButtonSound();
     }
 
     private void resetTrainGroupFilter() {
         ModClientConfig.TRAIN_GROUP_FILTER_BLACKLIST.set(new ArrayList<>());
         ModClientConfig.TRAIN_GROUP_FILTER_BLACKLIST.save();
         ModClientConfig.SPEC.afterReload();
-        ModGuiUtils.playButtonSound();
     }   
 
     private int getMaxScrollHeight() {
@@ -261,7 +260,13 @@ public class SearchSettingsScreen extends CommonScreen {
 
                 DynamicWidgets.renderWidgetInner(pPoseStack, wX, dY + (i * ARRAY_ENTRY_HEIGHT), defaultWidth, 20, ColorShade.DARK);
                 DynamicWidgets.renderTextSlotOverlay(pPoseStack, wX + 25, dY + (i * ARRAY_ENTRY_HEIGHT) + 1, 163, ARRAY_ENTRY_HEIGHT - 2);
-                drawString(pPoseStack, shadowlessFont, group.getGroupName(), wX + 30, dY + (i * ARRAY_ENTRY_HEIGHT) + 1 + 5, 0xFFFFFF);
+
+                MutableComponent name = Utils.text(group.getGroupName());
+                int maxTextWidth = 163 - 12;  
+                if (shadowlessFont.width(name) > maxTextWidth) {
+                    name = Utils.text(shadowlessFont.substrByWidth(name, maxTextWidth).getString()).append(Constants.ELLIPSIS_STRING);
+                }
+                drawString(pPoseStack, shadowlessFont, name, wX + 30, dY + (i * ARRAY_ENTRY_HEIGHT) + 1 + 5, 0xFFFFFF);
                 
                 DynamicWidgets.renderTextSlotOverlay(pPoseStack, wX + 6, dY + (i * ARRAY_ENTRY_HEIGHT) + 1, 16, ARRAY_ENTRY_HEIGHT - 2);
                 
@@ -286,8 +291,7 @@ public class SearchSettingsScreen extends CommonScreen {
             } else if (amount >= trainGroups.length) {
                 text = trainGroupsOverviewAll.getString();
             }
-            drawString(pPoseStack, font, Utils.translate(trainGroupsOverviewKey, text), wX + 25, wY + defaultDescriptionHeight + defaultOptionHeight / 2 - font.lineHeight / 2, amount <= 0 ? 0xFF8888 : 0xFFFF88);
-            
+            drawString(pPoseStack, font, Utils.translate(trainGroupsOverviewKey, text), wX + 25, wY + defaultDescriptionHeight + defaultOptionHeight / 2 - font.lineHeight / 2, amount <= 0 ? 0xFF8888 : 0xFFFF88);            
         }
 
         renderDefaultOptionWidget(pPoseStack, wX, wY, trainGroupsText.getString(), trainGroupsOptionLabel);
@@ -295,8 +299,14 @@ public class SearchSettingsScreen extends CommonScreen {
         trainGroupExpandButton.setYOffset(wY + defaultDescriptionHeight / 2 - 7);
         trainGroupResetButton.setXOffset(wX + defaultWidth - 2 - 32);
         trainGroupResetButton.setYOffset(wY + defaultDescriptionHeight / 2 - 7);
-        AllIcons.I_REFRESH.render(pPoseStack, trainGroupResetButton.getX(), trainGroupResetButton.getY()); // delete button
-        GuiUtils.blit(Constants.GUI_WIDGETS, pPoseStack, trainGroupExpandButton.getX(), trainGroupExpandButton.getY(), trainGroupsExpanded ? 216 : 200, 0, 16, 16); // expand button 
+
+        AllIcons.I_REFRESH.render(pPoseStack, trainGroupResetButton.getX(), trainGroupResetButton.getY());
+        if (trainGroupsExpanded) {
+            ModGuiIcons.COLLAPSE.render(pPoseStack, trainGroupExpandButton.getX(), trainGroupExpandButton.getY());
+        } else {
+            ModGuiIcons.EXPAND.render(pPoseStack, trainGroupExpandButton.getX(), trainGroupExpandButton.getY());
+        }
+
         // Button highlight
         if (workingArea.isInBounds(pMouseX, pMouseY)) {
             if (trainGroupExpandButton.isInBounds(pMouseX, pMouseY - scrollOffset)) {
@@ -355,6 +365,17 @@ public class SearchSettingsScreen extends CommonScreen {
                 renderComponentTooltip(pPoseStack, tooltip, ttx, tty);
             }
         }
+
+        for (Entry<TrainGroup, MutableGuiAreaDefinition> entry : areaByTrainGroup.entrySet()) {
+            if (!workingArea.isInBounds(pMouseX, pMouseY)) {
+                continue;
+            }
+            
+            if (shadowlessFont.width(entry.getKey().getGroupName()) > 163 - 12 && ModGuiUtils.renderTooltipAtFixedPos(this, entry.getValue(), List.of(Utils.text(entry.getKey().getGroupName())), width, pPoseStack, pMouseX, pMouseY, 0, (int)scrollOffset, entry.getValue().getLeft() + 24, (int)(entry.getValue().getTop() + 2 - scrollOffset))) {
+                break;
+            }
+        }
+
         super.renderFg(pPoseStack, pMouseX, pMouseY, pPartialTick);
     }
     
@@ -376,6 +397,7 @@ public class SearchSettingsScreen extends CommonScreen {
                 Optional<Entry<TrainGroup, MutableGuiAreaDefinition>> area = areaByTrainGroup.entrySet().stream().filter(x -> x.getValue().isInBounds(pMouseX, pMouseY - scrollOffset)).findFirst();
                 if (area.isPresent()) {
                     modifyTrainGroupFilter(area.get().getKey());
+                    ModGuiUtils.playButtonSound();
                     return true;
                 }
             }

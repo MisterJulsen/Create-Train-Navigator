@@ -13,7 +13,6 @@ import com.simibubi.create.foundation.utility.animation.LerpedFloat.Chaser;
 
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.ModMain;
-import de.mrjulsen.crn.client.gui.ControlCollection;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.overlay.HudOverlays;
 import de.mrjulsen.crn.client.gui.overlay.RouteDetailsOverlayScreen;
@@ -30,6 +29,7 @@ import de.mrjulsen.crn.util.ModGuiUtils;
 import de.mrjulsen.crn.util.Pair;
 import de.mrjulsen.mcdragonlib.client.gui.GuiUtils;
 import de.mrjulsen.mcdragonlib.client.gui.Tooltip;
+import de.mrjulsen.mcdragonlib.client.gui.WidgetsCollection;
 import de.mrjulsen.mcdragonlib.client.gui.wrapper.CommonScreen;
 import de.mrjulsen.mcdragonlib.utils.TimeUtils;
 import de.mrjulsen.mcdragonlib.utils.Utils;
@@ -70,9 +70,10 @@ public class RouteDetailsScreen extends CommonScreen implements IJourneyListener
 
     // Controls
     private IconButton backButton;    
+    private IconButton saveButton;    
 	private LerpedFloat scroll = LerpedFloat.linear().startWithValue(0);
     private final ExpandButton[] expandButtons;
-    private final ControlCollection expandButtonCollection = new ControlCollection();
+    private final WidgetsCollection expandButtonCollection = new WidgetsCollection();
 
     // Data
     private final SimpleRoute route;
@@ -90,6 +91,7 @@ public class RouteDetailsScreen extends CommonScreen implements IJourneyListener
     private final MutableComponent textConnectionEndangered = Utils.translate("gui.createrailwaysnavigator.route_overview.connection_endangered").withStyle(ChatFormatting.GOLD).withStyle(ChatFormatting.BOLD);
     private final MutableComponent textConnectionMissed = Utils.translate("gui.createrailwaysnavigator.route_overview.connection_missed").withStyle(ChatFormatting.RED).withStyle(ChatFormatting.BOLD);
     private final MutableComponent textTrainCanceled = Utils.translate("gui.createrailwaysnavigator.route_overview.train_canceled").withStyle(ChatFormatting.RED).withStyle(ChatFormatting.BOLD);
+    private final MutableComponent textSaveRoute = Utils.translate("gui.createrailwaysnavigator.route_details.save_route");
     private final String keyTrainCancellationReason = "gui.createrailwaysnavigator.route_overview.train_cancellation_info";
 
     private final UUID clientId = UUID.randomUUID();
@@ -150,19 +152,24 @@ public class RouteDetailsScreen extends CommonScreen implements IJourneyListener
         });
         addTooltip(Tooltip.of(Constants.TOOLTIP_GO_BACK).assignedTo(backButton));
 
-        this.addRenderableWidget(new IconButton(guiLeft + 21 + DEFAULT_ICON_BUTTON_WIDTH + 4, guiTop + 222, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, ModGuiIcons.BOOKMARK.getAsCreateIcon()) {
+        saveButton = this.addRenderableWidget(new IconButton(guiLeft + 21 + DEFAULT_ICON_BUTTON_WIDTH + 4, guiTop + 222, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, ModGuiIcons.BOOKMARK.getAsCreateIcon()) {
             @Override
             public void onClick(double mouseX, double mouseY) {
                 super.onClick(mouseX, mouseY);
-                HudOverlays.setOverlay(new RouteDetailsOverlayScreen(level, route, fWidth, fHeight));
+                if (JourneyListenerManager.exists(route.getListenerId())) {
+                    HudOverlays.setOverlay(new RouteDetailsOverlayScreen(level, route, fWidth, fHeight));
+                }
             }
         });
+        addTooltip(Tooltip.of(textSaveRoute).assignedTo(saveButton));
     }
 
     @Override
     public void tick() {
         super.tick();
 		scroll.tickChaser();
+
+        saveButton.visible = JourneyListenerManager.exists(route.getListenerId());
     }
 
     private Pair<MutableComponent, MutableComponent> getStationInfo(StationEntry station) {
@@ -184,7 +191,6 @@ public class RouteDetailsScreen extends CommonScreen implements IJourneyListener
         GuiUtils.blit(Constants.GUI_WIDGETS, poseStack, x, y, 0, V, ENTRY_WIDTH, HEIGHT);
 
         Pair<MutableComponent, MutableComponent> text = getStationInfo(stop);
-        drawString(poseStack, shadowlessFont, text.getSecond(), x + ENTRY_DEST_X, y + 15, 0xFFFFFF);
         float scale = shadowlessFont.width(text.getFirst()) > 30 ? 0.75f : 1;
         poseStack.pushPose();
         poseStack.scale(scale, 1, 1);
@@ -198,6 +204,13 @@ public class RouteDetailsScreen extends CommonScreen implements IJourneyListener
 
         Component platformText = Utils.text(stop.getUpdatedInfo().platform());
         drawString(poseStack, shadowlessFont, platformText, x + ENTRY_DEST_X + 129 - shadowlessFont.width(platformText), y + 15, stop.stationInfoChanged() ? Constants.COLOR_DELAYED : 0xFFFFFF);
+
+        MutableComponent name = text.getSecond();
+        int maxTextWidth = 135 - 12 - shadowlessFont.width(platformText);  
+        if (shadowlessFont.width(name) > maxTextWidth) {
+            name = Utils.text(shadowlessFont.substrByWidth(name, maxTextWidth - 3).getString()).append(Constants.ELLIPSIS_STRING);
+        }
+        drawString(poseStack, shadowlessFont, name, x + ENTRY_DEST_X, y + 15, 0xFFFFFF);
 
         return HEIGHT;
     }
@@ -228,7 +241,6 @@ public class RouteDetailsScreen extends CommonScreen implements IJourneyListener
         GuiUtils.blit(Constants.GUI_WIDGETS, poseStack, x, y, 0, V, ENTRY_WIDTH, HEIGHT);
 
         Pair<MutableComponent, MutableComponent> text = getStationInfo(stop);
-        drawString(poseStack, shadowlessFont, text.getSecond(), x + ENTRY_DEST_X, y + 6, 0xFFFFFF);
         float scale = shadowlessFont.width(text.getFirst()) > 30 ? 0.75f : 1;
         poseStack.pushPose();
         poseStack.scale(scale, 1, 1);
@@ -243,6 +255,13 @@ public class RouteDetailsScreen extends CommonScreen implements IJourneyListener
         Component platformText = Utils.text(stop.getUpdatedInfo().platform());
         drawString(poseStack, shadowlessFont, platformText, x + ENTRY_DEST_X + 129 - shadowlessFont.width(platformText), y + 6, stop.stationInfoChanged() ? Constants.COLOR_DELAYED : 0xFFFFFF);
 
+        MutableComponent name = text.getSecond();
+        int maxTextWidth = 135 - 12 - shadowlessFont.width(platformText);  
+        if (shadowlessFont.width(name) > maxTextWidth) {
+            name = Utils.text(shadowlessFont.substrByWidth(name, maxTextWidth - 3).getString()).append(Constants.ELLIPSIS_STRING);
+        }
+        drawString(poseStack, shadowlessFont, name, x + ENTRY_DEST_X, y + 6, 0xFFFFFF);
+
         return HEIGHT;
     }
 
@@ -253,7 +272,6 @@ public class RouteDetailsScreen extends CommonScreen implements IJourneyListener
         GuiUtils.blit(Constants.GUI_WIDGETS, poseStack, x, y, 0, V, ENTRY_WIDTH, HEIGHT);
         
         Pair<MutableComponent, MutableComponent> text = getStationInfo(stop);
-        drawString(poseStack, shadowlessFont, text.getSecond(), x + ENTRY_DEST_X, y + 21, 0xFFFFFF);
         float scale = shadowlessFont.width(text.getFirst()) > 30 ? 0.75f : 1;
         poseStack.pushPose();
         poseStack.scale(scale, 1, 1);
@@ -262,11 +280,19 @@ public class RouteDetailsScreen extends CommonScreen implements IJourneyListener
             pY -= (stop.shouldRenderRealtime() ? 5 : 0);
             drawString(poseStack, shadowlessFont, TimeUtils.parseTime((int)(stop.getEstimatedTimeWithThreshold() % 24000 + Constants.TIME_SHIFT), ModClientConfig.TIME_FORMAT.get()), (int)((x + ENTRY_TIME_X) / scale), pY + 10, stop.getDifferenceTime() > ModClientConfig.DEVIATION_THRESHOLD.get() ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME);
         }
+        
         drawString(poseStack, shadowlessFont, text.getFirst(), (int)((x + ENTRY_TIME_X) / scale), pY, 0xFFFFFF);
         poseStack.popPose();
 
         Component platformText = Utils.text(stop.getUpdatedInfo().platform());
         drawString(poseStack, shadowlessFont, platformText, x + ENTRY_DEST_X + 129 - shadowlessFont.width(platformText), y + 21, stop.stationInfoChanged() ? Constants.COLOR_DELAYED : 0xFFFFFF);
+        
+        MutableComponent name = text.getSecond();
+        int maxTextWidth = 135 - 12 - shadowlessFont.width(platformText);  
+        if (shadowlessFont.width(name) > maxTextWidth) {
+            name = Utils.text(shadowlessFont.substrByWidth(name, maxTextWidth - 3).getString()).append(Constants.ELLIPSIS_STRING);
+        }
+        drawString(poseStack, shadowlessFont, name, x + ENTRY_DEST_X, y + 21, 0xFFFFFF);
 
         return HEIGHT;
     }

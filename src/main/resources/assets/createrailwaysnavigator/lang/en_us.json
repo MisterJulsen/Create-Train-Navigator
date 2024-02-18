@@ -43,6 +43,7 @@
     
     "gui.createrailwaysnavigator.navigator.title": "Create Railways Navigator",
     "gui.createrailwaysnavigator.navigator.no_connections": "No connections found.",
+    "gui.createrailwaysnavigator.navigator.not_searched": "Nothing searched yet.",
     "gui.createrailwaysnavigator.navigator.searching": "Search for connections...",
     "gui.createrailwaysnavigator.navigator.error_title": "Unable to navigate!",
     "gui.createrailwaysnavigator.navigator.start_end_null": "Start or destination is empty.",
@@ -60,6 +61,7 @@
     "gui.createrailwaysnavigator.route_details.departure": "Departure in",
     "gui.createrailwaysnavigator.route_details.next_transfer_time": "Transfer in",
     "gui.createrailwaysnavigator.route_details.transfer": "Transfer",
+    "gui.createrailwaysnavigator.route_details.save_route": "Save Connection",
     
     "gui.createrailwaysnavigator.route_overview.title": "Route Details",
     "gui.createrailwaysnavigator.route_overview.journey_begins": "Your journey begins! %s to %s, departure %s on platform %s",
@@ -96,7 +98,7 @@
     "gui.createrailwaysnavigator.route_overview.notification.connection_endangered.title": "Your connection is endangered!",
     "gui.createrailwaysnavigator.route_overview.notification.connection_endangered": "You probably won't be able to reach %s to %s.",
     "gui.createrailwaysnavigator.route_overview.notification.connection_missed.title": "Missed connection",
-    "gui.createrailwaysnavigator.route_overview.notification.connection_missed": "You missed your connecting train to %s.",
+    "gui.createrailwaysnavigator.route_overview.notification.connection_missed": "You missed your connecting train %s to %s.",
     "gui.createrailwaysnavigator.route_overview.notification.journey_completed.title": "You have reached your destination!",
     "gui.createrailwaysnavigator.route_overview.notification.journey_completed": "Thank you for traveling and have a nice day",
 
@@ -114,7 +116,7 @@
     "gui.createrailwaysnavigator.alias_settings.title": "Train Station Tag Settings",
     "gui.createrailwaysnavigator.alias_settings.summary": "Contains %s Track Stations",
     "gui.createrailwaysnavigator.alias_settings.editor": "Last edited by %s on %s",
-    "gui.createrailwaysnavigator.alias_settings.add.tooltip": "Create new Train Station Tag",
+    "gui.createrailwaysnavigator.alias_settings.add.tooltip": "Create new Entry",
     "gui.createrailwaysnavigator.alias_settings.delete_alias.tooltip": "Delete Tag",
     "gui.createrailwaysnavigator.alias_settings.delete_station.tooltip": "Remove Station",
     "gui.createrailwaysnavigator.alias_settings.add_station.tooltip": "Add Station",
@@ -125,7 +127,6 @@
     "gui.createrailwaysnavigator.train_group_settings.title": "Train Group Settings",
     "gui.createrailwaysnavigator.train_group_settings.summary": "Contains %s Trains",
     "gui.createrailwaysnavigator.train_group_settings.editor": "Last edited by %s on %s",
-    "gui.createrailwaysnavigator.train_group_settings.add.tooltip": "Create new Train Group",
     "gui.createrailwaysnavigator.train_group_settings.delete_alias.tooltip": "Delete Group",
     "gui.createrailwaysnavigator.train_group_settings.delete_station.tooltip": "Remove Train",
     "gui.createrailwaysnavigator.train_group_settings.add_station.tooltip": "Add Train",

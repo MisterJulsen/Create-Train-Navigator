@@ -77,4 +77,8 @@ public class JourneyListenerManager {
         return journeyListenerCache.size();
     }
 
+    public static boolean exists(UUID listenerId) {
+        return journeyListenerCache.containsKey(listenerId);
+    }
+
 }

@@ -297,7 +297,7 @@ public class JourneyListener {
             }
         }
 
-        if (!beginAnnounced && firstStation().getEstimatedTime() - ModClientConfig.TRANSFER_TIME.get() < Minecraft.getInstance().level.getDayTime()) {
+        if (!beginAnnounced && firstStation().getEstimatedTime() - ModClientConfig.NEXT_STOP_ANNOUNCEMENT.get() < Minecraft.getInstance().level.getDayTime()) {
             setNotificationText(new NotificationData(currentState, Utils.translate(keyNotificationJourneyBeginsTitle,
                 lastStation().getStationName()
             ), Utils.translate(keyNotificationJourneyBegins,
@@ -377,6 +377,10 @@ public class JourneyListener {
                     continue;
                 }
 
+                if (routePart.get(0).isDeparted()) {
+                    continue;
+                }
+
                 if (departed) {
                     routePart.forEach(x -> x.setDeparted(true));
                     continue;
@@ -388,6 +392,11 @@ public class JourneyListener {
                 if (min > 0 && currentTime > min && currentTime + ModClientConfig.TRANSFER_TIME.get() > routePart.get(0).getScheduleTime()) {
                     routePart.forEach(x -> x.setDeparted(true));
                     departed = true;
+
+                    setNotificationText(new NotificationData(currentState, Utils.translate(keyNotificationConnectionMissedTitle), Utils.translate(keyNotificationConnectionMissed,
+                        routePart.get(0).getTrain().trainName(),
+                        routePart.get(0).getTrain().scheduleTitle()
+                    )));
                 }
             }
 
@@ -487,6 +496,50 @@ public class JourneyListener {
                 TimeUtils.parseTime((int)(last.getScheduleTime() % 24000) + Constants.TIME_SHIFT, ModClientConfig.TIME_FORMAT.get()),
                 last.getStationName()
             )));
+        }
+    }
+
+    
+
+    private void checkStationAccessibility() {
+        boolean willMiss = false;
+        for (int i = stationIndex; i < route.getStationCount(true); i++) {
+            StationEntry station = route.getStationArray()[i];
+            StationEntry nextStation = i < route.getStationCount(true) - 1 ? route.getStationArray()[i + 1] : null;
+            
+            boolean wasWillMiss = station.willMissStop();
+
+            if (nextStation == null) {
+                continue;
+            }
+
+            if (station.isDeparted()) {
+                willMiss = true;
+            }
+
+            if (!willMiss) {
+                long transferTime = -1;
+                if (nextStation != null && !nextStation.isDeparted()) {
+                    if (nextStation.getCurrentTime() + ModClientConfig.TRANSFER_TIME.get() < nextStation.getScheduleTime()) {
+                        transferTime = nextStation.getScheduleTime() - station.getScheduleTime();
+                    } else {
+                        transferTime = nextStation.getCurrentTime() - station.getCurrentTime();
+                    }
+                }
+
+                if (transferTime < 0) {
+                    willMiss = true;
+                }
+            }
+            
+            station.setWillMiss(willMiss);
+
+            if (station.getTag() == StationTag.PART_START && !wasWillMiss && station.willMissStop()) {
+                setNotificationText(new NotificationData(currentState, Utils.translate(keyNotificationConnectionEndangeredTitle), Utils.translate(keyNotificationConnectionEndangered,
+                    station.getTrain().trainName(),
+                    station.getTrain().scheduleTitle()
+                )));
+            }
         }
     }
 
@@ -696,39 +749,6 @@ public class JourneyListener {
         setNarratorText(narratorText);
         
         stop();
-    }
-
-    private void checkStationAccessibility() {
-        boolean willMiss = false;
-        for (int i = stationIndex; i < route.getStationCount(true); i++) {
-            StationEntry station = route.getStationArray()[i];
-            StationEntry nextStation = i < route.getStationCount(true) - 1 ? route.getStationArray()[i + 1] : null;
-
-            if (nextStation == null) {
-                continue;
-            }
-
-            if (station.isDeparted()) {
-                willMiss = true;
-            }
-
-            if (!willMiss) {
-                long transferTime = -1;
-                if (nextStation != null && !nextStation.isDeparted()) {
-                    if (nextStation.getCurrentTime() + ModClientConfig.TRANSFER_TIME.get() < nextStation.getScheduleTime()) {
-                        transferTime = nextStation.getScheduleTime() - station.getScheduleTime();
-                    } else {
-                        transferTime = nextStation.getCurrentTime() - station.getCurrentTime();
-                    }
-                }
-
-                if (transferTime < 0) {
-                    willMiss = true;
-                }
-            }
-            
-            station.setWillMiss(willMiss);
-        }
     }
 
     public long getTransferTime(int index) {

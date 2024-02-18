@@ -101,6 +101,7 @@ public class NavigatorScreen extends CommonScreen implements IJourneyListenerCli
     // Tooltips
     private final MutableComponent searchingText = Utils.translate("gui." + ModMain.MOD_ID + ".navigator.searching");
     private final MutableComponent noConnectionsText = Utils.translate("gui." + ModMain.MOD_ID + ".navigator.no_connections");
+    private final MutableComponent notSearchedText = Utils.translate("gui." + ModMain.MOD_ID + ".navigator.not_searched");
     private final MutableComponent errorTitle = Utils.translate("gui." + ModMain.MOD_ID + ".navigator.error_title");
     private final MutableComponent startEndEqualText = Utils.translate("gui." + ModMain.MOD_ID + ".navigator.start_end_equal");
     private final MutableComponent startEndNullText = Utils.translate("gui." + ModMain.MOD_ID + ".navigator.start_end_null");
@@ -349,7 +350,10 @@ public class NavigatorScreen extends CommonScreen implements IJourneyListenerCli
         drawString(pPoseStack, shadowlessFont, timeString, guiLeft + GUI_WIDTH - 22 - shadowlessFont.width(timeString), guiTop + 4, 0x4F4F4F);
 
         if (!isLoadingRoutes && !generatingRouteEntries) {
-            if (routes == null || routes.length <= 0) {
+            if (routes == null) {
+                drawCenteredString(pPoseStack, font, notSearchedText, guiLeft + GUI_WIDTH / 2, guiTop + 32 + GUI_HEIGHT / 2, 0xFFFFFF);
+                ModGuiIcons.INFO.render(pPoseStack, (int)(guiLeft + GUI_WIDTH / 2 - 8), (int)(guiTop + GUI_HEIGHT / 2));
+            } else if (routes.length <= 0) {
                 drawCenteredString(pPoseStack, font, noConnectionsText, guiLeft + GUI_WIDTH / 2, guiTop + 32 + GUI_HEIGHT / 2, 0xFFFFFF);
                 AllIcons.I_ACTIVE.render(pPoseStack, (int)(guiLeft + GUI_WIDTH / 2 - 8), (int)(guiTop + GUI_HEIGHT / 2));
             } else {

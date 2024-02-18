@@ -30,6 +30,9 @@ import de.mrjulsen.crn.event.listeners.TrainListener;
 import de.mrjulsen.crn.util.TrainUtils;
 
 public class Graph {
+
+    protected static final int MIN_START_TIME = 200;
+
     private Map<UUID, Node> nodesById;
     private Map<TrainStationAlias, Node> nodesByStation;
 
@@ -249,7 +252,7 @@ public class Graph {
         Collection<Route> routes = new ArrayList<>();
         routes.add(new Route(lastUpdated));
 
-        int timer = 0;
+        int timer = Math.max(MIN_START_TIME, settings.getTransferTime());
         UUID currentTrainId = null;
         final Node[] filteredTransferNodes = routeNodes.stream().filter(x -> x.isTransferPoint()).toArray(Node[]::new);
 
