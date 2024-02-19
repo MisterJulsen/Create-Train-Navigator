@@ -6,6 +6,7 @@ import java.util.Collection;
 import de.mrjulsen.crn.network.InstanceManager;
 import de.mrjulsen.crn.network.NetworkManager;
 import de.mrjulsen.crn.network.packets.cts.TrackStationsRequestPacket;
+import net.minecraft.client.Minecraft;
 
 public class ClientTrainStationSnapshot {
     private static ClientTrainStationSnapshot instance;
@@ -44,7 +45,7 @@ public class ClientTrainStationSnapshot {
 
     public static void syncToClient(Runnable then) {
         long id = InstanceManager.registerClientResponseReceievedAction(then);
-        NetworkManager.sendToServer(new TrackStationsRequestPacket(id));
+        NetworkManager.getInstance().sendToServer(Minecraft.getInstance().getConnection().getConnection(), new TrackStationsRequestPacket(id));
     }
 
 

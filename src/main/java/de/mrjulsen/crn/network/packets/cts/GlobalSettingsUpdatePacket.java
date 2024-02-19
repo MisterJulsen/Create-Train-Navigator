@@ -9,10 +9,12 @@ import de.mrjulsen.crn.data.TrainGroup;
 import de.mrjulsen.crn.data.TrainStationAlias;
 import de.mrjulsen.crn.network.InstanceManager;
 import de.mrjulsen.crn.network.NetworkManager;
-import de.mrjulsen.crn.network.packets.IPacketBase;
+import de.mrjulsen.mcdragonlib.network.IPacketBase;
 import de.mrjulsen.crn.network.packets.stc.GlobalSettingsResponsePacket;
+import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkEvent;
 
 public class GlobalSettingsUpdatePacket implements IPacketBase<GlobalSettingsUpdatePacket> {
@@ -63,7 +65,7 @@ public class GlobalSettingsUpdatePacket implements IPacketBase<GlobalSettingsUpd
             default:
                 return;
         }
-        NetworkManager.sendToServer(new GlobalSettingsUpdatePacket(InstanceManager.registerClientResponseReceievedAction(then), nbt, action));
+        NetworkManager.getInstance().sendToServer(Minecraft.getInstance().getConnection().getConnection(), new GlobalSettingsUpdatePacket(InstanceManager.registerClientResponseReceievedAction(then), nbt, action));
     }
 
     @Override
@@ -132,11 +134,16 @@ public class GlobalSettingsUpdatePacket implements IPacketBase<GlobalSettingsUpd
                     return;
             }
             GlobalSettingsManager.getInstance().setDirty();
-            NetworkManager.sendToClient(new GlobalSettingsResponsePacket(packet.id, GlobalSettingsManager.getInstance().getSettingsData()), context.get().getSender());
+            NetworkManager.getInstance().sendToClient(new GlobalSettingsResponsePacket(packet.id, GlobalSettingsManager.getInstance().getSettingsData()), context.get().getSender());
         });
         
         context.get().setPacketHandled(true);      
     } 
+    
+    @Override
+    public NetworkDirection getDirection() {
+        return NetworkDirection.PLAY_TO_SERVER;
+    }    
     
     public static enum EGlobalSettingsAction {
         REGISTER_ALIAS,

@@ -4,10 +4,11 @@ import java.util.UUID;
 import java.util.function.Supplier;
 
 import de.mrjulsen.crn.network.NetworkManager;
-import de.mrjulsen.crn.network.packets.IPacketBase;
+import de.mrjulsen.mcdragonlib.network.IPacketBase;
 import de.mrjulsen.crn.network.packets.stc.NextConnectionsResponsePacket;
 import de.mrjulsen.crn.util.TrainUtils;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkEvent;
 
 public class NextConnectionsRequestPacket implements IPacketBase<NextConnectionsRequestPacket> {
@@ -50,10 +51,15 @@ public class NextConnectionsRequestPacket implements IPacketBase<NextConnections
         {
             new Thread(() -> {
                 final long updateTime = context.get().getSender().level.getDayTime();
-                NetworkManager.sendToClient(new NextConnectionsResponsePacket(packet.requestId, TrainUtils.getConnectionsAt(packet.currentStationName, packet.trainId, (int)packet.ticksToNextStop), updateTime), context.get().getSender());
+                NetworkManager.getInstance().sendToClient(new NextConnectionsResponsePacket(packet.requestId, TrainUtils.getConnectionsAt(packet.currentStationName, packet.trainId, (int)packet.ticksToNextStop), updateTime), context.get().getSender());
             }, "Connections Loader").run();
         });
         
         context.get().setPacketHandled(true);
     }
+    
+    @Override
+    public NetworkDirection getDirection() {
+        return NetworkDirection.PLAY_TO_SERVER;
+    }    
 }

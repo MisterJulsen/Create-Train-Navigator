@@ -6,9 +6,10 @@ import de.mrjulsen.crn.data.GlobalSettings;
 import de.mrjulsen.crn.data.GlobalSettingsManager;
 import de.mrjulsen.crn.network.InstanceManager;
 import de.mrjulsen.crn.network.NetworkManager;
-import de.mrjulsen.crn.network.packets.IPacketBase;
+import de.mrjulsen.mcdragonlib.network.IPacketBase;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkEvent;
 
 public class GlobalSettingsResponsePacket implements IPacketBase<GlobalSettingsResponsePacket> {
@@ -46,6 +47,11 @@ public class GlobalSettingsResponsePacket implements IPacketBase<GlobalSettingsR
         });
         
         context.get().setPacketHandled(true);      
-    }    
+    }
+    
+    @Override
+    public NetworkDirection getDirection() {
+        return NetworkDirection.PLAY_TO_CLIENT;
+    }
 }
 

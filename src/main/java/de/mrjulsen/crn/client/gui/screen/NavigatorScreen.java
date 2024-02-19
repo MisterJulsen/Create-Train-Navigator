@@ -190,7 +190,7 @@ public class NavigatorScreen extends CommonScreen implements IJourneyListenerCli
                         fromBox.setValue(result.aliasName.get().getAliasName().get());
                     }
                 });
-                NetworkManager.sendToServer(new NearestStationRequestPacket(id, minecraft.player.position()));
+                NetworkManager.getInstance().sendToServer(Minecraft.getInstance().getConnection().getConnection(), new NearestStationRequestPacket(id, minecraft.player.position()));
             }
         });
         addTooltip(Tooltip.of(tooltipLocation).assignedTo(locationButton));
@@ -226,7 +226,7 @@ public class NavigatorScreen extends CommonScreen implements IJourneyListenerCli
                     }
                 });
                 scroll.chase(0, 0.7f, Chaser.EXP);
-                NetworkManager.sendToServer(new NavigationRequestPacket(id, stationFrom, stationTo));
+                NetworkManager.getInstance().sendToServer(Minecraft.getInstance().getConnection().getConnection(), new NavigationRequestPacket(id, stationFrom, stationTo));
                
             }
         });

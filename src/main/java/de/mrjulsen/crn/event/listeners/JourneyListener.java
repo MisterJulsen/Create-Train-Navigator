@@ -417,7 +417,7 @@ public class JourneyListener {
                 }
             });
         });
-        NetworkManager.sendToServer(new RealtimeRequestPacket(id, ids));
+        NetworkManager.getInstance().sendToServer(Minecraft.getInstance().getConnection().getConnection(), new RealtimeRequestPacket(id, ids));
     }
 
     private boolean isStationValidForShedule(List<SimpleDeparturePrediction> schedule, UUID trainId, int startIndex) {

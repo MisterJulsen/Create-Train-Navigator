@@ -8,10 +8,11 @@ import java.util.function.Supplier;
 
 import de.mrjulsen.crn.data.DeparturePrediction.SimpleDeparturePrediction;
 import de.mrjulsen.crn.network.NetworkManager;
-import de.mrjulsen.crn.network.packets.IPacketBase;
+import de.mrjulsen.mcdragonlib.network.IPacketBase;
 import de.mrjulsen.crn.network.packets.stc.RealtimeResponsePacket;
 import de.mrjulsen.crn.util.TrainUtils;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkEvent;
 
 public class RealtimeRequestPacket implements IPacketBase<RealtimeRequestPacket> {
@@ -59,12 +60,17 @@ public class RealtimeRequestPacket implements IPacketBase<RealtimeRequestPacket>
                     }
                     predictions.addAll(TrainUtils.getTrainDeparturePredictions(x).stream().map(a -> a.simplify()).sorted(Comparator.comparingInt(a -> a.ticks())).toList());
                 });
-                NetworkManager.sendToClient(new RealtimeResponsePacket(packet.requestId, predictions, updateTime), context.get().getSender());
+                NetworkManager.getInstance().sendToClient(new RealtimeResponsePacket(packet.requestId, predictions, updateTime), context.get().getSender());
             }, "Realtime Provider").run();
         });
         
         context.get().setPacketHandled(true);
     }
+    
+    @Override
+    public NetworkDirection getDirection() {
+        return NetworkDirection.PLAY_TO_SERVER;
+    }    
     
     public static record StationData(Collection<String> stationName, Collection<Integer> indices, UUID trainId) {}
 }

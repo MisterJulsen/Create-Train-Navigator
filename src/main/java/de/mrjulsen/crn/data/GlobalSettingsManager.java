@@ -4,6 +4,7 @@ import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.network.InstanceManager;
 import de.mrjulsen.crn.network.NetworkManager;
 import de.mrjulsen.crn.network.packets.cts.GlobalSettingsRequestPacket;
+import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -74,6 +75,6 @@ public class GlobalSettingsManager extends SavedData {
 
     public static void syncToClient(Runnable then) {
         long id = InstanceManager.registerClientResponseReceievedAction(then);
-        NetworkManager.sendToServer(new GlobalSettingsRequestPacket(id));
+        NetworkManager.getInstance().sendToServer(Minecraft.getInstance().getConnection().getConnection(), new GlobalSettingsRequestPacket(id));
     }
 }

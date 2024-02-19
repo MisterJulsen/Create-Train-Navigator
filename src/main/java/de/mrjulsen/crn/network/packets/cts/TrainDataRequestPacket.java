@@ -5,11 +5,12 @@ import java.util.function.Supplier;
 
 import com.simibubi.create.content.trains.entity.Train;
 import de.mrjulsen.crn.network.NetworkManager;
-import de.mrjulsen.crn.network.packets.IPacketBase;
+import de.mrjulsen.mcdragonlib.network.IPacketBase;
 import de.mrjulsen.crn.network.packets.stc.TrainDataResponsePacket;
 import de.mrjulsen.crn.util.TrainUtils;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkEvent;
 
 public class TrainDataRequestPacket implements IPacketBase<TrainDataRequestPacket> {
@@ -43,7 +44,7 @@ public class TrainDataRequestPacket implements IPacketBase<TrainDataRequestPacke
         context.get().enqueueWork(() ->
         {
             Train train = TrainUtils.getTrain(packet.trainId);
-            NetworkManager.sendToClient(new TrainDataResponsePacket(packet.requestId, new TrainData(
+            NetworkManager.getInstance().sendToClient(new TrainDataResponsePacket(packet.requestId, new TrainData(
                 packet.trainId,
                 train.speed,
                 train.navigation.ticksWaitingForSignal
@@ -74,4 +75,9 @@ public class TrainDataRequestPacket implements IPacketBase<TrainDataRequestPacke
             );
         }
     }
+    
+    @Override
+    public NetworkDirection getDirection() {
+        return NetworkDirection.PLAY_TO_SERVER;
+    }    
 }

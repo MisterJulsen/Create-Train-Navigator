@@ -4,9 +4,10 @@ import java.util.function.Supplier;
 
 import de.mrjulsen.crn.network.InstanceManager;
 import de.mrjulsen.crn.network.NetworkManager;
-import de.mrjulsen.crn.network.packets.IPacketBase;
+import de.mrjulsen.mcdragonlib.network.IPacketBase;
 import de.mrjulsen.crn.network.packets.cts.TrainDataRequestPacket.TrainData;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkEvent;
 
 public class TrainDataResponsePacket implements IPacketBase<TrainDataResponsePacket> {
@@ -49,5 +50,10 @@ public class TrainDataResponsePacket implements IPacketBase<TrainDataResponsePac
         
         context.get().setPacketHandled(true);      
     }    
+    
+    @Override
+    public NetworkDirection getDirection() {
+        return NetworkDirection.PLAY_TO_CLIENT;
+    }
 }
 

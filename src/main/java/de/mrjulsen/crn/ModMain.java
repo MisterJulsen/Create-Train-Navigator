@@ -32,7 +32,7 @@ public final class ModMain {
         eventBus.addListener(ClientInitWrapper::setup);
 
         ModItems.register(eventBus);
-        NetworkManager.registerNetworkPackets();
+        NetworkManager.create();
         MinecraftForge.EVENT_BUS.register(this);
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ModClientConfig.SPEC, MOD_ID + "-client.toml");
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ModCommonConfig.SPEC, MOD_ID + "-common.toml");

@@ -4,10 +4,11 @@ import java.util.function.Supplier;
 
 import de.mrjulsen.crn.event.listeners.TrainListener;
 import de.mrjulsen.crn.network.NetworkManager;
-import de.mrjulsen.crn.network.packets.IPacketBase;
+import de.mrjulsen.mcdragonlib.network.IPacketBase;
 import de.mrjulsen.crn.network.packets.stc.TrackStationResponsePacket;
 import de.mrjulsen.crn.util.TrainUtils;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkEvent;
 
 public class TrackStationsRequestPacket implements IPacketBase<TrackStationsRequestPacket> {
@@ -35,7 +36,7 @@ public class TrackStationsRequestPacket implements IPacketBase<TrackStationsRequ
     public void handle(TrackStationsRequestPacket packet, Supplier<NetworkEvent.Context> context) {        
         context.get().enqueueWork(() ->
         {
-            NetworkManager.sendToClient(new TrackStationResponsePacket(
+            NetworkManager.getInstance().sendToClient(new TrackStationResponsePacket(
                 packet.id,
                 TrainUtils.getAllStations().stream().map(x -> x.name).toList(),
                 TrainUtils.getAllTrains().stream().map(x -> x.name.getString()).toList(),
@@ -45,5 +46,10 @@ public class TrackStationsRequestPacket implements IPacketBase<TrackStationsRequ
         });
         
         context.get().setPacketHandled(true);      
-    }    
+    } 
+    
+    @Override
+    public NetworkDirection getDirection() {
+        return NetworkDirection.PLAY_TO_SERVER;
+    }       
 }

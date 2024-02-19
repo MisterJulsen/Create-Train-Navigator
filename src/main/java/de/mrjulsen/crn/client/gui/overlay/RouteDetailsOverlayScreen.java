@@ -411,7 +411,7 @@ public class RouteDetailsOverlayScreen implements IHudOverlay, IJourneyListenerC
                 });
             }
         });
-        NetworkManager.sendToServer(new NextConnectionsRequestPacket(id, getListener().currentStation().getTrain().trainId(), getListener().currentStation().getStationName(), getListener().currentStation().getCurrentTicks() + ModClientConfig.TRANSFER_TIME.get()));
+        NetworkManager.getInstance().sendToServer(Minecraft.getInstance().getConnection().getConnection(), new NextConnectionsRequestPacket(id, getListener().currentStation().getTrain().trainId(), getListener().currentStation().getStationName(), getListener().currentStation().getCurrentTicks() + ModClientConfig.TRANSFER_TIME.get()));
     }
 
     private void setNextConnectionsSubPage() {
@@ -452,7 +452,7 @@ public class RouteDetailsOverlayScreen implements IHudOverlay, IJourneyListenerC
                     ));
                     trainDataSubPageTime = 0;
                 });
-                NetworkManager.sendToServer(new TrainDataRequestPacket(id, getListener().currentStation().getTrain().trainId()));
+                NetworkManager.getInstance().sendToServer(Minecraft.getInstance().getConnection().getConnection(), new TrainDataRequestPacket(id, getListener().currentStation().getTrain().trainId()));
                 break;
         }
     }

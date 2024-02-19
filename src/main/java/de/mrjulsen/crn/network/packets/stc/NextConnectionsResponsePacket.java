@@ -8,8 +8,9 @@ import java.util.function.Supplier;
 import de.mrjulsen.crn.data.SimpleTrainConnection;
 import de.mrjulsen.crn.network.InstanceManager;
 import de.mrjulsen.crn.network.NetworkManager;
-import de.mrjulsen.crn.network.packets.IPacketBase;
+import de.mrjulsen.mcdragonlib.network.IPacketBase;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkEvent;
 
 public class NextConnectionsResponsePacket implements IPacketBase<NextConnectionsResponsePacket> {
@@ -57,6 +58,11 @@ public class NextConnectionsResponsePacket implements IPacketBase<NextConnection
         });
         
         context.get().setPacketHandled(true);      
-    }    
+    } 
+    
+    @Override
+    public NetworkDirection getDirection() {
+        return NetworkDirection.PLAY_TO_CLIENT;
+    }   
 }
 

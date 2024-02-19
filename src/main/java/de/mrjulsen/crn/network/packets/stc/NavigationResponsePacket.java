@@ -7,8 +7,9 @@ import java.util.function.Supplier;
 import de.mrjulsen.crn.data.SimpleRoute;
 import de.mrjulsen.crn.network.InstanceManager;
 import de.mrjulsen.crn.network.NetworkManager;
-import de.mrjulsen.crn.network.packets.IPacketBase;
+import de.mrjulsen.mcdragonlib.network.IPacketBase;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkEvent;
 
 public class NavigationResponsePacket implements IPacketBase<NavigationResponsePacket> {
@@ -60,6 +61,11 @@ public class NavigationResponsePacket implements IPacketBase<NavigationResponseP
         });
         
         context.get().setPacketHandled(true);      
+    }
+    
+    @Override
+    public NetworkDirection getDirection() {
+        return NetworkDirection.PLAY_TO_CLIENT;
     }
 
     public static record NavigationResponseData(long lastUpdated, long calculationTime) {}
