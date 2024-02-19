@@ -11,10 +11,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class Constants {
     public static final ResourceLocation GUI_WIDGETS = new ResourceLocation(ModMain.MOD_ID, "textures/gui/widgets.png");
-    public static final int TICKS_PER_DAY = 24000;
     public static final Component ELLIPSIS_STRING = Utils.text("...");
-    public static final double ONE_HOUR_TICKS = Constants.TICKS_PER_DAY / 24.0D;
-    public static final double ONE_MINUTE_TICKS = Constants.ONE_HOUR_TICKS / 60.0D;
     public static final Component TOOLTIP_GO_BACK = Utils.translate("gui." + ModMain.MOD_ID + ".common.go_back");
     public static final Component TOOLTIP_GO_TO_TOP = Utils.translate("gui." + ModMain.MOD_ID + ".common.go_to_top");
     public static final Component TOOLTIP_RESET_DEFAULTS = Utils.translate("gui." + ModMain.MOD_ID + ".common.reset_defaults");
@@ -25,7 +22,6 @@ public class Constants {
     public static final Component TEXT_FALSE = Utils.translate("gui." + ModMain.MOD_ID + ".common.false");
     public static final Component TEXT_SERVER_ERROR = Utils.translate("gui." + ModMain.MOD_ID + ".common.server_error");
     public static final String TEXT_SEARCH = Utils.translate("common." + ModMain.MOD_ID + ".search").getString();
-    public static final String DEFAULT_SETTINGS_PATH = "./config/" + ModMain.MOD_ID + "_settings.json";
     public static final Gson GSON = new Gson();
     public static final DateFormat DATE_FORMAT = new SimpleDateFormat();
     public static final int TIME_SHIFT = 6000;

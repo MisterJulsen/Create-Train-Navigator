@@ -13,6 +13,7 @@ import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.client.gui.widgets.SettingsOptionWidget;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.util.ModGuiUtils;
+import de.mrjulsen.mcdragonlib.DragonLibConstants;
 import de.mrjulsen.mcdragonlib.client.gui.GuiAreaDefinition;
 import de.mrjulsen.mcdragonlib.client.gui.GuiUtils;
 import de.mrjulsen.mcdragonlib.client.gui.Tooltip;
@@ -137,7 +138,7 @@ public class GlobalSettingsScreen extends CommonScreen {
         renderBackground(pPoseStack);
         GuiUtils.blit(GUI, pPoseStack, guiLeft, guiTop, 0, 0, GUI_WIDTH, GUI_HEIGHT);          
         drawString(pPoseStack, shadowlessFont, title, guiLeft + 19, guiTop + 4, 0x4F4F4F);
-        String timeString = TimeUtils.parseTime((int)((level.getDayTime() + Constants.TIME_SHIFT) % Constants.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get());
+        String timeString = TimeUtils.parseTime((int)((level.getDayTime() + Constants.TIME_SHIFT) % DragonLibConstants.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get());
         drawString(pPoseStack, shadowlessFont, timeString, guiLeft + GUI_WIDTH - 22 - shadowlessFont.width(timeString), guiTop + 4, 0x4F4F4F);
 
         // CONTENT

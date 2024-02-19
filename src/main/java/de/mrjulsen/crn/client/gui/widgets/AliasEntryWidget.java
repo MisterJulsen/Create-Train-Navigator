@@ -130,6 +130,11 @@ public class AliasEntryWidget extends AbstractEntryListOptionWidget {
             if (!focus) {
                 if (selectedStationName != null && !selectedStationName.isBlank()) {
                     alias.updateInfoForStation(selectedStationName, new StationInfo(box.getValue()));
+
+                    GlobalSettingsManager.getInstance().getSettingsData().updateAlias(alias.getAliasName(), alias, () -> {
+                        onUpdate.run();
+                        initStationDeleteButtons();
+                    });
                 }
                 box.visible = false;
                 selectedStationName = null;

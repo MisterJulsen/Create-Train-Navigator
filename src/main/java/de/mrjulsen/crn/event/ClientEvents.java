@@ -15,6 +15,7 @@ import de.mrjulsen.crn.event.listeners.TrainListener;
 import de.mrjulsen.crn.network.InstanceManager;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.ClientPlayerNetworkEvent.LoggedInEvent;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent.LoggedOutEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 
@@ -37,6 +38,12 @@ public class ClientEvents {
 
         ClientTrainStationSnapshot.getInstance().dispose();        
         InstanceManager.clearAll();
+        JourneyListenerManager.stop();
+    }
+
+    @SubscribeEvent
+    public static void onWorldJoin(LoggedInEvent event) {        
+        JourneyListenerManager.start();
     }
 
     @SuppressWarnings("resource")
@@ -49,7 +56,7 @@ public class ClientEvents {
             event.getLeft().add(String.format("CRN | T: %s/%s, JL: %s, O: %s, I: %s",
                 b1 ? TrainListener.getInstance().getListeningTrainCount() : (b2 ? ClientTrainStationSnapshot.getInstance().getListeningTrainCount() : 0),
                 b1 ? TrainListener.getInstance().getTotalTrainCount() : (b2 ? ClientTrainStationSnapshot.getInstance().getTrainCount() : 0),
-                JourneyListenerManager.getCacheSize(),
+                JourneyListenerManager.getInstance() == null ? 0 : JourneyListenerManager.getInstance().getCacheSize(),
                 HudOverlays.overlayCount(),
                 InstanceManager.getInstancesCountString()
             ));

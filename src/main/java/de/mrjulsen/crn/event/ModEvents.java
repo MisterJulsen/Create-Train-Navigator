@@ -17,7 +17,7 @@ public class ModEvents {
 
     @SubscribeEvent
     public static void onServerStarted(ServerStartedEvent event) { 
-        TrainListener.start();
+        TrainListener.start(event.getServer().overworld());
     }
 
     @SubscribeEvent

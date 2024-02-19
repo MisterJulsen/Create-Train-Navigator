@@ -12,7 +12,7 @@
       "args": "--launchTarget forgeclientuserdev --version MOD_DEV --assetIndex 1.18 --assetsDir C:\\Users\\julia\\.gradle\\caches\\forge_gradle\\assets --gameDir . --fml.forgeVersion 40.2.4 --fml.mcVersion 1.18.2 --fml.forgeGroup net.minecraftforge --fml.mcpVersion 20220404.173914",
       "env": {
         "MOD_CLASSES": "createrailwaysnavigator%%${workspaceFolder}\\bin\\main;createrailwaysnavigator%%${workspaceFolder}\\bin\\main",
-        "MCP_MAPPINGS": "parchment_1.18.2-2022.11.06-1.18.2"
+        "MCP_MAPPINGS": "parchment_1.18.1-2022.02.13-1.18.2"
       }
     },
     {
@@ -26,7 +26,7 @@
       "args": "--launchTarget forgedatauserdev --assetIndex 1.18 --assetsDir C:\\Users\\julia\\.gradle\\caches\\forge_gradle\\assets --gameDir . --fml.forgeVersion 40.2.4 --fml.mcVersion 1.18.2 --fml.forgeGroup net.minecraftforge --fml.mcpVersion 20220404.173914 --mod createrailwaysnavigator --all --output \"C:\\Users\\julia\\Documents\\Forge Modding\\Create Train Navigator\\src\\generated\\resources\" --existing \"C:\\Users\\julia\\Documents\\Forge Modding\\Create Train Navigator\\src\\main\\resources\"",
       "env": {
         "MOD_CLASSES": "createrailwaysnavigator%%${workspaceFolder}\\bin\\main;createrailwaysnavigator%%${workspaceFolder}\\bin\\main",
-        "MCP_MAPPINGS": "parchment_1.18.2-2022.11.06-1.18.2"
+        "MCP_MAPPINGS": "parchment_1.18.1-2022.02.13-1.18.2"
       }
     },
     {
@@ -40,7 +40,7 @@
       "args": "--launchTarget forgegametestserveruserdev --gameDir . --fml.forgeVersion 40.2.4 --fml.mcVersion 1.18.2 --fml.forgeGroup net.minecraftforge --fml.mcpVersion 20220404.173914",
       "env": {
         "MOD_CLASSES": "createrailwaysnavigator%%${workspaceFolder}\\bin\\main;createrailwaysnavigator%%${workspaceFolder}\\bin\\main",
-        "MCP_MAPPINGS": "parchment_1.18.2-2022.11.06-1.18.2"
+        "MCP_MAPPINGS": "parchment_1.18.1-2022.02.13-1.18.2"
       }
     },
     {
@@ -54,7 +54,7 @@
       "args": "--launchTarget forgeserveruserdev --gameDir . --fml.forgeVersion 40.2.4 --fml.mcVersion 1.18.2 --fml.forgeGroup net.minecraftforge --fml.mcpVersion 20220404.173914",
       "env": {
         "MOD_CLASSES": "createrailwaysnavigator%%${workspaceFolder}\\bin\\main;createrailwaysnavigator%%${workspaceFolder}\\bin\\main",
-        "MCP_MAPPINGS": "parchment_1.18.2-2022.11.06-1.18.2"
+        "MCP_MAPPINGS": "parchment_1.18.1-2022.02.13-1.18.2"
       }
     }
   ]

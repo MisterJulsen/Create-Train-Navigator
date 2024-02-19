@@ -50,7 +50,7 @@ public class SimpleRoute {
     }
 
     public UUID listen(IJourneyListenerClient initialListener) {
-        return listenerId = JourneyListenerManager.create(this, initialListener);
+        return listenerId = JourneyListenerManager.getInstance().create(this, initialListener);
     }
 
     public UUID getListenerId() {

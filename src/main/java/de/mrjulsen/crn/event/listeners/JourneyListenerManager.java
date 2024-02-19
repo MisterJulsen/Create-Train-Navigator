@@ -6,18 +6,22 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.data.SimpleRoute;
 import de.mrjulsen.crn.event.listeners.JourneyListener.State;
+import net.minecraft.client.Minecraft;
 
 public class JourneyListenerManager {
 
     private static final int CLEANUP_INTERVALL = 100;
-    private static int cleanupTimer = 0;
+    private static JourneyListenerManager instance;
 
-    private static final Map<UUID, JourneyListener> journeyListenerCache = new HashMap<>();
-    private static final Map<UUID, Set<UUID>> dataListeners = new HashMap<>();
+    private int cleanupTimer = 0;
 
-    public static UUID register(JourneyListener listener) {
+    private final Map<UUID, JourneyListener> journeyListenerCache = new HashMap<>();
+    private final Map<UUID, Set<UUID>> dataListeners = new HashMap<>();
+
+    public UUID register(JourneyListener listener) {
         UUID uuid = UUID.randomUUID();
         while (journeyListenerCache.containsKey(uuid)) {
             uuid = UUID.randomUUID();
@@ -27,13 +31,13 @@ public class JourneyListenerManager {
         return uuid;
     }
 
-    public static UUID create(SimpleRoute route, IJourneyListenerClient initialListener) {
+    public UUID create(SimpleRoute route, IJourneyListenerClient initialListener) {
         UUID id = register(new JourneyListener(route));
         dataListeners.put(id, new HashSet<>(Set.of(initialListener.getJourneyListenerClientId())));
         return id;
     }
 
-    public static JourneyListener get(UUID id, IJourneyListenerClient addListener) {
+    public JourneyListener get(UUID id, IJourneyListenerClient addListener) {
         if (addListener != null) {
             if (dataListeners.containsKey(id)) {
                 dataListeners.get(id).add(addListener.getJourneyListenerClientId());
@@ -44,25 +48,27 @@ public class JourneyListenerManager {
         return journeyListenerCache.get(id);
     }
 
-    /*
-    public static void remove(UUID id) {
-        journeyListenerCache.remove(id);
-        dataListeners.remove(id);
-    }
-    */
-
-    public static void removeClientListener(UUID listenerId, IJourneyListenerClient client) {
+    public void removeClientListener(UUID listenerId, IJourneyListenerClient client) {
         if (dataListeners.containsKey(listenerId)) {
             dataListeners.get(listenerId).removeIf(x -> x.equals(client.getJourneyListenerClientId()));
         }
     }
 
-    public static void removeClientListenerForAll(IJourneyListenerClient client) {
+    public void removeClientListenerForAll(IJourneyListenerClient client) {
         dataListeners.values().forEach(x -> x.removeIf(a -> a.equals(client.getJourneyListenerClientId())));
     }
 
 
+    @SuppressWarnings("resource")
     public static void tick() {
+        if (instance == null || Minecraft.getInstance().level == null) {
+            return;
+        }
+
+        instance.tickInstance();        
+    }
+
+    private void tickInstance() {
         journeyListenerCache.values().forEach(x -> x.tick());
 
         cleanupTimer++;
@@ -73,12 +79,38 @@ public class JourneyListenerManager {
         }
     }
 
-    public static int getCacheSize() {
+    public int getCacheSize() {
         return journeyListenerCache.size();
     }
 
-    public static boolean exists(UUID listenerId) {
+    public boolean exists(UUID listenerId) {
         return journeyListenerCache.containsKey(listenerId);
+    }
+
+
+    public static JourneyListenerManager getInstance() {
+        return instance;
+    }
+
+    public static JourneyListenerManager start() {
+        stop();
+        instance = new JourneyListenerManager();
+        ModMain.LOGGER.info("Journey Listener started.");
+        return instance;
+    }
+
+    public static void stop() {
+        if (instance != null) {
+            instance.stopInstance();
+        }
+
+        instance = null;
+    }
+
+    private void stopInstance() {
+        dataListeners.clear();
+        journeyListenerCache.clear();
+        ModMain.LOGGER.info("Journey Listener stopped.");
     }
 
 }

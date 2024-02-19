@@ -27,6 +27,7 @@ import de.mrjulsen.crn.event.listeners.JourneyListener;
 import de.mrjulsen.crn.event.listeners.JourneyListenerManager;
 import de.mrjulsen.crn.util.ModGuiUtils;
 import de.mrjulsen.crn.util.Pair;
+import de.mrjulsen.mcdragonlib.DragonLibConstants;
 import de.mrjulsen.mcdragonlib.client.gui.GuiUtils;
 import de.mrjulsen.mcdragonlib.client.gui.Tooltip;
 import de.mrjulsen.mcdragonlib.client.gui.WidgetsCollection;
@@ -104,7 +105,7 @@ public class RouteDetailsScreen extends CommonScreen implements IJourneyListener
         this.font = Minecraft.getInstance().font;  
         this.shadowlessFont = new NoShadowFontWrapper(font);    
         this.level = level;
-        JourneyListenerManager.get(listenerId, this);
+        JourneyListenerManager.getInstance().get(listenerId, this);
 
         int count = route.getParts().size();
         expandButtons = new ExpandButton[count];
@@ -120,7 +121,7 @@ public class RouteDetailsScreen extends CommonScreen implements IJourneyListener
     }
 
     public int getCurrentTime() {
-        return (int)(level.getDayTime() % Constants.TICKS_PER_DAY);
+        return (int)(level.getDayTime() % DragonLibConstants.TICKS_PER_DAY);
     }
 
     @Override
@@ -131,7 +132,7 @@ public class RouteDetailsScreen extends CommonScreen implements IJourneyListener
     @Override
     public void onClose() {
         this.minecraft.setScreen(lastScreen);        
-        JourneyListenerManager.removeClientListenerForAll(this);
+        JourneyListenerManager.getInstance().removeClientListenerForAll(this);
     }
 
     @Override
@@ -156,7 +157,7 @@ public class RouteDetailsScreen extends CommonScreen implements IJourneyListener
             @Override
             public void onClick(double mouseX, double mouseY) {
                 super.onClick(mouseX, mouseY);
-                if (JourneyListenerManager.exists(route.getListenerId())) {
+                if (JourneyListenerManager.getInstance().exists(route.getListenerId())) {
                     HudOverlays.setOverlay(new RouteDetailsOverlayScreen(level, route, fWidth, fHeight));
                 }
             }
@@ -169,7 +170,7 @@ public class RouteDetailsScreen extends CommonScreen implements IJourneyListener
         super.tick();
 		scroll.tickChaser();
 
-        saveButton.visible = JourneyListenerManager.exists(route.getListenerId());
+        saveButton.visible = JourneyListenerManager.getInstance().exists(route.getListenerId());
     }
 
     private Pair<MutableComponent, MutableComponent> getStationInfo(StationEntry station) {
@@ -300,7 +301,7 @@ public class RouteDetailsScreen extends CommonScreen implements IJourneyListener
     private void renderHeadline(PoseStack poseStack, int pMouseX, int pMouseY) {
         Component titleInfo = Utils.emptyText();
         Component headline = Utils.emptyText();
-        JourneyListener listener = JourneyListenerManager.get(route.getListenerId(), null);
+        JourneyListener listener = JourneyListenerManager.getInstance().get(route.getListenerId(), null);
 
         // Title
         if (!route.isValid()) {
@@ -370,7 +371,7 @@ public class RouteDetailsScreen extends CommonScreen implements IJourneyListener
             widget.render(pPoseStack, pMouseX, pMouseY, pPartialTick);
         
         drawString(pPoseStack, shadowlessFont, title, guiLeft + 19, guiTop + 4, 0x4F4F4F);
-        String timeString = TimeUtils.parseTime((int)((level.getDayTime() + Constants.TIME_SHIFT) % Constants.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get());
+        String timeString = TimeUtils.parseTime((int)((level.getDayTime() + Constants.TIME_SHIFT) % DragonLibConstants.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get());
         drawString(pPoseStack, shadowlessFont, timeString, guiLeft + GUI_WIDTH - 22 - shadowlessFont.width(timeString), guiTop + 4, 0x4F4F4F);
         
         renderHeadline(pPoseStack, pMouseX, pMouseY);

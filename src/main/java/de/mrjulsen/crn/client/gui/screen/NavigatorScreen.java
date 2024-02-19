@@ -14,6 +14,7 @@ import com.simibubi.create.foundation.utility.animation.LerpedFloat.Chaser;
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.client.gui.ControlCollection;
+import de.mrjulsen.mcdragonlib.DragonLibConstants;
 import de.mrjulsen.mcdragonlib.client.gui.GuiAreaDefinition;
 import de.mrjulsen.mcdragonlib.client.gui.GuiUtils;
 import de.mrjulsen.mcdragonlib.client.gui.Tooltip;
@@ -158,7 +159,7 @@ public class NavigatorScreen extends CommonScreen implements IJourneyListenerCli
 
     @Override
     public void onClose() {
-        JourneyListenerManager.removeClientListenerForAll(this);
+        JourneyListenerManager.getInstance().removeClientListenerForAll(this);
         super.onClose();
     }
 
@@ -212,7 +213,7 @@ public class NavigatorScreen extends CommonScreen implements IJourneyListenerCli
                 isLoadingRoutes = true;
 
                 long id = InstanceManager.registerClientNavigationResponseAction((routes, data) -> {
-                    JourneyListenerManager.removeClientListenerForAll(instance);
+                    JourneyListenerManager.getInstance().removeClientListenerForAll(instance);
 
                     instance.routes = routes.toArray(SimpleRoute[]::new);
                     setLastRefreshedTime();
@@ -221,7 +222,7 @@ public class NavigatorScreen extends CommonScreen implements IJourneyListenerCli
 
                     for (SimpleRoute route : instance.routes) {
                         UUID listenerId = route.listen(instance);
-                        JourneyListenerManager.get(listenerId, instance).start();
+                        JourneyListenerManager.getInstance().get(listenerId, instance).start();
                     }
                 });
                 scroll.chase(0, 0.7f, Chaser.EXP);
@@ -346,7 +347,7 @@ public class NavigatorScreen extends CommonScreen implements IJourneyListenerCli
             widget.render(pPoseStack, pMouseX, pMouseY, pPartialTick);
 
         drawString(pPoseStack, shadowlessFont, title, guiLeft + 19, guiTop + 4, 0x4F4F4F);
-        String timeString = TimeUtils.parseTime((int)((level.getDayTime() + Constants.TIME_SHIFT) % Constants.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get());
+        String timeString = TimeUtils.parseTime((int)((level.getDayTime() + Constants.TIME_SHIFT) % DragonLibConstants.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get());
         drawString(pPoseStack, shadowlessFont, timeString, guiLeft + GUI_WIDTH - 22 - shadowlessFont.width(timeString), guiTop + 4, 0x4F4F4F);
 
         if (!isLoadingRoutes && !generatingRouteEntries) {

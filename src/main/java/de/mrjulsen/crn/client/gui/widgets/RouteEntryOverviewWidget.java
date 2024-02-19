@@ -62,8 +62,8 @@ public class RouteEntryOverviewWidget extends Button {
         
         final float scale = 0.75f;
         float l = isMouseOver(pMouseX, pMouseY) ? 0.1f : 0;
-        boolean isActive = JourneyListenerManager.get(route.getListenerId(), null) != null;
-        boolean beforeJourney = isActive && JourneyListenerManager.get(route.getListenerId(), null).getCurrentState() == State.BEFORE_JOURNEY;
+        boolean isActive = JourneyListenerManager.getInstance().get(route.getListenerId(), null) != null;
+        boolean beforeJourney = isActive && JourneyListenerManager.getInstance().get(route.getListenerId(), null).getCurrentState() == State.BEFORE_JOURNEY;
         
         int color = ModGuiUtils.lightenColor(ColorShade.DARK.getColor(), l);
         if (!beforeJourney) {

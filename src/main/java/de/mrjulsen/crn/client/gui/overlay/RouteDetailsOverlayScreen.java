@@ -41,6 +41,7 @@ import de.mrjulsen.crn.network.NetworkManager;
 import de.mrjulsen.crn.network.packets.cts.NextConnectionsRequestPacket;
 import de.mrjulsen.crn.network.packets.cts.TrainDataRequestPacket;
 import de.mrjulsen.crn.util.ModGuiUtils;
+import de.mrjulsen.mcdragonlib.DragonLibConstants;
 import de.mrjulsen.mcdragonlib.client.gui.GuiUtils;
 import de.mrjulsen.mcdragonlib.utils.TimeUtils;
 import de.mrjulsen.mcdragonlib.utils.Utils;
@@ -172,7 +173,7 @@ public class RouteDetailsOverlayScreen implements IHudOverlay, IJourneyListenerC
     }
 
     public JourneyListener getListener() {
-        return listener == null ? listener = JourneyListenerManager.get(listenerId, this) : listener;
+        return listener == null ? listener = JourneyListenerManager.getInstance().get(listenerId, this) : listener;
     }
 
     public UUID getListenerId() {
@@ -187,7 +188,7 @@ public class RouteDetailsOverlayScreen implements IHudOverlay, IJourneyListenerC
     @Override
     public void onClose() {
         getListener().unregister(this);
-        JourneyListenerManager.removeClientListenerForAll(this);
+        JourneyListenerManager.getInstance().removeClientListenerForAll(this);
     }
 
 
@@ -486,7 +487,7 @@ public class RouteDetailsOverlayScreen implements IHudOverlay, IJourneyListenerC
         GuiComponent.drawString(poseStack, shadowlessFont, title, x + 6, y + 4, 0x4F4F4F);
         GuiComponent.drawString(poseStack, shadowlessFont, Utils.translate(keyOptionsText, new KeybindComponent(keyKeybindOptions).withStyle(ChatFormatting.BOLD)), x + 6, y + GUI_HEIGHT - 2 - shadowlessFont.lineHeight, 0x4F4F4F);
         
-        String timeString = TimeUtils.parseTime((int)((level.getDayTime() + Constants.TIME_SHIFT) % Constants.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get());
+        String timeString = TimeUtils.parseTime((int)((level.getDayTime() + Constants.TIME_SHIFT) % DragonLibConstants.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get());
         GuiComponent.drawString(poseStack, shadowlessFont, timeString, x + GUI_WIDTH - 4 - shadowlessFont.width(timeString), y + 4, 0x4F4F4F);
         
         // Test
@@ -653,7 +654,7 @@ public class RouteDetailsOverlayScreen implements IHudOverlay, IJourneyListenerC
 
         SimpleTrainConnection[] conns = connections.toArray(SimpleTrainConnection[]::new);
         for (int i = connectionsSubPageIndex * CONNECTION_ENTRIES_PER_PAGE, k = 0; i < Math.min((connectionsSubPageIndex + 1) * CONNECTION_ENTRIES_PER_PAGE, connections.size()); i++, k++) {
-            MutableComponent time = Utils.text(TimeUtils.parseTime((int)((connectionsRefreshTime + conns[i].ticks() + Constants.TIME_SHIFT) % Constants.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get()));
+            MutableComponent time = Utils.text(TimeUtils.parseTime((int)((connectionsRefreshTime + conns[i].ticks() + Constants.TIME_SHIFT) % DragonLibConstants.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get()));
             MutableComponent platform = Utils.text(conns[i].stationDetails().platform());
 
             int x1 = x + 10;
