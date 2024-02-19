@@ -20,7 +20,7 @@
     "gui.createrailwaysnavigator.loading.title": "Downloading data from server...",
     "gui.createrailwaysnavigator.overlay_settings.title": "Route Overlay Settings",
     "gui.createrailwaysnavigator.route_overlay_settings.show_details": "Show details",
-    "gui.createrailwaysnavigator.route_overlay_settings.unpin": "Remove HUD overlay for this journey",
+    "gui.createrailwaysnavigator.route_overlay_settings.unpin": "Remove route overlay",
     "gui.createrailwaysnavigator.route_overlay_settings.narrator.on": "Narrator announcements enabled.",
     "gui.createrailwaysnavigator.route_overlay_settings.narrator.off": "Narrator announcements disabled.",    
     "gui.createrailwaysnavigator.route_overlay_settings.notifications.on": "Notifications enabled",
@@ -35,7 +35,7 @@
     "gui.createrailwaysnavigator.common.collapse": "Hide Details",
     "gui.createrailwaysnavigator.common.go_back": "Go Back",
     "gui.createrailwaysnavigator.common.go_to_top": "Scroll To Top",
-    "gui.createrailwaysnavigator.common.reset_defaults": "Reset to defaults",
+    "gui.createrailwaysnavigator.common.reset_defaults": "Reset to default",
     "gui.createrailwaysnavigator.common.count": "Count",
     "gui.createrailwaysnavigator.common.true": "Yes",
     "gui.createrailwaysnavigator.common.false": "No",
@@ -150,14 +150,6 @@
     "gui.createrailwaysnavigator.search_settings.train_groups.tooltip.reset": "Reset filter",
 
     "gui.createrailwaysnavigator.new_text_entry.add.tooltip": "Add",
-
-    "gui.createrailwaysnavigator.filter_criteria.transfer_count": "Transfer Count",
-    "gui.createrailwaysnavigator.filter_criteria.stopovers": "Stopovers Count",
-    "gui.createrailwaysnavigator.filter_criteria.duration": "Total Duration",
-    
-    "gui.createrailwaysnavigator.result_count.all": "All",
-    "gui.createrailwaysnavigator.result_count.best": "Best Only",
-    "gui.createrailwaysnavigator.result_count.fixed_amount": "Fixed Count",
 
     "gui.createrailwaysnavigator.time.now": "now",
     "gui.createrailwaysnavigator.time_format.dhm": "%s days %s hrs. %s min.",
