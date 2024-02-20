@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 import com.simibubi.create.content.trains.entity.Train;
@@ -14,18 +15,18 @@ import com.simibubi.create.content.trains.station.GlobalStation;
 import de.mrjulsen.crn.event.listeners.TrainListener;
 
 public class SimulatedTrainSchedule {
-    private final Collection<TrainStationAlias> stationOrder;
+    private final Collection<TrainStop> stationOrder;
     private final SimulationData data;
 
     public SimulatedTrainSchedule(Collection<TrainStop> stations, SimulationData data) {
-        this.stationOrder = makeDiractional(stations.stream().map(x -> x.getStationAlias()).toList());
+        this.stationOrder = makeDiractional(stations);
         this.data = data;
     }
 
-    private List<TrainStationAlias> makeDiractional(Collection<TrainStationAlias> raw) {
-        List<TrainStationAlias> newList = new ArrayList<>();
+    private List<TrainStop> makeDiractional(Collection<TrainStop> raw) {
+        List<TrainStop> newList = new ArrayList<>();
         boolean isRepeating = false;
-        for (TrainStationAlias stop : raw) {            
+        for (TrainStop stop : raw) {            
             if (newList.contains(stop)) {
                 isRepeating = true;
                 continue;
@@ -40,16 +41,20 @@ public class SimulatedTrainSchedule {
         return newList;
     }
 
-    public Collection<TrainStationAlias> getAllStops() {
+    public Collection<TrainStop> getAllStops() {
         return stationOrder;
     }
 
+    public Optional<TrainStop> getFirstStopOf(TrainStationAlias station) {
+        return getAllStops().stream().filter(x -> x.getStationAlias().equals(station)).findFirst();
+    }
+
     public boolean hasStation(GlobalStation station) {
-        return getAllStops().stream().anyMatch(x -> x.contains(station.name));
+        return getAllStops().stream().anyMatch(x -> x.getStationAlias().contains(station.name));
     }
 
     public boolean hasStationAlias(TrainStationAlias station) {
-        return getAllStops().contains(station);
+        return getAllStops().stream().anyMatch(x -> x.getStationAlias().equals(station));
     }
 
     public SimulationData getSimulationData() {
@@ -57,10 +62,10 @@ public class SimulatedTrainSchedule {
     }
 
     public boolean isInDirection(TrainStationAlias start, TrainStationAlias end) {
-        for (TrainStationAlias stop : getAllStops()) {
-            if (stop.equals(start)) {
+        for (TrainStop stop : getAllStops()) {
+            if (stop.getStationAlias().equals(start)) {
                 return true;
-            } else if (stop.equals(end)) {
+            } else if (stop.getStationAlias().equals(end)) {
                 return false;
             }
         }
@@ -70,8 +75,8 @@ public class SimulatedTrainSchedule {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof SimulatedTrainSchedule other) {
-            Set<TrainStationAlias> thisStops = new HashSet<>(getAllStops());
-            Set<TrainStationAlias> otherStops = new HashSet<>(other.getAllStops());
+            Set<TrainStop> thisStops = new HashSet<>(getAllStops());
+            Set<TrainStop> otherStops = new HashSet<>(other.getAllStops());
 
             if (thisStops.size() != otherStops.size()) {
                 return false;
@@ -88,8 +93,8 @@ public class SimulatedTrainSchedule {
                 return false;
             }
             
-            TrainStationAlias[] a = getAllStops().toArray(TrainStationAlias[]::new);
-            TrainStationAlias[] b = other.getAllStops().toArray(TrainStationAlias[]::new);
+            TrainStop[] a = getAllStops().toArray(TrainStop[]::new);
+            TrainStop[] b = other.getAllStops().toArray(TrainStop[]::new);
             for (int i = 0; i < a.length; i++) {
                 if (!a[i].equals(b[i]))
                     return false;

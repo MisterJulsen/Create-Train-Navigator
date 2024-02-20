@@ -8,13 +8,15 @@ import java.util.List;
 
 import com.simibubi.create.content.trains.entity.Train;
 
+import net.minecraft.world.level.Level;
+
 public class RoutePart {
     private Train train;
     private TrainStop start;
     private TrainStop end;
     private Collection<TrainStop> stops;
     
-    public RoutePart(Train train, TrainStationAlias start, TrainStationAlias end, int startTicks) {
+    public RoutePart(Level level, Train train, TrainStationAlias start, TrainStationAlias end, int startTicks) {
         this.train = train;
         List<TrainStop> stops = new ArrayList<>(GlobalTrainData.getInstance().getAllStopoversOfTrainSortedNew(train, start, end, true, true));
 

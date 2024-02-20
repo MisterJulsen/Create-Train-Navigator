@@ -126,6 +126,7 @@ public class JourneyListener {
         setNarratorText(narratorText);
 
         isStarted = true;
+        requestRealtimeData();
         return this;
     }
 
@@ -324,7 +325,7 @@ public class JourneyListener {
                     if (currentState != State.WHILE_TRAVELING && currentState != State.WHILE_TRANSFER) {     
                         while (!currentTrainNextStop.station().equals(currentStation().getStationName()) && currentState != State.AFTER_JOURNEY) {
                             if (currentStation().getTag() == StationTag.END) {
-                                finishJourney();
+                                //finishJourney();
                             } else {
                                 nextStop();
                             }
@@ -342,7 +343,9 @@ public class JourneyListener {
                         } else {
                             reachTransferStop();
                         }
-                    } else {
+                    } else if (currentStation().getTag() == StationTag.END) {
+                        finishJourney();
+                    }else {
                         reachNextStop();
                     }
                 }

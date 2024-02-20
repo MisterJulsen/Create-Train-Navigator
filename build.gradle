@@ -3,10 +3,12 @@ buildscript {
         // These repositories are only for Gradle plugins, put any other repositories in the repository block further below
         maven { url = 'https://maven.minecraftforge.net' }
         maven { url = 'https://maven.parchmentmc.org' }
+        maven { url = 'https://repo.spongepowered.org/repository/maven-public' }
         mavenCentral()        
     }
     dependencies {
         classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
+        classpath "org.spongepowered:mixingradle:${mixingradle_version}"
         classpath 'org.parchmentmc:librarian:1.+'
     }
 }
@@ -17,6 +19,7 @@ plugins {
 }
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'org.parchmentmc.librarian.forgegradle'
+apply plugin: 'org.spongepowered.mixin'
 
 jarJar.enable()
 
@@ -65,6 +68,7 @@ minecraft {
             property 'forge.logging.console.level', 'debug'
 
             // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
+            arg '-mixin.config=createrailwaysnavigator.mixins.json'
             property 'forge.enabledGameTestNamespaces', 'createrailwaysnavigator'
             property 'mixin.env.remapRefMap', 'true'
             property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
@@ -172,6 +176,7 @@ dependencies {
         jarJar.ranged(it, "[${dragonlib_version}-${minecraft_version},)")
     }
     implementation fg.deobf("curse.maven:dragonlib-${dragonlib_curseforge_projectid}:${dragonlib_curseforge_fileid}")
+    annotationProcessor "org.spongepowered:mixin:${mixin_version}:processor"
 
     // Real mod deobf dependency examples - these get remapped to your current mappings
     // compileOnly fg.deobf("mezz.jei:jei-${mc_version}:${jei_version}:api") // Adds JEI API as a compile dependency
@@ -196,9 +201,14 @@ jar {
                 "Implementation-Title"    : project.name,
                 "Implementation-Version"  : project.jar.archiveVersion,
                 "Implementation-Vendor"   : "createtrainnavigatorsareus",
-                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
+                'MixinConfigs': 'createrailwaysnavigator.mixins.json'
         ])
     }
+}
+
+mixin {
+    add sourceSets.main, 'createrailwaysnavigator.refmap.json'
 }
 
 task jarJarRelease {

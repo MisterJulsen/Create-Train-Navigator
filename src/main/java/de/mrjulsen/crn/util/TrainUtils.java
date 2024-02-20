@@ -114,7 +114,18 @@ public class TrainUtils {
                     }
 
                     return b;
-                }).map(x -> new SimpleTrainConnection(x.getTrain().name.getString(), x.getTrain().id, x.getTrain().icon.getId(), x.getTicks() + simulatedScheduleByPrediction.get(x).getSimulationData().simulationCorrection(), x.getScheduleTitle(), x.getInfo())).sorted(Comparator.comparingInt(x -> x.ticks())).collect(Collectors.toSet());
+                }).map(x -> {
+                    SimulatedTrainSchedule sched = simulatedScheduleByPrediction.get(x);
+                    Optional<TrainStop> firstStop = sched.getFirstStopOf(x.getNextStop());
+                    return new SimpleTrainConnection(
+                        x.getTrain().name.getString(),
+                        x.getTrain().id,
+                        x.getTrain().icon.getId(),
+                        sched.getSimulationData().simulationTime() + sched.getSimulationData().simulationCorrection(),
+                        firstStop.isPresent() ? firstStop.get().getPrediction().getScheduleTitle() : x.getScheduleTitle(),
+                        x.getInfo()
+                    );
+                }).sorted(Comparator.comparingInt(x -> x.ticks())).collect(Collectors.toSet());
                 
     }
 

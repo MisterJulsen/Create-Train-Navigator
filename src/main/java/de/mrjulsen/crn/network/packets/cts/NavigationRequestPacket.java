@@ -72,7 +72,7 @@ public class NavigationRequestPacket implements IPacketBase<NavigationRequestPac
                         return;
                     }
                     
-                    Graph graph = new Graph(context.get().getSender().getLevel().getDayTime(), packet.filterSettings);
+                    Graph graph = new Graph(context.get().getSender().getLevel(), packet.filterSettings);
                     routes.addAll(graph.navigate(startAlias, endAlias, true));
                 } catch (Exception e) {
                     ModMain.LOGGER.error("Navigation error: ", e);

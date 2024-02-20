@@ -28,6 +28,7 @@ import de.mrjulsen.crn.data.TrainStationAlias;
 import de.mrjulsen.crn.data.UserSettings;
 import de.mrjulsen.crn.event.listeners.TrainListener;
 import de.mrjulsen.crn.util.TrainUtils;
+import net.minecraft.world.level.Level;
 
 public class Graph {
 
@@ -48,12 +49,14 @@ public class Graph {
     private final UserSettings settings;
 
     private final long lastUpdated;
+    private final Level level;
 
-    public Graph(long updateTime, UserSettings settings) {
+    public Graph(Level level, UserSettings settings) {
         long startTime = System.currentTimeMillis();
-        lastUpdated = updateTime;
+        lastUpdated = level.getDayTime();
         this.settings = settings;
-        GlobalTrainData.makeSnapshot(updateTime);
+        this.level = level;
+        GlobalTrainData.makeSnapshot(lastUpdated);
 
         this.nodesById = new HashMap<>();
         this.nodesByStation = new HashMap<>();
@@ -252,7 +255,7 @@ public class Graph {
         Collection<Route> routes = new ArrayList<>();
         routes.add(new Route(lastUpdated));
 
-        int timer = Math.max(MIN_START_TIME, settings.getTransferTime());
+        int timer = MIN_START_TIME;
         UUID currentTrainId = null;
         final Node[] filteredTransferNodes = routeNodes.stream().filter(x -> x.isTransferPoint()).toArray(Node[]::new);
 
@@ -281,9 +284,10 @@ public class Graph {
 
             return b;
         }).map(x -> {
-            return schedulesByTrain.get(x.getTrain().id).simulate(x.getTrain(), simulationTime, lastNode.getStationAlias());
+            int t = x.getTicks() + TrainListener.getInstance().getDepartmentTime(level, x.getTrain());
+            return schedulesByTrain.get(x.getTrain().id).simulate(x.getTrain(), t > simulationTime ? 0 : simulationTime, lastNode.getStationAlias());
         }).sorted(Comparator.comparingInt(x -> x.getSimulationData().simulationCorrection())).toList();
-
+ 
         SimulatedTrainSchedule selectedPrediction = trainPredictions.stream().filter(x -> x.isInDirection(lastNode.getStationAlias(), node.getStationAlias())).findFirst().orElse(trainPredictions.stream().findFirst().orElse(null));
         
         if (selectedPrediction == null) {
@@ -305,7 +309,8 @@ public class Graph {
 
         for (SimulatedTrainSchedule sched : filteredSchedules) {
             Route r = new Route(lastUpdated);
-            RoutePart part = new RoutePart(sched.getSimulationData().train(), lastNode.getStationAlias(), node.getStationAlias(), simulationTime);
+            int t = sched.getFirstStopOf(lastNode.getStationAlias()).get().getPrediction().getTicks() + TrainListener.getInstance().getDepartmentTime(level, sched.getSimulationData().train());
+            RoutePart part = new RoutePart(level, sched.getSimulationData().train(), lastNode.getStationAlias(), node.getStationAlias(), t > simulationTime ? 0 : simulationTime);
             r.addPart(part);
             timer = part.getEndStation().getPrediction().getTicks() + settings.getTransferTime();
             excludedSchedules.add(schedulesByTrain.get(part.getTrain().id));
@@ -353,7 +358,7 @@ public class Graph {
                     return routes;
                 }
 
-                RoutePart part = new RoutePart(selectedPrediction.getSimulationData().train(), lastNode.getStationAlias(), node.getStationAlias(), simulationTime);
+                RoutePart part = new RoutePart(level, selectedPrediction.getSimulationData().train(), lastNode.getStationAlias(), node.getStationAlias(), simulationTime);
                 routes.add(part);
                 timer = part.getEndStation().getPrediction().getTicks() + settings.getTransferTime();
                 excludedSchedules.add(schedulesByTrain.get(part.getTrain().id));

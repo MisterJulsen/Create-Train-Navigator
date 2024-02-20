@@ -9,11 +9,15 @@ import java.util.OptionalInt;
 import java.util.UUID;
 
 import com.simibubi.create.content.trains.entity.Train;
+import com.simibubi.create.content.trains.schedule.condition.ScheduleWaitCondition;
+import com.simibubi.create.content.trains.schedule.condition.TimedWaitCondition;
 
 import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.config.ModCommonConfig;
+import de.mrjulsen.crn.mixin.ScheduleDataAccessor;
 import de.mrjulsen.crn.util.TrainUtils;
 import de.mrjulsen.mcdragonlib.utils.ScheduledTask;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
 
 public class TrainListener {
@@ -25,6 +29,21 @@ public class TrainListener {
     private int listeingTrainCount;
     private final Map<UUID, List<Integer>> TRAIN_DURATIONS = new HashMap<>();
     private final Map<UUID, Integer> lastTicks = new HashMap<>();
+
+    public int getDepartmentTime(Level level, Train train) {
+		List<List<ScheduleWaitCondition>> conditions = train.runtime.getSchedule().entries.get(train.runtime.currentEntry).conditions;
+		if (conditions.isEmpty() || ((ScheduleDataAccessor)train.runtime).crn$conditionProgress().isEmpty() || ((ScheduleDataAccessor)train.runtime).crn$conditionContext().isEmpty())
+			return 0;
+
+		List<ScheduleWaitCondition> list = conditions.get(0);
+		int progress = ((ScheduleDataAccessor)train.runtime).crn$conditionProgress().get(0);
+		if (progress >= list.size())
+			return 0;
+
+		CompoundTag tag = ((ScheduleDataAccessor)train.runtime).crn$conditionContext().get(0);
+		ScheduleWaitCondition condition = list.get(progress);
+		return ((TimedWaitCondition)condition).totalWaitTicks() - tag.getInt("Time");
+	}
 
     private boolean performTask(TrainListener instance, Level level, int iteration) {
 
