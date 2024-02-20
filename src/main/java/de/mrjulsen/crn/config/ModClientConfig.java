@@ -18,7 +18,6 @@ public class ModClientConfig {
     public static final ForgeConfigSpec.ConfigValue<Integer> REALTIME_EARLY_ARRIVAL_THRESHOLD;
     public static final ForgeConfigSpec.ConfigValue<Double> OVERLAY_SCALE;
     public static final ForgeConfigSpec.ConfigValue<Integer> TRANSFER_TIME;
-    public static final ForgeConfigSpec.ConfigValue<Integer> MINIMUM_DEPARTURE_TIME;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> TRAIN_GROUP_FILTER_BLACKLIST;
     public static final ForgeConfigSpec.ConfigValue<Boolean> ROUTE_NARRATOR;
     public static final ForgeConfigSpec.ConfigValue<Boolean> ROUTE_NOTIFICATIONS;
@@ -51,8 +50,6 @@ public class ModClientConfig {
             .defineEnum("route_overlay.position", OverlayPosition.TOP_LEFT);
         TRANSFER_TIME = BUILDER.comment("Specifies the minimum amount of time (in ticks) that must be available for changing the train. Only trains that depart later than the specified value at the transfer station will be selected. (Default: 1000, 1 in-game hour, approx. 50 real life seconds)")
             .defineInRange("search_settings.transfer_time", 1000, 0, MAX_TRANSFER_TIME);
-        MINIMUM_DEPARTURE_TIME = BUILDER.comment("The minimum time that must be available until the first train leaves. If a train would leave the starting station earlier than specified, this train will no longer be selected.")
-            .defineInRange("search_settings.minimum_departure_time", 200, 0, MAX_TRANSFER_TIME);
         TRAIN_GROUP_FILTER_BLACKLIST = BUILDER.comment("List of train groups that should NOT be used in navigation. (Default: <empty>)")
             .defineList("search_settings.train_group_blacklist", new ArrayList<String>(), x -> x instanceof String);
 
