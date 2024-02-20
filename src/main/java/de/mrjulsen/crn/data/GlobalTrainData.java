@@ -7,33 +7,52 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import com.simibubi.create.content.trains.entity.Train;
+import com.simibubi.create.content.trains.station.GlobalStation;
+
 import de.mrjulsen.crn.util.TrainUtils;
 
 public class GlobalTrainData {
 
     private final Collection<Train> trains;
-    private final Collection<String> stations;
+    private final Map<String, Set<GlobalStation>> stationByName;
     private final Map<String, Collection<DeparturePrediction>> aliasPredictions = new HashMap<>();
     private final Map<UUID, Collection<DeparturePrediction>> trainPredictions = new HashMap<>();
+    private final long updateTime;
 
     private static GlobalTrainData instance = null;
 
-    private GlobalTrainData() {
+    private GlobalTrainData(long updateTime) {
+        instance = this;
         trains = TrainUtils.getAllTrains();
-        stations = TrainUtils.getAllStations().stream().map(x -> x.name).toList();
+
+        stationByName = new HashMap<>();
+        for (GlobalStation sta : TrainUtils.getAllStations()) {
+            if (stationByName.containsKey(sta.name)) {
+                stationByName.get(sta.name).add(sta);
+            } else {
+                stationByName.put(sta.name, new HashSet<>(Set.of(sta)));
+            }
+        } 
         TrainUtils.getMappedDeparturePredictions(aliasPredictions, trainPredictions);
+        this.updateTime = updateTime;
     }
 
-    public static GlobalTrainData makeSnapshot() {
-        return instance = new GlobalTrainData();
+    public static GlobalTrainData makeSnapshot(long updateTime) {
+        return new GlobalTrainData(updateTime);
     }
 
     public static GlobalTrainData getInstance() {
-        return instance == null ? makeSnapshot() : instance;
+        return instance;
+    }
+
+    public long getUpdateTime() {
+        return updateTime;
     }
 
 
@@ -45,16 +64,23 @@ public class GlobalTrainData {
         return trains;
     }
 
-    public final Collection<String> getAllStations() {
-        return stations;
+    public final Set<String> getAllStations() {
+        return stationByName.keySet();
     }
+
+    public final Set<GlobalStation> getStationData(String stationName) {
+        return stationByName.get(stationName);
+    }
+
+
+    
 
     public Collection<DeparturePrediction> getPredictionsOfTrain(Train train) {
         return trainPredictions.get(train.id);
     }
 
     public Collection<DeparturePrediction> getPredictionsOfTrainChronologically(Train train) {
-        return getPredictionsOfTrain(train).stream().sorted(Comparator.comparingInt(x -> x.getTicks())).toList();
+        return getPredictionsOfTrain(train).parallelStream().sorted(Comparator.comparingInt(x -> x.getTicks())).toList();
     }
 
     public Optional<DeparturePrediction> getNextStop(Train train) {
@@ -63,22 +89,17 @@ public class GlobalTrainData {
 
     
     public boolean trainStopsAt(Train train, TrainStationAlias station) {
-        return getPredictionsOfTrain(train).stream().anyMatch(x -> x.getNextStop().equals(station));
+        return getPredictionsOfTrain(train).parallelStream().anyMatch(x -> x.getNextStop().equals(station));
     }
 
 
     public Collection<DeparturePrediction> getTrainStopDataAt(Train train, TrainStationAlias station) {
         Collection<DeparturePrediction> predictions = getPredictionsOfTrain(train);
-
-        if (predictions.stream().noneMatch(x -> x.getNextStop().equals(station))) {
-            return Collections.emptyList();
-        }
-
-        return predictions.stream().filter(x -> x.getNextStop().equals(station)).toList();
+        return predictions.parallelStream().filter(x -> x.getNextStop().equals(station)).toList();
     }
 
     public Collection<DeparturePrediction> getSortedTrainStopDataAt(Train train, TrainStationAlias station) {
-        return getTrainStopDataAt(train, station).stream().sorted(Comparator.comparingInt(x -> x.getTicks())).toList();
+        return getTrainStopDataAt(train, station).parallelStream().sorted(Comparator.comparingInt(x -> x.getTicks())).toList();
     }
 
     public Optional<DeparturePrediction> getNextTrainStopDataAt(Train train, TrainStationAlias station) {   
@@ -86,21 +107,21 @@ public class GlobalTrainData {
     }
 
     public Collection<TrainStop> getAllStops(Train train) {
-        return getPredictionsOfTrain(train).stream().map(x -> new TrainStop(x.getNextStop(), x)).toList();
+        return getPredictionsOfTrain(train).parallelStream().map(x -> new TrainStop(x.getNextStop(), x)).toList();
     }
 
-    public Collection<TrainStop> getAllStopsSorted(Train train) {
-        return getAllStops(train).stream().sorted(Comparator.comparingInt(x -> x.getPrediction().getTicks())).toList();
-    }    
+    public List<TrainStop> getAllStopsSorted(Train train) {
+        return getAllStops(train).parallelStream().sorted(Comparator.comparingInt(x -> x.getPrediction().getTicks())).toList();
+    }
 
     public SimpleTrainSchedule getTrainSimpleSchedule(Train train) {
         return new SimpleTrainSchedule(train);
     }
 
-    public List<TrainStop> getAllStopoversOfTrainSortedNew(Train train, TrainStationAlias start, TrainStationAlias end, boolean includeStartEnd) {
-        Collection<TrainStop> stops = getAllStopsFrom(train, start, false).getAllStops();
+    public List<TrainStop> getAllStopoversOfTrainSortedNew(Train train, TrainStationAlias start, TrainStationAlias end, boolean includeStartEnd, boolean correctStart) {
+        Collection<TrainStop> stops = getAllStopsFrom(train, start, false, true).getAllStops();
         
-        if (stops.stream().noneMatch(x -> x.isStationAlias(start)) || stops.stream().noneMatch(x -> x.isStationAlias(end))) {
+        if (stops.parallelStream().noneMatch(x -> x.isStationAlias(start) || x.isStationAlias(end))) {
             return new ArrayList<>();
         }
 
@@ -109,8 +130,8 @@ public class GlobalTrainData {
         int ticksStart = -1;
         int ticksStop = -1;
 
-        Collection<DeparturePrediction> startStopDatas = getTrainStopDataAt(train, start);
-        Collection<DeparturePrediction> endStopDatas = getTrainStopDataAt(train, end);
+        Collection<DeparturePrediction> startStopDatas = getSortedTrainStopDataAt(train, start);
+        Collection<DeparturePrediction> endStopDatas = getSortedTrainStopDataAt(train, end);
 
         Optional<DeparturePrediction> firstStartData = startStopDatas.stream().findFirst();
 
@@ -123,13 +144,12 @@ public class GlobalTrainData {
             // Die erste Endstation, die nach der ersten Startstation kommt.
             Optional<DeparturePrediction> endStopData = endStopDatas.stream()
                 .filter(x -> x.getTicks() >= ftmpTicksStart)
-                .sorted(Comparator.comparingInt(x -> x.getTicks()))
                 .findFirst();
                 
             if (endStopData.isPresent()) {
                 ticksStop = (endPrediction = endStopData.get()).getTicks();
             } else {
-                endStopData = endStopDatas.stream().sorted(Comparator.comparingInt(x -> x.getTicks())).findFirst();
+                endStopData = endStopDatas.stream().findFirst();
                 if (endStopData.isPresent()) {
                     ticksStop = (endPrediction = endStopData.get()).getTicks();
                 }
@@ -138,19 +158,24 @@ public class GlobalTrainData {
         final int fTicksStop = ticksStop;
 
         if (startStopDatas != null && startStopDatas.size() > 0) {
-            DeparturePrediction startStopData = startStopDatas.stream()
-                .filter(x -> x.getTicks() <= fTicksStop)
-                .sorted(Comparator.comparingInt(x -> x.getTicks()))
-                .reduce((a, b) -> b).orElse(null);
+            DeparturePrediction startStopData = correctStart ?
+                startStopDatas.stream()
+                    .filter(x -> x.getTicks() <= fTicksStop)
+                    .reduce((a, b) -> b).orElse(null)
+            : startPrediction;
                 
             if (startStopData != null) {
                 ticksStart = (startPrediction = startStopData).getTicks();
             } else {
-                startStopData = startStopDatas.stream().sorted(Comparator.comparingInt(x -> x.getTicks())).reduce((a, b) -> b).orElse(null);
+                startStopData = startStopDatas.stream().reduce((a, b) -> b).orElse(null);
                 if (startStopData != null) {
                     ticksStart = (startPrediction = startStopData).getTicks();
                 }
             }
+        }
+
+        if (correctStart) {            
+            
         }
         final int fTicksStart = ticksStart;
 
@@ -174,12 +199,25 @@ public class GlobalTrainData {
         return filteredStops;
     }
 
-    public SimpleTrainSchedule getAllStopsFrom(Train train, TrainStationAlias alias, boolean preventDuplicates) {
+    // TODO unused
+    /**
+     * Creates a {@code SimpleTrainSchedule} which contains all stations the train will arrive.
+     * @param train The train of this schedule.
+     * @param alias The station alias to start at. This is the first stop in the schedule.
+     * @param preventDuplicates If {@code true}, every station exists once.
+     * @param noLoop If {@code true}, the schedule will continue beyond the last stop.
+     * @return A new {@code SimpleTrainSchedule}
+     */
+    public SimpleTrainSchedule getAllStopsFrom(Train train, TrainStationAlias alias, boolean preventDuplicates, boolean loop) {
         List<TrainStop> newList = new ArrayList<>();
         int idx = 0;
         for (TrainStop stop : getAllStopsSorted(train)) {            
             if (preventDuplicates && newList.contains(stop)) {
-                continue;
+                if (loop) {
+                    continue;
+                } else {
+                    break;
+                }
             }
 
             if (stop.getStationAlias().equals(alias)) {
@@ -188,19 +226,6 @@ public class GlobalTrainData {
 
             newList.add(idx, stop);
             idx++;
-        }
-        return SimpleTrainSchedule.of(newList);
-    }
-
-
-    public SimpleTrainSchedule getAllStopsDirectional(Train train, TrainStationAlias alias) {
-        List<TrainStop> newList = new ArrayList<>();
-        for (TrainStop stop : getAllStopsFrom(train, alias, false).getAllStops()) {  
-            if (newList.contains(stop)) {
-                break;
-            }
-
-            newList.add(stop);
         }
         return SimpleTrainSchedule.of(newList);
     }
@@ -225,7 +250,7 @@ public class GlobalTrainData {
     }
 
     public Collection<DeparturePrediction> getDepartingTrainsAt(TrainStationAlias station) {
-        return aliasPredictions.getOrDefault(station.getAliasName().get(), Collections.emptyList()).stream().sorted(Comparator.comparingInt(x -> x.getTicks())).toList();
+        return aliasPredictions.getOrDefault(station.getAliasName().get(), Collections.emptyList()).parallelStream().sorted(Comparator.comparingInt(x -> x.getTicks())).toList();
     }
 
     public Optional<DeparturePrediction> getNextDepartingTrainAt(TrainStationAlias station) {

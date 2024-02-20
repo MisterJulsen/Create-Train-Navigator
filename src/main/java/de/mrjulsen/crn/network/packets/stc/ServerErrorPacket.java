@@ -4,8 +4,9 @@ import java.util.function.Supplier;
 
 import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.network.NetworkManager;
-import de.mrjulsen.crn.network.packets.IPacketBase;
+import de.mrjulsen.mcdragonlib.network.IPacketBase;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkEvent;
 
 public class ServerErrorPacket implements IPacketBase<ServerErrorPacket> {
@@ -38,5 +39,10 @@ public class ServerErrorPacket implements IPacketBase<ServerErrorPacket> {
         
         context.get().setPacketHandled(true);      
     }    
+    
+    @Override
+    public NetworkDirection getDirection() {
+        return NetworkDirection.PLAY_TO_CLIENT;
+    }
 }
 

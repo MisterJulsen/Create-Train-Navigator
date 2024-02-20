@@ -6,23 +6,31 @@ import java.util.Collection;
 import de.mrjulsen.crn.network.InstanceManager;
 import de.mrjulsen.crn.network.NetworkManager;
 import de.mrjulsen.crn.network.packets.cts.TrackStationsRequestPacket;
+import net.minecraft.client.Minecraft;
 
 public class ClientTrainStationSnapshot {
     private static ClientTrainStationSnapshot instance;
 
     private final Collection<String> stationNames;
+    private final Collection<String> trainNames;
 
-    private ClientTrainStationSnapshot(Collection<String> stationNames) {
+    private final int listeningTrainCount;
+    private final int totalTrainCount;
+
+    private ClientTrainStationSnapshot(Collection<String> stationNames, Collection<String> trainNames, int listeningTrainCount, int totalTrainCount) {
         this.stationNames = stationNames;
+        this.trainNames = trainNames;
+        this.listeningTrainCount = listeningTrainCount;
+        this.totalTrainCount = totalTrainCount;
     }
 
-    public static ClientTrainStationSnapshot makeNew(Collection<String> stationNames) {
-        return instance = new ClientTrainStationSnapshot(stationNames);
+    public static ClientTrainStationSnapshot makeNew(Collection<String> stationNames, Collection<String> trainNames, int listeningTrainCount, int totalTrainCount) {
+        return instance = new ClientTrainStationSnapshot(stationNames, trainNames, listeningTrainCount, totalTrainCount);
     }
 
     public static ClientTrainStationSnapshot getInstance() {
         if (instance == null) {
-            makeNew(new ArrayList<>());
+            makeNew(new ArrayList<>(), new ArrayList<>(), 0, 0);
         }
         return instance;
     }
@@ -31,8 +39,29 @@ public class ClientTrainStationSnapshot {
         return stationNames;
     }
 
+    public Collection<String> getAllTrainNames() {
+        return trainNames;
+    }
+
     public static void syncToClient(Runnable then) {
         long id = InstanceManager.registerClientResponseReceievedAction(then);
-        NetworkManager.sendToServer(new TrackStationsRequestPacket(id));
+        NetworkManager.getInstance().sendToServer(Minecraft.getInstance().getConnection().getConnection(), new TrackStationsRequestPacket(id));
+    }
+
+
+    public int getListeningTrainCount() {
+        return listeningTrainCount;
+    }
+
+    public int getTrainCount() {
+        return totalTrainCount;
+    }
+
+    public int getStationCount() {
+        return stationNames.size();
+    }
+
+    public void dispose() {
+        instance = null;
     }
 }

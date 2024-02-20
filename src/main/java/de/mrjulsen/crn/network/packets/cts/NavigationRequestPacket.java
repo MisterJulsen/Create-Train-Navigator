@@ -5,17 +5,18 @@ import java.util.ArrayList;
 import java.util.function.Supplier;
 
 import de.mrjulsen.crn.ModMain;
-import de.mrjulsen.crn.core.Navigation;
+import de.mrjulsen.crn.core.navigation.Graph;
 import de.mrjulsen.crn.data.GlobalSettingsManager;
 import de.mrjulsen.crn.data.Route;
 import de.mrjulsen.crn.data.SimpleRoute;
 import de.mrjulsen.crn.data.TrainStationAlias;
 import de.mrjulsen.crn.data.UserSettings;
 import de.mrjulsen.crn.network.NetworkManager;
-import de.mrjulsen.crn.network.packets.IPacketBase;
+import de.mrjulsen.mcdragonlib.network.IPacketBase;
 import de.mrjulsen.crn.network.packets.stc.NavigationResponsePacket;
 import de.mrjulsen.crn.network.packets.stc.ServerErrorPacket;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkEvent;
 
 public class NavigationRequestPacket implements IPacketBase<NavigationRequestPacket> {
@@ -57,10 +58,11 @@ public class NavigationRequestPacket implements IPacketBase<NavigationRequestPac
 
     @Override
     public void handle(NavigationRequestPacket packet, Supplier<NetworkEvent.Context> context) {        
-        context.get().enqueueWork(() ->
-        {
+        context.get().enqueueWork(() -> {
             Thread navigationThread = new Thread(() -> {
                 List<Route> routes = new ArrayList<>();
+                final long updateTime = context.get().getSender().level.getDayTime();
+                final long startTime = System.currentTimeMillis();
                 
                 try {
                     TrainStationAlias startAlias = GlobalSettingsManager.getInstance().getSettingsData().getAliasFor(packet.start);
@@ -69,24 +71,32 @@ public class NavigationRequestPacket implements IPacketBase<NavigationRequestPac
                     if (startAlias == null || endAlias == null) {
                         return;
                     }
-
-                    routes = packet.filterSettings.shouldOnlyTakeNextDepartingTrain() ? 
-                        Navigation.navigateForNext(startAlias, endAlias, packet.filterSettings) :
-                        Navigation.navigateForAll(startAlias, endAlias, packet.filterSettings);
                     
+                    Graph graph = new Graph(context.get().getSender().getLevel(), packet.filterSettings);
+                    routes.addAll(graph.navigate(startAlias, endAlias, true));
                 } catch (Exception e) {
                     ModMain.LOGGER.error("Navigation error: ", e);
-                    NetworkManager.sendToClient(new ServerErrorPacket(e.getMessage()), context.get().getSender());
-                } finally {                    
-                    NetworkManager.sendToClient(new NavigationResponsePacket(packet.id, new ArrayList<>(routes.stream().map(x -> new SimpleRoute(x)).toList())), context.get().getSender());
-                }                
+                    NetworkManager.getInstance().sendToClient(new ServerErrorPacket(e.getMessage()), context.get().getSender());
+                } finally {         
+                    final long estimatedTime = System.currentTimeMillis() - startTime;
+                    ModMain.LOGGER.info(String.format("Route calculated. Took %sms.",
+                        estimatedTime
+                    ));                          
+                    NetworkManager.getInstance().sendToClient(new NavigationResponsePacket(packet.id, new ArrayList<>(routes.stream().filter(x -> !x.isEmpty()).map(x -> new SimpleRoute(x)).toList()), estimatedTime, updateTime), context.get().getSender());                    
+                }
             });
             navigationThread.setPriority(Thread.MIN_PRIORITY);
-            navigationThread.setName("Navigation Worker");
+            navigationThread.setName("Navigator");
             navigationThread.start();
 
         });
         
         context.get().setPacketHandled(true);      
+    }
+
+    
+    @Override
+    public NetworkDirection getDirection() {
+        return NetworkDirection.PLAY_TO_SERVER;
     }    
 }

@@ -14,13 +14,15 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.foundation.gui.UIRenderHelper.CustomRenderTarget;
 
-import de.mrjulsen.crn.client.gui.GuiAreaDefinition;
+import de.mrjulsen.mcdragonlib.client.gui.GuiAreaDefinition;
+import de.mrjulsen.mcdragonlib.client.gui.GuiUtils;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.network.chat.FormattedText;
+import net.minecraft.sounds.SoundEvents;
 
-public class GuiUtils {
+public class ModGuiUtils {
 	
 	/**
 	 * @see https://github.com/Creators-of-Create/Create/blob/mc1.18/dev/src/main/java/com/simibubi/create/foundation/gui/UIRenderHelper.java
@@ -87,20 +89,48 @@ public class GuiUtils {
 	}
 
 	@SuppressWarnings("resource")
-    public static <W extends AbstractWidget> boolean renderTooltip(Screen s, W w, List<FormattedCharSequence> lines, PoseStack stack, int mouseX, int mouseY, int xOffset, int yOffset) {
-        if (w.isMouseOver(mouseX + xOffset, mouseY + yOffset)) {
-            s.renderTooltip(stack, lines, mouseX, mouseY, s.getMinecraft().font);
+	public static <T extends FormattedText> boolean renderTooltipAtFixedPos(Screen screen, GuiAreaDefinition area, List<T> lines, int maxWidth, PoseStack stack, int mouseX, int mouseY, int xOffset, int yOffset, int xPos, int yPos) {
+		if (area.isInBounds((double)(mouseX + xOffset), (double)(mouseY + yOffset))) {
+			screen.renderComponentTooltip(stack, GuiUtils.getTooltipData(screen, lines, maxWidth), xPos - 8, yPos + 16, screen.getMinecraft().font);
 			return true;
-        }
-		return false;
+		} else {
+			return false;
+		}
+   	}
+
+	public static void playButtonSound() {
+        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
     }
 
-	@SuppressWarnings("resource")
-    public static boolean renderTooltip(Screen s, GuiAreaDefinition w, List<FormattedCharSequence> lines, PoseStack stack, int mouseX, int mouseY, int xOffset, int yOffset) {
-        if (w.isInBounds(mouseX + xOffset, mouseY + yOffset)) {
-            s.renderTooltip(stack, lines, mouseX, mouseY, s.getMinecraft().font);
-			return true;
-        }
-		return false;
+	public static int applyTint(int color, int tint) {
+        int originalRed = (color >> 16) & 0xFF;
+        int originalGreen = (color >> 8) & 0xFF;
+        int originalBlue = color & 0xFF;
+
+        int tintRed = (tint >> 16) & 0xFF;
+        int tintGreen = (tint >> 8) & 0xFF;
+        int tintBlue = tint & 0xFF;
+
+        int mixedRed = (originalRed + tintRed) / 2;
+        int mixedGreen = (originalGreen + tintGreen) / 2;
+        int mixedBlue = (originalBlue + tintBlue) / 2;
+
+        return 0xFF000000 | (mixedRed << 16) | (mixedGreen << 8) | mixedBlue;
+    }
+
+	public static int lightenColor(int color, float factor) {
+        int red = (color >> 16) & 0xFF;
+        int green = (color >> 8) & 0xFF;
+        int blue = color & 0xFF;
+
+        red = (int) ((red * (1 - factor)) + (255 * factor));
+        green = (int) ((green * (1 - factor)) + (255 * factor));
+        blue = (int) ((blue * (1 - factor)) + (255 * factor));
+
+        red = Math.min(255, Math.max(0, red));
+        green = Math.min(255, Math.max(0, green));
+        blue = Math.min(255, Math.max(0, blue));
+
+        return 0xFF000000 | (red << 16) | (green << 8) | blue;
     }
 }

@@ -8,19 +8,21 @@ import java.util.List;
 
 import com.simibubi.create.content.trains.entity.Train;
 
+import net.minecraft.world.level.Level;
+
 public class RoutePart {
     private Train train;
     private TrainStop start;
     private TrainStop end;
     private Collection<TrainStop> stops;
     
-    public RoutePart(DeparturePrediction prediction, TrainStop start, TrainStationAlias end) {
-        this.train = prediction.getTrain();
-        List<TrainStop> stops = new ArrayList<>(GlobalTrainData.getInstance().getAllStopoversOfTrainSortedNew(train, start.getStationAlias(), end, true));
+    public RoutePart(Level level, Train train, TrainStationAlias start, TrainStationAlias end, int startTicks) {
+        this.train = train;
+        List<TrainStop> stops = new ArrayList<>(GlobalTrainData.getInstance().getAllStopoversOfTrainSortedNew(train, start, end, true, true));
 
         TrainStop startStop = stops.get(0);
-        if (startStop.getPrediction().getTicks() < start.getPrediction().getTicks() && startStop.getPrediction().getTrainCycleDuration() > 0) {
-            int diffTicks = start.getPrediction().getTicks() - startStop.getPrediction().getTicks();
+        if (startStop.getPrediction().getTicks() < startTicks && startStop.getPrediction().getTrainCycleDuration() > 0) {
+            int diffTicks = startTicks - startStop.getPrediction().getTicks();
             int mul = diffTicks / startStop.getPrediction().getTrainCycleDuration() + 1;
 
             stops = new ArrayList<>(stops.stream().map(x -> new TrainStop(x.getStationAlias(), DeparturePrediction.withCycleTicks(x.getPrediction(), mul))).toList());

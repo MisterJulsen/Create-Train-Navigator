@@ -9,7 +9,7 @@ modLoader="javafml" #mandatory
 loaderVersion="[40,)" #mandatory This is typically bumped every Minecraft version by Forge. See our download page for lists of versions.
 # The license for you mod. This is mandatory metadata and allows for easier comprehension of your redistributive properties.
 # Review your options at https://choosealicense.com/. All rights reserved is the default copyright stance, and is thus the default here.
-license="MIT License"
+license="GNU General Public License v3.0"
 # A URL to refer people to when problems occur with this mod
 issueTrackerURL="https://github.com/MisterJulsen/Create-Train-Navigator/issues" #optional
 # A list of mods - how many allowed here is determined by the individual mod loader
@@ -23,7 +23,7 @@ version="${file.jarVersion}" #mandatory
  # A display name for the mod
 displayName="Create Railways Navigator" #mandatory
 # A URL to query for updates for this mod. See the JSON update specification https://mcforge.readthedocs.io/en/latest/gettingstarted/autoupdate/
-updateJSONURL="https://github.com/MisterJulsen/Create-Train-Navigator/blob/1.18.2/update.json" #optional
+updateJSONURL="https://raw.githubusercontent.com/MisterJulsen/Create-Train-Navigator/1.18.2/update.json" #optional
 # A URL for the "homepage" for this mod, displayed in the mod UI
 displayURL="https://www.curseforge.com/minecraft/mc-mods/create-railways-navigator" #optional
 # A file name (in the root of the mod JAR) containing a logo for display
@@ -52,7 +52,7 @@ Get possible train connections in your world from one station to another using t
 [[dependencies.createrailwaysnavigator]]
     modId="minecraft"
     mandatory=true
-# This version range declares a minimum of the current minecraft version up to but not including the next major version
+    # This version range declares a minimum of the current minecraft version up to but not including the next major version
     versionRange="[1.18.2,1.19)"
     ordering="NONE"
     side="BOTH"
@@ -61,4 +61,10 @@ Get possible train connections in your world from one station to another using t
     mandatory=true
     versionRange="[0.5.1.e,)"
     ordering="NONE"
+    side="BOTH"
+[[dependencies.dragonlib]]
+    modId="dragonlib"
+    mandatory=true
+    versionRange="[1.18.2,1.19)"
+    ordering="BEFORE"
     side="BOTH"

@@ -8,26 +8,40 @@ import java.util.function.Supplier;
 import de.mrjulsen.crn.data.ClientTrainStationSnapshot;
 import de.mrjulsen.crn.network.InstanceManager;
 import de.mrjulsen.crn.network.NetworkManager;
-import de.mrjulsen.crn.network.packets.IPacketBase;
+import de.mrjulsen.mcdragonlib.network.IPacketBase;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkEvent;
 
 public class TrackStationResponsePacket implements IPacketBase<TrackStationResponsePacket> {
     public long id;
     public Collection<String> stationNames;
+    public Collection<String> trainNames;
+    public int listingTrainCount;
+    public int totalTrainCount;
     
     public TrackStationResponsePacket() { }
 
-    public TrackStationResponsePacket(long id, Collection<String> stationNames) {
+    public TrackStationResponsePacket(long id, Collection<String> stationNames, Collection<String> trainNames, int listingTrainCount, int totalTrainCount) {
         this.id = id;
         this.stationNames = stationNames;
+        this.trainNames = trainNames;
+        this.listingTrainCount = listingTrainCount;
+        this.totalTrainCount = totalTrainCount;
     }
 
     @Override
     public void encode(TrackStationResponsePacket packet, FriendlyByteBuf buffer) {
         buffer.writeLong(packet.id);
+        buffer.writeInt(packet.listingTrainCount);
+        buffer.writeInt(packet.totalTrainCount);
         buffer.writeInt(packet.stationNames.size());
         for (String s : packet.stationNames) {
+            buffer.writeUtf(s);
+        }
+
+        buffer.writeInt(packet.trainNames.size());
+        for (String s : packet.trainNames) {
             buffer.writeUtf(s);
         }
     }
@@ -35,12 +49,20 @@ public class TrackStationResponsePacket implements IPacketBase<TrackStationRespo
     @Override
     public TrackStationResponsePacket decode(FriendlyByteBuf buffer) {
         long id = buffer.readLong();
+        int listingTrainCount = buffer.readInt();
+        int totalTrainCount = buffer.readInt();
         int count = buffer.readInt();
         List<String> stationNames = new ArrayList<>(count);
         for (int i = 0; i < count; i++) {
             stationNames.add(buffer.readUtf());
         }
-        return new TrackStationResponsePacket(id, stationNames);
+
+        count = buffer.readInt();
+        List<String> trainNames = new ArrayList<>(count);
+        for (int i = 0; i < count; i++) {
+            trainNames.add(buffer.readUtf());
+        }
+        return new TrackStationResponsePacket(id, stationNames, trainNames, listingTrainCount, totalTrainCount);
     }
 
     @Override
@@ -48,12 +70,22 @@ public class TrackStationResponsePacket implements IPacketBase<TrackStationRespo
         context.get().enqueueWork(() ->
         {
             NetworkManager.executeOnClient(() -> {
-                ClientTrainStationSnapshot.makeNew(packet.stationNames == null || packet.stationNames.isEmpty() ? new ArrayList<>() : new ArrayList<>(packet.stationNames));
+                ClientTrainStationSnapshot.makeNew(
+                    packet.stationNames == null || packet.stationNames.isEmpty() ? new ArrayList<>() : new ArrayList<>(packet.stationNames),
+                    packet.trainNames == null || packet.trainNames.isEmpty() ? new ArrayList<>() : new ArrayList<>(packet.trainNames),
+                    packet.listingTrainCount,
+                    packet.totalTrainCount
+                );
                 InstanceManager.runClientResponseReceievedAction(packet.id);
             });
         });
         
         context.get().setPacketHandled(true);      
     }    
+    
+    @Override
+    public NetworkDirection getDirection() {
+        return NetworkDirection.PLAY_TO_CLIENT;
+    }
 }
 

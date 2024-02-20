@@ -4,6 +4,10 @@ import java.util.UUID;
 
 import com.simibubi.create.content.trains.entity.TrainIconType;
 
+import de.mrjulsen.crn.config.ModClientConfig;
+import de.mrjulsen.crn.data.TrainStationAlias.StationInfo;
+import de.mrjulsen.crn.event.listeners.IJourneyListenerClient;
+import de.mrjulsen.crn.event.listeners.JourneyListenerManager;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -11,27 +15,88 @@ import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 public class SimpleRoute {
 
     private static final String NBT_PARTS = "Parts";
+    private static final String NBT_REFRESH_TIME = "RefreshTime";
 
-    private final Collection<SimpleRoutePart> parts;
+    protected final long refreshTime;
+    protected final List<SimpleRoutePart> parts;
+
+    // Cache
+    protected int stationCount = -1;
+    protected StationEntry startStation = null;
+    protected StationEntry endStation = null;
+    protected StationEntry[] stationArray = null;
+    protected boolean valid = true;
+    protected String invalidationReason = "";
+    protected String invalidationTrainName = "";
+
+    // listener
+    protected UUID listenerId;
 
     public SimpleRoute(Route route) {
-        this(route.getParts().stream().map(x -> new SimpleRoutePart(x)).toList());
+        this(route.getParts().stream().map(x -> new SimpleRoutePart(x, route.getRefreshTime())).toList(), route.getRefreshTime());
     }
 
-    private SimpleRoute(Collection<SimpleRoutePart> parts) {
+    protected SimpleRoute(List<SimpleRoutePart> parts, long refreshTime) {
         this.parts = new ArrayList<>(parts);
+        this.refreshTime = refreshTime;
+
+        parts.forEach(x -> x.setParent(this));
+        tagAll();
     }
 
-    public Collection<SimpleRoutePart> getParts() {
+    public UUID listen(IJourneyListenerClient initialListener) {
+        return listenerId = JourneyListenerManager.getInstance().create(this, initialListener);
+    }
+
+    public UUID getListenerId() {
+        return listenerId;
+    }
+
+    public List<SimpleRoutePart> getParts() {
         return parts;
     }
 
-    public int getStationCount() {
-        return parts.stream().mapToInt(x -> x.getStationCount(false)).sum() + parts.size() + 1;
+    public long getRefreshTime() {
+        return refreshTime;
+    }
+
+    protected void tagAll() {        
+        final int maxIndex = getParts().size() - 1;
+        int partIndex = 0;
+        int stationIndex = 0;
+
+        for (SimpleRoutePart part : getParts()) {
+            final int idx = partIndex;
+            final StationTrainDetails trainDetails = new StationTrainDetails(part.getTrainName(), part.getTrainID(), part.getScheduleTitle());
+
+            part.getStartStation().train = trainDetails;
+            part.getStartStation().tag = idx <= 0 ? StationTag.START : StationTag.PART_START;
+            part.getStartStation().index = stationIndex;
+            stationIndex++;
+
+            for (StationEntry station : part.getStopovers()) {
+                station.train = trainDetails;
+                station.tag = StationTag.TRANSIT;
+                station.index = stationIndex;
+                stationIndex++;
+            }
+
+            part.getEndStation().train = trainDetails;
+            part.getEndStation().tag = idx >= maxIndex ? StationTag.END : StationTag.PART_END;
+            part.getEndStation().index = stationIndex;
+
+            stationIndex++;
+            partIndex++;
+        }
+    }
+
+    public int getStationCount(boolean countTransfersTwice) {
+        return stationCount < 0 ? stationCount = parts.stream().mapToInt(x -> x.getStationCount(false)).sum() + (countTransfersTwice ? parts.size() * 2 : parts.size() + 1) : stationCount;
     }
 
     public int getTransferCount() {
@@ -42,20 +107,43 @@ public class SimpleRoute {
         return getEndStation().getTicks() - getStartStation().getTicks();
     }
 
+    protected void invalidate(String reason, String trainName) {
+        this.valid = false;
+        this.invalidationReason = reason;
+        this.invalidationTrainName = trainName;
+    }
+
+    public boolean isValid() {
+        return valid;
+    }
+
+    public String getInvalidationReason() {
+        return invalidationReason;
+    }
+
+    public String getInvalidationTrainName() {
+        return invalidationTrainName;
+    }
+
     public StationEntry getStartStation() {
-        return getParts().stream().findFirst().get().getStartStation();
+        return startStation == null ? startStation = getParts().stream().findFirst().get().getStartStation() : startStation;
     }
 
     public StationEntry getEndStation() {
-        return getParts().stream().reduce((a, b) -> b).get().getEndStation();
+        return endStation == null ? endStation = getParts().stream().reduce((a, b) -> b).get().getEndStation() : endStation;
     }
 
     public String getName() {
         return String.format("%s - %s", getStartStation().getStationName(), getEndStation().getStationName());
     }
 
+    public StationEntry[] getStationArray() {
+        return stationArray == null ? stationArray = getParts().stream().flatMap(x -> x.getStations().stream()).toArray(StationEntry[]::new) : stationArray;
+    }
+
     public CompoundTag toNbt() {
         CompoundTag nbt = new CompoundTag();
+        nbt.putLong(NBT_REFRESH_TIME, getRefreshTime());
         ListTag partsTag = new ListTag();
         partsTag.addAll(getParts().stream().map(x -> x.toNbt()).toList());        
         nbt.put(NBT_PARTS, partsTag);
@@ -63,8 +151,11 @@ public class SimpleRoute {
     }
 
     public static SimpleRoute fromNbt(CompoundTag nbt) {
-        Collection<SimpleRoutePart> parts = nbt.getList(NBT_PARTS, Tag.TAG_COMPOUND).stream().map(x -> SimpleRoutePart.fromNbt((CompoundTag)x)).toList();
-        return new SimpleRoute(parts);
+        long refreshTime = nbt.getLong(NBT_REFRESH_TIME);
+        List<SimpleRoutePart> parts = new ArrayList<>(nbt.getList(NBT_PARTS, Tag.TAG_COMPOUND).stream().map(x -> SimpleRoutePart.fromNbt((CompoundTag)x, refreshTime)).toList());
+        SimpleRoute route = new SimpleRoute(parts, refreshTime);
+        parts.forEach(x -> x.setParent(route));
+        return route;
     }
     
     public static class SimpleRoutePart {
@@ -76,27 +167,32 @@ public class SimpleRoute {
         private static final String NBT_END_STATION = "EndStation";
         private static final String NBT_STOPOVERS = "Stopovers";
 
-        private final String trainName;
-        private final UUID trainId;
-        private final ResourceLocation trainIconId;
-        private final String scheduleTitle;
-        private final StationEntry start;
-        private final StationEntry end;
-        private final Collection<StationEntry> stopovers;
+        protected SimpleRoute parent;
 
-        public SimpleRoutePart(RoutePart part) {
+        protected final String trainName;
+        protected final UUID trainId;
+        protected final ResourceLocation trainIconId;
+        protected final String scheduleTitle;
+        protected final StationEntry start;
+        protected final StationEntry end;
+        protected final Collection<StationEntry> stopovers;
+
+        // Cache
+        protected List<StationEntry> allStations = null;
+
+        public SimpleRoutePart(RoutePart part, long refreshTime) {
             this(
                 part.getTrain().name.getString(),
                 part.getTrain().id,
                 part.getTrain().icon.getId(),
                 part.getStartStation().getPrediction().getScheduleTitle(),
-                new StationEntry(part.getStartStation()),
-                new StationEntry(part.getEndStation()),
-                part.getStopovers().stream().map(x -> new StationEntry(x)).toList()
+                new StationEntry(part.getStartStation(), refreshTime),
+                new StationEntry(part.getEndStation(), refreshTime),
+                part.getStopovers().stream().map(x -> new StationEntry(x, refreshTime)).toList()
             );
         }
 
-        private SimpleRoutePart(String trainName, UUID trainId, ResourceLocation trainIconId, String scheduleTitle, StationEntry start, StationEntry end, Collection<StationEntry> stopovers) {
+        protected SimpleRoutePart(String trainName, UUID trainId, ResourceLocation trainIconId, String scheduleTitle, StationEntry start, StationEntry end, Collection<StationEntry> stopovers) {
             this.trainName = trainName;
             this.trainId = trainId;
             this.trainIconId = trainIconId;
@@ -104,6 +200,16 @@ public class SimpleRoute {
             this.start = start;
             this.end = end;
             this.stopovers = stopovers;
+
+            getStations().forEach(x -> x.setParent(this));
+        }
+
+        protected void setParent(SimpleRoute parent) {
+            this.parent = parent;
+        }
+
+        protected SimpleRoute getParent() {
+            return parent;
         }
 
         public String getTrainName() {
@@ -134,6 +240,16 @@ public class SimpleRoute {
             return stopovers;
         }
 
+        public List<StationEntry> getStations() {
+            if (allStations != null) {
+                return allStations;
+            }
+            allStations = new ArrayList<>(stopovers);
+            allStations.add(0, getStartStation());
+            allStations.add(getEndStation());
+            return allStations;
+        }
+
         public int getStationCount(boolean includeStartEnd) {
             return getStopovers().size() + (includeStartEnd ? 2 : 0);
         }
@@ -152,16 +268,20 @@ public class SimpleRoute {
             return nbt;
         }
 
-        public static SimpleRoutePart fromNbt(CompoundTag nbt) {
+        public static SimpleRoutePart fromNbt(CompoundTag nbt, long refreshTime) {
             String trainName = nbt.getString(NBT_TRAIN_NAME);
             String scheduleTitle = nbt.getString(NBT_SCHEDULE_TITLE);
             UUID trainId = nbt.getUUID(NBT_TRAIN_ID);
             ResourceLocation trainIconId = new ResourceLocation(nbt.getString(NBT_TRAIN_ICON_ID));
-            StationEntry start = StationEntry.fromNbt(nbt.getCompound(NBT_START_STATION));
-            StationEntry end = StationEntry.fromNbt(nbt.getCompound(NBT_END_STATION));
-            Collection<StationEntry> stopovers = nbt.getList(NBT_STOPOVERS, Tag.TAG_COMPOUND).stream().map(x -> StationEntry.fromNbt((CompoundTag)x)).toList();
+            StationEntry start = StationEntry.fromNbt(nbt.getCompound(NBT_START_STATION), refreshTime);
+            StationEntry end = StationEntry.fromNbt(nbt.getCompound(NBT_END_STATION), refreshTime);
+            Collection<StationEntry> stopovers = nbt.getList(NBT_STOPOVERS, Tag.TAG_COMPOUND).stream().map(x -> StationEntry.fromNbt((CompoundTag)x, refreshTime)).toList();
 
-            return new SimpleRoutePart(trainName, trainId, trainIconId, scheduleTitle, start, end, stopovers);
+            SimpleRoutePart part = new SimpleRoutePart(trainName, trainId, trainIconId, scheduleTitle, start, end, stopovers);
+            start.setParent(part);
+            end.setParent(part);
+            stopovers.forEach(x -> x.setParent(part));
+            return part;
         }
     }
 
@@ -169,16 +289,50 @@ public class SimpleRoute {
         private static final String NBT_NAME = "Name";
         private static final String NBT_TICKS = "Ticks";
 
-        private final String stationName;
-        private final int ticks;
+        protected final String stationName;
+        protected final StationInfo info;
+        protected final int ticks;
+        protected final long refreshTime;
+        
+        protected int index;
+        protected StationTrainDetails train;
+        protected StationTag tag;
 
-        public StationEntry(TrainStop stop) {
-            this(stop.getStationAlias().getAliasName().get(), stop.getPrediction().getTicks());
+        protected boolean departed = false;
+        protected boolean willMiss = false;
+        protected boolean trainCanceled = false;
+
+        protected int currentTicks;
+        protected long currentRefreshTime;
+        protected StationInfo updatedStationInfo;
+        protected boolean wasUpdated = false;
+
+        protected SimpleRoutePart parent;
+
+        public StationEntry(TrainStop stop, long refreshTime) {
+            this(
+                stop.getStationAlias().getAliasName().get(),
+                stop.getStationAlias().getInfoForStation(stop.getPrediction().getNextStopStation()),
+                stop.getPrediction().getTicks(), refreshTime
+            );
         }
 
-        private StationEntry(String stationName, int ticks) {
+        protected StationEntry(String stationName, StationInfo info, int ticks, long refreshTime) {
             this.stationName = stationName;
+            this.info = info;
             this.ticks = ticks;
+            this.refreshTime = refreshTime;
+            this.currentTicks = ticks;
+            this.currentRefreshTime = refreshTime;
+            this.updatedStationInfo = info;
+        }
+
+        protected void setParent(SimpleRoutePart parent) {
+            this.parent = parent;
+        }
+
+        public SimpleRoutePart getParent() {
+            return parent;
         }
 
         public String getStationName() {
@@ -189,18 +343,144 @@ public class SimpleRoute {
             return ticks;
         }
 
+        public long getRefreshTime() {
+            return refreshTime;
+        }        
+
+        public int getCurrentTicks() {
+            return currentTicks;
+        }
+
+        public long getCurrentRefreshTime() {
+            return currentRefreshTime;
+        }
+
+        public long getCurrentTime() {
+            return currentRefreshTime + currentTicks;
+        }
+
+        public StationInfo getInfo() {
+            return info;
+        }
+
+        public boolean stationInfoChanged() {
+            return !getInfo().equals(getUpdatedInfo());
+        }
+
+        public StationInfo getUpdatedInfo() {
+            return updatedStationInfo;
+        }
+
+        public void updateRealtimeData(int ticks, long refreshTime, StationInfo info, Runnable onDelayed) {
+            this.wasUpdated = true;
+
+            this.currentRefreshTime = refreshTime;
+            this.currentTicks = ticks;
+            this.updatedStationInfo = info;
+        }
+
+        public long getScheduleTime() {
+            return getRefreshTime() + getTicks();
+        }
+
+        public long getEstimatedTime() {
+            return getCurrentRefreshTime() + getCurrentTicks();
+        }
+
+        public long getDifferenceTime() {
+            return getEstimatedTime() - getScheduleTime();
+        }
+
+        public long getEstimatedTimeWithThreshold() {
+            return getScheduleTime() + ((long)(getDifferenceTime() / ModClientConfig.REALTIME_PRECISION_THRESHOLD.get()) * ModClientConfig.REALTIME_PRECISION_THRESHOLD.get());
+        }
+
+        public StationTrainDetails getTrain() {
+            return train;
+        }
+
+        public int getIndex() {
+            return index;
+        }
+
+        public StationTag getTag() {
+            return tag;
+        }
+
+        public boolean isDelayed() {
+            return getEstimatedTime() - ModClientConfig.DEVIATION_THRESHOLD.get() > getScheduleTime();
+        }
+
+        
+
+        public void setDeparted(boolean b) {
+            this.departed = this.departed || b;
+        }
+
+        public void setWillMiss(boolean b) {
+            this.willMiss = b;
+        }
+
+        public void setTrainCanceled(boolean b, String reason, String trainName) {
+            if (b) {
+                getParent().getParent().invalidate(reason, trainName);
+            }
+            this.trainCanceled = b;
+        }
+
+        public boolean isDeparted() {
+            return this.departed;
+        }
+
+        public boolean willMissStop() {
+            return willMiss;
+        }
+
+        public boolean isTrainCanceled() {
+            return trainCanceled;
+        }
+
+        /**
+         * Returns true if this station is reachable. Returns false if the train at this station already departed.
+         * @param safeConnection If true this station will no longer be considered as reachable if it may not be reachable due to a delay. But this doesn't mean that the train already departed.
+         * @return
+         */
+        public boolean reachable(boolean safeConnection) {
+            return (!safeConnection || !willMissStop()) && !isDeparted() && !isTrainCanceled();
+        }
+
+        public boolean shouldRenderRealtime() {
+            return !isDeparted() && !isTrainCanceled() && relatimeWasUpdated() && (getEstimatedTime() + ModClientConfig.TRANSFER_TIME.get() + ModClientConfig.REALTIME_EARLY_ARRIVAL_THRESHOLD.get() > getScheduleTime());
+        }
+
+        public boolean relatimeWasUpdated() {
+            return wasUpdated;
+        }
+
         public CompoundTag toNbt() {
             CompoundTag nbt = new CompoundTag();
             nbt.putString(NBT_NAME, getStationName());
             nbt.putInt(NBT_TICKS, getTicks());
+            getInfo().writeNbt(nbt);
             return nbt;
         }
 
-        public static StationEntry fromNbt(CompoundTag nbt) {
+        public static StationEntry fromNbt(CompoundTag nbt, long refreshTime) {
             String stationName = nbt.getString(NBT_NAME);
             int ticks = nbt.getInt(NBT_TICKS);
-            return new StationEntry(stationName, ticks);
+            StationInfo info = StationInfo.fromNbt(nbt);
+            return new StationEntry(stationName, info, ticks, refreshTime);
         }
+    }
+
+    public record StationTrainDetails(String trainName, UUID trainId, String scheduleTitle) {}
+
+    public enum StationTag {
+        TRANSIT,
+        START,
+        PART_START,
+        PART_END,
+        END;
     }
 }
 

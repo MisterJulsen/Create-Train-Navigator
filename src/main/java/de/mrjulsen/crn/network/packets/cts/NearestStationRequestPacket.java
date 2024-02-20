@@ -5,13 +5,14 @@ import java.util.function.Supplier;
 import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.data.NearestTrackStationResult;
 import de.mrjulsen.crn.network.NetworkManager;
-import de.mrjulsen.crn.network.packets.IPacketBase;
+import de.mrjulsen.mcdragonlib.network.IPacketBase;
 import de.mrjulsen.crn.network.packets.stc.NearestStationResponsePacket;
 import de.mrjulsen.crn.network.packets.stc.ServerErrorPacket;
 import de.mrjulsen.crn.util.TrainUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkEvent;
 
 public class NearestStationRequestPacket implements IPacketBase<NearestStationRequestPacket> {
@@ -53,9 +54,9 @@ public class NearestStationRequestPacket implements IPacketBase<NearestStationRe
                     result = TrainUtils.getNearestTrackStation(context.get().getSender().getLevel(), packet.pos);                    
                 } catch (Exception e) {
                     ModMain.LOGGER.error("Error while trying to find nearest track station ", e);
-                    NetworkManager.sendToClient(new ServerErrorPacket(e.getMessage()), context.get().getSender());
+                    NetworkManager.getInstance().sendToClient(new ServerErrorPacket(e.getMessage()), context.get().getSender());
                 } finally {                    
-                    NetworkManager.sendToClient(new NearestStationResponsePacket(packet.id, result), context.get().getSender());
+                    NetworkManager.getInstance().sendToClient(new NearestStationResponsePacket(packet.id, result), context.get().getSender());
                 }                
             });
             navigationThread.setPriority(Thread.MIN_PRIORITY);
@@ -65,5 +66,10 @@ public class NearestStationRequestPacket implements IPacketBase<NearestStationRe
         });
         
         context.get().setPacketHandled(true);      
-    }    
+    }
+
+    @Override
+    public NetworkDirection getDirection() {
+        return NetworkDirection.PLAY_TO_SERVER;
+    }        
 }

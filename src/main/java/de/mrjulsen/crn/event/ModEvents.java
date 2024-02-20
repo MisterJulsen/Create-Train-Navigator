@@ -17,15 +17,13 @@ public class ModEvents {
 
     @SubscribeEvent
     public static void onServerStarted(ServerStartedEvent event) { 
-        TrainListener.start();
+        TrainListener.start(event.getServer().overworld());
     }
 
     @SubscribeEvent
     public static void onServerStopped(ServerStoppingEvent event) {
         TrainListener.stop();
     }
-
-
 }
 
 

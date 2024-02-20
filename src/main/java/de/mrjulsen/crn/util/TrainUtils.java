@@ -2,10 +2,14 @@ package de.mrjulsen.crn.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import com.simibubi.create.Create;
 import com.simibubi.create.content.trains.GlobalRailwayManager;
@@ -18,7 +22,11 @@ import com.simibubi.create.content.trains.station.GlobalStation;
 import de.mrjulsen.crn.data.DeparturePrediction;
 import de.mrjulsen.crn.data.GlobalSettingsManager;
 import de.mrjulsen.crn.data.NearestTrackStationResult;
+import de.mrjulsen.crn.data.SimpleTrainConnection;
+import de.mrjulsen.crn.data.SimpleTrainSchedule;
+import de.mrjulsen.crn.data.SimulatedTrainSchedule;
 import de.mrjulsen.crn.data.TrainStationAlias;
+import de.mrjulsen.crn.data.TrainStop;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.Level;
 
@@ -62,6 +70,65 @@ public class TrainUtils {
         });
     }
 
+    public static Collection<DeparturePrediction> getTrainDeparturePredictions(UUID trainId) {
+        return Gott().values().stream().flatMap(x -> x.stream()).filter(x -> x.train.id.equals(trainId)).map(x -> new DeparturePrediction(x)).toList();
+    }
+
+
+
+    public static Collection<TrainStop> getTrainStopsSorted(UUID trainId) {
+        return getTrainDeparturePredictions(trainId).parallelStream().map(x -> new TrainStop(x.getNextStop(), x)).sorted(Comparator.comparingInt(x -> x.getPrediction().getTicks())).toList();
+    }
+
+    public static Set<SimpleTrainConnection> getConnectionsAt(String stationName, UUID currentTrainId, int ticksToNextStop) {
+        TrainStationAlias alias = GlobalSettingsManager.getInstance().getSettingsData().getAliasFor(stationName);
+        SimpleTrainSchedule ownSchedule = SimpleTrainSchedule.of(getTrainStopsSorted(currentTrainId));
+        GlobalTrainDisplayData.refresh();
+
+        List<SimulatedTrainSchedule> excludedSchedules = new ArrayList<>();
+        Map<DeparturePrediction, SimpleTrainSchedule> scheduleByPrediction = new HashMap<>();
+        Map<DeparturePrediction, SimulatedTrainSchedule> simulatedScheduleByPrediction = new HashMap<>();
+
+        return Gott().entrySet().stream().filter(x -> alias.contains(x.getKey())).map(x -> x.getValue())
+                .flatMap(x -> x.parallelStream().map(y -> new DeparturePrediction(y)))
+                .peek(x -> {
+                    SimpleTrainSchedule schedule = SimpleTrainSchedule.of(getTrainStopsSorted(x.getTrain().id));
+                    scheduleByPrediction.put(x, schedule);
+                    simulatedScheduleByPrediction.put(x, schedule.simulate(x.getTrain(), ticksToNextStop, alias));
+                })
+                .sorted(Comparator.comparingInt(x -> simulatedScheduleByPrediction.get(x).getSimulationData().simulationCorrection()))
+                .filter(x -> {
+                    SimpleTrainSchedule schedule = scheduleByPrediction.get(x);
+                    SimulatedTrainSchedule directionalSchedule = simulatedScheduleByPrediction.get(x);
+
+                    if (excludedSchedules.stream().anyMatch(y -> y.exactEquals(directionalSchedule))) {
+                        return false;
+                    }
+
+                    boolean b = !x.getTrain().id.equals(currentTrainId) &&
+                            !schedule.equals(ownSchedule) &&
+                            TrainUtils.isTrainValid(x.getTrain());
+
+                    if (b) {
+                        excludedSchedules.add(directionalSchedule);
+                    }
+
+                    return b;
+                }).map(x -> {
+                    SimulatedTrainSchedule sched = simulatedScheduleByPrediction.get(x);
+                    Optional<TrainStop> firstStop = sched.getFirstStopOf(x.getNextStop());
+                    return new SimpleTrainConnection(
+                        x.getTrain().name.getString(),
+                        x.getTrain().id,
+                        x.getTrain().icon.getId(),
+                        sched.getSimulationData().simulationTime() + sched.getSimulationData().simulationCorrection(),
+                        firstStop.isPresent() ? firstStop.get().getPrediction().getScheduleTitle() : x.getScheduleTitle(),
+                        x.getInfo()
+                    );
+                }).sorted(Comparator.comparingInt(x -> x.ticks())).collect(Collectors.toSet());
+                
+    }
+
     public static boolean GottKnows(String station) {
         return Gott().keySet().stream().anyMatch(x -> {
             String regex = x.isBlank() ? x : "\\Q" + x.replace("*", "\\E.*\\Q") + "\\E";
@@ -83,7 +150,12 @@ public class TrainUtils {
     }
 
     public static NearestTrackStationResult getNearestTrackStation(Level level, Vec3i pos) {        
-        Optional<GlobalStation> station = getAllStations().stream().filter(x -> Gott().containsKey(x.name) && x.getBlockEntityDimension().equals(level.dimension())).min((a, b) -> Double.compare(a.getBlockEntityPos().distSqr(pos), b.getBlockEntityPos().distSqr(pos)));
+        Optional<GlobalStation> station = getAllStations().stream().filter(x ->
+            GottKnows(x.name) &&
+            x.getBlockEntityDimension().equals(level.dimension()) && 
+            !GlobalSettingsManager.getInstance().getSettingsData().isBlacklisted(x.name)
+        ).min((a, b) -> Double.compare(a.getBlockEntityPos().distSqr(pos), b.getBlockEntityPos().distSqr(pos)));
+
         double distance = station.isPresent() ? station.get().getBlockEntityPos().distSqr(pos) : 0;
         return new NearestTrackStationResult(station, distance);
     }
@@ -96,13 +168,20 @@ public class TrainUtils {
         return RAILWAY_MANAGER.trains.values();
     }
 
+    public static Train getTrain(UUID trainId) {
+        return RAILWAY_MANAGER.trains.get(trainId);
+    }
+
     public static boolean isTrainValid(Train train) {
         return !train.derailed &&
                !train.invalid &&
-               train.navigation.destination != null &&
-               !train.runtime.completed &&
                !train.runtime.paused &&
-               train.runtime.isAutoSchedule
+               train.runtime.getSchedule() != null &&
+               train.graph != null
         ;
+    }
+
+    public static boolean isTrainIdValid(UUID trainId) {
+        return isTrainValid(getTrain(trainId));
     }
 }

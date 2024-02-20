@@ -1,8 +1,12 @@
 package de.mrjulsen.crn.data;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import de.mrjulsen.crn.Constants;
 import net.minecraft.nbt.CompoundTag;
@@ -14,30 +18,36 @@ public class TrainStationAlias {
     
     private static final String NBT_ALIAS_NAME = "AliasName";
     private static final String NBT_STATION_LIST = "Stations";
+    private static final String NBT_STATION_MAP = "StationData";
     private static final String NBT_LAST_EDITOR = "LastEditor";
     private static final String NBT_LAST_EDITED_TIME = "LastEditedTimestamp";
+   
+    private static final String NBT_STATION_ENTRY_NAME = "Name";
 
-    private AliasName aliasName;
-    private Collection<String> stations = new ArrayList<>();
+    protected AliasName aliasName;
+    protected Map<String, StationInfo> stations = new HashMap<>();
     // log
-    private String lastEditorName = null;
-    private long lastEditedTime = 0;
+    protected String lastEditorName = null;
+    protected long lastEditedTime = 0;
 
-    protected TrainStationAlias(AliasName aliasName, Collection<String> initialValues, String lastEditorName, long lastEditedTime) {
+    protected TrainStationAlias(AliasName aliasName, Map<String, StationInfo> initialValues, String lastEditorName, long lastEditedTime) {
         this(aliasName, initialValues);
         this.lastEditorName = lastEditorName;
         this.lastEditedTime = lastEditedTime;
     }
 
-    public TrainStationAlias(AliasName aliasName, Collection<String> initialValues) {
+    public TrainStationAlias(AliasName aliasName, Map<String, StationInfo> initialValues) {
         this(aliasName);
-        stations.addAll(initialValues);
+        stations.putAll(initialValues);
     }
 
     public TrainStationAlias(AliasName aliasName) {
         this.aliasName = aliasName;
     }
 
+    public TrainStationAlias copy() {
+        return new TrainStationAlias(new AliasName(getAliasName().get()), new HashMap<>(getAllStations()));
+    }
 
     public CompoundTag toNbt() {
         CompoundTag nbt = new CompoundTag();
@@ -50,10 +60,15 @@ public class TrainStationAlias {
             nbt.putString(NBT_LAST_EDITOR, getLastEditorName());
         }
         nbt.putLong(NBT_LAST_EDITED_TIME, lastEditedTime);
-
+        
         ListTag stationsList = new ListTag();
-        stations.forEach(x -> stationsList.add(StringTag.valueOf(x)));
-        nbt.put(NBT_STATION_LIST, stationsList);
+        stations.forEach((key, value) -> {
+            CompoundTag entry = new CompoundTag();
+            entry.putString(NBT_STATION_ENTRY_NAME, key);
+            value.writeNbt(entry);
+            stationsList.add(entry);
+        });
+        nbt.put(NBT_STATION_MAP, stationsList);
 
         return nbt;
     }
@@ -65,7 +80,19 @@ public class TrainStationAlias {
         AliasName name = AliasName.fromNbt(nbt.getCompound(NBT_ALIAS_NAME));
         String lastEditorName = nbt.contains(NBT_LAST_EDITOR) ? nbt.getString(NBT_LAST_EDITOR) : null;
         long lastEditedTime = nbt.getLong(NBT_LAST_EDITED_TIME);
-        Collection<String> stations = nbt.getList(NBT_STATION_LIST, Tag.TAG_STRING).stream().map(x -> ((StringTag)x).getAsString()).toList();
+        Map<String, StationInfo> stations;
+        if (nbt.contains(NBT_STATION_LIST)) {
+            stations = nbt.getList(NBT_STATION_LIST, Tag.TAG_STRING).stream().map(x -> ((StringTag)x).getAsString()).collect(Collectors.toMap(x -> x, x -> StationInfo.empty()));        
+        } else if (nbt.contains(NBT_STATION_MAP)) {
+            stations = nbt.getList(NBT_STATION_MAP, Tag.TAG_COMPOUND).stream().map(x -> (CompoundTag)x).collect(Collectors.toMap(x -> {
+                return x.getString(NBT_STATION_ENTRY_NAME);
+            }, x -> {
+                return StationInfo.fromNbt(x);
+            }));
+        } else {
+            stations = new IdentityHashMap<>();
+        }
+
         return new TrainStationAlias(name, stations, lastEditorName, lastEditedTime);
     }
 
@@ -91,27 +118,41 @@ public class TrainStationAlias {
         return this.aliasName;
     }
 
-    public void add(String station) {
-        if (!stations.contains(station)) {
-            stations.add(station);
+    public void updateInfoForStation(String station, StationInfo info) {
+        if (stations.containsKey(station)) {
+            stations.replace(station, info);
         }
     }
 
-    public void addAll(Collection<String> stations) {
-        stations.forEach(x -> {
-            if (!this.stations.contains(x)) {
-                this.stations.add(x);
+    public void add(String station, StationInfo info) {
+        if (!stations.containsKey(station)) {
+            stations.put(station, info);
+        }
+    }
+
+    public void addAll(Map<String, StationInfo> stations) {
+        stations.forEach((key, value) -> {
+            if (!this.stations.containsKey(key)) {
+                this.stations.put(key, value);
             }
         });
     }
 
     public boolean contains(String station) {
         String regex = station.isBlank() ? station : "\\Q" + station.replace("*", "\\E.*\\Q");
-        return stations.stream().anyMatch(x -> x.matches(regex));
+        return stations.keySet().stream().anyMatch(x -> x.matches(regex));
     }
 
-    public Collection<String> getAllStationNames() {
+    public Set<String> getAllStationNames() {
+        return stations.keySet();
+    }
+
+    public Map<String, StationInfo> getAllStations() {
         return stations;
+    }
+
+    public StationInfo getInfoForStation(String stationName) {
+        return stations.containsKey(stationName) ? stations.get(stationName) : StationInfo.empty();
     }
 
     public void setName(AliasName name) {
@@ -119,7 +160,7 @@ public class TrainStationAlias {
     }
 
     public void remove(String station) {
-        stations.removeIf(x -> x.equals(station));
+        stations.remove(station);
     }
 
     @Override
@@ -135,11 +176,42 @@ public class TrainStationAlias {
         return false;
     }
 
+    @Override
+    public int hashCode() {
+        return 7 * Objects.hash(aliasName);
+    }
+
     public void update(TrainStationAlias newData) {
         this.aliasName = newData.aliasName;
         this.stations = newData.stations;
         this.lastEditedTime = newData.lastEditedTime;
         this.lastEditorName = newData.lastEditorName;
+    }
+
+    public static record StationInfo(String platform) {
+        private static final String NBT_PLATFORM = "Platform";
+
+        public static StationInfo empty() {
+            return new StationInfo("");
+        }
+
+        public void writeNbt(CompoundTag nbt) {
+            nbt.putString(NBT_PLATFORM, platform());
+        }
+
+        public static StationInfo fromNbt(CompoundTag nbt) {
+            return new StationInfo(
+                nbt.getString(NBT_PLATFORM)
+            );
+        }
+
+        @Override
+        public final boolean equals(Object obj) {
+            if (obj instanceof StationInfo other) {
+                return platform().equals(other.platform());
+            }
+            return false;
+        }
     }
 
 }
