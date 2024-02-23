@@ -123,7 +123,7 @@ public class TrainUtils {
                         x.getTrain().icon.getId(),
                         sched.getSimulationData().simulationTime() + sched.getSimulationData().simulationCorrection(),
                         firstStop.isPresent() ? firstStop.get().getPrediction().getScheduleTitle() : x.getScheduleTitle(),
-                        x.getInfo()
+                        firstStop.isPresent() ? firstStop.get().getStationAlias().getInfoForStation(x.getNextStopStation()) : x.getInfo()
                     );
                 }).sorted(Comparator.comparingInt(x -> x.ticks())).collect(Collectors.toSet());
                 
