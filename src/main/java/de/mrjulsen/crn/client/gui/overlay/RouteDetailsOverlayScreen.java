@@ -352,12 +352,12 @@ public class RouteDetailsOverlayScreen implements IHudOverlay, IJourneyListenerC
     private void setPageTransfer() {
         fadeOut(() -> {
             currentPage = Page.TRANSFER;  
-            Optional<StationEntry> station = getListener().nextStation();          
-            if (station.isPresent()) {
+            StationEntry station = getListener().currentStation();          
+            if (station != null) {
                 this.messageLabel = MultiLineLabel.create(shadowlessFont, Utils.translate(keyTransfer,
-                    station.get().getTrain().trainName(),
-                    station.get().getTrain().scheduleTitle(),
-                    station.get().getInfo().platform()
+                    station.getTrain().trainName(),
+                    station.getTrain().scheduleTitle(),
+                    station.getInfo().platform()
                 ), SLIDING_TEXT_AREA_WIDTH - (15 + ModGuiIcons.ICON_SIZE));
             }
             fadeIn(null);
@@ -389,9 +389,9 @@ public class RouteDetailsOverlayScreen implements IHudOverlay, IJourneyListenerC
     private void setPageJourneyCompleted() {
         fadeOut(() -> {
             currentPage = Page.JOURNEY_END;
-            Optional<StationEntry> station = getListener().previousSation();
-            if (station.isPresent()) {
-                this.messageLabel = MultiLineLabel.create(shadowlessFont, Utils.translate(keyAfterJourney, station.get().getStationName()), SLIDING_TEXT_AREA_WIDTH - 10);
+            StationEntry station = getListener().currentStation();
+            if (station != null) {
+                this.messageLabel = MultiLineLabel.create(shadowlessFont, Utils.translate(keyAfterJourney, station.getStationName()), SLIDING_TEXT_AREA_WIDTH - 10);
             }
             fadeIn(null);
         });
