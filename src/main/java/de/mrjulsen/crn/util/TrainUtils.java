@@ -107,7 +107,8 @@ public class TrainUtils {
 
                     boolean b = !x.getTrain().id.equals(currentTrainId) &&
                             !schedule.equals(ownSchedule) &&
-                            TrainUtils.isTrainValid(x.getTrain());
+                            TrainUtils.isTrainValid(x.getTrain()) &&
+                            !GlobalSettingsManager.getInstance().getSettingsData().isTrainBlacklisted(x.getTrain());
 
                     if (b) {
                         excludedSchedules.add(directionalSchedule);
