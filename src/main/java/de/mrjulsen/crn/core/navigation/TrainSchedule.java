@@ -47,8 +47,8 @@ public class TrainSchedule {
             TrainStop stop = stops.get(i);
 
             int duration = i == 0 ? cycleDuration - lastStop.getPrediction().getTicks() + stop.getPrediction().getTicks() : stop.getPrediction().getTicks() - lastStop.getPrediction().getTicks();
-            Node node1 = graph.addNode(lastStop.getStationAlias());
-            Node node2 = graph.addNode(stop.getStationAlias());
+            Node node1 = graph.addNode(lastStop.getStationAlias(), train);
+            Node node2 = graph.addNode(stop.getStationAlias(), train);
             Edge edge = graph.addEdge(node1, node2, getId()).withCost(duration, false);
 
             nodes.add(node1);

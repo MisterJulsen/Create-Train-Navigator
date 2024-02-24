@@ -1,6 +1,8 @@
 package de.mrjulsen.crn.core.navigation;
 
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 import de.mrjulsen.crn.data.TrainStationAlias;
@@ -8,6 +10,7 @@ import de.mrjulsen.crn.data.TrainStationAlias;
 public class Node implements Comparable<Node> {
     private TrainStationAlias name;
     private final UUID id;
+    private final Set<UUID> trainIds = new HashSet<>();
 
     // calc
     private long cost = Long.MAX_VALUE;
@@ -22,6 +25,14 @@ public class Node implements Comparable<Node> {
 
     public UUID getId() {
         return id;
+    }
+
+    public Set<UUID> getTrainIds() {
+        return trainIds;
+    }
+
+    public void addTrain(UUID id) {
+        trainIds.add(id);
     }
 
     public TrainStationAlias getStationAlias() {
