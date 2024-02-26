@@ -299,14 +299,18 @@ public class JourneyListener {
         }
 
         if (!beginAnnounced && firstStation().getEstimatedTime() - ModClientConfig.NEXT_STOP_ANNOUNCEMENT.get() < Minecraft.getInstance().level.getDayTime()) {
-            setNotificationText(new NotificationData(currentState, Utils.translate(keyNotificationJourneyBeginsTitle,
+            Component title = Utils.translate(keyNotificationJourneyBeginsTitle,
                 lastStation().getStationName()
-            ), Utils.translate(keyNotificationJourneyBegins,
+            );
+            Component description = Utils.translate(keyNotificationJourneyBegins,
                 currentStation().getTrain().trainName(),
                 currentStation().getTrain().scheduleTitle(),
                 TimeUtils.parseTime((int)currentStation().getEstimatedTimeWithThreshold() + Constants.TIME_SHIFT, ModClientConfig.TIME_FORMAT.get()),
                 currentStation().getInfo().platform()
-            )));
+            );
+
+            setNotificationText(new NotificationData(currentState, title, description));
+            setNarratorText(title.getString() + " " + description.getString());
             beginAnnounced = true;
         }
     }
@@ -324,9 +328,7 @@ public class JourneyListener {
                 if (currentState != State.BEFORE_JOURNEY && currentState != State.JOURNEY_INTERRUPTED) {                
                     if (currentState != State.WHILE_TRAVELING && currentState != State.WHILE_TRANSFER) {     
                         while (!currentTrainNextStop.station().equals(currentStation().getStationName()) && currentState != State.AFTER_JOURNEY) {
-                            if (currentStation().getTag() == StationTag.END) {
-                                //finishJourney();
-                            } else {
+                            if (currentStation().getTag() != StationTag.END) {
                                 nextStop();
                             }
                         }
@@ -364,7 +366,7 @@ public class JourneyListener {
             for (int i = stationIndex; i < route.getStationCount(true); i++) {
                 StationEntry e = route.getStationArray()[i];
                 if (!predMap.containsKey(e.getTrain().trainId()) || e.isTrainCanceled()) {
-                    e.setTrainCanceled(true, "", e.getTrain().trainName()); // TODO: Invalidation reason
+                    e.setTrainCanceled(true, "", e.getTrain().trainName());
                     continue;                    
                 }
 
@@ -396,10 +398,13 @@ public class JourneyListener {
                     routePart.forEach(x -> x.setDeparted(true));
                     departed = true;
 
-                    setNotificationText(new NotificationData(currentState, Utils.translate(keyNotificationConnectionMissedTitle), Utils.translate(keyNotificationConnectionMissed,
+                    Component title = Utils.translate(keyNotificationConnectionMissedTitle);
+                    Component description = Utils.translate(keyNotificationConnectionMissed,
                         routePart.get(0).getTrain().trainName(),
                         routePart.get(0).getTrain().scheduleTitle()
-                    )));
+                    );
+                    setNotificationText(new NotificationData(currentState, title, description));
+                    setNarratorText(title.getString() + " " + description.getString());
                 }
             }
 
