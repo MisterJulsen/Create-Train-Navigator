@@ -130,7 +130,7 @@ public class AliasEntryWidget extends AbstractEntryListOptionWidget {
             if (!focus) {
                 if (selectedStationName != null && !selectedStationName.isBlank()) {
                     alias.updateInfoForStation(selectedStationName, new StationInfo(box.getValue()));
-
+                    alias.updateLastEdited(minecraft.player.getName().getString());
                     GlobalSettingsManager.getInstance().getSettingsData().updateAlias(alias.getAliasName(), alias, () -> {
                         onUpdate.run();
                         initStationDeleteButtons();
