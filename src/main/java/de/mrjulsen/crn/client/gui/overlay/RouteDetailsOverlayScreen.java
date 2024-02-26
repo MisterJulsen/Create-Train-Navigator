@@ -367,9 +367,9 @@ public class RouteDetailsOverlayScreen implements IHudOverlay, IJourneyListenerC
     private void setPageConnectionMissed() {
         fadeOut(() -> {
             currentPage = Page.JOURNEY_INTERRUPTED;
-            Optional<StationEntry> station = getListener().previousSation();
-            if (station.isPresent()) {
-                Component text = Utils.translate(keyConnectionMissedPageText, station.get().getStationName());
+            StationEntry station = getListener().lastStation();
+            if (station != null) {
+                Component text = Utils.translate(keyConnectionMissedPageText, station.getStationName());
                 this.messageLabel = MultiLineLabel.create(shadowlessFont, text, SLIDING_TEXT_AREA_WIDTH - 10);
                 interruptedText = Utils.translate(keyConnectionMissed);
             }
