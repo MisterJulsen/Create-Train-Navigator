@@ -1,5 +1,6 @@
 package de.mrjulsen.crn.event.listeners;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -59,9 +60,13 @@ public class JourneyListenerManager {
     }
 
 
+    public static boolean hasInstance() {
+        return instance != null;
+    }
+
     @SuppressWarnings("resource")
     public static void tick() {
-        if (instance == null || Minecraft.getInstance().level == null) {
+        if (!hasInstance() || Minecraft.getInstance().level == null) {
             return;
         }
 
@@ -87,6 +92,10 @@ public class JourneyListenerManager {
         return journeyListenerCache.containsKey(listenerId);
     }
 
+    public Collection<JourneyListener> getAllListeners() {
+        return journeyListenerCache.values();
+    }
+
 
     public static JourneyListenerManager getInstance() {
         return instance;
@@ -100,7 +109,7 @@ public class JourneyListenerManager {
     }
 
     public static void stop() {
-        if (instance != null) {
+        if (hasInstance()) {
             instance.stopInstance();
         }
 

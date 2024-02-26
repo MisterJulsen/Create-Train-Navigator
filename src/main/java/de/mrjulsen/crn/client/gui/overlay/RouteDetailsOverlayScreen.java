@@ -207,7 +207,7 @@ public class RouteDetailsOverlayScreen implements IHudOverlay, IJourneyListenerC
 
         // Sliding text
         if (slidingTextWidth > SLIDING_TEXT_AREA_WIDTH * 0.75f) {
-            slidingTextOffset--;
+            slidingTextOffset -= 2;
             if (slidingTextOffset < -(slidingTextWidth / 2)) {
                 slidingTextOffset = (int)((SLIDING_TEXT_AREA_WIDTH + slidingTextWidth / 2) + 20);                
             }

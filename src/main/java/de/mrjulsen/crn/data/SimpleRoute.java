@@ -22,7 +22,7 @@ public class SimpleRoute {
     private static final String NBT_PARTS = "Parts";
     private static final String NBT_REFRESH_TIME = "RefreshTime";
 
-    protected final long refreshTime;
+    protected long refreshTime;
     protected final List<SimpleRoutePart> parts;
 
     // Cache
@@ -93,6 +93,11 @@ public class SimpleRoute {
             stationIndex++;
             partIndex++;
         }
+    }
+
+    public void shiftTime(int amount) {
+        parts.forEach(x -> x.shiftTime(amount));
+        refreshTime += amount;
     }
 
     public int getStationCount(boolean countTransfersTwice) {
@@ -204,6 +209,10 @@ public class SimpleRoute {
             getStations().forEach(x -> x.setParent(this));
         }
 
+        public void shiftTime(int amount) {
+            getStations().forEach(x -> x.shiftTime(amount));
+        }
+
         protected void setParent(SimpleRoute parent) {
             this.parent = parent;
         }
@@ -291,8 +300,8 @@ public class SimpleRoute {
 
         protected final String stationName;
         protected final StationInfo info;
-        protected final int ticks;
-        protected final long refreshTime;
+        protected int ticks;
+        protected long refreshTime;
         
         protected int index;
         protected StationTrainDetails train;
@@ -301,6 +310,8 @@ public class SimpleRoute {
         protected boolean departed = false;
         protected boolean willMiss = false;
         protected boolean trainCanceled = false;
+
+        protected int timeShift = 0;
 
         protected int currentTicks;
         protected long currentRefreshTime;
@@ -325,6 +336,17 @@ public class SimpleRoute {
             this.currentTicks = ticks;
             this.currentRefreshTime = refreshTime;
             this.updatedStationInfo = info;
+        }
+
+        public void shiftTime(int amount) {
+            timeShift += amount;
+            refreshTime += amount;
+            currentRefreshTime += amount;
+
+        }
+
+        public int getTimeShift() {
+            return timeShift;
         }
 
         protected void setParent(SimpleRoutePart parent) {

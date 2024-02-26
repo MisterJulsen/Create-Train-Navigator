@@ -2,9 +2,7 @@ package de.mrjulsen.crn.event;
 
 import net.minecraftforge.event.TickEvent.ClientTickEvent;
 import net.minecraftforge.event.TickEvent.Phase;
-import net.minecraftforge.event.TickEvent.Type;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
 import de.mrjulsen.crn.ModMain;
@@ -21,14 +19,25 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 
 @EventBusSubscriber(Dist.CLIENT)
 public class ClientEvents {
-    
+
+    private static long lastTicks = 0;
+
+    @SuppressWarnings("resource")
     @SubscribeEvent
 	public static void onTick(ClientTickEvent event) {
-        if (event.phase != Phase.END && event.side != LogicalSide.CLIENT && event.type != Type.CLIENT) {
+        if (event.phase != Phase.END) {
             return;
         }
         HudOverlays.tick();
         JourneyListenerManager.tick();
+
+        if (JourneyListenerManager.hasInstance() && Minecraft.getInstance().level != null) {
+            long currentTicks = Minecraft.getInstance().level.dayTime();
+            if (Math.abs(currentTicks - lastTicks) > 1)  {
+                JourneyListenerManager.getInstance().getAllListeners().forEach(x -> x.getListeningRoute().shiftTime((int)(currentTicks - lastTicks)));
+            }
+            lastTicks = currentTicks;
+        }
     }
 
     @SubscribeEvent
