@@ -162,6 +162,9 @@ public class RouteDetailsOverlayScreen implements IHudOverlay, IJourneyListenerC
             if (getListener().getLastNotification() != null) {
                 notificationReceive(getListener().getLastNotification());
             }
+            if (getListener().lastNarratorText() != null) {
+                narratorAnnouncement(getListener().lastNarratorText());
+            }
             setPageJourneyStart();
         } else {
             setPageRouteOverview();
