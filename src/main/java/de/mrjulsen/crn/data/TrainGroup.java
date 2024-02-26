@@ -67,6 +67,8 @@ public class TrainGroup {
     public void update(TrainGroup newData) {
         this.name = newData.name;
         this.trainNames = newData.trainNames;
+        this.lastEditedTime = newData.lastEditedTime;
+        this.lastEditorName = newData.lastEditorName;
     }
 
     public void add(String trainName) {
