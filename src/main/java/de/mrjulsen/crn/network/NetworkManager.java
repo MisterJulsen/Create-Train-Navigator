@@ -18,6 +18,7 @@ import de.mrjulsen.crn.network.packets.stc.NearestStationResponsePacket;
 import de.mrjulsen.crn.network.packets.stc.NextConnectionsResponsePacket;
 import de.mrjulsen.crn.network.packets.stc.RealtimeResponsePacket;
 import de.mrjulsen.crn.network.packets.stc.ServerErrorPacket;
+import de.mrjulsen.crn.network.packets.stc.TimeCorrectionPacket;
 import de.mrjulsen.crn.network.packets.stc.TrackStationResponsePacket;
 import de.mrjulsen.crn.network.packets.stc.TrainDataResponsePacket;
 import de.mrjulsen.mcdragonlib.network.IPacketBase;
@@ -32,7 +33,7 @@ public class NetworkManager extends NetworkManagerBase<NetworkManager> {
     }
 
     public static void create() {
-        instance = NetworkManagerBase.create(NetworkManager.class, ModMain.MOD_ID, "crn_network", "2");
+        instance = NetworkManagerBase.create(NetworkManager.class, ModMain.MOD_ID, "crn_network", "3");
     }
 
     public static NetworkManager getInstance() {
@@ -60,7 +61,8 @@ public class NetworkManager extends NetworkManagerBase<NetworkManager> {
             RealtimeResponsePacket.class,
             ServerErrorPacket.class,
             TrackStationResponsePacket.class,
-            TrainDataResponsePacket.class
+            TrainDataResponsePacket.class,
+            TimeCorrectionPacket.class
         );
     }
 }

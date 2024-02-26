@@ -20,9 +20,6 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 @EventBusSubscriber(Dist.CLIENT)
 public class ClientEvents {
 
-    private static long lastTicks = 0;
-
-    @SuppressWarnings("resource")
     @SubscribeEvent
 	public static void onTick(ClientTickEvent event) {
         if (event.phase != Phase.END) {
@@ -30,14 +27,6 @@ public class ClientEvents {
         }
         HudOverlays.tick();
         JourneyListenerManager.tick();
-
-        if (JourneyListenerManager.hasInstance() && Minecraft.getInstance().level != null) {
-            long currentTicks = Minecraft.getInstance().level.dayTime();
-            if (Math.abs(currentTicks - lastTicks) > 1)  {
-                JourneyListenerManager.getInstance().getAllListeners().forEach(x -> x.getListeningRoute().shiftTime((int)(currentTicks - lastTicks)));
-            }
-            lastTicks = currentTicks;
-        }
     }
 
     @SubscribeEvent
