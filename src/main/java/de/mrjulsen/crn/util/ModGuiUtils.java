@@ -72,7 +72,7 @@ public class ModGuiUtils {
 		matrixStack.pushPose();
 		matrixStack.translate(x, y, 0);
 		matrixStack.scale(w, h, 1);
-		net.minecraftforge.client.gui.GuiUtils.drawGradientRect(matrixStack.last()
+		net.minecraftforge.client.gui.ScreenUtils.drawGradientRect(matrixStack.last()
 			.pose(), -100, 0, 0, 1, 1, 0xff000000, 0xff000000);
 		matrixStack.popPose();
 

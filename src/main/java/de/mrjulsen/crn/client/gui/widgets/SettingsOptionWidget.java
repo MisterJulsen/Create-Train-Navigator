@@ -9,13 +9,14 @@ import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.client.gui.IForegroundRendering;
 import de.mrjulsen.mcdragonlib.client.gui.GuiUtils;
+import de.mrjulsen.mcdragonlib.utils.Utils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.MutableComponent;
 
 public class SettingsOptionWidget extends Button implements IForegroundRendering {
 
@@ -30,7 +31,7 @@ public class SettingsOptionWidget extends Button implements IForegroundRendering
     // Controls
     private final MultiLineLabel messageLabel;
     
-    private final TranslatableComponent tooltipOptionText = new TranslatableComponent("gui." + ModMain.MOD_ID + ".global_settings.option.tooltip");
+    private final MutableComponent tooltipOptionText = Utils.translate("gui." + ModMain.MOD_ID + ".global_settings.option.tooltip");
     
 
     public SettingsOptionWidget(Screen parent, int pX, int pY, Component title, Component description, OnPress pOnPress) {

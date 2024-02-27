@@ -26,7 +26,6 @@ import de.mrjulsen.mcdragonlib.utils.TimeUtils;
 import de.mrjulsen.mcdragonlib.utils.Utils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.KeybindComponent;
 import net.minecraft.network.chat.MutableComponent;
 
 public class JourneyListener {
@@ -115,7 +114,7 @@ public class JourneyListener {
             TimeUtils.parseTime((int)currentStation().getEstimatedTimeWithThreshold() + Constants.TIME_SHIFT, ModClientConfig.TIME_FORMAT.get()),
             currentStation().getInfo().platform()
         );
-        String narratorText = text.getString() + ". " + Utils.translate(keyOptionsText, new KeybindComponent(keyKeybindOptions)).getString();
+        String narratorText = text.getString() + ". " + Utils.translate(keyOptionsText, Component.keybind(keyKeybindOptions)).getString();
 
         onJourneyBegin.values().forEach(x -> {
             if (x.isPresent()) {

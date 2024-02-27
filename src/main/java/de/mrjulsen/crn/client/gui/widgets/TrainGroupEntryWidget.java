@@ -26,8 +26,6 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 
@@ -64,13 +62,13 @@ public class TrainGroupEntryWidget extends AbstractEntryListOptionWidget {
 	private ModStationSuggestions suggestions;
 
     // Tooltips
-    private final TranslatableComponent tooltipDeleteAlias = new TranslatableComponent("gui." + ModMain.MOD_ID + ".train_group_settings.delete_alias.tooltip");
-    private final TranslatableComponent tooltipDeleteStation = new TranslatableComponent("gui." + ModMain.MOD_ID + ".train_group_settings.delete_station.tooltip");
-    private final TranslatableComponent tooltipAddStation = new TranslatableComponent("gui." + ModMain.MOD_ID + ".train_group_settings.add_station.tooltip");
+    private final MutableComponent tooltipDeleteAlias = Utils.translate("gui." + ModMain.MOD_ID + ".train_group_settings.delete_alias.tooltip");
+    private final MutableComponent tooltipDeleteStation = Utils.translate("gui." + ModMain.MOD_ID + ".train_group_settings.delete_station.tooltip");
+    private final MutableComponent tooltipAddStation = Utils.translate("gui." + ModMain.MOD_ID + ".train_group_settings.add_station.tooltip");
     
 
     public TrainGroupEntryWidget(AbstractEntryListSettingsScreen<TrainGroup, TrainGroupEntryWidget> parent, int pX, int pY, TrainGroup trainGroup, Runnable onUpdate, boolean expanded) {
-        super(pX, pY, 200, 48, new TextComponent(trainGroup.getGroupName()), (btn) -> {});
+        super(pX, pY, 200, 48, Utils.text(trainGroup.getGroupName()), (btn) -> {});
         
         Minecraft minecraft = Minecraft.getInstance();
         shadowlessFont = new NoShadowFontWrapper(minecraft.font);
@@ -81,7 +79,7 @@ public class TrainGroupEntryWidget extends AbstractEntryListOptionWidget {
         this.expanded = expanded;
         this.onUpdate = onUpdate;
 
-        titleBox = new ModEditBox(minecraft.font, pX + 30, pY + 10, 129, 12, new TextComponent(""));
+        titleBox = new ModEditBox(minecraft.font, pX + 30, pY + 10, 129, 12, Utils.emptyText());
 		titleBox.setBordered(false);
 		titleBox.setMaxLength(32);
 		titleBox.setTextColor(0xFFFFFF);
@@ -97,7 +95,7 @@ public class TrainGroupEntryWidget extends AbstractEntryListOptionWidget {
         controls.components.add(titleBox);
 
         
-        newEntryBox = new ModEditBox(minecraft.font, pX + 30, pY + 30, 129, 12, new TextComponent(""));
+        newEntryBox = new ModEditBox(minecraft.font, pX + 30, pY + 30, 129, 12, Utils.emptyText());
 		newEntryBox.setBordered(false);
 		newEntryBox.setMaxLength(32);
 		newEntryBox.setTextColor(0xFFFFFF);
@@ -280,9 +278,9 @@ public class TrainGroupEntryWidget extends AbstractEntryListOptionWidget {
             drawString(pPoseStack, shadowlessFont, name, x + 30, y + 10, 0xFFFFFF);
 
             pPoseStack.scale(0.75f, 0.75f, 0.75f);
-            drawString(pPoseStack, shadowlessFont, new TranslatableComponent("gui." + ModMain.MOD_ID + ".train_group_settings.summary", trainGroup.getTrainNames().size()), (int)((x + 5) / 0.75f), (int)((y + 30) / 0.75f), 0xDBDBDB);
+            drawString(pPoseStack, shadowlessFont, Utils.translate("gui." + ModMain.MOD_ID + ".train_group_settings.summary", trainGroup.getTrainNames().size()), (int)((x + 5) / 0.75f), (int)((y + 30) / 0.75f), 0xDBDBDB);
             if (trainGroup.getLastEditorName() != null && !trainGroup.getLastEditorName().isBlank()) {
-                drawString(pPoseStack, shadowlessFont, new TranslatableComponent("gui." + ModMain.MOD_ID + ".train_group_settings.editor", trainGroup.getLastEditorName(), trainGroup.getLastEditedTimeFormatted()), (int)((x + 5) / 0.75f), (int)((y + 38) / 0.75f), 0xDBDBDB);
+                drawString(pPoseStack, shadowlessFont, Utils.translate("gui." + ModMain.MOD_ID + ".train_group_settings.editor", trainGroup.getLastEditorName(), trainGroup.getLastEditedTimeFormatted()), (int)((x + 5) / 0.75f), (int)((y + 38) / 0.75f), 0xDBDBDB);
             }
             float s = 1 / 0.75f;
             pPoseStack.scale(s, s, s);

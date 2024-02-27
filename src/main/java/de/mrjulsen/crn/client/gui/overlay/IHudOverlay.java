@@ -2,11 +2,11 @@ package de.mrjulsen.crn.client.gui.overlay;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 
-import net.minecraftforge.client.gui.ForgeIngameGui;
+import net.minecraftforge.client.gui.overlay.ForgeGui;
 
 public interface IHudOverlay {
     int getId();
-    void render(ForgeIngameGui gui, PoseStack poseStack, int width, int height, float partialTicks);
+    void render(ForgeGui gui, PoseStack poseStack, int width, int height, float partialTicks);
     void tick();
 
     default boolean keyPressed(int pKeyCode, int pScanCode, int pModifiers) {

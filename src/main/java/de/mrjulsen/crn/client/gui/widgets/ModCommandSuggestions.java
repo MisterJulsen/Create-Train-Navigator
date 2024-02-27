@@ -17,6 +17,9 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
+
+import de.mrjulsen.mcdragonlib.utils.Utils;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
@@ -31,7 +34,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiComponent;
-import net.minecraft.client.gui.chat.NarratorChatListener;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.Rect2i;
@@ -40,7 +42,6 @@ import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.Style;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec2;
@@ -72,7 +73,6 @@ public class ModCommandSuggestions {
    private CompletableFuture<Suggestions> pendingSuggestions;
    @Nullable
    protected ModCommandSuggestions.SuggestionsList suggestions;
-   private boolean allowSuggestions;
    boolean keepSuggestions;
 
    public ModCommandSuggestions(Minecraft pMinecraft, Screen pScreen, EditBox pInput, Font pFont, boolean pCommandsOnly, boolean pOnlyShowIfCursorPastError, int pLineStartOffset, int pSuggestionLineLimit, boolean pAnchorToBottom, int pFillColor) {
@@ -90,7 +90,6 @@ public class ModCommandSuggestions {
    }
 
    public void setAllowSuggestions(boolean pAutoSuggest) {
-      this.allowSuggestions = pAutoSuggest;
       if (!pAutoSuggest) {
          this.suggestions = null;
       }
@@ -213,7 +212,7 @@ public class ModCommandSuggestions {
    private static FormattedCharSequence getExceptionMessage(CommandSyntaxException pException) {
       Component component = ComponentUtils.fromMessage(pException.getRawMessage());
       String s = pException.getContext();
-      return s == null ? component.getVisualOrderText() : (new TranslatableComponent("command.context.parse_error", component, pException.getCursor(), s)).getVisualOrderText();
+      return s == null ? component.getVisualOrderText() : (Utils.translate("command.context.parse_error", component, pException.getCursor(), s)).getVisualOrderText();
    }
 
    private void updateUsageInfo() {
@@ -245,10 +244,6 @@ public class ModCommandSuggestions {
       }
 
       this.suggestions = null;
-      if (this.allowSuggestions && this.minecraft.options.autoSuggestions) {
-         this.showSuggestions(false);
-      }
-
    }
 
    private void fillNodeUsage(ChatFormatting pFormatting) {
@@ -351,14 +346,12 @@ public class ModCommandSuggestions {
       private int current;
       private Vec2 lastMouse = Vec2.ZERO;
       private boolean tabCycles;
-      private int lastNarratedEntry;
 
       SuggestionsList(int pXPos, int pYPos, int pWidth, List<Suggestion> pSuggestionList, boolean pNarrateFirstSuggestion) {
          int i = pXPos - 1;
          int j = ModCommandSuggestions.this.anchorToBottom ? pYPos - 3 - Math.min(pSuggestionList.size(), ModCommandSuggestions.this.suggestionLineLimit) * 12 : pYPos;
          this.rect = new Rect2i(i, j, pWidth + 1, Math.min(pSuggestionList.size(), ModCommandSuggestions.this.suggestionLineLimit) * 12);
          this.originalContents = ModCommandSuggestions.this.input.getValue();
-         this.lastNarratedEntry = pNarrateFirstSuggestion ? -1 : 0;
          this.suggestionList = pSuggestionList;
          this.select(0);
       }
@@ -489,9 +482,7 @@ public class ModCommandSuggestions {
 
          Suggestion suggestion = this.suggestionList.get(this.current);
          ModCommandSuggestions.this.input.setSuggestion(ModCommandSuggestions.calculateSuggestionSuffix(ModCommandSuggestions.this.input.getValue(), suggestion.apply(this.originalContents)));
-         if (this.lastNarratedEntry != this.current) {
-            NarratorChatListener.INSTANCE.sayNow(this.getNarrationMessage());
-         }
+         
 
       }
 
@@ -508,10 +499,9 @@ public class ModCommandSuggestions {
       }
 
       Component getNarrationMessage() {
-         this.lastNarratedEntry = this.current;
          Suggestion suggestion = this.suggestionList.get(this.current);
          Message message = suggestion.getTooltip();
-         return message != null ? new TranslatableComponent("narration.suggestion.tooltip", this.current + 1, this.suggestionList.size(), suggestion.getText(), message) : new TranslatableComponent("narration.suggestion", this.current + 1, this.suggestionList.size(), suggestion.getText());
+         return message != null ? Utils.translate("narration.suggestion.tooltip", this.current + 1, this.suggestionList.size(), suggestion.getText(), message) : Utils.translate("narration.suggestion", this.current + 1, this.suggestionList.size(), suggestion.getText());
       }
 
       public void hide() {

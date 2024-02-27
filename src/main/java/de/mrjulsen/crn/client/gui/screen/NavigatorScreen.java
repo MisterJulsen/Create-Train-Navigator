@@ -46,7 +46,6 @@ import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.components.toasts.SystemToast.SystemToastIds;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
@@ -232,7 +231,7 @@ public class NavigatorScreen extends CommonScreen implements IJourneyListenerCli
         });
         addTooltip(Tooltip.of(tooltipSearch).assignedTo(searchButton));
 
-        fromBox = new EditBox(font, guiLeft + 50, guiTop + 25, 157, 12, new TextComponent(""));
+        fromBox = new EditBox(font, guiLeft + 50, guiTop + 25, 157, 12, Utils.emptyText());
 		fromBox.setBordered(false);
 		fromBox.setMaxLength(25);
 		fromBox.setTextColor(0xFFFFFF);
@@ -243,7 +242,7 @@ public class NavigatorScreen extends CommonScreen implements IJourneyListenerCli
         });
 		addRenderableWidget(fromBox);
 
-        toBox = new EditBox(font, guiLeft + 50, guiTop + 47, 157, 12, new TextComponent(""));
+        toBox = new EditBox(font, guiLeft + 50, guiTop + 47, 157, 12, Utils.emptyText());
 		toBox.setBordered(false);
 		toBox.setMaxLength(25);
 		toBox.setTextColor(0xFFFFFF);
@@ -371,8 +370,8 @@ public class NavigatorScreen extends CommonScreen implements IJourneyListenerCli
 
                 pPoseStack.popPose();
                 ModGuiUtils.endStencil();                
-                net.minecraftforge.client.gui.GuiUtils.drawGradientRect(pPoseStack.last().pose(), 200, guiLeft + AREA_X, guiTop + AREA_Y, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y + 10, 0x77000000, 0x00000000);
-                net.minecraftforge.client.gui.GuiUtils.drawGradientRect(pPoseStack.last().pose(), 200, guiLeft + AREA_X, guiTop + AREA_Y + AREA_H - 10, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y + AREA_H, 0x00000000, 0x77000000);
+                net.minecraftforge.client.gui.ScreenUtils.drawGradientRect(pPoseStack.last().pose(), 200, guiLeft + AREA_X, guiTop + AREA_Y, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y + 10, 0x77000000, 0x00000000);
+                net.minecraftforge.client.gui.ScreenUtils.drawGradientRect(pPoseStack.last().pose(), 200, guiLeft + AREA_X, guiTop + AREA_Y + AREA_H - 10, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y + AREA_H, 0x00000000, 0x77000000);
                 UIRenderHelper.swapAndBlitColor(UIRenderHelper.framebuffer, minecraft.getMainRenderTarget());
 
                 // Scrollbar

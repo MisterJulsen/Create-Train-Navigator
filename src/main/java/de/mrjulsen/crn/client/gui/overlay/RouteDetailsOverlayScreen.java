@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.text2speech.Narrator;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 import com.simibubi.create.foundation.gui.UIRenderHelper;
 import com.simibubi.create.foundation.utility.animation.LerpedFloat;
@@ -17,7 +18,7 @@ import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.NavigatorToast;
-import de.mrjulsen.crn.client.input.ModKeys;
+import de.mrjulsen.crn.client.input.KeyBinding;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.OverlayPosition;
 import de.mrjulsen.crn.data.SimpleRoute;
@@ -51,15 +52,13 @@ import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiComponent;
-import net.minecraft.client.gui.chat.NarratorChatListener;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.KeybindComponent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.client.gui.ForgeIngameGui;
+import net.minecraftforge.client.gui.overlay.ForgeGui;
 
 public class RouteDetailsOverlayScreen implements IHudOverlay, IJourneyListenerClient {
 
@@ -198,7 +197,7 @@ public class RouteDetailsOverlayScreen implements IHudOverlay, IJourneyListenerC
     @Override
     public void tick() {
 
-        if (ModKeys.keyRouteOverlayOptions.isDown() && Minecraft.getInstance().player.getInventory().hasAnyOf(Set.of(ModItems.NAVIGATOR.get()))) {
+        if (KeyBinding.OPEN_SETTINGS_KEY.isDown() && Minecraft.getInstance().player.getInventory().hasAnyOf(Set.of(ModItems.NAVIGATOR.get()))) {
             ClientWrapper.showRouteOverlaySettingsGui(this);
         }
 
@@ -331,7 +330,7 @@ public class RouteDetailsOverlayScreen implements IHudOverlay, IJourneyListenerC
 
     private void narratorAnnouncement(String text) {
         if (ModClientConfig.ROUTE_NARRATOR.get()) {
-            NarratorChatListener.INSTANCE.narrator.say(text, true);
+            Narrator.getNarrator().say(text, true);
         }
     }
 
@@ -463,7 +462,7 @@ public class RouteDetailsOverlayScreen implements IHudOverlay, IJourneyListenerC
 
     //#region RENDERING
     @Override
-    public void render(ForgeIngameGui gui, PoseStack poseStack, int width, int height, float partialTicks) {
+    public void render(ForgeGui gui, PoseStack poseStack, int width, int height, float partialTicks) {
         OverlayPosition pos = ModClientConfig.ROUTE_OVERLAY_POSITION.get();
         final int x = pos == OverlayPosition.TOP_LEFT || pos == OverlayPosition.BOTTOM_LEFT ? 8 : (int)(width - GUI_WIDTH * getUIScale() - 10);
         final int y = pos == OverlayPosition.TOP_LEFT || pos == OverlayPosition.TOP_RIGHT ? 8 : (int)(height - GUI_HEIGHT * getUIScale() - 10);
@@ -477,7 +476,7 @@ public class RouteDetailsOverlayScreen implements IHudOverlay, IJourneyListenerC
         poseStack.popPose();
     }
 
-    private void renderInternal(ForgeIngameGui gui, PoseStack poseStack, int x, int y, int width, int height, float partialTicks) {
+    private void renderInternal(ForgeGui gui, PoseStack poseStack, int x, int y, int width, int height, float partialTicks) {
         poseStack.pushPose();
         float fadePercentage = this.fading ? Mth.clamp((float)(Util.getMillis() - this.fadeStart) / 500.0F, 0.0F, 1.0F) : 1.0F;
         float alpha = fadeInvert ? Mth.clamp(1.0f - fadePercentage, 0, 1) : Mth.clamp(fadePercentage, 0, 1);
@@ -488,7 +487,7 @@ public class RouteDetailsOverlayScreen implements IHudOverlay, IJourneyListenerC
         GuiUtils.blit(GUI, poseStack, x, y, 0, getListener().getCurrentState().important() ? 138 : 0, GUI_WIDTH, GUI_HEIGHT, 256, 256);
         
         GuiComponent.drawString(poseStack, shadowlessFont, title, x + 6, y + 4, 0x4F4F4F);
-        GuiComponent.drawString(poseStack, shadowlessFont, Utils.translate(keyOptionsText, new KeybindComponent(keyKeybindOptions).withStyle(ChatFormatting.BOLD)), x + 6, y + GUI_HEIGHT - 2 - shadowlessFont.lineHeight, 0x4F4F4F);
+        GuiComponent.drawString(poseStack, shadowlessFont, Utils.translate(keyOptionsText, Component.keybind(keyKeybindOptions).withStyle(ChatFormatting.BOLD)), x + 6, y + GUI_HEIGHT - 2 - shadowlessFont.lineHeight, 0x4F4F4F);
         
         String timeString = TimeUtils.parseTime((int)((level.getDayTime() + Constants.TIME_SHIFT) % DragonLibConstants.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get());
         GuiComponent.drawString(poseStack, shadowlessFont, timeString, x + GUI_WIDTH - 4 - shadowlessFont.width(timeString), y + 4, 0x4F4F4F);

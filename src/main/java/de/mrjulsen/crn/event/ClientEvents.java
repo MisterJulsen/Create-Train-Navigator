@@ -3,21 +3,24 @@ package de.mrjulsen.crn.event;
 import net.minecraftforge.event.TickEvent.ClientTickEvent;
 import net.minecraftforge.event.TickEvent.Phase;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.fml.common.Mod;
 
 import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.client.gui.overlay.HudOverlays;
+import de.mrjulsen.crn.client.input.KeyBinding;
 import de.mrjulsen.crn.data.ClientTrainStationSnapshot;
 import de.mrjulsen.crn.event.listeners.JourneyListenerManager;
 import de.mrjulsen.crn.event.listeners.TrainListener;
 import de.mrjulsen.crn.network.InstanceManager;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.ClientPlayerNetworkEvent.LoggedInEvent;
-import net.minecraftforge.client.event.ClientPlayerNetworkEvent.LoggedOutEvent;
-import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import net.minecraftforge.client.event.ClientPlayerNetworkEvent.LoggingIn;
+import net.minecraftforge.client.event.ClientPlayerNetworkEvent.LoggingOut;
+import net.minecraftforge.client.event.CustomizeGuiOverlayEvent;
+import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
+import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 
-@EventBusSubscriber(Dist.CLIENT)
+@Mod.EventBusSubscriber(modid = ModMain.MOD_ID, value = Dist.CLIENT)
 public class ClientEvents {
 
     @SubscribeEvent
@@ -30,7 +33,7 @@ public class ClientEvents {
     }
 
     @SubscribeEvent
-    public static void onWorldLeave(LoggedOutEvent event) {
+    public static void onWorldLeave(LoggingOut event) {
         int count = HudOverlays.removeAll();
         ModMain.LOGGER.info("Removed all " + count + " overlays.");
 
@@ -40,13 +43,13 @@ public class ClientEvents {
     }
 
     @SubscribeEvent
-    public static void onWorldJoin(LoggedInEvent event) {        
+    public static void onWorldJoin(LoggingIn event) {        
         JourneyListenerManager.start();
     }
 
     @SuppressWarnings("resource")
     @SubscribeEvent
-    public static void onDebugOverlay(RenderGameOverlayEvent.Text event) {
+    public static void onDebugOverlay(CustomizeGuiOverlayEvent.DebugText event) {
         boolean b1 = TrainListener.getInstance() != null;
         boolean b2 = ClientTrainStationSnapshot.getInstance() != null;
         
@@ -58,6 +61,20 @@ public class ClientEvents {
                 HudOverlays.overlayCount(),
                 InstanceManager.getInstancesCountString()
             ));
+        }
+    }
+
+    @Mod.EventBusSubscriber(modid = ModMain.MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
+    public static class ClientModBusEvents {
+        @SubscribeEvent
+        public static void registerGuiOverlay(final RegisterGuiOverlaysEvent event) {        
+            event.registerAboveAll("route_details_overlay", HudOverlays.HUD_ROUTE_DETAILS);
+        }
+
+        
+        @SubscribeEvent
+        public static void onKeyRegister(RegisterKeyMappingsEvent event) {
+            event.register(KeyBinding.OPEN_SETTINGS_KEY);
         }
     }
 }

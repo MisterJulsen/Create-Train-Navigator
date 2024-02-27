@@ -254,9 +254,9 @@ public abstract class AbstractBlacklistScreen extends CommonScreen {
 
         pPoseStack.popPose();
         ModGuiUtils.endStencil();        
-        net.minecraftforge.client.gui.GuiUtils.drawGradientRect(pPoseStack.last().pose(), 200, guiLeft + AREA_X, guiTop + AREA_Y - 38, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y - 38 + 10, 0x77000000, 0x00000000);
-        net.minecraftforge.client.gui.GuiUtils.drawGradientRect(pPoseStack.last().pose(), 200, guiLeft + AREA_X, guiTop + AREA_Y + AREA_H - 10, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y + AREA_H, 0x00000000, 0x77000000);
-        net.minecraftforge.client.gui.GuiUtils.drawGradientRect(pPoseStack.last().pose(), 200, guiLeft + AREA_X + 10, guiTop + AREA_Y, guiLeft + AREA_X + AREA_W - 10, guiTop + AREA_Y + 10, 0x77000000, 0x00000000);
+        net.minecraftforge.client.gui.ScreenUtils.drawGradientRect(pPoseStack.last().pose(), 200, guiLeft + AREA_X, guiTop + AREA_Y - 38, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y - 38 + 10, 0x77000000, 0x00000000);
+        net.minecraftforge.client.gui.ScreenUtils.drawGradientRect(pPoseStack.last().pose(), 200, guiLeft + AREA_X, guiTop + AREA_Y + AREA_H - 10, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y + AREA_H, 0x00000000, 0x77000000);
+        net.minecraftforge.client.gui.ScreenUtils.drawGradientRect(pPoseStack.last().pose(), 200, guiLeft + AREA_X + 10, guiTop + AREA_Y, guiLeft + AREA_X + AREA_W - 10, guiTop + AREA_Y + 10, 0x77000000, 0x00000000);
         UIRenderHelper.swapAndBlitColor(UIRenderHelper.framebuffer, minecraft.getMainRenderTarget());
 
         super.render(pPoseStack, pMouseX, pMouseY, pPartialTick);

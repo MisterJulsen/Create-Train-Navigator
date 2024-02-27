@@ -10,10 +10,10 @@ import de.mrjulsen.crn.client.gui.screen.RouteOverlaySettingsScreen;
 import de.mrjulsen.crn.data.ClientTrainStationSnapshot;
 import de.mrjulsen.crn.data.GlobalSettingsManager;
 import de.mrjulsen.crn.network.packets.stc.ServerErrorPacket;
+import de.mrjulsen.mcdragonlib.utils.Utils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.components.toasts.SystemToast.SystemToastIds;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.network.NetworkEvent;
 
@@ -33,6 +33,6 @@ public class ClientWrapper {
     }
 
     public static void handleErrorMessagePacket(ServerErrorPacket packet, Supplier<NetworkEvent.Context> ctx) {        
-        Minecraft.getInstance().getToasts().addToast(new SystemToast(SystemToastIds.PERIODIC_NOTIFICATION, Constants.TEXT_SERVER_ERROR, new TextComponent(packet.message)));   
+        Minecraft.getInstance().getToasts().addToast(new SystemToast(SystemToastIds.PERIODIC_NOTIFICATION, Constants.TEXT_SERVER_ERROR, Utils.text(packet.message)));   
     }
 }

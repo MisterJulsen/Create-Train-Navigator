@@ -4,13 +4,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.ScreenEvent.KeyboardCharTypedEvent;
-import net.minecraftforge.client.event.ScreenEvent.KeyboardKeyPressedEvent;
-import net.minecraftforge.client.event.ScreenEvent.KeyboardKeyReleasedEvent;
-import net.minecraftforge.client.event.ScreenEvent.MouseClickedEvent;
-import net.minecraftforge.client.event.ScreenEvent.MouseDragEvent;
-import net.minecraftforge.client.event.ScreenEvent.MouseScrollEvent;
-import net.minecraftforge.client.gui.IIngameOverlay;
+import net.minecraftforge.client.event.ScreenEvent.CharacterTyped;
+import net.minecraftforge.client.event.ScreenEvent.KeyPressed;
+import net.minecraftforge.client.event.ScreenEvent.KeyReleased;
+import net.minecraftforge.client.event.ScreenEvent.MouseButtonPressed;
+import net.minecraftforge.client.event.ScreenEvent.MouseDragged;
+import net.minecraftforge.client.event.ScreenEvent.MouseScrolled;
+import net.minecraftforge.client.gui.overlay.IGuiOverlay;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
@@ -19,7 +19,7 @@ public class HudOverlays {
 
     private static final Map<Integer, IHudOverlay> activeOverlays = new HashMap<>();
 
-    public static final IIngameOverlay HUD_ROUTE_DETAILS = ((gui, poseStack, partialTicks, width, height) -> {
+    public static final IGuiOverlay HUD_ROUTE_DETAILS = ((gui, poseStack, partialTicks, width, height) -> {
         activeOverlays.values().forEach(x -> x.render(gui, poseStack, width, height, partialTicks));
     });
 
@@ -64,32 +64,32 @@ public class HudOverlays {
 
 
     @SubscribeEvent
-    public static void keyPressed(KeyboardKeyPressedEvent event) {
+    public static void keyPressed(KeyPressed event) {
         activeOverlays.values().forEach(x -> x.keyPressed(event.getKeyCode(), event.getScanCode(), event.getModifiers()));
     }
 
     @SubscribeEvent
-    public static void keyReleased(KeyboardKeyReleasedEvent event) {
+    public static void keyReleased(KeyReleased event) {
         activeOverlays.values().forEach(x -> x.keyReleased(event.getKeyCode(), event.getScanCode(), event.getModifiers()));
     }
 
     @SubscribeEvent
-    public static void charTyped(KeyboardCharTypedEvent event) {
+    public static void charTyped(CharacterTyped event) {
         activeOverlays.values().forEach(x -> x.charTyped(event.getCodePoint(), event.getModifiers()));
     }
 
     @SubscribeEvent
-    public static void mouseDragged(MouseDragEvent event) {
+    public static void mouseDragged(MouseDragged event) {
         activeOverlays.values().forEach(x -> x.mouseDragged(event.getMouseX(), event.getMouseY(), event.getMouseButton(), event.getDragX(), event.getDragY()));
     }
 
     @SubscribeEvent
-    public static void mouseClicked(MouseClickedEvent event) {
+    public static void mouseClicked(MouseButtonPressed event) {
         activeOverlays.values().forEach(x -> x.mouseClicked(event.getMouseX(), event.getMouseY(), event.getButton()));
     }
 
     @SubscribeEvent
-    public static void mouseScrolled(MouseScrollEvent event) {
+    public static void mouseScrolled(MouseScrolled event) {
         activeOverlays.values().forEach(x -> x.mouseScrolled(event.getMouseX(), event.getMouseY(), event.getScrollDelta()));
     }
 }

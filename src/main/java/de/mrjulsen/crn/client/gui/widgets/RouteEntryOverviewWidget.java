@@ -22,7 +22,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.world.level.Level;
 
 public class RouteEntryOverviewWidget extends Button {
@@ -42,7 +41,7 @@ public class RouteEntryOverviewWidget extends Button {
     private static final MutableComponent trainCanceled = Utils.translate("gui.createrailwaysnavigator.route_overview.stop_canceled");
 
     public RouteEntryOverviewWidget(NavigatorScreen parent, Level level, int lastRefreshedTime, int pX, int pY, SimpleRoute route, OnPress pOnPress) {
-        super(pX, pY, WIDTH, HEIGHT, new TextComponent(route.getName()), pOnPress); // 48
+        super(pX, pY, WIDTH, HEIGHT, Utils.text(route.getName()), pOnPress); // 48
         this.route = route;
         this.parent = parent;
         this.level = level;
