@@ -3,7 +3,6 @@ package de.mrjulsen.crn.client.gui.screen;
 import java.util.List;
 import java.util.UUID;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 import com.simibubi.create.foundation.gui.AllIcons;
 import com.simibubi.create.foundation.gui.UIRenderHelper;
@@ -17,7 +16,7 @@ import de.mrjulsen.crn.client.gui.ControlCollection;
 import de.mrjulsen.mcdragonlib.DragonLibConstants;
 import de.mrjulsen.mcdragonlib.client.gui.GuiAreaDefinition;
 import de.mrjulsen.mcdragonlib.client.gui.GuiUtils;
-import de.mrjulsen.mcdragonlib.client.gui.Tooltip;
+import de.mrjulsen.mcdragonlib.client.gui.DragonLibTooltip;
 import de.mrjulsen.mcdragonlib.client.gui.wrapper.CommonScreen;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.widgets.ModDestinationSuggestions;
@@ -39,9 +38,10 @@ import de.mrjulsen.mcdragonlib.utils.TimeUtils;
 import de.mrjulsen.mcdragonlib.utils.Utils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.components.Widget;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.components.toasts.SystemToast.SystemToastIds;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -178,7 +178,7 @@ public class NavigatorScreen extends CommonScreen implements IJourneyListenerCli
         guiTop = this.height / 2 - GUI_HEIGHT / 2;
 
         switchButtonsArea = new GuiAreaDefinition(guiLeft + 190, guiTop + 34, 11, 12);
-        addTooltip(Tooltip.of(tooltipSwitch).assignedTo(switchButtonsArea));
+        addTooltip(DragonLibTooltip.of(tooltipSwitch).assignedTo(switchButtonsArea));
 
         locationButton = this.addRenderableWidget(new IconButton(guiLeft + 208, guiTop + 20, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, ModGuiIcons.POSITION.getAsCreateIcon()) {
             @Override
@@ -192,7 +192,7 @@ public class NavigatorScreen extends CommonScreen implements IJourneyListenerCli
                 NetworkManager.getInstance().sendToServer(Minecraft.getInstance().getConnection().getConnection(), new NearestStationRequestPacket(id, minecraft.player.position()));
             }
         });
-        addTooltip(Tooltip.of(tooltipLocation).assignedTo(locationButton));
+        addTooltip(DragonLibTooltip.of(tooltipLocation).assignedTo(locationButton));
 
         searchButton = this.addRenderableWidget(new IconButton(guiLeft + 208, guiTop + 42, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, AllIcons.I_MTD_SCAN) {
             @Override
@@ -229,7 +229,7 @@ public class NavigatorScreen extends CommonScreen implements IJourneyListenerCli
                
             }
         });
-        addTooltip(Tooltip.of(tooltipSearch).assignedTo(searchButton));
+        addTooltip(DragonLibTooltip.of(tooltipSearch).assignedTo(searchButton));
 
         fromBox = new EditBox(font, guiLeft + 50, guiTop + 25, 157, 12, Utils.emptyText());
 		fromBox.setBordered(false);
@@ -260,7 +260,7 @@ public class NavigatorScreen extends CommonScreen implements IJourneyListenerCli
                 scroll.chase(0, 0.7f, Chaser.EXP);
             }
         });
-        addTooltip(Tooltip.of(Constants.TOOLTIP_GO_TO_TOP).assignedTo(goToTopButton));
+        addTooltip(DragonLibTooltip.of(Constants.TOOLTIP_GO_TO_TOP).assignedTo(goToTopButton));
 
         // Global Options Button
         if (minecraft.player.hasPermissions(ModCommonConfig.GLOBAL_SETTINGS_PERMISSION_LEVEL.get())) {
@@ -271,7 +271,7 @@ public class NavigatorScreen extends CommonScreen implements IJourneyListenerCli
                     minecraft.setScreen(new GlobalSettingsScreen(level, instance));
                 }
             });
-            addTooltip(Tooltip.of(tooltipGlobalSettings).assignedTo(globalSettingsButton));
+            addTooltip(DragonLibTooltip.of(tooltipGlobalSettings).assignedTo(globalSettingsButton));
         }
 
         searchSettingsButton = this.addRenderableWidget(new IconButton(guiLeft + 21, guiTop + 222, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, ModGuiIcons.FILTER.getAsCreateIcon()) {
@@ -281,7 +281,7 @@ public class NavigatorScreen extends CommonScreen implements IJourneyListenerCli
                 minecraft.setScreen(new SearchSettingsScreen(level, instance));
             }
         });
-        addTooltip(Tooltip.of(tooltipSearchSettings).assignedTo(searchSettingsButton));
+        addTooltip(DragonLibTooltip.of(tooltipSearchSettings).assignedTo(searchSettingsButton));
 
         this.addRenderableWidget(new IconButton(guiLeft + GUI_WIDTH - 42, guiTop + 222, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, AllIcons.I_MTD_CLOSE) {
             @Override
@@ -297,7 +297,7 @@ public class NavigatorScreen extends CommonScreen implements IJourneyListenerCli
     protected void updateEditorSubwidgets(EditBox field) {
         clearSuggestions();
 
-		destinationSuggestions = new ModDestinationSuggestions(this.minecraft, this, field, this.font, getViableStations(field), field.getHeight() + 2 + field.y);
+		destinationSuggestions = new ModDestinationSuggestions(this.minecraft, this, field, this.font, getViableStations(field), field.getHeight() + 2 + field.getY());
         destinationSuggestions.setAllowSuggestions(true);
         destinationSuggestions.updateCommandInfo();
 	}
@@ -336,42 +336,42 @@ public class NavigatorScreen extends CommonScreen implements IJourneyListenerCli
     }
 
     @Override
-    public void renderBg(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) { 
+    public void renderBg(GuiGraphics graphics, int pMouseX, int pMouseY, float pPartialTick) { 
         
 		float scrollOffset = -scroll.getValue(pPartialTick);
 
-        renderBackground(pPoseStack);
-        GuiUtils.blit(GUI, pPoseStack, guiLeft, guiTop, 0, 0, GUI_WIDTH, GUI_HEIGHT);
-        for (Widget widget : this.renderables)
-            widget.render(pPoseStack, pMouseX, pMouseY, pPartialTick);
+        renderBackground(graphics);
+        GuiUtils.blit(GUI, graphics, guiLeft, guiTop, 0, 0, GUI_WIDTH, GUI_HEIGHT);
+        for (Renderable widget : this.renderables)
+            widget.render(graphics, pMouseX, pMouseY, pPartialTick);
 
-        drawString(pPoseStack, shadowlessFont, title, guiLeft + 19, guiTop + 4, 0x4F4F4F);
+        graphics.drawString(shadowlessFont, title, guiLeft + 19, guiTop + 4, 0x4F4F4F);
         String timeString = TimeUtils.parseTime((int)((level.getDayTime() + Constants.TIME_SHIFT) % DragonLibConstants.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get());
-        drawString(pPoseStack, shadowlessFont, timeString, guiLeft + GUI_WIDTH - 22 - shadowlessFont.width(timeString), guiTop + 4, 0x4F4F4F);
+        graphics.drawString(shadowlessFont, timeString, guiLeft + GUI_WIDTH - 22 - shadowlessFont.width(timeString), guiTop + 4, 0x4F4F4F);
 
         if (!isLoadingRoutes && !generatingRouteEntries) {
             if (routes == null) {
-                drawCenteredString(pPoseStack, font, notSearchedText, guiLeft + GUI_WIDTH / 2, guiTop + 32 + GUI_HEIGHT / 2, 0xFFFFFF);
-                ModGuiIcons.INFO.render(pPoseStack, (int)(guiLeft + GUI_WIDTH / 2 - 8), (int)(guiTop + GUI_HEIGHT / 2));
+                graphics.drawCenteredString(font, notSearchedText, guiLeft + GUI_WIDTH / 2, guiTop + 32 + GUI_HEIGHT / 2, 0xFFFFFF);
+                ModGuiIcons.INFO.render(graphics, (int)(guiLeft + GUI_WIDTH / 2 - 8), (int)(guiTop + GUI_HEIGHT / 2));
             } else if (routes.length <= 0) {
-                drawCenteredString(pPoseStack, font, noConnectionsText, guiLeft + GUI_WIDTH / 2, guiTop + 32 + GUI_HEIGHT / 2, 0xFFFFFF);
-                AllIcons.I_ACTIVE.render(pPoseStack, (int)(guiLeft + GUI_WIDTH / 2 - 8), (int)(guiTop + GUI_HEIGHT / 2));
+                graphics.drawCenteredString(font, noConnectionsText, guiLeft + GUI_WIDTH / 2, guiTop + 32 + GUI_HEIGHT / 2, 0xFFFFFF);
+                AllIcons.I_ACTIVE.render(graphics, (int)(guiLeft + GUI_WIDTH / 2 - 8), (int)(guiTop + GUI_HEIGHT / 2));
             } else {
                 UIRenderHelper.swapAndBlitColor(minecraft.getMainRenderTarget(), UIRenderHelper.framebuffer);
-                ModGuiUtils.startStencil(pPoseStack, guiLeft + AREA_X, guiTop + AREA_Y, AREA_W, AREA_H);
-                pPoseStack.pushPose();
-                pPoseStack.translate(0, scrollOffset, 0);
+                ModGuiUtils.startStencil(graphics, guiLeft + AREA_X, guiTop + AREA_Y, AREA_W, AREA_H);
+                graphics.pose().pushPose();
+                graphics.pose().translate(0, scrollOffset, 0);
 
                 int start = (int)(Math.abs(scrollOffset + ENTRIES_START_Y_OFFSET) / (ENTRY_SPACING + RouteEntryOverviewWidget.HEIGHT));
                 int end = Math.min(routesCollection.components.size(), start + 2 + (int)(AREA_H / (ENTRY_SPACING + RouteEntryOverviewWidget.HEIGHT)));
                 for (int i = start; i < end; i++) {
-                    routesCollection.components.get(i).render(pPoseStack, (int)(pMouseX), (int)(pMouseY - scrollOffset), pPartialTick);
+                    routesCollection.components.get(i).render(graphics, (int)(pMouseX), (int)(pMouseY - scrollOffset), pPartialTick);
                 }
 
-                pPoseStack.popPose();
+                graphics.pose().popPose();
                 ModGuiUtils.endStencil();                
-                net.minecraftforge.client.gui.ScreenUtils.drawGradientRect(pPoseStack.last().pose(), 200, guiLeft + AREA_X, guiTop + AREA_Y, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y + 10, 0x77000000, 0x00000000);
-                net.minecraftforge.client.gui.ScreenUtils.drawGradientRect(pPoseStack.last().pose(), 200, guiLeft + AREA_X, guiTop + AREA_Y + AREA_H - 10, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y + AREA_H, 0x00000000, 0x77000000);
+                graphics.fillGradient(guiLeft + AREA_X, guiTop + AREA_Y, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y + 10, 0x77000000, 0x00000000);
+                graphics.fillGradient(guiLeft + AREA_X, guiTop + AREA_Y + AREA_H - 10, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y + AREA_H, 0x00000000, 0x77000000);
                 UIRenderHelper.swapAndBlitColor(UIRenderHelper.framebuffer, minecraft.getMainRenderTarget());
 
                 // Scrollbar
@@ -381,31 +381,31 @@ public class NavigatorScreen extends CommonScreen implements IJourneyListenerCli
                     int scrollerHeight = Math.max(10, (int)(aH * (aH / maxHeight)));
                     int startY = guiTop + AREA_Y + (int)((AREA_H) * (Math.abs(scrollOffset) / maxHeight));
 
-                    fill(pPoseStack, guiLeft + AREA_X + AREA_W - 3, startY, guiLeft + AREA_X + AREA_W, startY + scrollerHeight, 0x7FFFFFFF);
+                    graphics.fill(guiLeft + AREA_X + AREA_W - 3, startY, guiLeft + AREA_X + AREA_W, startY + scrollerHeight, 0x7FFFFFFF);
                 }
             }
         } else {            
             double offsetX = Math.sin(Math.toRadians(angle)) * 5;
             double offsetY = Math.cos(Math.toRadians(angle)) * 5; 
             
-            drawCenteredString(pPoseStack, font, searchingText, guiLeft + GUI_WIDTH / 2, guiTop + 32 + GUI_HEIGHT / 2, 0xFFFFFF);
-            AllIcons.I_MTD_SCAN.render(pPoseStack, (int)(guiLeft + GUI_WIDTH / 2 - 8 + offsetX), (int)(guiTop + GUI_HEIGHT / 2 + offsetY));
+            graphics.drawCenteredString(font, searchingText, guiLeft + GUI_WIDTH / 2, guiTop + 32 + GUI_HEIGHT / 2, 0xFFFFFF);
+            AllIcons.I_MTD_SCAN.render(graphics, (int)(guiLeft + GUI_WIDTH / 2 - 8 + offsetX), (int)(guiTop + GUI_HEIGHT / 2 + offsetY));
         }
 
         if (switchButtonsArea.isInBounds(pMouseX, pMouseY)) {
-            fill(pPoseStack, switchButtonsArea.getLeft(), switchButtonsArea.getTop(), switchButtonsArea.getRight(), switchButtonsArea.getBottom(), 0x3FFFFFFF);
+            graphics.fill(switchButtonsArea.getLeft(), switchButtonsArea.getTop(), switchButtonsArea.getRight(), switchButtonsArea.getBottom(), 0x3FFFFFFF);
         }
     }
 
     @Override
-	public void renderFg(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+	public void renderFg(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
 		if (destinationSuggestions != null) {
-			matrixStack.pushPose();
-			matrixStack.translate(0, 0, 500);
-			destinationSuggestions.render(matrixStack, mouseX, mouseY);
-			matrixStack.popPose();
+			graphics.pose().pushPose();
+			graphics.pose().translate(0, 0, 500);
+			destinationSuggestions.render(graphics, mouseX, mouseY);
+			graphics.pose().popPose();
 		}
-        super.renderFg(matrixStack, mouseX, mouseY, partialTicks);
+        super.renderFg(graphics, mouseX, mouseY, partialTicks);
     }
 
     @Override

@@ -6,7 +6,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.text2speech.Narrator;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 import com.simibubi.create.foundation.gui.UIRenderHelper;
@@ -51,7 +50,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -269,9 +268,9 @@ public class RouteDetailsOverlayScreen implements IHudOverlay, IJourneyListenerC
         }
     }
     
-    private void startStencil(PoseStack poseStack, int x, int y, int w, int h) {
+    private void startStencil(GuiGraphics graphics, int x, int y, int w, int h) {
         UIRenderHelper.swapAndBlitColor(Minecraft.getInstance().getMainRenderTarget(), UIRenderHelper.framebuffer);
-        ModGuiUtils.startStencil(poseStack, x, y, w, h);
+        ModGuiUtils.startStencil(graphics, x, y, w, h);
     }
 
     private void endStencil() {
@@ -462,7 +461,7 @@ public class RouteDetailsOverlayScreen implements IHudOverlay, IJourneyListenerC
 
     //#region RENDERING
     @Override
-    public void render(ForgeGui gui, PoseStack poseStack, int width, int height, float partialTicks) {
+    public void render(ForgeGui gui, GuiGraphics graphics, int width, int height, float partialTicks) {
         OverlayPosition pos = ModClientConfig.ROUTE_OVERLAY_POSITION.get();
         final int x = pos == OverlayPosition.TOP_LEFT || pos == OverlayPosition.BOTTOM_LEFT ? 8 : (int)(width - GUI_WIDTH * getUIScale() - 10);
         final int y = pos == OverlayPosition.TOP_LEFT || pos == OverlayPosition.TOP_RIGHT ? 8 : (int)(height - GUI_HEIGHT * getUIScale() - 10);
@@ -470,67 +469,67 @@ public class RouteDetailsOverlayScreen implements IHudOverlay, IJourneyListenerC
         xPos.chase(x, 0.2f, Chaser.EXP);
         yPos.chase(y, 0.2f, Chaser.EXP);
 
-        poseStack.pushPose();
-        poseStack.translate((int)xPos.getValue(), (int)yPos.getValue(), 0);
-        renderInternal(gui, poseStack, 0, 0, width, height, partialTicks);
-        poseStack.popPose();
+        graphics.pose().pushPose();
+        graphics.pose().translate((int)xPos.getValue(), (int)yPos.getValue(), 0);
+        renderInternal(gui, graphics, 0, 0, width, height, partialTicks);
+        graphics.pose().popPose();
     }
 
-    private void renderInternal(ForgeGui gui, PoseStack poseStack, int x, int y, int width, int height, float partialTicks) {
-        poseStack.pushPose();
+    private void renderInternal(ForgeGui gui, GuiGraphics graphics, int x, int y, int width, int height, float partialTicks) {
+        graphics.pose().pushPose();
         float fadePercentage = this.fading ? Mth.clamp((float)(Util.getMillis() - this.fadeStart) / 500.0F, 0.0F, 1.0F) : 1.0F;
         float alpha = fadeInvert ? Mth.clamp(1.0f - fadePercentage, 0, 1) : Mth.clamp(fadePercentage, 0, 1);
         int fontAlpha = Mth.ceil(alpha * 255.0F) << 24; // <color> | fontAlpha
 
-        poseStack.scale(getUIScale(), getUIScale(), getUIScale());
+        graphics.pose().scale(getUIScale(), getUIScale(), getUIScale());
         RenderSystem.setShaderTexture(0, GUI);
-        GuiUtils.blit(GUI, poseStack, x, y, 0, getListener().getCurrentState().important() ? 138 : 0, GUI_WIDTH, GUI_HEIGHT, 256, 256);
+        GuiUtils.blit(GUI, graphics, x, y, 0, getListener().getCurrentState().important() ? 138 : 0, GUI_WIDTH, GUI_HEIGHT, 256, 256);
         
-        GuiComponent.drawString(poseStack, shadowlessFont, title, x + 6, y + 4, 0x4F4F4F);
-        GuiComponent.drawString(poseStack, shadowlessFont, Utils.translate(keyOptionsText, Component.keybind(keyKeybindOptions).withStyle(ChatFormatting.BOLD)), x + 6, y + GUI_HEIGHT - 2 - shadowlessFont.lineHeight, 0x4F4F4F);
+        graphics.drawString(shadowlessFont, title, x + 6, y + 4, 0x4F4F4F);
+        graphics.drawString(shadowlessFont, Utils.translate(keyOptionsText, Component.keybind(keyKeybindOptions).withStyle(ChatFormatting.BOLD)), x + 6, y + GUI_HEIGHT - 2 - shadowlessFont.lineHeight, 0x4F4F4F);
         
         String timeString = TimeUtils.parseTime((int)((level.getDayTime() + Constants.TIME_SHIFT) % DragonLibConstants.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get());
-        GuiComponent.drawString(poseStack, shadowlessFont, timeString, x + GUI_WIDTH - 4 - shadowlessFont.width(timeString), y + 4, 0x4F4F4F);
+        graphics.drawString(shadowlessFont, timeString, x + GUI_WIDTH - 4 - shadowlessFont.width(timeString), y + 4, 0x4F4F4F);
         
         // Test
-        renderSlidingText(poseStack, x, y + 2);
+        renderSlidingText(graphics, x, y + 2);
 
-        startStencil(poseStack, x + 3, y + 40, 220, 62);
-        poseStack.pushPose();
-        poseStack.translate((fadeInvert ? 0 : -20) + fadePercentage * 20, 0, 0);
+        startStencil(graphics, x + 3, y + 40, 220, 62);
+        graphics.pose().pushPose();
+        graphics.pose().translate((fadeInvert ? 0 : -20) + fadePercentage * 20, 0, 0);
         if (alpha > 0.1f && (fontAlpha & -67108864) != 0) {
             
             switch (currentPage) {
                 case JOURNEY_START:
-                    renderPageJourneyStart(poseStack, x, y + 40, fadePercentage, fontAlpha);
+                    renderPageJourneyStart(graphics, x, y + 40, fadePercentage, fontAlpha);
                     break;
                 case NEXT_CONNECTIONS:
-                    renderNextConnections(poseStack, x, y + 40, fadePercentage, fontAlpha, null);
+                    renderNextConnections(graphics, x, y + 40, fadePercentage, fontAlpha, null);
                     break;
                 case TRANSFER:
-                    renderPageTransfer(poseStack, x, y + 40, fadePercentage, fontAlpha, null);
+                    renderPageTransfer(graphics, x, y + 40, fadePercentage, fontAlpha, null);
                     break;
                 case JOURNEY_INTERRUPTED:
-                    renderPageJourneyInterrupted(poseStack, x, y + 40, fadePercentage, fontAlpha);
+                    renderPageJourneyInterrupted(graphics, x, y + 40, fadePercentage, fontAlpha);
                     break;
                 case JOURNEY_END:
-                    renderPageJourneyCompleted(poseStack, x, y + 40, fadePercentage, fontAlpha);
+                    renderPageJourneyCompleted(graphics, x, y + 40, fadePercentage, fontAlpha);
                     break;
                 case ROUTE_OVERVIEW:
                     final int[] yOffset = new int[] { y + 40 - 1 };
                     for (int i = getListener().getIndex(); i < Math.min(getListener().getIndex() + MAX_STATION_PER_PAGE, getListener().getListeningRoute().getStationCount(true)); i++) {
                         final int k = i;
-                        yOffset[0] += renderRouteOverview(poseStack, k, x, yOffset[0], alpha, fontAlpha);
+                        yOffset[0] += renderRouteOverview(graphics, k, x, yOffset[0], alpha, fontAlpha);
                     }                    
                     break;                    
                 default:
                     break;
             }
         }
-        poseStack.popPose();
+        graphics.pose().popPose();
         endStencil();
 
-        poseStack.popPose();
+        graphics.pose().popPose();
 
         if (fadePercentage >= 1.0f) {
             fading = false;
@@ -540,16 +539,16 @@ public class RouteDetailsOverlayScreen implements IHudOverlay, IJourneyListenerC
         }
     }
 
-    public void renderSlidingText(PoseStack poseStack, int x, int y) {
-        startStencil(poseStack, x + 3, y + 16, 220, 21);
-        poseStack.pushPose();
-        poseStack.scale(1.0f / 0.75f, 1.0f / 0.75f, 1.0f / 0.75f);
-        GuiComponent.drawCenteredString(poseStack, shadowlessFont, slidingText, (int)((x + 3) + slidingTextOffset), y + 14, 0xFF9900);
-        poseStack.popPose();
+    public void renderSlidingText(GuiGraphics graphics, int x, int y) {
+        startStencil(graphics, x + 3, y + 16, 220, 21);
+        graphics.pose().pushPose();
+        graphics.pose().scale(1.0f / 0.75f, 1.0f / 0.75f, 1.0f / 0.75f);
+        graphics.drawCenteredString(shadowlessFont, slidingText, (int)((x + 3) + slidingTextOffset), y + 14, 0xFF9900);
+        graphics.pose().popPose();
         endStencil();
     }
 
-    public int renderRouteOverview(PoseStack poseStack, int index, int x, int y, float alphaPercentage, int fontAlpha) {
+    public int renderRouteOverview(GuiGraphics graphics, int index, int x, int y, float alphaPercentage, int fontAlpha) {
         RenderSystem.setShaderTexture(0, GUI);
         RenderSystem.setShaderColor(1, 1, 1, alphaPercentage);        
         RenderSystem.enableBlend();
@@ -580,32 +579,32 @@ public class RouteDetailsOverlayScreen implements IHudOverlay, IJourneyListenerC
             default:
                 break;
         }        
-        GuiUtils.blit(GUI, poseStack, x + 75, y, 226, dY, 7, ROUTE_LINE_HEIGHT, 256, 256);
+        GuiUtils.blit(GUI, graphics, x + 75, y, 226, dY, 7, ROUTE_LINE_HEIGHT, 256, 256);
         if (index >= getListener().getIndex() + MAX_STATION_PER_PAGE - 1 && station.getTag() != StationTag.END) {            
-            GuiUtils.blit(GUI, poseStack, x + 75, y + ROUTE_LINE_HEIGHT, 226, ROUTE_LINE_HEIGHT, 7, ROUTE_LINE_HEIGHT, 256, 256);
+            GuiUtils.blit(GUI, graphics, x + 75, y + ROUTE_LINE_HEIGHT, 226, ROUTE_LINE_HEIGHT, 7, ROUTE_LINE_HEIGHT, 256, 256);
         }
 
         // time display
         if (station.isTrainCanceled()) {
-            GuiComponent.drawString(poseStack, shadowlessFont, Utils.translate(keyTrainCanceled), x + 10, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, DELAYED | fontAlpha);  
+            graphics.drawString(shadowlessFont, Utils.translate(keyTrainCanceled), x + 10, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, DELAYED | fontAlpha);  
         } else {
             long timeDiff = station.getDifferenceTime();
             MutableComponent timeText = Utils.text(TimeUtils.parseTime((int)(station.getScheduleTime() + Constants.TIME_SHIFT), ModClientConfig.TIME_FORMAT.get())).withStyle(reachable ? ChatFormatting.RESET : ChatFormatting.STRIKETHROUGH);
             
             float scale = shadowlessFont.width(timeText) >= 30 ? 0.7F : 1;
-            poseStack.pushPose();
-            poseStack.scale(scale, 1, 1);
-            GuiComponent.drawString(poseStack, shadowlessFont, timeText, (int)((x + 10) / scale), y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, reachable ? (index <= getListener().getIndex() ? 0xFFFFFF | fontAlpha : 0xDBDBDB | fontAlpha) : DELAYED | fontAlpha);
-            poseStack.popPose();
+            graphics.pose().pushPose();
+            graphics.pose().scale(scale, 1, 1);
+            graphics.drawString(shadowlessFont, timeText, (int)((x + 10) / scale), y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, reachable ? (index <= getListener().getIndex() ? 0xFFFFFF | fontAlpha : 0xDBDBDB | fontAlpha) : DELAYED | fontAlpha);
+            graphics.pose().popPose();
             
             if (station.reachable(false) && station.shouldRenderRealtime()) {
                 MutableComponent realtimeText = Utils.text(TimeUtils.parseTime((int)(station.getEstimatedTimeWithThreshold() + Constants.TIME_SHIFT), ModClientConfig.TIME_FORMAT.get())).withStyle(reachable ? ChatFormatting.RESET : ChatFormatting.STRIKETHROUGH);
                 
                 float realtimeScale = shadowlessFont.width(realtimeText) >= 30 ? 0.7F : 1;
-                poseStack.pushPose();
-                poseStack.scale(realtimeScale, 1, 1);                
-                GuiComponent.drawString(poseStack, shadowlessFont, realtimeText, (int)((x + 40) / realtimeScale), y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, timeDiff < ModClientConfig.DEVIATION_THRESHOLD.get() && reachable ? ON_TIME | fontAlpha : DELAYED | fontAlpha);
-                poseStack.popPose();
+                graphics.pose().pushPose();
+                graphics.pose().scale(realtimeScale, 1, 1);                
+                graphics.drawString(shadowlessFont, realtimeText, (int)((x + 40) / realtimeScale), y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, timeDiff < ModClientConfig.DEVIATION_THRESHOLD.get() && reachable ? ON_TIME | fontAlpha : DELAYED | fontAlpha);
+                graphics.pose().popPose();
             }
         }
 
@@ -621,8 +620,8 @@ public class RouteDetailsOverlayScreen implements IHudOverlay, IJourneyListenerC
             stationText = Utils.text(shadowlessFont.substrByWidth(stationText, maxStationNameWidth).getString()).append(Utils.text("...")).withStyle(stationText.getStyle());
         }
 
-        GuiComponent.drawString(poseStack, shadowlessFont, stationText, x + 90, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, reachable ? (index <= getListener().getIndex() ? 0xFFFFFF | fontAlpha : 0xDBDBDB | fontAlpha) : DELAYED | fontAlpha);
-        GuiComponent.drawString(poseStack, shadowlessFont, platformText, x + SLIDING_TEXT_AREA_WIDTH - platformTextWidth, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, reachable && !station.stationInfoChanged() ? (index <= getListener().getIndex() ? 0xFFFFFF | fontAlpha : 0xDBDBDB | fontAlpha) : DELAYED | fontAlpha);
+        graphics.drawString(shadowlessFont, stationText, x + 90, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, reachable ? (index <= getListener().getIndex() ? 0xFFFFFF | fontAlpha : 0xDBDBDB | fontAlpha) : DELAYED | fontAlpha);
+        graphics.drawString(shadowlessFont, platformText, x + SLIDING_TEXT_AREA_WIDTH - platformTextWidth, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, reachable && !station.stationInfoChanged() ? (index <= getListener().getIndex() ? 0xFFFFFF | fontAlpha : 0xDBDBDB | fontAlpha) : DELAYED | fontAlpha);
         
         // render transfer
         if (station.getTag() == StationTag.PART_END) {
@@ -631,18 +630,18 @@ public class RouteDetailsOverlayScreen implements IHudOverlay, IJourneyListenerC
             RenderSystem.enableBlend();
             RenderSystem.defaultBlendFunc();
             RenderSystem.enableDepthTest();
-            GuiUtils.blit(GUI, poseStack, x + 75, y, 226, transferY, 7, ROUTE_LINE_HEIGHT, 256, 256);
+            GuiUtils.blit(GUI, graphics, x + 75, y, 226, transferY, 7, ROUTE_LINE_HEIGHT, 256, 256);
             if (nextStation.isPresent() && !nextStation.get().reachable(true)) {
                 if (nextStation.get().isDeparted() || nextStation.get().isTrainCanceled()) {
-                    ModGuiIcons.CROSS.render(poseStack, x + 10, y + ROUTE_LINE_HEIGHT - 2 - ModGuiIcons.ICON_SIZE / 2);
-                    GuiComponent.drawString(poseStack, shadowlessFont, Utils.translate(nextStation.get().isTrainCanceled() ? keyConnectionCanceled : keyConnectionMissed).withStyle(ChatFormatting.BOLD), x + 90, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, DELAYED | fontAlpha);
+                    ModGuiIcons.CROSS.render(graphics, x + 10, y + ROUTE_LINE_HEIGHT - 2 - ModGuiIcons.ICON_SIZE / 2);
+                    graphics.drawString(shadowlessFont, Utils.translate(nextStation.get().isTrainCanceled() ? keyConnectionCanceled : keyConnectionMissed).withStyle(ChatFormatting.BOLD), x + 90, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, DELAYED | fontAlpha);
                 } else {
-                    ModGuiIcons.WARN.render(poseStack, x + 10, y + ROUTE_LINE_HEIGHT - 2 - ModGuiIcons.ICON_SIZE / 2);
-                    GuiComponent.drawString(poseStack, shadowlessFont, Utils.translate(keyConnectionEndangered).withStyle(ChatFormatting.BOLD), x + 90, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, COLOR_WARN | fontAlpha);
+                    ModGuiIcons.WARN.render(graphics, x + 10, y + ROUTE_LINE_HEIGHT - 2 - ModGuiIcons.ICON_SIZE / 2);
+                    graphics.drawString(shadowlessFont, Utils.translate(keyConnectionEndangered).withStyle(ChatFormatting.BOLD), x + 90, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, COLOR_WARN | fontAlpha);
                 }
             } else {
-                GuiComponent.drawString(poseStack, shadowlessFont, Utils.text(TimeUtils.parseDurationShort((int)(getListener().getTransferTime(index)))).withStyle(ChatFormatting.ITALIC), x + 10, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, 0xDBDBDB | fontAlpha);
-                GuiComponent.drawString(poseStack, shadowlessFont, Utils.translate(keyScheduleTransfer).withStyle(ChatFormatting.ITALIC), x + 90, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, 0xDBDBDB | fontAlpha);
+                graphics.drawString(shadowlessFont, Utils.text(TimeUtils.parseDurationShort((int)(getListener().getTransferTime(index)))).withStyle(ChatFormatting.ITALIC), x + 10, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, 0xDBDBDB | fontAlpha);
+                graphics.drawString(shadowlessFont, Utils.translate(keyScheduleTransfer).withStyle(ChatFormatting.ITALIC), x + 90, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, 0xDBDBDB | fontAlpha);
             }
                     
             return ROUTE_LINE_HEIGHT * 2;
@@ -651,8 +650,8 @@ public class RouteDetailsOverlayScreen implements IHudOverlay, IJourneyListenerC
         
     }
 
-    public void renderNextConnections(PoseStack poseStack, int x, int y, float alphaPercentage, int fontAlpha, StationEntry station) {
-        GuiComponent.drawString(poseStack, shadowlessFont, Utils.translate(keyNextConnections).withStyle(ChatFormatting.BOLD), x + 10, y + 4, 0xFFFFFF | fontAlpha);
+    public void renderNextConnections(GuiGraphics graphics, int x, int y, float alphaPercentage, int fontAlpha, StationEntry station) {
+        graphics.drawString(shadowlessFont, Utils.translate(keyNextConnections).withStyle(ChatFormatting.BOLD), x + 10, y + 4, 0xFFFFFF | fontAlpha);
 
         SimpleTrainConnection[] conns = connections.toArray(SimpleTrainConnection[]::new);
         for (int i = connectionsSubPageIndex * CONNECTION_ENTRIES_PER_PAGE, k = 0; i < Math.min((connectionsSubPageIndex + 1) * CONNECTION_ENTRIES_PER_PAGE, connections.size()); i++, k++) {
@@ -676,10 +675,10 @@ public class RouteDetailsOverlayScreen implements IHudOverlay, IJourneyListenerC
                 destination = Utils.text(shadowlessFont.substrByWidth(destination, maxDestinationWidth).getString()).append(Utils.text("..."));
             }
 
-            GuiComponent.drawString(poseStack, shadowlessFont, time, x1, y + 15 + 12 * k, 0xDBDBDB | fontAlpha);
-            GuiComponent.drawString(poseStack, shadowlessFont, trainName, x2, y + 15 + 12 * k, 0xDBDBDB | fontAlpha);
-            GuiComponent.drawString(poseStack, shadowlessFont, destination, x3, y + 15 + 12 * k, 0xDBDBDB | fontAlpha);
-            GuiComponent.drawString(poseStack, shadowlessFont, platform, x4, y + 15 + 12 * k, 0xDBDBDB | fontAlpha);
+            graphics.drawString(shadowlessFont, time, x1, y + 15 + 12 * k, 0xDBDBDB | fontAlpha);
+            graphics.drawString(shadowlessFont, trainName, x2, y + 15 + 12 * k, 0xDBDBDB | fontAlpha);
+            graphics.drawString(shadowlessFont, destination, x3, y + 15 + 12 * k, 0xDBDBDB | fontAlpha);
+            graphics.drawString(shadowlessFont, platform, x4, y + 15 + 12 * k, 0xDBDBDB | fontAlpha);
         }
 
         // page
@@ -691,20 +690,20 @@ public class RouteDetailsOverlayScreen implements IHudOverlay, IJourneyListenerC
             int s = dotSize + (i == connectionsSubPageIndex ? 2 : 0);
             int dX = startX + i * dotSize * 3 - (i == connectionsSubPageIndex ? 1 : 0);
             int dY = dotY - (i == connectionsSubPageIndex ? 1 : 0);
-            GuiComponent.fill(poseStack, dX, dY, dX + s, dY + s, i == connectionsSubPageIndex ? 0xFFFFFF | fontAlpha : 0xDBDBDB | fontAlpha);
-            GuiComponent.fill(poseStack, dX + 1, dY + 1, dX + s - 1, dY + s - 1, i == connectionsSubPageIndex ? 0xAAAAAA | fontAlpha : 0x888888 | fontAlpha);
+            graphics.fill(dX, dY, dX + s, dY + s, i == connectionsSubPageIndex ? 0xFFFFFF | fontAlpha : 0xDBDBDB | fontAlpha);
+            graphics.fill(dX + 1, dY + 1, dX + s - 1, dY + s - 1, i == connectionsSubPageIndex ? 0xAAAAAA | fontAlpha : 0x888888 | fontAlpha);
         }
 
     }
 
-    public void renderPageJourneyStart(PoseStack poseStack, int x, int y, float alphaPercentage, int fontAlpha) {
-        y += 3 + renderRouteOverview(poseStack, getListener().getIndex(), x, y - 3, alphaPercentage, fontAlpha);
-        GuiComponent.fill(poseStack, x + 3, y, x + 3 + SLIDING_TEXT_AREA_WIDTH, y + 1, 0xDBDBDB | fontAlpha);
+    public void renderPageJourneyStart(GuiGraphics graphics, int x, int y, float alphaPercentage, int fontAlpha) {
+        y += 3 + renderRouteOverview(graphics, getListener().getIndex(), x, y - 3, alphaPercentage, fontAlpha);
+        graphics.fill(x + 3, y, x + 3 + SLIDING_TEXT_AREA_WIDTH, y + 1, 0xDBDBDB | fontAlpha);
         
         // Title
-        ModGuiIcons.TIME.render(poseStack, x + 10, y + 3);
+        ModGuiIcons.TIME.render(graphics, x + 10, y + 3);
         long time = getListener().currentStation().getEstimatedTimeWithThreshold() - level.getDayTime();
-        GuiComponent.drawString(poseStack, shadowlessFont, Utils.translate(keyDepartureIn).append(" ").append(time > 0 ? Utils.text(TimeUtils.parseTime((int)(time % 24000), TimeFormat.HOURS_24)) : Utils.translate(keyTimeNow)).withStyle(ChatFormatting.BOLD), x + 15 + ModGuiIcons.ICON_SIZE, y + 3 + ModGuiIcons.ICON_SIZE / 2 - shadowlessFont.lineHeight / 2, 0xFFFFFF | fontAlpha);
+        graphics.drawString(shadowlessFont, Utils.translate(keyDepartureIn).append(" ").append(time > 0 ? Utils.text(TimeUtils.parseTime((int)(time % 24000), TimeFormat.HOURS_24)) : Utils.translate(keyTimeNow)).withStyle(ChatFormatting.BOLD), x + 15 + ModGuiIcons.ICON_SIZE, y + 3 + ModGuiIcons.ICON_SIZE / 2 - shadowlessFont.lineHeight / 2, 0xFFFFFF | fontAlpha);
         y += 5 + ModGuiIcons.ICON_SIZE;
         
         // Details
@@ -720,49 +719,49 @@ public class RouteDetailsOverlayScreen implements IHudOverlay, IJourneyListenerC
             stationText = Utils.text(shadowlessFont.substrByWidth(stationText, maxStationNameWidth).getString()).append(Utils.text("...")).withStyle(stationText.getStyle());
         }
 
-        ModGuiIcons.TARGET.render(poseStack, x + 10, y + shadowlessFont.lineHeight / 2 - ModGuiIcons.ICON_SIZE / 2);
-        GuiComponent.drawString(poseStack, shadowlessFont, stationText, x + 15 + ModGuiIcons.ICON_SIZE, y, 0xDBDBDB | fontAlpha);
-        GuiComponent.drawString(poseStack, shadowlessFont, platformText, x + SLIDING_TEXT_AREA_WIDTH - platformTextWidth, y, endStation.stationInfoChanged() ? DELAYED | fontAlpha : 0xDBDBDB | fontAlpha);
-        ModGuiIcons.INFO.render(poseStack, x + 10, y + detailsLineHeight + shadowlessFont.lineHeight / 2 - ModGuiIcons.ICON_SIZE / 2);
-        GuiComponent.drawString(poseStack, shadowlessFont, Utils.text(String.format("%s %s | %s",
+        ModGuiIcons.TARGET.render(graphics, x + 10, y + shadowlessFont.lineHeight / 2 - ModGuiIcons.ICON_SIZE / 2);
+        graphics.drawString(shadowlessFont, stationText, x + 15 + ModGuiIcons.ICON_SIZE, y, 0xDBDBDB | fontAlpha);
+        graphics.drawString(shadowlessFont, platformText, x + SLIDING_TEXT_AREA_WIDTH - platformTextWidth, y, endStation.stationInfoChanged() ? DELAYED | fontAlpha : 0xDBDBDB | fontAlpha);
+        ModGuiIcons.INFO.render(graphics, x + 10, y + detailsLineHeight + shadowlessFont.lineHeight / 2 - ModGuiIcons.ICON_SIZE / 2);
+        graphics.drawString(shadowlessFont, Utils.text(String.format("%s %s | %s",
             getListener().getListeningRoute().getTransferCount(),
             Utils.translate(keyTransferCount).getString(),
             TimeUtils.parseDurationShort(getListener().getListeningRoute().getTotalDuration())
         )), x + 15 + ModGuiIcons.ICON_SIZE, y + detailsLineHeight, 0xDBDBDB | fontAlpha);
     }
 
-    public void renderPageTransfer(PoseStack poseStack, int x, int y, float alphaPercentage, int fontAlpha, StationEntry station) {
-        y += 3 + renderRouteOverview(poseStack, getListener().getIndex(), x, y - 3, alphaPercentage, fontAlpha);
-        GuiComponent.fill(poseStack, x + 3, y, x + 3 + SLIDING_TEXT_AREA_WIDTH, y + 1, 0xDBDBDB | fontAlpha);
+    public void renderPageTransfer(GuiGraphics graphics, int x, int y, float alphaPercentage, int fontAlpha, StationEntry station) {
+        y += 3 + renderRouteOverview(graphics, getListener().getIndex(), x, y - 3, alphaPercentage, fontAlpha);
+        graphics.fill(x + 3, y, x + 3 + SLIDING_TEXT_AREA_WIDTH, y + 1, 0xDBDBDB | fontAlpha);
         
         // Title
-        ModGuiIcons.WALK.render(poseStack, x + 10, y + 3);        
+        ModGuiIcons.WALK.render(graphics, x + 10, y + 3);        
         long transferTime = getListener().currentStation().getEstimatedTimeWithThreshold() - level.getDayTime();//getListener().getTransferTime(getListener().getIndex());
-        GuiComponent.drawString(poseStack, shadowlessFont, Utils.translate(keyScheduleTransfer).append(" ").append(transferTime > 0 ? Utils.text(TimeUtils.parseTime((int)(transferTime % 24000), TimeFormat.HOURS_24)) : Utils.translate(keyTimeNow)).withStyle(ChatFormatting.BOLD), x + 15 + ModGuiIcons.ICON_SIZE, y + 3 + ModGuiIcons.ICON_SIZE / 2 - shadowlessFont.lineHeight / 2, 0xFFFFFF | fontAlpha);
+        graphics.drawString(shadowlessFont, Utils.translate(keyScheduleTransfer).append(" ").append(transferTime > 0 ? Utils.text(TimeUtils.parseTime((int)(transferTime % 24000), TimeFormat.HOURS_24)) : Utils.translate(keyTimeNow)).withStyle(ChatFormatting.BOLD), x + 15 + ModGuiIcons.ICON_SIZE, y + 3 + ModGuiIcons.ICON_SIZE / 2 - shadowlessFont.lineHeight / 2, 0xFFFFFF | fontAlpha);
         y += 5 + ModGuiIcons.ICON_SIZE;
         
         // Details
-        this.messageLabel.renderLeftAligned(poseStack, x + 15 + ModGuiIcons.ICON_SIZE, y, 12, 0xDBDBDB | fontAlpha);
+        this.messageLabel.renderLeftAligned(graphics, x + 15 + ModGuiIcons.ICON_SIZE, y, 12, 0xDBDBDB | fontAlpha);
     }
 
-    public void renderPageJourneyInterrupted(PoseStack poseStack, int x, int y, float alphaPercentage, int fontAlpha) {
+    public void renderPageJourneyInterrupted(GuiGraphics graphics, int x, int y, float alphaPercentage, int fontAlpha) {
         // Title
-        ModGuiIcons.CROSS.render(poseStack, x + 10, y + 3);
-        GuiComponent.drawString(poseStack, shadowlessFont, interruptedText.withStyle(ChatFormatting.BOLD), x + 15 + ModGuiIcons.ICON_SIZE, y + 3 + ModGuiIcons.ICON_SIZE / 2 - shadowlessFont.lineHeight / 2, DELAYED | fontAlpha);
+        ModGuiIcons.CROSS.render(graphics, x + 10, y + 3);
+        graphics.drawString(shadowlessFont, interruptedText.withStyle(ChatFormatting.BOLD), x + 15 + ModGuiIcons.ICON_SIZE, y + 3 + ModGuiIcons.ICON_SIZE / 2 - shadowlessFont.lineHeight / 2, DELAYED | fontAlpha);
         y += 5 + ModGuiIcons.ICON_SIZE;
         
         // Details
-        this.messageLabel.renderLeftAligned(poseStack, x + 10, y, 10, 0xDBDBDB | fontAlpha);
+        this.messageLabel.renderLeftAligned(graphics, x + 10, y, 10, 0xDBDBDB | fontAlpha);
     }
 
-    public void renderPageJourneyCompleted(PoseStack poseStack, int x, int y, float alphaPercentage, int fontAlpha) {
+    public void renderPageJourneyCompleted(GuiGraphics graphics, int x, int y, float alphaPercentage, int fontAlpha) {
         // Title
-        ModGuiIcons.CHECK.render(poseStack, x + 10, y + 3);
-        GuiComponent.drawString(poseStack, shadowlessFont, Utils.translate(keyJourneyCompleted).withStyle(ChatFormatting.BOLD), x + 15 + ModGuiIcons.ICON_SIZE, y + 3 + ModGuiIcons.ICON_SIZE / 2 - shadowlessFont.lineHeight / 2, ON_TIME | fontAlpha);
+        ModGuiIcons.CHECK.render(graphics, x + 10, y + 3);
+        graphics.drawString(shadowlessFont, Utils.translate(keyJourneyCompleted).withStyle(ChatFormatting.BOLD), x + 15 + ModGuiIcons.ICON_SIZE, y + 3 + ModGuiIcons.ICON_SIZE / 2 - shadowlessFont.lineHeight / 2, ON_TIME | fontAlpha);
         y += 5 + ModGuiIcons.ICON_SIZE;
         
         // Details
-        this.messageLabel.renderLeftAligned(poseStack, x + 10, y, 10, 0xDBDBDB | fontAlpha);
+        this.messageLabel.renderLeftAligned(graphics, x + 10, y, 10, 0xDBDBDB | fontAlpha);
     }
     //#endregion
 

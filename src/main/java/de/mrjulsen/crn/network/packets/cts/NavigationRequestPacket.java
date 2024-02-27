@@ -61,7 +61,7 @@ public class NavigationRequestPacket implements IPacketBase<NavigationRequestPac
         context.get().enqueueWork(() -> {
             Thread navigationThread = new Thread(() -> {
                 List<Route> routes = new ArrayList<>();
-                final long updateTime = context.get().getSender().level.getDayTime();
+                final long updateTime = context.get().getSender().level().getDayTime();
                 final long startTime = System.currentTimeMillis();
                 
                 try {
@@ -72,7 +72,7 @@ public class NavigationRequestPacket implements IPacketBase<NavigationRequestPac
                         return;
                     }
                     
-                    Graph graph = new Graph(context.get().getSender().getLevel(), packet.filterSettings);
+                    Graph graph = new Graph(context.get().getSender().level(), packet.filterSettings);
                     routes.addAll(graph.navigate(startAlias, endAlias, true));
                 } catch (Exception e) {
                     ModMain.LOGGER.error("Navigation error: ", e);

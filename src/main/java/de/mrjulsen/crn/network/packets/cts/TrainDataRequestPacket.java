@@ -48,7 +48,7 @@ public class TrainDataRequestPacket implements IPacketBase<TrainDataRequestPacke
                 packet.trainId,
                 train.speed,
                 train.navigation.ticksWaitingForSignal
-            ), context.get().getSender().getLevel().getDayTime()), context.get().getSender());
+            ), context.get().getSender().level().getDayTime()), context.get().getSender());
         });
         
         context.get().setPacketHandled(true);

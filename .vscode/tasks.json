@@ -1,0 +1,37 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "prepareRunClientCompile",
+      "type": "shell",
+      "command": "./gradlew prepareRunClientCompile",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      }
+    },
+    {
+      "label": "prepareRunDataCompile",
+      "type": "shell",
+      "command": "./gradlew prepareRunDataCompile",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      }
+    },
+    {
+      "label": "prepareRunGameTestServerCompile",
+      "type": "shell",
+      "command": "./gradlew prepareRunGameTestServerCompile",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      }
+    },
+    {
+      "label": "prepareRunServerCompile",
+      "type": "shell",
+      "command": "./gradlew prepareRunServerCompile",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      }
+    }
+  ]
+}

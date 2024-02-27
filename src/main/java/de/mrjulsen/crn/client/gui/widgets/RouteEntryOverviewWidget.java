@@ -1,6 +1,5 @@
 package de.mrjulsen.crn.client.gui.widgets;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 
 import de.mrjulsen.crn.Constants;
@@ -20,6 +19,7 @@ import de.mrjulsen.mcdragonlib.utils.Utils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.level.Level;
@@ -41,7 +41,7 @@ public class RouteEntryOverviewWidget extends Button {
     private static final MutableComponent trainCanceled = Utils.translate("gui.createrailwaysnavigator.route_overview.stop_canceled");
 
     public RouteEntryOverviewWidget(NavigatorScreen parent, Level level, int lastRefreshedTime, int pX, int pY, SimpleRoute route, OnPress pOnPress) {
-        super(pX, pY, WIDTH, HEIGHT, Utils.text(route.getName()), pOnPress); // 48
+        super(pX, pY, WIDTH, HEIGHT, Utils.text(route.getName()), pOnPress, DEFAULT_NARRATION); // 48
         this.route = route;
         this.parent = parent;
         this.level = level;
@@ -57,7 +57,7 @@ public class RouteEntryOverviewWidget extends Button {
     }
 
     @Override
-    public void renderButton(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) {
+    public void renderWidget(GuiGraphics graphics, int pMouseX, int pMouseY, float pPartialTick) {
         
         final float scale = 0.75f;
         float l = isMouseOver(pMouseX, pMouseY) ? 0.1f : 0;
@@ -68,8 +68,8 @@ public class RouteEntryOverviewWidget extends Button {
         if (!beforeJourney) {
             color = ModGuiUtils.applyTint(color, 0x663300);
         }
-        DynamicWidgets.renderSingleShadeWidget(pPoseStack, x, y, WIDTH, HEIGHT, color);
-        DynamicWidgets.renderHorizontalSeparator(pPoseStack, x + 6, y + 22, 188);
+        DynamicWidgets.renderSingleShadeWidget(graphics, getX(), getY(), WIDTH, HEIGHT, color);
+        DynamicWidgets.renderHorizontalSeparator(graphics, getX() + 6, getY() + 22, 188);
 
         Minecraft minecraft = Minecraft.getInstance();
         SimpleRoutePart[] parts = route.getParts().toArray(SimpleRoutePart[]::new);
@@ -92,44 +92,44 @@ public class RouteEntryOverviewWidget extends Button {
         }
 
         float localScale = shadowlessFont.width(line) > WIDTH - 12 ? scale : 1;
-        pPoseStack.pushPose();
-        pPoseStack.scale(localScale, 1, 1);
-        drawString(pPoseStack, minecraft.font, line, (int)((x + 6) / localScale), y + 5, 0xFFFFFF);
-        pPoseStack.popPose();
+        graphics.pose().pushPose();
+        graphics.pose().scale(localScale, 1, 1);
+        graphics.drawString(minecraft.font, line, (int)((getX() + 6) / localScale), getY() + 5, 0xFFFFFF);
+        graphics.pose().popPose();
 
         int routePartWidth = DISPLAY_WIDTH / parts.length;
         String end = route.getEndStation().getStationName();
         int textW = shadowlessFont.width(end);
         
         for (int i = 0; i < parts.length; i++) {
-            fill(pPoseStack, x + 5 + (i * routePartWidth) + 1, y + 27, x + 5 + ((i + 1) * routePartWidth + 1) - 2, y + 38, 0xFF393939);
+            graphics.fill(getX() + 5 + (i * routePartWidth) + 1, getY() + 27, getX() + 5 + ((i + 1) * routePartWidth + 1) - 2, getY() + 38, 0xFF393939);
         }
 
-        pPoseStack.pushPose();
-        pPoseStack.scale(scale, scale, scale);
+        graphics.pose().pushPose();
+        graphics.pose().scale(scale, scale, scale);
         
         if (route.getStartStation().shouldRenderRealtime()) {
-            drawString(pPoseStack, shadowlessFont, TimeUtils.parseTime((int)(route.getStartStation().getEstimatedTimeWithThreshold() % 24000 + Constants.TIME_SHIFT), ModClientConfig.TIME_FORMAT.get()), (int)((x + 6 + shadowlessFont.width(timeStart) * localScale / 2.0f) / scale) - shadowlessFont.width(timeStart) / 2, (int)((y + 15) / scale), route.getStartStation().isDelayed() ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME);
+            graphics.drawString(shadowlessFont, TimeUtils.parseTime((int)(route.getStartStation().getEstimatedTimeWithThreshold() % 24000 + Constants.TIME_SHIFT), ModClientConfig.TIME_FORMAT.get()), (int)((getX() + 6 + shadowlessFont.width(timeStart) * localScale / 2.0f) / scale) - shadowlessFont.width(timeStart) / 2, (int)((getY() + 15) / scale), route.getStartStation().isDelayed() ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME);
         }
         if (route.getEndStation().shouldRenderRealtime()) {
-            drawString(pPoseStack, shadowlessFont, TimeUtils.parseTime((int)(route.getEndStation().getEstimatedTimeWithThreshold() % 24000 + Constants.TIME_SHIFT), ModClientConfig.TIME_FORMAT.get()), (int)((x + 6 + shadowlessFont.width(timeEnd) * localScale * 1.5f + (shadowlessFont.width(dash)) * localScale) / scale) - shadowlessFont.width(timeEnd) / 2, (int)((y + 15) / scale), route.getEndStation().isDelayed() ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME);
+            graphics.drawString(shadowlessFont, TimeUtils.parseTime((int)(route.getEndStation().getEstimatedTimeWithThreshold() % 24000 + Constants.TIME_SHIFT), ModClientConfig.TIME_FORMAT.get()), (int)((getX() + 6 + shadowlessFont.width(timeEnd) * localScale * 1.5f + (shadowlessFont.width(dash)) * localScale) / scale) - shadowlessFont.width(timeEnd) / 2, (int)((getY() + 15) / scale), route.getEndStation().isDelayed() ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME);
         }
 
         if (!route.isValid()) {
-            drawString(pPoseStack, shadowlessFont, trainCanceled, (int)((x + WIDTH - 5) / scale) - shadowlessFont.width(trainCanceled), (int)((y + 15) / scale), Constants.COLOR_DELAYED);        
+            graphics.drawString(shadowlessFont, trainCanceled, (int)((getX() + WIDTH - 5) / scale) - shadowlessFont.width(trainCanceled), (int)((getY() + 15) / scale), Constants.COLOR_DELAYED);        
         } else if (!beforeJourney) {
-            drawString(pPoseStack, shadowlessFont, connectionInPast, (int)((x + WIDTH - 5) / scale) - shadowlessFont.width(connectionInPast), (int)((y + 15) / scale), Constants.COLOR_DELAYED);        
+            graphics.drawString(shadowlessFont, connectionInPast, (int)((getX() + WIDTH - 5) / scale) - shadowlessFont.width(connectionInPast), (int)((getY() + 15) / scale), Constants.COLOR_DELAYED);        
         }
 
 
         for (int i = 0; i < parts.length; i++) {
-            drawCenteredString(pPoseStack, shadowlessFont, parts[i].getTrainName(), (int)((x + 5 + (i * routePartWidth) + (routePartWidth / 2)) / 0.75f), (int)((y + 30) / 0.75f), 0xFFFFFF);
+            graphics.drawCenteredString(shadowlessFont, parts[i].getTrainName(), (int)((getX() + 5 + (i * routePartWidth) + (routePartWidth / 2)) / 0.75f), (int)((getY() + 30) / 0.75f), 0xFFFFFF);
         }
 
-        drawString(pPoseStack, shadowlessFont, route.getStartStation().getStationName(), (int)((x + 6) / scale), (int)((y + 43) / scale), 0xDBDBDB);
-        drawString(pPoseStack, shadowlessFont, end, (int)((x + WIDTH - 6) / scale) - textW, (int)((y + 43) / scale), 0xDBDBDB);
+        graphics.drawString(shadowlessFont, route.getStartStation().getStationName(), (int)((getX() + 6) / scale), (int)((getY() + 43) / scale), 0xDBDBDB);
+        graphics.drawString(shadowlessFont, end, (int)((getX() + WIDTH - 6) / scale) - textW, (int)((getY() + 43) / scale), 0xDBDBDB);
         
-        pPoseStack.popPose();
+        graphics.pose().popPose();
     }
     
 }

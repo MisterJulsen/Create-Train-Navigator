@@ -4,7 +4,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.text2speech.Narrator;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 import com.simibubi.create.foundation.gui.AllIcons;
@@ -36,6 +35,7 @@ import de.mrjulsen.mcdragonlib.utils.Utils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -220,35 +220,35 @@ public class RouteOverlaySettingsScreen extends CommonScreen {
     }
     
     @Override
-    public void renderBg(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) {
-        renderBackground(pPoseStack);
-        GuiUtils.blit(GUI, pPoseStack, guiLeft, guiTop, 0, 0, GUI_WIDTH, GUI_HEIGHT);
-        drawString(pPoseStack, shadowlessFont, title, guiLeft + 6, guiTop + 4, DragonLibConstants.DEFAULT_UI_FONT_COLOR);
+    public void renderBg(GuiGraphics graphics, int pMouseX, int pMouseY, float pPartialTick) {
+        renderBackground(graphics);
+        GuiUtils.blit(GUI, graphics, guiLeft, guiTop, 0, 0, GUI_WIDTH, GUI_HEIGHT);
+        graphics.drawString(shadowlessFont, title, guiLeft + 6, guiTop + 4, DragonLibConstants.DEFAULT_UI_FONT_COLOR);
 
         GuiGameElement.of(renderedItem).<GuiGameElement
 			.GuiRenderBuilder>at(guiLeft + GUI_WIDTH, guiTop + GUI_HEIGHT - 48, -200)
 			.scale(5)
-			.render(pPoseStack);
+			.render(graphics);
 
-        DynamicWidgets.renderTextBox(pPoseStack, guiLeft + 63, guiTop + 23, 43);
+        DynamicWidgets.renderTextBox(graphics, guiLeft + 63, guiTop + 23, 43);
 
-        drawString(pPoseStack, font, scaleLabel, guiLeft + 67, guiTop + 28, 0xFFFFFF);
+        graphics.drawString(font, scaleLabel, guiLeft + 67, guiTop + 28, 0xFFFFFF);
 
-        super.renderBg(pPoseStack, pMouseX, pMouseY, pPartialTick);
+        super.renderBg(graphics, pMouseX, pMouseY, pPartialTick);
     }
 
     @Override
-    public void renderFg(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) {
+    public void renderFg(GuiGraphics graphics, int pMouseX, int pMouseY, float pPartialTick) {
         buttons.performForEach(widget -> {
             if (widget instanceof AbstractSimiWidget simiWidget && simiWidget.isHoveredOrFocused()) {
 				List<Component> tooltip = simiWidget.getToolTip();
 				if (tooltip.isEmpty())
 					return;
-				int ttx = simiWidget.lockedTooltipX == -1 ? pMouseX : simiWidget.lockedTooltipX + simiWidget.x;
-				int tty = simiWidget.lockedTooltipY == -1 ? pMouseY : simiWidget.lockedTooltipY + simiWidget.y;
-				renderComponentTooltip(pPoseStack, tooltip, ttx, tty);
+				int ttx = simiWidget.lockedTooltipX == -1 ? pMouseX : simiWidget.lockedTooltipX + simiWidget.getX();
+				int tty = simiWidget.lockedTooltipY == -1 ? pMouseY : simiWidget.lockedTooltipY + simiWidget.getY();
+				graphics.renderComponentTooltip(font, tooltip, ttx, tty);
 			}
         });
-        super.renderFg(pPoseStack, pMouseX, pMouseY, pPartialTick);
+        super.renderFg(graphics, pMouseX, pMouseY, pPartialTick);
     }
 }

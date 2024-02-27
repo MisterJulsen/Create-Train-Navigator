@@ -1,14 +1,14 @@
 package de.mrjulsen.crn.client.gui.widgets;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphics;
 
 public interface IEntryListSettingsOption {
     void setYPos(int y);
     void tick();
     int calcHeight();
     void unfocusAll();
-    void renderForeground(PoseStack poseStack, int mouseX, int mouseY, float partialTicks);
-    void renderSuggestions(PoseStack poseStack, int mouseX, int mouseY, float partialTicks);
+    void renderForeground(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks);
+    void renderSuggestions(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks);
     /**
      * This method is always called, even if the used clicked outside the working area of the container window.
      * This additional method should fix the usage of the suggestions popup, which can be rendered outside of the working area.

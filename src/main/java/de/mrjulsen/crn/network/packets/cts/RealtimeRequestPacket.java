@@ -52,7 +52,7 @@ public class RealtimeRequestPacket implements IPacketBase<RealtimeRequestPacket>
         context.get().enqueueWork(() ->
         {
             new Thread(() -> {
-                final long updateTime = context.get().getSender().level.getDayTime();
+                final long updateTime = context.get().getSender().level().getDayTime();
                 Collection<SimpleDeparturePrediction> predictions = new ArrayList<>();
                 packet.ids.forEach(x -> {
                     if (!TrainUtils.isTrainIdValid(x)) {

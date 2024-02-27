@@ -1,6 +1,5 @@
 package de.mrjulsen.crn.client.gui.screen;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 import com.simibubi.create.foundation.gui.AllIcons;
 import com.simibubi.create.foundation.gui.UIRenderHelper;
@@ -16,13 +15,14 @@ import de.mrjulsen.crn.util.ModGuiUtils;
 import de.mrjulsen.mcdragonlib.DragonLibConstants;
 import de.mrjulsen.mcdragonlib.client.gui.GuiAreaDefinition;
 import de.mrjulsen.mcdragonlib.client.gui.GuiUtils;
-import de.mrjulsen.mcdragonlib.client.gui.Tooltip;
+import de.mrjulsen.mcdragonlib.client.gui.DragonLibTooltip;
 import de.mrjulsen.mcdragonlib.client.gui.WidgetsCollection;
 import de.mrjulsen.mcdragonlib.client.gui.wrapper.CommonScreen;
 import de.mrjulsen.mcdragonlib.utils.TimeUtils;
 import de.mrjulsen.mcdragonlib.utils.Utils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -112,7 +112,7 @@ public class GlobalSettingsScreen extends CommonScreen {
                 onClose();
             }
         });
-        addTooltip(Tooltip.of(Constants.TOOLTIP_GO_BACK).assignedTo(backButton));
+        addTooltip(DragonLibTooltip.of(Constants.TOOLTIP_GO_BACK).assignedTo(backButton));
     }
     
     private int getMaxScrollHeight() {
@@ -132,31 +132,31 @@ public class GlobalSettingsScreen extends CommonScreen {
     }
 
     @Override
-    public void renderBg(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) {
+    public void renderBg(GuiGraphics graphics, int pMouseX, int pMouseY, float pPartialTick) {
         float scrollOffset = -scroll.getValue(pPartialTick);
 
-        renderBackground(pPoseStack);
-        GuiUtils.blit(GUI, pPoseStack, guiLeft, guiTop, 0, 0, GUI_WIDTH, GUI_HEIGHT);          
-        drawString(pPoseStack, shadowlessFont, title, guiLeft + 19, guiTop + 4, 0x4F4F4F);
+        renderBackground(graphics);
+        GuiUtils.blit(GUI, graphics, guiLeft, guiTop, 0, 0, GUI_WIDTH, GUI_HEIGHT);          
+        graphics.drawString(shadowlessFont, title, guiLeft + 19, guiTop + 4, 0x4F4F4F);
         String timeString = TimeUtils.parseTime((int)((level.getDayTime() + Constants.TIME_SHIFT) % DragonLibConstants.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get());
-        drawString(pPoseStack, shadowlessFont, timeString, guiLeft + GUI_WIDTH - 22 - shadowlessFont.width(timeString), guiTop + 4, 0x4F4F4F);
+        graphics.drawString(shadowlessFont, timeString, guiLeft + GUI_WIDTH - 22 - shadowlessFont.width(timeString), guiTop + 4, 0x4F4F4F);
 
         // CONTENT
         UIRenderHelper.swapAndBlitColor(minecraft.getMainRenderTarget(), UIRenderHelper.framebuffer);
-        ModGuiUtils.startStencil(pPoseStack, guiLeft + AREA_X, guiTop + AREA_Y, AREA_W, AREA_H);
-        pPoseStack.pushPose();
-        pPoseStack.translate(0, scrollOffset, 0);      
+        ModGuiUtils.startStencil(graphics, guiLeft + AREA_X, guiTop + AREA_Y, AREA_W, AREA_H);
+        graphics.pose().pushPose();
+        graphics.pose().translate(0, scrollOffset, 0);      
         
-        optionsCollection.performForEachOfType(SettingsOptionWidget.class, x -> x.renderButton(pPoseStack, pMouseX, (int)(pMouseY - scrollOffset), pPartialTick, workingArea.isInBounds(pMouseX, pMouseY)));
+        optionsCollection.performForEachOfType(SettingsOptionWidget.class, x -> x.renderButton(graphics, pMouseX, (int)(pMouseY - scrollOffset), pPartialTick, workingArea.isInBounds(pMouseX, pMouseY)));
 
-        pPoseStack.popPose();
+        graphics.pose().popPose();
         ModGuiUtils.endStencil();        
-        net.minecraftforge.client.gui.ScreenUtils.drawGradientRect(pPoseStack.last().pose(), 200, guiLeft + AREA_X, guiTop + AREA_Y, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y + 10, 0x77000000, 0x00000000);
-        net.minecraftforge.client.gui.ScreenUtils.drawGradientRect(pPoseStack.last().pose(), 200, guiLeft + AREA_X, guiTop + AREA_Y + AREA_H - 10, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y + AREA_H, 0x00000000, 0x77000000);
+        graphics.fillGradient(guiLeft + AREA_X, guiTop + AREA_Y, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y + 10, 0x77000000, 0x00000000);
+        graphics.fillGradient(guiLeft + AREA_X, guiTop + AREA_Y + AREA_H - 10, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y + AREA_H, 0x00000000, 0x77000000);
         UIRenderHelper.swapAndBlitColor(UIRenderHelper.framebuffer, minecraft.getMainRenderTarget());
 
 
-        super.renderBg(pPoseStack, pMouseX, pMouseY, pPartialTick);
+        super.renderBg(graphics, pMouseX, pMouseY, pPartialTick);
 
         // Scrollbar
         double maxHeight = getMaxScrollHeight();
@@ -165,15 +165,15 @@ public class GlobalSettingsScreen extends CommonScreen {
             int scrollerHeight = Math.max(10, (int)(aH * (aH / maxHeight)));
             int startY = guiTop + AREA_Y + (int)((AREA_H) * (Math.abs(scrollOffset) / maxHeight));
 
-            fill(pPoseStack, guiLeft + AREA_X + AREA_W - 3, startY, guiLeft + AREA_X + AREA_W, startY + scrollerHeight, 0x7FFFFFFF);
+            graphics.fill(guiLeft + AREA_X + AREA_W - 3, startY, guiLeft + AREA_X + AREA_W, startY + scrollerHeight, 0x7FFFFFFF);
         }
     }
 
     @Override
-    public void renderFg(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTicks) {
+    public void renderFg(GuiGraphics graphics, int pMouseX, int pMouseY, float pPartialTicks) {
 		float scrollOffset = -scroll.getValue(pPartialTicks);
-        optionsCollection.performForEachOfType(SettingsOptionWidget.class, x -> workingArea.isInBounds(pMouseX, pMouseY), x -> x.renderForeground(pPoseStack, pMouseX, pMouseY, -scrollOffset));
-        super.renderFg(pPoseStack, pMouseX, pMouseY, pPartialTicks);
+        optionsCollection.performForEachOfType(SettingsOptionWidget.class, x -> workingArea.isInBounds(pMouseX, pMouseY), x -> x.renderForeground(graphics, pMouseX, pMouseY, -scrollOffset));
+        super.renderFg(graphics, pMouseX, pMouseY, pPartialTicks);
     }
 
     @Override

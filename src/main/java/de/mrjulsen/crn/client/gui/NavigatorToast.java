@@ -6,13 +6,12 @@ import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 
 import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.mcdragonlib.client.gui.GuiUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.toasts.Toast;
 import net.minecraft.client.gui.components.toasts.ToastComponent;
 import net.minecraft.network.chat.Component;
@@ -68,7 +67,7 @@ public class NavigatorToast implements Toast {
      * @param pTimeSinceLastVisible time in milliseconds
      */
     @SuppressWarnings("resource")
-    public Toast.Visibility render(PoseStack pPoseStack, ToastComponent pToastComponent, long pTimeSinceLastVisible) {
+    public Toast.Visibility render(GuiGraphics graphics, ToastComponent pToastComponent, long pTimeSinceLastVisible) {
         if (this.changed) {
             this.lastChanged = pTimeSinceLastVisible;
             this.changed = false;
@@ -80,19 +79,19 @@ public class NavigatorToast implements Toast {
         int lineHeight = 10;
         
         int toastHeight = this.height() + Math.max(0, this.messageLines.size() - 1) * lineHeight + 3;
-        GuiComponent.fill(pPoseStack, 0, 0, lineWidth, toastHeight, COLOR_BORDER);
-        GuiComponent.fill(pPoseStack, 1, 1, lineWidth - 1, toastHeight - 1, COLOR_INNER_BORDER);
-        GuiComponent.fill(pPoseStack, 3, 3, lineWidth - 3, toastHeight - 3, COLOR_CANVAS);
+        graphics.fill(0, 0, lineWidth, toastHeight, COLOR_BORDER);
+        graphics.fill(1, 1, lineWidth - 1, toastHeight - 1, COLOR_INNER_BORDER);
+        graphics.fill(3, 3, lineWidth - 3, toastHeight - 3, COLOR_CANVAS);
 
-        GuiUtils.blit(MOD_ICON, pPoseStack, 4, this.messageLines == null || this.messageLines.size() <= 1 ? 0 : 4, 32, 32, 0, 0, 64, 64, 64, 64);
+        GuiUtils.blit(MOD_ICON, graphics, 4, this.messageLines == null || this.messageLines.size() <= 1 ? 0 : 4, 32, 32, 0, 0, 64, 64, 64, 64);
 
         if (this.messageLines == null) {
-            pToastComponent.getMinecraft().font.draw(pPoseStack, this.title, 40, lineHeight, -256);
+            graphics.drawString(Minecraft.getInstance().font, this.title, 40, lineHeight, -256, false);
         } else {
-            pToastComponent.getMinecraft().font.draw(pPoseStack, this.title, 40, 7.0F, -256);
+            graphics.drawString(Minecraft.getInstance().font, this.title, 40, 7, -256, false);
 
             for (int i = 0; i < this.messageLines.size(); ++i) {
-                pToastComponent.getMinecraft().font.draw(pPoseStack, this.messageLines.get(i), 40, (float) (20 + i * lineHeight), -1);
+                graphics.drawString(Minecraft.getInstance().font, this.messageLines.get(i), 40, (float) (20 + i * lineHeight), -1, false);
             }
         }
 

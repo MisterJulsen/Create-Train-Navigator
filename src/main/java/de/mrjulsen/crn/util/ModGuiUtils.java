@@ -17,10 +17,12 @@ import com.simibubi.create.foundation.gui.UIRenderHelper.CustomRenderTarget;
 import de.mrjulsen.mcdragonlib.client.gui.GuiAreaDefinition;
 import de.mrjulsen.mcdragonlib.client.gui.GuiUtils;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.item.ItemStack;
 
 public class ModGuiUtils {
 	
@@ -43,8 +45,12 @@ public class ModGuiUtils {
 		return framebuffer;
 	}
 
-	/**
-	 * Switch from src to dst, after copying the contents of src to dst.
+    public static void updateWindowSize(Window window) {
+        if (getFramebuffer() != null)
+            getFramebuffer().resize(window.getWidth(), window.getHeight(), Minecraft.ON_OSX);
+    }
+    
+    /**
 	 * @see https://github.com/Creators-of-Create/Create/blob/mc1.18/dev/src/main/java/com/simibubi/create/foundation/gui/UIRenderHelper.java
 	 */
 	public static void swapAndBlitColor(RenderTarget src, RenderTarget dst) {
@@ -55,10 +61,10 @@ public class ModGuiUtils {
 		GlStateManager._glBindFramebuffer(GlConst.GL_FRAMEBUFFER, dst.frameBufferId);
 	}
 
-	/**
-	 * @see https://github.com/Creators-of-Create/Create/blob/mc1.18/dev/src/main/java/com/simibubi/create/content/trains/schedule/ScheduleScreen.java
-	 */
-    public static void startStencil(PoseStack matrixStack, float x, float y, float w, float h) {
+    /**
+     * @see https://github.com/Creators-of-Create/Create/blob/mc1.20.1/dev/src/main/java/com/simibubi/create/content/trains/schedule/ScheduleScreen.java#L860
+     */
+	public static void startStencil(GuiGraphics graphics, float x, float y, float w, float h) {
 		RenderSystem.clear(GL30.GL_STENCIL_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
 
 		GL11.glDisable(GL11.GL_STENCIL_TEST);
@@ -69,11 +75,11 @@ public class ModGuiUtils {
 		RenderSystem.stencilMask(0xFF);
 		RenderSystem.stencilFunc(GL11.GL_NEVER, 1, 0xFF);
 
+		PoseStack matrixStack = graphics.pose();
 		matrixStack.pushPose();
 		matrixStack.translate(x, y, 0);
 		matrixStack.scale(w, h, 1);
-		net.minecraftforge.client.gui.ScreenUtils.drawGradientRect(matrixStack.last()
-			.pose(), -100, 0, 0, 1, 1, 0xff000000, 0xff000000);
+		graphics.fillGradient(0, 0, 1, 1, -100, 0xff000000, 0xff000000);
 		matrixStack.popPose();
 
 		GL11.glEnable(GL11.GL_STENCIL_TEST);
@@ -81,17 +87,19 @@ public class ModGuiUtils {
 		RenderSystem.stencilFunc(GL11.GL_EQUAL, 1, 0xFF);
 	}
 
-	/**
-	 * @see https://github.com/Creators-of-Create/Create/blob/mc1.18/dev/src/main/java/com/simibubi/create/content/trains/schedule/ScheduleScreen.java
-	 */
+    /**
+     * @see https://github.com/Creators-of-Create/Create/blob/mc1.20.1/dev/src/main/java/com/simibubi/create/content/trains/schedule/ScheduleScreen.java#L860
+     */
 	public static void endStencil() {
 		GL11.glDisable(GL11.GL_STENCIL_TEST);
 	}
 
+
+
 	@SuppressWarnings("resource")
-	public static <T extends FormattedText> boolean renderTooltipAtFixedPos(Screen screen, GuiAreaDefinition area, List<T> lines, int maxWidth, PoseStack stack, int mouseX, int mouseY, int xOffset, int yOffset, int xPos, int yPos) {
-		if (area.isInBounds((double)(mouseX + xOffset), (double)(mouseY + yOffset))) {
-			screen.renderComponentTooltip(stack, GuiUtils.getTooltipData(screen, lines, maxWidth), xPos - 8, yPos + 16, screen.getMinecraft().font);
+	public static <T extends FormattedText> boolean renderTooltipAtFixedPos(Screen screen, GuiAreaDefinition area, List<T> lines, int maxWidth, GuiGraphics graphics, int mouseX, int mouseY, int xOffset, int yOffset, int xPos, int yPos) {
+		if (area.isInBounds((double)(mouseX + xOffset), (double)(mouseY + yOffset))) {			
+			graphics.renderComponentTooltip(screen.getMinecraft().font, GuiUtils.getTooltipData(screen, lines, maxWidth), xPos - 8, yPos + 16, ItemStack.EMPTY);
 			return true;
 		} else {
 			return false;

@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 import com.simibubi.create.foundation.gui.AllIcons;
 import com.simibubi.create.foundation.gui.UIRenderHelper;
@@ -17,19 +16,20 @@ import com.simibubi.create.foundation.utility.animation.LerpedFloat.Chaser;
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.client.gui.widgets.HintTextBox;
-import de.mrjulsen.crn.client.gui.widgets.ModEditBox;
 import de.mrjulsen.crn.client.gui.widgets.ModStationSuggestions;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.util.ModGuiUtils;
 import de.mrjulsen.mcdragonlib.utils.TimeUtils;
 import de.mrjulsen.mcdragonlib.utils.Utils;
 import de.mrjulsen.mcdragonlib.DragonLibConstants;
+import de.mrjulsen.mcdragonlib.client.gui.DragonLibTooltip;
 import de.mrjulsen.mcdragonlib.client.gui.GuiAreaDefinition;
 import de.mrjulsen.mcdragonlib.client.gui.GuiUtils;
-import de.mrjulsen.mcdragonlib.client.gui.Tooltip;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.ModEditBox;
 import de.mrjulsen.mcdragonlib.client.gui.wrapper.CommonScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -104,7 +104,7 @@ public abstract class AbstractBlacklistScreen extends CommonScreen {
                 onClose();
             }
         });
-        addTooltip(Tooltip.of(Constants.TOOLTIP_GO_BACK).assignedTo(backButton));
+        addTooltip(DragonLibTooltip.of(Constants.TOOLTIP_GO_BACK).assignedTo(backButton));
 
         newEntryBox = new ModEditBox(minecraft.font, guiLeft + AREA_X + 5 + 35, guiTop + AREA_Y - 28 + 10, 129, 12, Utils.emptyText());
 		newEntryBox.setBordered(false);
@@ -113,6 +113,8 @@ public abstract class AbstractBlacklistScreen extends CommonScreen {
         newEntryBox.setOnFocusChanged((box, focused) -> {
             if (!focused) {
                 clearSuggestions();
+            } else {
+                updateEditorSubwidgets(newEntryBox);
             }
         });
         newEntryBox.setResponder(x -> {
@@ -121,7 +123,7 @@ public abstract class AbstractBlacklistScreen extends CommonScreen {
         addRenderableWidget(newEntryBox);
 
         addButton = new GuiAreaDefinition(guiLeft + AREA_X + 165 + 10, guiTop + AREA_Y - 28 + 6, 16, 16);
-        addTooltip(Tooltip.of(tooltipAdd).assignedTo(addButton));
+        addTooltip(DragonLibTooltip.of(tooltipAdd).assignedTo(addButton));
 
         searchBox = addRenderableWidget(new HintTextBox(font, guiLeft + AREA_X + 1, guiTop + 16 + 1, AREA_W - 2, 16));
         searchBox.setHint(Constants.TEXT_SEARCH);
@@ -169,7 +171,7 @@ public abstract class AbstractBlacklistScreen extends CommonScreen {
     protected void updateEditorSubwidgets(EditBox field) {
         clearSuggestions();
 
-		suggestions = new ModStationSuggestions(minecraft, this, field, minecraft.font, getViableStations(field), field.getHeight() + 2 + field.y);
+		suggestions = new ModStationSuggestions(minecraft, this, field, minecraft.font, getViableStations(field), field.getHeight() + 2 + field.getY());
         suggestions.setAllowSuggestions(true);
         suggestions.updateCommandInfo();
 	}
@@ -191,7 +193,6 @@ public abstract class AbstractBlacklistScreen extends CommonScreen {
     @Override
     public void tick() {
         super.tick();
-        newEntryBox.tick();
 		scroll.tickChaser();
         
         float scrollMax = getMaxScrollHeight();
@@ -209,37 +210,37 @@ public abstract class AbstractBlacklistScreen extends CommonScreen {
     }
 
     @Override
-    public void render(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) { 
+    public void render(GuiGraphics graphics, int pMouseX, int pMouseY, float pPartialTick) { 
         
 		float scrollOffset = -scroll.getValue(pPartialTick);
 
-        renderBackground(pPoseStack);
-        GuiUtils.blit(GUI, pPoseStack, guiLeft, guiTop, 0, 0, GUI_WIDTH, GUI_HEIGHT);
+        renderBackground(graphics);
+        GuiUtils.blit(GUI, graphics, guiLeft, guiTop, 0, 0, GUI_WIDTH, GUI_HEIGHT);
                
-        GuiUtils.blit(WIDGETS, pPoseStack, guiLeft + AREA_X + 10, guiTop + AREA_Y - 28, 0, 110, 200, 28);
-        GuiUtils.blit(WIDGETS, pPoseStack, guiLeft + AREA_X + 35, guiTop + AREA_Y - 28 + 5, 0, 92, 139, 18);        
-        GuiUtils.blit(WIDGETS, pPoseStack, addButton.getX(), addButton.getY(), 200, 16, 16, 16); // add button 
+        GuiUtils.blit(WIDGETS, graphics, guiLeft + AREA_X + 10, guiTop + AREA_Y - 28, 0, 110, 200, 28);
+        GuiUtils.blit(WIDGETS, graphics, guiLeft + AREA_X + 35, guiTop + AREA_Y - 28 + 5, 0, 92, 139, 18);        
+        GuiUtils.blit(WIDGETS, graphics, addButton.getX(), addButton.getY(), 200, 16, 16, 16); // add button 
         if (addButton.isInBounds(pMouseX, pMouseY)) { 
-            fill(pPoseStack, addButton.getX(), addButton.getY(), addButton.getRight(), addButton.getBottom(), 0x1AFFFFFF);
+            graphics.fill(addButton.getX(), addButton.getY(), addButton.getRight(), addButton.getBottom(), 0x1AFFFFFF);
         }
         
         UIRenderHelper.swapAndBlitColor(minecraft.getMainRenderTarget(), UIRenderHelper.framebuffer);
-        ModGuiUtils.startStencil(pPoseStack, guiLeft + AREA_X, guiTop + AREA_Y, AREA_W, AREA_H);
-        pPoseStack.pushPose();
-        pPoseStack.translate(0, scrollOffset, 0);
+        ModGuiUtils.startStencil(graphics, guiLeft + AREA_X, guiTop + AREA_Y, AREA_W, AREA_H);
+        graphics.pose().pushPose();
+        graphics.pose().translate(0, scrollOffset, 0);
 
         String[] blacklist = getBlacklistedNames(searchBox.getValue());
         for (int i = 0; i < blacklist.length; i++) {
-            GuiUtils.blit(WIDGETS, pPoseStack, guiLeft + AREA_X + 10, guiTop + AREA_Y + (i * ENTRY_HEIGHT), 0, 4, 200, ENTRY_HEIGHT);
+            GuiUtils.blit(WIDGETS, graphics, guiLeft + AREA_X + 10, guiTop + AREA_Y + (i * ENTRY_HEIGHT), 0, 4, 200, ENTRY_HEIGHT);
         }
-        GuiUtils.blit(WIDGETS, pPoseStack, guiLeft + AREA_X + 10, guiTop + AREA_Y + (blacklist.length * ENTRY_HEIGHT), 0, 23, 200, 3);
-        GuiUtils.blit(WIDGETS, pPoseStack, guiLeft + AREA_X + 10, guiTop + AREA_Y + (blacklist.length * ENTRY_HEIGHT) + 3, 0, 46, 200, 2);
+        GuiUtils.blit(WIDGETS, graphics, guiLeft + AREA_X + 10, guiTop + AREA_Y + (blacklist.length * ENTRY_HEIGHT), 0, 23, 200, 3);
+        GuiUtils.blit(WIDGETS, graphics, guiLeft + AREA_X + 10, guiTop + AREA_Y + (blacklist.length * ENTRY_HEIGHT) + 3, 0, 46, 200, 2);
 
         for (GuiAreaDefinition def : blacklistEntryButton.values()) { 
-            GuiUtils.blit(WIDGETS, pPoseStack, def.getX(), def.getY(), 232, 0, 16, 16); // delete button
+            GuiUtils.blit(WIDGETS, graphics, def.getX(), def.getY(), 232, 0, 16, 16); // delete button
 
             if (def.isInBounds(pMouseX, pMouseY - scrollOffset)) {
-                fill(pPoseStack, def.getX(), def.getY(), def.getRight(), def.getBottom(), 0x1AFFFFFF);
+                graphics.fill(def.getX(), def.getY(), def.getRight(), def.getBottom(), 0x1AFFFFFF);
             }
         }
 
@@ -249,17 +250,17 @@ public abstract class AbstractBlacklistScreen extends CommonScreen {
             if (shadowlessFont.width(name) > maxTextWidth) {
                 name = Utils.text(shadowlessFont.substrByWidth(name, maxTextWidth).getString()).append(Constants.ELLIPSIS_STRING);
             }
-            drawString(pPoseStack, shadowlessFont, name, guiLeft + AREA_X + 40, guiTop + AREA_Y + (i * ENTRY_HEIGHT) + 6, 0xFFFFFF);
+            graphics.drawString(shadowlessFont, name, guiLeft + AREA_X + 40, guiTop + AREA_Y + (i * ENTRY_HEIGHT) + 6, 0xFFFFFF);
         }
 
-        pPoseStack.popPose();
-        ModGuiUtils.endStencil();        
-        net.minecraftforge.client.gui.ScreenUtils.drawGradientRect(pPoseStack.last().pose(), 200, guiLeft + AREA_X, guiTop + AREA_Y - 38, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y - 38 + 10, 0x77000000, 0x00000000);
-        net.minecraftforge.client.gui.ScreenUtils.drawGradientRect(pPoseStack.last().pose(), 200, guiLeft + AREA_X, guiTop + AREA_Y + AREA_H - 10, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y + AREA_H, 0x00000000, 0x77000000);
-        net.minecraftforge.client.gui.ScreenUtils.drawGradientRect(pPoseStack.last().pose(), 200, guiLeft + AREA_X + 10, guiTop + AREA_Y, guiLeft + AREA_X + AREA_W - 10, guiTop + AREA_Y + 10, 0x77000000, 0x00000000);
+        graphics.pose().popPose();
+        ModGuiUtils.endStencil(); 
+        graphics.fillGradient(guiLeft + AREA_X, guiTop + AREA_Y - 38, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y - 38 + 10, 0x77000000, 0x00000000);
+        graphics.fillGradient(guiLeft + AREA_X, guiTop + AREA_Y + AREA_H - 10, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y + AREA_H, 0x00000000, 0x77000000);
+        graphics.fillGradient(guiLeft + AREA_X + 10, guiTop + AREA_Y, guiLeft + AREA_X + AREA_W - 10, guiTop + AREA_Y + 10, 0x77000000, 0x00000000);
         UIRenderHelper.swapAndBlitColor(UIRenderHelper.framebuffer, minecraft.getMainRenderTarget());
 
-        super.render(pPoseStack, pMouseX, pMouseY, pPartialTick);
+        super.render(graphics, pMouseX, pMouseY, pPartialTick);
 
         // Scrollbar
         double maxHeight = getMaxScrollHeight();
@@ -268,39 +269,39 @@ public abstract class AbstractBlacklistScreen extends CommonScreen {
             int scrollerHeight = Math.max(10, (int)(aH * (aH / maxHeight)));
             int startY = guiTop + AREA_Y + (int)((AREA_H) * (Math.abs(scrollOffset) / maxHeight));
 
-            fill(pPoseStack, guiLeft + AREA_X + AREA_W - 3, startY, guiLeft + AREA_X + AREA_W, startY + scrollerHeight, 0x7FFFFFFF);
+            graphics.fill(guiLeft + AREA_X + AREA_W - 3, startY, guiLeft + AREA_X + AREA_W, startY + scrollerHeight, 0x7FFFFFFF);
         }
         
-        drawString(pPoseStack, shadowlessFont, title, guiLeft + 19, guiTop + 4, 0x4F4F4F);
+        graphics.drawString(shadowlessFont, title, guiLeft + 19, guiTop + 4, 0x4F4F4F);
         String timeString = TimeUtils.parseTime((int)((level.getDayTime() + Constants.TIME_SHIFT) % DragonLibConstants.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get());
-        drawString(pPoseStack, shadowlessFont, timeString, guiLeft + GUI_WIDTH - 22 - shadowlessFont.width(timeString), guiTop + 4, 0x4F4F4F);
+        graphics.drawString(shadowlessFont, timeString, guiLeft + GUI_WIDTH - 22 - shadowlessFont.width(timeString), guiTop + 4, 0x4F4F4F);
     }
 
     @Override
-    public void renderFg(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+    public void renderFg(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
 		if (suggestions != null) {
-			matrixStack.pushPose();
-			matrixStack.translate(0, 0, 500);
-			suggestions.render(matrixStack, mouseX, mouseY);
-			matrixStack.popPose();
+			graphics.pose().pushPose();
+			graphics.pose().translate(0, 0, 500);
+			suggestions.render(graphics, mouseX, mouseY);
+			graphics.pose().popPose();
 		}
 
 		float scrollOffset = scroll.getValue(partialTicks);
         
         if (mouseX > guiLeft + AREA_X && mouseX < guiLeft + AREA_X + AREA_W && mouseY > guiTop + AREA_Y && mouseY < guiTop + AREA_Y + AREA_H) {
             for (Entry<String, GuiAreaDefinition> entry : blacklistEntryButton.entrySet()) {
-                if (GuiUtils.renderTooltipWithScrollOffset(this, entry.getValue(), List.of(tooltipRemove), width, matrixStack, mouseX, mouseY, 0, (int)scrollOffset)) {
+                if (GuiUtils.renderTooltipWithScrollOffset(this, entry.getValue(), List.of(tooltipRemove), width, graphics, mouseX, mouseY, 0, (int)scrollOffset)) {
                     break;
                 }
             }
 
             for (Entry<String, GuiAreaDefinition> entry : entryAreas.entrySet()) {
-                if (shadowlessFont.width(entry.getKey()) > 129 && ModGuiUtils.renderTooltipAtFixedPos(this, entry.getValue(), List.of(Utils.text(entry.getKey())), width, matrixStack, mouseX, mouseY, 0, (int)scrollOffset, entry.getValue().getLeft() + 1, (int)(entry.getValue().getTop() - scrollOffset))) {
+                if (shadowlessFont.width(entry.getKey()) > 129 && ModGuiUtils.renderTooltipAtFixedPos(this, entry.getValue(), List.of(Utils.text(entry.getKey())), width, graphics, mouseX, mouseY, 0, (int)scrollOffset, entry.getValue().getLeft() + 1, (int)(entry.getValue().getTop() - scrollOffset))) {
                     break;
                 }
             }
         }
-        super.renderFg(matrixStack, mouseX, mouseY, partialTicks);
+        super.renderFg(graphics, mouseX, mouseY, partialTicks);
     }
 
     @Override
@@ -316,18 +317,27 @@ public abstract class AbstractBlacklistScreen extends CommonScreen {
         if (addButton.isInBounds(pMouseX, pMouseY) && !newEntryBox.getValue().isBlank()) {
             addToBlacklistInternal();            
             ModGuiUtils.playButtonSound();
-            return super.mouseClicked(pMouseX, pMouseY, pButton);
+            clearSuggestions();
+            newEntryBox.setFocused(false);
+            return true;
         } else if (pMouseX > guiLeft + AREA_X && pMouseX < guiLeft + AREA_X + AREA_W && pMouseY > guiTop + AREA_Y && pMouseY < guiTop + AREA_Y + AREA_H && blacklistEntryButton.values().stream().anyMatch(x -> x.isInBounds(pMouseX, pMouseY + scrollOffset))) {
             for (Entry<String, GuiAreaDefinition> entry : blacklistEntryButton.entrySet()) {
                 if (entry.getValue().isInBounds(pMouseX, pMouseY + scrollOffset)) {
                     removeFromBlacklist(entry.getKey(), this::initStationDeleteButtons);
                     ModGuiUtils.playButtonSound();
-                    return super.mouseClicked(pMouseX, pMouseY + scrollOffset, pButton);
+                    clearSuggestions();
+                    newEntryBox.setFocused(false);
+                    return true;
                 }
             }
         }
         
-        return super.mouseClicked(pMouseX, pMouseY, pButton);
+        boolean b = super.mouseClicked(pMouseX, pMouseY, pButton);
+        if (!b) {
+            searchBox.setFocused(false);
+            newEntryBox.setFocused(false);
+        }
+        return b;
     }
 
     @Override

@@ -3,10 +3,11 @@ package de.mrjulsen.crn.client.gui.widgets;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map.Entry;
+
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 
 import de.mrjulsen.crn.Constants;
@@ -20,9 +21,11 @@ import de.mrjulsen.crn.util.ModGuiUtils;
 import de.mrjulsen.mcdragonlib.client.gui.GuiAreaDefinition;
 import de.mrjulsen.mcdragonlib.client.gui.GuiUtils;
 import de.mrjulsen.mcdragonlib.client.gui.WidgetsCollection;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.ModEditBox;
 import de.mrjulsen.mcdragonlib.utils.Utils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.MutableComponent;
@@ -123,11 +126,11 @@ public class TrainGroupEntryWidget extends AbstractEntryListOptionWidget {
         String[] names = trainGroup.getTrainNames().toArray(String[]::new);
         for (int i = 0; i < names.length; i++) {
             String name = names[i];
-            removeStationButtons.put(name, new GuiAreaDefinition(x + 165, y + 26 + (i * STATION_ENTRY_HEIGHT) + 2, 16, 16));
-            trainGroupNames.put(name, new GuiAreaDefinition(x + 25, y + 26 + (i * STATION_ENTRY_HEIGHT) + 2, 129, 16));
+            removeStationButtons.put(name, new GuiAreaDefinition(getX() + 165, getY() + 26 + (i * STATION_ENTRY_HEIGHT) + 2, 16, 16));
+            trainGroupNames.put(name, new GuiAreaDefinition(getX() + 25, getY() + 26 + (i * STATION_ENTRY_HEIGHT) + 2, 129, 16));
         }
         
-        titleBarArea = new GuiAreaDefinition(x + 25, y + 6, 129, 16);
+        titleBarArea = new GuiAreaDefinition(getX() + 25, getY() + 6, 129, 16);
     }
 
     @Override
@@ -167,7 +170,7 @@ public class TrainGroupEntryWidget extends AbstractEntryListOptionWidget {
         });        
         
         newEntryBox.setValue("");
-        newEntryBox.setFocus(false);
+        newEntryBox.setFocused(false);
     }
 
     private boolean setGroupName(String name) {
@@ -215,57 +218,57 @@ public class TrainGroupEntryWidget extends AbstractEntryListOptionWidget {
 
     @Override
     public void setYPos(int y) {
-        this.y = y;
-        deleteButton = new GuiAreaDefinition(x + 165, y + 6, 16, 16);
-        expandButton = new GuiAreaDefinition(x + 182, y + 6, 16, 16);
-        addButton = new GuiAreaDefinition(x + 165, y + 26 + (trainGroup.getTrainNames().size() * STATION_ENTRY_HEIGHT) + 2, 16, 16);
-        titleBox.y = y + 10;
+        this.setY(y);
+        deleteButton = new GuiAreaDefinition(getX() + 165, y + 6, 16, 16);
+        expandButton = new GuiAreaDefinition(getX() + 182, y + 6, 16, 16);
+        addButton = new GuiAreaDefinition(getX() + 165, y + 26 + (trainGroup.getTrainNames().size() * STATION_ENTRY_HEIGHT) + 2, 16, 16);
+        titleBox.setY(y + 10);
         initStationDeleteButtons();
     }
 
     @Override
     public void unfocusAll() {
-        controls.performForEachOfType(ModEditBox.class, x -> x.setFocus(false));
+        controls.performForEachOfType(ModEditBox.class, x -> x.setFocused(false));
     }
 
     @Override
-    public void renderSuggestions(PoseStack poseStack, int mouseX, int mouseY, float partialTicks) {
+    public void renderSuggestions(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
         if (suggestions != null) {
-			poseStack.pushPose();
-			poseStack.translate(0, -parent.getScrollOffset(partialTicks), 500);
-			suggestions.render(poseStack, mouseX, mouseY + parent.getScrollOffset(partialTicks));
-			poseStack.popPose();
+			graphics.pose().pushPose();
+			graphics.pose().translate(0, -parent.getScrollOffset(partialTicks), 500);
+			suggestions.render(graphics, mouseX, mouseY + parent.getScrollOffset(partialTicks));
+			graphics.pose().popPose();
 		}
     }
 
     @Override
-    public void renderButton(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) { 
+    public void renderWidget(GuiGraphics graphics, int pMouseX, int pMouseY, float pPartialTick) { 
         RenderSystem.setShaderTexture(0, GUI_WIDGETS);
-        GuiUtils.blit(GUI_WIDGETS, pPoseStack, x, y, 0, 0, WIDTH, HEIGHT);
+        GuiUtils.blit(GUI_WIDGETS, graphics, getX(), getY(), 0, 0, WIDTH, HEIGHT);
 
-        GuiUtils.blit(GUI_WIDGETS, pPoseStack, deleteButton.getX(), deleteButton.getY(), 232, 0, 16, 16); // delete button
-        GuiUtils.blit(GUI_WIDGETS, pPoseStack, expandButton.getX(), expandButton.getY(), expanded ? 216 : 200, 0, 16, 16); // expand button  
+        GuiUtils.blit(GUI_WIDGETS, graphics, deleteButton.getX(), deleteButton.getY(), 232, 0, 16, 16); // delete button
+        GuiUtils.blit(GUI_WIDGETS, graphics, expandButton.getX(), expandButton.getY(), expanded ? 216 : 200, 0, 16, 16); // expand button  
 
         if (expanded) {
             Set<String> names = trainGroup.getTrainNames();
-            GuiUtils.blit(GUI_WIDGETS, pPoseStack, x + 25, y + 5, 0, 92, 139, 18); // textbox
-            newEntryBox.y = y + 26 + (names.size() * STATION_ENTRY_HEIGHT) + 6;
+            GuiUtils.blit(GUI_WIDGETS, graphics, getX() + 25, getY() + 5, 0, 92, 139, 18); // textbox
+            newEntryBox.setY(getY() + 26 + (names.size() * STATION_ENTRY_HEIGHT) + 6);
             
             for (int i = 0; i < names.size(); i++) {
-                GuiUtils.blit(GUI_WIDGETS, pPoseStack, x, y + 26 + (i * STATION_ENTRY_HEIGHT), 0, 48, 200, STATION_ENTRY_HEIGHT);
+                GuiUtils.blit(GUI_WIDGETS, graphics, getX(), getY() + 26 + (i * STATION_ENTRY_HEIGHT), 0, 48, 200, STATION_ENTRY_HEIGHT);
             }
             
-            GuiUtils.blit(GUI_WIDGETS, pPoseStack, x, y + 26 + (names.size() * STATION_ENTRY_HEIGHT), 0, 68, 200, 24);
-            DynamicWidgets.renderTextBox(pPoseStack, x + 25, y + 26 + (names.size() * STATION_ENTRY_HEIGHT) + 1, 139);
-            GuiUtils.blit(GUI_WIDGETS, pPoseStack, addButton.getX(), addButton.getY(), 200, 16, 16, 16); // add button 
+            GuiUtils.blit(GUI_WIDGETS, graphics, getX(), getY() + 26 + (names.size() * STATION_ENTRY_HEIGHT), 0, 68, 200, 24);
+            DynamicWidgets.renderTextBox(graphics, getX() + 25, getY() + 26 + (names.size() * STATION_ENTRY_HEIGHT) + 1, 139);
+            GuiUtils.blit(GUI_WIDGETS, graphics, addButton.getX(), addButton.getY(), 200, 16, 16, 16); // add button 
 
             for (GuiAreaDefinition def : removeStationButtons.values()) { 
-                GuiUtils.blit(GUI_WIDGETS, pPoseStack, def.getX(), def.getY(), 232, 0, 16, 16); // delete button
+                GuiUtils.blit(GUI_WIDGETS, graphics, def.getX(), def.getY(), 232, 0, 16, 16); // delete button
             }
 
             int i = 0;
             for (String entry : names) {
-                drawString(pPoseStack, shadowlessFont, entry, x + 30, y + 26 + (i * STATION_ENTRY_HEIGHT) + 6, 0xFFFFFF);
+                graphics.drawString(shadowlessFont, entry, getX() + 30, getY() + 26 + (i * STATION_ENTRY_HEIGHT) + 6, 0xFFFFFF);
                 i++;
             }
             
@@ -275,62 +278,62 @@ public class TrainGroupEntryWidget extends AbstractEntryListOptionWidget {
             if (shadowlessFont.width(name) > maxTextWidth) {
                 name = Utils.text(shadowlessFont.substrByWidth(name, maxTextWidth).getString()).append(Constants.ELLIPSIS_STRING);
             }
-            drawString(pPoseStack, shadowlessFont, name, x + 30, y + 10, 0xFFFFFF);
+            graphics.drawString(shadowlessFont, name, getX() + 30, getY() + 10, 0xFFFFFF);
 
-            pPoseStack.scale(0.75f, 0.75f, 0.75f);
-            drawString(pPoseStack, shadowlessFont, Utils.translate("gui." + ModMain.MOD_ID + ".train_group_settings.summary", trainGroup.getTrainNames().size()), (int)((x + 5) / 0.75f), (int)((y + 30) / 0.75f), 0xDBDBDB);
+            graphics.pose().scale(0.75f, 0.75f, 0.75f);
+            graphics.drawString(shadowlessFont, Utils.translate("gui." + ModMain.MOD_ID + ".train_group_settings.summary", trainGroup.getTrainNames().size()), (int)((getX() + 5) / 0.75f), (int)((getY() + 30) / 0.75f), 0xDBDBDB);
             if (trainGroup.getLastEditorName() != null && !trainGroup.getLastEditorName().isBlank()) {
-                drawString(pPoseStack, shadowlessFont, Utils.translate("gui." + ModMain.MOD_ID + ".train_group_settings.editor", trainGroup.getLastEditorName(), trainGroup.getLastEditedTimeFormatted()), (int)((x + 5) / 0.75f), (int)((y + 38) / 0.75f), 0xDBDBDB);
+                graphics.drawString(shadowlessFont, Utils.translate("gui." + ModMain.MOD_ID + ".train_group_settings.editor", trainGroup.getLastEditorName(), trainGroup.getLastEditedTimeFormatted()), (int)((getX() + 5) / 0.75f), (int)((getY() + 38) / 0.75f), 0xDBDBDB);
             }
             float s = 1 / 0.75f;
-            pPoseStack.scale(s, s, s);
+            graphics.pose().scale(s, s, s);
         }
 
-        controls.performForEach(x -> x.visible, x -> x.render(pPoseStack, pMouseX, pMouseY, pPartialTick));  
+        controls.performForEach(x -> x.visible, x -> x.render(graphics, pMouseX, pMouseY, pPartialTick));  
 
         // Button highlight
         if (deleteButton.isInBounds(pMouseX, pMouseY)) {
-            fill(pPoseStack, deleteButton.getX(), deleteButton.getY(), deleteButton.getRight(), deleteButton.getBottom(), 0x1AFFFFFF);
+            graphics.fill(deleteButton.getX(), deleteButton.getY(), deleteButton.getRight(), deleteButton.getBottom(), 0x1AFFFFFF);
         } else if (expandButton.isInBounds(pMouseX, pMouseY)) {
-            fill(pPoseStack, expandButton.getX(), expandButton.getY(), expandButton.getRight(), expandButton.getBottom(), 0x1AFFFFFF);
+            graphics.fill(expandButton.getX(), expandButton.getY(), expandButton.getRight(), expandButton.getBottom(), 0x1AFFFFFF);
         } else if (expanded && addButton.isInBounds(pMouseX, pMouseY)) {
-            fill(pPoseStack, addButton.getX(), addButton.getY(), addButton.getRight(), addButton.getBottom(), 0x1AFFFFFF);
+            graphics.fill(addButton.getX(), addButton.getY(), addButton.getRight(), addButton.getBottom(), 0x1AFFFFFF);
         } else if (expanded && removeStationButtons.values().stream().anyMatch(x -> x.isInBounds(pMouseX, pMouseY))) {
             for (Entry<String, GuiAreaDefinition> entry : removeStationButtons.entrySet()) {
                 if (entry.getValue().isInBounds(pMouseX, pMouseY)) {
-                    fill(pPoseStack, entry.getValue().getX(), entry.getValue().getY(), entry.getValue().getRight(), entry.getValue().getBottom(), 0x1AFFFFFF);
+                    graphics.fill(entry.getValue().getX(), entry.getValue().getY(), entry.getValue().getRight(), entry.getValue().getBottom(), 0x1AFFFFFF);
                 }
             }
         }
     }
     
     @Override
-    public void renderForeground(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+    public void renderForeground(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
 		if (suggestions != null) {
-			matrixStack.pushPose();
-			matrixStack.translate(0, -parent.getScrollOffset(partialTicks), 500);
-			suggestions.render(matrixStack, mouseX, mouseY + parent.getScrollOffset(partialTicks));
-			matrixStack.popPose();
+			graphics.pose().pushPose();
+			graphics.pose().translate(0, -parent.getScrollOffset(partialTicks), 500);
+			suggestions.render(graphics, mouseX, mouseY + parent.getScrollOffset(partialTicks));
+			graphics.pose().popPose();
 		}
         
-        GuiUtils.renderTooltipWithScrollOffset(parent, deleteButton, List.of(tooltipDeleteAlias), width, matrixStack, mouseX, mouseY, 0, parent.getScrollOffset(partialTicks));
-        GuiUtils.renderTooltipWithScrollOffset(parent, expandButton, List.of(expanded ? Constants.TOOLTIP_COLLAPSE : Constants.TOOLTIP_EXPAND), width, matrixStack, mouseX, mouseY, 0, parent.getScrollOffset(partialTicks));
+        GuiUtils.renderTooltipWithScrollOffset(parent, deleteButton, List.of(tooltipDeleteAlias), width, graphics, mouseX, mouseY, 0, parent.getScrollOffset(partialTicks));
+        GuiUtils.renderTooltipWithScrollOffset(parent, expandButton, List.of(expanded ? Constants.TOOLTIP_COLLAPSE : Constants.TOOLTIP_EXPAND), width, graphics, mouseX, mouseY, 0, parent.getScrollOffset(partialTicks));
         if (expanded) {
-            GuiUtils.renderTooltipWithScrollOffset(parent, addButton, List.of(tooltipAddStation), width, matrixStack, mouseX, mouseY, 0, parent.getScrollOffset(partialTicks));        
+            GuiUtils.renderTooltipWithScrollOffset(parent, addButton, List.of(tooltipAddStation), width, graphics, mouseX, mouseY, 0, parent.getScrollOffset(partialTicks));        
             for (Entry<String, GuiAreaDefinition> entry : removeStationButtons.entrySet()) {
-                if (GuiUtils.renderTooltipWithScrollOffset(parent, entry.getValue(), List.of(tooltipDeleteStation), width, matrixStack, mouseX, mouseY, 0, parent.getScrollOffset(partialTicks))) {
+                if (GuiUtils.renderTooltipWithScrollOffset(parent, entry.getValue(), List.of(tooltipDeleteStation), width, graphics, mouseX, mouseY, 0, parent.getScrollOffset(partialTicks))) {
                     break;
                 }
             }
 
             for (Entry<String, GuiAreaDefinition> entry : trainGroupNames.entrySet()) {
-                if (shadowlessFont.width(entry.getKey()) > 129 && ModGuiUtils.renderTooltipAtFixedPos(parent, entry.getValue(), List.of(Utils.text(entry.getKey())), width, matrixStack, mouseX, mouseY, 0, parent.getScrollOffset(partialTicks), entry.getValue().getLeft() + 1, entry.getValue().getTop() - parent.getScrollOffset(partialTicks))) {
+                if (shadowlessFont.width(entry.getKey()) > 129 && ModGuiUtils.renderTooltipAtFixedPos(parent, entry.getValue(), List.of(Utils.text(entry.getKey())), width, graphics, mouseX, mouseY, 0, parent.getScrollOffset(partialTicks), entry.getValue().getLeft() + 1, entry.getValue().getTop() - parent.getScrollOffset(partialTicks))) {
                     break;
                 }
             }
         } else {
             if (titleBarArea.isInBounds(mouseX, mouseY + parent.getScrollOffset(partialTicks)) && shadowlessFont.width(trainGroup.getGroupName()) > 129) {
-                ModGuiUtils.renderTooltipAtFixedPos(parent, titleBarArea, List.of(Utils.text(trainGroup.getGroupName())), width, matrixStack, mouseX, mouseY, 0, parent.getScrollOffset(partialTicks), titleBarArea.getLeft() + 1, titleBarArea.getTop() - parent.getScrollOffset(partialTicks));
+                ModGuiUtils.renderTooltipAtFixedPos(parent, titleBarArea, List.of(Utils.text(trainGroup.getGroupName())), width, graphics, mouseX, mouseY, 0, parent.getScrollOffset(partialTicks), titleBarArea.getLeft() + 1, titleBarArea.getTop() - parent.getScrollOffset(partialTicks));
             }
         }
     }
@@ -368,9 +371,15 @@ public class TrainGroupEntryWidget extends AbstractEntryListOptionWidget {
             }
         }
 
-        if (controls.components.stream().filter(x -> x.visible).anyMatch(x -> x.mouseClicked(pMouseX, pMouseY, pButton))) {
-            return super.mouseClicked(pMouseX, pMouseY, pButton);
+        Collection<AbstractWidget> filteredWidgets = controls.components.stream().filter(x -> x.visible).toList();
+        for (AbstractWidget guieventlistener : filteredWidgets) {
+            if (guieventlistener.mouseClicked(pMouseX, pMouseY, pButton)) {
+                parent.unfocusAllWidgets();
+                guieventlistener.setFocused(true);
+                return super.mouseClicked(pMouseX, pMouseY, pButton);
+            }
         }
+        
         return false;
     }
 
@@ -417,7 +426,7 @@ public class TrainGroupEntryWidget extends AbstractEntryListOptionWidget {
     protected void updateEditorSubwidgets(EditBox field) {
         clearSuggestions();
 
-		suggestions = new ModStationSuggestions(minecraft, parent, field, minecraft.font, getViableTrains(field), field.getHeight() + 2 + field.y);
+		suggestions = new ModStationSuggestions(minecraft, parent, field, minecraft.font, getViableTrains(field), field.getHeight() + 2 + field.getY());
         suggestions.setAllowSuggestions(true);
         suggestions.updateCommandInfo();
 	}

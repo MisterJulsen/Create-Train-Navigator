@@ -19,8 +19,8 @@ public class HudOverlays {
 
     private static final Map<Integer, IHudOverlay> activeOverlays = new HashMap<>();
 
-    public static final IGuiOverlay HUD_ROUTE_DETAILS = ((gui, poseStack, partialTicks, width, height) -> {
-        activeOverlays.values().forEach(x -> x.render(gui, poseStack, width, height, partialTicks));
+    public static final IGuiOverlay HUD_ROUTE_DETAILS = ((gui, graphics, partialTicks, width, height) -> {
+        activeOverlays.values().forEach(x -> x.render(gui, graphics, width, height, partialTicks));
     });
 
     public static <T extends IHudOverlay> T setOverlay(T overlay) {

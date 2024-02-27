@@ -3,7 +3,6 @@ package de.mrjulsen.crn.client.gui.screen;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 import com.simibubi.create.foundation.gui.AllIcons;
 import com.simibubi.create.foundation.gui.UIRenderHelper;
@@ -19,13 +18,14 @@ import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.util.ModGuiUtils;
 import de.mrjulsen.mcdragonlib.DragonLibConstants;
 import de.mrjulsen.mcdragonlib.client.gui.GuiUtils;
-import de.mrjulsen.mcdragonlib.client.gui.Tooltip;
+import de.mrjulsen.mcdragonlib.client.gui.DragonLibTooltip;
 import de.mrjulsen.mcdragonlib.client.gui.WidgetsCollection;
 import de.mrjulsen.mcdragonlib.client.gui.wrapper.CommonScreen;
 import de.mrjulsen.mcdragonlib.utils.TimeUtils;
 import de.mrjulsen.mcdragonlib.utils.Utils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
@@ -97,7 +97,7 @@ public abstract class AbstractEntryListSettingsScreen<D, W extends AbstractEntry
         .withCallback((x, y) -> {
             onClose();
         }));
-        addTooltip(Tooltip.of(Constants.TOOLTIP_GO_BACK).assignedTo(backButton));
+        addTooltip(DragonLibTooltip.of(Constants.TOOLTIP_GO_BACK).assignedTo(backButton));
 
         addButton = this.addRenderableWidget(new IconButton(guiLeft + 43, guiTop + 222, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, AllIcons.I_ADD));
         addButton.withCallback((x, y) -> {
@@ -105,7 +105,7 @@ public abstract class AbstractEntryListSettingsScreen<D, W extends AbstractEntry
             newEntryCollection.setVisible(true);
             newEntryInputBox.setValue("");
         });
-        addTooltip(Tooltip.of(tooltipAdd).assignedTo(addButton));
+        addTooltip(DragonLibTooltip.of(tooltipAdd).assignedTo(addButton));
 
         searchBox = addRenderableWidget(new HintTextBox(font, guiLeft + AREA_X + 1, guiTop + 16 + 1, AREA_W - 2, 16));
         searchBox.setHint(Constants.TEXT_SEARCH);
@@ -154,10 +154,11 @@ public abstract class AbstractEntryListSettingsScreen<D, W extends AbstractEntry
         }
         cancelFocus = true;
         addButton.visible = true;
-        newEntryCollection.setVisible(false);     
-        renderables.stream().filter(x -> x instanceof EditBox && excluded != x).forEach(x -> ((EditBox)x).setFocus(false));
+        newEntryCollection.setVisible(false);
+        renderables.stream().filter(x -> x instanceof EditBox && excluded != x).forEach(x -> ((EditBox)x).setFocused(false));
         entriesCollection.performForEachOfType(AbstractEntryListOptionWidget.class, x -> x.unfocusAll());
-        cancelFocus = false;
+        cancelFocus = false;   
+        newEntryInputBox.setFocused(true); 
     }
 
     protected void refreshEntries() {
@@ -218,7 +219,7 @@ public abstract class AbstractEntryListSettingsScreen<D, W extends AbstractEntry
     }
     
     public void unfocusAllWidgets() {
-        renderables.stream().filter(x -> x instanceof EditBox).forEach(x -> ((EditBox)x).setFocus(false));
+        renderables.stream().filter(x -> x instanceof EditBox).forEach(x -> ((EditBox)x).setFocused(false));
     }
 
     public void unfocusAllEntries() {
@@ -226,19 +227,19 @@ public abstract class AbstractEntryListSettingsScreen<D, W extends AbstractEntry
     }
 
     @Override
-    public void renderBg(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) {         
+    public void renderBg(GuiGraphics graphics, int pMouseX, int pMouseY, float pPartialTick) {         
 		float scrollOffset = -scroll.getValue(pPartialTick);
 
-        renderBackground(pPoseStack);
-        GuiUtils.blit(GUI, pPoseStack, guiLeft, guiTop, 0, 0, GUI_WIDTH, GUI_HEIGHT);
-        drawString(pPoseStack, shadowlessFont, title, guiLeft + 19, guiTop + 4, 0x4F4F4F);
+        renderBackground(graphics);
+        GuiUtils.blit(GUI, graphics, guiLeft, guiTop, 0, 0, GUI_WIDTH, GUI_HEIGHT);
+        graphics.drawString(shadowlessFont, title, guiLeft + 19, guiTop + 4, 0x4F4F4F);
         String timeString = TimeUtils.parseTime((int)((level.getDayTime() + Constants.TIME_SHIFT) % DragonLibConstants.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get());
-        drawString(pPoseStack, shadowlessFont, timeString, guiLeft + GUI_WIDTH - 22 - shadowlessFont.width(timeString), guiTop + 4, 0x4F4F4F);
+        graphics.drawString(shadowlessFont, timeString, guiLeft + GUI_WIDTH - 22 - shadowlessFont.width(timeString), guiTop + 4, 0x4F4F4F);
                 
         UIRenderHelper.swapAndBlitColor(minecraft.getMainRenderTarget(), UIRenderHelper.framebuffer);
-        ModGuiUtils.startStencil(pPoseStack, guiLeft + AREA_X, guiTop + AREA_Y, AREA_W, AREA_H);
-        pPoseStack.pushPose();
-        pPoseStack.translate(0, scrollOffset, 0);
+        ModGuiUtils.startStencil(graphics, guiLeft + AREA_X, guiTop + AREA_Y, AREA_W, AREA_H);
+        graphics.pose().pushPose();
+        graphics.pose().translate(0, scrollOffset, 0);
 
         renderingEntries = true;
         while (initEntries) {
@@ -256,17 +257,17 @@ public abstract class AbstractEntryListSettingsScreen<D, W extends AbstractEntry
                 widget.setYPos(currentY);
                 widget.calcHeight();
                 if (currentY < guiTop + AREA_Y + AREA_H - scrollOffset && currentY + widget.getHeight() > guiTop + AREA_Y - scrollOffset) {
-                    widget.render(pPoseStack, pMouseX, (int)(pMouseY - scrollOffset), pPartialTick);
+                    widget.render(graphics, pMouseX, (int)(pMouseY - scrollOffset), pPartialTick);
                 }
                 currentY += widget.getHeight() + ENTRY_SPACING;
             }
         }
         renderingEntries = false;
 
-        pPoseStack.popPose();
+        graphics.pose().popPose();
         ModGuiUtils.endStencil();        
-        net.minecraftforge.client.gui.ScreenUtils.drawGradientRect(pPoseStack.last().pose(), 200, guiLeft + AREA_X, guiTop + AREA_Y, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y + 10, 0x77000000, 0x00000000);
-        net.minecraftforge.client.gui.ScreenUtils.drawGradientRect(pPoseStack.last().pose(), 200, guiLeft + AREA_X, guiTop + AREA_Y + AREA_H - 10, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y + AREA_H, 0x00000000, 0x77000000);
+        graphics.fillGradient(guiLeft + AREA_X, guiTop + AREA_Y, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y + 10, 0x77000000, 0x00000000);
+        graphics.fillGradient(guiLeft + AREA_X, guiTop + AREA_Y + AREA_H - 10, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y + AREA_H, 0x00000000, 0x77000000);
         UIRenderHelper.swapAndBlitColor(UIRenderHelper.framebuffer, minecraft.getMainRenderTarget());
         
         // Scrollbar
@@ -277,21 +278,21 @@ public abstract class AbstractEntryListSettingsScreen<D, W extends AbstractEntry
             int scrollerHeight = Math.max(10, (int)(aH * (aH / maxHeight)));
             int startY = guiTop + AREA_Y + (int)((AREA_H) * (Math.abs(scrollOffset) / maxHeight));
 
-            fill(pPoseStack, guiLeft + AREA_X + AREA_W - 3, startY, guiLeft + AREA_X + AREA_W, startY + scrollerHeight, 0x7FFFFFFF);
+            graphics.fill(guiLeft + AREA_X + AREA_W - 3, startY, guiLeft + AREA_X + AREA_W, startY + scrollerHeight, 0x7FFFFFFF);
         }
 
-        super.renderBg(pPoseStack, pMouseX, pMouseY, pPartialTick);
+        super.renderBg(graphics, pMouseX, pMouseY, pPartialTick);
     }
 
     @Override
-    public void renderFg(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTicks) {
+    public void renderFg(GuiGraphics graphics, int pMouseX, int pMouseY, float pPartialTicks) {
         entriesCollection.performForEachOfType(AbstractEntryListOptionWidget.class, x -> {
             if (pMouseX > guiLeft + AREA_X && pMouseX < guiLeft + AREA_X + AREA_W && pMouseY > guiTop + AREA_Y && pMouseY < guiTop + AREA_Y + AREA_H) {
-                x.renderForeground(pPoseStack, pMouseX, pMouseY, pPartialTicks);
+                x.renderForeground(graphics, pMouseX, pMouseY, pPartialTicks);
             }
-            x.renderSuggestions(pPoseStack, pMouseX, pMouseY, pPartialTicks);
+            x.renderSuggestions(graphics, pMouseX, pMouseY, pPartialTicks);
         });
-        super.renderFg(pPoseStack, pMouseX, pMouseY, pPartialTicks);
+        super.renderFg(graphics, pMouseX, pMouseY, pPartialTicks);
     }
 
     @Override

@@ -6,6 +6,6 @@ import net.minecraft.network.chat.Component;
 public abstract class AbstractEntryListOptionWidget extends Button implements IEntryListSettingsOption {
 
     public AbstractEntryListOptionWidget(int pX, int pY, int pWidth, int pHeight, Component pMessage, OnPress pOnPress) {
-        super(pX, pY, pWidth, pHeight, pMessage, pOnPress);
+        super(pX, pY, pWidth, pHeight, pMessage, pOnPress, DEFAULT_NARRATION);
     }
 }

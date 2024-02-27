@@ -1,10 +1,10 @@
 package de.mrjulsen.crn.client.gui.screen;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.foundation.gui.AllIcons;
 import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.mcdragonlib.client.gui.wrapper.CommonScreen;
 import de.mrjulsen.mcdragonlib.utils.Utils;
+import net.minecraft.client.gui.GuiGraphics;
 
 public class LoadingScreen extends CommonScreen {
 
@@ -24,13 +24,13 @@ public class LoadingScreen extends CommonScreen {
     }
 
     @Override
-    public void render(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) { 
+    public void render(GuiGraphics graphics, int pMouseX, int pMouseY, float pPartialTick) { 
         
-        renderBackground(pPoseStack);
+        renderBackground(graphics);
         double offsetX = Math.sin(Math.toRadians(angle)) * 5;
         double offsetY = Math.cos(Math.toRadians(angle)) * 5; 
         
-        drawCenteredString(pPoseStack, font, title, width / 2, height / 2, 0xFFFFFF);
-        AllIcons.I_MTD_SCAN.render(pPoseStack, (int)(width / 2 + offsetX), (int)(height / 2 - 50 + offsetY));
+        graphics.drawCenteredString(font, title, width / 2, height / 2, 0xFFFFFF);
+        AllIcons.I_MTD_SCAN.render(graphics, (int)(width / 2 + offsetX), (int)(height / 2 - 50 + offsetY));
     }    
 }

@@ -5,9 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
 import java.util.Map.Entry;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 import com.simibubi.create.foundation.gui.AllIcons;
 import com.simibubi.create.foundation.gui.UIRenderHelper;
@@ -32,12 +32,13 @@ import de.mrjulsen.crn.util.ModGuiUtils;
 import de.mrjulsen.mcdragonlib.utils.TimeUtils;
 import de.mrjulsen.mcdragonlib.utils.Utils;
 import de.mrjulsen.mcdragonlib.client.gui.GuiUtils;
-import de.mrjulsen.mcdragonlib.client.gui.Tooltip;
+import de.mrjulsen.mcdragonlib.client.gui.DragonLibTooltip;
 import de.mrjulsen.mcdragonlib.client.gui.wrapper.CommonScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.MultiLineLabel;
-import net.minecraft.client.gui.components.Widget;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -128,7 +129,7 @@ public class SearchSettingsScreen extends CommonScreen {
                 onClose();
             }
         });
-        addTooltip(Tooltip.of(Constants.TOOLTIP_GO_BACK).assignedTo(backButton));
+        addTooltip(DragonLibTooltip.of(Constants.TOOLTIP_GO_BACK).assignedTo(backButton));
 
         defaultsButton = this.addRenderableWidget(new IconButton(guiLeft + 43, guiTop + 222, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, AllIcons.I_REFRESH) {
             @Override
@@ -139,7 +140,7 @@ public class SearchSettingsScreen extends CommonScreen {
                 init();
             }
         });
-        addTooltip(Tooltip.of(Constants.TOOLTIP_RESET_DEFAULTS).assignedTo(defaultsButton));
+        addTooltip(DragonLibTooltip.of(Constants.TOOLTIP_RESET_DEFAULTS).assignedTo(defaultsButton));
 
         transferTimeLabelInitialY = guiTop + AREA_Y + ENTRIES_START_Y_OFFSET + (0 * (ENTRY_HEIGHT + ENTRY_SPACING)) + 44;
         transferTimeInputInitialY = guiTop + AREA_Y + ENTRIES_START_Y_OFFSET + (0 * (ENTRY_HEIGHT + ENTRY_SPACING)) + 39;
@@ -182,12 +183,12 @@ public class SearchSettingsScreen extends CommonScreen {
 		scroll.tickChaser();
     }
 
-    private void renderDefaultOptionWidget(PoseStack pPoseStack, int x, int y, String text, MultiLineLabel label) {
-        pPoseStack.pushPose();
-        drawString(pPoseStack, shadowlessFont, text, x + 25, y + 6, 0xFFFFFF);
-        pPoseStack.scale(0.75f, 0.75f, 0.75f);        
-        label.renderLeftAligned(pPoseStack, (int)((x + 25) / 0.75f), (int)((y + 19) / 0.75f), 10, 0xDBDBDB);
-        pPoseStack.popPose();
+    private void renderDefaultOptionWidget(GuiGraphics graphics, int x, int y, String text, MultiLineLabel label) {
+        graphics.pose().pushPose();
+        graphics.drawString(shadowlessFont, text, x + 25, y + 6, 0xFFFFFF);
+        graphics.pose().scale(0.75f, 0.75f, 0.75f);        
+        label.renderLeftAligned(graphics, (int)((x + 25) / 0.75f), (int)((y + 19) / 0.75f), 10, 0xDBDBDB);
+        graphics.pose().popPose();
     }
 
     private void modifyTrainGroupFilter(TrainGroup group) {
@@ -214,17 +215,17 @@ public class SearchSettingsScreen extends CommonScreen {
 
 
     @Override
-    public void renderBg(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) {
-        renderBackground(pPoseStack);
-        GuiUtils.blit(GUI, pPoseStack, guiLeft, guiTop, 0, 0, GUI_WIDTH, GUI_HEIGHT);
+    public void renderBg(GuiGraphics graphics, int pMouseX, int pMouseY, float pPartialTick) {
+        renderBackground(graphics);
+        GuiUtils.blit(GUI, graphics, guiLeft, guiTop, 0, 0, GUI_WIDTH, GUI_HEIGHT);
         float scrollOffset = -scroll.getValue(pPartialTick);
 
         // SCROLLABLE AREA START
-        pPoseStack.pushPose();
+        graphics.pose().pushPose();
         UIRenderHelper.swapAndBlitColor(minecraft.getMainRenderTarget(), UIRenderHelper.framebuffer);
-        GuiUtils.startStencil(pPoseStack, guiLeft + AREA_X, guiTop + AREA_Y, AREA_W, AREA_H);
-        pPoseStack.pushPose();
-        pPoseStack.translate(0, scrollOffset, 0);
+        GuiUtils.startStencil(graphics, guiLeft + AREA_X, guiTop + AREA_Y, AREA_W, AREA_H);
+        graphics.pose().pushPose();
+        graphics.pose().translate(0, scrollOffset, 0);
 
         final int defaultWidth = 200;
         final int defaultDescriptionHeight = 36;
@@ -233,20 +234,20 @@ public class SearchSettingsScreen extends CommonScreen {
         int wY = guiTop + AREA_Y + ENTRIES_START_Y_OFFSET;
 
         // transfer time
-        DynamicWidgets.renderDuoShadeWidget(pPoseStack, wX, wY, defaultWidth, defaultDescriptionHeight, ColorShade.LIGHT, defaultOptionHeight, ColorShade.DARK);
-        DynamicWidgets.renderTextSlotOverlay(pPoseStack, wX + 25, wY + 39, 163, 18);
-        DynamicWidgets.renderTextBox(pPoseStack, wX + 25, wY + 39, 66);
-        renderDefaultOptionWidget(pPoseStack, wX, wY, transferTimeBoxText.getString(), transferOptionLabel);
-        drawString(pPoseStack, font, transferLabel, guiLeft + AREA_X + 10 + 30, transferTimeLabelInitialY, 0xFFFFFF);
+        DynamicWidgets.renderDuoShadeWidget(graphics, wX, wY, defaultWidth, defaultDescriptionHeight, ColorShade.LIGHT, defaultOptionHeight, ColorShade.DARK);
+        DynamicWidgets.renderTextSlotOverlay(graphics, wX + 25, wY + 39, 163, 18);
+        DynamicWidgets.renderTextBox(graphics, wX + 25, wY + 39, 66);
+        renderDefaultOptionWidget(graphics, wX, wY, transferTimeBoxText.getString(), transferOptionLabel);
+        graphics.drawString(font, transferLabel, guiLeft + AREA_X + 10 + 30, transferTimeLabelInitialY, 0xFFFFFF);
         wY += ENTRY_SPACING + defaultOptionHeight + defaultDescriptionHeight;
         
         // train groups
         int dY = wY;
         if (trainGroupsExpanded) {
-            DynamicWidgets.renderWidgetInner(pPoseStack, wX, dY, defaultWidth, defaultDescriptionHeight, ColorShade.LIGHT);
-            DynamicWidgets.renderWidgetTopBorder(pPoseStack, wX, dY, defaultWidth);
+            DynamicWidgets.renderWidgetInner(graphics, wX, dY, defaultWidth, defaultDescriptionHeight, ColorShade.LIGHT);
+            DynamicWidgets.renderWidgetTopBorder(graphics, wX, dY, defaultWidth);
             dY += defaultDescriptionHeight;
-            DynamicWidgets.renderWidgetInner(pPoseStack, wX, dY, defaultWidth, 2, ColorShade.DARK);
+            DynamicWidgets.renderWidgetInner(graphics, wX, dY, defaultWidth, 2, ColorShade.DARK);
             dY += 2;
             
             for (int i = 0; i < trainGroups.length; i++) {
@@ -259,32 +260,32 @@ public class SearchSettingsScreen extends CommonScreen {
                 area.setXOffset(wX);
                 area.setYOffset(dY + (i * ARRAY_ENTRY_HEIGHT));
 
-                DynamicWidgets.renderWidgetInner(pPoseStack, wX, dY + (i * ARRAY_ENTRY_HEIGHT), defaultWidth, 20, ColorShade.DARK);
-                DynamicWidgets.renderTextSlotOverlay(pPoseStack, wX + 25, dY + (i * ARRAY_ENTRY_HEIGHT) + 1, 163, ARRAY_ENTRY_HEIGHT - 2);
+                DynamicWidgets.renderWidgetInner(graphics, wX, dY + (i * ARRAY_ENTRY_HEIGHT), defaultWidth, 20, ColorShade.DARK);
+                DynamicWidgets.renderTextSlotOverlay(graphics, wX + 25, dY + (i * ARRAY_ENTRY_HEIGHT) + 1, 163, ARRAY_ENTRY_HEIGHT - 2);
 
                 MutableComponent name = Utils.text(group.getGroupName());
                 int maxTextWidth = 163 - 12;  
                 if (shadowlessFont.width(name) > maxTextWidth) {
                     name = Utils.text(shadowlessFont.substrByWidth(name, maxTextWidth).getString()).append(Constants.ELLIPSIS_STRING);
                 }
-                drawString(pPoseStack, shadowlessFont, name, wX + 30, dY + (i * ARRAY_ENTRY_HEIGHT) + 1 + 5, 0xFFFFFF);
+                graphics.drawString(shadowlessFont, name, wX + 30, dY + (i * ARRAY_ENTRY_HEIGHT) + 1 + 5, 0xFFFFFF);
                 
-                DynamicWidgets.renderTextSlotOverlay(pPoseStack, wX + 6, dY + (i * ARRAY_ENTRY_HEIGHT) + 1, 16, ARRAY_ENTRY_HEIGHT - 2);
+                DynamicWidgets.renderTextSlotOverlay(graphics, wX + 6, dY + (i * ARRAY_ENTRY_HEIGHT) + 1, 16, ARRAY_ENTRY_HEIGHT - 2);
                 
                 if (ModClientConfig.TRAIN_GROUP_FILTER_BLACKLIST.get().stream().noneMatch(x -> x.equals(group.getGroupName()))) {
-                    AllIcons.I_CONFIRM.render(pPoseStack, wX + 6, dY + (i * ARRAY_ENTRY_HEIGHT) + 2);
+                    AllIcons.I_CONFIRM.render(graphics, wX + 6, dY + (i * ARRAY_ENTRY_HEIGHT) + 2);
                 }
 
                 if (workingArea.isInBounds(pMouseX, pMouseY) && area.isInBounds(pMouseX, pMouseY - scrollOffset)) {
-                    fill(pPoseStack, area.getX(), area.getY(), area.getRight(), area.getBottom(), 0x1AFFFFFF);
+                    graphics.fill(area.getX(), area.getY(), area.getRight(), area.getBottom(), 0x1AFFFFFF);
                 }
             }
             dY += trainGroups.length * ARRAY_ENTRY_HEIGHT;            
-            DynamicWidgets.renderWidgetInner(pPoseStack, wX, dY, defaultWidth, 2, ColorShade.DARK);
+            DynamicWidgets.renderWidgetInner(graphics, wX, dY, defaultWidth, 2, ColorShade.DARK);
             dY += 2;
-            DynamicWidgets.renderWidgetBottomBorder(pPoseStack, wX, dY, defaultWidth);
+            DynamicWidgets.renderWidgetBottomBorder(graphics, wX, dY, defaultWidth);
         } else {
-            DynamicWidgets.renderDuoShadeWidget(pPoseStack, wX, wY, defaultWidth, defaultDescriptionHeight, ColorShade.LIGHT, defaultOptionHeight, ColorShade.DARK);
+            DynamicWidgets.renderDuoShadeWidget(graphics, wX, wY, defaultWidth, defaultDescriptionHeight, ColorShade.LIGHT, defaultOptionHeight, ColorShade.DARK);
             int amount = trainGroups.length - ModClientConfig.TRAIN_GROUP_FILTER_BLACKLIST.get().size();
             String text = String.valueOf(amount);
             if (amount <= 0) {
@@ -292,50 +293,49 @@ public class SearchSettingsScreen extends CommonScreen {
             } else if (amount >= trainGroups.length) {
                 text = trainGroupsOverviewAll.getString();
             }
-            drawString(pPoseStack, font, Utils.translate(trainGroupsOverviewKey, text), wX + 25, wY + defaultDescriptionHeight + defaultOptionHeight / 2 - font.lineHeight / 2, amount <= 0 ? 0xFF8888 : 0xFFFF88);            
-        }
+            graphics.drawString(font, Utils.translate(trainGroupsOverviewKey, text), wX + 25, wY + defaultDescriptionHeight + defaultOptionHeight / 2 - font.lineHeight / 2, amount <= 0 ? 0xFF8888 : 0xFFFF88);                    }
 
-        renderDefaultOptionWidget(pPoseStack, wX, wY, trainGroupsText.getString(), trainGroupsOptionLabel);
+        renderDefaultOptionWidget(graphics, wX, wY, trainGroupsText.getString(), trainGroupsOptionLabel);
         trainGroupExpandButton.setXOffset(wX + defaultWidth - 2 - 16);
         trainGroupExpandButton.setYOffset(wY + defaultDescriptionHeight / 2 - 7);
         trainGroupResetButton.setXOffset(wX + defaultWidth - 2 - 32);
         trainGroupResetButton.setYOffset(wY + defaultDescriptionHeight / 2 - 7);
 
-        AllIcons.I_REFRESH.render(pPoseStack, trainGroupResetButton.getX(), trainGroupResetButton.getY());
+        AllIcons.I_REFRESH.render(graphics, trainGroupResetButton.getX(), trainGroupResetButton.getY());
         if (trainGroupsExpanded) {
-            ModGuiIcons.COLLAPSE.render(pPoseStack, trainGroupExpandButton.getX(), trainGroupExpandButton.getY());
+            ModGuiIcons.COLLAPSE.render(graphics, trainGroupExpandButton.getX(), trainGroupExpandButton.getY());
         } else {
-            ModGuiIcons.EXPAND.render(pPoseStack, trainGroupExpandButton.getX(), trainGroupExpandButton.getY());
+            ModGuiIcons.EXPAND.render(graphics, trainGroupExpandButton.getX(), trainGroupExpandButton.getY());
         }
 
         // Button highlight
         if (workingArea.isInBounds(pMouseX, pMouseY)) {
             if (trainGroupExpandButton.isInBounds(pMouseX, pMouseY - scrollOffset)) {
-                fill(pPoseStack, trainGroupExpandButton.getX(), trainGroupExpandButton.getY(), trainGroupExpandButton.getRight(), trainGroupExpandButton.getBottom(), 0x1AFFFFFF);
+                graphics.fill(trainGroupExpandButton.getX(), trainGroupExpandButton.getY(), trainGroupExpandButton.getRight(), trainGroupExpandButton.getBottom(), 0x1AFFFFFF);
             } else if (trainGroupResetButton.isInBounds(pMouseX, pMouseY - scrollOffset)) {
-                fill(pPoseStack, trainGroupResetButton.getX(), trainGroupResetButton.getY(), trainGroupResetButton.getRight(), trainGroupResetButton.getBottom(), 0x1AFFFFFF);
+                graphics.fill(trainGroupResetButton.getX(), trainGroupResetButton.getY(), trainGroupResetButton.getRight(), trainGroupResetButton.getBottom(), 0x1AFFFFFF);
             }
         }
 
         wY += ENTRY_SPACING + dY;
 
-        pPoseStack.popPose();
+        graphics.pose().popPose();
         GuiUtils.endStencil();        
-        net.minecraftforge.client.gui.ScreenUtils.drawGradientRect(pPoseStack.last().pose(), 200, guiLeft + AREA_X, guiTop + AREA_Y, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y + 10, 0x77000000, 0x00000000);
-        net.minecraftforge.client.gui.ScreenUtils.drawGradientRect(pPoseStack.last().pose(), 200, guiLeft + AREA_X, guiTop + AREA_Y + AREA_H - 10, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y + AREA_H, 0x00000000, 0x77000000);
+        graphics.fillGradient(guiLeft + AREA_X, guiTop + AREA_Y, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y + 10, 0x77000000, 0x00000000);
+        graphics.fillGradient(guiLeft + AREA_X, guiTop + AREA_Y + AREA_H - 10, guiLeft + AREA_X + AREA_W, guiTop + AREA_Y + AREA_H, 0x00000000, 0x77000000);
         UIRenderHelper.swapAndBlitColor(UIRenderHelper.framebuffer, minecraft.getMainRenderTarget());
 
         // widgets y offset
-        transferTimeInput.y = (int)(transferTimeInputInitialY + scrollOffset);
+        transferTimeInput.setY((int)(transferTimeInputInitialY + scrollOffset));
 
         // set scrollbar values
         maxY = wY - AREA_H;
-        pPoseStack.popPose();
+        graphics.pose().popPose();
         // SCROLLABLE AREA END
         
-        drawString(pPoseStack, shadowlessFont, title, guiLeft + 19, guiTop + 4, 0x4F4F4F);
+        graphics.drawString(shadowlessFont, title, guiLeft + 19, guiTop + 4, 0x4F4F4F);
         String timeString = TimeUtils.parseTime((int)((level.getDayTime() + Constants.TIME_SHIFT) % DragonLibConstants.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get());
-        drawString(pPoseStack, shadowlessFont, timeString, guiLeft + GUI_WIDTH - 22 - shadowlessFont.width(timeString), guiTop + 4, 0x4F4F4F);
+        graphics.drawString(shadowlessFont, timeString, guiLeft + GUI_WIDTH - 22 - shadowlessFont.width(timeString), guiTop + 4, 0x4F4F4F);
 
         double maxHeight = getMaxScrollHeight();
         double aH = AREA_H + 1;
@@ -343,27 +343,27 @@ public class SearchSettingsScreen extends CommonScreen {
             int scrollerHeight = Math.max(10, (int)(aH * (aH / maxHeight)));
             int startY = guiTop + AREA_Y + (int)((AREA_H) * (Math.abs(scrollOffset) / maxHeight));
 
-            fill(pPoseStack, guiLeft + AREA_X + AREA_W - 3, startY, guiLeft + AREA_X + AREA_W, startY + scrollerHeight, 0x7FFFFFFF);
+            graphics.fill(guiLeft + AREA_X + AREA_W - 3, startY, guiLeft + AREA_X + AREA_W, startY + scrollerHeight, 0x7FFFFFFF);
         }
     }
 
     @Override
-    public void renderFg(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) {
+    public void renderFg(GuiGraphics graphics, int pMouseX, int pMouseY, float pPartialTick) {
         int scrollOffset = (int)scroll.getValue(pPartialTick);
 
         if (workingArea.isInBounds(pMouseX, pMouseY)) {
-            GuiUtils.renderTooltipWithScrollOffset(this, trainGroupResetButton, List.of(tooltipTrainGroupsReset), width, pPoseStack, pMouseX, pMouseY, 0, scrollOffset);
+            GuiUtils.renderTooltipWithScrollOffset(this, trainGroupResetButton, List.of(tooltipTrainGroupsReset), width, graphics, pMouseX, pMouseY, 0, scrollOffset);
         }
 
-        for (Widget widget : renderables) {
+        for (Renderable widget : renderables) {
             if (widget instanceof AbstractSimiWidget simiWidget && simiWidget.isHoveredOrFocused()
                 && simiWidget.visible) {
                 List<Component> tooltip = simiWidget.getToolTip();
                 if (tooltip.isEmpty())
                     continue;
-                int ttx = simiWidget.lockedTooltipX == -1 ? pMouseX : simiWidget.lockedTooltipX + simiWidget.x;
-                int tty = simiWidget.lockedTooltipY == -1 ? pMouseY : simiWidget.lockedTooltipY + simiWidget.y;
-                renderComponentTooltip(pPoseStack, tooltip, ttx, tty);
+                int ttx = simiWidget.lockedTooltipX == -1 ? pMouseX : simiWidget.lockedTooltipX + simiWidget.getX();
+                int tty = simiWidget.lockedTooltipY == -1 ? pMouseY : simiWidget.lockedTooltipY + simiWidget.getY();
+                graphics.renderComponentTooltip(font, tooltip, ttx, tty);
             }
         }
 
@@ -372,12 +372,12 @@ public class SearchSettingsScreen extends CommonScreen {
                 continue;
             }
             
-            if (shadowlessFont.width(entry.getKey().getGroupName()) > 163 - 12 && ModGuiUtils.renderTooltipAtFixedPos(this, entry.getValue(), List.of(Utils.text(entry.getKey().getGroupName())), width, pPoseStack, pMouseX, pMouseY, 0, (int)scrollOffset, entry.getValue().getLeft() + 24, (int)(entry.getValue().getTop() + 2 - scrollOffset))) {
+            if (shadowlessFont.width(entry.getKey().getGroupName()) > 163 - 12 && ModGuiUtils.renderTooltipAtFixedPos(this, entry.getValue(), List.of(Utils.text(entry.getKey().getGroupName())), width, graphics, pMouseX, pMouseY, 0, (int)scrollOffset, entry.getValue().getLeft() + 24, (int)(entry.getValue().getTop() + 2 - scrollOffset))) {
                 break;
             }
         }
 
-        super.renderFg(pPoseStack, pMouseX, pMouseY, pPartialTick);
+        super.renderFg(graphics, pMouseX, pMouseY, pPartialTick);
     }
     
     @Override

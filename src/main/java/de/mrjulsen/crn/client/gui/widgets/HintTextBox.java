@@ -3,13 +3,13 @@ package de.mrjulsen.crn.client.gui.widgets;
 import org.lwjgl.glfw.GLFW;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.foundation.gui.Theme;
 import com.simibubi.create.foundation.utility.Components;
 
 import de.mrjulsen.mcdragonlib.client.gui.widgets.ModEditBox;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 
 public class HintTextBox extends ModEditBox {
 
@@ -26,8 +26,8 @@ public class HintTextBox extends ModEditBox {
 	}
 
 	@Override
-	public void renderButton(PoseStack ms, int mouseX, int mouseY, float partialTicks) {
-		super.renderButton(ms, mouseX, mouseY, partialTicks);
+	public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+		super.renderWidget(graphics, mouseX, mouseY, partialTicks);
 
 		if (hint == null || hint.isEmpty())
 			return;
@@ -35,7 +35,7 @@ public class HintTextBox extends ModEditBox {
 		if (!getValue().isEmpty())
 			return;
 
-		font.draw(ms, hint, x + 5, this.y + (this.height - 8) / 2, Theme.c(Theme.Key.TEXT).scaleAlpha(.75f).getRGB());
+			graphics.drawString(font, hint, getX() + 5, this.getY() + (this.height - 8) / 2, Theme.c(Theme.Key.TEXT).scaleAlpha(.75f).getRGB(), false);
 	}
 
 	@Override

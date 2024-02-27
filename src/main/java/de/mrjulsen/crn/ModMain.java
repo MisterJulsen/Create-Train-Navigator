@@ -5,6 +5,7 @@ import com.mojang.logging.LogUtils;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.item.ModItems;
+import de.mrjulsen.crn.item.creativemodetab.ModCreativeModeTab;
 import de.mrjulsen.crn.network.NetworkManager;
 import de.mrjulsen.crn.proxy.ClientInitWrapper;
 import de.mrjulsen.crn.proxy.ServerInit;
@@ -34,6 +35,7 @@ public final class ModMain {
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ModCommonConfig.SPEC, MOD_ID + "-common.toml");
 
         ModItems.register(eventBus);
+        ModCreativeModeTab.register(eventBus);
         NetworkManager.create();
         MinecraftForge.EVENT_BUS.register(this);
     }

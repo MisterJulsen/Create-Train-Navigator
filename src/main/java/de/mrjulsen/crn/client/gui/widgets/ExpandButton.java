@@ -1,11 +1,10 @@
 package de.mrjulsen.crn.client.gui.widgets;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-
 import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.mcdragonlib.utils.Utils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 
 public class ExpandButton extends Button {
@@ -23,7 +22,7 @@ public class ExpandButton extends Button {
     
 
     public ExpandButton(Font font, int pX, int pY, boolean initialState, OnPress pOnPress) {
-        super(pX, pY, 20, 20, Utils.emptyText(), pOnPress);
+        super(pX, pY, 20, 20, Utils.emptyText(), pOnPress, DEFAULT_NARRATION);
         this.font = font;
         this.expanded = initialState;
         
@@ -44,12 +43,12 @@ public class ExpandButton extends Button {
     }
 
     @Override
-    public void renderButton(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) {
+    public void renderWidget(GuiGraphics graphics, int pMouseX, int pMouseY, float pPartialTick) {
         if (isMouseOver(pMouseX, pMouseY)) {
-            fill(pPoseStack, x, y, x + width, y + height, 0x1AFFFFFF);
-            drawCenteredString(pPoseStack, font, expanded ? Utils.text(collapseText).withStyle(ChatFormatting.UNDERLINE).getVisualOrderText() : Utils.text(expandText).withStyle(ChatFormatting.UNDERLINE).getVisualOrderText(), x + width / 2, y + height / 2 - font.lineHeight / 2, 0xFFFFFF);
+            graphics.fill(getX(), getY(), getX() + width, getY() + height, 0x1AFFFFFF);
+            graphics.drawCenteredString(font, expanded ? Utils.text(collapseText).withStyle(ChatFormatting.UNDERLINE).getVisualOrderText() : Utils.text(expandText).withStyle(ChatFormatting.UNDERLINE).getVisualOrderText(), getX() + width / 2, getY() + height / 2 - font.lineHeight / 2, 0xFFFFFF);
         } else {            
-            drawCenteredString(pPoseStack, font, expanded ? collapseText : expandText, x + width / 2, y + height / 2 - font.lineHeight / 2, 0xFFFFFF);
+            graphics.drawCenteredString(font, expanded ? collapseText : expandText, getX() + width / 2, getY() + height / 2 - font.lineHeight / 2, 0xFFFFFF);
         }        
     }
 

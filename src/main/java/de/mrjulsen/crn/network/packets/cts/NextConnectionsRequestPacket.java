@@ -50,7 +50,7 @@ public class NextConnectionsRequestPacket implements IPacketBase<NextConnections
         context.get().enqueueWork(() ->
         {
             new Thread(() -> {
-                final long updateTime = context.get().getSender().level.getDayTime();
+                final long updateTime = context.get().getSender().level().getDayTime();
                 NetworkManager.getInstance().sendToClient(new NextConnectionsResponsePacket(packet.requestId, TrainUtils.getConnectionsAt(packet.currentStationName, packet.trainId, (int)packet.ticksToNextStop), updateTime), context.get().getSender());
             }, "Connections Loader").run();
         });

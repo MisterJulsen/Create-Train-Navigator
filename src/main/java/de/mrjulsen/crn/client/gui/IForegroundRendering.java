@@ -1,7 +1,7 @@
 package de.mrjulsen.crn.client.gui;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphics;
 
 public interface IForegroundRendering {
-    void renderForeground(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTicks);
+    void renderForeground(GuiGraphics graphics, int pMouseX, int pMouseY, float pPartialTicks);
 }
