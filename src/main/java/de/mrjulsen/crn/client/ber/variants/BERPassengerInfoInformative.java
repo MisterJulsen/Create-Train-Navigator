@@ -16,7 +16,7 @@ import de.mrjulsen.crn.client.ber.base.IBlockEntityRendererInstance.BlockEntityR
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.SimpleTrainConnection;
-import de.mrjulsen.crn.data.DeparturePrediction.Side;
+import de.mrjulsen.crn.data.DeparturePrediction.TrainExitSide;
 import de.mrjulsen.crn.data.DeparturePrediction.SimpleDeparturePrediction;
 import de.mrjulsen.crn.event.listeners.JourneyListener.State;
 import de.mrjulsen.crn.network.InstanceManager;
@@ -57,6 +57,9 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
     private int nextConnectionsPage = 0;
     private int nextConnectionsMaxPage = 0;
     private int nextConnectionsTimer = 0;
+
+    // Cache
+    private TrainExitSide lastKnownExitSide = TrainExitSide.UNKNOWN;
 
     private static final String keyNextStop = "gui.createrailwaysnavigator.route_overview.next_stop";
     private static final Component textNextConnections = Utils.translate("gui.createrailwaysnavigator.route_overview.next_connections").withStyle(ChatFormatting.BOLD);
@@ -107,6 +110,11 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
             }
         }
 
+        if (this.state != State.WHILE_TRAVELING && lastKnownExitSide != pBlockEntity.relativeExitDirection.get()) {
+            dirty = true;
+        }
+        lastKnownExitSide = pBlockEntity.relativeExitDirection.get();
+
         if (dirty) {
             update(level, pos, state, pBlockEntity, parent);
         } else {
@@ -151,7 +159,7 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
         }
 
         // Render route path
-        if (this.state != State.BEFORE_NEXT_STOP) {
+        if (this.state != State.BEFORE_NEXT_STOP || nextConnections == null || nextConnections.isEmpty()) {
             float tempH = PANEL_LINE_HEIGHT - 0.2857142f;
             context.renderUtils().renderTexture(
                 TEXTURE,
@@ -190,27 +198,30 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
                 y += PANEL_LINE_HEIGHT;
             }
             
-            context.renderUtils().renderTexture(
-                TEXTURE,
-                pPoseStack,
-                8,
-                y,
-                0.0f,
-                1,
-                2,
-                uv * TEX_ROUTE_PATH_U,
-                uv * TEX_ROUTE_PATH_H * 2,
-                uv * (TEX_ROUTE_PATH_U + 7),
-                uv * (TEX_ROUTE_PATH_H * 3),
-                pBlockEntity.getBlockState().getValue(HorizontalDirectionalBlock.FACING),
-                0xFFFFFFFF,
-                pPackedLight
-            );
+            if (pBlockEntity.getTrainData().predictions().size() > 1) {
+                context.renderUtils().renderTexture(
+                    TEXTURE,
+                    pPoseStack,
+                    8,
+                    y,
+                    0.0f,
+                    1,
+                    2,
+                    uv * TEX_ROUTE_PATH_U,
+                    uv * TEX_ROUTE_PATH_H * 2,
+                    uv * (TEX_ROUTE_PATH_U + 7),
+                    uv * (TEX_ROUTE_PATH_H * 3),
+                    pBlockEntity.getBlockState().getValue(HorizontalDirectionalBlock.FACING),
+                    0xFFFFFFFF,
+                    pPackedLight
+                );
+            }
+            
         }
 
         // EXIT ARROW
-        Side side = pBlockEntity.relativeExitDirection.get();
-        if (state != State.WHILE_TRAVELING && side != Side.UNKNOWN) {
+        TrainExitSide side = pBlockEntity.relativeExitDirection.get();
+        if (state != State.WHILE_TRAVELING && side != TrainExitSide.UNKNOWN) {
             context.renderUtils().renderTexture(
                 ModGuiIcons.ICON_LOCATION,
                 pPoseStack,
@@ -219,10 +230,10 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
                 0,
                 2.5f,
                 2.5f,
-                uv * (side == Side.RIGHT ? ModGuiIcons.ARROW_RIGHT : ModGuiIcons.ARROW_LEFT).getU(),
-                uv * (side == Side.RIGHT ? ModGuiIcons.ARROW_RIGHT : ModGuiIcons.ARROW_LEFT).getV(),
-                uv * ((side == Side.RIGHT ? ModGuiIcons.ARROW_RIGHT : ModGuiIcons.ARROW_LEFT).getU() + ModGuiIcons.ICON_SIZE),
-                uv * ((side == Side.RIGHT ? ModGuiIcons.ARROW_RIGHT : ModGuiIcons.ARROW_LEFT).getV() + ModGuiIcons.ICON_SIZE),
+                uv * (side == TrainExitSide.RIGHT ? ModGuiIcons.ARROW_RIGHT : ModGuiIcons.ARROW_LEFT).getU(),
+                uv * (side == TrainExitSide.RIGHT ? ModGuiIcons.ARROW_RIGHT : ModGuiIcons.ARROW_LEFT).getV(),
+                uv * ((side == TrainExitSide.RIGHT ? ModGuiIcons.ARROW_RIGHT : ModGuiIcons.ARROW_LEFT).getU() + ModGuiIcons.ICON_SIZE),
+                uv * ((side == TrainExitSide.RIGHT ? ModGuiIcons.ARROW_RIGHT : ModGuiIcons.ARROW_LEFT).getV() + ModGuiIcons.ICON_SIZE),
                 pBlockEntity.getBlockState().getValue(HorizontalDirectionalBlock.FACING),
                 (0xFF << 24) | (pBlockEntity.getColor()),
                 LightTexture.FULL_BRIGHT
@@ -236,7 +247,7 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
     }
 
     private float generateTimeLabel(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent) {        
-        float maxWidth = blockEntity.getXSizeScaled() * 16 - (this.state != State.WHILE_TRAVELING && blockEntity.relativeExitDirection.get() != Side.UNKNOWN ? 4 : 0);
+        float maxWidth = blockEntity.getXSizeScaled() * 16 - (this.state != State.WHILE_TRAVELING && blockEntity.relativeExitDirection.get() != TrainExitSide.UNKNOWN ? 4 : 0);
         MutableComponent line = Utils.text(TimeUtils.parseTime((int)(blockEntity.getLevel().getDayTime() % DragonLibConstants.TICKS_PER_DAY + Constants.TIME_SHIFT), ModClientConfig.TIME_FORMAT.get())).withStyle(ChatFormatting.BOLD);
         float rawTextWidth = Math.min(parent.getFontUtils().font.width(line) * 0.5f, maxWidth);
         float textWidth = rawTextWidth * 0.5f;
@@ -245,7 +256,7 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
             .withMaxWidth(maxWidth, true)
             .withStretchScale(0.5f, 0.5f)
             .withColor((0xFF << 24) | (blockEntity.getColor() & 0x00FFFFFF))
-            .withPredefinedTextTransformation(new TextTransformation(blockEntity.getXSizeScaled() * 16 - 2.5f - textWidth - (this.state != State.WHILE_TRAVELING && blockEntity.relativeExitDirection.get() != Side.UNKNOWN ? 4 : 0), 2.5f, 0.0f, 0.5f, 0.25f))
+            .withPredefinedTextTransformation(new TextTransformation(blockEntity.getXSizeScaled() * 16 - 2.5f - textWidth - (this.state != State.WHILE_TRAVELING && blockEntity.relativeExitDirection.get() != TrainExitSide.UNKNOWN ? 4 : 0), 2.5f, 0.0f, 0.5f, 0.25f))
             .build();
 
         return rawTextWidth;
@@ -254,7 +265,7 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
     private void generateTitleBar(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent) {
         int displayWidth = blockEntity.getXSizeScaled();
 
-        float maxWidth = displayWidth * 16 - 6 - (this.state != State.WHILE_TRAVELING && blockEntity.relativeExitDirection.get() != Side.UNKNOWN ? 4 : 0);
+        float maxWidth = displayWidth * 16 - 6 - (this.state != State.WHILE_TRAVELING && blockEntity.relativeExitDirection.get() != TrainExitSide.UNKNOWN ? 4 : 0);
         maxWidth *= 2;
         float timeWidth = generateTimeLabel(level, pos, state, blockEntity, parent);
         MutableComponent line = Utils.text(blockEntity.getTrainData().trainName()).withStyle(ChatFormatting.BOLD);
@@ -351,6 +362,10 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
             y += PANEL_LINE_HEIGHT;
         }
 
+        if (blockEntity.getTrainData().predictions().size() <= 1) {
+            return;
+        }
+
         // DESTINATION
         pred = blockEntity.getTrainData().getLastStop().get();
         rawTime = (int)(blockEntity.getLastRefreshedTime() % 24000 + pred.departureTicks() + Constants.TIME_SHIFT);
@@ -364,7 +379,7 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
             .withPredefinedTextTransformation(new TextTransformation(3.0f, y + 0.3f, 0.0f, 1, 0.14f))
             .build()
         );
-        line = Utils.text(pred.scheduleTitle()).withStyle(ChatFormatting.BOLD);
+        line = Utils.text(pred.stationName()).withStyle(ChatFormatting.BOLD);
         parent.labels.add(new BERText(parent.getFontUtils(), line, 0)
             .withIsCentered(false)
             .withMaxWidth(maxWidth, true)

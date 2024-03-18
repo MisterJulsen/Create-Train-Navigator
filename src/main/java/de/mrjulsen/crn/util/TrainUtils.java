@@ -32,8 +32,7 @@ import de.mrjulsen.crn.data.SimpleTrainSchedule;
 import de.mrjulsen.crn.data.SimulatedTrainSchedule;
 import de.mrjulsen.crn.data.TrainStationAlias;
 import de.mrjulsen.crn.data.TrainStop;
-import de.mrjulsen.crn.data.DeparturePrediction.Side;
-import de.mrjulsen.crn.data.DeparturePrediction.TrainExit;
+import de.mrjulsen.crn.data.DeparturePrediction.TrainExitSide;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
@@ -87,9 +86,9 @@ public class TrainUtils {
         Collection<DeparturePrediction> preds = Gott().values().stream().flatMap(x -> x.stream()).filter(x -> x.train.id.equals(trainId)).map(x -> {
             DeparturePrediction prediction = new DeparturePrediction(x);
             if (stationsByName.containsKey(prediction.getStationName())) {
-                Set<Side> exitSides = stationsByName.get(prediction.getStationName()).stream().filter(a -> edges.containsKey(a.id)).map(a -> getTrainStationExit(a, Direction.fromYRot(angleOn(a, edges.get(a.id).stream().findFirst().get())), level)).collect(Collectors.toSet());
+                Set<TrainExitSide> exitSides = stationsByName.get(prediction.getStationName()).stream().filter(a -> edges.containsKey(a.id)).map(a -> getTrainStationExit(a, Direction.fromYRot(angleOn(a, edges.get(a.id).stream().findFirst().get())), level)).collect(Collectors.toSet());
                 if (exitSides.size() == 1) {
-                    prediction.setExit(new TrainExit(exitSides.stream().findFirst().get(), Direction.NORTH));
+                    prediction.setExit(exitSides.stream().findFirst().get());
                 }
             }
             return prediction;
@@ -239,33 +238,33 @@ public class TrainUtils {
      * @param server
      * @return 1 = right, -1 = left, 0 = unknown
      */
-    public static TrainExit getTrainStationExitDirection(GlobalStation station, Level level) {
+    public static TrainExitSide getTrainStationExitDirection(GlobalStation station, Level level) {
         DoorControlBehaviour dcb = getTrainStationDoorControl(station, level);
         if (dcb == null) {
-            return TrainExit.def();
+            return TrainExitSide.UNKNOWN;
         }
         Direction stationDirection = getStationDirection(station);
 
         if (dcb.mode.matches(stationDirection.getClockWise())) {
-            return new TrainExit(Side.RIGHT, stationDirection.getClockWise());
+            return TrainExitSide.RIGHT;
         } else if (dcb.mode.matches(stationDirection.getCounterClockWise())) {
-            return new TrainExit(Side.LEFT, stationDirection.getCounterClockWise());
+            return TrainExitSide.LEFT;
         }
-        return TrainExit.def();
+        return TrainExitSide.UNKNOWN;
     }
 
-    public static Side getTrainStationExit(GlobalStation station, Direction stationDirection, Level level) {
+    public static TrainExitSide getTrainStationExit(GlobalStation station, Direction stationDirection, Level level) {
         DoorControlBehaviour dcb = getTrainStationDoorControl(station, level);
         if (dcb == null) {
-            return Side.UNKNOWN;
+            return TrainExitSide.UNKNOWN;
         }
 
         if (dcb.mode.matches(stationDirection.getClockWise())) {
-            return Side.RIGHT;
+            return TrainExitSide.RIGHT;
         } else if (dcb.mode.matches(stationDirection.getCounterClockWise())) {
-            return Side.LEFT;
+            return TrainExitSide.LEFT;
         }
-        return Side.UNKNOWN;
+        return TrainExitSide.UNKNOWN;
     }
 
 

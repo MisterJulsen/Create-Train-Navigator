@@ -18,7 +18,7 @@ import de.mrjulsen.crn.data.CarriageData;
 import de.mrjulsen.crn.data.EDisplayInfo;
 import de.mrjulsen.crn.data.EDisplayType;
 import de.mrjulsen.crn.data.IBlockEntitySerializable;
-import de.mrjulsen.crn.data.DeparturePrediction.Side;
+import de.mrjulsen.crn.data.DeparturePrediction.TrainExitSide;
 import de.mrjulsen.crn.data.DeparturePrediction.SimpleDeparturePrediction;
 import de.mrjulsen.crn.network.InstanceManager;
 import de.mrjulsen.crn.network.NetworkManager;
@@ -81,22 +81,22 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     private int syncTicks = 0;
     private final Cache<IBlockEntityRendererInstance<AdvancedDisplayBlockEntity>> renderer = new Cache<>(() -> new AdvancedDisplayRenderInstance(this));
 
-    public final Cache<Side> relativeExitDirection = new Cache<>(() -> {
+    public final Cache<TrainExitSide> relativeExitDirection = new Cache<>(() -> {
         
         if (getCarriageData() == null || !getTrainData().getNextStop().isPresent() || !(getBlockState().getBlock() instanceof AbstractAdvancedDisplayBlock)) {
-            return Side.UNKNOWN;
+            return TrainExitSide.UNKNOWN;
         }
-        Side side = getTrainData().getNextStop().get().exitSide();
+        TrainExitSide side = getTrainData().getNextStop().get().exitSide();
         Direction blockFacing = getBlockState().getValue(HorizontalDirectionalBlock.FACING);
         if (!carriageData.isOppositeDirection()) {
             blockFacing = blockFacing.getOpposite();
         }
 
-        Side result = side;
+        TrainExitSide result = side;
         if (getCarriageData().assemblyDirection() == blockFacing) {
             result = result.getOpposite();
         } else if (getCarriageData().assemblyDirection().getOpposite() != blockFacing) {
-            result = Side.UNKNOWN;
+            result = TrainExitSide.UNKNOWN;
         }
         return result;
     });
@@ -294,7 +294,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
                         !prediction.scheduleTitle().equals(data.predictions().get(0).scheduleTitle()) ||
                         !prediction.stationName().equals(data.predictions().get(0).stationName()) ||
                         trainData.getNextStop().get().exitSide() != data.getNextStop().get().exitSide() ||
-                        trainData.getNextStop().get().departureTicks() + lastRefreshedTime != data.getNextStop().get().departureTicks() + refreshTime;
+                        (getInfoType() == EDisplayInfo.INFORMATIVE && getDisplayType() == EDisplayType.PASSENGER_INFORMATION && trainData.getNextStop().get().departureTicks() + lastRefreshedTime != data.getNextStop().get().departureTicks() + refreshTime) // It's not clean but it works ... for now
                     ;
                 }
                 this.lastRefreshedTime = refreshTime;

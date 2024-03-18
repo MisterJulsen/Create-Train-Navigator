@@ -10,8 +10,9 @@ import java.util.function.Supplier;
 import com.simibubi.create.content.trains.entity.Train;
 
 import de.mrjulsen.crn.Constants;
-import de.mrjulsen.crn.data.DeparturePrediction.Side;
+import de.mrjulsen.crn.data.DeparturePrediction.TrainExitSide;
 import de.mrjulsen.crn.data.DeparturePrediction.SimpleDeparturePrediction;
+import de.mrjulsen.crn.data.GlobalSettingsManager;
 import de.mrjulsen.crn.data.SimpleTrainSchedule;
 import de.mrjulsen.crn.data.TrainStop;
 import de.mrjulsen.crn.network.NetworkManager;
@@ -63,25 +64,23 @@ public class TrainDataRequestPacket implements IPacketBase<TrainDataRequestPacke
     public void handle(TrainDataRequestPacket packet, Supplier<NetworkEvent.Context> context) {        
         context.get().enqueueWork(() -> {
             final Level level = context.get().getSender().getLevel();
-            new Thread(() -> {
-                
-            }, "Train Data Gatherer").start();
-
-                Train train = TrainUtils.getTrain(packet.trainId);
-                List<SimpleDeparturePrediction> departurePredictions = new ArrayList<>();
-                if (packet.getPredictions) {
-                    Collection<TrainStop> stops = TrainUtils.getTrainStopsSorted(packet.trainId, level);
+            Train train = TrainUtils.getTrain(packet.trainId);
+            List<SimpleDeparturePrediction> departurePredictions = new ArrayList<>();
+            if (packet.getPredictions && train != null) {
+                Collection<TrainStop> stops = new ArrayList<>(TrainUtils.getTrainStopsSorted(packet.trainId, level));/*.stream().filter(x -> !GlobalSettingsManager.getInstance().getSettingsData().isBlacklisted(x.getStationAlias())).toList());*/
+                if (stops != null) {
                     departurePredictions.addAll(SimpleTrainSchedule.of(stops).makeScheduleUntilNextRepeat().getAllStops().stream().map(x -> x.getPrediction().simplify()).toList());
                 }
+            }
 
-                NetworkManager.getInstance().sendToClient(new TrainDataResponsePacket(packet.requestId, new TrainData(
-                    packet.trainId,
-                    train.name.getString(),
-                    departurePredictions,
-                    train.speed,
-                    train.navigation.ticksWaitingForSignal,
-                    train.currentlyBackwards
-                ), context.get().getSender().getLevel().getDayTime()), context.get().getSender());
+            NetworkManager.getInstance().sendToClient(new TrainDataResponsePacket(packet.requestId, new TrainData(
+                packet.trainId,
+                train.name.getString(),
+                departurePredictions,
+                train.speed,
+                train.navigation.ticksWaitingForSignal,
+                train.currentlyBackwards
+            ), context.get().getSender().getLevel().getDayTime()), context.get().getSender());
         });
         
         context.get().setPacketHandled(true);
@@ -184,7 +183,7 @@ public class TrainDataRequestPacket implements IPacketBase<TrainDataRequestPacke
 
         public static TrainData empty() {
             MutableComponent text = Utils.translate("block.createrailwaysnavigator.advanced_display.ber.not_in_service");
-            return new TrainData(Constants.ZERO_UUID, "CRN", List.of(new SimpleDeparturePrediction("", 0, text.getString(), Constants.ZERO_UUID, null, Side.UNKNOWN)), 0, 0, false);
+            return new TrainData(Constants.ZERO_UUID, "CRN", List.of(new SimpleDeparturePrediction("", 0, text.getString(), Constants.ZERO_UUID, null, TrainExitSide.UNKNOWN)), 0, 0, false);
         }
 
     }

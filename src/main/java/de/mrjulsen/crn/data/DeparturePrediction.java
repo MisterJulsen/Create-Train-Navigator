@@ -2,7 +2,6 @@ package de.mrjulsen.crn.data;
 
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 
 import com.simibubi.create.content.trains.display.GlobalTrainDisplayData.TrainDeparturePrediction;
@@ -10,7 +9,6 @@ import com.simibubi.create.content.trains.entity.Train;
 
 import de.mrjulsen.crn.data.TrainStationAlias.StationInfo;
 import de.mrjulsen.crn.event.listeners.TrainListener;
-import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 
 public class DeparturePrediction {
@@ -22,7 +20,7 @@ public class DeparturePrediction {
     private StationInfo info;
 
     // Special data
-    private TrainExit exit = TrainExit.def();
+    private TrainExitSide exit = TrainExitSide.UNKNOWN;
 
     private int cycle;
 
@@ -88,20 +86,16 @@ public class DeparturePrediction {
         return TrainListener.getInstance().getApproximatedTrainDuration(train);
     }
 
-    public Optional<TrainExit> getExit() {
-        return exit == null ? Optional.empty() : Optional.of(exit);
+    public TrainExitSide getExitSide() {
+        return this.exit;
     }
 
-    public void setExit(TrainExit exit) {
+    public void setExit(TrainExitSide exit) {
         this.exit = exit;
     }
 
-    public boolean hasExitData() {
-        return exit != null;
-    }
-
     public SimpleDeparturePrediction simplify() {
-        return new SimpleDeparturePrediction(getNextStop().getAliasName().get(), getTicks(), getScheduleTitle(), getTrain().id, getInfo(), getExit().get().exitSide());
+        return new SimpleDeparturePrediction(getNextStop().getAliasName().get(), getTicks(), getScheduleTitle(), getTrain().id, getInfo(), getExitSide());
     }
 
 
@@ -128,20 +122,14 @@ public class DeparturePrediction {
         return String.format("%s, Next stop: %s in %st", getTrain().name.getString(), getNextStop().getAliasName(), getTicks());
     }
 
-    public record TrainExit(Side exitSide, Direction exitDirection) {
-        public static TrainExit def() {
-            return new TrainExit(Side.UNKNOWN, Direction.NORTH);
-        }
-    }
-
-    public static enum Side {
+    public static enum TrainExitSide {
         UNKNOWN((byte)0),
         RIGHT((byte)1),
         LEFT((byte)-1);
 
         private byte side;
 
-        Side(byte side) {
+        TrainExitSide(byte side) {
             this.side = side;
         }
 
@@ -149,16 +137,16 @@ public class DeparturePrediction {
             return side;
         }
 
-        public static Side getFromByte(byte side) {
+        public static TrainExitSide getFromByte(byte side) {
             return Arrays.stream(values()).filter(x -> x.getAsByte() == side).findFirst().orElse(UNKNOWN);
         }
 
-        public Side getOpposite() {
+        public TrainExitSide getOpposite() {
             return getFromByte((byte)-getAsByte());
         }
     }
 
-    public static record SimpleDeparturePrediction(String stationName, int departureTicks, String scheduleTitle, UUID trainId, StationInfo stationInfo, Side exitSide) {
+    public static record SimpleDeparturePrediction(String stationName, int departureTicks, String scheduleTitle, UUID trainId, StationInfo stationInfo, TrainExitSide exitSide) {
 
         private static final String NBT_STATION = "station";
         private static final String NBT_TICKS = "ticks";
@@ -184,7 +172,7 @@ public class DeparturePrediction {
                 nbt.getString(NBT_SCHEDULE_TITLE), 
                 nbt.getUUID(NBT_ID),
                 StationInfo.fromNbt(nbt),
-                Side.getFromByte(nbt.getByte(NBT_EXIT_SIDE))
+                TrainExitSide.getFromByte(nbt.getByte(NBT_EXIT_SIDE))
             );
         }
     }
