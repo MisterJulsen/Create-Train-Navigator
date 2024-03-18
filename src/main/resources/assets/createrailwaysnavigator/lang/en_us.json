@@ -4,9 +4,25 @@
 
     "common.createrailwaysnavigator.search": "Search",
 
-    "item.createrailwaysnavigator.navigator": "Create Railways Navigator",
-
     "itemGroup.createrailwaysnavigatortab": "Create Railways Navigator",
+
+    "item.createrailwaysnavigator.navigator": "Create Railways Navigator",
+	"item.createrailwaysnavigator.navigator.tooltip.summary": "The _navigator_ shows possible _train connections_ with additional information such as _stopovers_, _real-time data_ and more.",
+
+    "block.createrailwaysnavigator.advanced_display": "Advanced Display",
+	"block.createrailwaysnavigator.advanced_display.tooltip.summary": "Use it on _trains_, as a _train destination display_ or _passenger information display_, or at _train stations_ as a improved _platform display_ which also shows more information than regular display boards.",
+    "block.createrailwaysnavigator.advanced_display.tooltip.condition1": "When R-Clicked using a Wrench",
+	"block.createrailwaysnavigator.advanced_display.tooltip.behaviour1": "Open a menu to _configure_ the _display_.",
+    "block.createrailwaysnavigator.advanced_display_small": "Small Advanced Display",
+	"block.createrailwaysnavigator.advanced_display_small.tooltip.summary": "Use it on _trains_, as a _train destination display_ or _passenger information display_, or at _train stations_ as a improved _platform display_ which also shows more information than regular display boards.",
+    "block.createrailwaysnavigator.advanced_display_small.tooltip.condition1": "When R-Clicked using a Wrench",
+	"block.createrailwaysnavigator.advanced_display_small.tooltip.behaviour1": "Open a menu to _configure_ the _display_.",
+    "block.createrailwaysnavigator.advanced_display_panel": "Advanced Display Panel",
+	"block.createrailwaysnavigator.advanced_display_panel.tooltip.summary": "Use it on _trains_, as a _train destination display_ or _passenger information display_, or at _train stations_ as a improved _platform display_ which also shows more information than regular display boards.",
+    "block.createrailwaysnavigator.advanced_display_panel.tooltip.condition1": "When R-Clicked using a Wrench",
+	"block.createrailwaysnavigator.advanced_display_panel.tooltip.behaviour1": "Open a menu to _configure_ the _display_.",
+
+    "block.createrailwaysnavigator.advanced_display.ber.not_in_service": "Not in service!",
 
     "key.createrailwaysnavigator.category.crn": "Create Railways Navigator",
     "key.createrailwaysnavigator.route_overlay_options": "Show Route Overlay Options",
@@ -71,7 +87,7 @@
     "gui.createrailwaysnavigator.route_overview.transfer": "Change to %s → %s on platform %s",
     "gui.createrailwaysnavigator.route_overview.journey_completed": "Journey completed",
     "gui.createrailwaysnavigator.route_overview.after_journey": "You have reached %s. Thank you for traveling and have a nice day.",
-    "gui.createrailwaysnavigator.route_overview.next_connections": "Next connections:",
+    "gui.createrailwaysnavigator.route_overview.next_connections": "Next connections",
     "gui.createrailwaysnavigator.route_overview.schedule_transfer": "Transfer",
     "gui.createrailwaysnavigator.route_overview.train_canceled": "Train Canceled",
     "gui.createrailwaysnavigator.route_overview.train_cancellation_info": "Information about %s",
@@ -101,6 +117,7 @@
     "gui.createrailwaysnavigator.route_overview.notification.connection_missed": "You missed your connecting train %s to %s.",
     "gui.createrailwaysnavigator.route_overview.notification.journey_completed.title": "You have reached your destination!",
     "gui.createrailwaysnavigator.route_overview.notification.journey_completed": "Thank you for traveling and have a nice day",
+    "gui.createrailwaysnavigator.route_overview.date": "Day %s, %s",
 
     "gui.createrailwaysnavigator.global_settings.title": "Global Settings",
     "gui.createrailwaysnavigator.global_settings.option.tooltip": "Click to edit",
@@ -155,6 +172,26 @@
     "gui.createrailwaysnavigator.time_format.dhm": "%s days %s hrs. %s min.",
     "gui.createrailwaysnavigator.time_format.hm": "%s hrs. %s min.",
     "gui.createrailwaysnavigator.time_format.m": "%s min.",
+
+    "gui.createrailwaysnavigator.advanced_display_settings.title": "Advanced Display Settings",
+
+    "enum.createrailwaysnavigator.display_info_type": "Display Info Type",
+    "enum.createrailwaysnavigator.display_info_type.description": "Display Info Type Description Placeholder",
+    "enum.createrailwaysnavigator.display_info_type.simple": "Simple",
+    "enum.createrailwaysnavigator.display_info_type.info.simple": "Simple Info",
+    "enum.createrailwaysnavigator.display_info_type.detailed": "Detailed",
+    "enum.createrailwaysnavigator.display_info_type.info.detailed": "Detailed Info",
+    "enum.createrailwaysnavigator.display_info_type.informative": "Informative",
+    "enum.createrailwaysnavigator.display_info_type.info.informative": "Informative Info",
+    
+    "enum.createrailwaysnavigator.display_type": "Display Type",
+    "enum.createrailwaysnavigator.display_type.description": "Display Type Description Placeholder",
+    "enum.createrailwaysnavigator.display_type.train_destination": "Train Destination",
+    "enum.createrailwaysnavigator.display_type.info.train_destination": "Simple Info",
+    "enum.createrailwaysnavigator.display_type.passenger_information": "Passenger Information",
+    "enum.createrailwaysnavigator.display_type.info.passenger_information": "Detailed Info",
+    "enum.createrailwaysnavigator.display_type.platform": "Platform Display",
+    "enum.createrailwaysnavigator.display_type.info.platform": "Informative Info",
 
     "createrailwaysnavigator.moin": "moin"
 }

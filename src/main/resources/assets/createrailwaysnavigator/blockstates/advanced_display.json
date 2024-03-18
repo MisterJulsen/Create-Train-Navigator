@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "createrailwaysnavigator:block/advanced_display"
+    },
+    "facing=east": {
+      "model": "createrailwaysnavigator:block/advanced_display",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "createrailwaysnavigator:block/advanced_display",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "createrailwaysnavigator:block/advanced_display",
+      "y": 270
+    }
+  }
+}

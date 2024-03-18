@@ -71,7 +71,7 @@
     "gui.createrailwaysnavigator.route_overview.transfer": "Umstieg in %s → %s auf Gleis %s",
     "gui.createrailwaysnavigator.route_overview.journey_completed": "Reise abgeschlossen",
     "gui.createrailwaysnavigator.route_overview.after_journey": "Sie haben %s erreicht. Wir bedanken uns für Ihre Reise und wünschen einen schönen Tag.",
-    "gui.createrailwaysnavigator.route_overview.next_connections": "Nächste Anschlüsse:",
+    "gui.createrailwaysnavigator.route_overview.next_connections": "Nächste Anschlüsse",
     "gui.createrailwaysnavigator.route_overview.schedule_transfer": "Umstieg",
     "gui.createrailwaysnavigator.route_overview.train_canceled": "Zug fällt aus",
     "gui.createrailwaysnavigator.route_overview.train_cancellation_info": "Information zu %s",

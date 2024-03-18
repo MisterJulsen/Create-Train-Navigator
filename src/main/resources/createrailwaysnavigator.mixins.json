@@ -6,9 +6,11 @@
     "compatibilityLevel": "JAVA_17",
     "refmap": "createrailwaysnavigator.refmap.json",
     "mixins": [
-      "ScheduleDataAccessor"
+      "ScheduleDataAccessor",
+      "MountedStorageManagerMixin"
     ],
     "client": [
+      "BakedGlyphAccessor"
     ],
     "injectors": {
       "defaultRequire": 1

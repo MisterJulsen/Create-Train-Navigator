@@ -99,7 +99,6 @@ public class JourneyListener {
 
     private boolean beginAnnounced = false;
 
-
     public JourneyListener(SimpleRoute route) {
         this.route = route;
     }
@@ -319,7 +318,7 @@ public class JourneyListener {
         final Collection<UUID> ids = Arrays.stream(route.getStationArray()).map(x -> x.getTrain().trainId()).distinct().toList();
         
         long id = InstanceManager.registerClientRealtimeResponseAction((predictions, time) -> {
-            Map<UUID, List<SimpleDeparturePrediction>> predMap = predictions.stream().collect(Collectors.groupingBy(SimpleDeparturePrediction::id));            
+            Map<UUID, List<SimpleDeparturePrediction>> predMap = predictions.stream().collect(Collectors.groupingBy(SimpleDeparturePrediction::trainId));            
             
             if (predMap.containsKey(currentStation().getTrain().trainId())) {
                 SimpleDeparturePrediction currentTrainNextStop = predMap.get(currentStation().getTrain().trainId()).get(0);
@@ -327,7 +326,7 @@ public class JourneyListener {
 
                 if (currentState != State.BEFORE_JOURNEY && currentState != State.JOURNEY_INTERRUPTED) {                
                     if (currentState != State.WHILE_TRAVELING && currentState != State.WHILE_TRANSFER) {     
-                        while (!currentTrainNextStop.station().equals(currentStation().getStationName()) && currentState != State.AFTER_JOURNEY) {
+                        while (!currentTrainNextStop.stationName().equals(currentStation().getStationName()) && currentState != State.AFTER_JOURNEY) {
                             if (currentStation().getTag() != StationTag.END) {
                                 nextStop();
                             }
@@ -438,7 +437,7 @@ public class JourneyListener {
             filteredStationEntryList.add(entry.getStationName());
         }
         String[] filteredStationEntries = filteredStationEntryList.toArray(String[]::new);
-        String[] sched = schedule.stream().map(x -> x.station()).toArray(String[]::new);
+        String[] sched = schedule.stream().map(x -> x.stationName()).toArray(String[]::new);
         
         int k = 0;
         for (int i = 0; i < filteredStationEntries.length; i++) {
@@ -469,15 +468,15 @@ public class JourneyListener {
 
         for (int i = 0, k = 0; i < schedule.size() && k < route.size(); i++) {
             SimpleDeparturePrediction current = schedule.get(i);
-            long newTime = current.ticks() + updateTime;
-            if (route.get(0).getStationName().equals(current.station())) {
+            long newTime = current.departureTicks() + updateTime;
+            if (route.get(0).getStationName().equals(current.stationName())) {
                 k = 0;
                 b = true;
             }
 
-            if (route.get(k).getStationName().equals(current.station()) && b == true) {
+            if (route.get(k).getStationName().equals(current.stationName()) && b == true) {
                 if (newTime > lastTime/* && newTime + EARLY_ARRIVAL_THRESHOLD > route.get(k).station().getScheduleTime()*/) {
-                    route.get(k).updateRealtimeData(current.ticks(), updateTime, current.info(), () -> {
+                    route.get(k).updateRealtimeData(current.departureTicks(), updateTime, current.stationInfo(), () -> {
 
                     });
                     lastTime = route.get(k).getCurrentTime();

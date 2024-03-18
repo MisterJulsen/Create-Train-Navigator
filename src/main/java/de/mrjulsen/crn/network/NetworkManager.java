@@ -12,6 +12,7 @@ import de.mrjulsen.crn.network.packets.cts.NextConnectionsRequestPacket;
 import de.mrjulsen.crn.network.packets.cts.RealtimeRequestPacket;
 import de.mrjulsen.crn.network.packets.cts.TrackStationsRequestPacket;
 import de.mrjulsen.crn.network.packets.cts.TrainDataRequestPacket;
+import de.mrjulsen.crn.network.packets.cts.UpdateBlockEntityPacket;
 import de.mrjulsen.crn.network.packets.stc.GlobalSettingsResponsePacket;
 import de.mrjulsen.crn.network.packets.stc.NavigationResponsePacket;
 import de.mrjulsen.crn.network.packets.stc.NearestStationResponsePacket;
@@ -52,6 +53,7 @@ public class NetworkManager extends NetworkManagerBase<NetworkManager> {
             RealtimeRequestPacket.class,
             TrackStationsRequestPacket.class,
             TrainDataRequestPacket.class,
+            UpdateBlockEntityPacket.class,
 
             // stc
             GlobalSettingsResponsePacket.class,
