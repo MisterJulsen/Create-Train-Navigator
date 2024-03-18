@@ -10,6 +10,6 @@ public class ClientInit {
     public static void setup(final FMLClientSetupEvent event) {        
         ModGuiUtils.init();
         ModKeys.init();
-        OverlayRegistry.registerOverlayTop("route_details_overlay", HudOverlays.HUD_ROUTE_DETAILS);
+        ModDisplayTags.register();
     }
 }
