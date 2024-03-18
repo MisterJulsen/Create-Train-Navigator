@@ -25,16 +25,25 @@ public final class ModMain {
 
     // Directly reference a slf4j logger
     public static final Logger LOGGER = LogUtils.getLogger();
+    
+    public static final CreateRegistrate REGISTRATE = CreateRegistrate.create(MOD_ID);
+
 
     public ModMain() {
         IEventBus eventBus = FMLJavaModLoadingContext.get().getModEventBus();
         eventBus.addListener(ServerInit::setup);
         eventBus.addListener(ClientInitWrapper::setup);
 
-        ModItems.register(eventBus);
-        NetworkManager.create();
-        MinecraftForge.EVENT_BUS.register(this);
+		REGISTRATE.registerEventListeners(eventBus);
+
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ModClientConfig.SPEC, MOD_ID + "-client.toml");
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ModCommonConfig.SPEC, MOD_ID + "-common.toml");
+        
+        new ModCreativeModeTab("createrailwaysnavigatortab");
+        ModBlocks.register();
+        ModItems.register();
+        ModBlockEntities.register();
+        NetworkManager.create();
+        MinecraftForge.EVENT_BUS.register(this);
     }
 }
