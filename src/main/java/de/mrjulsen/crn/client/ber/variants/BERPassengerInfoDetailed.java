@@ -12,6 +12,7 @@ import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.GlobalSettingsManager;
 import de.mrjulsen.crn.data.DeparturePrediction.TrainExitSide;
 import de.mrjulsen.crn.event.listeners.JourneyListener.State;
+import de.mrjulsen.mcdragonlib.utils.TimeUtils;
 import de.mrjulsen.mcdragonlib.utils.Utils;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -21,11 +22,17 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class BERPassengerInfoSimple implements IBERRenderSubtype<AdvancedDisplayBlockEntity, AdvancedDisplayRenderInstance> {
+public class BERPassengerInfoDetailed implements IBERRenderSubtype<AdvancedDisplayBlockEntity, AdvancedDisplayRenderInstance> {
 
+    private static final int MAX_PAGES = 3;
+    private static final int TICKS_PER_PAGE = 200;
+
+    private int page = 0;
+    private int ticks = 0;
     private State state = State.WHILE_TRAVELING;
 
     private static final String keyNextStop = "gui.createrailwaysnavigator.route_overview.next_stop";
+    private static final String keyDate = "gui.createrailwaysnavigator.route_overview.date";
 
     @Override
     public void tick(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity pBlockEntity, AdvancedDisplayRenderInstance parent) {
@@ -33,7 +40,16 @@ public class BERPassengerInfoSimple implements IBERRenderSubtype<AdvancedDisplay
             return;
         }
 
-        boolean dirty = false;        
+        boolean dirty = false;
+        if (this.state == State.WHILE_TRAVELING) {            
+            ticks++;
+            if ((ticks = ticks % TICKS_PER_PAGE) == 0) {
+                page++;
+                page %= MAX_PAGES;
+                dirty = true;
+            }
+        }
+        
         if (pBlockEntity.getTrainData().getNextStop().isPresent()) {
             if (this.state != State.WHILE_NEXT_STOP && pBlockEntity.getTrainData().getNextStop().get().departureTicks() <= 0) {
                 this.state = State.WHILE_NEXT_STOP;
@@ -59,6 +75,7 @@ public class BERPassengerInfoSimple implements IBERRenderSubtype<AdvancedDisplay
         }
 
         parent.labels.clear();
+
         switch (this.state) {
             case BEFORE_NEXT_STOP:
                 updateAnnounceNextStop(level, pos, state, blockEntity, parent);
@@ -67,7 +84,18 @@ public class BERPassengerInfoSimple implements IBERRenderSubtype<AdvancedDisplay
                 updateWhileNextStop(level, pos, state, blockEntity, parent);
                 break;
             default:
-                updateDefault(level, pos, state, blockEntity, parent);
+                switch (page) {
+                    default:
+                    case 0:
+                        updateDefault(level, pos, state, blockEntity, parent);
+                        break;
+                    case 1:
+                        updatePage2(level, pos, state, blockEntity, parent);
+                        break;
+                    case 2:
+                        updatePage3(level, pos, state, blockEntity, parent);
+                        break;
+                }
                 break;
         }
     }
@@ -172,6 +200,44 @@ public class BERPassengerInfoSimple implements IBERRenderSubtype<AdvancedDisplay
             .withCanScroll(true, 1)
             .withColor((0xFF << 24) | (blockEntity.getColor()))
             .withPredefinedTextTransformation(new TextTransformation(3 + (side == TrainExitSide.LEFT ? 10 : 0), 5.5f, 0.0f, 1, 0.75f))
+            .build()
+        );
+    }
+
+    private void updatePage2(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent) {
+        int displayWidth = blockEntity.getXSizeScaled();
+
+        MutableComponent line = Utils.text("" + (int)Math.abs(Math.round(blockEntity.getTrainData().speed() * 20 * 3.6F))).append(" km/h");
+        float maxWidth = displayWidth * 16 - 6;        
+        parent.labels.add(new BERText(parent.getFontUtils(), line, 0)
+            .withIsCentered(true)
+            .withMaxWidth(maxWidth, true)
+            .withStretchScale(0.75f, 0.75f)
+            .withStencil(0, maxWidth)
+            .withCanScroll(true, 1)
+            .withColor((0xFF << 24) | (blockEntity.getColor()))
+            .withPredefinedTextTransformation(new TextTransformation(3, 5.5f, 0.0f, 1, 0.75f))
+            .build()
+        );
+    }
+    
+    private void updatePage3(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent) {        
+        int displayWidth = blockEntity.getXSizeScaled();
+        boolean isSingleBlock = blockEntity.getXSizeScaled() <= 1;
+
+        MutableComponent line = isSingleBlock ?
+            Utils.text(TimeUtils.parseTime((int)(blockEntity.getLevel().dayTime() % 24000), ModClientConfig.TIME_FORMAT.get())) :
+            Utils.translate(keyDate, blockEntity.getLevel().getDayTime() / 24000, TimeUtils.parseTime((int)(blockEntity.getLevel().dayTime() % 24000), ModClientConfig.TIME_FORMAT.get()));
+            
+        float maxWidth = displayWidth * 16 - 6;        
+        parent.labels.add(new BERText(parent.getFontUtils(), line, 0)
+            .withIsCentered(true)
+            .withMaxWidth(maxWidth, true)
+            .withStretchScale(0.75f, 0.75f)
+            .withStencil(0, maxWidth)
+            .withCanScroll(true, 1)
+            .withColor((0xFF << 24) | (blockEntity.getColor()))
+            .withPredefinedTextTransformation(new TextTransformation(3, 5.5f, 0.0f, 1, 0.75f))
             .build()
         );
     }

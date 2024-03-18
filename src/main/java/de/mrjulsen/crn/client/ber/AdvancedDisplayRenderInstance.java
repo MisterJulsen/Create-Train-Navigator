@@ -9,6 +9,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.client.ber.base.AbstractBlockEntityRenderInstance;
 import de.mrjulsen.crn.client.ber.base.BERText;
+import de.mrjulsen.crn.client.ber.variants.BERPassengerInfoDetailed;
 import de.mrjulsen.crn.client.ber.variants.BERPassengerInfoInformative;
 import de.mrjulsen.crn.client.ber.variants.BERPassengerInfoSimple;
 import de.mrjulsen.crn.client.ber.variants.BERRenderSubtypeBase;
@@ -54,6 +55,7 @@ public class AdvancedDisplayRenderInstance extends AbstractBlockEntityRenderInst
             ),
             EDisplayType.PASSENGER_INFORMATION, Map.of(
                 EDisplayInfo.SIMPLE, () -> new BERPassengerInfoSimple(),
+                EDisplayInfo.DETAILED, () -> new BERPassengerInfoDetailed(),
                 EDisplayInfo.INFORMATIVE, () -> new BERPassengerInfoInformative()
             )
         );
