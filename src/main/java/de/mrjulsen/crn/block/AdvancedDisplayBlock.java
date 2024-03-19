@@ -21,8 +21,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class AdvancedDisplayBlock extends AbstractAdvancedDisplayBlock {
     
-    private static final VoxelShape SHAPE_SN = Block.box(0, 0, 4, 16, 16, 12);
-    private static final VoxelShape SHAPE_EW = Block.box(4, 0, 0, 12, 16, 16);
+    private static final VoxelShape SHAPE_SN = Block.box(0, 0, 3, 16, 16, 13);
+    private static final VoxelShape SHAPE_EW = Block.box(3, 0, 0, 13, 16, 16);
 
     public AdvancedDisplayBlock(Properties properties) {
         super(properties);
@@ -40,7 +40,7 @@ public class AdvancedDisplayBlock extends AbstractAdvancedDisplayBlock {
 
     @Override
     public Tripple<Float, Float, Float> getRenderOffset(Level level, BlockState blockState, BlockPos pos) {
-        return Tripple.of(0.0f, 0.0f, 12.05f);
+        return Tripple.of(0.0f, 0.0f, 13.05f);
     }
 
     private static final int placementHelperId = PlacementHelpers.register(new PlacementHelper());

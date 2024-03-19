@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 
 import de.mrjulsen.crn.ModMain;
+import de.mrjulsen.crn.network.packets.cts.AdvancedDisplayUpdatePacket;
 import de.mrjulsen.crn.network.packets.cts.GlobalSettingsRequestPacket;
 import de.mrjulsen.crn.network.packets.cts.GlobalSettingsUpdatePacket;
 import de.mrjulsen.crn.network.packets.cts.NavigationRequestPacket;
@@ -54,6 +55,7 @@ public class NetworkManager extends NetworkManagerBase<NetworkManager> {
             TrackStationsRequestPacket.class,
             TrainDataRequestPacket.class,
             UpdateBlockEntityPacket.class,
+            AdvancedDisplayUpdatePacket.class,
 
             // stc
             GlobalSettingsResponsePacket.class,

@@ -28,17 +28,17 @@ public class RightLeftCTBehaviour extends ConnectedTextureBehaviour.Base {
 
 	@Override
 	public CTSpriteShiftEntry getShift(BlockState state, Direction direction, TextureAtlasSprite sprite) {
-		return state.getValue(HorizontalDirectionalBlock.FACING) == direction ? layerShift : null;
+		return state.getValue(HorizontalDirectionalBlock.FACING).getAxis() == direction.getAxis() ? layerShift : null;
 	}
     
     @Override
 	public boolean connectsTo(BlockState state, BlockState other, BlockAndTintGetter reader, BlockPos pos, BlockPos otherPos, Direction face, Direction primaryOffset, Direction secondaryOffset) {
 		if (other.getBlock() != state.getBlock())
 			return false;
-		Direction facingDirection = state.getValue(HorizontalDirectionalBlock.FACING);
 		if (reader.getBlockEntity(pos) instanceof IMultiblockBlockEntity be1 && reader.getBlockEntity(otherPos) instanceof IMultiblockBlockEntity be2 && Math.abs(be1.getIndex() - be2.getIndex()) > 1) {
 			return false;
 		}
+		Direction facingDirection = state.getValue(HorizontalDirectionalBlock.FACING);
 		if (other.getValue(HorizontalDirectionalBlock.FACING) != facingDirection)
 			return false;
             
@@ -47,7 +47,7 @@ public class RightLeftCTBehaviour extends ConnectedTextureBehaviour.Base {
 
 	@Override
 	protected boolean isBeingBlocked(BlockState state, BlockAndTintGetter reader, BlockPos pos, BlockPos otherPos, Direction face) {
-		return (state.getValue(HorizontalDirectionalBlock.FACING) == face && super.isBeingBlocked(state, reader, pos, otherPos, face));
+		return (state.getValue(HorizontalDirectionalBlock.FACING).getAxis() == face.getAxis() && super.isBeingBlocked(state, reader, pos, otherPos, face));
 	}
 
 	@Override
@@ -81,11 +81,9 @@ public class RightLeftCTBehaviour extends ConnectedTextureBehaviour.Base {
 		if (axis == Axis.Y)
 			return super.getUpDirection(reader, pos, state, face);
 		boolean alongX = axis == Axis.X;
-		if (face.getAxis()
-			.isVertical() && alongX)
+		if (face.getAxis().isVertical() && alongX)
 			return super.getUpDirection(reader, pos, state, face).getClockWise();
-		if (face.getAxis() == axis || face.getAxis()
-			.isVertical())
+		if (face.getAxis() == axis || face.getAxis().isVertical())
 			return super.getUpDirection(reader, pos, state, face);
 		return Direction.fromAxisAndDirection(axis, alongX ? AxisDirection.POSITIVE : AxisDirection.NEGATIVE);
 	}
@@ -95,11 +93,9 @@ public class RightLeftCTBehaviour extends ConnectedTextureBehaviour.Base {
 		Axis axis = state.getValue(HorizontalDirectionalBlock.FACING).getAxis();
 		if (axis == Axis.Y)
 			return super.getRightDirection(reader, pos, state, face);
-		if (face.getAxis()
-			.isVertical() && axis == Axis.X)
+		if (face.getAxis().isVertical() && axis == Axis.X)
 			return super.getRightDirection(reader, pos, state, face).getClockWise();
-		if (face.getAxis() == axis || face.getAxis()
-			.isVertical())
+		if (face.getAxis() == axis || face.getAxis().isVertical())
 			return super.getRightDirection(reader, pos, state, face);
 		return Direction.fromAxisAndDirection(Axis.Y, face.getAxisDirection());
 	}

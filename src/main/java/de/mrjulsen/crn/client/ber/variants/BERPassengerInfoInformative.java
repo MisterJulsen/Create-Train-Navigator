@@ -246,8 +246,9 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
         return !optPred.isPresent() || optPred.get().stationName() == null || optPred.get().stationName().isBlank();
     }
 
-    private float generateTimeLabel(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent) {        
-        float maxWidth = blockEntity.getXSizeScaled() * 16 - (this.state != State.WHILE_TRAVELING && blockEntity.relativeExitDirection.get() != TrainExitSide.UNKNOWN ? 4 : 0);
+    private float generateTimeLabel(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent) {   
+        float arrowOffset = (this.state != State.WHILE_TRAVELING && blockEntity.relativeExitDirection.get() != TrainExitSide.UNKNOWN ? 4 : 0);     
+        float maxWidth = blockEntity.getXSizeScaled() * 16 - arrowOffset;
         MutableComponent line = Utils.text(TimeUtils.parseTime((int)(blockEntity.getLevel().getDayTime() % DragonLibConstants.TICKS_PER_DAY + Constants.TIME_SHIFT), ModClientConfig.TIME_FORMAT.get())).withStyle(ChatFormatting.BOLD);
         float rawTextWidth = Math.min(parent.getFontUtils().font.width(line) * 0.5f, maxWidth);
         float textWidth = rawTextWidth * 0.5f;
@@ -259,7 +260,7 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
             .withPredefinedTextTransformation(new TextTransformation(blockEntity.getXSizeScaled() * 16 - 2.5f - textWidth - (this.state != State.WHILE_TRAVELING && blockEntity.relativeExitDirection.get() != TrainExitSide.UNKNOWN ? 4 : 0), 2.5f, 0.0f, 0.5f, 0.25f))
             .build();
 
-        return rawTextWidth;
+        return rawTextWidth + arrowOffset;
     }
 
     private void generateTitleBar(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent) {
