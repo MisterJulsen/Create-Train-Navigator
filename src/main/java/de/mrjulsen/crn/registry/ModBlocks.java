@@ -16,6 +16,7 @@ import com.tterrag.registrate.util.nullness.NonNullConsumer;
 
 import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.block.AdvancedDisplayBlock;
+import de.mrjulsen.crn.block.AdvancedDisplayBoardBlock;
 import de.mrjulsen.crn.block.AdvancedDisplayPanelBlock;
 import de.mrjulsen.crn.block.AdvancedDisplaySmallBlock;
 import de.mrjulsen.crn.block.connected.RightLeftCTBehaviour;
@@ -40,7 +41,16 @@ public class ModBlocks {
 	public static final CTSpriteShiftEntry CT_ADVANCED_DISPLAY_SMALL = getCT(AllCTTypes.OMNIDIRECTIONAL, "advanced_display_small", "advanced_display_small");
     public static final CTSpriteShiftEntry CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL = getCT(AllCTTypes.HORIZONTAL_KRYPPERS, "advanced_display_small", "advanced_display_small");
 
-    public static final BlockEntry<AdvancedDisplayBlock> ADVANCED_DISPLAY = ModMain.REGISTRATE.block("advanced_display", AdvancedDisplayBlock::new)
+	public static final BlockEntry<AdvancedDisplayBlock> ADVANCED_DISPLAY_BLOCK = ModMain.REGISTRATE.block("advanced_display_block", AdvancedDisplayBlock::new)
+		.onRegister(connectedTextures(() -> new RightLeftCTBehaviour(CT_HORIZONTAL_ADVANCED_DISPLAY, CT_ADVANCED_DISPLAY)))
+		.addLayer(() -> RenderType::cutout)
+		.initialProperties(Material.METAL)
+		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new StationDisplayTarget()))
+		.item()
+		.build()
+		.register();
+
+    public static final BlockEntry<AdvancedDisplayBoardBlock> ADVANCED_DISPLAY = ModMain.REGISTRATE.block("advanced_display", AdvancedDisplayBoardBlock::new)
 		.onRegister(connectedTextures(() -> new RightLeftCTBehaviour(CT_HORIZONTAL_ADVANCED_DISPLAY, CT_ADVANCED_DISPLAY)))
 		.addLayer(() -> RenderType::cutout)
 		.initialProperties(Material.METAL)

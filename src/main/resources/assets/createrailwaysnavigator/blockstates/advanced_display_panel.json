@@ -17,19 +17,19 @@
     },
 
     "facing=north,side=back": {
-      "model": "createrailwaysnavigator:block/advanced_display_panel",
-      "y": 180
+      "model": "createrailwaysnavigator:block/advanced_display_panel_back"
     },
     "facing=east,side=back": {
-      "model": "createrailwaysnavigator:block/advanced_display_panel",
-      "y": 270
+      "model": "createrailwaysnavigator:block/advanced_display_panel_back",
+      "y": 90
     },
     "facing=south,side=back": {
-      "model": "createrailwaysnavigator:block/advanced_display_panel"
+      "model": "createrailwaysnavigator:block/advanced_display_panel_back",
+      "y": 180
     },
     "facing=west,side=back": {
-      "model": "createrailwaysnavigator:block/advanced_display_panel",
-      "y": 90
+      "model": "createrailwaysnavigator:block/advanced_display_panel_back",
+      "y": 270
     },
 
     "facing=north,side=both": {

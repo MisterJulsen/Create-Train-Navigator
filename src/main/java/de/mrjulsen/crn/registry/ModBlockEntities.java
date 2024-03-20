@@ -12,6 +12,7 @@ public class ModBlockEntities {
 		.blockEntity("advanced_display_block_entity", AdvancedDisplayBlockEntity::new)
 		.validBlocks(
 			ModBlocks.ADVANCED_DISPLAY,
+			ModBlocks.ADVANCED_DISPLAY_BLOCK,	
 			ModBlocks.ADVANCED_DISPLAY_PANEL,
 			ModBlocks.ADVANCED_DISPLAY_SMALL
 		)

@@ -3,6 +3,7 @@ package de.mrjulsen.crn.block.connected;
 import com.simibubi.create.foundation.block.connected.CTSpriteShiftEntry;
 import com.simibubi.create.foundation.block.connected.ConnectedTextureBehaviour;
 
+import de.mrjulsen.crn.block.AbstractAdvancedDisplayBlock;
 import de.mrjulsen.crn.block.be.IMultiblockBlockEntity;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
@@ -28,26 +29,42 @@ public class RightLeftCTBehaviour extends ConnectedTextureBehaviour.Base {
 
 	@Override
 	public CTSpriteShiftEntry getShift(BlockState state, Direction direction, TextureAtlasSprite sprite) {
-		return state.getValue(HorizontalDirectionalBlock.FACING).getAxis() == direction.getAxis() ? layerShift : null;
+		boolean b = false;
+		switch (state.getValue(AbstractAdvancedDisplayBlock.SIDE)) {
+			case BOTH:
+				b = state.getValue(HorizontalDirectionalBlock.FACING).getAxis() == direction.getAxis();
+				break;
+			case BACK:
+				b = state.getValue(HorizontalDirectionalBlock.FACING).getOpposite() == direction;
+				break;
+			default:
+				b = state.getValue(HorizontalDirectionalBlock.FACING) == direction;
+				break;
+		}
+		return b ? layerShift : null;
 	}
     
     @Override
 	public boolean connectsTo(BlockState state, BlockState other, BlockAndTintGetter reader, BlockPos pos, BlockPos otherPos, Direction face, Direction primaryOffset, Direction secondaryOffset) {
-		if (other.getBlock() != state.getBlock())
+		if (other.getBlock() != state.getBlock()) {
 			return false;
+		}
+		if (other.getValue(HorizontalDirectionalBlock.FACING) != state.getValue(HorizontalDirectionalBlock.FACING)) {
+			return false;
+		}
+		if (other.getValue(AbstractAdvancedDisplayBlock.SIDE) != state.getValue(AbstractAdvancedDisplayBlock.SIDE)) {
+			return false;
+		}
 		if (reader.getBlockEntity(pos) instanceof IMultiblockBlockEntity be1 && reader.getBlockEntity(otherPos) instanceof IMultiblockBlockEntity be2 && Math.abs(be1.getIndex() - be2.getIndex()) > 1) {
 			return false;
 		}
-		Direction facingDirection = state.getValue(HorizontalDirectionalBlock.FACING);
-		if (other.getValue(HorizontalDirectionalBlock.FACING) != facingDirection)
-			return false;
             
 		return true;
 	}
 
 	@Override
 	protected boolean isBeingBlocked(BlockState state, BlockAndTintGetter reader, BlockPos pos, BlockPos otherPos, Direction face) {
-		return (state.getValue(HorizontalDirectionalBlock.FACING).getAxis() == face.getAxis() && super.isBeingBlocked(state, reader, pos, otherPos, face));
+		return (state.getValue(HorizontalDirectionalBlock.FACING) == face && super.isBeingBlocked(state, reader, pos, otherPos, face));
 	}
 
 	@Override

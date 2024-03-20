@@ -17,6 +17,7 @@ import de.mrjulsen.crn.client.ber.base.IBlockEntityRendererInstance;
 import de.mrjulsen.crn.data.CarriageData;
 import de.mrjulsen.crn.data.EDisplayInfo;
 import de.mrjulsen.crn.data.EDisplayType;
+import de.mrjulsen.crn.data.ESide;
 import de.mrjulsen.crn.data.IBlockEntitySerializable;
 import de.mrjulsen.crn.data.DeparturePrediction.TrainExitSide;
 import de.mrjulsen.crn.data.DeparturePrediction.SimpleDeparturePrediction;
@@ -101,11 +102,18 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         return result;
     });
 
-    public final Cache<Tripple<Float, Float, Float>> renderOffset = new Cache<>(() -> {
+    public final Cache<Pair<Float, Float>> renderOffset = new Cache<>(() -> {
         if (getBlockState().getBlock() instanceof AbstractAdvancedDisplayBlock block) {
             return block.getRenderOffset(level, getBlockState(), worldPosition);
         }
-        return Tripple.of(0.0F, 0.0F, 0.0F);
+        return Tripple.of(0.0F, 0.0F);
+    });
+
+    public final Cache<Pair<Float, Float>> renderZOffset = new Cache<>(() -> {
+        if (getBlockState().getBlock() instanceof AbstractAdvancedDisplayBlock block) {
+            return block.getRenderZOffset(level, getBlockState(), worldPosition);
+        }
+        return Tripple.of(0.0F, 0.0F);
     });
 
     public final Cache<Pair<Float, Float>> renderAspectRatio = new Cache<>(() -> {
@@ -138,7 +146,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         return lastRefreshedTime;
     }
 
-    private byte getXSize() {
+    public byte getXSize() {
         return xSize;
     }
 
@@ -272,6 +280,16 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
             setXSize(newXSize);
         }
 	}
+
+    @Override
+    public boolean connectedTo(AdvancedDisplayBlockEntity otherBlockEntity) {
+        return otherBlockEntity.getBlockState().is(this.getBlockState().getBlock()) && (
+            getBlockState().getValue(AbstractAdvancedDisplayBlock.SIDE) == ESide.BOTH ?
+                otherBlockEntity.getBlockState().getValue(HorizontalDirectionalBlock.FACING).getAxis() == this.getBlockState().getValue(HorizontalDirectionalBlock.FACING).getAxis()
+            :
+                otherBlockEntity.getBlockState().getValue(HorizontalDirectionalBlock.FACING) == this.getBlockState().getValue(HorizontalDirectionalBlock.FACING)
+        );
+    }
 
     @Override
     public void contraptionTick(Level level, BlockPos pos, BlockState state, Contraption contraption) {

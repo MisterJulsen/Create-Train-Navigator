@@ -3,8 +3,8 @@ package de.mrjulsen.crn.network.packets.cts;
 import java.util.function.Supplier;
 
 import de.mrjulsen.crn.block.AbstractAdvancedDisplayBlock;
+import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.data.ESide;
-import de.mrjulsen.crn.data.IBlockEntitySerializable;
 import de.mrjulsen.mcdragonlib.network.IPacketBase;
 import de.mrjulsen.mcdragonlib.network.NetworkManagerBase;
 import net.minecraft.core.BlockPos;
@@ -22,7 +22,7 @@ public class AdvancedDisplayUpdatePacket implements IPacketBase<AdvancedDisplayU
 
     public AdvancedDisplayUpdatePacket() {}
 
-    public AdvancedDisplayUpdatePacket(BlockPos pos, IBlockEntitySerializable blockEntity, ESide side) {
+    public AdvancedDisplayUpdatePacket(BlockPos pos, AdvancedDisplayBlockEntity blockEntity, ESide side) {
         this.pos = pos;
         this.nbt = blockEntity.serialize();
         this.side = side;
@@ -57,13 +57,19 @@ public class AdvancedDisplayUpdatePacket implements IPacketBase<AdvancedDisplayU
             if (player != null) {
                 Level level = player.getLevel();
                 if (level.isLoaded(packet.pos)) {
-                    if (level.getBlockEntity(packet.pos) instanceof IBlockEntitySerializable blockEntity) {
-                        blockEntity.deserialize(packet.nbt);
+                    if (level.getBlockEntity(packet.pos) instanceof AdvancedDisplayBlockEntity blockEntity) {
+                        blockEntity.applyToAll(be -> {
+                            be.deserialize(packet.nbt);
+                        });
+
+                        blockEntity.applyToAll(be -> {
+                            if (level.getBlockState(be.getBlockPos()).getBlock() instanceof AbstractAdvancedDisplayBlock) {
+                                level.setBlockAndUpdate(be.getBlockPos(), level.getBlockState(be.getBlockPos()).setValue(AbstractAdvancedDisplayBlock.SIDE, packet.side));
+                            }
+                        });
                     }
 
-                    if (level.getBlockState(packet.pos).getBlock() instanceof AbstractAdvancedDisplayBlock) {
-                        level.setBlockAndUpdate(packet.pos, level.getBlockState(packet.pos).setValue(AbstractAdvancedDisplayBlock.SIDE, packet.side));
-                    }
+                    
                 }
             }
         });

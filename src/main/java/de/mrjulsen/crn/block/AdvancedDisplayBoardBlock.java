@@ -10,14 +10,26 @@ import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class AdvancedDisplayBlock extends AbstractAdvancedDisplayBlock {
+public class AdvancedDisplayBoardBlock extends AbstractAdvancedDisplayBlock {
+    
+    private static final VoxelShape SHAPE_SN = Block.box(0, 0, 3, 16, 16, 13);
+    private static final VoxelShape SHAPE_EW = Block.box(3, 0, 0, 13, 16, 16);
 
-    public AdvancedDisplayBlock(Properties properties) {
+    public AdvancedDisplayBoardBlock(Properties properties) {
         super(properties);
+    }
+
+    @Override
+    public VoxelShape getShape(BlockState pState, BlockGetter pLevel, BlockPos pPos, CollisionContext pContext) {
+        return pState.getValue(FACING) == Direction.NORTH || pState.getValue(FACING) == Direction.SOUTH ? SHAPE_SN : SHAPE_EW;
     }
 
     @Override
@@ -32,7 +44,7 @@ public class AdvancedDisplayBlock extends AbstractAdvancedDisplayBlock {
 
     @Override
     public Pair<Float, Float> getRenderZOffset(Level level, BlockState blockState, BlockPos pos) {
-        return Pair.of(16.05f, 16.05f);
+        return Pair.of(13.05f, 13.05f);
     }
 
     private static final int placementHelperId = PlacementHelpers.register(new PlacementHelper());
@@ -46,14 +58,14 @@ public class AdvancedDisplayBlock extends AbstractAdvancedDisplayBlock {
 	private static class PlacementHelper extends PoleHelper<Direction> {
 
 		public PlacementHelper() {
-			super(ModBlocks.ADVANCED_DISPLAY_BLOCK::has, state -> state.getValue(HorizontalDirectionalBlock.FACING)
+			super(ModBlocks.ADVANCED_DISPLAY::has, state -> state.getValue(HorizontalDirectionalBlock.FACING)
 				.getClockWise()
 				.getAxis(), HorizontalDirectionalBlock.FACING);
 		}
 
 		@Override
 		public Predicate<ItemStack> getItemPredicate() {
-			return ModBlocks.ADVANCED_DISPLAY_BLOCK::isIn;
+			return ModBlocks.ADVANCED_DISPLAY::isIn;
 		}
 
 	}

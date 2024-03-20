@@ -9,7 +9,6 @@ import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.data.ESide;
 import de.mrjulsen.crn.registry.ModBlockEntities;
 import de.mrjulsen.crn.util.Pair;
-import de.mrjulsen.crn.util.Tripple;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
@@ -156,6 +155,7 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
     }
 
     protected abstract int getPlacementHelperID();
-    public abstract Tripple<Float, Float, Float> getRenderOffset(Level level, BlockState blockState, BlockPos pos);
+    public abstract Pair<Float, Float> getRenderOffset(Level level, BlockState blockState, BlockPos pos);
+    /** First value: Front side, Second value: Back side */ public abstract Pair<Float, Float> getRenderZOffset(Level level, BlockState blockState, BlockPos pos);
     public abstract Pair<Float, Float> getRenderAspectRatio(Level level, BlockState blockState, BlockPos pos);
 }

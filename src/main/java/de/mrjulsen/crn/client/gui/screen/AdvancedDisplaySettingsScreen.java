@@ -20,7 +20,6 @@ import de.mrjulsen.crn.data.EDisplayType;
 import de.mrjulsen.crn.data.ESide;
 import de.mrjulsen.crn.network.NetworkManager;
 import de.mrjulsen.crn.network.packets.cts.AdvancedDisplayUpdatePacket;
-import de.mrjulsen.crn.registry.ModBlocks;
 import de.mrjulsen.mcdragonlib.DragonLibConstants;
 import de.mrjulsen.mcdragonlib.client.gui.GuiUtils;
 import de.mrjulsen.mcdragonlib.client.gui.wrapper.CommonScreen;
@@ -30,8 +29,6 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
 
 public class AdvancedDisplaySettingsScreen extends CommonScreen {
 
@@ -43,7 +40,7 @@ public class AdvancedDisplaySettingsScreen extends CommonScreen {
     private static final int DEFAULT_ICON_BUTTON_HEIGHT = 18;
 
     private final Font shadowlessFont;
-	private final ItemStack renderedItem = new ItemStack(ModBlocks.ADVANCED_DISPLAY.get());
+	private final ItemStack renderedItem;
 
     // Settings
     private final AdvancedDisplayBlockEntity blockEntity;
@@ -66,6 +63,7 @@ public class AdvancedDisplaySettingsScreen extends CommonScreen {
         this.shadowlessFont = new NoShadowFontWrapper(Minecraft.getInstance().font);
         this.blockEntity = blockEntity;
         this.side = blockEntity.getBlockState().getValue(AbstractAdvancedDisplayBlock.SIDE);
+        this.renderedItem = new ItemStack(blockEntity.getBlockState().getBlock());
     }
 
     @Override
@@ -112,13 +110,10 @@ public class AdvancedDisplaySettingsScreen extends CommonScreen {
             .calling((i) -> {
                 blockEntity.applyToAll(be -> {
                     ESide newSide = ESide.getSideById(i);
-                    Level level = be.getLevel();
-                    BlockState state = be.getBlockState();
-                    level.setBlockAndUpdate(be.getBlockPos(), state.setValue(AbstractAdvancedDisplayBlock.SIDE, newSide));
                     this.side = newSide;
                 });
             })
-            .setState(blockEntity.getBlockState().getValue(AbstractAdvancedDisplayBlock.SIDE).getId()));
+            .setState(side.getId()));
         sidesInput.onChanged();
     }
 

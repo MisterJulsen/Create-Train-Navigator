@@ -7,7 +7,6 @@ import com.simibubi.create.foundation.placement.PlacementHelpers;
 import com.simibubi.create.foundation.placement.PoleHelper;
 import de.mrjulsen.crn.registry.ModBlocks;
 import de.mrjulsen.crn.util.Pair;
-import de.mrjulsen.crn.util.Tripple;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -80,8 +79,13 @@ public class AdvancedDisplaySmallBlock extends AbstractAdvancedDisplayBlock {
     }
 
     @Override
-    public Tripple<Float, Float, Float> getRenderOffset(Level level, BlockState blockState, BlockPos pos) {
-        return Tripple.of(0.0f, blockState.getValue(HALF) == Half.BOTTOM ? 8.0F : 0.0F, 8.05f);
+    public Pair<Float, Float> getRenderOffset(Level level, BlockState blockState, BlockPos pos) {
+        return Pair.of(0.0f, blockState.getValue(HALF) == Half.BOTTOM ? 8.0F : 0.0F);
+    }
+
+    @Override
+    public Pair<Float, Float> getRenderZOffset(Level level, BlockState blockState, BlockPos pos) {
+        return Pair.of(8.05f, 16.05f);
     }
 
     private static final int placementHelperId = PlacementHelpers.register(new PlacementHelper());
