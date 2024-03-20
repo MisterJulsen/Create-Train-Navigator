@@ -55,7 +55,7 @@ public class RightLeftCTBehaviour extends ConnectedTextureBehaviour.Base {
 		if (other.getValue(AbstractAdvancedDisplayBlock.SIDE) != state.getValue(AbstractAdvancedDisplayBlock.SIDE)) {
 			return false;
 		}
-		if (reader.getBlockEntity(pos) instanceof IMultiblockBlockEntity be1 && reader.getBlockEntity(otherPos) instanceof IMultiblockBlockEntity be2 && Math.abs(be1.getIndex() - be2.getIndex()) > 1) {
+		if (reader.getBlockEntity(pos) instanceof IMultiblockBlockEntity be1 && reader.getBlockEntity(otherPos) instanceof IMultiblockBlockEntity be2 && Math.abs(be1.getXIndex() - be2.getXIndex()) > 1) {
 			return false;
 		}
             

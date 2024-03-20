@@ -2,6 +2,7 @@ package de.mrjulsen.crn.block.be;
 
 import java.util.function.Consumer;
 
+import de.mrjulsen.crn.block.AbstractAdvancedDisplayBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos.MutableBlockPos;
@@ -14,14 +15,17 @@ import net.minecraft.world.level.block.state.BlockState;
 @SuppressWarnings("unchecked")
 public interface IMultiblockBlockEntity<T extends BlockEntity & IMultiblockBlockEntity<T, B>, B extends Block> {
     
-    byte getIndex();
+    byte getXIndex();
     byte getMaxWidth();
+    byte getMaxHeight();
     boolean isController();
     Class<B> getBlockType();
     Class<T> getBlockEntityType();
 
     default T getController() {
         T be = (T)this;
+        
+        /*
 		if (isController())
 			return be;
 
@@ -33,8 +37,15 @@ public interface IMultiblockBlockEntity<T extends BlockEntity & IMultiblockBlock
 		MutableBlockPos pos = be.getBlockPos().mutable();
 		Direction side = blockState.getValue(HorizontalDirectionalBlock.FACING).getClockWise();
 
-		for (int i = 0; i < getMaxWidth(); i++) {
+        for (int i = 0; i < getMaxHeight(); i++) {
+			BlockState other = be.getLevel().getBlockState(pos);
+            if (other.getBlock() instanceof AbstractAdvancedDisplayBlock) {
+				break;
+			}
+            pos.move(Direction.UP);
+        }
 
+		for (int i = 0; i < getMaxWidth(); i++) {
             T otherBlockEntity = getBlockEntityCasted(be.getLevel(), pos.relative(side)) ;
             if (otherBlockEntity == null || !connectedTo(otherBlockEntity)) {
                 return be;
@@ -46,6 +57,43 @@ public interface IMultiblockBlockEntity<T extends BlockEntity & IMultiblockBlock
             }
 		}
 		return be;
+        */
+
+        if (isController())
+			return be;
+
+		BlockState blockState = be.getBlockState();
+		if (!(blockState.getBlock() instanceof AbstractAdvancedDisplayBlock))
+			return null;
+
+		MutableBlockPos pos = be.getBlockPos().mutable();
+		Direction side = blockState.getValue(AbstractAdvancedDisplayBlock.FACING).getClockWise();
+
+		for (int i = 0; i < getMaxWidth(); i++) {
+			if (be.getLevel().getBlockEntity(pos.relative(side)) instanceof AdvancedDisplayBlockEntity otherBe) {
+                if (otherBe.isController()) {
+                    return (T)otherBe;
+                }
+
+				pos.move(side);
+				continue;
+			}
+        }
+
+        for (int i = 0; i < getMaxHeight(); i++) {
+            if (be.getLevel().getBlockState(pos.above()).getBlock() instanceof AbstractAdvancedDisplayBlock) {
+				pos.move(Direction.UP);
+				continue;
+			}			
+
+			BlockEntity found = be.getLevel().getBlockEntity(pos);
+			if (found instanceof AdvancedDisplayBlockEntity flap && flap.isController())
+				return (T)flap;
+
+			break;
+		}
+
+		return null;
 	}
 
     default T getBlockEntityCasted(Level level, BlockPos otherpos) {
@@ -73,7 +121,7 @@ public interface IMultiblockBlockEntity<T extends BlockEntity & IMultiblockBlock
 		Direction side = blockState.getValue(HorizontalDirectionalBlock.FACING).getCounterClockWise();
 
 		for (int i = 0; i < getMaxWidth(); i++) {
-            BlockPos newPos = pos.relative(side, -getIndex());
+            BlockPos newPos = pos.relative(side, -getXIndex());
             pos.move(side);
             T otherBlockEntity = getBlockEntityCasted(be.getLevel(), newPos);
             if (otherBlockEntity == null || !connectedTo(otherBlockEntity)) {

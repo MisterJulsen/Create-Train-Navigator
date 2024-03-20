@@ -106,21 +106,20 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
     public void onPlace(BlockState pState, Level pLevel, BlockPos pPos, BlockState pOldState, boolean pIsMoving) {        
         Direction leftDirection = pState.getValue(HorizontalDirectionalBlock.FACING).getClockWise();
         BlockPos leftPos = pPos.relative(leftDirection);
-        if (pLevel.getBlockState(leftPos).is(this) && pLevel.getBlockEntity(leftPos) instanceof AdvancedDisplayBlockEntity leftBe && pLevel.getBlockEntity(pPos) instanceof AdvancedDisplayBlockEntity be && be.connectedTo(leftBe)) {
-            be.setColor(leftBe.getColor());
-            be.setDisplayType(leftBe.getDisplayType());
-            be.setInfoType(leftBe.getInfoType());
-            return;
-        }
+        updateNeighbour(pState, pLevel, pPos, pOldState, pIsMoving, leftDirection, leftPos);
 
         Direction rightDirection = pState.getValue(HorizontalDirectionalBlock.FACING).getCounterClockWise();
-        BlockPos rightPos = pPos.relative(rightDirection);
-        if (pLevel.getBlockState(rightPos).is(this) && pLevel.getBlockEntity(rightPos) instanceof AdvancedDisplayBlockEntity rightBe && pLevel.getBlockEntity(pPos) instanceof AdvancedDisplayBlockEntity be && be.connectedTo(rightBe)) {
-            be.setColor(rightBe.getColor());
-            be.setDisplayType(rightBe.getDisplayType());
-            be.setInfoType(rightBe.getInfoType());
+        BlockPos rightPos = pPos.relative(rightDirection);        
+        updateNeighbour(pState, pLevel, pPos, pOldState, pIsMoving, rightDirection, rightPos);
+    }
+
+    private void updateNeighbour(BlockState pState, Level pLevel, BlockPos pPos, BlockState pOldState, boolean pIsMoving, Direction direction, BlockPos neighbourPos) {
+        if (pLevel.getBlockState(neighbourPos).is(this) && pLevel.getBlockEntity(neighbourPos) instanceof AdvancedDisplayBlockEntity otherBe && pLevel.getBlockEntity(pPos) instanceof AdvancedDisplayBlockEntity be && be.connectedTo(otherBe)) {
+            be.setColor(otherBe.getColor());
+            be.setDisplayType(otherBe.getDisplayType());
+            be.setInfoType(otherBe.getInfoType());
             if (pLevel.isClientSide) {
-                be.getRenderer().update(pLevel, rightPos, pOldState, rightBe);
+                be.getRenderer().update(pLevel, neighbourPos, pOldState, otherBe);
             }
             return;
         }
