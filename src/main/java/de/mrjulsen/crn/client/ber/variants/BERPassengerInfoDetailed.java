@@ -22,7 +22,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class BERPassengerInfoDetailed implements IBERRenderSubtype<AdvancedDisplayBlockEntity, AdvancedDisplayRenderInstance> {
+public class BERPassengerInfoDetailed implements IBERRenderSubtype<AdvancedDisplayBlockEntity, AdvancedDisplayRenderInstance, Boolean> {
 
     private static final int MAX_PAGES = 3;
     private static final int TICKS_PER_PAGE = 200;
@@ -101,11 +101,15 @@ public class BERPassengerInfoDetailed implements IBERRenderSubtype<AdvancedDispl
     }
 
     @Override
-    public void renderAdditional(BlockEntityRendererContext context, AdvancedDisplayBlockEntity pBlockEntity, AdvancedDisplayRenderInstance parent, float pPartialTicks, PoseStack pPoseStack, MultiBufferSource pBufferSource, int pPackedLight, int pOverlay) {
+    public void renderAdditional(BlockEntityRendererContext context, AdvancedDisplayBlockEntity pBlockEntity, AdvancedDisplayRenderInstance parent, float pPartialTicks, PoseStack pPoseStack, MultiBufferSource pBufferSource, int pPackedLight, int pOverlay, Boolean backSide) {
         if (state == State.WHILE_NEXT_STOP || state == State.BEFORE_NEXT_STOP) {
             context.renderUtils().initRenderEngine();
             TrainExitSide side = pBlockEntity.relativeExitDirection.get();
             float uv = 1.0f / 256.0f;
+
+            if (backSide) {
+                side = side.getOpposite();
+            }
 
             switch (side) {
                 case RIGHT:

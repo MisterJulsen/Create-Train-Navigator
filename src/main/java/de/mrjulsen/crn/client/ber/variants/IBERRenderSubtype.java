@@ -10,8 +10,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
-public interface IBERRenderSubtype<T extends BlockEntity, S extends AbstractBlockEntityRenderInstance<T>> {
+public interface IBERRenderSubtype<T extends BlockEntity, S extends AbstractBlockEntityRenderInstance<T>, U> {
     void update(Level level, BlockPos pos, BlockState state, T blockEntity, S parent);
-    default void renderAdditional(BlockEntityRendererContext context, T pBlockEntity, S parent, float pPartialTicks, PoseStack pPoseStack, MultiBufferSource pBufferSource, int pPackedLight, int pOverlay) {}
+    default void renderAdditional(BlockEntityRendererContext context, T pBlockEntity, S parent, float pPartialTicks, PoseStack pPoseStack, MultiBufferSource pBufferSource, int pPackedLight, int pOverlay, U renderData) {}
     default void tick(Level level, BlockPos pos, BlockState state, T pBlockEntity, S parent) {}
 }

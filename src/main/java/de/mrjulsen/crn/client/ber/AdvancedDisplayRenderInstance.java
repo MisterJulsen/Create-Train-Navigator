@@ -34,11 +34,11 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class AdvancedDisplayRenderInstance extends AbstractBlockEntityRenderInstance<AdvancedDisplayBlockEntity> {
 
-    private Map<EDisplayType, Map<EDisplayInfo, Supplier<IBERRenderSubtype<AdvancedDisplayBlockEntity, AdvancedDisplayRenderInstance>>>> renderSubtypes;
+    private Map<EDisplayType, Map<EDisplayInfo, Supplier<IBERRenderSubtype<AdvancedDisplayBlockEntity, AdvancedDisplayRenderInstance, Boolean>>>> renderSubtypes;
 
     public Collection<BERText> labels;
     public BERText carriageIndexLabel;
-    private IBERRenderSubtype<AdvancedDisplayBlockEntity, AdvancedDisplayRenderInstance> renderSubtype;
+    private IBERRenderSubtype<AdvancedDisplayBlockEntity, AdvancedDisplayRenderInstance, Boolean> renderSubtype;
 
     private int lastXSize = 0;
     private EDisplayType lastType;
@@ -93,7 +93,7 @@ public class AdvancedDisplayRenderInstance extends AbstractBlockEntityRenderInst
                 pPoseStack.translate(offset.getFirst(), offset.getSecond(), zOffset.getFirst());
                 pPoseStack.scale(scale, scale, 1);
                 labels.forEach(x -> x.render(pPoseStack, pBufferSource, pBlockEntity.isGlowing() ? LightTexture.FULL_BRIGHT : pPackedLight));    
-                renderSubtype.renderAdditional(context, pBlockEntity, this, pPartialTicks, pPoseStack, pBufferSource, pBlockEntity.isGlowing() ? LightTexture.FULL_BRIGHT : pPackedLight, pOverlay);
+                renderSubtype.renderAdditional(context, pBlockEntity, this, pPartialTicks, pPoseStack, pBufferSource, pBlockEntity.isGlowing() ? LightTexture.FULL_BRIGHT : pPackedLight, pOverlay, false);
                 pPoseStack.popPose();
             }
             if (pBlockEntity.getBlockState().getValue(AbstractAdvancedDisplayBlock.SIDE) == ESide.BACK || pBlockEntity.getBlockState().getValue(AbstractAdvancedDisplayBlock.SIDE) == ESide.BOTH) {
@@ -103,7 +103,7 @@ public class AdvancedDisplayRenderInstance extends AbstractBlockEntityRenderInst
                 pPoseStack.translate(offset.getFirst(), offset.getSecond(), zOffset.getSecond());
                 pPoseStack.scale(scale, scale, 1);
                 labels.forEach(x -> x.render(pPoseStack, pBufferSource, pBlockEntity.isGlowing() ? LightTexture.FULL_BRIGHT : pPackedLight));    
-                renderSubtype.renderAdditional(context, pBlockEntity, this, pPartialTicks, pPoseStack, pBufferSource, pBlockEntity.isGlowing() ? LightTexture.FULL_BRIGHT : pPackedLight, pOverlay);
+                renderSubtype.renderAdditional(context, pBlockEntity, this, pPartialTicks, pPoseStack, pBufferSource, pBlockEntity.isGlowing() ? LightTexture.FULL_BRIGHT : pPackedLight, pOverlay, true);
                 pPoseStack.popPose();
             }
         }
@@ -128,7 +128,7 @@ public class AdvancedDisplayRenderInstance extends AbstractBlockEntityRenderInst
 
         if (lastType != type || lastInfo != info) {
             if (renderSubtypes.containsKey(type)) {
-                Map<EDisplayInfo, Supplier<IBERRenderSubtype<AdvancedDisplayBlockEntity, AdvancedDisplayRenderInstance>>> selectedType = renderSubtypes.get(type);
+                Map<EDisplayInfo, Supplier<IBERRenderSubtype<AdvancedDisplayBlockEntity, AdvancedDisplayRenderInstance, Boolean>>> selectedType = renderSubtypes.get(type);
                 if (selectedType.containsKey(info)) {
                     renderSubtype = selectedType.get(info).get();
                 }

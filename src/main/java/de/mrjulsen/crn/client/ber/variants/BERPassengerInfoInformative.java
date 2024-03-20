@@ -37,7 +37,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDisplayBlockEntity, AdvancedDisplayRenderInstance> {
+public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDisplayBlockEntity, AdvancedDisplayRenderInstance, Boolean> {
 
     private static final ResourceLocation TEXTURE = new ResourceLocation(ModMain.MOD_ID, "textures/gui/overview.png");
     private static final int TEX_ROUTE_PATH_U = 226;
@@ -143,7 +143,7 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
     }
 
     @Override
-    public void renderAdditional(BlockEntityRendererContext context, AdvancedDisplayBlockEntity pBlockEntity, AdvancedDisplayRenderInstance parent, float pPartialTicks, PoseStack pPoseStack, MultiBufferSource pBufferSource, int pPackedLight, int pOverlay) {
+    public void renderAdditional(BlockEntityRendererContext context, AdvancedDisplayBlockEntity pBlockEntity, AdvancedDisplayRenderInstance parent, float pPartialTicks, PoseStack pPoseStack, MultiBufferSource pBufferSource, int pPackedLight, int pOverlay, Boolean backSide) {
 
         // render title bar
         timeLabel.render(pPoseStack, pBufferSource, pBlockEntity.isGlowing() ? LightTexture.FULL_BRIGHT : pPackedLight);
@@ -221,6 +221,9 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
 
         // EXIT ARROW
         TrainExitSide side = pBlockEntity.relativeExitDirection.get();
+        if (backSide) {
+            side = side.getOpposite();
+        }
         if (state != State.WHILE_TRAVELING && side != TrainExitSide.UNKNOWN) {
             context.renderUtils().renderTexture(
                 ModGuiIcons.ICON_LOCATION,
