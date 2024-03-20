@@ -11,6 +11,7 @@ import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 
 import de.mrjulsen.crn.block.AbstractAdvancedDisplayBlock;
+import de.mrjulsen.crn.block.AdvancedDisplayBlock;
 import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
 import de.mrjulsen.crn.client.ber.base.IBERInstance;
 import de.mrjulsen.crn.client.ber.base.IBlockEntityRendererInstance;
@@ -29,6 +30,7 @@ import de.mrjulsen.crn.util.Cache;
 import de.mrjulsen.crn.util.Pair;
 import de.mrjulsen.crn.util.Tripple;
 import de.mrjulsen.mcdragonlib.common.BlockEntityUtil;
+import it.unimi.dsi.fastutil.Arrays;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -60,10 +62,12 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     private static final String NBT_DISPLAY_TYPE = "DisplayType";
 
     public static final byte MAX_XSIZE = 8;
+    public static final byte MAX_YSIZE = 8;
 
     // DATA
     /** Applies only for the controller block. All other blocks will have a size of 1. */
 	private byte xSize = 1;
+	private byte ySize = 1;
     private boolean isController;
     private byte index;
 
@@ -154,6 +158,14 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         return (byte)(getXSize() * renderAspectRatio.get().getFirst());
     }
 
+    public byte getYSize() {
+        return ySize;
+    }
+
+    public byte getYSizeScaled() {
+        return (byte)(getYSize() * renderAspectRatio.get().getSecond());
+    }
+
     public boolean isController() {
         return isController;
     }
@@ -182,6 +194,12 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 
     private void setXSize(int size) {
 		xSize = (byte)(de.mrjulsen.mcdragonlib.utils.Math.clamp(size, 1, MAX_XSIZE));
+        BlockEntityUtil.sendUpdatePacket(this);
+        this.setChanged();
+    }
+
+    private void setYSize(int size) {
+        ySize = (byte)(de.mrjulsen.mcdragonlib.utils.Math.clamp(size, 1, MAX_XSIZE));
         BlockEntityUtil.sendUpdatePacket(this);
         this.setChanged();
     }
@@ -241,11 +259,65 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         super.tick();
     }
 
+    @Override
+    public void lazyTick() {
+        super.lazyTick();
+        updateControllerStatus();
+    }
+
+    public void updateControllerStatus() {
+		if (level.isClientSide) {
+			return;
+        }
+
+		BlockState blockState = getBlockState();
+		if (!(blockState.getBlock() instanceof AbstractAdvancedDisplayBlock)) {
+            return;
+        }
+
+		Direction leftDirection = blockState.getValue(AbstractAdvancedDisplayBlock.FACING).getClockWise();
+		boolean shouldBeController = !(level.getBlockState(worldPosition.above()).getBlock() instanceof AbstractAdvancedDisplayBlock) && level.getBlockState(worldPosition.relative(leftDirection)) != blockState;
+
+		byte newXSize = 1;
+		byte newYSize = 1;
+
+		if (shouldBeController) {
+			for (int xOffset = 1; xOffset < MAX_XSIZE; xOffset++) {
+                BlockPos newPos = worldPosition.relative(leftDirection.getOpposite(), xOffset);
+				if (level.getBlockState(newPos) != blockState)
+					break;
+
+                if (level.getBlockEntity(newPos) instanceof AdvancedDisplayBlockEntity be) {
+                    be.setIndex(newXSize);
+                }
+
+				newXSize++;
+			}
+			for (int yOffset = 0; yOffset < MAX_YSIZE; yOffset++) {
+				if (!(level.getBlockState(worldPosition.relative(Direction.DOWN, yOffset)).getBlock() instanceof AbstractAdvancedDisplayBlock)) {
+                        break;
+                    }
+
+				newYSize++;
+			}
+		}
+
+		if (isController == shouldBeController && newXSize == xSize && newYSize == ySize)
+			return;
+
+		isController = shouldBeController;
+		xSize = newXSize;
+		ySize = newYSize;
+        index = 0;
+		sendData();
+	}
+
     public void tickInstance(Level level, BlockPos pos, BlockState state) {
 		if (level.isClientSide) {
             getRenderer().tick(level, pos, state, this);
         }
 
+        /*
         BlockState blockState = getBlockState();
         if (!(blockState.getBlock() instanceof AbstractAdvancedDisplayBlock))
             return;
@@ -279,6 +351,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
             setController(shouldBeController);
             setXSize(newXSize);
         }
+        */
 	}
 
     @Override
