@@ -28,6 +28,11 @@ public class BERPassengerInfoSimple implements IBERRenderSubtype<AdvancedDisplay
     private static final String keyNextStop = "gui.createrailwaysnavigator.route_overview.next_stop";
 
     @Override
+    public boolean isSingleLined() {
+        return true;
+    }
+
+    @Override
     public void tick(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity pBlockEntity, AdvancedDisplayRenderInstance parent) {
         if (pBlockEntity.getTrainData() == null) {
             return;

@@ -2,6 +2,7 @@ package de.mrjulsen.crn.block.be;
 
 import java.util.function.Consumer;
 
+import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.block.AbstractAdvancedDisplayBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -16,6 +17,9 @@ import net.minecraft.world.level.block.state.BlockState;
 public interface IMultiblockBlockEntity<T extends BlockEntity & IMultiblockBlockEntity<T, B>, B extends Block> {
     
     byte getXIndex();
+    byte getYIndex();    
+    byte getWidth();
+    byte getHeight();
     byte getMaxWidth();
     byte getMaxHeight();
     boolean isController();
@@ -120,14 +124,18 @@ public interface IMultiblockBlockEntity<T extends BlockEntity & IMultiblockBlock
 		MutableBlockPos pos = be.getBlockPos().mutable();
 		Direction side = blockState.getValue(HorizontalDirectionalBlock.FACING).getCounterClockWise();
 
-		for (int i = 0; i < getMaxWidth(); i++) {
-            BlockPos newPos = pos.relative(side, -getXIndex());
-            pos.move(side);
-            T otherBlockEntity = getBlockEntityCasted(be.getLevel(), newPos);
-            if (otherBlockEntity == null || !connectedTo(otherBlockEntity)) {
-                continue;
+		for (int i = 0; i < getWidth() && i < getMaxWidth(); i++) {
+            BlockPos newPos = pos.relative(side, i);
+            for (int j = 0; j < getHeight() && j < getMaxHeight(); j++) {
+                BlockPos newPos2 = newPos.relative(Direction.DOWN, j);
+                T otherBlockEntity = getBlockEntityCasted(be.getLevel(), newPos2);
+                if (otherBlockEntity != null) {
+                    apply.accept(otherBlockEntity);
+                } else {
+                    ModMain.LOGGER.error(String.format("BlockEntity at %s does not exist!", newPos2));
+                }
             }
-            apply.accept(otherBlockEntity);
 		}
+        
 	}
 }

@@ -217,8 +217,14 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     }
     
     
-    private void setIndex(int index) {
+    private void setXIndex(int index) {
 		this.xIndex = (byte)de.mrjulsen.mcdragonlib.utils.Math.clamp(index, 0, MAX_XSIZE - 1);        
+        BlockEntityUtil.sendUpdatePacket(this);
+        this.setChanged();
+    }
+
+    private void setYIndex(int index) {
+		this.yIndex = (byte)de.mrjulsen.mcdragonlib.utils.Math.clamp(index, 0, MAX_YSIZE - 1);        
         BlockEntityUtil.sendUpdatePacket(this);
         this.setChanged();
     }
@@ -281,31 +287,25 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 		if (!(blockState.getBlock() instanceof AbstractAdvancedDisplayBlock))
 			return;
 
-		Direction leftDirection = blockState.getValue(HorizontalDirectionalBlock.FACING).getClockWise();
-		boolean shouldBeController = level.getBlockState(worldPosition.relative(leftDirection)) != blockState && 
-            (level.getBlockState(worldPosition.above()) != blockState || (level.getBlockEntity(worldPosition.above()) instanceof AdvancedDisplayBlockEntity be && be.getXIndex() > 0))
-        ;
+		Direction leftDirection = blockState.getValue(AbstractAdvancedDisplayBlock.FACING)
+			.getClockWise();
+		boolean shouldBeController = !blockState.getValue(AbstractAdvancedDisplayBlock.UP)
+			&& level.getBlockState(worldPosition.relative(leftDirection)) != blockState;
 
 		byte newXSize = 1;
 		byte newYSize = 1;
 
 		if (shouldBeController) {
-			for (int xOffset = 1; xOffset < MAX_XSIZE; xOffset++) {
-                BlockPos relPos = worldPosition.relative(leftDirection.getOpposite(), xOffset);
-				if (level.getBlockState(relPos) != blockState) {
+			for (int xOffset = 1; xOffset < 32; xOffset++) {
+				if (level.getBlockState(worldPosition.relative(leftDirection.getOpposite(), xOffset)) != blockState)
 					break;
-                }
-                
-                if (level.getBlockEntity(relPos) instanceof AdvancedDisplayBlockEntity be) {
-                    be.setIndex(newYSize);
-                }
 				newXSize++;
 			}
-			for (int yOffset = 1; yOffset < MAX_YSIZE; yOffset++) {
-                BlockPos relPos = worldPosition.relative(Direction.DOWN, yOffset);
-				if (level.getBlockState(relPos) != blockState || (level.getBlockEntity(relPos) instanceof AdvancedDisplayBlockEntity be && be.getXIndex() != 0)) {
+			for (int yOffset = 0; yOffset < 32; yOffset++) {
+				if (!level.getBlockState(worldPosition.relative(Direction.DOWN, yOffset))
+					.getOptionalValue(AbstractAdvancedDisplayBlock.DOWN)
+					.orElse(false))
 					break;
-                }
 				newYSize++;
 			}
 		}
@@ -328,26 +328,22 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 			return null;
 
 		MutableBlockPos pos = getBlockPos().mutable();
-		Direction side = blockState.getValue(HorizontalDirectionalBlock.FACING).getClockWise();
+		Direction side = blockState.getValue(AbstractAdvancedDisplayBlock.FACING)
+			.getClockWise();
 
-		for (int i = 0; i < MAX_XSIZE; i++) {
+		for (int i = 0; i < 64; i++) {
 			BlockState other = level.getBlockState(pos);
-			if (level.getBlockState(pos.relative(side)) == other) {
-				pos.move(side);
+
+			if (other.getOptionalValue(AbstractAdvancedDisplayBlock.UP)
+				.orElse(false)) {
+				pos.move(Direction.UP);
 				continue;
 			}
 
-            BlockEntity found = level.getBlockEntity(pos);
-			if (found instanceof AdvancedDisplayBlockEntity flap && flap.isController)
-				return flap;
-                
-			break;
-		}
-
-        for (int i = 0; i < MAX_YSIZE; i++) {
-			BlockState other = level.getBlockState(pos);
-			if (level.getBlockState(pos.above()) == other) {
-				pos.move(Direction.UP);
+			if (!level.getBlockState(pos.relative(side))
+				.getOptionalValue(AbstractAdvancedDisplayBlock.UP)
+				.orElse(true)) {
+				pos.move(side);
 				continue;
 			}
 
@@ -360,6 +356,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 
 		return null;
 	}
+
 
     public void tickInstance(Level level, BlockPos pos, BlockState state) {
 		if (level.isClientSide) {
@@ -547,6 +544,16 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     @Override
     public byte getMaxHeight() {
         return MAX_YSIZE;
+    }
+
+    @Override
+    public byte getWidth() {
+        return xSize;
+    }
+
+    @Override
+    public byte getHeight() {
+        return ySize;
     }
 
     @Override

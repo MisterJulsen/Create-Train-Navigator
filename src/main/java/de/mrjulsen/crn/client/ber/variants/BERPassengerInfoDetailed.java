@@ -35,6 +35,11 @@ public class BERPassengerInfoDetailed implements IBERRenderSubtype<AdvancedDispl
     private static final String keyDate = "gui.createrailwaysnavigator.route_overview.date";
 
     @Override
+    public boolean isSingleLined() {
+        return true;
+    }
+
+    @Override
     public void tick(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity pBlockEntity, AdvancedDisplayRenderInstance parent) {
         if (pBlockEntity.getTrainData() == null) {
             return;

@@ -38,7 +38,7 @@ public class AdvancedDisplayRenderInstance extends AbstractBlockEntityRenderInst
 
     public Collection<BERText> labels;
     public BERText carriageIndexLabel;
-    private IBERRenderSubtype<AdvancedDisplayBlockEntity, AdvancedDisplayRenderInstance, Boolean> renderSubtype;
+    public IBERRenderSubtype<AdvancedDisplayBlockEntity, AdvancedDisplayRenderInstance, Boolean> renderSubtype;
 
     private int lastXSize = 0;
     private EDisplayType lastType;

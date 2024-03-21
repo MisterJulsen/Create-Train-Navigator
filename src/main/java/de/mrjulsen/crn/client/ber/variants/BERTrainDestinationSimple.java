@@ -14,6 +14,11 @@ import net.minecraft.world.level.block.state.BlockState;
 public class BERTrainDestinationSimple implements IBERRenderSubtype<AdvancedDisplayBlockEntity, AdvancedDisplayRenderInstance, Boolean> {
 
     @Override
+    public boolean isSingleLined() {
+        return true;
+    }
+
+    @Override
     public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent) {
         if (blockEntity.getTrainData() == null) {
             return;

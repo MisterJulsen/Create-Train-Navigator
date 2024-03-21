@@ -10,6 +10,7 @@ import com.simibubi.create.foundation.block.connected.CTSpriteShiftEntry;
 import com.simibubi.create.foundation.block.connected.CTSpriteShifter;
 import com.simibubi.create.foundation.block.connected.CTType;
 import com.simibubi.create.foundation.block.connected.ConnectedTextureBehaviour;
+import com.simibubi.create.foundation.block.connected.SimpleCTBehaviour;
 import com.simibubi.create.foundation.utility.RegisteredObjects;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import com.tterrag.registrate.util.nullness.NonNullConsumer;
@@ -19,6 +20,7 @@ import de.mrjulsen.crn.block.AdvancedDisplayBlock;
 import de.mrjulsen.crn.block.AdvancedDisplayBoardBlock;
 import de.mrjulsen.crn.block.AdvancedDisplayPanelBlock;
 import de.mrjulsen.crn.block.AdvancedDisplaySmallBlock;
+import de.mrjulsen.crn.block.connected.DefaultCTBehaviour;
 import de.mrjulsen.crn.block.connected.RightLeftCTBehaviour;
 import de.mrjulsen.crn.block.display.AdvancedDisplayTarget;
 import net.minecraft.client.renderer.RenderType;
@@ -35,6 +37,8 @@ public class ModBlocks {
 		ModMain.REGISTRATE.creativeModeTab(() -> ModCreativeModeTab.MAIN);
 	}
 
+	public static final CTSpriteShiftEntry FRAMED_GLASS = getCT(AllCTTypes.OMNIDIRECTIONAL, "advanced_display", "advanced_display");
+
     public static final CTSpriteShiftEntry CT_ADVANCED_DISPLAY = getCT(AllCTTypes.OMNIDIRECTIONAL, "advanced_display", "advanced_display");
     public static final CTSpriteShiftEntry CT_HORIZONTAL_ADVANCED_DISPLAY = getCT(AllCTTypes.HORIZONTAL_KRYPPERS, "advanced_display", "advanced_display");
 
@@ -42,7 +46,7 @@ public class ModBlocks {
     public static final CTSpriteShiftEntry CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL = getCT(AllCTTypes.HORIZONTAL_KRYPPERS, "advanced_display_small", "advanced_display_small");
 
 	public static final BlockEntry<AdvancedDisplayBlock> ADVANCED_DISPLAY_BLOCK = ModMain.REGISTRATE.block("advanced_display_block", AdvancedDisplayBlock::new)
-		.onRegister(connectedTextures(() -> new RightLeftCTBehaviour(CT_HORIZONTAL_ADVANCED_DISPLAY, CT_ADVANCED_DISPLAY)))
+		.onRegister(connectedTextures(() -> new DefaultCTBehaviour(FRAMED_GLASS)))
 		.addLayer(() -> RenderType::cutout)
 		.initialProperties(Material.METAL)
 		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
@@ -51,7 +55,7 @@ public class ModBlocks {
 		.register();
 
     public static final BlockEntry<AdvancedDisplayBoardBlock> ADVANCED_DISPLAY = ModMain.REGISTRATE.block("advanced_display", AdvancedDisplayBoardBlock::new)
-		.onRegister(connectedTextures(() -> new RightLeftCTBehaviour(CT_HORIZONTAL_ADVANCED_DISPLAY, CT_ADVANCED_DISPLAY)))
+		.onRegister(connectedTextures(() -> new DefaultCTBehaviour(FRAMED_GLASS)))
 		.addLayer(() -> RenderType::cutout)
 		.initialProperties(Material.METAL)
 		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
@@ -69,7 +73,7 @@ public class ModBlocks {
 		.register();
 
 	public static final BlockEntry<AdvancedDisplayPanelBlock> ADVANCED_DISPLAY_PANEL = ModMain.REGISTRATE.block("advanced_display_panel", AdvancedDisplayPanelBlock::new)
-		.onRegister(connectedTextures(() -> new RightLeftCTBehaviour(CT_HORIZONTAL_ADVANCED_DISPLAY, CT_ADVANCED_DISPLAY)))
+		.onRegister(connectedTextures(() -> new DefaultCTBehaviour(FRAMED_GLASS)))
 		.addLayer(() -> RenderType::cutout)
 		.initialProperties(Material.METAL)
 		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))

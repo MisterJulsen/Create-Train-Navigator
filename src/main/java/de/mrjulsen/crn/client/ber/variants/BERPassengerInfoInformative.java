@@ -64,6 +64,11 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
     private static final String keyNextStop = "gui.createrailwaysnavigator.route_overview.next_stop";
     private static final Component textNextConnections = Utils.translate("gui.createrailwaysnavigator.route_overview.next_connections").withStyle(ChatFormatting.BOLD);
 
+    @Override
+    public boolean isSingleLined() {
+        return false;
+    }
+
     @SuppressWarnings("resource")
     @Override
     public void tick(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity pBlockEntity, AdvancedDisplayRenderInstance parent) {
