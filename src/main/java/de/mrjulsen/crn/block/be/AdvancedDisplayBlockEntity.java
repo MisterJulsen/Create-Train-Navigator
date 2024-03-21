@@ -216,13 +216,13 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         this.setChanged();
     }
     
-    /*
+    
     private void setIndex(int index) {
-		this.index = (byte)de.mrjulsen.mcdragonlib.utils.Math.clamp(index, 0, MAX_XSIZE - 1);        
+		this.xIndex = (byte)de.mrjulsen.mcdragonlib.utils.Math.clamp(index, 0, MAX_XSIZE - 1);        
         BlockEntityUtil.sendUpdatePacket(this);
         this.setChanged();
     }
-    */
+    
 
     public void setColor(int color) {
 		this.color = color;
@@ -282,20 +282,30 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 			return;
 
 		Direction leftDirection = blockState.getValue(HorizontalDirectionalBlock.FACING).getClockWise();
-		boolean shouldBeController = level.getBlockState(worldPosition.above()) != blockState && level.getBlockState(worldPosition.relative(leftDirection)) != blockState;
+		boolean shouldBeController = level.getBlockState(worldPosition.relative(leftDirection)) != blockState && 
+            (level.getBlockState(worldPosition.above()) != blockState || (level.getBlockEntity(worldPosition.above()) instanceof AdvancedDisplayBlockEntity be && be.getXIndex() > 0))
+        ;
 
 		byte newXSize = 1;
 		byte newYSize = 1;
 
 		if (shouldBeController) {
 			for (int xOffset = 1; xOffset < MAX_XSIZE; xOffset++) {
-				if (level.getBlockState(worldPosition.relative(leftDirection.getOpposite(), xOffset)) != blockState)
+                BlockPos relPos = worldPosition.relative(leftDirection.getOpposite(), xOffset);
+				if (level.getBlockState(relPos) != blockState) {
 					break;
+                }
+                
+                if (level.getBlockEntity(relPos) instanceof AdvancedDisplayBlockEntity be) {
+                    be.setIndex(newYSize);
+                }
 				newXSize++;
 			}
-			for (int yOffset = 0; yOffset < MAX_YSIZE; yOffset++) {
-				if (level.getBlockState(worldPosition.relative(Direction.DOWN, yOffset)) != blockState)
+			for (int yOffset = 1; yOffset < MAX_YSIZE; yOffset++) {
+                BlockPos relPos = worldPosition.relative(Direction.DOWN, yOffset);
+				if (level.getBlockState(relPos) != blockState || (level.getBlockEntity(relPos) instanceof AdvancedDisplayBlockEntity be && be.getXIndex() != 0)) {
 					break;
+                }
 				newYSize++;
 			}
 		}
@@ -308,139 +318,6 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 		ySize = newYSize;
 		sendData();
 	}
-
-    /*
-    public void updateControllerStatus() {
-		if (level.isClientSide) {
-			return;
-        }
-
-		BlockState blockState = getBlockState();
-		if (!(blockState.getBlock() instanceof AbstractAdvancedDisplayBlock)) {
-            return;
-        }
-
-		Direction leftDirection = blockState.getValue(AbstractAdvancedDisplayBlock.FACING).getClockWise();
-		boolean shouldBeController = !(level.getBlockState(worldPosition.relative(leftDirection)).getBlock() instanceof AbstractAdvancedDisplayBlock) &&
-            (!(level.getBlockState(worldPosition.above()).getBlock() instanceof AbstractAdvancedDisplayBlock) || level.getBlockEntity(worldPosition.above()) instanceof AdvancedDisplayBlockEntity be && be.getXIndex() > 0);
-
-		byte newXSize = 1;
-		byte newYSize = 1;
-
-		if (shouldBeController) {
-            byte maxY = 0;
-            for (int yOffset = 1; yOffset < MAX_YSIZE; yOffset++) {
-                BlockPos downPos = worldPosition.relative(Direction.DOWN, yOffset);
-				if (!(level.getBlockState(downPos).getBlock() instanceof AbstractAdvancedDisplayBlock) || (level.getBlockEntity(downPos) instanceof AdvancedDisplayBlockEntity be && (be.getXIndex() > 0 || be.isController()))) {
-                    break;
-                }
-				maxY++;
-			}
-
-			for (int xOffset = 1; xOffset < MAX_XSIZE; xOffset++) {
-                BlockPos newPos = worldPosition.relative(leftDirection.getOpposite(), xOffset);
-				if (level.getBlockState(newPos) != blockState)
-					break;
-
-				newXSize++;
-			}
-			for (int yOffset = 1; yOffset < MAX_YSIZE && yOffset < maxY; yOffset++) {
-                BlockPos downPos = worldPosition.relative(Direction.DOWN, yOffset);
-				if (!(level.getBlockState(downPos).getBlock() instanceof AbstractAdvancedDisplayBlock) || (level.getBlockEntity(downPos) instanceof AdvancedDisplayBlockEntity be && (be.getXIndex() > 0 || be.isController()))) {
-                    break;
-                }
-
-				newYSize++;
-			}
-		}
-
-        checkIndex();
-
-		if (isController == shouldBeController && newXSize == xSize && newYSize == ySize)
-			return;
-
-		isController = shouldBeController;
-		xSize = newXSize;
-		ySize = newYSize;
-		sendData();
-	}
-    */
-
-    private void checkIndex() {
-        if (level.isClientSide) {
-            return;
-        }
-
-        BlockState blockState = getBlockState();
-		if (!(blockState.getBlock() instanceof AbstractAdvancedDisplayBlock)) {
-            return;
-        }
-
-        byte xIndex = 0, yIndex = 0;
-
-        Direction leftDirection = blockState.getValue(AbstractAdvancedDisplayBlock.FACING).getClockWise();
-        BlockPos targetXPos = getBlockPos().relative(leftDirection, getXIndex());
-        BlockPos targetPos = targetXPos.relative(Direction.UP, getYIndex());
-
-        if (!(level.getBlockState(targetPos).getBlock() instanceof AbstractAdvancedDisplayBlock) ||
-            !(level.getBlockEntity(targetPos) instanceof AdvancedDisplayBlockEntity be && be.isController()) ||
-            (level.getBlockState(targetXPos.relative(leftDirection)).getBlock() instanceof AbstractAdvancedDisplayBlock)
-        ) {
-
-            byte maxY = 0;
-            for (int yOffset = 0; yOffset < MAX_YSIZE; yOffset++) {
-                BlockPos newPos = worldPosition.relative(Direction.UP, yOffset);
-				if (!(level.getBlockState(newPos).getBlock() instanceof AbstractAdvancedDisplayBlock)) {
-					break;
-                }
-
-                maxY++;
-
-                if (level.getBlockEntity(newPos) instanceof AdvancedDisplayBlockEntity be && be.isController()) {
-                    break;
-                }
-
-			}
-
-            for (int xOffset = 1; xOffset < MAX_XSIZE; xOffset++) {
-                BlockPos newPos = worldPosition.relative(leftDirection, xOffset);
-				if (!(level.getBlockState(newPos).getBlock() instanceof AbstractAdvancedDisplayBlock)) {
-					break;
-                }
-
-                xIndex++;
-
-                if (level.getBlockEntity(newPos) instanceof AdvancedDisplayBlockEntity be && be.isController()) {
-                    this.xIndex = xIndex;
-                    this.yIndex = yIndex;
-                    sendData();
-                    return;
-                }
-
-			}
-
-            for (int yOffset = 1; yOffset < MAX_YSIZE && yOffset < maxY; yOffset++) {
-                BlockPos newPos = worldPosition.relative(leftDirection, yOffset).relative(Direction.UP, yOffset);
-				if (!(level.getBlockState(newPos).getBlock() instanceof AbstractAdvancedDisplayBlock)) {
-					break;
-                }
-
-                yIndex++;
-
-                if (level.getBlockEntity(newPos) instanceof AdvancedDisplayBlockEntity be && be.isController()) {
-                    this.xIndex = xIndex;
-                    this.yIndex = yIndex;
-                    sendData();
-                    return;
-                }
-
-			}
-
-            this.xIndex = 0;
-            this.yIndex = 0;
-            sendData();
-        }        
-    }
 
     public AdvancedDisplayBlockEntity getController() {
 		if (isController)
@@ -453,16 +330,24 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 		MutableBlockPos pos = getBlockPos().mutable();
 		Direction side = blockState.getValue(HorizontalDirectionalBlock.FACING).getClockWise();
 
-		for (int i = 0; i < 64; i++) {
+		for (int i = 0; i < MAX_XSIZE; i++) {
 			BlockState other = level.getBlockState(pos);
-
-			if (level.getBlockState(pos.above()) == other) {
-				pos.move(Direction.UP);
+			if (level.getBlockState(pos.relative(side)) == other) {
+				pos.move(side);
 				continue;
 			}
 
-			if (level.getBlockState(pos.relative(side)) == other) {
-				pos.move(side);
+            BlockEntity found = level.getBlockEntity(pos);
+			if (found instanceof AdvancedDisplayBlockEntity flap && flap.isController)
+				return flap;
+                
+			break;
+		}
+
+        for (int i = 0; i < MAX_YSIZE; i++) {
+			BlockState other = level.getBlockState(pos);
+			if (level.getBlockState(pos.above()) == other) {
+				pos.move(Direction.UP);
 				continue;
 			}
 

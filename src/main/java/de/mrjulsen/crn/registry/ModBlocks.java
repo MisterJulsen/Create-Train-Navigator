@@ -20,7 +20,7 @@ import de.mrjulsen.crn.block.AdvancedDisplayBoardBlock;
 import de.mrjulsen.crn.block.AdvancedDisplayPanelBlock;
 import de.mrjulsen.crn.block.AdvancedDisplaySmallBlock;
 import de.mrjulsen.crn.block.connected.RightLeftCTBehaviour;
-import de.mrjulsen.crn.block.display.StationDisplayTarget;
+import de.mrjulsen.crn.block.display.AdvancedDisplayTarget;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
@@ -45,7 +45,7 @@ public class ModBlocks {
 		.onRegister(connectedTextures(() -> new RightLeftCTBehaviour(CT_HORIZONTAL_ADVANCED_DISPLAY, CT_ADVANCED_DISPLAY)))
 		.addLayer(() -> RenderType::cutout)
 		.initialProperties(Material.METAL)
-		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new StationDisplayTarget()))
+		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
 		.item()
 		.build()
 		.register();
@@ -54,7 +54,7 @@ public class ModBlocks {
 		.onRegister(connectedTextures(() -> new RightLeftCTBehaviour(CT_HORIZONTAL_ADVANCED_DISPLAY, CT_ADVANCED_DISPLAY)))
 		.addLayer(() -> RenderType::cutout)
 		.initialProperties(Material.METAL)
-		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new StationDisplayTarget()))
+		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
 		.item()
 		.build()
 		.register();
@@ -63,7 +63,7 @@ public class ModBlocks {
 		.onRegister(connectedTextures(() -> new RightLeftCTBehaviour(CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL, CT_ADVANCED_DISPLAY_SMALL)))
 		.addLayer(() -> RenderType::cutout)
 		.initialProperties(Material.METAL)
-		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new StationDisplayTarget()))
+		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
 		.item()
 		.build()
 		.register();
@@ -72,7 +72,7 @@ public class ModBlocks {
 		.onRegister(connectedTextures(() -> new RightLeftCTBehaviour(CT_HORIZONTAL_ADVANCED_DISPLAY, CT_ADVANCED_DISPLAY)))
 		.addLayer(() -> RenderType::cutout)
 		.initialProperties(Material.METAL)
-		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new StationDisplayTarget()))
+		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
 		.item()
 		.build()
 		.register();

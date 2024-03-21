@@ -15,7 +15,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
-public class StationDisplayTarget extends DisplayTarget {
+public class AdvancedDisplayTarget extends DisplayTarget {
     
     @Override
 	public void acceptText(int line, List<MutableComponent> text, DisplayLinkContext context) {}
