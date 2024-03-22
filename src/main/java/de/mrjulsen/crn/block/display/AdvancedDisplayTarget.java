@@ -49,7 +49,7 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 		if (!(be instanceof AdvancedDisplayBlockEntity fdbe))
 			return baseShape;
 
-            AdvancedDisplayBlockEntity controller = fdbe.getController();
+		AdvancedDisplayBlockEntity controller = fdbe.getController();
 		if (controller == null)
 			return baseShape;
 
@@ -58,7 +58,6 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 			.getNormal();
 		return baseShape.move(controller.getBlockPos()
 			.subtract(pos))
-			.expandTowards(normal.getX() * (controller.getXSize() - 1), 1 - controller.getYSize(),
-				normal.getZ() * (controller.getXSize() - 1));
+			.expandTowards(normal.getX() * (controller.getXSize() - 1), 1 - controller.getYSize(), normal.getZ() * (controller.getXSize() - 1));
 	}
 }

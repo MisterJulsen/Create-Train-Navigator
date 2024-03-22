@@ -34,10 +34,7 @@ import org.slf4j.Logger;
 @Mod(ModMain.MOD_ID)
 public final class ModMain {
 
-    // The value here should match an entry in the META-INF/mods.toml file
     public static final String MOD_ID = "createrailwaysnavigator";
-
-    // Directly reference a slf4j logger
     public static final Logger LOGGER = LogUtils.getLogger();
     
     public static final CreateRegistrate REGISTRATE = CreateRegistrate.create(MOD_ID);

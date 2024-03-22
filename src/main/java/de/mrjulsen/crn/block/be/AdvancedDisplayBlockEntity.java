@@ -245,10 +245,8 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 		if (!(blockState.getBlock() instanceof AbstractAdvancedDisplayBlock))
 			return;
 
-		Direction leftDirection = blockState.getValue(AbstractAdvancedDisplayBlock.FACING)
-			.getClockWise();
-		boolean shouldBeController = !blockState.getValue(AbstractAdvancedDisplayBlock.UP)
-			&& level.getBlockState(worldPosition.relative(leftDirection)) != blockState;
+		Direction leftDirection = blockState.getValue(AbstractAdvancedDisplayBlock.FACING).getClockWise();
+		boolean shouldBeController = (((AbstractAdvancedDisplayBlock)blockState.getBlock()).isSingleLine(level, worldPosition) || !blockState.getValue(AbstractAdvancedDisplayBlock.UP)) && level.getBlockState(worldPosition.relative(leftDirection)) != blockState;
 
 		byte newXSize = 1;
 		byte newYSize = 1;
@@ -259,13 +257,14 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 					break;
 				newXSize++;
 			}
-			for (int yOffset = 0; yOffset < 32; yOffset++) {
-				if (!level.getBlockState(worldPosition.relative(Direction.DOWN, yOffset))
-					.getOptionalValue(AbstractAdvancedDisplayBlock.DOWN)
-					.orElse(false))
-					break;
-				newYSize++;
-			}
+
+            if (!((AbstractAdvancedDisplayBlock)blockState.getBlock()).isSingleLine(level, worldPosition)) {                
+                for (int yOffset = 0; yOffset < 32; yOffset++) {
+                    if (!level.getBlockState(worldPosition.relative(Direction.DOWN, yOffset)).getOptionalValue(AbstractAdvancedDisplayBlock.DOWN).orElse(false))
+                        break;
+                    newYSize++;
+                }
+            }
 		}
 
 		if (isController == shouldBeController && newXSize == xSize && newYSize == ySize)
@@ -292,15 +291,12 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 		for (int i = 0; i < 64; i++) {
 			BlockState other = level.getBlockState(pos);
 
-			if (other.getOptionalValue(AbstractAdvancedDisplayBlock.UP)
-				.orElse(false)) {
+			if (!((AbstractAdvancedDisplayBlock)blockState.getBlock()).isSingleLine(level, worldPosition) && other.getOptionalValue(AbstractAdvancedDisplayBlock.UP).orElse(false)) {
 				pos.move(Direction.UP);
 				continue;
 			}
 
-			if (!level.getBlockState(pos.relative(side))
-				.getOptionalValue(AbstractAdvancedDisplayBlock.UP)
-				.orElse(true)) {
+			if ((level.getBlockState(pos.relative(side)).getBlock() instanceof AbstractAdvancedDisplayBlock block && block.isSingleLine(level, worldPosition)) || !level.getBlockState(pos.relative(side)).getOptionalValue(AbstractAdvancedDisplayBlock.UP).orElse(true)) {
 				pos.move(side);
 				continue;
 			}
