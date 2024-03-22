@@ -39,6 +39,7 @@ import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition.Builder;
@@ -68,12 +69,14 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
     }
 
 	public boolean isSingleLine(LevelAccessor level, BlockPos pos) {
-		BlockState state = level.getBlockState(pos);
+		return isSingleLine(level.getBlockState(pos), level.getBlockEntity(pos));
+	}
 
+	public boolean isSingleLine(BlockState state, BlockEntity blockEntity) {
 		if (!(state.getBlock() instanceof AbstractAdvancedDisplayBlock)) {
 			return false;
 		}
-		if (level.getBlockEntity(pos) instanceof AdvancedDisplayBlockEntity be) {
+		if (blockEntity instanceof AdvancedDisplayBlockEntity be) {			
 			return !(
 				(be.getDisplayType() == EDisplayType.PASSENGER_INFORMATION && be.getInfoType() == EDisplayInfo.INFORMATIVE)
 			);
@@ -108,9 +111,9 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 		BlockState blockState = level.getBlockState(placedOnPos);
 		BlockState stateForPlacement = this.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
 
-		if ((blockState.getBlock() != this) || (context.getPlayer() != null && context.getPlayer().isShiftKeyDown()))
+		if ((blockState.getBlock() != this) || (context.getPlayer() != null && context.getPlayer().isShiftKeyDown())) {
 			stateForPlacement = super.getStateForPlacement(context).setValue(FACING, context.getHorizontalDirection().getOpposite());
-		else {
+		} else {
 			Direction otherFacing = blockState.getValue(FACING);
 			stateForPlacement = stateForPlacement.setValue(FACING, otherFacing);
 		}
@@ -134,8 +137,8 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 					BlockPos otherPos = currentPos.relative(connection);
 					BlockState other1 = currentPos.equals(pos) ? state : level.getBlockState(currentPos);
 					BlockState other2 = level.getBlockState(otherPos);
-					boolean col1 = canConnect(level, pos, otherPos, state, other1);
-					boolean col2 = canConnect(level, pos, otherPos, state, other2);
+					boolean col1 = canConnect(level, pos, state, other1);
+					boolean col2 = canConnect(level, pos, state, other2);
 					currentPos.move(movement);
 
 					if (!col1 && !col2)
@@ -159,6 +162,20 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 		LevelTickAccess<Block> blockTicks = pLevel.getBlockTicks();
 		if (!blockTicks.hasScheduledTick(pPos, this))
 			pLevel.scheduleTick(pPos, this, 1);
+
+		Direction leftDirection = pState.getValue(HorizontalDirectionalBlock.FACING).getClockWise();
+        BlockPos relPos = pPos.relative(leftDirection);
+        updateNeighbour(pState, pLevel, pPos, pOldState, pIsMoving, leftDirection, relPos);
+        relPos = pPos.relative(Direction.UP);        
+        updateNeighbour(pState, pLevel, pPos, pOldState, pIsMoving, Direction.UP, relPos);		
+        relPos = pPos.relative(leftDirection.getOpposite());
+        updateNeighbour(pState, pLevel, pPos, pOldState, pIsMoving, leftDirection.getOpposite(), relPos);
+        relPos = pPos.relative(Direction.DOWN);        
+        updateNeighbour(pState, pLevel, pPos, pOldState, pIsMoving, Direction.DOWN, relPos);
+
+		if (pLevel.isClientSide) {
+			withBlockEntityDo(pLevel, pPos, be -> be.getRenderer().update(pLevel, pPos, pState, be));			
+		}
 	}
 
     @Override
@@ -167,7 +184,7 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 			return;
 		BlockPos belowPos = pPos.relative(Direction.fromAxisAndDirection(getConnectionAxis(pState), AxisDirection.NEGATIVE));
 		BlockState belowState = pLevel.getBlockState(belowPos);
-		if (!canConnect(pLevel, pPos, belowPos, pState, belowState))
+		if (!canConnect(pLevel, pPos, pState, belowState))
 			KineticBlockEntity.switchToBlockState(pLevel, pPos, updateColumn(pLevel, pPos, pState, true));
 		withBlockEntityDo(pLevel, pPos, AdvancedDisplayBlockEntity::updateControllerStatus);
 	}
@@ -178,14 +195,14 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 	}
 
 	private BlockState updatedShapeInner(BlockState state, Direction pDirection, BlockState pNeighborState, LevelAccessor pLevel, BlockPos pCurrentPos, BlockPos pNeighborPos) {
-		if (!canConnect(pLevel, pCurrentPos, pNeighborPos, state, pNeighborState))
+		if (!canConnect(pLevel, pCurrentPos, state, pNeighborState))
 			return setConnection(state, pDirection, false);
 		if (pDirection.getAxis() == getConnectionAxis(state))
 			return withPropertiesOf(pNeighborState);
 		return setConnection(state, pDirection, getConnection(pNeighborState, pDirection.getOpposite()));
 	}
 
-    protected boolean canConnect(LevelAccessor level, BlockPos pos, BlockPos otherPos, BlockState state, BlockState other) {
+    protected boolean canConnect(LevelAccessor level, BlockPos pos, BlockState state, BlockState other) {
 		return other.getBlock() == this && state.getValue(FACING) == other.getValue(FACING);// &&
 			//!((pos.above().equals(otherPos) || pos.below().equals(otherPos)) && isSingleLine(level, pos));
 	}
@@ -216,7 +233,7 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 		for (Direction d : Iterate.directionsInAxis(getConnectionAxis(pState))) {
 			BlockPos relative = pPos.relative(d);
 			BlockState adjacent = pLevel.getBlockState(relative);
-			if (canConnect(pLevel, pPos, relative, pState, adjacent))
+			if (canConnect(pLevel, pPos, pState, adjacent))
 				KineticBlockEntity.switchToBlockState(pLevel, relative, updateColumn(pLevel, relative, adjacent, false));
 		}
 	}
@@ -254,6 +271,7 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
         BlockPos rightPos = pPos.relative(rightDirection);        
         updateNeighbour(pState, pLevel, pPos, pOldState, pIsMoving, rightDirection, rightPos);
     }
+    */
 
     private void updateNeighbour(BlockState pState, Level pLevel, BlockPos pPos, BlockState pOldState, boolean pIsMoving, Direction direction, BlockPos neighbourPos) {
         if (pLevel.getBlockState(neighbourPos).is(this) && pLevel.getBlockEntity(neighbourPos) instanceof AdvancedDisplayBlockEntity otherBe && pLevel.getBlockEntity(pPos) instanceof AdvancedDisplayBlockEntity be && be.connectedTo(otherBe)) {
@@ -266,7 +284,6 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
             return;
         }
     }
-    */
 
     @Override
     public InteractionResult onWrenched(BlockState state, UseOnContext context) {

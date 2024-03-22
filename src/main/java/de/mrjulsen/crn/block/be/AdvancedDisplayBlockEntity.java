@@ -222,6 +222,24 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         this.setChanged();
     }
 
+    public boolean isDisplayCompatible(AdvancedDisplayBlockEntity other) {
+        return getDisplayType() == other.getDisplayType() &&
+               getInfoType() == other.getInfoType()
+            ;
+    }
+
+    public static boolean connectable(Level level, BlockPos a, BlockPos b) {
+        if (level.getBlockEntity(a) instanceof AdvancedDisplayBlockEntity be1 && level.getBlockEntity(b) instanceof AdvancedDisplayBlockEntity be2 && be1.getBlockState().getBlock() instanceof AbstractAdvancedDisplayBlock block1 && be2.getBlockState().getBlock() instanceof AbstractAdvancedDisplayBlock) {
+            return be1.getDisplayType() == be2.getDisplayType() &&
+                    be1.getInfoType() == be2.getInfoType() &&
+                    be1.getBlockState().getValue(AbstractAdvancedDisplayBlock.SIDE) == be2.getBlockState().getValue(AbstractAdvancedDisplayBlock.SIDE) &&
+                    (!a.above().equals(b) || (be1.getBlockState().getValue(AbstractAdvancedDisplayBlock.UP) && !block1.isSingleLine(be1.getBlockState(), be1))) &&
+                    (!a.below().equals(b) || (be1.getBlockState().getValue(AbstractAdvancedDisplayBlock.DOWN) && !block1.isSingleLine(be1.getBlockState(), be1)))
+            ;
+        }
+        return false;
+    }
+
     
     @Override
     public void tick() {
@@ -246,22 +264,47 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 			return;
 
 		Direction leftDirection = blockState.getValue(AbstractAdvancedDisplayBlock.FACING).getClockWise();
-		boolean shouldBeController = (((AbstractAdvancedDisplayBlock)blockState.getBlock()).isSingleLine(level, worldPosition) || !blockState.getValue(AbstractAdvancedDisplayBlock.UP)) && level.getBlockState(worldPosition.relative(leftDirection)) != blockState;
+
+		boolean shouldBeController = (
+                ((AbstractAdvancedDisplayBlock)blockState.getBlock()).isSingleLine(level, worldPosition) ||
+                !blockState.getValue(AbstractAdvancedDisplayBlock.UP) ||
+                level.getBlockState(worldPosition.above()).getValue(AbstractAdvancedDisplayBlock.SIDE) != blockState.getValue(AbstractAdvancedDisplayBlock.SIDE) ||
+                (level.getBlockEntity(worldPosition.above()) instanceof AdvancedDisplayBlockEntity be && !isDisplayCompatible(be)) ||
+                false
+            ) && level.getBlockState(worldPosition.relative(leftDirection)) != blockState;
 
 		byte newXSize = 1;
 		byte newYSize = 1;
 
 		if (shouldBeController) {
-			for (int xOffset = 1; xOffset < 32; xOffset++) {
-				if (level.getBlockState(worldPosition.relative(leftDirection.getOpposite(), xOffset)) != blockState)
-					break;
+			for (int xOffset = 1; xOffset < getMaxWidth(); xOffset++) {
+                BlockPos relPos = worldPosition.relative(leftDirection.getOpposite(), xOffset);
+				if (level.getBlockState(relPos) != blockState) {
+                    break;
+                }
+
 				newXSize++;
 			}
 
-            if (!((AbstractAdvancedDisplayBlock)blockState.getBlock()).isSingleLine(level, worldPosition)) {                
-                for (int yOffset = 0; yOffset < 32; yOffset++) {
-                    if (!level.getBlockState(worldPosition.relative(Direction.DOWN, yOffset)).getOptionalValue(AbstractAdvancedDisplayBlock.DOWN).orElse(false))
+            if (!((AbstractAdvancedDisplayBlock)blockState.getBlock()).isSingleLine(level, worldPosition)) {
+                for (int yOffset = 0; yOffset < getMaxHeight(); yOffset++) {
+                    BlockPos downPos = worldPosition.relative(Direction.DOWN, yOffset);
+                    
+                    for (int i = 0; i < newXSize; i++) {
+                        BlockPos relPos = downPos.relative(leftDirection.getOpposite(), i);
+                        if (level.getBlockEntity(relPos) instanceof AdvancedDisplayBlockEntity be && be != this) {
+                            be.copyFrom(this);
+                        }
+                    }
+
+                    if (!level.getBlockState(downPos).getOptionalValue(AbstractAdvancedDisplayBlock.DOWN).orElse(false)) {
                         break;
+                    }
+
+                    if (level.getBlockEntity(downPos.below()) instanceof AdvancedDisplayBlockEntity be && !isDisplayCompatible(be)) {
+                        break;
+                    }
+    
                     newYSize++;
                 }
             }
@@ -274,6 +317,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 		xSize = newXSize;
 		ySize = newYSize;
 		sendData();
+        BlockEntityUtil.sendUpdatePacket(this);
 	}
 
     public AdvancedDisplayBlockEntity getController() {
@@ -285,19 +329,33 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 			return null;
 
 		MutableBlockPos pos = getBlockPos().mutable();
-		Direction side = blockState.getValue(AbstractAdvancedDisplayBlock.FACING)
-			.getClockWise();
+		Direction side = blockState.getValue(AbstractAdvancedDisplayBlock.FACING).getClockWise();
 
-		for (int i = 0; i < 64; i++) {
-			BlockState other = level.getBlockState(pos);
-
-			if (!((AbstractAdvancedDisplayBlock)blockState.getBlock()).isSingleLine(level, worldPosition) && other.getOptionalValue(AbstractAdvancedDisplayBlock.UP).orElse(false)) {
-				pos.move(Direction.UP);
+        for (int i = 0; i < getMaxWidth(); i++) {
+			//if ((level.getBlockState(pos.relative(side)).getBlock() instanceof AbstractAdvancedDisplayBlock block && block.isSingleLine(level, worldPosition)) || !level.getBlockState(pos.relative(side)).getOptionalValue(AbstractAdvancedDisplayBlock.UP).orElse(true)) {
+			if (AdvancedDisplayBlockEntity.connectable(level, pos, pos.relative(side))) {
+				pos.move(side);
 				continue;
 			}
 
-			if ((level.getBlockState(pos.relative(side)).getBlock() instanceof AbstractAdvancedDisplayBlock block && block.isSingleLine(level, worldPosition)) || !level.getBlockState(pos.relative(side)).getOptionalValue(AbstractAdvancedDisplayBlock.UP).orElse(true)) {
-				pos.move(side);
+			BlockEntity found = level.getBlockEntity(pos);
+			if (found instanceof AdvancedDisplayBlockEntity flap && flap.isController)
+				return flap;
+
+			break;
+		}
+
+		for (int i = 0; i < getMaxHeight(); i++) {
+			BlockState other = level.getBlockState(pos);
+            ESide thisSide = blockState.getValue(AbstractAdvancedDisplayBlock.SIDE);
+
+            /*
+			if (!((AbstractAdvancedDisplayBlock)blockState.getBlock()).isSingleLine(level, worldPosition) &&
+                other.getOptionalValue(AbstractAdvancedDisplayBlock.UP).orElse(false)
+            ) {
+            */
+            if (AdvancedDisplayBlockEntity.connectable(level, pos, pos.relative(Direction.UP))) {
+				pos.move(Direction.UP);
 				continue;
 			}
 
@@ -319,6 +377,21 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
             :
                 otherBlockEntity.getBlockState().getValue(HorizontalDirectionalBlock.FACING) == this.getBlockState().getValue(HorizontalDirectionalBlock.FACING)
         );
+    }
+
+    public void copyFrom(AdvancedDisplayBlockEntity other) {
+        if (getColor() == other.getColor() &&
+            getInfoType() == other.getInfoType() &&
+            getDisplayType() == other.getDisplayType()
+        ) {
+            return;
+        }
+
+        color = other.getColor();
+        displayType = other.getDisplayType();
+        infoType = other.getInfoType();
+        sendData();
+        BlockEntityUtil.sendUpdatePacket(this);
     }
 
     @Override
@@ -392,6 +465,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     public void deserialize(CompoundTag nbt) {
         infoType = EDisplayInfo.getTypeById(nbt.getInt(NBT_INFO_TYPE));
         displayType = EDisplayType.getTypeById(nbt.getInt(NBT_DISPLAY_TYPE));
+        sendData();
     }
 
     @Override

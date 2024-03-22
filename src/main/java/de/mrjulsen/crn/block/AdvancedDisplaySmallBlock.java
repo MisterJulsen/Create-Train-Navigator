@@ -14,9 +14,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition.Builder;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -54,7 +54,7 @@ public class AdvancedDisplaySmallBlock extends AbstractAdvancedDisplayBlock {
     }
 
     @Override
-    public boolean isSingleLine(LevelAccessor level, BlockPos pos) {
+    public boolean isSingleLine(BlockState state, BlockEntity blockEntity) {
         return true;
     }
 
