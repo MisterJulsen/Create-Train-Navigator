@@ -5,7 +5,6 @@ import javax.annotation.Nullable;
 
 import com.simibubi.create.content.contraptions.Contraption;
 import com.simibubi.create.content.trains.display.FlapDisplayBlock;
-import com.simibubi.create.content.trains.display.FlapDisplayBlockEntity;
 import com.simibubi.create.content.trains.entity.CarriageContraption;
 import com.simibubi.create.content.trains.entity.CarriageContraptionEntity;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
@@ -57,8 +56,6 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     private static final String NBT_XSIZE = "XSize";
     private static final String NBT_YSIZE = "YSize";
     private static final String NBT_CONTROLLER = "IsController";
-    private static final String NBT_XINDEX = "XIndex";
-    private static final String NBT_YINDEX = "YIndex";
     private static final String NBT_COLOR = "Color";
     private static final String NBT_INFO_TYPE = "InfoType";
     private static final String NBT_DISPLAY_TYPE = "DisplayType";
@@ -71,7 +68,6 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 	private byte xSize = 1;
 	private byte ySize = 1;
     private boolean isController;
-    private byte xIndex, yIndex;
 
     // USER SETTINGS
     private int color = DyeColor.WHITE.getTextColor();
@@ -172,14 +168,6 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         return isController;
     }
 
-    public byte getXIndex() {
-        return xIndex;
-    }
-
-    public byte getYIndex() {
-        return yIndex;
-    }
-
     @Override
     public int getColor() {
         return color;
@@ -197,38 +185,6 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     public EDisplayType getDisplayType() {
         return displayType;
     }
-
-    private void setXSize(int size) {
-		xSize = (byte)(de.mrjulsen.mcdragonlib.utils.Math.clamp(size, 1, MAX_XSIZE));
-        BlockEntityUtil.sendUpdatePacket(this);
-        this.setChanged();
-    }
-
-    private void setYSize(int size) {
-        ySize = (byte)(de.mrjulsen.mcdragonlib.utils.Math.clamp(size, 1, MAX_XSIZE));
-        BlockEntityUtil.sendUpdatePacket(this);
-        this.setChanged();
-    }
-
-    private void setController(boolean b) {
-        isController = b;
-        BlockEntityUtil.sendUpdatePacket(this);
-        this.setChanged();
-    }
-    
-    
-    private void setXIndex(int index) {
-		this.xIndex = (byte)de.mrjulsen.mcdragonlib.utils.Math.clamp(index, 0, MAX_XSIZE - 1);        
-        BlockEntityUtil.sendUpdatePacket(this);
-        this.setChanged();
-    }
-
-    private void setYIndex(int index) {
-		this.yIndex = (byte)de.mrjulsen.mcdragonlib.utils.Math.clamp(index, 0, MAX_YSIZE - 1);        
-        BlockEntityUtil.sendUpdatePacket(this);
-        this.setChanged();
-    }
-    
 
     public void setColor(int color) {
 		this.color = color;
@@ -269,7 +225,9 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     
     @Override
     public void tick() {
-        tickInstance(getLevel(), getBlockPos(), getBlockState());
+        if (level.isClientSide) {
+            getRenderer().tick(level, getBlockPos(), getBlockState(), this);
+        }
         super.tick();
     }
 
@@ -357,49 +315,6 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 		return null;
 	}
 
-
-    public void tickInstance(Level level, BlockPos pos, BlockState state) {
-		if (level.isClientSide) {
-            getRenderer().tick(level, pos, state, this);
-        }
-
-        /*
-        BlockState blockState = getBlockState();
-        if (!(blockState.getBlock() instanceof AbstractAdvancedDisplayBlock))
-            return;
-
-        Direction leftDirection = blockState.getValue(HorizontalDirectionalBlock.FACING).getClockWise();
-        BlockPos leftPos = worldPosition.relative(leftDirection);
-        boolean shouldBeController = level.getBlockState(leftPos) != blockState || (level.getBlockEntity(leftPos) instanceof AdvancedDisplayBlockEntity be && be.getIndex() >= MAX_XSIZE - 1);
-
-        int newXSize = 1;
-
-        if (shouldBeController) {
-            for (int xOffset = 1; xOffset < MAX_XSIZE; xOffset++) {
-                BlockPos newPos = worldPosition.relative(leftDirection.getOpposite(), xOffset);
-                BlockState foundBlock = level.getBlockState(newPos);
-                if (foundBlock != blockState) {
-                    break;
-                }
-
-                if (level.getBlockEntity(newPos) instanceof AdvancedDisplayBlockEntity be) {
-                    be.setIndex(newXSize);
-                }
-
-                newXSize++;
-            }
-        }
-
-        if (isController == shouldBeController && newXSize == getXSize()) {
-            
-        } else {                
-            setIndex(0);
-            setController(shouldBeController);
-            setXSize(newXSize);
-        }
-        */
-	}
-
     @Override
     public boolean connectedTo(AdvancedDisplayBlockEntity otherBlockEntity) {
         return otherBlockEntity.getBlockState().is(this.getBlockState().getBlock()) && (
@@ -452,8 +367,6 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         super.write(pTag, clientPacket);
         pTag.putByte(NBT_XSIZE, getXSize());
         pTag.putByte(NBT_YSIZE, getYSize());
-        pTag.putByte(NBT_XINDEX, getXIndex());
-        pTag.putByte(NBT_YINDEX, getYIndex());
         pTag.putInt(NBT_COLOR, getColor());
         pTag.putBoolean(NBT_CONTROLLER, isController());
         pTag.putInt(NBT_INFO_TYPE, getInfoType().getId());
@@ -465,8 +378,6 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 		super.read(pTag, clientPacket);
         xSize = pTag.getByte(NBT_XSIZE);
         ySize = pTag.getByte(NBT_YSIZE);
-        xIndex = pTag.getByte(NBT_XINDEX);
-        yIndex = pTag.getByte(NBT_YINDEX);
         color = pTag.getInt(NBT_COLOR);
         isController = pTag.getBoolean(NBT_CONTROLLER);
         infoType = EDisplayInfo.getTypeById(pTag.getInt(NBT_INFO_TYPE));

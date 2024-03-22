@@ -4,7 +4,6 @@ import com.simibubi.create.foundation.block.connected.CTSpriteShiftEntry;
 import com.simibubi.create.foundation.block.connected.ConnectedTextureBehaviour;
 
 import de.mrjulsen.crn.block.AbstractAdvancedDisplayBlock;
-import de.mrjulsen.crn.block.be.IMultiblockBlockEntity;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -53,9 +52,6 @@ public class RightLeftCTBehaviour extends ConnectedTextureBehaviour.Base {
 			return false;
 		}
 		if (other.getValue(AbstractAdvancedDisplayBlock.SIDE) != state.getValue(AbstractAdvancedDisplayBlock.SIDE)) {
-			return false;
-		}
-		if (reader.getBlockEntity(pos) instanceof IMultiblockBlockEntity be1 && reader.getBlockEntity(otherPos) instanceof IMultiblockBlockEntity be2 && Math.abs(be1.getXIndex() - be2.getXIndex()) > 1) {
 			return false;
 		}
             

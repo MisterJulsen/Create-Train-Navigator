@@ -15,9 +15,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 @SuppressWarnings("unchecked")
 public interface IMultiblockBlockEntity<T extends BlockEntity & IMultiblockBlockEntity<T, B>, B extends Block> {
-    
-    byte getXIndex();
-    byte getYIndex();    
+       
     byte getWidth();
     byte getHeight();
     byte getMaxWidth();
