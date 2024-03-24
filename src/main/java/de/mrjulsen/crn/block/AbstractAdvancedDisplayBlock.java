@@ -163,15 +163,25 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 		if (!blockTicks.hasScheduledTick(pPos, this))
 			pLevel.scheduleTick(pPos, this, 1);
 
-		Direction leftDirection = pState.getValue(HorizontalDirectionalBlock.FACING).getClockWise();
-        BlockPos relPos = pPos.relative(leftDirection);
-        updateNeighbour(pState, pLevel, pPos, pOldState, pIsMoving, leftDirection, relPos);
-        relPos = pPos.relative(Direction.UP);        
-        updateNeighbour(pState, pLevel, pPos, pOldState, pIsMoving, Direction.UP, relPos);		
-        relPos = pPos.relative(leftDirection.getOpposite());
-        updateNeighbour(pState, pLevel, pPos, pOldState, pIsMoving, leftDirection.getOpposite(), relPos);
-        relPos = pPos.relative(Direction.DOWN);        
-        updateNeighbour(pState, pLevel, pPos, pOldState, pIsMoving, Direction.DOWN, relPos);
+		Update: {
+			Direction leftDirection = pState.getValue(HorizontalDirectionalBlock.FACING).getClockWise();
+			BlockPos relPos = pPos.relative(leftDirection);
+			if (updateNeighbour(pState, pLevel, pPos, pOldState, pIsMoving, leftDirection, relPos)) {
+				break Update;
+			}
+			relPos = pPos.relative(Direction.UP);        
+			if (updateNeighbour(pState, pLevel, pPos, pOldState, pIsMoving, Direction.UP, relPos)) {
+				break Update;
+			}
+			relPos = pPos.relative(leftDirection.getOpposite());
+			if (updateNeighbour(pState, pLevel, pPos, pOldState, pIsMoving, leftDirection.getOpposite(), relPos)) {
+				break Update;
+			}
+			relPos = pPos.relative(Direction.DOWN);        
+			if (updateNeighbour(pState, pLevel, pPos, pOldState, pIsMoving, Direction.DOWN, relPos)) {
+				break Update;
+			}
+		}		
 
 		if (pLevel.isClientSide) {
 			withBlockEntityDo(pLevel, pPos, be -> be.getRenderer().update(pLevel, pPos, pState, be));			
@@ -261,29 +271,17 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 		return InteractionResult.FAIL;
     }
 
-    /*
-    @Override
-    public void onPlace(BlockState pState, Level pLevel, BlockPos pPos, BlockState pOldState, boolean pIsMoving) {        
-        Direction leftDirection = pState.getValue(HorizontalDirectionalBlock.FACING).getClockWise();
-        BlockPos leftPos = pPos.relative(leftDirection);
-        updateNeighbour(pState, pLevel, pPos, pOldState, pIsMoving, leftDirection, leftPos);
-
-        Direction rightDirection = pState.getValue(HorizontalDirectionalBlock.FACING).getCounterClockWise();
-        BlockPos rightPos = pPos.relative(rightDirection);        
-        updateNeighbour(pState, pLevel, pPos, pOldState, pIsMoving, rightDirection, rightPos);
-    }
-    */
-
-    private void updateNeighbour(BlockState pState, Level pLevel, BlockPos pPos, BlockState pOldState, boolean pIsMoving, Direction direction, BlockPos neighbourPos) {
-        if (pLevel.getBlockState(neighbourPos).is(this) && pLevel.getBlockEntity(neighbourPos) instanceof AdvancedDisplayBlockEntity otherBe && pLevel.getBlockEntity(pPos) instanceof AdvancedDisplayBlockEntity be && be.connectedTo(otherBe)) {
+    private boolean updateNeighbour(BlockState pState, Level pLevel, BlockPos pPos, BlockState pOldState, boolean pIsMoving, Direction direction, BlockPos neighbourPos) {
+        if (pLevel.getBlockState(neighbourPos).is(this) && pLevel.getBlockEntity(neighbourPos) instanceof AdvancedDisplayBlockEntity otherBe && pLevel.getBlockEntity(pPos) instanceof AdvancedDisplayBlockEntity be) {
             be.setColor(otherBe.getColor());
             be.setDisplayType(otherBe.getDisplayType());
             be.setInfoType(otherBe.getInfoType());
             if (pLevel.isClientSide) {
                 be.getRenderer().update(pLevel, neighbourPos, pOldState, otherBe);
             }
-            return;
+            return true;
         }
+		return false;
     }
 
     @Override
