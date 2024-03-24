@@ -7,18 +7,20 @@ import de.mrjulsen.mcdragonlib.common.ITranslatableEnum;
 import net.minecraft.util.StringRepresentable;
 
 public enum EDisplayType implements StringRepresentable, ITranslatableEnum{
-	TRAIN_DESTINATION(0, "train_destination", ModGuiIcons.TRAIN_DESTINATION),
-    PASSENGER_INFORMATION(1, "passenger_information", ModGuiIcons.PASSENGER_INFORMATION),
-	PLATFORM(2, "platform", ModGuiIcons.PLATFORM_INFORMATION);
+	TRAIN_DESTINATION(0, "train_destination", ModGuiIcons.TRAIN_DESTINATION, EDisplayTypeDataSource.TRAIN_INFORMATION),
+    PASSENGER_INFORMATION(1, "passenger_information", ModGuiIcons.PASSENGER_INFORMATION, EDisplayTypeDataSource.TRAIN_INFORMATION),
+	PLATFORM(2, "platform", ModGuiIcons.PLATFORM_INFORMATION, EDisplayTypeDataSource.PLATFORM);
 	
 	private String name;
 	private int id;
 	private ModGuiIcons icon;
+	private EDisplayTypeDataSource source;
 	
-	private EDisplayType(int id, String name, ModGuiIcons icon) {
+	private EDisplayType(int id, String name, ModGuiIcons icon, EDisplayTypeDataSource source) {
 		this.name = name;
 		this.id = id;
 		this.icon = icon;
+		this.source = source;
 	}
 	
 	public String getInfoTypeName() {
@@ -31,6 +33,10 @@ public enum EDisplayType implements StringRepresentable, ITranslatableEnum{
 
 	public ModGuiIcons getIcon() {
 		return icon;
+	}
+
+	public EDisplayTypeDataSource getSource() {
+		return source;
 	}
 
 	public static EDisplayType getTypeById(int id) {
@@ -51,4 +57,23 @@ public enum EDisplayType implements StringRepresentable, ITranslatableEnum{
 	public String getEnumValueName() {
 		return this.name;
 	}
+
+	public static enum EDisplayTypeDataSource {
+		TRAIN_INFORMATION(0),
+		PLATFORM(1);
+
+		private int index;
+
+		EDisplayTypeDataSource(int index) {
+			this.index = index;
+		}
+
+		public int getIndex() {
+			return index;
+		}
+
+		public static EDisplayTypeDataSource getByIndex(int index) {
+			return Arrays.stream(EDisplayTypeDataSource.values()).filter(x -> x.getIndex() == index).findFirst().orElse(PLATFORM);
+		}
+	} 
 }
