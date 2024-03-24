@@ -64,16 +64,18 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     public static final byte MAX_YSIZE = 16;
 
     // DATA
-    /** Applies only for the controller block. All other blocks will have a size of 1. */
-	private byte xSize = 1;
+    private byte xSize = 1;
 	private byte ySize = 1;
     private boolean isController;
+    private List<SimpleDeparturePrediction> predictions = new ArrayList<>();
+    private boolean fixedPlatform;
 
     // USER SETTINGS
     private int color = DyeColor.WHITE.getTextColor();
-    private boolean glowing = true;
+    private boolean glowing = true; // unused
     private EDisplayInfo infoType = EDisplayInfo.SIMPLE;
     private EDisplayType displayType = EDisplayType.TRAIN_DESTINATION;
+    
 
     // CLIENT DISPLAY ONLY - this data is not being saved!
     private long lastRefreshedTime;
@@ -84,8 +86,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     private int syncTicks = 0;
     private final Cache<IBlockEntityRendererInstance<AdvancedDisplayBlockEntity>> renderer = new Cache<>(() -> new AdvancedDisplayRenderInstance(this));
 
-    public final Cache<TrainExitSide> relativeExitDirection = new Cache<>(() -> {
-        
+    public final Cache<TrainExitSide> relativeExitDirection = new Cache<>(() -> {        
         if (getCarriageData() == null || !getTrainData().getNextStop().isPresent() || !(getBlockState().getBlock() instanceof AbstractAdvancedDisplayBlock)) {
             return TrainExitSide.UNKNOWN;
         }
@@ -130,6 +131,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     public final Cache<Float> renderScale = new Cache<>(() -> {        
         return 1.0F / Math.max(this.renderAspectRatio.get().getFirst(), this.renderAspectRatio.get().getSecond());
     }); 
+
 
 
     public AdvancedDisplayBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
