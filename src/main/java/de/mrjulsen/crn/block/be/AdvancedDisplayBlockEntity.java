@@ -60,8 +60,8 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     private static final String NBT_INFO_TYPE = "InfoType";
     private static final String NBT_DISPLAY_TYPE = "DisplayType";
 
-    public static final byte MAX_XSIZE = 8;
-    public static final byte MAX_YSIZE = 8;
+    public static final byte MAX_XSIZE = 16;
+    public static final byte MAX_YSIZE = 16;
 
     // DATA
     /** Applies only for the controller block. All other blocks will have a size of 1. */
