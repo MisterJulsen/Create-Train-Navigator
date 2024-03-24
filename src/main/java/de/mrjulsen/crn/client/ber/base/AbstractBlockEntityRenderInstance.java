@@ -6,7 +6,7 @@ public abstract class AbstractBlockEntityRenderInstance<T extends BlockEntity> i
 
     public AbstractBlockEntityRenderInstance(T blockEntity) {
         preinit(blockEntity);
-        update(blockEntity.getLevel(), blockEntity.getBlockPos(), blockEntity.getBlockState(), blockEntity);
+        update(blockEntity.getLevel(), blockEntity.getBlockPos(), blockEntity.getBlockState(), blockEntity, EUpdateReason.INITIALIZED);
     }
 
     protected void preinit(T blockEntity) {}

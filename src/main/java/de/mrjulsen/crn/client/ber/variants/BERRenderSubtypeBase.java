@@ -1,6 +1,7 @@
 package de.mrjulsen.crn.client.ber.variants;
 
 import de.mrjulsen.crn.client.ber.base.AbstractBlockEntityRenderInstance;
+import de.mrjulsen.crn.client.ber.base.IBlockEntityRendererInstance.EUpdateReason;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -14,5 +15,5 @@ public final class BERRenderSubtypeBase<T extends BlockEntity, S extends Abstrac
     }
 
     @Override
-    public void update(Level level, BlockPos pos, BlockState state, T blockEntity, S parent) {}    
+    public void update(Level level, BlockPos pos, BlockState state, T blockEntity, S parent, EUpdateReason reason) {}    
 }

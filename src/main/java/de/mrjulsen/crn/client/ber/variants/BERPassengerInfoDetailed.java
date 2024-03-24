@@ -9,6 +9,7 @@ import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
 import de.mrjulsen.crn.client.ber.base.BERText;
 import de.mrjulsen.crn.client.ber.base.BERText.TextTransformation;
 import de.mrjulsen.crn.client.ber.base.IBlockEntityRendererInstance.BlockEntityRendererContext;
+import de.mrjulsen.crn.client.ber.base.IBlockEntityRendererInstance.EUpdateReason;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.GlobalSettingsManager;
@@ -58,12 +59,12 @@ public class BERPassengerInfoDetailed implements IBERRenderSubtype<AdvancedDispl
         }
 
         if (dirty) {
-            update(level, pos, state, pBlockEntity, parent);
+            update(level, pos, state, pBlockEntity, parent, EUpdateReason.DATA_CHANGED);
         }
     }
 
     @Override
-    public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent) {
+    public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason) {
         if (blockEntity.getTrainData() == null) {
             return;
         }

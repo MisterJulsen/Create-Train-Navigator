@@ -44,7 +44,7 @@ public interface IBlockEntityRendererInstance<T extends BlockEntity> {
      * @param state
      * @param blockEntity
      */
-    default void update(Level level, BlockPos pos, BlockState state, T blockEntity) { }
+    default void update(Level level, BlockPos pos, BlockState state, T blockEntity, EUpdateReason reason) { }
 
     default FontUtils getFontUtils() {
         return fontUtils;
@@ -54,4 +54,10 @@ public interface IBlockEntityRendererInstance<T extends BlockEntity> {
      * Additional data from the default Block Entity Renderer.
      */
     public static record BlockEntityRendererContext(BlockEntityRendererProvider.Context context, BERUtils renderUtils) {}
+
+    public static enum EUpdateReason {
+        INITIALIZED,
+        DATA_CHANGED,
+        BLOCK_CHANGED
+    }
 }

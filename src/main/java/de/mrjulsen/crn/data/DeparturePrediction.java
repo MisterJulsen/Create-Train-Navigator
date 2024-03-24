@@ -95,7 +95,7 @@ public class DeparturePrediction {
     }
 
     public SimpleDeparturePrediction simplify() {
-        return new SimpleDeparturePrediction(getNextStop().getAliasName().get(), getTicks(), getScheduleTitle(), getTrain().id, getInfo(), getExitSide());
+        return new SimpleDeparturePrediction(getNextStop().getAliasName().get(), getTicks(), getScheduleTitle(), getTrain().name.getString(), getTrain().id, getInfo(), getExitSide());
     }
 
 
@@ -146,11 +146,12 @@ public class DeparturePrediction {
         }
     }
 
-    public static record SimpleDeparturePrediction(String stationName, int departureTicks, String scheduleTitle, UUID trainId, StationInfo stationInfo, TrainExitSide exitSide) {
+    public static record SimpleDeparturePrediction(String stationName, int departureTicks, String scheduleTitle, String trainName, UUID trainId, StationInfo stationInfo, TrainExitSide exitSide) {
 
         private static final String NBT_STATION = "station";
         private static final String NBT_TICKS = "ticks";
         private static final String NBT_SCHEDULE_TITLE = "title";
+        private static final String NBT_TRAIN_NAME = "tname";
         private static final String NBT_ID = "id";
         private static final String NBT_EXIT_SIDE = "exit";
 
@@ -159,6 +160,7 @@ public class DeparturePrediction {
             nbt.putString(NBT_STATION, stationName);
             nbt.putInt(NBT_TICKS, departureTicks);
             nbt.putString(NBT_SCHEDULE_TITLE, scheduleTitle);
+            nbt.putString(NBT_TRAIN_NAME, trainName);
             nbt.putUUID(NBT_ID, trainId);
             stationInfo().writeNbt(nbt);
             nbt.putByte(NBT_EXIT_SIDE, exitSide.getAsByte());
@@ -169,7 +171,8 @@ public class DeparturePrediction {
             return new SimpleDeparturePrediction(
                 nbt.getString(NBT_STATION), 
                 nbt.getInt(NBT_TICKS), 
-                nbt.getString(NBT_SCHEDULE_TITLE), 
+                nbt.getString(NBT_SCHEDULE_TITLE),
+                nbt.getString(NBT_TRAIN_NAME),
                 nbt.getUUID(NBT_ID),
                 StationInfo.fromNbt(nbt),
                 TrainExitSide.getFromByte(nbt.getByte(NBT_EXIT_SIDE))

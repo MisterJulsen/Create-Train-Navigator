@@ -22,18 +22,17 @@ import de.mrjulsen.crn.data.TrainStationAlias.StationInfo;
 import de.mrjulsen.crn.network.InstanceManager;
 import de.mrjulsen.crn.network.NetworkManager;
 import de.mrjulsen.crn.network.packets.cts.RealtimeRequestPacket;
+import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.utils.TimeUtils;
 import de.mrjulsen.mcdragonlib.utils.Utils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.KeybindComponent;
-import net.minecraft.network.chat.MutableComponent;
 
 public class JourneyListener {
 
     public static final int ID = 1;
     private static final int REALTIME_REFRESH_TIME = 100;
-    private static final Component TEXT_CONCAT = Utils.text("     ***     ");
     
     private final SimpleRoute route;
     private int stationIndex = 0;
@@ -562,19 +561,6 @@ public class JourneyListener {
         return lastNotification;
     }
 
-    private Component concat(Component... components) {
-        if (components.length <= 0) {
-            return Utils.emptyText();
-        }
-
-        MutableComponent c = components[0].copy();
-        for (int i = 1; i < components.length; i++) {
-            c.append(TEXT_CONCAT);
-            c.append(components[i]);
-        }
-        return c;
-    }
-
     private void setState(State state) {
         this.currentState = state;
         onStateChange.values().forEach(x -> {            
@@ -663,7 +649,7 @@ public class JourneyListener {
                 nextStation().get().getTrain().scheduleTitle(),
                 nextStation().get().getInfo().platform()
             );
-            text = concat(text, transferText);
+            text = ModUtils.concat(text, transferText);
             setState(State.BEFORE_TRANSFER);
             setNotificationText(new NotificationData(currentState, Utils.translate(keyNotificationTransferTitle), Utils.translate(keyNotificationTransfer,
                 nextStation().get().getTrain().trainName(),
@@ -723,7 +709,7 @@ public class JourneyListener {
     }
 
     private void reachTransferStopConnectionMissed() {
-        Component text = concat(
+        Component text = ModUtils.concat(
             Utils.text(currentStation().getStationName()),
             Utils.translate(keyConnectionMissedInfo)
         );

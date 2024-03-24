@@ -172,6 +172,7 @@
 
     "gui.createrailwaysnavigator.new_text_entry.add.tooltip": "Add",
 
+    "gui.createrailwaysnavigator.time": "Time: %s",
     "gui.createrailwaysnavigator.time.now": "now",
     "gui.createrailwaysnavigator.time_format.dhm": "%s days %s hrs. %s min.",
     "gui.createrailwaysnavigator.time_format.hm": "%s hrs. %s min.",

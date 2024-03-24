@@ -11,6 +11,7 @@ import com.simibubi.create.foundation.utility.Iterate;
 
 import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.client.ClientWrapper;
+import de.mrjulsen.crn.client.ber.base.IBlockEntityRendererInstance.EUpdateReason;
 import de.mrjulsen.crn.data.EDisplayInfo;
 import de.mrjulsen.crn.data.EDisplayType;
 import de.mrjulsen.crn.data.ESide;
@@ -184,7 +185,7 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 		}		
 
 		if (pLevel.isClientSide) {
-			withBlockEntityDo(pLevel, pPos, be -> be.getRenderer().update(pLevel, pPos, pState, be));			
+			withBlockEntityDo(pLevel, pPos, be -> be.getRenderer().update(pLevel, pPos, pState, be, EUpdateReason.BLOCK_CHANGED));			
 		}
 	}
 
@@ -276,7 +277,7 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
             be.setDisplayType(otherBe.getDisplayType());
             be.setInfoType(otherBe.getInfoType());
             if (pLevel.isClientSide) {
-                be.getRenderer().update(pLevel, neighbourPos, pOldState, otherBe);
+                be.getRenderer().update(pLevel, neighbourPos, pOldState, otherBe, EUpdateReason.BLOCK_CHANGED);
             }
             return true;
         }

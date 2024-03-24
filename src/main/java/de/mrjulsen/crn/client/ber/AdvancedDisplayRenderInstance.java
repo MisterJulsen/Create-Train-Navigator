@@ -15,6 +15,7 @@ import de.mrjulsen.crn.client.ber.base.BERText;
 import de.mrjulsen.crn.client.ber.variants.BERPassengerInfoDetailed;
 import de.mrjulsen.crn.client.ber.variants.BERPassengerInfoInformative;
 import de.mrjulsen.crn.client.ber.variants.BERPassengerInfoSimple;
+import de.mrjulsen.crn.client.ber.variants.BERPlatformSimple;
 import de.mrjulsen.crn.client.ber.variants.BERRenderSubtypeBase;
 import de.mrjulsen.crn.client.ber.variants.BERTrainDestinationDetailed;
 import de.mrjulsen.crn.client.ber.variants.BERTrainDestinationInformative;
@@ -61,6 +62,9 @@ public class AdvancedDisplayRenderInstance extends AbstractBlockEntityRenderInst
                 EDisplayInfo.SIMPLE, () -> new BERPassengerInfoSimple(),
                 EDisplayInfo.DETAILED, () -> new BERPassengerInfoDetailed(),
                 EDisplayInfo.INFORMATIVE, () -> new BERPassengerInfoInformative()
+            ),
+            EDisplayType.PLATFORM, Map.of(
+                EDisplayInfo.SIMPLE, () -> new BERPlatformSimple()
             )
         );
     }
@@ -115,13 +119,13 @@ public class AdvancedDisplayRenderInstance extends AbstractBlockEntityRenderInst
         labels.forEach(x -> x.tick());
 
         if (blockEntity.getXSizeScaled() != lastXSize) {
-            update(level, pos, state, blockEntity);
+            update(level, pos, state, blockEntity, EUpdateReason.BLOCK_CHANGED);
         }
         lastXSize = blockEntity.getXSizeScaled();
     }
 
     @Override
-    public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity) {
+    public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, EUpdateReason reason) {
         carriageIndexLabel = null;
         EDisplayType type = blockEntity.getDisplayType();
         EDisplayInfo info = blockEntity.getInfoType();
@@ -142,6 +146,6 @@ public class AdvancedDisplayRenderInstance extends AbstractBlockEntityRenderInst
         lastType = type;
         lastInfo = info;
 
-        renderSubtype.update(level, pos, state, blockEntity, this);
+        renderSubtype.update(level, pos, state, blockEntity, this, reason);
     }
 }

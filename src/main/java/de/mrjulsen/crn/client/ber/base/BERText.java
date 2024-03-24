@@ -34,12 +34,14 @@ public class BERText {
     private boolean centered = false;
     private int color = 0xFFFFFFFF;
     private int ticksPerPage = 200;
+    private int refreshRate = 0;
 
     private TextTransformation predefinedTextTransformation = null;
 
     // stored data
     private TextDataCache cache;
     private float scrollXOffset = 0.0f;
+    private int refreshTimer = 0;
     private int currentTicks = 0;
     private int currentIndex = 0;
     private List<Component> texts;
@@ -94,6 +96,14 @@ public class BERText {
         return this;
     }
 
+    /**
+     * The displayed text is updated every x ticks. If the value is less than or equal to 0, then the text will not be updated.
+     */
+    public BERText withRefreshRate(int ticks) {
+        this.refreshRate = ticks;
+        return this;
+    }
+
     public BERText withPredefinedTextTransformation(TextTransformation transformation) {
         this.predefinedTextTransformation = transformation;
         return this;
@@ -102,6 +112,7 @@ public class BERText {
     public BERText build() {
         fetchCurrentText();
         calc();
+        scrollXOffset = cache.maxWidthScaled();
         return this;
     }
 
@@ -283,17 +294,30 @@ public class BERText {
     }
 
     public void tick() {
+        
+        if (refreshRate > 0) {
+            refreshTimer++;
+            if ((refreshTimer %= refreshRate) == 0) {
+                fetchCurrentText();
+                calc();
+            }
+        }
+
+        boolean multiText = getTexts().size() > 1;
+
         if (cache.mustScroll()) {
             scrollXOffset -= getScrollSpeed() / this.getMaxStretchScale();
             if (scrollXOffset < -cache.textWidth()) {
                 scrollXOffset = cache.maxWidthScaled();
 
-                currentIndex++;
-                fetchCurrentText();
-                currentIndex %= getTexts().size();
-                calc();
+                if (multiText) {
+                    currentIndex++;
+                    fetchCurrentText();
+                    currentIndex %= getTexts().size();
+                    calc();
+                }
             }
-        } else {
+        } else if (multiText) {
             currentTicks++;
             if ((currentTicks %= getTicksPerPage()) == 0) {
                 currentIndex++;

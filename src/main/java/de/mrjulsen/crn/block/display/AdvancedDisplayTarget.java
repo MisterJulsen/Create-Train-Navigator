@@ -28,7 +28,7 @@ public class AdvancedDisplayTarget extends DisplayBoardTarget {
 		if (context.getTargetBlockEntity() instanceof AdvancedDisplayBlockEntity blockEntity) {
 			AdvancedDisplayBlockEntity controller = blockEntity.getController();
 			if (controller != null) {
-				controller.setDepartureData(GlobalTrainDisplayData.prepare(filter, 5).stream().map(x -> new DeparturePrediction(x).simplify()).toList(), fixedPlatform);
+				controller.setDepartureData(GlobalTrainDisplayData.prepare(filter, 5).stream().map(x -> new DeparturePrediction(x).simplify()).toList(), fixedPlatform, context.getTargetBlockEntity().getLevel().getDayTime());
 				controller.sendData();
 			}
 		}
