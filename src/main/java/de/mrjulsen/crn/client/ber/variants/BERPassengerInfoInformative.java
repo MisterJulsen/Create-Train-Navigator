@@ -291,7 +291,7 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
             }
         }
 
-        if (titleLabel != null && line.getString().equals(titleLabel.getText().getString())) {
+        if (titleLabel != null && line.getString().equals(titleLabel.getCurrentText().getString())) {
             return;
         }
 

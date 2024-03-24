@@ -1,5 +1,8 @@
 package de.mrjulsen.crn.client.ber.base;
 
+import java.util.List;
+import java.util.function.Supplier;
+
 import com.mojang.blaze3d.font.GlyphInfo;
 import com.mojang.blaze3d.vertex.PoseStack;
 
@@ -18,8 +21,8 @@ public class BERText {
     private static final byte CHAR_SIZE = 8;
 
     private final FontUtils fontUtils;
-    private final Component text;
     private final float xOffset;
+    private Supplier<List<Component>> textData;
 
     private float minX = 0;
     private float maxX = Float.MAX_VALUE;
@@ -30,16 +33,26 @@ public class BERText {
     private float scrollSpeed = 0.0f;
     private boolean centered = false;
     private int color = 0xFFFFFFFF;
+    private int ticksPerPage = 200;
 
-    private TextTransformation predefinedTextTransformation = null;;
+    private TextTransformation predefinedTextTransformation = null;
 
     // stored data
     private TextDataCache cache;
     private float scrollXOffset = 0.0f;
+    private int currentTicks = 0;
+    private int currentIndex = 0;
+    private List<Component> texts;
 
     public BERText(FontUtils fontUtils, Component text, float xOffset) {
         this.fontUtils = fontUtils;
-        this.text = text;
+        this.textData = () -> List.of(text);
+        this.xOffset = xOffset;
+    }
+
+    public BERText(FontUtils fontUtils, Supplier<List<Component>> texts, float xOffset) {
+        this.fontUtils = fontUtils;
+        this.textData = texts;
         this.xOffset = xOffset;
     }
 
@@ -76,12 +89,18 @@ public class BERText {
         return this;
     }
 
+    public BERText withTicksPerPage(int ticks) {
+        this.ticksPerPage = ticks;
+        return this;
+    }
+
     public BERText withPredefinedTextTransformation(TextTransformation transformation) {
         this.predefinedTextTransformation = transformation;
         return this;
     }
 
     public BERText build() {
+        fetchCurrentText();
         calc();
         return this;
     }
@@ -90,8 +109,20 @@ public class BERText {
         return fontUtils;
     }
 
-    public Component getText() {
-        return text;
+    private void fetchCurrentText() {
+        texts = textData.get();
+    } 
+    
+    public Component getCurrentText() {
+        return texts.get(currentIndex);
+    }    
+
+    public List<Component> getTexts() {
+        return texts;
+    }
+
+    public int getTicksPerPage() {
+        return ticksPerPage;
     }
 
     public float getXOffset() {
@@ -135,7 +166,7 @@ public class BERText {
     }
 
     public float getTextWidth() {
-        return getFontUtils().font.width(getText());
+        return getFontUtils().font.width(getCurrentText());
     }
 
     public float getScaledTextWidth() {
@@ -147,7 +178,7 @@ public class BERText {
     }
 
     public void calc() {
-        float textWidth = getFontUtils().font.width(getText());
+        float textWidth = getFontUtils().font.width(getCurrentText());
         float rawXScale = getMaxWidth() / textWidth;
         float finalXScale = de.mrjulsen.mcdragonlib.utils.Math.clamp(rawXScale, getMinStretchScale(), getMaxStretchScale());
         boolean mustScroll = rawXScale < getMinStretchScale();
@@ -165,15 +196,18 @@ public class BERText {
 
     public void render(PoseStack pPoseStack, MultiBufferSource pBufferSource, int pPackedLight) {
         getFontUtils().reset();
-        pPoseStack.pushPose();
-        if (predefinedTextTransformation != null) {
-            pPoseStack.translate(predefinedTextTransformation.x(), predefinedTextTransformation.y(), predefinedTextTransformation.z());
-            pPoseStack.scale(predefinedTextTransformation.xScale(), predefinedTextTransformation.yScale(), 1);
+        pPoseStack.pushPose(); {
+            if (predefinedTextTransformation != null) {
+                pPoseStack.translate(predefinedTextTransformation.x(), predefinedTextTransformation.y(), predefinedTextTransformation.z());
+                pPoseStack.scale(predefinedTextTransformation.xScale(), predefinedTextTransformation.yScale(), 1);
+            }
+
+            pPoseStack.pushPose(); {                
+                pPoseStack.scale(cache.textXScale(), 1, 1);
+                renderTextInBounds(pPoseStack, getFontUtils(), pBufferSource, getCurrentText(), pPackedLight, cache.mustScroll ? scrollXOffset : cache.xOffset(), cache.minX(), cache.maxX(), getColor());
+            }
+            pPoseStack.popPose();
         }
-        pPoseStack.pushPose();
-        pPoseStack.scale(cache.textXScale(), 1, 1);
-        renderTextInBounds(pPoseStack, getFontUtils(), pBufferSource, getText(), pPackedLight, cache.mustScroll ? scrollXOffset : cache.xOffset(), cache.minX(), cache.maxX(), getColor());
-        pPoseStack.popPose();
         pPoseStack.popPose();
     }
 
@@ -253,6 +287,19 @@ public class BERText {
             scrollXOffset -= getScrollSpeed() / this.getMaxStretchScale();
             if (scrollXOffset < -cache.textWidth()) {
                 scrollXOffset = cache.maxWidthScaled();
+
+                currentIndex++;
+                fetchCurrentText();
+                currentIndex %= getTexts().size();
+                calc();
+            }
+        } else {
+            currentTicks++;
+            if ((currentTicks %= getTicksPerPage()) == 0) {
+                currentIndex++;
+                fetchCurrentText();
+                currentIndex %= getTexts().size();
+                calc();
             }
         }
     }

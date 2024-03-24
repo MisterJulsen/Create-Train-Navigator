@@ -1,5 +1,7 @@
 package de.mrjulsen.crn.client.ber.variants;
 
+import java.util.List;
+
 import com.mojang.blaze3d.vertex.PoseStack;
 
 import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
@@ -24,11 +26,6 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class BERPassengerInfoDetailed implements IBERRenderSubtype<AdvancedDisplayBlockEntity, AdvancedDisplayRenderInstance, Boolean> {
 
-    private static final int MAX_PAGES = 3;
-    private static final int TICKS_PER_PAGE = 200;
-
-    private int page = 0;
-    private int ticks = 0;
     private State state = State.WHILE_TRAVELING;
 
     private static final String keyNextStop = "gui.createrailwaysnavigator.route_overview.next_stop";
@@ -46,14 +43,6 @@ public class BERPassengerInfoDetailed implements IBERRenderSubtype<AdvancedDispl
         }
 
         boolean dirty = false;
-        if (this.state == State.WHILE_TRAVELING) {            
-            ticks++;
-            if ((ticks = ticks % TICKS_PER_PAGE) == 0) {
-                page++;
-                page %= MAX_PAGES;
-                dirty = true;
-            }
-        }
         
         if (pBlockEntity.getTrainData().getNextStop().isPresent()) {
             if (this.state != State.WHILE_NEXT_STOP && pBlockEntity.getTrainData().getNextStop().get().departureTicks() <= 0) {
@@ -89,18 +78,7 @@ public class BERPassengerInfoDetailed implements IBERRenderSubtype<AdvancedDispl
                 updateWhileNextStop(level, pos, state, blockEntity, parent);
                 break;
             default:
-                switch (page) {
-                    default:
-                    case 0:
-                        updateDefault(level, pos, state, blockEntity, parent);
-                        break;
-                    case 1:
-                        updatePage2(level, pos, state, blockEntity, parent);
-                        break;
-                    case 2:
-                        updatePage3(level, pos, state, blockEntity, parent);
-                        break;
-                }
+                updateDefault(level, pos, state, blockEntity, parent);
                 break;
         }
     }
@@ -161,10 +139,16 @@ public class BERPassengerInfoDetailed implements IBERRenderSubtype<AdvancedDispl
 
     private void updateDefault(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent) {
         int displayWidth = blockEntity.getXSizeScaled();
+        boolean isSingleBlock = blockEntity.getXSizeScaled() <= 1;
 
-        MutableComponent line = Utils.text(blockEntity.getTrainData().trainName()).append(" ").append(Utils.text(blockEntity.getTrainData().getNextStop().get().scheduleTitle()));
         float maxWidth = displayWidth * 16 - 6;        
-        parent.labels.add(new BERText(parent.getFontUtils(), line, 0)
+        parent.labels.add(new BERText(parent.getFontUtils(), () -> List.of(
+            Utils.text(blockEntity.getTrainData().trainName()).append(" ").append(Utils.text(blockEntity.getTrainData().getNextStop().get().scheduleTitle())),
+            Utils.text("" + (int)Math.abs(Math.round(blockEntity.getTrainData().speed() * 20 * 3.6F))).append(" km/h"),
+            isSingleBlock ?
+                    Utils.text(TimeUtils.parseTime((int)(blockEntity.getLevel().dayTime() % 24000), ModClientConfig.TIME_FORMAT.get())) :
+                    Utils.translate(keyDate, blockEntity.getLevel().getDayTime() / 24000, TimeUtils.parseTime((int)(blockEntity.getLevel().dayTime() % 24000), ModClientConfig.TIME_FORMAT.get()))
+        ), 0)
             .withIsCentered(true)
             .withMaxWidth(maxWidth, true)
             .withStretchScale(0.75f, 0.75f)
@@ -209,44 +193,6 @@ public class BERPassengerInfoDetailed implements IBERRenderSubtype<AdvancedDispl
             .withCanScroll(true, 1)
             .withColor((0xFF << 24) | (blockEntity.getColor()))
             .withPredefinedTextTransformation(new TextTransformation(3 + (side == TrainExitSide.LEFT ? 10 : 0), 5.5f, 0.0f, 1, 0.75f))
-            .build()
-        );
-    }
-
-    private void updatePage2(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent) {
-        int displayWidth = blockEntity.getXSizeScaled();
-
-        MutableComponent line = Utils.text("" + (int)Math.abs(Math.round(blockEntity.getTrainData().speed() * 20 * 3.6F))).append(" km/h");
-        float maxWidth = displayWidth * 16 - 6;        
-        parent.labels.add(new BERText(parent.getFontUtils(), line, 0)
-            .withIsCentered(true)
-            .withMaxWidth(maxWidth, true)
-            .withStretchScale(0.75f, 0.75f)
-            .withStencil(0, maxWidth)
-            .withCanScroll(true, 1)
-            .withColor((0xFF << 24) | (blockEntity.getColor()))
-            .withPredefinedTextTransformation(new TextTransformation(3, 5.5f, 0.0f, 1, 0.75f))
-            .build()
-        );
-    }
-    
-    private void updatePage3(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent) {        
-        int displayWidth = blockEntity.getXSizeScaled();
-        boolean isSingleBlock = blockEntity.getXSizeScaled() <= 1;
-
-        MutableComponent line = isSingleBlock ?
-            Utils.text(TimeUtils.parseTime((int)(blockEntity.getLevel().dayTime() % 24000), ModClientConfig.TIME_FORMAT.get())) :
-            Utils.translate(keyDate, blockEntity.getLevel().getDayTime() / 24000, TimeUtils.parseTime((int)(blockEntity.getLevel().dayTime() % 24000), ModClientConfig.TIME_FORMAT.get()));
-            
-        float maxWidth = displayWidth * 16 - 6;        
-        parent.labels.add(new BERText(parent.getFontUtils(), line, 0)
-            .withIsCentered(true)
-            .withMaxWidth(maxWidth, true)
-            .withStretchScale(0.75f, 0.75f)
-            .withStencil(0, maxWidth)
-            .withCanScroll(true, 1)
-            .withColor((0xFF << 24) | (blockEntity.getColor()))
-            .withPredefinedTextTransformation(new TextTransformation(3, 5.5f, 0.0f, 1, 0.75f))
             .build()
         );
     }
