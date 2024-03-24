@@ -1,6 +1,8 @@
 package de.mrjulsen.crn.block.be;
 
+import java.util.ArrayList;
 import java.util.List;
+
 import javax.annotation.Nullable;
 
 import com.simibubi.create.content.contraptions.Contraption;
@@ -17,7 +19,6 @@ import de.mrjulsen.crn.client.ber.base.IBlockEntityRendererInstance;
 import de.mrjulsen.crn.data.CarriageData;
 import de.mrjulsen.crn.data.EDisplayInfo;
 import de.mrjulsen.crn.data.EDisplayType;
-import de.mrjulsen.crn.data.ESide;
 import de.mrjulsen.crn.data.IBlockEntitySerializable;
 import de.mrjulsen.crn.data.DeparturePrediction.TrainExitSide;
 import de.mrjulsen.crn.data.DeparturePrediction.SimpleDeparturePrediction;
@@ -40,6 +41,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -190,17 +192,52 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     public EDisplayType getDisplayType() {
         return displayType;
     }
+    
+    @Override
+    public byte getMaxWidth() {
+        return MAX_XSIZE;
+    }
+
+    @Override
+    public byte getMaxHeight() {
+        return MAX_YSIZE;
+    }
+
+    @Override
+    public byte getWidth() {
+        return xSize;
+    }
+
+    @Override
+    public byte getHeight() {
+        return ySize;
+    }
+
+    @Override
+    public Class<AbstractAdvancedDisplayBlock> getBlockType() {
+        return AbstractAdvancedDisplayBlock.class;
+    }
+
+    @Override
+    public Class<AdvancedDisplayBlockEntity> getBlockEntityType() {
+        return AdvancedDisplayBlockEntity.class;
+    }
+
     public List<SimpleDeparturePrediction> getPredictions() {
         return predictions;
     }
+
+    public boolean isPlatformFixed() {
+        return fixedPlatform;
+    }
+
+
 
     public void setColor(int color) {
 		this.color = color;
         if (level.isClientSide) {
             getRenderer().update(level, worldPosition, getBlockState(), this);
         }
-        BlockEntityUtil.sendUpdatePacket(this);
-        this.setChanged();
     }
 
     public void setGlowing(boolean glowing) {
@@ -208,8 +245,6 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         if (level.isClientSide) {
             getRenderer().update(level, worldPosition, getBlockState(), this);
         }
-        BlockEntityUtil.sendUpdatePacket(this);
-        this.setChanged();
     }
 
     public void setInfoType(EDisplayInfo type) {
@@ -217,8 +252,6 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         if (level.isClientSide) {
             getRenderer().update(level, worldPosition, getBlockState(), this);
         }
-        BlockEntityUtil.sendUpdatePacket(this);
-        this.setChanged();
     }
 
     public void setDisplayType(EDisplayType type) {
@@ -226,12 +259,27 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         if (level.isClientSide) {
             getRenderer().update(level, worldPosition, getBlockState(), this);
         }
+    }
+
     public void setDepartureData(List<SimpleDeparturePrediction> predictions, boolean fixedPlatform) {
         this.predictions = predictions;
         this.fixedPlatform = fixedPlatform;
     }
+
+
+    
+    @Override
+    public boolean connectable(BlockGetter getter, BlockPos a, BlockPos b) {
+        if (getter == null || a == null || b == null) {
+            return false;
+        }
+
+        if (getter.getBlockEntity(a) instanceof AdvancedDisplayBlockEntity be1 && getter.getBlockEntity(b) instanceof AdvancedDisplayBlockEntity be2 && be1.getBlockState().getBlock() instanceof AbstractAdvancedDisplayBlock block1 && be2.getBlockState().getBlock() instanceof AbstractAdvancedDisplayBlock block2) {
+            return  block1 == block2 &&
+                    be1.getDisplayType() == be2.getDisplayType() &&
                     be1.getInfoType() == be2.getInfoType() &&
                     be1.getBlockState().getValue(AbstractAdvancedDisplayBlock.SIDE) == be2.getBlockState().getValue(AbstractAdvancedDisplayBlock.SIDE) &&
+                    be1.getBlockState().getValue(AbstractAdvancedDisplayBlock.FACING) == be2.getBlockState().getValue(AbstractAdvancedDisplayBlock.FACING) &&
                     (!a.above().equals(b) || (be1.getBlockState().getValue(AbstractAdvancedDisplayBlock.UP) && !block1.isSingleLine(be1.getBlockState(), be1))) &&
                     (!a.below().equals(b) || (be1.getBlockState().getValue(AbstractAdvancedDisplayBlock.DOWN) && !block1.isSingleLine(be1.getBlockState(), be1)))
             ;
@@ -239,38 +287,72 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         return false;
     }
 
-    
-    @Override
-    public void tick() {
-        if (level.isClientSide) {
-            getRenderer().tick(level, getBlockPos(), getBlockState(), this);
-        }
-        super.tick();
-    }
+    public AdvancedDisplayBlockEntity getController() {
+		if (isController())
+			return this;
 
-    @Override
-    public void lazyTick() {
-        super.lazyTick();
-        updateControllerStatus();
+		BlockState blockState = getBlockState();
+		if (!(blockState.getBlock() instanceof AbstractAdvancedDisplayBlock))
+			return null;
+
+		MutableBlockPos pos = getBlockPos().mutable();
+		Direction side = blockState.getValue(AbstractAdvancedDisplayBlock.FACING).getClockWise();
+
+        for (int i = 0; i < getMaxWidth(); i++) {
+			if (connectable(level, pos, pos.relative(side))) {
+				pos.move(side);
+				continue;
+			}
+
+			BlockEntity found = level.getBlockEntity(pos);
+			if (found instanceof AdvancedDisplayBlockEntity flap && flap.isController)
+				return flap;
+
+			break;
+		}
+
+		for (int i = 0; i < getMaxHeight(); i++) {
+            if (connectable(level, pos, pos.relative(Direction.UP))) {
+				pos.move(Direction.UP);
+				continue;
+			}
+
+			BlockEntity found = level.getBlockEntity(pos);
+			if (found instanceof AdvancedDisplayBlockEntity flap && flap.isController)
+				return flap;
+
+			break;
+		}
+
+		return null;
+	}
+
+    public void copyFrom(AdvancedDisplayBlockEntity other) {
+        if (getColor() == other.getColor() &&
+            getInfoType() == other.getInfoType() &&
+            getDisplayType() == other.getDisplayType()
+        ) {
+            return;
+        }
+
+        color = other.getColor();
+        displayType = other.getDisplayType();
+        infoType = other.getInfoType();
+        sendData();
+        BlockEntityUtil.sendUpdatePacket(this);
     }
 
     public void updateControllerStatus() {
-		if (level.isClientSide)
+		if (level.isClientSide) {
 			return;
+        }
 
 		BlockState blockState = getBlockState();
 		if (!(blockState.getBlock() instanceof AbstractAdvancedDisplayBlock))
 			return;
 
 		Direction leftDirection = blockState.getValue(AbstractAdvancedDisplayBlock.FACING).getClockWise();
-
-		boolean shouldBeController = (
-                ((AbstractAdvancedDisplayBlock)blockState.getBlock()).isSingleLine(level, worldPosition) ||
-                !blockState.getValue(AbstractAdvancedDisplayBlock.UP) ||
-                level.getBlockState(worldPosition.above()).getValue(AbstractAdvancedDisplayBlock.SIDE) != blockState.getValue(AbstractAdvancedDisplayBlock.SIDE) ||
-                (level.getBlockEntity(worldPosition.above()) instanceof AdvancedDisplayBlockEntity be && !isDisplayCompatible(be)) ||
-                false
-            ) && level.getBlockState(worldPosition.relative(leftDirection)) != blockState;
+        boolean shouldBeController = !connectable(level, worldPosition, worldPosition.relative(leftDirection)) && !connectable(level, worldPosition, worldPosition.above());
 
 		byte newXSize = 1;
 		byte newYSize = 1;
@@ -296,14 +378,9 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
                         }
                     }
 
-                    if (!level.getBlockState(downPos).getOptionalValue(AbstractAdvancedDisplayBlock.DOWN).orElse(false)) {
+                    if (!connectable(level, downPos, downPos.below())) {
                         break;
-                    }
-
-                    if (level.getBlockEntity(downPos.below()) instanceof AdvancedDisplayBlockEntity be && !isDisplayCompatible(be)) {
-                        break;
-                    }
-    
+                    }    
                     newYSize++;
                 }
             }
@@ -319,78 +396,18 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         BlockEntityUtil.sendUpdatePacket(this);
 	}
 
-    public AdvancedDisplayBlockEntity getController() {
-		if (isController)
-			return this;
-
-		BlockState blockState = getBlockState();
-		if (!(blockState.getBlock() instanceof AbstractAdvancedDisplayBlock))
-			return null;
-
-		MutableBlockPos pos = getBlockPos().mutable();
-		Direction side = blockState.getValue(AbstractAdvancedDisplayBlock.FACING).getClockWise();
-
-        for (int i = 0; i < getMaxWidth(); i++) {
-			//if ((level.getBlockState(pos.relative(side)).getBlock() instanceof AbstractAdvancedDisplayBlock block && block.isSingleLine(level, worldPosition)) || !level.getBlockState(pos.relative(side)).getOptionalValue(AbstractAdvancedDisplayBlock.UP).orElse(true)) {
-			if (AdvancedDisplayBlockEntity.connectable(level, pos, pos.relative(side))) {
-				pos.move(side);
-				continue;
-			}
-
-			BlockEntity found = level.getBlockEntity(pos);
-			if (found instanceof AdvancedDisplayBlockEntity flap && flap.isController)
-				return flap;
-
-			break;
-		}
-
-		for (int i = 0; i < getMaxHeight(); i++) {
-			BlockState other = level.getBlockState(pos);
-            ESide thisSide = blockState.getValue(AbstractAdvancedDisplayBlock.SIDE);
-
-            /*
-			if (!((AbstractAdvancedDisplayBlock)blockState.getBlock()).isSingleLine(level, worldPosition) &&
-                other.getOptionalValue(AbstractAdvancedDisplayBlock.UP).orElse(false)
-            ) {
-            */
-            if (AdvancedDisplayBlockEntity.connectable(level, pos, pos.relative(Direction.UP))) {
-				pos.move(Direction.UP);
-				continue;
-			}
-
-			BlockEntity found = level.getBlockEntity(pos);
-			if (found instanceof AdvancedDisplayBlockEntity flap && flap.isController)
-				return flap;
-
-			break;
-		}
-
-		return null;
-	}
-
     @Override
-    public boolean connectedTo(AdvancedDisplayBlockEntity otherBlockEntity) {
-        return otherBlockEntity.getBlockState().is(this.getBlockState().getBlock()) && (
-            getBlockState().getValue(AbstractAdvancedDisplayBlock.SIDE) == ESide.BOTH ?
-                otherBlockEntity.getBlockState().getValue(HorizontalDirectionalBlock.FACING).getAxis() == this.getBlockState().getValue(HorizontalDirectionalBlock.FACING).getAxis()
-            :
-                otherBlockEntity.getBlockState().getValue(HorizontalDirectionalBlock.FACING) == this.getBlockState().getValue(HorizontalDirectionalBlock.FACING)
-        );
+    public void tick() {
+        if (level.isClientSide) {
+            getRenderer().tick(level, getBlockPos(), getBlockState(), this);
+        }
+        super.tick();
     }
 
-    public void copyFrom(AdvancedDisplayBlockEntity other) {
-        if (getColor() == other.getColor() &&
-            getInfoType() == other.getInfoType() &&
-            getDisplayType() == other.getDisplayType()
-        ) {
-            return;
-        }
-
-        color = other.getColor();
-        displayType = other.getDisplayType();
-        infoType = other.getInfoType();
-        sendData();
-        BlockEntityUtil.sendUpdatePacket(this);
+    @Override
+    public void lazyTick() {
+        super.lazyTick();
+        updateControllerStatus();
     }
 
     @Override
@@ -407,10 +424,10 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         CarriageContraption carriage = (CarriageContraption)contraption;        
         if (syncTicks == 0) {
             long id = InstanceManager.registerClientTrainDataResponseAction((data, refreshTime) -> {
-                boolean b = false;
+                boolean shouldUpdate = false;
                 if (trainData != null && trainData.getNextStop().isPresent() && data.getNextStop().isPresent()) {
                     SimpleDeparturePrediction prediction = trainData.getNextStop().get();
-                    b = !trainData.trainName().equals(data.trainName()) ||
+                    shouldUpdate = !trainData.trainName().equals(data.trainName()) ||
                         !prediction.scheduleTitle().equals(data.predictions().get(0).scheduleTitle()) ||
                         !prediction.stationName().equals(data.predictions().get(0).stationName()) ||
                         trainData.getNextStop().get().exitSide() != data.getNextStop().get().exitSide() ||
@@ -419,10 +436,10 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
                 }
                 this.lastRefreshedTime = refreshTime;
                 this.trainData = data;
-                carriageData = new CarriageData(((CarriageContraptionEntity)carriage.entity).carriageIndex, carriage.getAssemblyDirection(), data.isOppositeDirection());
-                relativeExitDirection.clear();
+                this.carriageData = new CarriageData(((CarriageContraptionEntity)carriage.entity).carriageIndex, carriage.getAssemblyDirection(), data.isOppositeDirection());
+                this.relativeExitDirection.clear();
 
-                if (b) {
+                if (shouldUpdate) {
                     getRenderer().update(level, pos, state, this);
                 }
             });
@@ -521,33 +538,4 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {}
 
-    @Override
-    public byte getMaxWidth() {
-        return MAX_XSIZE;
-    }
-
-    @Override
-    public byte getMaxHeight() {
-        return MAX_YSIZE;
-    }
-
-    @Override
-    public byte getWidth() {
-        return xSize;
-    }
-
-    @Override
-    public byte getHeight() {
-        return ySize;
-    }
-
-    @Override
-    public Class<AbstractAdvancedDisplayBlock> getBlockType() {
-        return AbstractAdvancedDisplayBlock.class;
-    }
-
-    @Override
-    public Class<AdvancedDisplayBlockEntity> getBlockEntityType() {
-        return AdvancedDisplayBlockEntity.class;
-    }
 }
