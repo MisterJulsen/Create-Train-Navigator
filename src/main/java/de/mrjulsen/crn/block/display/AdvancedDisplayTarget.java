@@ -3,9 +3,12 @@ package de.mrjulsen.crn.block.display;
 import java.util.List;
 
 import com.simibubi.create.content.redstone.displayLink.DisplayLinkContext;
-import com.simibubi.create.content.redstone.displayLink.target.DisplayTarget;
+import com.simibubi.create.content.redstone.displayLink.target.DisplayBoardTarget;
 import com.simibubi.create.content.redstone.displayLink.target.DisplayTargetStats;
+import com.simibubi.create.content.trains.display.GlobalTrainDisplayData;
+
 import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
+import de.mrjulsen.crn.data.DeparturePrediction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.MutableComponent;
@@ -15,10 +18,21 @@ import net.minecraft.world.phys.AABB;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
-public class AdvancedDisplayTarget extends DisplayTarget {
+public class AdvancedDisplayTarget extends DisplayBoardTarget {    
     
-    @Override
-	public void acceptText(int line, List<MutableComponent> text, DisplayLinkContext context) {}
+	@Override
+	public void acceptFlapText(int line, List<List<MutableComponent>> text, DisplayLinkContext context) {		
+		String filter = context.sourceConfig().getString("Filter");
+		boolean fixedPlatform = filter.contains("*");
+
+		if (context.getTargetBlockEntity() instanceof AdvancedDisplayBlockEntity blockEntity) {
+			AdvancedDisplayBlockEntity controller = blockEntity.getController();
+			if (controller != null) {
+				controller.setDepartureData(GlobalTrainDisplayData.prepare(filter, 5).stream().map(x -> new DeparturePrediction(x).simplify()).toList(), fixedPlatform);
+				controller.sendData();
+			}
+		}
+	}
 
 	@Override
 	public boolean isReserved(int line, BlockEntity target, DisplayLinkContext context) {
@@ -53,11 +67,7 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 		if (controller == null)
 			return baseShape;
 
-		Vec3i normal = controller.getDirection()
-			.getClockWise()
-			.getNormal();
-		return baseShape.move(controller.getBlockPos()
-			.subtract(pos))
-			.expandTowards(normal.getX() * (controller.getXSize() - 1), 1 - controller.getYSize(), normal.getZ() * (controller.getXSize() - 1));
+		Vec3i normal = controller.getDirection().getClockWise().getNormal();
+		return baseShape.move(controller.getBlockPos().subtract(pos)).expandTowards(normal.getX() * (controller.getXSize() - 1), 1 - controller.getYSize(), normal.getZ() * (controller.getXSize() - 1));
 	}
 }

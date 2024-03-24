@@ -35,6 +35,8 @@ import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.item.DyeColor;
@@ -59,6 +61,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     private static final String NBT_COLOR = "Color";
     private static final String NBT_INFO_TYPE = "InfoType";
     private static final String NBT_DISPLAY_TYPE = "DisplayType";
+    private static final String NBT_PREDICTIONS = "Predictions";
 
     public static final byte MAX_XSIZE = 16;
     public static final byte MAX_YSIZE = 16;
@@ -187,6 +190,9 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     public EDisplayType getDisplayType() {
         return displayType;
     }
+    public List<SimpleDeparturePrediction> getPredictions() {
+        return predictions;
+    }
 
     public void setColor(int color) {
 		this.color = color;
@@ -220,19 +226,10 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         if (level.isClientSide) {
             getRenderer().update(level, worldPosition, getBlockState(), this);
         }
-        BlockEntityUtil.sendUpdatePacket(this);
-        this.setChanged();
+    public void setDepartureData(List<SimpleDeparturePrediction> predictions, boolean fixedPlatform) {
+        this.predictions = predictions;
+        this.fixedPlatform = fixedPlatform;
     }
-
-    public boolean isDisplayCompatible(AdvancedDisplayBlockEntity other) {
-        return getDisplayType() == other.getDisplayType() &&
-               getInfoType() == other.getInfoType()
-            ;
-    }
-
-    public static boolean connectable(Level level, BlockPos a, BlockPos b) {
-        if (level.getBlockEntity(a) instanceof AdvancedDisplayBlockEntity be1 && level.getBlockEntity(b) instanceof AdvancedDisplayBlockEntity be2 && be1.getBlockState().getBlock() instanceof AbstractAdvancedDisplayBlock block1 && be2.getBlockState().getBlock() instanceof AbstractAdvancedDisplayBlock) {
-            return be1.getDisplayType() == be2.getDisplayType() &&
                     be1.getInfoType() == be2.getInfoType() &&
                     be1.getBlockState().getValue(AbstractAdvancedDisplayBlock.SIDE) == be2.getBlockState().getValue(AbstractAdvancedDisplayBlock.SIDE) &&
                     (!a.above().equals(b) || (be1.getBlockState().getValue(AbstractAdvancedDisplayBlock.UP) && !block1.isSingleLine(be1.getBlockState(), be1))) &&
@@ -442,6 +439,10 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         pTag.putBoolean(NBT_CONTROLLER, isController());
         pTag.putInt(NBT_INFO_TYPE, getInfoType().getId());
         pTag.putInt(NBT_DISPLAY_TYPE, getDisplayType().getId());
+
+        ListTag list = new ListTag();
+        list.addAll(getPredictions().stream().map(x -> x.toNbt()).toList());
+        pTag.put(NBT_PREDICTIONS, list);
     }
 
     @Override
@@ -453,6 +454,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         isController = pTag.getBoolean(NBT_CONTROLLER);
         infoType = EDisplayInfo.getTypeById(pTag.getInt(NBT_INFO_TYPE));
         displayType = EDisplayType.getTypeById(pTag.getInt(NBT_DISPLAY_TYPE));
+        predictions = new ArrayList<>(pTag.getList(NBT_PREDICTIONS, Tag.TAG_COMPOUND).stream().map(x -> SimpleDeparturePrediction.fromNbt((CompoundTag)x)).toList());
     }    
 
     @Override
