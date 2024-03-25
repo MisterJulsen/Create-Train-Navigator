@@ -15,6 +15,7 @@ import de.mrjulsen.crn.client.ber.base.BERText;
 import de.mrjulsen.crn.client.ber.variants.BERPassengerInfoDetailed;
 import de.mrjulsen.crn.client.ber.variants.BERPassengerInfoInformative;
 import de.mrjulsen.crn.client.ber.variants.BERPassengerInfoSimple;
+import de.mrjulsen.crn.client.ber.variants.BERPlatformDetailed;
 import de.mrjulsen.crn.client.ber.variants.BERPlatformSimple;
 import de.mrjulsen.crn.client.ber.variants.BERRenderSubtypeBase;
 import de.mrjulsen.crn.client.ber.variants.BERTrainDestinationDetailed;
@@ -64,7 +65,8 @@ public class AdvancedDisplayRenderInstance extends AbstractBlockEntityRenderInst
                 EDisplayInfo.INFORMATIVE, () -> new BERPassengerInfoInformative()
             ),
             EDisplayType.PLATFORM, Map.of(
-                EDisplayInfo.SIMPLE, () -> new BERPlatformSimple()
+                EDisplayInfo.SIMPLE, () -> new BERPlatformSimple(),
+                EDisplayInfo.DETAILED, () -> new BERPlatformDetailed()
             )
         );
     }

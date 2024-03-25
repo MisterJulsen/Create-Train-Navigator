@@ -36,7 +36,7 @@ public class BERTrainDestinationDetailed implements IBERRenderSubtype<AdvancedDi
         BERText lastLabel = new BERText(parent.getFontUtils(), line, 0)
             .withIsCentered(isSingleBlock)
             .withMaxWidth(maxWidth, isSingleBlock)
-            .withStretchScale(0.3f, 0.6f)
+            .withStretchScale(0.3f, 0.5f)
             .withStencil(0, displayWidth * 16 - 5)
             .withCanScroll(isSingleBlock, 0.5f)
             .withColor((0xFF << 24) | (blockEntity.getColor() & 0x00FFFFFF))

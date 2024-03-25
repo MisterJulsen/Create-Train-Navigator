@@ -1,6 +1,7 @@
 package de.mrjulsen.crn.client.ber.base;
 
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import com.mojang.blaze3d.font.GlyphInfo;
@@ -35,6 +36,7 @@ public class BERText {
     private int color = 0xFFFFFFFF;
     private int ticksPerPage = 200;
     private int refreshRate = 0;
+    private Consumer<BERText> onUpdate;
 
     private TextTransformation predefinedTextTransformation = null;
 
@@ -109,9 +111,14 @@ public class BERText {
         return this;
     }
 
+    public BERText withUpdateFunc(Consumer<BERText> onUpdate) {
+        this.onUpdate = onUpdate;
+        return this;
+    }
+
     public BERText build() {
         fetchCurrentText();
-        calc();
+        calc(false);
         scrollXOffset = cache.maxWidthScaled();
         return this;
     }
@@ -188,7 +195,11 @@ public class BERText {
         return color;
     }
 
-    public void calc() {
+    public void recalc() {
+        calc(false);
+    }
+
+    protected void calc(boolean callUpdate) {
         float textWidth = getFontUtils().font.width(getCurrentText());
         float rawXScale = getMaxWidth() / textWidth;
         float finalXScale = de.mrjulsen.mcdragonlib.utils.Math.clamp(rawXScale, getMinStretchScale(), getMaxStretchScale());
@@ -203,6 +214,10 @@ public class BERText {
         float maxX = Math.min(forceMaxWidth() ? maxWidthScaled : Float.MAX_VALUE, getMaxX() / finalXScale);
         float xOffset = getXOffset() + (isCentered() ? maxWidthScaled / 2 - textWidth / 2 : 0);
         cache = new TextDataCache(finalXScale, minX, maxX, xOffset, maxWidthScaled, textWidth, forceMaxWidth() && mustScroll);
+
+        if (callUpdate && onUpdate != null) {
+            onUpdate.accept(this);
+        }
     }
 
     public void render(PoseStack pPoseStack, MultiBufferSource pBufferSource, int pPackedLight) {
@@ -299,7 +314,7 @@ public class BERText {
             refreshTimer++;
             if ((refreshTimer %= refreshRate) == 0) {
                 fetchCurrentText();
-                calc();
+                calc(true);
             }
         }
 
@@ -314,7 +329,7 @@ public class BERText {
                     currentIndex++;
                     fetchCurrentText();
                     currentIndex %= getTexts().size();
-                    calc();
+                    calc(true);
                 }
             }
         } else if (multiText) {
@@ -323,7 +338,7 @@ public class BERText {
                 currentIndex++;
                 fetchCurrentText();
                 currentIndex %= getTexts().size();
-                calc();
+                calc(true);
             }
         }
     }
