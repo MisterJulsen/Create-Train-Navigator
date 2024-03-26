@@ -79,7 +79,8 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 		}
 		if (blockEntity instanceof AdvancedDisplayBlockEntity be) {			
 			return !(
-				(be.getDisplayType() == EDisplayType.PASSENGER_INFORMATION && be.getInfoType() == EDisplayInfo.INFORMATIVE)
+				(be.getDisplayType() == EDisplayType.PASSENGER_INFORMATION && be.getInfoType() == EDisplayInfo.INFORMATIVE) ||
+				(be.getDisplayType() == EDisplayType.PLATFORM && be.getInfoType() == EDisplayInfo.DETAILED)
 			);
 		} 
 
