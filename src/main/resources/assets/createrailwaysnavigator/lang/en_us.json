@@ -2,8 +2,6 @@
     "advancement.createrailwaysnavigator.root": "Thank you for traveling",
     "advancement.createrailwaysnavigator.root.description": "Craft a Create Railways Navigator Item to look for train connections from one train station to another.",
 
-    "common.createrailwaysnavigator.search": "Search",
-
     "itemGroup.createrailwaysnavigatortab": "Create Railways Navigator",
 
     "item.createrailwaysnavigator.navigator": "Create Railways Navigator",
@@ -38,6 +36,7 @@
     "enum.createrailwaysnavigator.overlay_position.info.bottom_right": "Bottom Right Corner",
     
     "gui.createrailwaysnavigator.loading.title": "Downloading data from server...",
+
     "gui.createrailwaysnavigator.overlay_settings.title": "Route Overlay Settings",
     "gui.createrailwaysnavigator.route_overlay_settings.show_details": "Show details",
     "gui.createrailwaysnavigator.route_overlay_settings.unpin": "Remove route overlay",
@@ -59,6 +58,7 @@
     "gui.createrailwaysnavigator.common.count": "Count",
     "gui.createrailwaysnavigator.common.true": "Yes",
     "gui.createrailwaysnavigator.common.false": "No",
+    "gui.createrailwaysnavigator.common.search": "Search",
     "gui.createrailwaysnavigator.common.server_error": "Server error while executing task. Look console for details.",
     
     "gui.createrailwaysnavigator.navigator.title": "Create Railways Navigator",
