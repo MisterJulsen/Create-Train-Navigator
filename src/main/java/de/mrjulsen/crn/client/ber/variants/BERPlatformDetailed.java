@@ -27,15 +27,16 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class BERPlatformDetailed implements IBERRenderSubtype<AdvancedDisplayBlockEntity, AdvancedDisplayRenderInstance, Boolean> {
 
-    private static final String keyTrainDeparture = "gui.createrailwaysnavigator.route_overview.notification.journey_begins";
     private static final String keyTime = "gui.createrailwaysnavigator.time";
 
     private Collection<SimpleDeparturePrediction> lastPredictions = new ArrayList<>();
 
-    private BERText label1;
-    private BERText label2;
+    private BERText timeLabel;
+    private BERText[][] additionalLabels;
 
-    private BERText[] additionalLabels;
+    private int timer;
+    private static final int MAX_TIMER = 100;
+    private boolean showTime = false;
 
     @Override
     public boolean isSingleLined() {
@@ -44,30 +45,61 @@ public class BERPlatformDetailed implements IBERRenderSubtype<AdvancedDisplayBlo
 
     @Override
     public void tick(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity pBlockEntity, AdvancedDisplayRenderInstance parent) {
-        if (label1 != null) label1.tick();
-        if (label2 != null) label2.tick();
+        if (timeLabel != null) timeLabel.tick();
 
         if (additionalLabels != null) {
             for (int i = 0; i < additionalLabels.length; i++) {
-                if (additionalLabels[i] != null) {
-                    additionalLabels[i].tick();
+                if (additionalLabels[i] == null) {
+                    continue;
+                }
+
+                for (int k = 0; k < additionalLabels[i].length; k++) {
+                    if (additionalLabels[i][k] == null) {
+                        continue;
+                    }
+
+                    additionalLabels[i][k].tick();
                 }
             }
         }
+        timeLabel.tick();
+
+        timer++;
+        if ((timer %= MAX_TIMER) == 0) {
+            showTime = !showTime;
+        }
+    }
+
+    private int maxLines(AdvancedDisplayBlockEntity blockEntity) {
+        return blockEntity.getYSize() * 3 - 1;
     }
     
     @Override
     public void renderAdditional(BlockEntityRendererContext context, AdvancedDisplayBlockEntity pBlockEntity, AdvancedDisplayRenderInstance parent, float pPartialTicks, PoseStack pPoseStack, MultiBufferSource pBufferSource, int pPackedLight, int pOverlay, Boolean backSide) {
-        if (label1 != null) label1.render(pPoseStack, pBufferSource, pPackedLight);
-        if (label2 != null) label2.render(pPoseStack, pBufferSource, pPackedLight);
-
         if (additionalLabels != null) {
             for (int i = 0; i < additionalLabels.length; i++) {
-                if (additionalLabels[i] != null) {
-                    additionalLabels[i].render(pPoseStack, pBufferSource, pPackedLight);
+                if (additionalLabels[i] == null) {
+                    continue;
+                }
+
+                if (i >= maxLines(pBlockEntity) - 1 && showTime) {
+                    break;
+                } else {
+                    for (int k = 0; k < additionalLabels[i].length; k++) {
+                        if (additionalLabels[i][k] == null) {
+                            continue;
+                        }
+    
+                        additionalLabels[i][k].render(pPoseStack, pBufferSource, pPackedLight);
+                    }
+
+                    if (i >= maxLines(pBlockEntity) - 1) {
+                        return;
+                    }
                 }
             }
         }
+        timeLabel.render(pPoseStack, pBufferSource, pPackedLight);
     }
 
     @Override
@@ -76,39 +108,40 @@ public class BERPlatformDetailed implements IBERRenderSubtype<AdvancedDisplayBlo
         List<SimpleDeparturePrediction> preds = blockEntity.getPredictions().stream().filter(x -> x.departureTicks() < 1000).toList();
 
         if (preds.size() <= 0) {
-            parent.labels.clear();
+            additionalLabels = null;
             setTimer(level, pos, state, blockEntity, parent, reason, 4f);
             return;
         }
         
-        int maxLines = blockEntity.getYSize() * 3 - 1;
+        int maxLines = maxLines(blockEntity);
         boolean refreshAll = reason != EUpdateReason.DATA_CHANGED || !ModUtils.compareCollections(lastPredictions, preds, (a, b) -> a.stationInfo().platform().equals(b.stationInfo().platform()) && a.trainId().equals(b.trainId()));
         
 
         if (refreshAll) {
-            parent.labels.clear();
-            additionalLabels = new BERText[preds.size()];
+            additionalLabels = null;
+            timeLabel = null;
+            additionalLabels = new BERText[Math.min(preds.size(), maxLines)][];
 
-            for (int i = 0; i < preds.size() && i < maxLines; i++) {
-                addLine(level, pos, state, blockEntity, parent, reason, preds.get(i), 4 + (i * 5.4f), i >= maxLines - 1);
-
-                if (i >= preds.size() - 1) {
-                    setTimer(level, pos, state, blockEntity, parent, reason, 4 + ((i + 1) * 5.4f));
-                }
+            for (int i = 0; i < additionalLabels.length; i++) {
+                additionalLabels[i] = addLine(level, pos, state, blockEntity, parent, reason, preds.get(i), 4 + (i * 5.4f), i >= maxLines - 1);
             }
+            setTimer(level, pos, state, blockEntity, parent, reason, 4 + ((additionalLabels.length < maxLines ? additionalLabels.length : maxLines - 1) * 5.4f));
         }
         lastPredictions = preds;
 
     }
 
-    private void addLine(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason, SimpleDeparturePrediction prediction, float y, boolean lastPossibleLine) {
+    private BERText[] addLine(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason, SimpleDeparturePrediction prediction, float y, boolean lastPossibleLine) {
         float displayWidth = blockEntity.getXSizeScaled() * 16 - 6;
         float maxTimeWidth = 12;
+
+        BERText[] labels = new BERText[3];
         
-        parent.labels.add(new BERText(parent.getFontUtils(), () -> {
+        labels[0] = new BERText(parent.getFontUtils(), () -> {
             List<Component> texts = new ArrayList<>();
-            texts.add(Utils.text(TimeUtils.parseTime((int)(blockEntity.getLastRefreshedTime() % DragonLibConstants.TICKS_PER_DAY + Constants.TIME_SHIFT + prediction.departureTicks()), ModClientConfig.TIME_FORMAT.get())));
-            return List.of(ModUtils.concat(texts.toArray(Component[]::new)));
+            int rawTime = (int)(blockEntity.getLastRefreshedTime() % DragonLibConstants.TICKS_PER_DAY + Constants.TIME_SHIFT + prediction.departureTicks());
+            texts.add(Utils.text(TimeUtils.parseTime(rawTime - rawTime % ModClientConfig.REALTIME_PRECISION_THRESHOLD.get(), ModClientConfig.TIME_FORMAT.get())));
+            return texts;
         }, 0)
             .withIsCentered(false)
             .withMaxWidth(maxTimeWidth, true)
@@ -118,7 +151,7 @@ public class BERPlatformDetailed implements IBERRenderSubtype<AdvancedDisplayBlo
             .withColor((0xFF << 24) | (blockEntity.getColor()))
             .withPredefinedTextTransformation(new TextTransformation(3, y, 0.0f, 1, 0.4f))
             .build()
-        );
+        ;
 
         // PLATFORM
         Component label = Utils.text(prediction.stationInfo().platform());
@@ -131,17 +164,19 @@ public class BERPlatformDetailed implements IBERRenderSubtype<AdvancedDisplayBlo
             .withColor((0xFF << 24) | (blockEntity.getColor()))
             .withPredefinedTextTransformation(new TextTransformation(displayWidth - labelWidth + 3, y, 0.0f, 1, 0.4f))
             .build();
-        parent.labels.add(lastLabel);
+        labels[1] = lastLabel;
 
         float platformWidth = lastLabel.getScaledTextWidth();
 
-        parent.labels.add(new BERText(parent.getFontUtils(), () -> {
+        labels[2] = new BERText(parent.getFontUtils(), () -> {
             List<Component> texts = new ArrayList<>();
             texts.add(Utils.text(prediction.trainName() + " " + prediction.scheduleTitle()));
+            /*
             if (lastPossibleLine) {
                 texts.add(Utils.translate(keyTime, TimeUtils.parseTime((int)(blockEntity.getLevel().getDayTime() % 24000 + 6000), ModClientConfig.TIME_FORMAT.get())));
             }
-            return List.of(ModUtils.concat(texts.toArray(Component[]::new)));             
+            */
+            return texts;             
         }, 0)
             .withIsCentered(true)
             .withMaxWidth(displayWidth - maxTimeWidth - platformWidth - 2, true)
@@ -153,12 +188,14 @@ public class BERPlatformDetailed implements IBERRenderSubtype<AdvancedDisplayBlo
             .withColor((0xFF << 24) | (blockEntity.getColor()))
             .withPredefinedTextTransformation(new TextTransformation(3 + maxTimeWidth + 1, y, 0.0f, 1, 0.4f))
             .build()
-        );
+        ;
+
+        return labels;
     }
 
     public void setTimer(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason, float y) {
         float displayWidth = blockEntity.getXSizeScaled() * 16 - 6;
-        parent.labels.add(new BERText(parent.getFontUtils(), () -> List.of(Utils.translate(keyTime, TimeUtils.parseTime((int)(blockEntity.getLevel().getDayTime() % 24000 + 6000), ModClientConfig.TIME_FORMAT.get()))), 0)
+        timeLabel = new BERText(parent.getFontUtils(), () -> List.of(Utils.translate(keyTime, TimeUtils.parseTime((int)(blockEntity.getLevel().getDayTime() % 24000 + 6000), ModClientConfig.TIME_FORMAT.get()))), 0)
             .withIsCentered(true)
             .withMaxWidth(displayWidth, true)
             .withStretchScale(0.4f, 0.4f)
@@ -169,6 +206,6 @@ public class BERPlatformDetailed implements IBERRenderSubtype<AdvancedDisplayBlo
             .withRefreshRate(16)
             .withPredefinedTextTransformation(new TextTransformation(3, y, 0.0f, 1, 0.4f))
             .build()
-        );
+        ;
     }
 }
