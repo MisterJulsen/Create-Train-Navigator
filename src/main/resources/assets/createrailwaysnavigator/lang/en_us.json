@@ -7,6 +7,7 @@
     "item.createrailwaysnavigator.navigator": "Create Railways Navigator",
 	"item.createrailwaysnavigator.navigator.tooltip.summary": "The _navigator_ shows possible _train connections_ with additional information such as _stopovers_, _real-time data_ and more.",
 
+    "block.createrailwaysnavigator.train_station_clock": "Train Station Clock",
     "block.createrailwaysnavigator.advanced_display_block": "Advanced Display Block",
 	"block.createrailwaysnavigator.advanced_display_block.tooltip.summary": "Use it on _trains_, as a _train destination display_ or _passenger information display_, or at _train stations_ as improved _platform displays_ which also shows more information than regular display boards.",
     "block.createrailwaysnavigator.advanced_display_block.tooltip.condition1": "When R-Clicked using a _Wrench_",

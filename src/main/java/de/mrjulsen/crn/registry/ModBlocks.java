@@ -19,6 +19,7 @@ import de.mrjulsen.crn.block.AdvancedDisplayBlock;
 import de.mrjulsen.crn.block.AdvancedDisplayBoardBlock;
 import de.mrjulsen.crn.block.AdvancedDisplayPanelBlock;
 import de.mrjulsen.crn.block.AdvancedDisplaySmallBlock;
+import de.mrjulsen.crn.block.TrainStationClockBlock;
 import de.mrjulsen.crn.block.connected.AdvancedDisplayCTBehaviour;
 import de.mrjulsen.crn.block.connected.RightLeftCTBehaviour;
 import de.mrjulsen.crn.block.display.AdvancedDisplayTarget;
@@ -76,6 +77,13 @@ public class ModBlocks {
 		.addLayer(() -> RenderType::cutout)
 		.initialProperties(Material.METAL)
 		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
+		.item()
+		.build()
+		.register();
+
+	public static final BlockEntry<TrainStationClockBlock> TRAIN_STATION_CLOCK = ModMain.REGISTRATE.block("train_station_clock", TrainStationClockBlock::new)
+		.addLayer(() -> RenderType::cutout)
+		.initialProperties(Material.METAL)
 		.item()
 		.build()
 		.register();

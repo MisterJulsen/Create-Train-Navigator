@@ -41,4 +41,17 @@ public class ModUtils {
 
         return true;
     }
+
+    public static float clockHandDegrees(long time, int divisor) {
+        return 360.0F / divisor * (time % divisor);
+    }
+
+    public static byte[] decodeColor(int color) {
+        byte a = (byte)((color >> 24) & 0xFF);
+        byte r = (byte)((color >> 16) & 0xFF);
+        byte g = (byte)((color >> 8) & 0xFF);
+        byte b = (byte)(color & 0xFF);
+
+        return new byte[] {a, r, g, b};
+    }
 }
