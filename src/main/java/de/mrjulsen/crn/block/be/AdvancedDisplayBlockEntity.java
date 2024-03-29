@@ -423,7 +423,6 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         xSize = newXSize;
         ySize = newYSize;
         if (level.isClientSide) {
-            System.out.println(ySize + ", " + newYSize + ", "  + isController + ", " + worldPosition);
             getRenderer().update(level, worldPosition, blockState, this, EUpdateReason.BLOCK_CHANGED);
         } else {            
             sendData();
