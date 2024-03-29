@@ -93,6 +93,8 @@ public class BERPassengerInfoSimple implements IBERRenderSubtype<AdvancedDisplay
                 case RIGHT:
                     context.renderUtils().renderTexture(
                         ModGuiIcons.ICON_LOCATION,
+                        pBufferSource,
+                        pBlockEntity,
                         pPoseStack,
                         pBlockEntity.getXSizeScaled() * 16 - 3 - 8,
                         4,
@@ -111,6 +113,8 @@ public class BERPassengerInfoSimple implements IBERRenderSubtype<AdvancedDisplay
                 case LEFT:
                     context.renderUtils().renderTexture(
                         ModGuiIcons.ICON_LOCATION,
+                        pBufferSource,
+                        pBlockEntity,
                         pPoseStack,
                         3f,
                         4,

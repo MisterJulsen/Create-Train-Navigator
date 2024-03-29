@@ -105,6 +105,8 @@ public class BERPlatformDetailed implements IBERRenderSubtype<AdvancedDisplayBlo
     @Override
     public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason) {
     
+        parent.labels.clear();
+
         List<SimpleDeparturePrediction> preds = blockEntity.getPredictions().stream().filter(x -> x.departureTicks() < 1000).toList();
 
         if (preds.size() <= 0) {
@@ -171,11 +173,6 @@ public class BERPlatformDetailed implements IBERRenderSubtype<AdvancedDisplayBlo
         labels[2] = new BERText(parent.getFontUtils(), () -> {
             List<Component> texts = new ArrayList<>();
             texts.add(Utils.text(prediction.trainName() + " " + prediction.scheduleTitle()));
-            /*
-            if (lastPossibleLine) {
-                texts.add(Utils.translate(keyTime, TimeUtils.parseTime((int)(blockEntity.getLevel().getDayTime() % 24000 + 6000), ModClientConfig.TIME_FORMAT.get())));
-            }
-            */
             return texts;             
         }, 0)
             .withIsCentered(true)

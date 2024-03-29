@@ -156,7 +156,7 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
         titleLabel.render(pPoseStack, pBufferSource, pBlockEntity.isGlowing() ? LightTexture.FULL_BRIGHT : pPackedLight);
 
         context.renderUtils().initRenderEngine();
-        context.renderUtils().fillColor(pBufferSource, (0xFF << 24) | (pBlockEntity.getColor() & 0x00FFFFFF), pPoseStack, 2.5f, 4.75f, 0.0f, pBlockEntity.getXSizeScaled() * 16 - 5, 0.25f, pBlockEntity.getBlockState().getValue(HorizontalDirectionalBlock.FACING), pPackedLight);
+        context.renderUtils().fillColor(pBufferSource, pBlockEntity, (0xFF << 24) | (pBlockEntity.getColor() & 0x00FFFFFF), pPoseStack, 2.5f, 4.75f, 0.0f, pBlockEntity.getXSizeScaled() * 16 - 5, 0.25f, pBlockEntity.getBlockState().getValue(HorizontalDirectionalBlock.FACING), pPackedLight);
         float uv = 1.0f / 256.0f;
         float y = 5f;
 
@@ -169,6 +169,8 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
             float tempH = PANEL_LINE_HEIGHT - 0.2857142f;
             context.renderUtils().renderTexture(
                 TEXTURE,
+                pBufferSource,
+                pBlockEntity,
                 pPoseStack,
                 8,
                 y,
@@ -187,6 +189,8 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
             for (int i = 0; i < 2 && i < pBlockEntity.getTrainData().stopovers().size(); i++) {
                 context.renderUtils().renderTexture(
                     TEXTURE,
+                    pBufferSource,
+                    pBlockEntity,
                     pPoseStack,
                     8,
                     y,
@@ -207,6 +211,8 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
             if (pBlockEntity.getTrainData().predictions().size() > 1) {
                 context.renderUtils().renderTexture(
                     TEXTURE,
+                    pBufferSource,
+                    pBlockEntity,
                     pPoseStack,
                     8,
                     y,
@@ -233,6 +239,8 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
         if (state != State.WHILE_TRAVELING && side != TrainExitSide.UNKNOWN) {
             context.renderUtils().renderTexture(
                 ModGuiIcons.ICON_LOCATION,
+                pBufferSource,
+                pBlockEntity,
                 pPoseStack,
                 pBlockEntity.getXSizeScaled() * 16 - 3f - 2,
                 2.25f,

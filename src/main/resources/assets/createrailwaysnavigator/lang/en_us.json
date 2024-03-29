@@ -178,6 +178,12 @@
     "gui.createrailwaysnavigator.time_format.dhm": "%s days %s hrs. %s min.",
     "gui.createrailwaysnavigator.time_format.hm": "%s hrs. %s min.",
     "gui.createrailwaysnavigator.time_format.m": "%s min.",
+    
+    "gui.createrailwaysnavigator.platform": "Platform",
+    "gui.createrailwaysnavigator.departure": "Departure",
+    "gui.createrailwaysnavigator.destination": "Destination",
+    "gui.createrailwaysnavigator.line": "Line",
+    "gui.createrailwaysnavigator.following_trains": "Following trains:",
 
     "gui.createrailwaysnavigator.advanced_display_settings.title": "Advanced Display Settings",
 

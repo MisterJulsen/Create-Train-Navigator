@@ -2,7 +2,9 @@ package de.mrjulsen.crn.block.be;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -14,6 +16,7 @@ import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 
 import de.mrjulsen.crn.block.AbstractAdvancedDisplayBlock;
+import de.mrjulsen.crn.block.AdvancedDisplaySmallBlock;
 import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
 import de.mrjulsen.crn.client.ber.base.IBERInstance;
 import de.mrjulsen.crn.client.ber.base.IBlockEntityRendererInstance;
@@ -40,6 +43,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -64,9 +68,11 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     private static final String NBT_YSIZE = "YSize";
     private static final String NBT_CONTROLLER = "IsController";
     private static final String NBT_COLOR = "Color";
+    private static final String NBT_GLOWING = "Glowing";
     private static final String NBT_INFO_TYPE = "InfoType";
     private static final String NBT_DISPLAY_TYPE = "DisplayType";
     private static final String NBT_PREDICTIONS = "Predictions";
+    private static final String NBT_NEXT_DEPARTURE_STOPOVERS = "NextStopovers";
     private static final String NBT_PLATFORM_FIXED = "IsPlatformFixed";
     private static final String NBT_LAST_REFRESH_TIME = "LastRefreshed";
 
@@ -78,11 +84,12 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 	private byte ySize = 1;
     private boolean isController;
     private List<SimpleDeparturePrediction> predictions = new ArrayList<>();
+    private Set<String> nextDepartureStopovers = new HashSet<>();
     private boolean fixedPlatform;
 
     // USER SETTINGS
     private int color = DyeColor.WHITE.getTextColor();
-    private boolean glowing = true; // unused
+    private boolean glowing = false; // unused
     private EDisplayInfo infoType = EDisplayInfo.SIMPLE;
     private EDisplayType displayType = EDisplayType.TRAIN_DESTINATION;
     
@@ -232,9 +239,25 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         return predictions;
     }
 
+    public Set<String> getNextDepartureStopovers() {
+        return nextDepartureStopovers;
+    }
+
     public boolean isPlatformFixed() {
         return fixedPlatform;
     }
+
+	public boolean isSingleLine() {
+		if (!(getBlockState().getBlock() instanceof AbstractAdvancedDisplayBlock)) {
+			return false;
+		}
+
+		return getBlockState().getBlock() instanceof AdvancedDisplaySmallBlock || !(
+            (getDisplayType() == EDisplayType.PASSENGER_INFORMATION && getInfoType() == EDisplayInfo.INFORMATIVE) ||
+            (getDisplayType() == EDisplayType.PLATFORM && getInfoType() == EDisplayInfo.DETAILED) ||
+            (getDisplayType() == EDisplayType.PLATFORM && getInfoType() == EDisplayInfo.INFORMATIVE) 
+        ); 
+	}
 
 
 
@@ -266,9 +289,10 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         }
     }
 
-    public void setDepartureData(List<SimpleDeparturePrediction> predictions, boolean fixedPlatform, long lastRefreshedTime) {
+    public void setDepartureData(List<SimpleDeparturePrediction> predictions, Set<String> nextDepartureStopovers, boolean fixedPlatform, long lastRefreshedTime) {
         this.predictions = predictions.stream().sorted(Comparator.comparingInt(x -> x.departureTicks())).toList();
         this.fixedPlatform = fixedPlatform;
+        this.nextDepartureStopovers = nextDepartureStopovers;
         this.lastRefreshedTime = lastRefreshedTime;
     }
 
@@ -286,8 +310,8 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
                     be1.getInfoType() == be2.getInfoType() &&
                     be1.getBlockState().getValue(AbstractAdvancedDisplayBlock.SIDE) == be2.getBlockState().getValue(AbstractAdvancedDisplayBlock.SIDE) &&
                     be1.getBlockState().getValue(AbstractAdvancedDisplayBlock.FACING) == be2.getBlockState().getValue(AbstractAdvancedDisplayBlock.FACING) &&
-                    (!a.above().equals(b) || (be1.getBlockState().getValue(AbstractAdvancedDisplayBlock.UP) && !block1.isSingleLine(be1.getBlockState(), be1))) &&
-                    (!a.below().equals(b) || (be1.getBlockState().getValue(AbstractAdvancedDisplayBlock.DOWN) && !block1.isSingleLine(be1.getBlockState(), be1)))
+                    (!a.above().equals(b) || (be1.getBlockState().getValue(AbstractAdvancedDisplayBlock.UP) && !be1.isSingleLine())) &&
+                    (!a.below().equals(b) || (be1.getBlockState().getValue(AbstractAdvancedDisplayBlock.DOWN) && !be1.isSingleLine()))
             ;
         }
         return false;
@@ -336,12 +360,14 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     public void copyFrom(AdvancedDisplayBlockEntity other) {
         if (getColor() == other.getColor() &&
             getInfoType() == other.getInfoType() &&
-            getDisplayType() == other.getDisplayType()
+            getDisplayType() == other.getDisplayType() &&
+            isGlowing() == other.isGlowing()
         ) {
             return;
         }
 
         color = other.getColor();
+        glowing = other.isGlowing();
         displayType = other.getDisplayType();
         infoType = other.getInfoType();
         sendData();
@@ -349,9 +375,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     }
 
     public void updateControllerStatus() {
-		if (level.isClientSide) {
-			return;
-        }
+		
 
 		BlockState blockState = getBlockState();
 		if (!(blockState.getBlock() instanceof AbstractAdvancedDisplayBlock))
@@ -373,7 +397,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 				newXSize++;
 			}
 
-            if (!((AbstractAdvancedDisplayBlock)blockState.getBlock()).isSingleLine(level, worldPosition)) {
+            if (!isSingleLine()) {
                 for (int yOffset = 0; yOffset < getMaxHeight(); yOffset++) {
                     BlockPos downPos = worldPosition.relative(Direction.DOWN, yOffset);
                     
@@ -394,12 +418,18 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 
 		if (isController == shouldBeController && newXSize == xSize && newYSize == ySize)
 			return;
+        
+        isController = shouldBeController;
+        xSize = newXSize;
+        ySize = newYSize;
+        if (level.isClientSide) {
+            System.out.println(ySize + ", " + newYSize + ", "  + isController + ", " + worldPosition);
+            getRenderer().update(level, worldPosition, blockState, this, EUpdateReason.BLOCK_CHANGED);
+        } else {            
+            sendData();
+            BlockEntityUtil.sendUpdatePacket(this);
+        }
 
-		isController = shouldBeController;
-		xSize = newXSize;
-		ySize = newYSize;
-		sendData();
-        BlockEntityUtil.sendUpdatePacket(this);
 	}
 
     @Override
@@ -481,11 +511,20 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         pTag.putInt(NBT_INFO_TYPE, getInfoType().getId());
         pTag.putInt(NBT_DISPLAY_TYPE, getDisplayType().getId());
         pTag.putBoolean(NBT_PLATFORM_FIXED, isPlatformFixed());
+        pTag.putBoolean(NBT_GLOWING, isGlowing());
         pTag.putLong(NBT_LAST_REFRESH_TIME, getLastRefreshedTime());
 
-        ListTag list = new ListTag();
-        list.addAll(getPredictions().stream().map(x -> x.toNbt()).toList());
-        pTag.put(NBT_PREDICTIONS, list);
+        if (getPredictions() != null && !getPredictions().isEmpty()) {            
+            ListTag list = new ListTag();
+            list.addAll(getPredictions().stream().map(x -> x.toNbt()).toList());
+            pTag.put(NBT_PREDICTIONS, list);
+        }
+
+        if (getNextDepartureStopovers() != null && !getNextDepartureStopovers().isEmpty()) {
+            ListTag stopovers = new ListTag();
+            stopovers.addAll(getNextDepartureStopovers().stream().map(x -> StringTag.valueOf(x)).toList());
+            pTag.put(NBT_NEXT_DEPARTURE_STOPOVERS, stopovers);
+        }
     }
 
     @Override
@@ -494,10 +533,16 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         xSize = pTag.getByte(NBT_XSIZE);
         ySize = pTag.getByte(NBT_YSIZE);
         color = pTag.getInt(NBT_COLOR);
+        glowing = pTag.getBoolean(NBT_GLOWING);
         isController = pTag.getBoolean(NBT_CONTROLLER);
         infoType = EDisplayInfo.getTypeById(pTag.getInt(NBT_INFO_TYPE));
         displayType = EDisplayType.getTypeById(pTag.getInt(NBT_DISPLAY_TYPE));
-        setDepartureData(new ArrayList<>(pTag.getList(NBT_PREDICTIONS, Tag.TAG_COMPOUND).stream().map(x -> SimpleDeparturePrediction.fromNbt((CompoundTag)x)).toList()), pTag.getBoolean(NBT_PLATFORM_FIXED), pTag.getLong(NBT_LAST_REFRESH_TIME));
+        setDepartureData(
+            pTag.contains(NBT_PREDICTIONS) ? new ArrayList<>(pTag.getList(NBT_PREDICTIONS, Tag.TAG_COMPOUND).stream().map(x -> SimpleDeparturePrediction.fromNbt((CompoundTag)x)).toList()) : new ArrayList<>(),
+            pTag.contains(NBT_NEXT_DEPARTURE_STOPOVERS) ? new HashSet<>(pTag.getList(NBT_NEXT_DEPARTURE_STOPOVERS, Tag.TAG_STRING).stream().map(x -> ((StringTag)x).getAsString()).toList()) : new HashSet<>(),
+            pTag.getBoolean(NBT_PLATFORM_FIXED),
+            pTag.getLong(NBT_LAST_REFRESH_TIME)
+        );
     }    
 
     @Override

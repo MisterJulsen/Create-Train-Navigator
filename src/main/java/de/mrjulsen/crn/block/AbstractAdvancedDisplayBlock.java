@@ -12,8 +12,6 @@ import com.simibubi.create.foundation.utility.Iterate;
 import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.client.ber.base.IBlockEntityRendererInstance.EUpdateReason;
-import de.mrjulsen.crn.data.EDisplayInfo;
-import de.mrjulsen.crn.data.EDisplayType;
 import de.mrjulsen.crn.data.ESide;
 import de.mrjulsen.crn.registry.ModBlockEntities;
 import de.mrjulsen.crn.util.Pair;
@@ -31,6 +29,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
@@ -40,7 +39,6 @@ import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.Rotation;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition.Builder;
@@ -68,24 +66,6 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
             .setValue(SIDE, ESide.FRONT)
         );
     }
-
-	public boolean isSingleLine(LevelAccessor level, BlockPos pos) {
-		return isSingleLine(level.getBlockState(pos), level.getBlockEntity(pos));
-	}
-
-	public boolean isSingleLine(BlockState state, BlockEntity blockEntity) {
-		if (!(state.getBlock() instanceof AbstractAdvancedDisplayBlock)) {
-			return false;
-		}
-		if (blockEntity instanceof AdvancedDisplayBlockEntity be) {			
-			return !(
-				(be.getDisplayType() == EDisplayType.PASSENGER_INFORMATION && be.getInfoType() == EDisplayInfo.INFORMATIVE) ||
-				(be.getDisplayType() == EDisplayType.PLATFORM && be.getInfoType() == EDisplayInfo.DETAILED)
-			);
-		} 
-
-		return false;
-	}
 
     @Override
     public BlockState rotate(BlockState pState, Rotation pRotation) {
@@ -186,7 +166,7 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 		}		
 
 		if (pLevel.isClientSide) {
-			withBlockEntityDo(pLevel, pPos, be -> be.getRenderer().update(pLevel, pPos, pState, be, EUpdateReason.BLOCK_CHANGED));			
+			withBlockEntityDo(pLevel, pPos, be -> be.getController().getRenderer().update(pLevel, pPos, pState, be, EUpdateReason.BLOCK_CHANGED));			
 		}
 	}
 
@@ -268,6 +248,15 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
             });
             return InteractionResult.SUCCESS;
 		}
+       
+		if (heldItem.is(Items.GLOW_INK_SAC)) {
+			pLevel.playSound(null, pPos, SoundEvents.GLOW_INK_SAC_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
+			blockEntity.applyToAll(be -> {
+                be.setGlowing(true);
+				be.sendData();
+            });
+            return InteractionResult.SUCCESS;
+		}
 
 		return InteractionResult.FAIL;
     }
@@ -278,7 +267,7 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
             be.setDisplayType(otherBe.getDisplayType());
             be.setInfoType(otherBe.getInfoType());
             if (pLevel.isClientSide) {
-                be.getRenderer().update(pLevel, neighbourPos, pOldState, otherBe, EUpdateReason.BLOCK_CHANGED);
+                be.getController().getRenderer().update(pLevel, neighbourPos, pOldState, otherBe, EUpdateReason.BLOCK_CHANGED);
             }
             return true;
         }

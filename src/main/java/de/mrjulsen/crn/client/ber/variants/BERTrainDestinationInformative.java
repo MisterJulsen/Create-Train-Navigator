@@ -105,10 +105,11 @@ public class BERTrainDestinationInformative implements IBERRenderSubtype<Advance
     @Override
     public void renderAdditional(BlockEntityRendererContext context, AdvancedDisplayBlockEntity pBlockEntity, AdvancedDisplayRenderInstance parent, float pPartialTicks, PoseStack pPoseStack, MultiBufferSource pBufferSource, int pPackedLight, int pOverlay, Boolean backSide) {
         context.renderUtils().initRenderEngine();
-        context.renderUtils().fillColor(pBufferSource, (0xFF << 24) | (pBlockEntity.getColor() & 0x00FFFFFF), pPoseStack, 2.5f, 5.0f, 0.0f, pBlockEntity.getXSizeScaled() * 16 - 5, 0.25f, pBlockEntity.getBlockState().getValue(HorizontalDirectionalBlock.FACING), pPackedLight);
         float uv = 1.0f / 256.0f;
         context.renderUtils().renderTexture(
             new ResourceLocation("create:textures/gui/assemble.png"),
+            pBufferSource,
+            pBlockEntity,
             pPoseStack,
             pBlockEntity.getXSizeScaled() * 16 - 6f - (parent.carriageIndexLabel == null ? 0 : parent.carriageIndexLabel.getScaledTextWidth() * 0.5f),
             2.5f,
@@ -123,6 +124,9 @@ public class BERTrainDestinationInformative implements IBERRenderSubtype<Advance
             (0xFF << 24) | (pBlockEntity.getColor() & 0x00FFFFFF),
             pPackedLight
         );
+
+        
+        context.renderUtils().fillColor(pBufferSource, pBlockEntity, (0xFF << 24) | (pBlockEntity.getColor() & 0x00FFFFFF), pPoseStack, 2.5f, 5.0f, 0.0f, pBlockEntity.getXSizeScaled() * 16 - 5, 0.25f, pBlockEntity.getBlockState().getValue(HorizontalDirectionalBlock.FACING), pPackedLight);
     }
 
     

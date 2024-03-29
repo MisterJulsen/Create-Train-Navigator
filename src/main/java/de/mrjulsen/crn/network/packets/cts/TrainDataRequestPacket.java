@@ -64,6 +64,7 @@ public class TrainDataRequestPacket implements IPacketBase<TrainDataRequestPacke
     public void handle(TrainDataRequestPacket packet, Supplier<NetworkEvent.Context> context) {        
         context.get().enqueueWork(() -> {
             final Level level = context.get().getSender().getLevel();
+            final long updateTime = level.getDayTime();
             Train train = TrainUtils.getTrain(packet.trainId);
             List<SimpleDeparturePrediction> departurePredictions = new ArrayList<>();
             if (packet.getPredictions && train != null) {
@@ -80,7 +81,7 @@ public class TrainDataRequestPacket implements IPacketBase<TrainDataRequestPacke
                 train.speed,
                 train.navigation.ticksWaitingForSignal,
                 train.currentlyBackwards
-            ), context.get().getSender().getLevel().getDayTime()), context.get().getSender());
+            ), updateTime), context.get().getSender());
         });
         
         context.get().setPacketHandled(true);

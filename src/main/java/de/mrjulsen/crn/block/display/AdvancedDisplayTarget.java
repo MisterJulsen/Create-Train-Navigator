@@ -1,6 +1,10 @@
 package de.mrjulsen.crn.block.display;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.simibubi.create.content.redstone.displayLink.DisplayLinkContext;
 import com.simibubi.create.content.redstone.displayLink.target.DisplayBoardTarget;
@@ -9,6 +13,10 @@ import com.simibubi.create.content.trains.display.GlobalTrainDisplayData;
 
 import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.data.DeparturePrediction;
+import de.mrjulsen.crn.data.TrainStop;
+import de.mrjulsen.crn.data.DeparturePrediction.SimpleDeparturePrediction;
+import de.mrjulsen.crn.data.GlobalSettingsManager;
+import de.mrjulsen.crn.util.TrainUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.MutableComponent;
@@ -23,12 +31,23 @@ public class AdvancedDisplayTarget extends DisplayBoardTarget {
 	@Override
 	public void acceptFlapText(int line, List<List<MutableComponent>> text, DisplayLinkContext context) {		
 		String filter = context.sourceConfig().getString("Filter");
-		boolean fixedPlatform = filter.contains("*");
+		boolean fixedPlatform = !filter.contains("*");
 
 		if (context.getTargetBlockEntity() instanceof AdvancedDisplayBlockEntity blockEntity) {
 			AdvancedDisplayBlockEntity controller = blockEntity.getController();
 			if (controller != null) {
-				controller.setDepartureData(GlobalTrainDisplayData.prepare(filter, 5).stream().map(x -> new DeparturePrediction(x).simplify()).toList(), fixedPlatform, context.getTargetBlockEntity().getLevel().getDayTime());
+				List<SimpleDeparturePrediction> preds = GlobalTrainDisplayData.prepare(filter, 5).stream().map(x -> new DeparturePrediction(x).simplify()).sorted(Comparator.comparingInt(x -> x.departureTicks())).toList();
+ 				Set<String> stopovers = new HashSet<>();
+
+				if (!preds.isEmpty()) {
+					SimpleDeparturePrediction pred = preds.iterator().next();
+					List<TrainStop> stops = new ArrayList<>(TrainUtils.getTrainStopsSorted(pred.trainId(), context.blockEntity().getLevel()).stream().skip(1).filter(x -> !GlobalSettingsManager.getInstance().getSettingsData().isBlacklisted(x.getStationAlias())).toList());
+					for (int i = 0; i < stops.size() - 1; i++) {
+						stopovers.add(stops.get(i).getStationAlias().getAliasName().get());
+					}
+				}
+				
+				controller.setDepartureData(preds, stopovers, fixedPlatform, context.getTargetBlockEntity().getLevel().getDayTime());
 				controller.sendData();
 			}
 		}
