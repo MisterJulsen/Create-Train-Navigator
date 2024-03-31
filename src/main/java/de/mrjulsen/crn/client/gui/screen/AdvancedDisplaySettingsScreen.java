@@ -1,11 +1,13 @@
 package de.mrjulsen.crn.client.gui.screen;
 
 import java.util.Arrays;
+import java.util.List;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 import com.simibubi.create.foundation.gui.AllIcons;
 import com.simibubi.create.foundation.gui.element.GuiGameElement;
+import com.simibubi.create.foundation.gui.widget.AbstractSimiWidget;
 import com.simibubi.create.foundation.gui.widget.IconButton;
 import com.simibubi.create.foundation.gui.widget.Label;
 import com.simibubi.create.foundation.gui.widget.ScrollInput;
@@ -29,6 +31,7 @@ import de.mrjulsen.mcdragonlib.client.gui.wrapper.CommonScreen;
 import de.mrjulsen.mcdragonlib.utils.Utils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.components.Widget;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -60,6 +63,12 @@ public class AdvancedDisplaySettingsScreen extends CommonScreen {
     
     private IconButton globalSettingsButton;
     private final MutableComponent tooltipGlobalSettings = Utils.translate("gui." + ModMain.MOD_ID + ".navigator.global_settings.tooltip");
+    private final MutableComponent tooltipDisplayType = Utils.translate("gui.createrailwaysnavigator.advanced_display_settings.display_type");
+    private final MutableComponent tooltipDisplayTypeDescription = Utils.translate("gui.createrailwaysnavigator.advanced_display_settings.display_type.description");
+    private final MutableComponent tooltipInfoType = Utils.translate("gui.createrailwaysnavigator.advanced_display_settings.info_type");
+    private final MutableComponent tooltipInfoTypeDescription = Utils.translate("gui.createrailwaysnavigator.advanced_display_settings.info_type.description");
+    private final MutableComponent tooltipSides = Utils.translate("gui.createrailwaysnavigator.advanced_display_settings.sides");
+    private final MutableComponent tooltipSidesDescription = Utils.translate("gui.createrailwaysnavigator.advanced_display_settings.sides.description");
 
     private int guiLeft, guiTop;
 
@@ -94,26 +103,31 @@ public class AdvancedDisplaySettingsScreen extends CommonScreen {
         displayTypeLabel = addRenderableWidget(new Label(guiLeft + 45 + 5, guiTop + 23 + 5, Components.immutableEmpty()).withShadow());
         displayTypeInput = addRenderableWidget(new SelectionScrollInput(guiLeft + 45, guiTop + 23, 138, 18)
             .forOptions(Arrays.stream(EDisplayType.values()).map(x -> Utils.translate(x.getValueTranslationKey(ModMain.MOD_ID))).toList())
+            .titled(tooltipDisplayType)
             .writingTo(displayTypeLabel)
             .calling((i) -> {
                 blockEntity.setDisplayType(EDisplayType.getTypeById(i));
             })
+            .addHint(tooltipDisplayTypeDescription)
             .setState(blockEntity.getDisplayType().getId()));
         displayTypeInput.onChanged();
 
         infoTypeLabel = addRenderableWidget(new Label(guiLeft + 45 + 5, guiTop + 45 + 5, Components.immutableEmpty()).withShadow());
         infoTypeInput = addRenderableWidget(new SelectionScrollInput(guiLeft + 45, guiTop + 45, 138, 18)
             .forOptions(Arrays.stream(EDisplayInfo.values()).map(x -> Utils.translate(x.getValueTranslationKey(ModMain.MOD_ID))).toList())
+            .titled(tooltipInfoType)
             .writingTo(infoTypeLabel)
             .calling((i) -> {
                 blockEntity.setInfoType(EDisplayInfo.getTypeById(i));
             })
+            .addHint(tooltipInfoTypeDescription)
             .setState(blockEntity.getInfoType().getId()));
         infoTypeInput.onChanged();
         
         sidesLabel = addRenderableWidget(new Label(guiLeft + 45 + 5, guiTop + 67 + 5, Components.immutableEmpty()).withShadow());
         sidesInput = addRenderableWidget(new SelectionScrollInput(guiLeft + 45, guiTop + 67, 138, 18)
             .forOptions(Arrays.stream(ESide.values()).map(x -> Utils.translate(x.getValueTranslationKey(ModMain.MOD_ID))).toList())
+			.titled(tooltipSides)
             .writingTo(sidesLabel)
             .calling((i) -> {
                 blockEntity.applyToAll(be -> {
@@ -121,6 +135,7 @@ public class AdvancedDisplaySettingsScreen extends CommonScreen {
                     this.side = newSide;
                 });
             })
+            .addHint(tooltipSidesDescription)
             .setState(side.getId()));
         sidesInput.onChanged();
 
@@ -164,8 +179,24 @@ public class AdvancedDisplaySettingsScreen extends CommonScreen {
 
         blockEntity.getDisplayType().getIcon().render(pPoseStack, guiLeft + 22, guiTop + 24);
         blockEntity.getInfoType().getIcon().render(pPoseStack, guiLeft + 22, guiTop + 46);
-            
+        ModGuiIcons.DOUBLE_SIDED.render(pPoseStack, guiLeft + 22, guiTop + 68);            
 
         super.renderBg(pPoseStack, pMouseX, pMouseY, pPartialTick);
+    }
+
+    @Override
+    public void renderFg(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) {
+        super.renderFg(pPoseStack, pMouseX, pMouseY, pPartialTick);
+        for (Widget widget : renderables) {
+            if (widget instanceof AbstractSimiWidget simiWidget && simiWidget.isHoveredOrFocused()
+                && simiWidget.visible) {
+                List<Component> tooltip = simiWidget.getToolTip();
+                if (tooltip.isEmpty())
+                    continue;
+                int ttx = simiWidget.lockedTooltipX == -1 ? pMouseX : simiWidget.lockedTooltipX + simiWidget.x;
+                int tty = simiWidget.lockedTooltipY == -1 ? pMouseY : simiWidget.lockedTooltipY + simiWidget.y;
+                renderComponentTooltip(pPoseStack, tooltip, ttx, tty);
+            }
+        }
     }
 }
