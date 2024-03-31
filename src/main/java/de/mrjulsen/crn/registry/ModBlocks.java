@@ -10,6 +10,8 @@ import com.simibubi.create.foundation.block.connected.CTSpriteShiftEntry;
 import com.simibubi.create.foundation.block.connected.CTSpriteShifter;
 import com.simibubi.create.foundation.block.connected.CTType;
 import com.simibubi.create.foundation.block.connected.ConnectedTextureBehaviour;
+import com.simibubi.create.foundation.data.SharedProperties;
+import com.simibubi.create.foundation.data.TagGen;
 import com.simibubi.create.foundation.utility.RegisteredObjects;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import com.tterrag.registrate.util.nullness.NonNullConsumer;
@@ -48,7 +50,8 @@ public class ModBlocks {
 	public static final BlockEntry<AdvancedDisplayBlock> ADVANCED_DISPLAY_BLOCK = ModMain.REGISTRATE.block("advanced_display_block", AdvancedDisplayBlock::new)
 		.onRegister(connectedTextures(() -> new AdvancedDisplayCTBehaviour(CT_ADVANCED_DISPLAY_ALL)))
 		.addLayer(() -> RenderType::cutout)
-		.initialProperties(Material.METAL)
+		.initialProperties(SharedProperties::softMetal)
+		.transform(TagGen.pickaxeOnly())
 		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
 		.item()
 		.build()
@@ -57,7 +60,8 @@ public class ModBlocks {
     public static final BlockEntry<AdvancedDisplayBoardBlock> ADVANCED_DISPLAY = ModMain.REGISTRATE.block("advanced_display", AdvancedDisplayBoardBlock::new)
 		.onRegister(connectedTextures(() -> new AdvancedDisplayCTBehaviour(CT_ADVANCED_DISPLAY)))
 		.addLayer(() -> RenderType::cutout)
-		.initialProperties(Material.METAL)
+		.initialProperties(SharedProperties::softMetal)
+		.transform(TagGen.pickaxeOnly())
 		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
 		.item()
 		.build()
@@ -66,7 +70,8 @@ public class ModBlocks {
 	public static final BlockEntry<AdvancedDisplaySmallBlock> ADVANCED_DISPLAY_SMALL = ModMain.REGISTRATE.block("advanced_display_small", AdvancedDisplaySmallBlock::new)
 		.onRegister(connectedTextures(() -> new RightLeftCTBehaviour(CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL, CT_ADVANCED_DISPLAY_SMALL)))
 		.addLayer(() -> RenderType::cutout)
-		.initialProperties(Material.METAL)
+		.initialProperties(SharedProperties::softMetal)
+		.transform(TagGen.pickaxeOnly())
 		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
 		.item()
 		.build()
@@ -75,7 +80,8 @@ public class ModBlocks {
 	public static final BlockEntry<AdvancedDisplayPanelBlock> ADVANCED_DISPLAY_PANEL = ModMain.REGISTRATE.block("advanced_display_panel", AdvancedDisplayPanelBlock::new)
 		.onRegister(connectedTextures(() -> new AdvancedDisplayCTBehaviour(CT_ADVANCED_DISPLAY)))
 		.addLayer(() -> RenderType::cutout)
-		.initialProperties(Material.METAL)
+		.initialProperties(SharedProperties::softMetal)
+		.transform(TagGen.pickaxeOnly())
 		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
 		.item()
 		.build()
@@ -83,7 +89,8 @@ public class ModBlocks {
 
 	public static final BlockEntry<TrainStationClockBlock> TRAIN_STATION_CLOCK = ModMain.REGISTRATE.block("train_station_clock", TrainStationClockBlock::new)
 		.addLayer(() -> RenderType::cutout)
-		.initialProperties(Material.METAL)
+		.initialProperties(SharedProperties::softMetal)
+		.transform(TagGen.pickaxeOnly())
 		.item()
 		.build()
 		.register();
