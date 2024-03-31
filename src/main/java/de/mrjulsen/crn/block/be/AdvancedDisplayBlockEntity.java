@@ -258,6 +258,18 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         ); 
 	}
 
+    public int getPlatformInfoLinesCount() {
+        switch (getInfoType()) {
+            default:
+            case SIMPLE:
+                return 32;
+            case DETAILED:
+                return getYSize() * 3 - 1;
+            case INFORMATIVE:
+                return getYSize() * 3 - 2;
+        }
+    }
+
 
 
     public void setColor(int color) {

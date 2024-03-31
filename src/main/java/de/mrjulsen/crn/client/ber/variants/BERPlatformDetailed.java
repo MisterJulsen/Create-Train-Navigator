@@ -69,10 +69,6 @@ public class BERPlatformDetailed implements IBERRenderSubtype<AdvancedDisplayBlo
             showTime = !showTime;
         }
     }
-
-    private int maxLines(AdvancedDisplayBlockEntity blockEntity) {
-        return blockEntity.getYSize() * 3 - 1;
-    }
     
     @Override
     public void renderAdditional(BlockEntityRendererContext context, AdvancedDisplayBlockEntity pBlockEntity, AdvancedDisplayRenderInstance parent, float pPartialTicks, PoseStack pPoseStack, MultiBufferSource pBufferSource, int pPackedLight, int pOverlay, Boolean backSide) {
@@ -82,7 +78,7 @@ public class BERPlatformDetailed implements IBERRenderSubtype<AdvancedDisplayBlo
                     continue;
                 }
 
-                if (i >= maxLines(pBlockEntity) - 1 && showTime) {
+                if (i >= pBlockEntity.getPlatformInfoLinesCount() - 1 && showTime) {
                     break;
                 } else {
                     for (int k = 0; k < additionalLabels[i].length; k++) {
@@ -93,7 +89,7 @@ public class BERPlatformDetailed implements IBERRenderSubtype<AdvancedDisplayBlo
                         additionalLabels[i][k].render(pPoseStack, pBufferSource, pPackedLight);
                     }
 
-                    if (i >= maxLines(pBlockEntity) - 1) {
+                    if (i >= pBlockEntity.getPlatformInfoLinesCount() - 1) {
                         return;
                     }
                 }
@@ -115,7 +111,7 @@ public class BERPlatformDetailed implements IBERRenderSubtype<AdvancedDisplayBlo
             return;
         }
         
-        int maxLines = maxLines(blockEntity);
+        int maxLines = blockEntity.getPlatformInfoLinesCount();
         boolean refreshAll = reason != EUpdateReason.DATA_CHANGED || !ModUtils.compareCollections(lastPredictions, preds, (a, b) -> a.stationInfo().platform().equals(b.stationInfo().platform()) && a.trainId().equals(b.trainId()));
         
 
@@ -127,7 +123,7 @@ public class BERPlatformDetailed implements IBERRenderSubtype<AdvancedDisplayBlo
             for (int i = 0; i < additionalLabels.length; i++) {
                 additionalLabels[i] = addLine(level, pos, state, blockEntity, parent, reason, preds.get(i), 4 + (i * 5.4f), i >= maxLines - 1);
             }
-            setTimer(level, pos, state, blockEntity, parent, reason, 4 + ((additionalLabels.length < maxLines ? additionalLabels.length : maxLines - 1) * 5.4f));
+            setTimer(level, pos, state, blockEntity, parent, reason, 4 + ((additionalLabels.length < maxLines ? additionalLabels.length : maxLines - 1) * 5.34f));
         }
         lastPredictions = preds;
 

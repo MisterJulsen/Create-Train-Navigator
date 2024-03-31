@@ -102,6 +102,8 @@ public class AdvancedDisplayRenderInstance extends AbstractBlockEntityRenderInst
             return;
         }
         
+        final int light = pBlockEntity.isGlowing() ? LightTexture.FULL_BRIGHT : pPackedLight;
+
         if (pBlockEntity.getBlockState().getBlock() instanceof AbstractAdvancedDisplayBlock) {
             
             Pair<Float, Float> offset = pBlockEntity.renderOffset.get();
@@ -113,7 +115,7 @@ public class AdvancedDisplayRenderInstance extends AbstractBlockEntityRenderInst
                 pPoseStack.translate(offset.getFirst(), offset.getSecond(), zOffset.getFirst());
                 pPoseStack.scale(scale, scale, 1);   
                 renderSubtype.renderAdditional(context, pBlockEntity, this, pPartialTicks, pPoseStack, pBufferSource, pBlockEntity.isGlowing() ? LightTexture.FULL_BRIGHT : pPackedLight, pOverlay, false);
-                labels.forEach(x -> x.render(pPoseStack, pBufferSource, pBlockEntity.isGlowing() ? LightTexture.FULL_BRIGHT : pPackedLight)); 
+                labels.forEach(x -> x.render(pPoseStack, pBufferSource, light)); 
                 pPoseStack.popPose();
             }
             if (pBlockEntity.getBlockState().getValue(AbstractAdvancedDisplayBlock.SIDE) == ESide.BACK || pBlockEntity.getBlockState().getValue(AbstractAdvancedDisplayBlock.SIDE) == ESide.BOTH) {
@@ -123,7 +125,7 @@ public class AdvancedDisplayRenderInstance extends AbstractBlockEntityRenderInst
                 pPoseStack.translate(offset.getFirst(), offset.getSecond(), zOffset.getSecond());
                 pPoseStack.scale(scale, scale, 1); 
                 renderSubtype.renderAdditional(context, pBlockEntity, this, pPartialTicks, pPoseStack, pBufferSource, pBlockEntity.isGlowing() ? LightTexture.FULL_BRIGHT : pPackedLight, pOverlay, true);
-                labels.forEach(x -> x.render(pPoseStack, pBufferSource, pBlockEntity.isGlowing() ? LightTexture.FULL_BRIGHT : pPackedLight));
+                labels.forEach(x -> x.render(pPoseStack, pBufferSource, light));
                 pPoseStack.popPose();
             }
         }
