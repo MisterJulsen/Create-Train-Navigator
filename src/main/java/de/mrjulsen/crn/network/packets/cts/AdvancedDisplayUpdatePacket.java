@@ -2,7 +2,6 @@ package de.mrjulsen.crn.network.packets.cts;
 
 import java.util.function.Supplier;
 
-import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.block.AbstractAdvancedDisplayBlock;
 import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.data.ESide;
