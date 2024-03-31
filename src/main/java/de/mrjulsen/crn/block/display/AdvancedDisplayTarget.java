@@ -36,7 +36,7 @@ public class AdvancedDisplayTarget extends DisplayBoardTarget {
 		if (context.getTargetBlockEntity() instanceof AdvancedDisplayBlockEntity blockEntity) {
 			AdvancedDisplayBlockEntity controller = blockEntity.getController();
 			if (controller != null) {
-				List<SimpleDeparturePrediction> preds = GlobalTrainDisplayData.prepare(filter, 5).stream().map(x -> new DeparturePrediction(x).simplify()).sorted(Comparator.comparingInt(x -> x.departureTicks())).toList();
+				List<SimpleDeparturePrediction> preds = GlobalTrainDisplayData.prepare(filter, controller.getPlatformInfoLinesCount()).stream().map(x -> new DeparturePrediction(x).simplify()).sorted(Comparator.comparingInt(x -> x.departureTicks())).toList();
  				Set<String> stopovers = new HashSet<>();
 
 				if (!preds.isEmpty()) {
