@@ -61,7 +61,6 @@ public class AdvancedDisplayUpdatePacket implements IPacketBase<AdvancedDisplayU
                     if (level.getBlockEntity(packet.pos) instanceof AdvancedDisplayBlockEntity blockEntity) {
                         blockEntity.applyToAll(be -> {
                             be.deserialize(packet.nbt);
-                            ModMain.LOGGER.info(be.getInfoType() + ", " + be.getDisplayType());
                             if (level.getBlockState(be.getBlockPos()).getBlock() instanceof AbstractAdvancedDisplayBlock) {
                                 level.setBlockAndUpdate(be.getBlockPos(), level.getBlockState(be.getBlockPos()).setValue(AbstractAdvancedDisplayBlock.SIDE, packet.side));
                             }
