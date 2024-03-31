@@ -24,7 +24,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -143,28 +142,30 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 		if (!blockTicks.hasScheduledTick(pPos, this))
 			pLevel.scheduleTick(pPos, this, 1);
 
-		Update: {
-			Direction leftDirection = pState.getValue(HorizontalDirectionalBlock.FACING).getClockWise();
-			BlockPos relPos = pPos.relative(leftDirection);
-			if (updateNeighbour(pState, pLevel, pPos, pOldState, pIsMoving, leftDirection, relPos)) {
-				break Update;
-			}
-			relPos = pPos.relative(Direction.UP);        
-			if (updateNeighbour(pState, pLevel, pPos, pOldState, pIsMoving, Direction.UP, relPos)) {
-				break Update;
-			}
-			relPos = pPos.relative(leftDirection.getOpposite());
-			if (updateNeighbour(pState, pLevel, pPos, pOldState, pIsMoving, leftDirection.getOpposite(), relPos)) {
-				break Update;
-			}
-			relPos = pPos.relative(Direction.DOWN);        
-			if (updateNeighbour(pState, pLevel, pPos, pOldState, pIsMoving, Direction.DOWN, relPos)) {
-				break Update;
-			}
-		}		
+		updateNeighbours(pState, pLevel, pPos);
 
 		if (pLevel.isClientSide) {
 			withBlockEntityDo(pLevel, pPos, be -> be.getController().getRenderer().update(pLevel, pPos, pState, be, EUpdateReason.BLOCK_CHANGED));			
+		}
+	}
+
+	public void updateNeighbours(BlockState pState, Level pLevel, BlockPos pPos) {
+		Direction leftDirection = pState.getValue(HorizontalDirectionalBlock.FACING).getClockWise();
+		BlockPos relPos = pPos.relative(leftDirection);
+		if (updateNeighbour(pState, pLevel, pPos, relPos)) {
+			return;
+		}
+		relPos = pPos.relative(Direction.UP);        
+		if (updateNeighbour(pState, pLevel, pPos, relPos)) {
+			return;
+		}
+		relPos = pPos.relative(leftDirection.getOpposite());
+		if (updateNeighbour(pState, pLevel, pPos, relPos)) {
+			return;
+		}
+		relPos = pPos.relative(Direction.DOWN);        
+		if (updateNeighbour(pState, pLevel, pPos, relPos)) {
+			return;
 		}
 	}
 
@@ -233,16 +234,12 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
         ItemStack heldItem = pPlayer.getItemInHand(pHand);
         AdvancedDisplayBlockEntity blockEntity = ((AdvancedDisplayBlockEntity)pLevel.getBlockEntity(pPos)).getController();
 
-        IPlacementHelper placementHelper = PlacementHelpers.get(getPlacementHelperID());
-        if (placementHelper.matchesItem(heldItem))
-            return placementHelper.getOffset(pPlayer, pLevel, pState, pPos, pHit).placeInWorld(pLevel, (BlockItem)heldItem.getItem(), pPlayer, pHand, pHit);
-            
 		DyeColor dye = DyeColor.getColor(heldItem);        
 		if (dye != null) {
 			pLevel.playSound(null, pPos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
 			blockEntity.applyToAll(be -> {
-                be.setColor(dye == DyeColor.ORANGE ? 0xFF9900 : dye.getMaterialColor().col);
-				be.sendData();
+                be.setColor(dye == DyeColor.ORANGE ? 0xFF9900 : dye.getMaterialColor().col);				
+				be.notifyUpdate();
             });
             return InteractionResult.SUCCESS;
 		}
@@ -251,7 +248,7 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 			pLevel.playSound(null, pPos, SoundEvents.GLOW_INK_SAC_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
 			blockEntity.applyToAll(be -> {
                 be.setGlowing(true);
-				be.sendData();
+				be.notifyUpdate();
             });
             return InteractionResult.SUCCESS;
 		}
@@ -259,13 +256,15 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 		return InteractionResult.FAIL;
     }
 
-    private boolean updateNeighbour(BlockState pState, Level pLevel, BlockPos pPos, BlockState pOldState, boolean pIsMoving, Direction direction, BlockPos neighbourPos) {
+    private boolean updateNeighbour(BlockState pState, Level pLevel, BlockPos pPos, BlockPos neighbourPos) {
         if (pLevel.getBlockState(neighbourPos).is(this) && pLevel.getBlockEntity(neighbourPos) instanceof AdvancedDisplayBlockEntity otherBe && pLevel.getBlockEntity(pPos) instanceof AdvancedDisplayBlockEntity be) {
             be.setColor(otherBe.getColor());
+            be.setGlowing(otherBe.isGlowing());
             be.setDisplayType(otherBe.getDisplayType());
             be.setInfoType(otherBe.getInfoType());
+			be.notifyUpdate();
             if (pLevel.isClientSide) {
-                be.getController().getRenderer().update(pLevel, neighbourPos, pOldState, otherBe, EUpdateReason.BLOCK_CHANGED);
+                be.getController().getRenderer().update(pLevel, neighbourPos, pState, otherBe, EUpdateReason.BLOCK_CHANGED);
             }
             return true;
         }

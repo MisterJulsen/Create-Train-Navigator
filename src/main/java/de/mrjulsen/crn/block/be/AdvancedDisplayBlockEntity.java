@@ -35,7 +35,6 @@ import de.mrjulsen.crn.network.packets.cts.TrainDataRequestPacket.TrainData;
 import de.mrjulsen.crn.util.Cache;
 import de.mrjulsen.crn.util.Pair;
 import de.mrjulsen.crn.util.Tripple;
-import de.mrjulsen.mcdragonlib.common.BlockEntityUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
@@ -370,12 +369,20 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         glowing = other.isGlowing();
         displayType = other.getDisplayType();
         infoType = other.getInfoType();
-        sendData();
-        BlockEntityUtil.sendUpdatePacket(this);
+        notifyUpdate();
+    }
+
+    public void clearData() {
+        predictions = List.of();
+        nextDepartureStopovers = Set.of();
+        fixedPlatform = false;
     }
 
     public void updateControllerStatus() {
-		
+
+        if (level.isClientSide) {
+            return;
+        }
 
 		BlockState blockState = getBlockState();
 		if (!(blockState.getBlock() instanceof AbstractAdvancedDisplayBlock))
@@ -422,14 +429,15 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         isController = shouldBeController;
         xSize = newXSize;
         ySize = newYSize;
+
+        if (!isController) {
+            clearData();
+        }
         if (level.isClientSide) {
             getRenderer().update(level, worldPosition, blockState, this, EUpdateReason.BLOCK_CHANGED);
-        } else {            
-            sendData();
-            BlockEntityUtil.sendUpdatePacket(this);
         }
-
-	}
+        notifyUpdate();
+	}    
 
     @Override
     public void tick() {
@@ -439,7 +447,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 
         super.tick();
 
-        if (getDisplayType() != EDisplayType.PLATFORM) {
+        if (getDisplayType().getSource() != EDisplayTypeDataSource.PLATFORM) {
             return;
         }
 
@@ -464,14 +472,14 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     @Override
     public void contraptionTick(Level level, BlockPos pos, BlockState state, Contraption contraption) {
         getRenderer().tick(level, pos, state, this);
-        
+
         if (!isController()) {
             return;
         }
 
         if (getDisplayType().getSource() != EDisplayTypeDataSource.TRAIN_INFORMATION) {
             return;
-        }
+        }        
 
         syncTicks++;       
         if ((syncTicks %= 100) == 0) {
@@ -528,6 +536,17 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 
     @Override
     public void read(CompoundTag pTag, boolean clientPacket) {
+        boolean updateClient = false;
+        if (level != null && getBlockState() != null && level.isClientSide) {
+            if (
+                isController() != pTag.getBoolean(NBT_CONTROLLER) ||
+                getXSize() != pTag.getByte(NBT_XSIZE) ||
+                getYSize() != pTag.getByte(NBT_YSIZE)
+            ) {
+                updateClient = true;
+            }
+        }
+
 		super.read(pTag, clientPacket);
         xSize = pTag.getByte(NBT_XSIZE);
         ySize = pTag.getByte(NBT_YSIZE);
@@ -542,6 +561,10 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
             pTag.getBoolean(NBT_PLATFORM_FIXED),
             pTag.getLong(NBT_LAST_REFRESH_TIME)
         );
+
+        if (updateClient) {
+            getRenderer().update(level, worldPosition, getBlockState(), this, EUpdateReason.BLOCK_CHANGED);
+        }
     }    
 
     @Override
@@ -556,7 +579,6 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     public void deserialize(CompoundTag nbt) {
         infoType = EDisplayInfo.getTypeById(nbt.getInt(NBT_INFO_TYPE));
         displayType = EDisplayType.getTypeById(nbt.getInt(NBT_DISPLAY_TYPE));
-        sendData();
     }
 
     @Override
@@ -565,7 +587,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         if (!isController)
             return aabb;
         Vec3i normal = getDirection().getClockWise().getNormal();
-        return aabb.expandTowards(normal.getX() * getXSize(), 0, normal.getZ() * getXSize());
+        return aabb.expandTowards(normal.getX() * getXSize(), -getYSize(), normal.getZ() * getXSize());
     }
 
     public Direction getDirection() {

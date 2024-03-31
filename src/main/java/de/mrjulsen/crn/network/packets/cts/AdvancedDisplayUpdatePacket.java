@@ -2,6 +2,7 @@ package de.mrjulsen.crn.network.packets.cts;
 
 import java.util.function.Supplier;
 
+import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.block.AbstractAdvancedDisplayBlock;
 import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.data.ESide;
@@ -60,12 +61,11 @@ public class AdvancedDisplayUpdatePacket implements IPacketBase<AdvancedDisplayU
                     if (level.getBlockEntity(packet.pos) instanceof AdvancedDisplayBlockEntity blockEntity) {
                         blockEntity.applyToAll(be -> {
                             be.deserialize(packet.nbt);
-                        });
-
-                        blockEntity.applyToAll(be -> {
+                            ModMain.LOGGER.info(be.getInfoType() + ", " + be.getDisplayType());
                             if (level.getBlockState(be.getBlockPos()).getBlock() instanceof AbstractAdvancedDisplayBlock) {
                                 level.setBlockAndUpdate(be.getBlockPos(), level.getBlockState(be.getBlockPos()).setValue(AbstractAdvancedDisplayBlock.SIDE, packet.side));
                             }
+                            be.notifyUpdate();
                         });
                     }
 
