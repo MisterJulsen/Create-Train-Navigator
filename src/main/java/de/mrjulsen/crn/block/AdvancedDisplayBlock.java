@@ -17,7 +17,7 @@ import net.minecraft.world.level.block.state.BlockState;
 public class AdvancedDisplayBlock extends AbstractAdvancedDisplayBlock {
 
     public AdvancedDisplayBlock(Properties properties) {
-        super(properties);
+        super(properties.noOcclusion());
     }
 
     @Override
