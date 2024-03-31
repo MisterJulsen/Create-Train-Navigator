@@ -13,13 +13,14 @@ import net.minecraftforge.client.gui.OverlayRegistry;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
 public class ClientInit {
+
     public static ResourceLocation blankTextureLocation;
 
+    @SuppressWarnings("resource")
     public static void setup(final FMLClientSetupEvent event) {        
         ModGuiUtils.init();
         ModKeys.init();
         OverlayRegistry.registerOverlayBottom("route_details_overlay", HudOverlays.HUD_ROUTE_DETAILS);
-        //BlockEntityRenderers.register(ModBlockEntities.ADVANCED_DISPLAY_BLOCK_ENTITY.get(), StaticBlockEntityRenderer::new);
         ModDisplayTags.register();
 
         NativeImage img = new NativeImage(1, 1, false);

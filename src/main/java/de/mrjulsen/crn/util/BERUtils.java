@@ -1,20 +1,15 @@
 package de.mrjulsen.crn.util;
 
-import java.util.BitSet;
-
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import de.mrjulsen.crn.proxy.ClientInit;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.ModelBlockRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -45,20 +40,6 @@ public class BERUtils {
 
     public static void addVert(VertexConsumer builder, PoseStack pPoseStack, float x, float y, float z, float u, float v, float r, float g, float b, float a, int lu, int lv) {
         builder.vertex(pPoseStack.last().pose(), x, y, z).color(r, g, b, a).uv(u, v).uv2(lu, lv).overlayCoords(OverlayTexture.NO_OVERLAY).normal(pPoseStack.last().normal(), 0, 0, 1).endVertex();
-    }
-    
-    @SuppressWarnings("resource")
-    private static void renderWithAO(BlockEntity be, BlockState state, Direction direction, VertexConsumer builder, PoseStack pPoseStack, float x0, float y0, float z0, float x1, float y1, float z1, float u0, float v0, float u1, float v1, float r, float g, float b, float a, int packedLight) {
-        float[] afloat = new float[Direction.values().length * 2];
-        BitSet bitset = new BitSet(3);
-        ModelBlockRenderer.AmbientOcclusionFace ao = Minecraft.getInstance().getBlockRenderer().getModelRenderer().new AmbientOcclusionFace();
-        BlockAndTintGetter batg = Minecraft.getInstance().level;
-        ao.calculate(batg, state, be.getBlockPos(), direction, afloat, bitset, true);
-        
-        addVert(builder, pPoseStack, x0, y1, z0, u0, v0, r * ao.brightness[0], g * ao.brightness[0], b * ao.brightness[0], a, ao.lightmap[0] & 0xFFFF, (ao.lightmap[0] >> 16) & 0xFFFF);
-        addVert(builder, pPoseStack, x0, y0, z0, u0, v1, r * ao.brightness[1], g * ao.brightness[1], b * ao.brightness[1], a, ao.lightmap[1] & 0xFFFF, (ao.lightmap[1] >> 16) & 0xFFFF);
-        addVert(builder, pPoseStack, x1, y0, z1, u1, v1, r * ao.brightness[2], g * ao.brightness[2], b * ao.brightness[2], a, ao.lightmap[2] & 0xFFFF, (ao.lightmap[2] >> 16) & 0xFFFF);
-        addVert(builder, pPoseStack, x1, y1, z1, u1, v0, r * ao.brightness[3], g * ao.brightness[3], b * ao.brightness[3], a, ao.lightmap[3] & 0xFFFF, (ao.lightmap[3] >> 16) & 0xFFFF);
     }
 
     private static void renderWithoutAO(VertexConsumer builder, PoseStack pPoseStack, float x0, float y0, float z0, float x1, float y1, float z1, float u0, float v0, float u1, float v1, float r, float g, float b, float a, int packedLight) {
