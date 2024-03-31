@@ -5,8 +5,6 @@ import java.util.Random;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.foundation.block.IBE;
-import com.simibubi.create.foundation.placement.IPlacementHelper;
-import com.simibubi.create.foundation.placement.PlacementHelpers;
 import com.simibubi.create.foundation.utility.Iterate;
 
 import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
@@ -302,7 +300,6 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
         return ModBlockEntities.ADVANCED_DISPLAY_BLOCK_ENTITY.get();
     }
 
-    protected abstract int getPlacementHelperID();
     public abstract Pair<Float, Float> getRenderOffset(Level level, BlockState blockState, BlockPos pos);
     /** First value: Front side, Second value: Back side */ public abstract Pair<Float, Float> getRenderZOffset(Level level, BlockState blockState, BlockPos pos);
     public abstract Pair<Float, Float> getRenderAspectRatio(Level level, BlockState blockState, BlockPos pos);

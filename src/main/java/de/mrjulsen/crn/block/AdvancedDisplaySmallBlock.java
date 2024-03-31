@@ -1,21 +1,13 @@
 package de.mrjulsen.crn.block;
 
 import java.util.Map;
-import java.util.function.Predicate;
-
-import com.simibubi.create.foundation.placement.PlacementHelpers;
-import com.simibubi.create.foundation.placement.PoleHelper;
-import de.mrjulsen.crn.registry.ModBlocks;
 import de.mrjulsen.crn.util.Pair;
-import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition.Builder;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -87,26 +79,4 @@ public class AdvancedDisplaySmallBlock extends AbstractAdvancedDisplayBlock {
     public Pair<Float, Float> getRenderZOffset(Level level, BlockState blockState, BlockPos pos) {
         return Pair.of(8.05f, 16.05f);
     }
-
-    private static final int placementHelperId = PlacementHelpers.register(new PlacementHelper());
-
-    @Override
-    protected int getPlacementHelperID() {
-        return placementHelperId;
-    }
-
-	@MethodsReturnNonnullByDefault
-	private static class PlacementHelper extends PoleHelper<Direction> {
-
-		public PlacementHelper() {
-			super(ModBlocks.ADVANCED_DISPLAY_SMALL::has, state -> state.getValue(HorizontalDirectionalBlock.FACING)
-				.getClockWise()
-				.getAxis(), HorizontalDirectionalBlock.FACING);
-		}
-
-		@Override
-		public Predicate<ItemStack> getItemPredicate() {
-			return ModBlocks.ADVANCED_DISPLAY_SMALL::isIn;
-		}
-	}    
 }
