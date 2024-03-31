@@ -15,6 +15,8 @@ import com.simibubi.create.foundation.utility.Components;
 import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.block.AbstractAdvancedDisplayBlock;
 import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
+import de.mrjulsen.crn.client.gui.ModGuiIcons;
+import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.data.EDisplayInfo;
 import de.mrjulsen.crn.data.EDisplayType;
 import de.mrjulsen.crn.data.ESide;
@@ -22,11 +24,14 @@ import de.mrjulsen.crn.network.NetworkManager;
 import de.mrjulsen.crn.network.packets.cts.AdvancedDisplayUpdatePacket;
 import de.mrjulsen.mcdragonlib.DragonLibConstants;
 import de.mrjulsen.mcdragonlib.client.gui.GuiUtils;
+import de.mrjulsen.mcdragonlib.client.gui.Tooltip;
 import de.mrjulsen.mcdragonlib.client.gui.wrapper.CommonScreen;
 import de.mrjulsen.mcdragonlib.utils.Utils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
@@ -52,6 +57,9 @@ public class AdvancedDisplaySettingsScreen extends CommonScreen {
     private Label displayTypeLabel;    
     private ScrollInput sidesInput;
     private Label sidesLabel;
+    
+    private IconButton globalSettingsButton;
+    private final MutableComponent tooltipGlobalSettings = Utils.translate("gui." + ModMain.MOD_ID + ".navigator.global_settings.tooltip");
 
     private int guiLeft, guiTop;
 
@@ -115,6 +123,19 @@ public class AdvancedDisplaySettingsScreen extends CommonScreen {
             })
             .setState(side.getId()));
         sidesInput.onChanged();
+
+        // Global Options Button
+        if (minecraft.player.hasPermissions(ModCommonConfig.GLOBAL_SETTINGS_PERMISSION_LEVEL.get())) {
+            final Screen instance = this;
+            globalSettingsButton = this.addRenderableWidget(new IconButton(guiLeft + 7, guiTop + 99, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, ModGuiIcons.SETTINGS.getAsCreateIcon()) {
+                @Override
+                public void onClick(double mouseX, double mouseY) {
+                    super.onClick(mouseX, mouseY);
+                    minecraft.setScreen(new GlobalSettingsScreen(blockEntity.getLevel(), instance));
+                }
+            });
+            addTooltip(Tooltip.of(tooltipGlobalSettings).assignedTo(globalSettingsButton));
+        }
     }
 
     @Override
