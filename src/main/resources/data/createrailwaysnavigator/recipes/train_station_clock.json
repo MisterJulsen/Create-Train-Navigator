@@ -1,0 +1,23 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+      " I ",
+      "ICI",
+      " P "
+    ],
+    "key": {
+      "I": {
+        "tag": "forge:plates/iron"
+      },
+      "C": {
+        "item": "minecraft:clock"
+      },
+      "P": {
+        "item": "create:precision_mechanism"
+      }
+    },
+    "result": {
+      "item": "createrailwaysnavigator:train_station_clock",
+      "count": 1
+    }
+  }
