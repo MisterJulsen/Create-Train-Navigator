@@ -213,7 +213,7 @@ public class BERText {
         float maxWidthScaled = getMaxWidth() / finalXScale;
         float maxX = Math.min(forceMaxWidth() ? maxWidthScaled : Float.MAX_VALUE, getMaxX() / finalXScale);
         float xOffset = getXOffset() + (isCentered() ? maxWidthScaled / 2 - textWidth / 2 : 0);
-        cache = new TextDataCache(finalXScale, minX, maxX, xOffset, maxWidthScaled, textWidth, forceMaxWidth() && mustScroll);
+        cache = new TextDataCache(finalXScale, minX, maxX, xOffset, maxWidthScaled, textWidth, forceMaxWidth() && mustScroll && canScroll());
 
         if (callUpdate && onUpdate != null) {
             onUpdate.accept(this);
