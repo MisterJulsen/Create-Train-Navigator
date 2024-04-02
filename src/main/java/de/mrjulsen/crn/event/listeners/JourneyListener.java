@@ -325,7 +325,7 @@ public class JourneyListener {
 
                 if (currentState != State.BEFORE_JOURNEY && currentState != State.JOURNEY_INTERRUPTED) {                
                     if (currentState != State.WHILE_TRAVELING && currentState != State.WHILE_TRANSFER) {     
-                        while (!currentTrainNextStop.stationName().equals(currentStation().getStationName()) && currentState != State.AFTER_JOURNEY) {
+                        while (!currentTrainNextStop.stationTagName().equals(currentStation().getStationName()) && currentState != State.AFTER_JOURNEY) {
                             if (currentStation().getTag() != StationTag.END) {
                                 nextStop();
                             }
@@ -436,7 +436,7 @@ public class JourneyListener {
             filteredStationEntryList.add(entry.getStationName());
         }
         String[] filteredStationEntries = filteredStationEntryList.toArray(String[]::new);
-        String[] sched = schedule.stream().map(x -> x.stationName()).toArray(String[]::new);
+        String[] sched = schedule.stream().map(x -> x.stationTagName()).toArray(String[]::new);
         
         int k = 0;
         for (int i = 0; i < filteredStationEntries.length; i++) {
@@ -468,12 +468,12 @@ public class JourneyListener {
         for (int i = 0, k = 0; i < schedule.size() && k < route.size(); i++) {
             SimpleDeparturePrediction current = schedule.get(i);
             long newTime = current.departureTicks() + updateTime;
-            if (route.get(0).getStationName().equals(current.stationName())) {
+            if (route.get(0).getStationName().equals(current.stationTagName())) {
                 k = 0;
                 b = true;
             }
 
-            if (route.get(k).getStationName().equals(current.stationName()) && b == true) {
+            if (route.get(k).getStationName().equals(current.stationTagName()) && b == true) {
                 if (newTime > lastTime/* && newTime + EARLY_ARRIVAL_THRESHOLD > route.get(k).station().getScheduleTime()*/) {
                     route.get(k).updateRealtimeData(current.departureTicks(), updateTime, current.stationInfo(), () -> {
 

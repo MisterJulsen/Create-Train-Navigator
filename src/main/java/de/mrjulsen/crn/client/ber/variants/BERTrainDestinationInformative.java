@@ -63,7 +63,7 @@ public class BERTrainDestinationInformative implements IBERRenderSubtype<Advance
         parent.labels.add(lastLabel);
 
         // DESTINATION
-        line = Utils.text(blockEntity.getTrainData().getNextStop().get().stationName()).withStyle(ChatFormatting.BOLD);
+        line = Utils.text(blockEntity.getTrainData().getNextStop().get().stationTagName()).withStyle(ChatFormatting.BOLD);
         parent.labels.add(new BERText(parent.getFontUtils(), line, 0)
             .withIsCentered(false)
             .withMaxWidth(maxWidth, true)

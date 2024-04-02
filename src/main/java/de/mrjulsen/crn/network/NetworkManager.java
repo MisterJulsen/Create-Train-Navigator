@@ -13,7 +13,6 @@ import de.mrjulsen.crn.network.packets.cts.NextConnectionsRequestPacket;
 import de.mrjulsen.crn.network.packets.cts.RealtimeRequestPacket;
 import de.mrjulsen.crn.network.packets.cts.TrackStationsRequestPacket;
 import de.mrjulsen.crn.network.packets.cts.TrainDataRequestPacket;
-import de.mrjulsen.crn.network.packets.cts.UpdateBlockEntityPacket;
 import de.mrjulsen.crn.network.packets.stc.GlobalSettingsResponsePacket;
 import de.mrjulsen.crn.network.packets.stc.NavigationResponsePacket;
 import de.mrjulsen.crn.network.packets.stc.NearestStationResponsePacket;
@@ -35,7 +34,7 @@ public class NetworkManager extends NetworkManagerBase<NetworkManager> {
     }
 
     public static void create() {
-        instance = NetworkManagerBase.create(NetworkManager.class, ModMain.MOD_ID, "crn_network", "3");
+        instance = NetworkManagerBase.create(NetworkManager.class, ModMain.MOD_ID, "crn_network", "4");
     }
 
     public static NetworkManager getInstance() {
@@ -54,7 +53,6 @@ public class NetworkManager extends NetworkManagerBase<NetworkManager> {
             RealtimeRequestPacket.class,
             TrackStationsRequestPacket.class,
             TrainDataRequestPacket.class,
-            UpdateBlockEntityPacket.class,
             AdvancedDisplayUpdatePacket.class,
 
             // stc

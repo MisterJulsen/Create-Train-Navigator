@@ -95,7 +95,7 @@ public class DeparturePrediction {
     }
 
     public SimpleDeparturePrediction simplify() {
-        return new SimpleDeparturePrediction(getNextStop().getAliasName().get(), getTicks(), getScheduleTitle(), getTrain().name.getString(), getTrain().id, getInfo(), getExitSide());
+        return new SimpleDeparturePrediction(getNextStop().getAliasName().get(), nextStop, getTicks(), getScheduleTitle(), getTrain().name.getString(), getTrain().id, getInfo(), getExitSide());
     }
 
 
@@ -146,9 +146,10 @@ public class DeparturePrediction {
         }
     }
 
-    public static record SimpleDeparturePrediction(String stationName, int departureTicks, String scheduleTitle, String trainName, UUID trainId, StationInfo stationInfo, TrainExitSide exitSide) {
+    public static record SimpleDeparturePrediction(String stationTagName, String stationName, int departureTicks, String scheduleTitle, String trainName, UUID trainId, StationInfo stationInfo, TrainExitSide exitSide) {
 
         private static final String NBT_STATION = "station";
+        private static final String NBT_STATION_NAME = "stationName";
         private static final String NBT_TICKS = "ticks";
         private static final String NBT_SCHEDULE_TITLE = "title";
         private static final String NBT_TRAIN_NAME = "tname";
@@ -157,7 +158,8 @@ public class DeparturePrediction {
 
         public CompoundTag toNbt() {
             CompoundTag nbt = new CompoundTag();
-            nbt.putString(NBT_STATION, stationName);
+            nbt.putString(NBT_STATION, stationTagName);
+            nbt.putString(NBT_STATION_NAME, stationName);
             nbt.putInt(NBT_TICKS, departureTicks);
             nbt.putString(NBT_SCHEDULE_TITLE, scheduleTitle);
             nbt.putString(NBT_TRAIN_NAME, trainName);
@@ -169,7 +171,8 @@ public class DeparturePrediction {
 
         public static SimpleDeparturePrediction fromNbt(CompoundTag nbt) {
             return new SimpleDeparturePrediction(
-                nbt.getString(NBT_STATION), 
+                nbt.getString(NBT_STATION),
+                nbt.getString(NBT_STATION_NAME),
                 nbt.getInt(NBT_TICKS), 
                 nbt.getString(NBT_SCHEDULE_TITLE),
                 nbt.getString(NBT_TRAIN_NAME),

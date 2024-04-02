@@ -2,6 +2,7 @@ package de.mrjulsen.crn.registry;
 
 import java.util.function.Supplier;
 
+import com.simibubi.create.Create;
 import com.simibubi.create.CreateClient;
 import com.simibubi.create.content.redstone.displayLink.AllDisplayBehaviours;
 import com.simibubi.create.foundation.block.connected.AllCTTypes;
@@ -24,8 +25,10 @@ import de.mrjulsen.crn.block.AdvancedDisplaySmallBlock;
 import de.mrjulsen.crn.block.TrainStationClockBlock;
 import de.mrjulsen.crn.block.connected.AdvancedDisplayCTBehaviour;
 import de.mrjulsen.crn.block.connected.RightLeftCTBehaviour;
+import de.mrjulsen.crn.block.display.AdvancedDisplaySource;
 import de.mrjulsen.crn.block.display.AdvancedDisplayTarget;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.api.distmarker.Dist;
@@ -94,6 +97,7 @@ public class ModBlocks {
 		.build()
 		.register();
 
+
     public static <T extends Block> NonNullConsumer<? super T> connectedTextures(
 		Supplier<ConnectedTextureBehaviour> behavior) {
 		return entry -> onClient(() -> () -> registerCTBehviour(entry, behavior));
@@ -116,5 +120,13 @@ public class ModBlocks {
 	}
 
     public static void register() {
+		Create.REGISTRATE.addRegisterCallback("track_station", Registry.BLOCK_REGISTRY, ModBlocks::addSignalSource);
+    }
+
+    public static boolean registeredTrackStationSource = false;
+	public static void addSignalSource(Block block) {
+        if (registeredTrackStationSource) return;
+        AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplaySource()).accept(block);
+        registeredTrackStationSource = true;
     }
 }

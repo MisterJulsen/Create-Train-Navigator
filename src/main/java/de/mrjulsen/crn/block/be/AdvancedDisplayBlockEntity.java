@@ -2,10 +2,7 @@ package de.mrjulsen.crn.block.be;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
 import javax.annotation.Nullable;
 
 import com.simibubi.create.content.contraptions.Contraption;
@@ -62,7 +59,6 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     IBlockEntitySerializable,
     IColorableBlockEntity
 {
-
     private static final String NBT_XSIZE = "XSize";
     private static final String NBT_YSIZE = "YSize";
     private static final String NBT_CONTROLLER = "IsController";
@@ -74,6 +70,8 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     private static final String NBT_NEXT_DEPARTURE_STOPOVERS = "NextStopovers";
     private static final String NBT_PLATFORM_FIXED = "IsPlatformFixed";
     private static final String NBT_LAST_REFRESH_TIME = "LastRefreshed";
+    private static final String NBT_PLATFORM_WIDTH = "PlatformWidth";
+    private static final String NBT_TRAIN_NAME_WIDTH = "TrainNameWidth";
 
     public static final byte MAX_XSIZE = 16;
     public static final byte MAX_YSIZE = 16;
@@ -82,18 +80,20 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     private byte xSize = 1;
 	private byte ySize = 1;
     private boolean isController;
-    private List<SimpleDeparturePrediction> predictions = new ArrayList<>();
-    private Set<String> nextDepartureStopovers = new HashSet<>();
+    private List<SimpleDeparturePrediction> predictions;
+    private List<String> nextDepartureStopovers;
     private boolean fixedPlatform;
+    private byte trainNameWidth;
+    private byte platformWidth;
 
     // USER SETTINGS
     private int color = DyeColor.WHITE.getTextColor();
-    private boolean glowing = false; // unused
+    private boolean glowing = false;
     private EDisplayInfo infoType = EDisplayInfo.SIMPLE;
     private EDisplayType displayType = EDisplayType.TRAIN_DESTINATION;
     
 
-    // CLIENT DISPLAY ONLY - this data is not being saved!
+    // CLIENT DISPLAY ONLY - this data is not saved!
     private long lastRefreshedTime;
     private TrainData trainData = TrainData.empty();
     private CarriageData carriageData = new CarriageData(0, Direction.NORTH, false);
@@ -152,6 +152,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 
     public AdvancedDisplayBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+        reset();
     }
 
     public TrainData getTrainData() {
@@ -164,6 +165,14 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 
     public long getLastRefreshedTime() {
         return lastRefreshedTime;
+    }
+
+    public byte getTrainNameWidth() {
+        return trainNameWidth;
+    }
+
+    public byte getPlatformWidth() {
+        return platformWidth;
     }
 
     public byte getXSize() {
@@ -238,7 +247,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         return predictions;
     }
 
-    public Set<String> getNextDepartureStopovers() {
+    public List<String> getNextDepartureStopovers() {
         return nextDepartureStopovers;
     }
 
@@ -270,8 +279,6 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         }
     }
 
-
-
     public void setColor(int color) {
 		this.color = color;
         if (level.isClientSide) {
@@ -300,14 +307,14 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         }
     }
 
-    public void setDepartureData(List<SimpleDeparturePrediction> predictions, Set<String> nextDepartureStopovers, boolean fixedPlatform, long lastRefreshedTime) {
+    public void setDepartureData(List<SimpleDeparturePrediction> predictions, List<String> nextDepartureStopovers, boolean fixedPlatform, long lastRefreshedTime, byte platformWidth, byte trainNameWidth) {
         this.predictions = predictions.stream().sorted(Comparator.comparingInt(x -> x.departureTicks())).toList();
         this.fixedPlatform = fixedPlatform;
         this.nextDepartureStopovers = nextDepartureStopovers;
         this.lastRefreshedTime = lastRefreshedTime;
+        this.platformWidth = platformWidth;
+        this.trainNameWidth = trainNameWidth;
     }
-
-
     
     @Override
     public boolean connectable(BlockGetter getter, BlockPos a, BlockPos b) {
@@ -384,10 +391,12 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         notifyUpdate();
     }
 
-    public void clearData() {
+    public void reset() {
         predictions = List.of();
-        nextDepartureStopovers = Set.of();
+        nextDepartureStopovers = List.of();
         fixedPlatform = false;
+        platformWidth = -1;
+        trainNameWidth = 16;
     }
 
     public void updateControllerStatus() {
@@ -443,10 +452,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         ySize = newYSize;
 
         if (!isController) {
-            clearData();
-        }
-        if (level.isClientSide) {
-            getRenderer().update(level, worldPosition, blockState, this, EUpdateReason.BLOCK_CHANGED);
+            reset();
         }
         notifyUpdate();
 	}    
@@ -502,7 +508,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
                     SimpleDeparturePrediction prediction = trainData.getNextStop().get();
                     shouldUpdate = !trainData.trainName().equals(data.trainName()) ||
                         !prediction.scheduleTitle().equals(data.predictions().get(0).scheduleTitle()) ||
-                        !prediction.stationName().equals(data.predictions().get(0).stationName()) ||
+                        !prediction.stationTagName().equals(data.predictions().get(0).stationTagName()) ||
                         trainData.getNextStop().get().exitSide() != data.getNextStop().get().exitSide() ||
                         (getInfoType() == EDisplayInfo.INFORMATIVE && getDisplayType() == EDisplayType.PASSENGER_INFORMATION && trainData.getNextStop().get().departureTicks() + lastRefreshedTime != data.getNextStop().get().departureTicks() + refreshTime) // It's not clean but it works ... for now
                     ;
@@ -532,6 +538,8 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         pTag.putBoolean(NBT_PLATFORM_FIXED, isPlatformFixed());
         pTag.putBoolean(NBT_GLOWING, isGlowing());
         pTag.putLong(NBT_LAST_REFRESH_TIME, getLastRefreshedTime());
+        pTag.putByte(NBT_PLATFORM_WIDTH, getPlatformWidth());
+        pTag.putByte(NBT_TRAIN_NAME_WIDTH, getTrainNameWidth());
 
         if (getPredictions() != null && !getPredictions().isEmpty()) {            
             ListTag list = new ListTag();
@@ -553,7 +561,9 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
             if (
                 isController() != pTag.getBoolean(NBT_CONTROLLER) ||
                 getXSize() != pTag.getByte(NBT_XSIZE) ||
-                getYSize() != pTag.getByte(NBT_YSIZE)
+                getYSize() != pTag.getByte(NBT_YSIZE) ||
+                getPlatformWidth() != pTag.getByte(NBT_PLATFORM_WIDTH) ||
+                getTrainNameWidth() != pTag.getByte(NBT_TRAIN_NAME_WIDTH)
             ) {
                 updateClient = true;
             }
@@ -569,9 +579,11 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         displayType = EDisplayType.getTypeById(pTag.getInt(NBT_DISPLAY_TYPE));
         setDepartureData(
             pTag.contains(NBT_PREDICTIONS) ? new ArrayList<>(pTag.getList(NBT_PREDICTIONS, Tag.TAG_COMPOUND).stream().map(x -> SimpleDeparturePrediction.fromNbt((CompoundTag)x)).toList()) : new ArrayList<>(),
-            pTag.contains(NBT_NEXT_DEPARTURE_STOPOVERS) ? new HashSet<>(pTag.getList(NBT_NEXT_DEPARTURE_STOPOVERS, Tag.TAG_STRING).stream().map(x -> ((StringTag)x).getAsString()).toList()) : new HashSet<>(),
+            pTag.contains(NBT_NEXT_DEPARTURE_STOPOVERS) ? pTag.getList(NBT_NEXT_DEPARTURE_STOPOVERS, Tag.TAG_STRING).stream().map(x -> ((StringTag)x).getAsString()).toList() : new ArrayList<>(),
             pTag.getBoolean(NBT_PLATFORM_FIXED),
-            pTag.getLong(NBT_LAST_REFRESH_TIME)
+            pTag.getLong(NBT_LAST_REFRESH_TIME),
+            pTag.getByte(NBT_PLATFORM_WIDTH),
+            pTag.getByte(NBT_TRAIN_NAME_WIDTH)
         );
 
         if (updateClient) {

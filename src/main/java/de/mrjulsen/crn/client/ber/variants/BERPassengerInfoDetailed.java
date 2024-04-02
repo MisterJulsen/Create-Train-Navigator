@@ -169,7 +169,7 @@ public class BERPassengerInfoDetailed implements IBERRenderSubtype<AdvancedDispl
         int displayWidth = blockEntity.getXSizeScaled();
         TrainExitSide side = blockEntity.relativeExitDirection.get();
 
-        MutableComponent line = Utils.translate(keyNextStop, GlobalSettingsManager.getInstance().getSettingsData().getAliasFor(blockEntity.getTrainData().getNextStop().get().stationName()).getAliasName().get());
+        MutableComponent line = Utils.translate(keyNextStop, GlobalSettingsManager.getInstance().getSettingsData().getAliasFor(blockEntity.getTrainData().getNextStop().get().stationTagName()).getAliasName().get());
         float maxWidth = displayWidth * 16 - 6 - (side != TrainExitSide.UNKNOWN ? 10 : 0);        
         parent.labels.add(new BERText(parent.getFontUtils(), line, 0)
             .withIsCentered(true)
@@ -187,7 +187,7 @@ public class BERPassengerInfoDetailed implements IBERRenderSubtype<AdvancedDispl
         int displayWidth = blockEntity.getXSizeScaled();
 
         TrainExitSide side = blockEntity.relativeExitDirection.get();
-        MutableComponent line = Utils.text(GlobalSettingsManager.getInstance().getSettingsData().getAliasFor(blockEntity.getTrainData().getNextStop().get().stationName()).getAliasName().get());
+        MutableComponent line = Utils.text(GlobalSettingsManager.getInstance().getSettingsData().getAliasFor(blockEntity.getTrainData().getNextStop().get().stationTagName()).getAliasName().get());
 
         float maxWidth = displayWidth * 16 - 6 - (side != TrainExitSide.UNKNOWN ? 10 : 0);        
         parent.labels.add(new BERText(parent.getFontUtils(), line, 0)

@@ -222,5 +222,11 @@
     "enum.createrailwaysnavigator.side.both": "Both sides",
     "enum.createrailwaysnavigator.side.info.both": "The information will be rendered on both sides.",
 
+    "create.display_source.advanced_display": "Advanced Displays",
+    "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width": "Train Name Column Width",
+    "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width.description": "The width of the train name column in block pixels. (Default: 16)",
+    "gui.createrailwaysnavigator.display_source.advanced_display.platform_width": "Platform Column Width",
+    "gui.createrailwaysnavigator.display_source.advanced_display.platform_width.description": "The width of the platform column in block pixels. (-1 = Auto, Default: 0)",
+
     "createrailwaysnavigator.moin": "moin"
 }

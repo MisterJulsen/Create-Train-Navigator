@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -80,8 +81,8 @@ public class AdvancedDisplayRenderInstance extends AbstractBlockEntityRenderInst
     public MutableComponent getStopoversString(AdvancedDisplayBlockEntity blockEntity) {
         MutableComponent line = Utils.text("");
 
-        Set<String> stopovers = blockEntity.getDisplayType().getSource() == EDisplayTypeDataSource.TRAIN_INFORMATION ?
-            new HashSet<>(blockEntity.getTrainData().stopovers().stream().map(x -> x.stationName()).toList()) :
+        List<String> stopovers = blockEntity.getDisplayType().getSource() == EDisplayTypeDataSource.TRAIN_INFORMATION ?
+            blockEntity.getTrainData().stopovers().stream().map(x -> x.stationTagName()).toList() :
             blockEntity.getNextDepartureStopovers();
 
         Iterator<String> i = stopovers.iterator();

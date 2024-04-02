@@ -97,7 +97,7 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
                         updateNextConnections(level, pos, state, pBlockEntity, parent);
                     }
                 });
-                NetworkManager.getInstance().sendToServer(Minecraft.getInstance().player.connection.getConnection(), new NextConnectionsRequestPacket(id, pBlockEntity.getTrainData().trainId(), pBlockEntity.getTrainData().getNextStop().get().stationName(), pBlockEntity.getTrainData().getNextStop().get().departureTicks()));
+                NetworkManager.getInstance().sendToServer(Minecraft.getInstance().player.connection.getConnection(), new NextConnectionsRequestPacket(id, pBlockEntity.getTrainData().trainId(), pBlockEntity.getTrainData().getNextStop().get().stationTagName(), pBlockEntity.getTrainData().getNextStop().get().departureTicks()));
                 dirty = true;
             } else if (this.state != State.WHILE_TRAVELING && pBlockEntity.getTrainData().getNextStop().get().departureTicks() > ModClientConfig.NEXT_STOP_ANNOUNCEMENT.get()) {
                 this.state = State.WHILE_TRAVELING;
@@ -260,7 +260,7 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
 
     private boolean notInService(AdvancedDisplayBlockEntity blockEntity) {
         Optional<SimpleDeparturePrediction> optPred = blockEntity.getTrainData().getNextStop();
-        return !optPred.isPresent() || optPred.get().stationName() == null || optPred.get().stationName().isBlank();
+        return !optPred.isPresent() || optPred.get().stationTagName() == null || optPred.get().stationTagName().isBlank();
     }
 
     private float generateTimeLabel(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent) {   
@@ -290,10 +290,10 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
         if (blockEntity.getTrainData().getNextStop().isPresent()) {
             switch (this.state) {
                 case BEFORE_NEXT_STOP:
-                    line = Utils.translate(keyNextStop, blockEntity.getTrainData().getNextStop().get().stationName());
+                    line = Utils.translate(keyNextStop, blockEntity.getTrainData().getNextStop().get().stationTagName());
                     break;
                 case WHILE_NEXT_STOP:
-                    line = Utils.translate(blockEntity.getTrainData().trainName() + " " + blockEntity.getTrainData().getNextStop().get().stationName()).withStyle(ChatFormatting.BOLD);
+                    line = Utils.translate(blockEntity.getTrainData().trainName() + " " + blockEntity.getTrainData().getNextStop().get().stationTagName()).withStyle(ChatFormatting.BOLD);
                     break;
                 default:
                     break;
@@ -340,7 +340,7 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
         );
 
 
-        line = Utils.text(pred.stationName()).withStyle(ChatFormatting.BOLD);
+        line = Utils.text(pred.stationTagName()).withStyle(ChatFormatting.BOLD);
         parent.labels.add(new BERText(parent.getFontUtils(), line, 0)
             .withIsCentered(false)
             .withMaxWidth(maxWidth, true)
@@ -366,7 +366,7 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
                 .withPredefinedTextTransformation(new TextTransformation(3.0f, y + 0.1f, 0.0f, 1, 0.14f))
                 .build()
             );
-            line = Utils.text(pred.stationName());
+            line = Utils.text(pred.stationTagName());
             parent.labels.add(new BERText(parent.getFontUtils(), line, 0)
                 .withIsCentered(false)
                 .withMaxWidth(maxWidth, true)
@@ -397,7 +397,7 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
             .withPredefinedTextTransformation(new TextTransformation(3.0f, y + 0.3f, 0.0f, 1, 0.14f))
             .build()
         );
-        line = Utils.text(pred.stationName()).withStyle(ChatFormatting.BOLD);
+        line = Utils.text(pred.stationTagName()).withStyle(ChatFormatting.BOLD);
         parent.labels.add(new BERText(parent.getFontUtils(), line, 0)
             .withIsCentered(false)
             .withMaxWidth(maxWidth, true)

@@ -2,10 +2,7 @@ package de.mrjulsen.crn.block.display;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
 import com.simibubi.create.content.redstone.displayLink.DisplayLinkContext;
 import com.simibubi.create.content.redstone.displayLink.target.DisplayBoardTarget;
 import com.simibubi.create.content.redstone.displayLink.target.DisplayTargetStats;
@@ -15,26 +12,32 @@ import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.data.DeparturePrediction;
 import de.mrjulsen.crn.data.TrainStop;
 import de.mrjulsen.crn.data.DeparturePrediction.SimpleDeparturePrediction;
-import de.mrjulsen.crn.data.GlobalSettingsManager;
+import de.mrjulsen.crn.data.SimpleTrainSchedule;
+import de.mrjulsen.crn.data.SimulatedTrainSchedule;
 import de.mrjulsen.crn.util.TrainUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 
 public class AdvancedDisplayTarget extends DisplayBoardTarget {    
     
 	@Override
-	public void acceptFlapText(int line, List<List<MutableComponent>> text, DisplayLinkContext context) {		
+	public void acceptFlapText(int line, List<List<MutableComponent>> text, DisplayLinkContext context) {
+
+		CompoundTag nbt = context.sourceConfig();
+		if (!nbt.contains(AdvancedDisplaySource.NBT_ADVANCED_DISPLAY)) {
+			return;
+		}
+
 		String filter = context.sourceConfig().getString("Filter");
 		boolean fixedPlatform = !filter.contains("*");
 
 		if (context.getTargetBlockEntity() instanceof AdvancedDisplayBlockEntity blockEntity) {
-			AdvancedDisplayBlockEntity controller = blockEntity.getController();
+			final AdvancedDisplayBlockEntity controller = blockEntity.getController();
 			if (controller != null) {
 				List<SimpleDeparturePrediction> preds = GlobalTrainDisplayData.prepare(filter, controller.getPlatformInfoLinesCount()).stream().map(x -> new DeparturePrediction(x).simplify()).sorted(Comparator.comparingInt(x -> x.departureTicks())).toList();
  				List<String> stopovers = new ArrayList<>();
@@ -57,7 +60,14 @@ public class AdvancedDisplayTarget extends DisplayBoardTarget {
 					}
 				}
 				
-				controller.setDepartureData(preds, stopovers, fixedPlatform, context.getTargetBlockEntity().getLevel().getDayTime());
+				controller.setDepartureData(
+					preds,
+					stopovers,
+					fixedPlatform,
+					context.getTargetBlockEntity().getLevel().getDayTime(),
+					(byte)context.sourceConfig().getInt(AdvancedDisplaySource.NBT_PLATFORM_WIDTH),
+					(byte)context.sourceConfig().getInt(AdvancedDisplaySource.NBT_TRAIN_NAME_WIDTH)
+				);
 				controller.sendData();
 			}
 		}
@@ -84,7 +94,6 @@ public class AdvancedDisplayTarget extends DisplayBoardTarget {
 	}
 
 	@Override
-	@OnlyIn(Dist.CLIENT)
 	public AABB getMultiblockBounds(LevelAccessor level, BlockPos pos) {
 		AABB baseShape = super.getMultiblockBounds(level, pos);
 		BlockEntity be = level.getBlockEntity(pos);

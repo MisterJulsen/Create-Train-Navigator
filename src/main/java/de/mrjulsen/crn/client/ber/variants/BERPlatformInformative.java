@@ -31,7 +31,6 @@ public class BERPlatformInformative implements IBERRenderSubtype<AdvancedDisplay
     private List<SimpleDeparturePrediction> lastPredictions = new ArrayList<>();
 
     private static final int TIME_LABEL_WIDTH = 16;
-    private static final int TRAIN_NAME_WIDTH = 16;
     
     private static final String keyPlatform = "gui.createrailwaysnavigator.platform";
     private static final String keyLine = "gui.createrailwaysnavigator.line";
@@ -114,7 +113,7 @@ public class BERPlatformInformative implements IBERRenderSubtype<AdvancedDisplay
     }
 
     private void addLine(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason, int predictionIdx, float y) {
-        float displayWidth = blockEntity.getXSizeScaled() * 16 - 6;
+        float displayWidth = blockEntity.getXSizeScaled() * 16 - 4;
         
         // TIME
         parent.labels.add(new BERText(parent.getFontUtils(), () -> {
@@ -135,18 +134,21 @@ public class BERPlatformInformative implements IBERRenderSubtype<AdvancedDisplay
 
         // PLATFORM
         Component label = blockEntity.isPlatformFixed() ? Utils.emptyText() : Utils.text(lastPredictions.get(predictionIdx).stationInfo().platform());
-        float labelWidth = parent.getFontUtils().font.width(label) * 0.4f;
+        float labelWidth = blockEntity.getPlatformWidth() < 0 ? parent.getFontUtils().font.width(label) * 0.4f : Math.min(parent.getFontUtils().font.width(label) * 0.4f, blockEntity.getPlatformWidth() - 2);
+        int platformMaxWidth = blockEntity.getPlatformWidth() < 0 ? (int)(displayWidth - 6) : blockEntity.getPlatformWidth() - 2;
+        
         BERText lastLabel = new BERText(parent.getFontUtils(), label, 0)
             .withIsCentered(false)
-            .withMaxWidth(displayWidth, false)
-            .withStretchScale(0.25f, 0.4f)
-            .withStencil(0, displayWidth)
+            .withMaxWidth(platformMaxWidth, true)
+            .withStretchScale(0.2f, 0.4f)
+            .withStencil(0, platformMaxWidth)
             .withColor((0xFF << 24) | (blockEntity.getColor()))
-            .withPredefinedTextTransformation(new TextTransformation(displayWidth - labelWidth + 3, y, 0.01f, 1, 0.4f))
+            .withPredefinedTextTransformation(new TextTransformation(blockEntity.getXSizeScaled() * 16 - 3 - labelWidth, y, 0.01f, 1, 0.4f))
             .build();
         parent.labels.add(lastLabel);
 
-        float platformWidth = lastLabel.getScaledTextWidth();
+        float platformWidth = blockEntity.getPlatformWidth() < 0 ? lastLabel.getScaledTextWidth() + 2 : blockEntity.getPlatformWidth();
+        int trainNameWidth = blockEntity.getTrainNameWidth();
 
         lastLabel = new BERText(parent.getFontUtils(), () -> {
             List<Component> texts = new ArrayList<>();
@@ -154,9 +156,9 @@ public class BERPlatformInformative implements IBERRenderSubtype<AdvancedDisplay
             return texts;             
         }, 0)
             .withIsCentered(false)
-            .withMaxWidth(Math.min(TRAIN_NAME_WIDTH - 1, displayWidth - TIME_LABEL_WIDTH - platformWidth - 1), false)
+            .withMaxWidth(Math.min(trainNameWidth - 1, displayWidth - TIME_LABEL_WIDTH - platformWidth - 1), false)
             .withStretchScale(0.2f, 0.4f)
-            .withStencil(0, Math.min(TRAIN_NAME_WIDTH - 1, displayWidth - TIME_LABEL_WIDTH - platformWidth - 1))
+            .withStencil(0, Math.min(trainNameWidth - 1, displayWidth - TIME_LABEL_WIDTH - platformWidth - 1))
             .withColor((0xFF << 24) | (blockEntity.getColor()))
             .withPredefinedTextTransformation(new TextTransformation(TIME_LABEL_WIDTH, y, 0.01f, 1, 0.4f))
             .build()
@@ -169,12 +171,12 @@ public class BERPlatformInformative implements IBERRenderSubtype<AdvancedDisplay
             return texts;
         }, 0)
             .withIsCentered(false)
-            .withMaxWidth(displayWidth - TIME_LABEL_WIDTH - TRAIN_NAME_WIDTH - platformWidth - 2, true)
+            .withMaxWidth(displayWidth - TIME_LABEL_WIDTH - trainNameWidth - platformWidth + 1, true)
             .withStretchScale(0.25f, 0.4f)
-            .withStencil(0, displayWidth - TIME_LABEL_WIDTH - TRAIN_NAME_WIDTH - platformWidth - 2)
+            .withStencil(0, displayWidth - TIME_LABEL_WIDTH - trainNameWidth - platformWidth + 1)
             .withCanScroll(true, 1)
             .withColor((0xFF << 24) | (blockEntity.getColor()))
-            .withPredefinedTextTransformation(new TextTransformation(TIME_LABEL_WIDTH + TRAIN_NAME_WIDTH, y, 0.01f, 1, 0.4f))
+            .withPredefinedTextTransformation(new TextTransformation(TIME_LABEL_WIDTH + trainNameWidth, y, 0.01f, 1, 0.4f))
             .build()
         ;
         
@@ -183,6 +185,7 @@ public class BERPlatformInformative implements IBERRenderSubtype<AdvancedDisplay
 
     private void addNextDeparture(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason, int predictionIdx) {
         float displayWidth = blockEntity.getXSizeScaled() * 16 - 6;
+        int timeLabelWidth = TIME_LABEL_WIDTH - 3;
         // TIME
         parent.labels.add(new BERText(parent.getFontUtils(), () -> {
             List<Component> texts = new ArrayList<>();
@@ -191,9 +194,9 @@ public class BERPlatformInformative implements IBERRenderSubtype<AdvancedDisplay
             return texts;
         }, 0)
             .withIsCentered(false)
-            .withMaxWidth(TIME_LABEL_WIDTH, true)
+            .withMaxWidth(timeLabelWidth, true)
             .withStretchScale(0.2f, 0.4f)
-            .withStencil(0, TIME_LABEL_WIDTH)
+            .withStencil(0, timeLabelWidth)
             .withRefreshRate(100)
             .withColor((0xFF << 24) | (blockEntity.getColor()))
             .withPredefinedTextTransformation(new TextTransformation(3, 3, 0.0f, 1, 0.4f))
@@ -217,9 +220,9 @@ public class BERPlatformInformative implements IBERRenderSubtype<AdvancedDisplay
 
         parent.labels.add(new BERText(parent.getFontUtils(), Utils.text(lastPredictions.get(predictionIdx).trainName()), 0)
             .withIsCentered(false)
-            .withMaxWidth(TIME_LABEL_WIDTH, true)
+            .withMaxWidth(timeLabelWidth, true)
             .withStretchScale(0.15f, 0.3f)
-            .withStencil(0, TIME_LABEL_WIDTH)
+            .withStencil(0, timeLabelWidth)
             .withColor((0xFF << 24) | (blockEntity.getColor()))
             .withPredefinedTextTransformation(new TextTransformation(3, 7, 0.0f, 1, 0.3f))
             .build()
@@ -227,23 +230,23 @@ public class BERPlatformInformative implements IBERRenderSubtype<AdvancedDisplay
 
         parent.labels.add(new BERText(parent.getFontUtils(), Utils.text(lastPredictions.get(predictionIdx).scheduleTitle()).withStyle(ChatFormatting.BOLD), 0)
             .withIsCentered(false)
-            .withMaxWidth(displayWidth - TIME_LABEL_WIDTH - platformWidth - 5, true)
+            .withMaxWidth(displayWidth - timeLabelWidth - platformWidth - 5, true)
             .withStretchScale(0.3f, 0.6f)
-            .withStencil(0, displayWidth - TIME_LABEL_WIDTH - platformWidth - 5)
+            .withStencil(0, displayWidth - timeLabelWidth - platformWidth - 5)
             .withCanScroll(true, 0.5f)
             .withColor((0xFF << 24) | (blockEntity.getColor()))
-            .withPredefinedTextTransformation(new TextTransformation(3 + TIME_LABEL_WIDTH + 1, 8, 0.0f, 1, 0.6f))
+            .withPredefinedTextTransformation(new TextTransformation(3 + timeLabelWidth + 1, 8, 0.0f, 1, 0.6f))
             .build()
         );
 
         parent.labels.add(new BERText(parent.getFontUtils(), parent.getStopoversString(blockEntity), 0)
             .withIsCentered(false)
-            .withMaxWidth(displayWidth - TIME_LABEL_WIDTH - platformWidth - 5, true)
+            .withMaxWidth(displayWidth - TIME_LABEL_WIDTH - platformWidth - 2, true)
             .withStretchScale(0.2f, 0.25f)
-            .withStencil(0, displayWidth - TIME_LABEL_WIDTH - platformWidth - 5)
+            .withStencil(0, displayWidth - TIME_LABEL_WIDTH - platformWidth - 2)
             .withCanScroll(true, 0.5f)
             .withColor((0xFF << 24) | (blockEntity.getColor()))
-            .withPredefinedTextTransformation(new TextTransformation(3 + TIME_LABEL_WIDTH + 1, 5, 0.0f, 1, 0.25f))
+            .withPredefinedTextTransformation(new TextTransformation(TIME_LABEL_WIDTH + 1, 5, 0.0f, 1, 0.25f))
             .build()
         );
 
@@ -261,15 +264,14 @@ public class BERPlatformInformative implements IBERRenderSubtype<AdvancedDisplay
     }
 
     private void addHeader(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason) {
-        float displayWidth = blockEntity.getXSizeScaled() * 16 - 6;
+        float displayWidth = blockEntity.getXSizeScaled() * 16 - 4;
         float TIME_LABEL_WIDTH = 16;
-        float TRAIN_NAME_WIDTH = 16;
         
         // TIME
         parent.labels.add(new BERText(parent.getFontUtils(), Utils.translate(keyDeparture).withStyle(ChatFormatting.BOLD).withStyle(ChatFormatting.ITALIC), 0)
             .withIsCentered(false)
             .withMaxWidth(TIME_LABEL_WIDTH - 4, true)
-            .withStretchScale(0.1f, 0.3f)
+            .withStretchScale(0.15f, 0.3f)
             .withStencil(0, Math.min(TIME_LABEL_WIDTH - 4, displayWidth - 2))
             .withColor((0xFF << 24) | (blockEntity.getColor()))
             .withPredefinedTextTransformation(new TextTransformation(3, 3, 0.0f, 1, 0.3f))
@@ -278,23 +280,27 @@ public class BERPlatformInformative implements IBERRenderSubtype<AdvancedDisplay
 
         // PLATFORM
         Component label = Utils.translate(keyPlatform).withStyle(ChatFormatting.BOLD).withStyle(ChatFormatting.ITALIC);
-        float labelWidth = parent.getFontUtils().font.width(label) * 0.3f;
+        float labelWidth = blockEntity.getPlatformWidth() < 0 ? parent.getFontUtils().font.width(label) * 0.3f : Math.min(parent.getFontUtils().font.width(label) * 0.4f, blockEntity.getPlatformWidth() - 2);
+        int platformMaxWidth = blockEntity.getPlatformWidth() < 0 ? (int)(displayWidth - 6) : blockEntity.getPlatformWidth() - 2;
+        
         BERText lastLabel = new BERText(parent.getFontUtils(), label, 0)
             .withIsCentered(false)
-            .withMaxWidth(displayWidth, false)
-            .withStretchScale(0.3f, 0.3f)
-            .withStencil(0, displayWidth)
+            .withMaxWidth(platformMaxWidth, true)
+            .withStretchScale(0.15f, 0.3f)
+            .withStencil(0, platformMaxWidth)
             .withColor((0xFF << 24) | (blockEntity.getColor()))
-            .withPredefinedTextTransformation(new TextTransformation(displayWidth - labelWidth + 3, 3, 0.0f, 1, 0.3f))
+            .withPredefinedTextTransformation(new TextTransformation(blockEntity.getXSizeScaled() * 16 - 3 - labelWidth, 3, 0.0f, 1, 0.3f))
             .build();
         parent.labels.add(lastLabel);
 
-        float platformWidth = lastLabel.getScaledTextWidth();
+        float platformWidth = blockEntity.getPlatformWidth() < 0 ? lastLabel.getScaledTextWidth() + 2 : blockEntity.getPlatformWidth();
+        int trainNameWidth = blockEntity.getTrainNameWidth();
+
         lastLabel = new BERText(parent.getFontUtils(), Utils.translate(keyLine).withStyle(ChatFormatting.BOLD).withStyle(ChatFormatting.ITALIC), 0)
             .withIsCentered(false)
-            .withMaxWidth(Math.min(TRAIN_NAME_WIDTH - 1, displayWidth - TIME_LABEL_WIDTH - platformWidth - 1), true)
-            .withStretchScale(0.2f, 0.3f)
-            .withStencil(0, Math.min(TRAIN_NAME_WIDTH - 1, displayWidth - TIME_LABEL_WIDTH - platformWidth - 1))
+            .withMaxWidth(Math.min(trainNameWidth - 1, displayWidth - TIME_LABEL_WIDTH - platformWidth - 1), true)
+            .withStretchScale(0.15f, 0.3f)
+            .withStencil(0, Math.min(trainNameWidth - 1, displayWidth - TIME_LABEL_WIDTH - platformWidth - 1))
             .withColor((0xFF << 24) | (blockEntity.getColor()))
             .withPredefinedTextTransformation(new TextTransformation(TIME_LABEL_WIDTH, 3, 0.0f, 1, 0.3f))
             .build()
@@ -303,11 +309,11 @@ public class BERPlatformInformative implements IBERRenderSubtype<AdvancedDisplay
 
         lastLabel = new BERText(parent.getFontUtils(), Utils.translate(keyDestination).withStyle(ChatFormatting.BOLD).withStyle(ChatFormatting.ITALIC), 0)
             .withIsCentered(false)
-            .withMaxWidth(displayWidth - TIME_LABEL_WIDTH - TRAIN_NAME_WIDTH - platformWidth - 1, true)
-            .withStretchScale(0.2f, 0.3f)
-            .withStencil(0, displayWidth - TIME_LABEL_WIDTH - TRAIN_NAME_WIDTH - platformWidth - 1)
+            .withMaxWidth(displayWidth - TIME_LABEL_WIDTH - trainNameWidth - platformWidth + 1, true)
+            .withStretchScale(0.15f, 0.3f)
+            .withStencil(0, displayWidth - TIME_LABEL_WIDTH - trainNameWidth - platformWidth + 1)
             .withColor((0xFF << 24) | (blockEntity.getColor()))
-            .withPredefinedTextTransformation(new TextTransformation(TIME_LABEL_WIDTH + TRAIN_NAME_WIDTH, 3, 0.0f, 1, 0.3f))
+            .withPredefinedTextTransformation(new TextTransformation(TIME_LABEL_WIDTH + trainNameWidth, 3, 0.0f, 1, 0.3f))
             .build()
         ;
         
