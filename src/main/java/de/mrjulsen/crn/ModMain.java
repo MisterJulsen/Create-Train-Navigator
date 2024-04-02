@@ -16,6 +16,7 @@ import de.mrjulsen.crn.proxy.ServerInit;
 import de.mrjulsen.crn.registry.ModBlockEntities;
 import de.mrjulsen.crn.registry.ModBlocks;
 import de.mrjulsen.crn.registry.ModCreativeModeTab;
+import de.mrjulsen.crn.registry.ModExtras;
 import de.mrjulsen.crn.registry.ModItems;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -72,6 +73,7 @@ public final class ModMain {
         ModItems.register();
         ModBlockEntities.register();
         NetworkManager.create();
+        ModExtras.register();
         MinecraftForge.EVENT_BUS.register(this);
     }
 }
