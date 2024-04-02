@@ -33,10 +33,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.Widget;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 
 public class AdvancedDisplaySettingsScreen extends CommonScreen {
 
@@ -51,7 +53,10 @@ public class AdvancedDisplaySettingsScreen extends CommonScreen {
 	private final ItemStack renderedItem;
 
     // Settings
-    private final AdvancedDisplayBlockEntity blockEntity;
+    private final Level level;
+    private final BlockPos pos;
+    private EDisplayInfo info;
+    private EDisplayType type;
     private ESide side;
 
     private ScrollInput infoTypeInput;
@@ -78,14 +83,17 @@ public class AdvancedDisplaySettingsScreen extends CommonScreen {
     public AdvancedDisplaySettingsScreen(AdvancedDisplayBlockEntity blockEntity) {
         super(title);
         this.shadowlessFont = new NoShadowFontWrapper(Minecraft.getInstance().font);
-        this.blockEntity = blockEntity;
+        this.pos = blockEntity.getBlockPos();
+        this.level = blockEntity.getLevel();
+        this.info = blockEntity.getInfoType();
+        this.type = blockEntity.getDisplayType();        
         this.side = blockEntity.getBlockState().getValue(AbstractAdvancedDisplayBlock.SIDE);
         this.renderedItem = new ItemStack(blockEntity.getBlockState().getBlock());
     }
 
     @Override
-    public void onClose() {
-        NetworkManager.getInstance().sendToServer(Minecraft.getInstance().getConnection().getConnection(), new AdvancedDisplayUpdatePacket(blockEntity.getBlockPos(), blockEntity, side));
+    public void onClose() {        
+        NetworkManager.getInstance().sendToServer(Minecraft.getInstance().getConnection().getConnection(), new AdvancedDisplayUpdatePacket(level, pos, type, info, side));
         super.onClose();
     }
 
@@ -106,10 +114,10 @@ public class AdvancedDisplaySettingsScreen extends CommonScreen {
             .titled(tooltipDisplayType)
             .writingTo(displayTypeLabel)
             .calling((i) -> {
-                blockEntity.setDisplayType(EDisplayType.getTypeById(i));
+                type = EDisplayType.getTypeById(i);
             })
             .addHint(tooltipDisplayTypeDescription)
-            .setState(blockEntity.getDisplayType().getId()));
+            .setState(type.getId()));
         displayTypeInput.onChanged();
 
         infoTypeLabel = addRenderableWidget(new Label(guiLeft + 45 + 5, guiTop + 45 + 5, Components.immutableEmpty()).withShadow());
@@ -118,10 +126,10 @@ public class AdvancedDisplaySettingsScreen extends CommonScreen {
             .titled(tooltipInfoType)
             .writingTo(infoTypeLabel)
             .calling((i) -> {
-                blockEntity.setInfoType(EDisplayInfo.getTypeById(i));
+                info = EDisplayInfo.getTypeById(i);
             })
             .addHint(tooltipInfoTypeDescription)
-            .setState(blockEntity.getInfoType().getId()));
+            .setState(info.getId()));
         infoTypeInput.onChanged();
         
         sidesLabel = addRenderableWidget(new Label(guiLeft + 45 + 5, guiTop + 67 + 5, Components.immutableEmpty()).withShadow());
@@ -130,10 +138,7 @@ public class AdvancedDisplaySettingsScreen extends CommonScreen {
 			.titled(tooltipSides)
             .writingTo(sidesLabel)
             .calling((i) -> {
-                blockEntity.applyToAll(be -> {
-                    ESide newSide = ESide.getSideById(i);
-                    this.side = newSide;
-                });
+                side = ESide.getSideById(i);
             })
             .addHint(tooltipSidesDescription)
             .setState(side.getId()));
@@ -146,7 +151,7 @@ public class AdvancedDisplaySettingsScreen extends CommonScreen {
                 @Override
                 public void onClick(double mouseX, double mouseY) {
                     super.onClick(mouseX, mouseY);
-                    minecraft.setScreen(new GlobalSettingsScreen(blockEntity.getLevel(), instance));
+                    minecraft.setScreen(new GlobalSettingsScreen(level, instance));
                 }
             });
             addTooltip(Tooltip.of(tooltipGlobalSettings).assignedTo(globalSettingsButton));
@@ -177,8 +182,8 @@ public class AdvancedDisplaySettingsScreen extends CommonScreen {
 			.scale(4f)
 			.render(pPoseStack);
 
-        blockEntity.getDisplayType().getIcon().render(pPoseStack, guiLeft + 22, guiTop + 24);
-        blockEntity.getInfoType().getIcon().render(pPoseStack, guiLeft + 22, guiTop + 46);
+        type.getIcon().render(pPoseStack, guiLeft + 22, guiTop + 24);
+        info.getIcon().render(pPoseStack, guiLeft + 22, guiTop + 46);
         ModGuiIcons.DOUBLE_SIDED.render(pPoseStack, guiLeft + 22, guiTop + 68);            
 
         super.renderBg(pPoseStack, pMouseX, pMouseY, pPartialTick);
