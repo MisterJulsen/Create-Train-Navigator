@@ -1,6 +1,8 @@
 {
-    "advancement.createrailwaysnavigator.root": "Thank you for traveling",
-    "advancement.createrailwaysnavigator.root.description": "Craft a Create Railways Navigator Item to look for train connections from one train station to another.",
+    "advancement.createrailwaysnavigator.navigator": "Thank you for traveling",
+    "advancement.createrailwaysnavigator.navigator.description": "Craft a Navigator to search for train connections from one train station to another.",    
+    "advancement.createrailwaysnavigator.advanced_display": "Not quite 4k",
+    "advancement.createrailwaysnavigator.advanced_display.description": "Upgrade your display boards to display more information and even place them in your trains.",
 
     "itemGroup.createrailwaysnavigatortab": "Create Railways Navigator",
 
