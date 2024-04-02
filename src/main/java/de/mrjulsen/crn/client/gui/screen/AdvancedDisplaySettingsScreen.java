@@ -19,9 +19,11 @@ import de.mrjulsen.crn.block.AbstractAdvancedDisplayBlock;
 import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.config.ModCommonConfig;
+import de.mrjulsen.crn.data.ClientTrainStationSnapshot;
 import de.mrjulsen.crn.data.EDisplayInfo;
 import de.mrjulsen.crn.data.EDisplayType;
 import de.mrjulsen.crn.data.ESide;
+import de.mrjulsen.crn.data.GlobalSettingsManager;
 import de.mrjulsen.crn.network.NetworkManager;
 import de.mrjulsen.crn.network.packets.cts.AdvancedDisplayUpdatePacket;
 import de.mrjulsen.mcdragonlib.DragonLibConstants;
@@ -151,7 +153,12 @@ public class AdvancedDisplaySettingsScreen extends CommonScreen {
                 @Override
                 public void onClick(double mouseX, double mouseY) {
                     super.onClick(mouseX, mouseY);
-                    minecraft.setScreen(new GlobalSettingsScreen(level, instance));
+                    minecraft.setScreen(new LoadingScreen());
+                    GlobalSettingsManager.syncToClient(() -> {
+                        ClientTrainStationSnapshot.syncToClient(() -> {
+                            minecraft.setScreen(new GlobalSettingsScreen(level, instance));
+                        });
+                    });
                 }
             });
             addTooltip(Tooltip.of(tooltipGlobalSettings).assignedTo(globalSettingsButton));
