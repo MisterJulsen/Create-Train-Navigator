@@ -97,7 +97,7 @@ public class TrainUtils {
     }
 
     public static Collection<TrainStop> getTrainStopsSorted(UUID trainId, Level level) {
-        return getTrainDeparturePredictions(trainId, level).stream().map(x -> new TrainStop(x.getNextStop(), x)).sorted(Comparator.comparingInt(x -> x.getPrediction().getTicks())).toList();
+        return getTrainDeparturePredictions(trainId, level).stream().map(x -> new TrainStop(x.getNextStop(), x)).filter(x -> !GlobalSettingsManager.getInstance().getSettingsData().isBlacklisted(x.getStationAlias())).sorted(Comparator.comparingInt(x -> x.getPrediction().getTicks())).toList();
     }
 
     public static Set<SimpleTrainConnection> getConnectionsAt(String stationName, UUID currentTrainId, int ticksToNextStop) {
