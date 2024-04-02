@@ -266,6 +266,8 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
             if (pLevel.isClientSide) {
                 be.getController().getRenderer().update(pLevel, neighbourPos, pState, otherBe, EUpdateReason.BLOCK_CHANGED);
             }
+
+			pLevel.setBlockAndUpdate(pPos, pState.setValue(SIDE, pLevel.getBlockState(neighbourPos).getValue(SIDE)));
             return true;
         }
 		return false;
