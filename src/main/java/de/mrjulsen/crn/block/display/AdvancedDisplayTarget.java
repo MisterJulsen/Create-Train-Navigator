@@ -37,13 +37,23 @@ public class AdvancedDisplayTarget extends DisplayBoardTarget {
 			AdvancedDisplayBlockEntity controller = blockEntity.getController();
 			if (controller != null) {
 				List<SimpleDeparturePrediction> preds = GlobalTrainDisplayData.prepare(filter, controller.getPlatformInfoLinesCount()).stream().map(x -> new DeparturePrediction(x).simplify()).sorted(Comparator.comparingInt(x -> x.departureTicks())).toList();
- 				Set<String> stopovers = new HashSet<>();
+ 				List<String> stopovers = new ArrayList<>();
 
 				if (!preds.isEmpty()) {
 					SimpleDeparturePrediction pred = preds.iterator().next();
-					List<TrainStop> stops = new ArrayList<>(TrainUtils.getTrainStopsSorted(pred.trainId(), context.blockEntity().getLevel()).stream().skip(1).filter(x -> !GlobalSettingsManager.getInstance().getSettingsData().isBlacklisted(x.getStationAlias())).toList());
-					for (int i = 0; i < stops.size() - 1; i++) {
-						stopovers.add(stops.get(i).getStationAlias().getAliasName().get());
+					SimulatedTrainSchedule sched = SimpleTrainSchedule.of(TrainUtils.getTrainStopsSorted(pred.trainId(), context.blockEntity().getLevel())).simulate(TrainUtils.getTrain(pred.trainId()), 0, pred.stationName());
+						
+					List<TrainStop> stops = new ArrayList<>(sched.getAllStops());
+					boolean foundStart = false;
+
+					if (!stops.isEmpty()) {
+						for (int i = 0; i < stops.size() - 1; i++) {
+							TrainStop x = stops.get(i);
+							if (foundStart) {
+								stopovers.add(x.getStationAlias().getAliasName().get());
+							}
+							foundStart = foundStart || x.getPrediction().getStationName().equals(pred.stationName());
+						}
 					}
 				}
 				
