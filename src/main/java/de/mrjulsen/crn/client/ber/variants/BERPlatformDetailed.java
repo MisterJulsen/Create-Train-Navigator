@@ -1,7 +1,6 @@
 package de.mrjulsen.crn.client.ber.variants;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -29,7 +28,9 @@ public class BERPlatformDetailed implements IBERRenderSubtype<AdvancedDisplayBlo
 
     private static final String keyTime = "gui.createrailwaysnavigator.time";
 
-    private Collection<SimpleDeparturePrediction> lastPredictions = new ArrayList<>();
+    private static final int TIME_LABEL_WIDTH = 16;
+
+    private List<SimpleDeparturePrediction> lastPredictions = new ArrayList<>();
 
     private BERText timeLabel;
     private BERText[][] additionalLabels;
@@ -62,7 +63,6 @@ public class BERPlatformDetailed implements IBERRenderSubtype<AdvancedDisplayBlo
                 }
             }
         }
-        timeLabel.tick();
 
         timer++;
         if ((timer %= MAX_TIMER) == 0) {
@@ -114,6 +114,7 @@ public class BERPlatformDetailed implements IBERRenderSubtype<AdvancedDisplayBlo
         int maxLines = blockEntity.getPlatformInfoLinesCount();
         boolean refreshAll = reason != EUpdateReason.DATA_CHANGED || !ModUtils.compareCollections(lastPredictions, preds, (a, b) -> a.stationInfo().platform().equals(b.stationInfo().platform()) && a.trainId().equals(b.trainId()));
         
+        lastPredictions = preds;
 
         if (refreshAll) {
             additionalLabels = null;
@@ -121,68 +122,85 @@ public class BERPlatformDetailed implements IBERRenderSubtype<AdvancedDisplayBlo
             additionalLabels = new BERText[Math.min(preds.size(), maxLines)][];
 
             for (int i = 0; i < additionalLabels.length; i++) {
-                additionalLabels[i] = addLine(level, pos, state, blockEntity, parent, reason, preds.get(i), 4 + (i * 5.4f), i >= maxLines - 1);
+                additionalLabels[i] = addLine(level, pos, state, blockEntity, parent, reason, i, 4 + (i * 5.4f));
             }
             setTimer(level, pos, state, blockEntity, parent, reason, 4 + ((additionalLabels.length < maxLines ? additionalLabels.length : maxLines - 1) * 5.34f));
         }
-        lastPredictions = preds;
 
     }
 
-    private BERText[] addLine(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason, SimpleDeparturePrediction prediction, float y, boolean lastPossibleLine) {
-        float displayWidth = blockEntity.getXSizeScaled() * 16 - 6;
-        float maxTimeWidth = 12;
+    
+    private BERText[] addLine(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason, int predictionIdx, float y) {
+        float displayWidth = blockEntity.getXSizeScaled() * 16 - 4;
 
-        BERText[] labels = new BERText[3];
-        
-        labels[0] = new BERText(parent.getFontUtils(), () -> {
+        BERText[] labels = new BERText[4];
+
+        // PLATFORM
+        Component label = Utils.text(lastPredictions.get(predictionIdx).stationInfo().platform());
+        float labelWidth = blockEntity.getPlatformWidth() < 0 ? parent.getFontUtils().font.width(label) * 0.4f : Math.min(parent.getFontUtils().font.width(label) * 0.4f, blockEntity.getPlatformWidth() - 2);
+        int platformMaxWidth = blockEntity.getPlatformWidth() < 0 ? (int)(displayWidth - 6) : blockEntity.getPlatformWidth() - 2;
+
+        BERText lastLabel = new BERText(parent.getFontUtils(), label, 0)
+            .withIsCentered(false)
+            .withMaxWidth(platformMaxWidth, true)
+            .withStretchScale(0.2f, 0.4f)
+            .withStencil(0, platformMaxWidth)
+            .withColor((0xFF << 24) | (blockEntity.getColor()))
+            .withPredefinedTextTransformation(new TextTransformation(blockEntity.getXSizeScaled() * 16 - 3 - labelWidth, y, 0.01f, 1, 0.4f))
+            .build();
+        labels[0] = lastLabel;
+
+        // TIME
+        labels[1] = new BERText(parent.getFontUtils(), () -> {
             List<Component> texts = new ArrayList<>();
-            int rawTime = (int)(blockEntity.getLastRefreshedTime() % DragonLibConstants.TICKS_PER_DAY + Constants.TIME_SHIFT + prediction.departureTicks());
+            int rawTime = (int)(blockEntity.getLastRefreshedTime() % DragonLibConstants.TICKS_PER_DAY + Constants.TIME_SHIFT + lastPredictions.get(predictionIdx).departureTicks());
             texts.add(Utils.text(TimeUtils.parseTime(rawTime - rawTime % ModClientConfig.REALTIME_PRECISION_THRESHOLD.get(), ModClientConfig.TIME_FORMAT.get())));
             return texts;
         }, 0)
             .withIsCentered(false)
-            .withMaxWidth(maxTimeWidth, true)
+            .withMaxWidth(TIME_LABEL_WIDTH - 4, true)
             .withStretchScale(0.2f, 0.4f)
-            .withStencil(0, maxTimeWidth)
-            .withCanScroll(true, 1)
+            .withStencil(0, TIME_LABEL_WIDTH - 4)
             .withColor((0xFF << 24) | (blockEntity.getColor()))
-            .withPredefinedTextTransformation(new TextTransformation(3, y, 0.0f, 1, 0.4f))
+            .withRefreshRate(100)
+            .withPredefinedTextTransformation(new TextTransformation(3, y, 0.01f, 1, 0.4f))
             .build()
-        ;
+        ;        
 
-        // PLATFORM
-        Component label = Utils.text(prediction.stationInfo().platform());
-        float labelWidth = parent.getFontUtils().font.width(label) * 0.4f;
-        BERText lastLabel = new BERText(parent.getFontUtils(), label, 0)
-            .withIsCentered(false)
-            .withMaxWidth(displayWidth, false)
-            .withStretchScale(0.25f, 0.4f)
-            .withStencil(0, displayWidth)
-            .withColor((0xFF << 24) | (blockEntity.getColor()))
-            .withPredefinedTextTransformation(new TextTransformation(displayWidth - labelWidth + 3, y, 0.0f, 1, 0.4f))
-            .build();
-        labels[1] = lastLabel;
+        float platformWidth = blockEntity.getPlatformWidth() < 0 ? lastLabel.getScaledTextWidth() + 2 : blockEntity.getPlatformWidth();
+        int trainNameWidth = blockEntity.getTrainNameWidth();
 
-        float platformWidth = lastLabel.getScaledTextWidth();
-
-        labels[2] = new BERText(parent.getFontUtils(), () -> {
+        lastLabel = new BERText(parent.getFontUtils(), () -> {
             List<Component> texts = new ArrayList<>();
-            texts.add(Utils.text(prediction.trainName() + " " + prediction.scheduleTitle()));
+            texts.add(Utils.text(lastPredictions.get(predictionIdx).trainName()));
             return texts;             
         }, 0)
-            .withIsCentered(true)
-            .withMaxWidth(displayWidth - maxTimeWidth - platformWidth - 2, true)
-            .withStretchScale(0.25f, 0.4f)
-            .withStencil(0, displayWidth - maxTimeWidth - platformWidth - 2)
-            .withCanScroll(true, 1)
-            .withTicksPerPage(100)
-            .withRefreshRate(lastPossibleLine ? 16 : 0)
+            .withIsCentered(false)
+            .withMaxWidth(Math.min(trainNameWidth - 1, displayWidth - TIME_LABEL_WIDTH - platformWidth - 1), false)
+            .withStretchScale(0.2f, 0.4f)
+            .withStencil(0, Math.min(trainNameWidth - 1, displayWidth - TIME_LABEL_WIDTH - platformWidth - 1))
             .withColor((0xFF << 24) | (blockEntity.getColor()))
-            .withPredefinedTextTransformation(new TextTransformation(3 + maxTimeWidth + 1, y, 0.0f, 1, 0.4f))
+            .withPredefinedTextTransformation(new TextTransformation(TIME_LABEL_WIDTH, y, 0.01f, 1, 0.4f))
+            .build()
+        ;        
+        labels[2] = lastLabel;
+
+        lastLabel = new BERText(parent.getFontUtils(), () -> {
+            List<Component> texts = new ArrayList<>();
+            texts.add(Utils.text(lastPredictions.get(predictionIdx).scheduleTitle()));
+            return texts;
+        }, 0)
+            .withIsCentered(false)
+            .withMaxWidth(displayWidth - TIME_LABEL_WIDTH - trainNameWidth - platformWidth + 1, true)
+            .withStretchScale(0.25f, 0.4f)
+            .withStencil(0, displayWidth - TIME_LABEL_WIDTH - trainNameWidth - platformWidth + 1)
+            .withCanScroll(true, 1)
+            .withColor((0xFF << 24) | (blockEntity.getColor()))
+            .withPredefinedTextTransformation(new TextTransformation(TIME_LABEL_WIDTH + trainNameWidth, y, 0.01f, 1, 0.4f))
             .build()
         ;
-
+        
+        labels[3] = lastLabel;
         return labels;
     }
 

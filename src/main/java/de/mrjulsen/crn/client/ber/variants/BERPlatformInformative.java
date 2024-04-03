@@ -78,10 +78,12 @@ public class BERPlatformInformative implements IBERRenderSubtype<AdvancedDisplay
     public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason) {
         List<SimpleDeparturePrediction> preds = blockEntity.getPredictions();
         boolean isPlatformFixed = blockEntity.isPlatformFixed();
+        /*
         if (preds.size() <= 0) {
             parent.labels.clear();
             return;
         }
+        */
         
         int maxLines = blockEntity.getPlatformInfoLinesCount() - (isPlatformFixed ? 1 : 0) ;
         boolean refreshAll = reason != EUpdateReason.DATA_CHANGED ||
@@ -100,7 +102,7 @@ public class BERPlatformInformative implements IBERRenderSubtype<AdvancedDisplay
                 addHeader(level, pos, state, blockEntity, parent, reason);
             }
 
-            if (isPlatformFixed) {
+            if (isPlatformFixed && preds.size() > 0) {
                 for (int i = 1; i < maxLines && i < preds.size(); i++) {
                     addLine(level, pos, state, blockEntity, parent, reason, i, 4 + ((i + 2) * 5.4f));
                 }
@@ -115,6 +117,21 @@ public class BERPlatformInformative implements IBERRenderSubtype<AdvancedDisplay
     private void addLine(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason, int predictionIdx, float y) {
         float displayWidth = blockEntity.getXSizeScaled() * 16 - 4;
         
+        // PLATFORM
+        Component label = blockEntity.isPlatformFixed() ? Utils.emptyText() : Utils.text(lastPredictions.get(predictionIdx).stationInfo().platform());
+        float labelWidth = blockEntity.getPlatformWidth() < 0 ? parent.getFontUtils().font.width(label) * 0.4f : Math.min(parent.getFontUtils().font.width(label) * 0.4f, blockEntity.getPlatformWidth() - 2);
+        int platformMaxWidth = blockEntity.getPlatformWidth() < 0 ? (int)(displayWidth - 6) : blockEntity.getPlatformWidth() - 2;
+
+        BERText lastLabel = new BERText(parent.getFontUtils(), label, 0)
+            .withIsCentered(false)
+            .withMaxWidth(platformMaxWidth, true)
+            .withStretchScale(0.2f, 0.4f)
+            .withStencil(0, platformMaxWidth)
+            .withColor((0xFF << 24) | (blockEntity.getColor()))
+            .withPredefinedTextTransformation(new TextTransformation(blockEntity.getXSizeScaled() * 16 - 3 - labelWidth, y, 0.01f, 1, 0.4f))
+            .build();
+        parent.labels.add(lastLabel);
+
         // TIME
         parent.labels.add(new BERText(parent.getFontUtils(), () -> {
             List<Component> texts = new ArrayList<>();
@@ -130,22 +147,7 @@ public class BERPlatformInformative implements IBERRenderSubtype<AdvancedDisplay
             .withRefreshRate(100)
             .withPredefinedTextTransformation(new TextTransformation(3, y, 0.01f, 1, 0.4f))
             .build()
-        );
-
-        // PLATFORM
-        Component label = blockEntity.isPlatformFixed() ? Utils.emptyText() : Utils.text(lastPredictions.get(predictionIdx).stationInfo().platform());
-        float labelWidth = blockEntity.getPlatformWidth() < 0 ? parent.getFontUtils().font.width(label) * 0.4f : Math.min(parent.getFontUtils().font.width(label) * 0.4f, blockEntity.getPlatformWidth() - 2);
-        int platformMaxWidth = blockEntity.getPlatformWidth() < 0 ? (int)(displayWidth - 6) : blockEntity.getPlatformWidth() - 2;
-        
-        BERText lastLabel = new BERText(parent.getFontUtils(), label, 0)
-            .withIsCentered(false)
-            .withMaxWidth(platformMaxWidth, true)
-            .withStretchScale(0.2f, 0.4f)
-            .withStencil(0, platformMaxWidth)
-            .withColor((0xFF << 24) | (blockEntity.getColor()))
-            .withPredefinedTextTransformation(new TextTransformation(blockEntity.getXSizeScaled() * 16 - 3 - labelWidth, y, 0.01f, 1, 0.4f))
-            .build();
-        parent.labels.add(lastLabel);
+        );        
 
         float platformWidth = blockEntity.getPlatformWidth() < 0 ? lastLabel.getScaledTextWidth() + 2 : blockEntity.getPlatformWidth();
         int trainNameWidth = blockEntity.getTrainNameWidth();
@@ -186,6 +188,26 @@ public class BERPlatformInformative implements IBERRenderSubtype<AdvancedDisplay
     private void addNextDeparture(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason, int predictionIdx) {
         float displayWidth = blockEntity.getXSizeScaled() * 16 - 6;
         int timeLabelWidth = TIME_LABEL_WIDTH - 3;
+
+        // PLATFORM
+        Component label = Utils.text(blockEntity.getStationInfo().platform()).withStyle(ChatFormatting.BOLD);
+        float labelWidth = parent.getFontUtils().font.width(label) * 0.8f;
+        BERText lastLabel = new BERText(parent.getFontUtils(), label, 0)
+            .withIsCentered(false)
+            .withMaxWidth(displayWidth, true)
+            .withStretchScale(0.8f, 0.8f)
+            .withStencil(0, displayWidth)
+            .withColor((0xFF << 24) | (blockEntity.getColor()))
+            .withPredefinedTextTransformation(new TextTransformation(displayWidth - labelWidth + 3, 3, 0.0f, 1, 1f))
+            .build();
+        parent.labels.add(lastLabel);
+        
+        if (lastPredictions.size() <= 0) {
+            return;
+        }
+
+        float platformWidth = lastLabel.getScaledTextWidth();
+
         // TIME
         parent.labels.add(new BERText(parent.getFontUtils(), () -> {
             List<Component> texts = new ArrayList<>();
@@ -202,21 +224,6 @@ public class BERPlatformInformative implements IBERRenderSubtype<AdvancedDisplay
             .withPredefinedTextTransformation(new TextTransformation(3, 3, 0.0f, 1, 0.4f))
             .build()
         );
-
-        // PLATFORM
-        Component label = Utils.text(lastPredictions.get(predictionIdx).stationInfo().platform()).withStyle(ChatFormatting.BOLD);
-        float labelWidth = parent.getFontUtils().font.width(label) * 0.8f;
-        BERText lastLabel = new BERText(parent.getFontUtils(), label, 0)
-            .withIsCentered(false)
-            .withMaxWidth(displayWidth, true)
-            .withStretchScale(0.8f, 0.8f)
-            .withStencil(0, displayWidth)
-            .withColor((0xFF << 24) | (blockEntity.getColor()))
-            .withPredefinedTextTransformation(new TextTransformation(displayWidth - labelWidth + 3, 3, 0.0f, 1, 1f))
-            .build();
-        parent.labels.add(lastLabel);
-
-        float platformWidth = lastLabel.getScaledTextWidth();
 
         parent.labels.add(new BERText(parent.getFontUtils(), Utils.text(lastPredictions.get(predictionIdx).trainName()), 0)
             .withIsCentered(false)
@@ -287,7 +294,7 @@ public class BERPlatformInformative implements IBERRenderSubtype<AdvancedDisplay
             .withIsCentered(false)
             .withMaxWidth(platformMaxWidth, true)
             .withStretchScale(0.15f, 0.3f)
-            .withStencil(0, platformMaxWidth)
+            .withStencil(0, labelWidth)
             .withColor((0xFF << 24) | (blockEntity.getColor()))
             .withPredefinedTextTransformation(new TextTransformation(blockEntity.getXSizeScaled() * 16 - 3 - labelWidth, 3, 0.0f, 1, 0.3f))
             .build();
