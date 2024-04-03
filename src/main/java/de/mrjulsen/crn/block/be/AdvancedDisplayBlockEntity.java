@@ -24,6 +24,7 @@ import de.mrjulsen.crn.data.EDisplayType;
 import de.mrjulsen.crn.data.IBlockEntitySerializable;
 import de.mrjulsen.crn.data.DeparturePrediction.TrainExitSide;
 import de.mrjulsen.crn.data.EDisplayType.EDisplayTypeDataSource;
+import de.mrjulsen.crn.data.TrainStationAlias.StationInfo;
 import de.mrjulsen.crn.data.DeparturePrediction.SimpleDeparturePrediction;
 import de.mrjulsen.crn.network.InstanceManager;
 import de.mrjulsen.crn.network.NetworkManager;
@@ -68,7 +69,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     private static final String NBT_DISPLAY_TYPE = "DisplayType";
     private static final String NBT_PREDICTIONS = "Predictions";
     private static final String NBT_NEXT_DEPARTURE_STOPOVERS = "NextStopovers";
-    private static final String NBT_PLATFORM_FIXED = "IsPlatformFixed";
+    private static final String NBT_FILTER = "Filter";
     private static final String NBT_LAST_REFRESH_TIME = "LastRefreshed";
     private static final String NBT_PLATFORM_WIDTH = "PlatformWidth";
     private static final String NBT_TRAIN_NAME_WIDTH = "TrainNameWidth";
@@ -82,7 +83,8 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     private boolean isController;
     private List<SimpleDeparturePrediction> predictions;
     private List<String> nextDepartureStopovers;
-    private boolean fixedPlatform;
+    private String stationNameFilter;
+    private StationInfo stationInfo;
     private byte trainNameWidth;
     private byte platformWidth;
 
@@ -252,7 +254,15 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     }
 
     public boolean isPlatformFixed() {
-        return fixedPlatform;
+        return !stationNameFilter.contains("*");
+    }
+
+    public StationInfo getStationInfo() {
+        return stationInfo;
+    }
+
+    public String getStationNameFilter() {
+        return stationNameFilter;
     }
 
 	public boolean isSingleLine() {
@@ -307,9 +317,10 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         }
     }
 
-    public void setDepartureData(List<SimpleDeparturePrediction> predictions, List<String> nextDepartureStopovers, boolean fixedPlatform, long lastRefreshedTime, byte platformWidth, byte trainNameWidth) {
+    public void setDepartureData(List<SimpleDeparturePrediction> predictions, List<String> nextDepartureStopovers, String stationNameFilter, StationInfo staionInfo, long lastRefreshedTime, byte platformWidth, byte trainNameWidth) {
         this.predictions = predictions.stream().sorted(Comparator.comparingInt(x -> x.departureTicks())).toList();
-        this.fixedPlatform = fixedPlatform;
+        this.stationNameFilter = stationNameFilter;
+        this.stationInfo = staionInfo;
         this.nextDepartureStopovers = nextDepartureStopovers;
         this.lastRefreshedTime = lastRefreshedTime;
         this.platformWidth = platformWidth;
@@ -395,9 +406,10 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     public void reset() {
         predictions = List.of();
         nextDepartureStopovers = List.of();
-        fixedPlatform = false;
+        stationNameFilter = "";
         platformWidth = -1;
         trainNameWidth = 16;
+        stationInfo = StationInfo.empty();
     }
 
     public void updateControllerStatus() {
@@ -498,15 +510,19 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 
         if (getDisplayType().getSource() != EDisplayTypeDataSource.TRAIN_INFORMATION) {
             return;
-        }        
+        }
 
         syncTicks++;       
         if ((syncTicks %= 100) == 0) {
             CarriageContraption carriage = (CarriageContraption)contraption; 
             long id = InstanceManager.registerClientTrainDataResponseAction((data, refreshTime) -> {
+                if (data == null) {
+                    return;
+                }
                 boolean shouldUpdate = false;
                 if (trainData != null && trainData.getNextStop().isPresent() && data.getNextStop().isPresent()) {
                     SimpleDeparturePrediction prediction = trainData.getNextStop().get();
+
                     shouldUpdate = !trainData.trainName().equals(data.trainName()) ||
                         !prediction.scheduleTitle().equals(data.predictions().get(0).scheduleTitle()) ||
                         !prediction.stationTagName().equals(data.predictions().get(0).stationTagName()) ||
@@ -518,7 +534,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
                 this.trainData = data;
                 this.carriageData = new CarriageData(((CarriageContraptionEntity)carriage.entity).carriageIndex, carriage.getAssemblyDirection(), data.isOppositeDirection());
                 this.relativeExitDirection.clear();
-
+                
                 if (shouldUpdate) {
                     getRenderer().update(level, pos, state, this, EUpdateReason.DATA_CHANGED);
                 }
@@ -536,11 +552,13 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         pTag.putBoolean(NBT_CONTROLLER, isController());
         pTag.putInt(NBT_INFO_TYPE, getInfoType().getId());
         pTag.putInt(NBT_DISPLAY_TYPE, getDisplayType().getId());
-        pTag.putBoolean(NBT_PLATFORM_FIXED, isPlatformFixed());
+        pTag.putString(NBT_FILTER, getStationNameFilter());
         pTag.putBoolean(NBT_GLOWING, isGlowing());
         pTag.putLong(NBT_LAST_REFRESH_TIME, getLastRefreshedTime());
         pTag.putByte(NBT_PLATFORM_WIDTH, getPlatformWidth());
         pTag.putByte(NBT_TRAIN_NAME_WIDTH, getTrainNameWidth());
+
+        getStationInfo().writeNbt(pTag);
 
         if (getPredictions() != null && !getPredictions().isEmpty()) {            
             ListTag list = new ListTag();
@@ -572,6 +590,9 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         }
 
 		super.read(pTag, clientPacket);
+
+        StationInfo info = StationInfo.fromNbt(pTag);
+
         xSize = pTag.getByte(NBT_XSIZE);
         ySize = pTag.getByte(NBT_YSIZE);
         color = pTag.getInt(NBT_COLOR);
@@ -582,7 +603,8 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         setDepartureData(
             pTag.contains(NBT_PREDICTIONS) ? new ArrayList<>(pTag.getList(NBT_PREDICTIONS, Tag.TAG_COMPOUND).stream().map(x -> SimpleDeparturePrediction.fromNbt((CompoundTag)x)).toList()) : new ArrayList<>(),
             pTag.contains(NBT_NEXT_DEPARTURE_STOPOVERS) ? pTag.getList(NBT_NEXT_DEPARTURE_STOPOVERS, Tag.TAG_STRING).stream().map(x -> ((StringTag)x).getAsString()).toList() : new ArrayList<>(),
-            pTag.getBoolean(NBT_PLATFORM_FIXED),
+            pTag.getString(NBT_FILTER),
+            info,
             pTag.getLong(NBT_LAST_REFRESH_TIME),
             pTag.getByte(NBT_PLATFORM_WIDTH),
             pTag.getByte(NBT_TRAIN_NAME_WIDTH)

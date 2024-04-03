@@ -10,6 +10,7 @@ import com.simibubi.create.content.trains.display.GlobalTrainDisplayData;
 
 import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.data.DeparturePrediction;
+import de.mrjulsen.crn.data.GlobalSettingsManager;
 import de.mrjulsen.crn.data.TrainStop;
 import de.mrjulsen.crn.data.DeparturePrediction.SimpleDeparturePrediction;
 import de.mrjulsen.crn.data.SimpleTrainSchedule;
@@ -34,7 +35,6 @@ public class AdvancedDisplayTarget extends DisplayBoardTarget {
 		}
 
 		String filter = context.sourceConfig().getString("Filter");
-		boolean fixedPlatform = !filter.contains("*");
 
 		if (context.getTargetBlockEntity() instanceof AdvancedDisplayBlockEntity blockEntity) {
 			final AdvancedDisplayBlockEntity controller = blockEntity.getController();
@@ -63,7 +63,8 @@ public class AdvancedDisplayTarget extends DisplayBoardTarget {
 				controller.setDepartureData(
 					preds,
 					stopovers,
-					fixedPlatform,
+					filter,
+					GlobalSettingsManager.getInstance().getSettingsData().getAliasFor(filter).getInfoForStation(filter),
 					context.getTargetBlockEntity().getLevel().getDayTime(),
 					(byte)context.sourceConfig().getInt(AdvancedDisplaySource.NBT_PLATFORM_WIDTH),
 					(byte)context.sourceConfig().getInt(AdvancedDisplaySource.NBT_TRAIN_NAME_WIDTH)
