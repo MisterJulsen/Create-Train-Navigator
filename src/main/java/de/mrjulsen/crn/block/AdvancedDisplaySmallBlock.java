@@ -7,6 +7,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition.Builder;
@@ -59,6 +60,16 @@ public class AdvancedDisplaySmallBlock extends AbstractAdvancedDisplayBlock {
 			return stateForPlacement.setValue(HALF, Half.TOP);
 		return stateForPlacement;
 	}
+
+    @Override
+    public boolean canConnectWithBlock(Level level, BlockPos selfPos, BlockPos otherPos) {
+        return level.getBlockState(otherPos).getBlock() instanceof AdvancedDisplaySmallBlock && level.getBlockState(selfPos).getValue(HALF) == level.getBlockState(otherPos).getValue(HALF);
+    }
+
+    @Override
+    protected boolean canConnect(LevelAccessor level, BlockPos pos, BlockState state, BlockState other) {
+        return super.canConnect(level, pos, state, other) && state.getValue(HALF) == other.getValue(HALF);
+    }
 
 	@Override
 	protected void createBlockStateDefinition(Builder<Block, BlockState> pBuilder) {

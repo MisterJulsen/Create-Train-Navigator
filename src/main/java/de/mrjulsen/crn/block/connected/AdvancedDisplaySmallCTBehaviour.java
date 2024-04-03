@@ -4,6 +4,7 @@ import com.simibubi.create.foundation.block.connected.CTSpriteShiftEntry;
 import com.simibubi.create.foundation.block.connected.ConnectedTextureBehaviour;
 
 import de.mrjulsen.crn.block.AbstractAdvancedDisplayBlock;
+import de.mrjulsen.crn.block.AdvancedDisplaySmallBlock;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -13,15 +14,15 @@ import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class RightLeftCTBehaviour extends ConnectedTextureBehaviour.Base {
+public class AdvancedDisplaySmallCTBehaviour extends ConnectedTextureBehaviour.Base {
     protected CTSpriteShiftEntry topShift;
 	protected CTSpriteShiftEntry layerShift;
 
-	public RightLeftCTBehaviour(CTSpriteShiftEntry layerShift) {
+	public AdvancedDisplaySmallCTBehaviour(CTSpriteShiftEntry layerShift) {
 		this(layerShift, null);
 	}
 
-	public RightLeftCTBehaviour(CTSpriteShiftEntry layerShift, CTSpriteShiftEntry topShift) {
+	public AdvancedDisplaySmallCTBehaviour(CTSpriteShiftEntry layerShift, CTSpriteShiftEntry topShift) {
 		this.layerShift = layerShift;
 		this.topShift = topShift;
 	}
@@ -52,6 +53,9 @@ public class RightLeftCTBehaviour extends ConnectedTextureBehaviour.Base {
 			return false;
 		}
 		if (other.getValue(AbstractAdvancedDisplayBlock.SIDE) != state.getValue(AbstractAdvancedDisplayBlock.SIDE)) {
+			return false;
+		}
+		if (other.getValue(AdvancedDisplaySmallBlock.HALF) != state.getValue(AdvancedDisplaySmallBlock.HALF)) {
 			return false;
 		}
             

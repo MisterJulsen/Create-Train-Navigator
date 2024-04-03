@@ -23,7 +23,7 @@ import de.mrjulsen.crn.block.AdvancedDisplayPanelBlock;
 import de.mrjulsen.crn.block.AdvancedDisplaySmallBlock;
 import de.mrjulsen.crn.block.TrainStationClockBlock;
 import de.mrjulsen.crn.block.connected.AdvancedDisplayCTBehaviour;
-import de.mrjulsen.crn.block.connected.RightLeftCTBehaviour;
+import de.mrjulsen.crn.block.connected.AdvancedDisplaySmallCTBehaviour;
 import de.mrjulsen.crn.block.display.AdvancedDisplayTarget;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
@@ -67,7 +67,7 @@ public class ModBlocks {
 		.register();
 
 	public static final BlockEntry<AdvancedDisplaySmallBlock> ADVANCED_DISPLAY_SMALL = ModMain.REGISTRATE.block("advanced_display_small", AdvancedDisplaySmallBlock::new)
-		.onRegister(connectedTextures(() -> new RightLeftCTBehaviour(CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL, CT_ADVANCED_DISPLAY_SMALL)))
+		.onRegister(connectedTextures(() -> new AdvancedDisplaySmallCTBehaviour(CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL, CT_ADVANCED_DISPLAY_SMALL)))
 		.addLayer(() -> RenderType::cutout)
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())

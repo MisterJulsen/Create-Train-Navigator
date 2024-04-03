@@ -12,6 +12,11 @@ public class AdvancedDisplayBlock extends AbstractAdvancedDisplayBlock {
     }
 
     @Override
+    public boolean canConnectWithBlock(Level level, BlockPos selfPos, BlockPos otherPos) {
+        return true;
+    }
+
+    @Override
     public Pair<Float, Float> getRenderAspectRatio(Level level, BlockState blockState, BlockPos pos) {
         return Pair.of(1.0F, 1.0F);
     }

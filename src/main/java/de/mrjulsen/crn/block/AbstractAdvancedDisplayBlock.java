@@ -197,6 +197,8 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 		return other.getBlock() == this && state.getValue(FACING) == other.getValue(FACING);
 	}
 
+	public abstract boolean canConnectWithBlock(Level level, BlockPos selfPos, BlockPos otherPos);
+
 	protected Axis getConnectionAxis(BlockState state) {
 		return state.getValue(FACING).getClockWise().getAxis();
 	}
