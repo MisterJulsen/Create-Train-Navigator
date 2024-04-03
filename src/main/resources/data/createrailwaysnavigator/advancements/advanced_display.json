@@ -21,7 +21,7 @@
         "conditions": {
           "items": [
             {
-              "tag": "createrailwaysnavigator:blocks/advanced_displays"
+              "tag": "createrailwaysnavigator:advanced_displays"
             }
           ]
         }
