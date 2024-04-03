@@ -51,7 +51,7 @@ public class SimpleTrainSchedule {
     }
 
     public SimpleTrainSchedule makeScheduleUntilNextRepeat() {
-        Set<TrainStop> newList = new HashSet<>();
+        List<TrainStop> newList = new ArrayList<>();
         for (TrainStop stop : getAllStops()) {
             if (newList.contains(stop)) {
                 break;
