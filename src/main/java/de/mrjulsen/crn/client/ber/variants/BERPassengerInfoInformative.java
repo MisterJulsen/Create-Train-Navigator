@@ -28,7 +28,6 @@ import de.mrjulsen.mcdragonlib.utils.TimeUtils;
 import de.mrjulsen.mcdragonlib.utils.Utils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -152,8 +151,8 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
     public void renderAdditional(BlockEntityRendererContext context, AdvancedDisplayBlockEntity pBlockEntity, AdvancedDisplayRenderInstance parent, float pPartialTicks, PoseStack pPoseStack, MultiBufferSource pBufferSource, int pPackedLight, int pOverlay, Boolean backSide) {
 
         // render title bar
-        timeLabel.render(pPoseStack, pBufferSource, pBlockEntity.isGlowing() ? LightTexture.FULL_BRIGHT : pPackedLight);
-        titleLabel.render(pPoseStack, pBufferSource, pBlockEntity.isGlowing() ? LightTexture.FULL_BRIGHT : pPackedLight);
+        timeLabel.render(pPoseStack, pBufferSource, pPackedLight);
+        titleLabel.render(pPoseStack, pBufferSource, pPackedLight);
 
         context.renderUtils().initRenderEngine();
         context.renderUtils().fillColor(pBufferSource, pBlockEntity, (0xFF << 24) | (pBlockEntity.getColor() & 0x00FFFFFF), pPoseStack, 2.5f, 4.75f, 0.0f, pBlockEntity.getXSizeScaled() * 16 - 5, 0.25f, pBlockEntity.getBlockState().getValue(HorizontalDirectionalBlock.FACING), pPackedLight);
@@ -253,7 +252,7 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
                 uv * ((side == TrainExitSide.RIGHT ? ModGuiIcons.ARROW_RIGHT : ModGuiIcons.ARROW_LEFT).getV() + ModGuiIcons.ICON_SIZE),
                 pBlockEntity.getBlockState().getValue(HorizontalDirectionalBlock.FACING),
                 (0xFF << 24) | (pBlockEntity.getColor()),
-                LightTexture.FULL_BRIGHT
+                pPackedLight
             );
         }
     }

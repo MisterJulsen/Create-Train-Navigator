@@ -17,7 +17,6 @@ import de.mrjulsen.crn.data.DeparturePrediction.TrainExitSide;
 import de.mrjulsen.crn.event.listeners.JourneyListener.State;
 import de.mrjulsen.mcdragonlib.utils.TimeUtils;
 import de.mrjulsen.mcdragonlib.utils.Utils;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.MutableComponent;
@@ -113,7 +112,7 @@ public class BERPassengerInfoDetailed implements IBERRenderSubtype<AdvancedDispl
                         uv * (ModGuiIcons.ARROW_RIGHT.getV() + ModGuiIcons.ICON_SIZE),
                         pBlockEntity.getBlockState().getValue(HorizontalDirectionalBlock.FACING),
                         (0xFF << 24) | (pBlockEntity.getColor()),
-                        LightTexture.FULL_BRIGHT
+                        pPackedLight
                     );
                     break;
                 case LEFT:
@@ -133,7 +132,7 @@ public class BERPassengerInfoDetailed implements IBERRenderSubtype<AdvancedDispl
                         uv * (ModGuiIcons.ARROW_LEFT.getV() + ModGuiIcons.ICON_SIZE),
                         pBlockEntity.getBlockState().getValue(HorizontalDirectionalBlock.FACING),
                         (0xFF << 24) | (pBlockEntity.getColor()),
-                        LightTexture.FULL_BRIGHT
+                        pPackedLight
                     );
                     break;
                 default:

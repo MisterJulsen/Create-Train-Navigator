@@ -113,7 +113,7 @@ public class AdvancedDisplayRenderInstance extends AbstractBlockEntityRenderInst
                 pPoseStack.pushPose();
                 pPoseStack.translate(offset.getFirst(), offset.getSecond(), zOffset.getFirst());
                 pPoseStack.scale(scale, scale, 1);   
-                renderSubtype.renderAdditional(context, pBlockEntity, this, pPartialTicks, pPoseStack, pBufferSource, pBlockEntity.isGlowing() ? LightTexture.FULL_BRIGHT : pPackedLight, pOverlay, false);
+                renderSubtype.renderAdditional(context, pBlockEntity, this, pPartialTicks, pPoseStack, pBufferSource, light, pOverlay, false);
                 labels.forEach(x -> x.render(pPoseStack, pBufferSource, light)); 
                 pPoseStack.popPose();
             }
@@ -123,7 +123,7 @@ public class AdvancedDisplayRenderInstance extends AbstractBlockEntityRenderInst
                 pPoseStack.translate(-pBlockEntity.getXSize() * 16, 0, -16);
                 pPoseStack.translate(offset.getFirst(), offset.getSecond(), zOffset.getSecond());
                 pPoseStack.scale(scale, scale, 1); 
-                renderSubtype.renderAdditional(context, pBlockEntity, this, pPartialTicks, pPoseStack, pBufferSource, pBlockEntity.isGlowing() ? LightTexture.FULL_BRIGHT : pPackedLight, pOverlay, true);
+                renderSubtype.renderAdditional(context, pBlockEntity, this, pPartialTicks, pPoseStack, pBufferSource, light, pOverlay, true);
                 labels.forEach(x -> x.render(pPoseStack, pBufferSource, light));
                 pPoseStack.popPose();
             }
