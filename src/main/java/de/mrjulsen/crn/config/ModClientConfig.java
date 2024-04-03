@@ -15,6 +15,7 @@ public class ModClientConfig {
     public static final ForgeConfigSpec.ConfigValue<Integer> REALTIME_PRECISION_THRESHOLD;
     public static final ForgeConfigSpec.ConfigValue<Integer> DEVIATION_THRESHOLD;
     public static final ForgeConfigSpec.ConfigValue<Integer> NEXT_STOP_ANNOUNCEMENT;
+    public static final ForgeConfigSpec.ConfigValue<Integer> DISPLAY_LEAD_TIME;
     public static final ForgeConfigSpec.ConfigValue<Integer> REALTIME_EARLY_ARRIVAL_THRESHOLD;
     public static final ForgeConfigSpec.ConfigValue<Double> OVERLAY_SCALE;
     public static final ForgeConfigSpec.ConfigValue<Integer> TRANSFER_TIME;
@@ -40,6 +41,8 @@ public class ModClientConfig {
             .defineInRange("general.next_stop_announcement", 500, 100, 1000);
         REALTIME_PRECISION_THRESHOLD = BUILDER.comment("This value (in ticks) indicates how accurately the real-time data should be displayed. By default, only deviations over 10 in-game minutes (167 ticks, approx. 8 real life seconds) are displayed. The lower the value, the more accurate the real-time data but also the more often deviations from the schedule occur. (Default: 167, 10 in-game minutes)")
             .defineInRange("general.realtime_precision_threshold", 167, 1, 1000);
+        DISPLAY_LEAD_TIME = BUILDER.comment("This value indicates when departing trains should be displayed on advanced displays. By default 1000 ticks (1 in-game hour, 50 real life seconds) before departure is imminent.")
+            .defineInRange("general.display_lead_time", 1000, 200, MAX_TRANSFER_TIME);
         OVERLAY_SCALE = BUILDER.comment("Scale of the route overlay UI. (Default: 0.75)")
             .defineInRange("route_overlay.scale", 0.75f, MIN_SCALE, MAX_SCALE);
         ROUTE_NARRATOR = BUILDER.comment("If active, events during the journey (e.g. the next stop) are announced. (Default: OFF)")

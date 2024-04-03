@@ -103,7 +103,7 @@ public class BERPlatformDetailed implements IBERRenderSubtype<AdvancedDisplayBlo
     
         parent.labels.clear();
 
-        List<SimpleDeparturePrediction> preds = blockEntity.getPredictions().stream().filter(x -> x.departureTicks() < 1000).toList();
+        List<SimpleDeparturePrediction> preds = blockEntity.getPredictions().stream().filter(x -> x.departureTicks() < ModClientConfig.DISPLAY_LEAD_TIME.get()).toList();
 
         if (preds.size() <= 0) {
             additionalLabels = null;

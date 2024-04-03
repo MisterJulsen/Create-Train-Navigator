@@ -48,7 +48,7 @@ public class BERPlatformSimple implements IBERRenderSubtype<AdvancedDisplayBlock
 
     @Override
     public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason) {
-        Collection<SimpleDeparturePrediction> preds = blockEntity.getPredictions().stream().filter(x -> x.departureTicks() < 1000).toList();
+        Collection<SimpleDeparturePrediction> preds = blockEntity.getPredictions().stream().filter(x -> x.departureTicks() < ModClientConfig.DISPLAY_LEAD_TIME.get()).toList();
         Collection<UUID> uuidOrder = preds.stream().map(x -> x.trainId()).toList();
 
         if (reason == EUpdateReason.DATA_CHANGED && lastTrainOrder.equals(uuidOrder)) {
