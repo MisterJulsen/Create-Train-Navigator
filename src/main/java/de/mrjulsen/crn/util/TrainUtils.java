@@ -100,7 +100,7 @@ public class TrainUtils {
         return getTrainDeparturePredictions(trainId, level).stream().map(x -> new TrainStop(x.getNextStop(), x)).filter(x -> !GlobalSettingsManager.getInstance().getSettingsData().isBlacklisted(x.getStationAlias())).sorted(Comparator.comparingInt(x -> x.getPrediction().getTicks())).toList();
     }
 
-    public static Set<SimpleTrainConnection> getConnectionsAt(String stationName, UUID currentTrainId, int ticksToNextStop) {
+    public static List<SimpleTrainConnection> getConnectionsAt(String stationName, UUID currentTrainId, int ticksToNextStop) {
         TrainStationAlias alias = GlobalSettingsManager.getInstance().getSettingsData().getAliasFor(stationName);
         SimpleTrainSchedule ownSchedule = SimpleTrainSchedule.of(getTrainStopsSorted(currentTrainId, null));
         GlobalTrainDisplayData.refresh();
@@ -126,9 +126,9 @@ public class TrainUtils {
                     }
 
                     boolean b = !x.getTrain().id.equals(currentTrainId) &&
-                            !schedule.equals(ownSchedule) &&
                             TrainUtils.isTrainValid(x.getTrain()) &&
-                            !GlobalSettingsManager.getInstance().getSettingsData().isTrainBlacklisted(x.getTrain());
+                            !GlobalSettingsManager.getInstance().getSettingsData().isTrainBlacklisted(x.getTrain()) &&
+                            !schedule.equals(ownSchedule);
 
                     if (b) {
                         excludedSchedules.add(directionalSchedule);
@@ -144,9 +144,9 @@ public class TrainUtils {
                         x.getTrain().icon.getId(),
                         sched.getSimulationData().simulationTime() + sched.getSimulationData().simulationCorrection(),
                         firstStop.isPresent() ? firstStop.get().getPrediction().getScheduleTitle() : x.getScheduleTitle(),
-                        firstStop.isPresent() ? firstStop.get().getStationAlias().getInfoForStation(x.getStationName()) : x.getInfo()
+                        firstStop.isPresent() ? firstStop.get().getStationAlias().getInfoForStation(firstStop.get().getPrediction().getStationName()) : x.getInfo()
                     );
-                }).sorted(Comparator.comparingInt(x -> x.ticks())).collect(Collectors.toSet());
+                }).sorted(Comparator.comparingInt(x -> x.ticks())).toList();
                 
     }
 
