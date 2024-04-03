@@ -564,7 +564,8 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
                 getXSize() != pTag.getByte(NBT_XSIZE) ||
                 getYSize() != pTag.getByte(NBT_YSIZE) ||
                 getPlatformWidth() != pTag.getByte(NBT_PLATFORM_WIDTH) ||
-                getTrainNameWidth() != pTag.getByte(NBT_TRAIN_NAME_WIDTH)
+                getTrainNameWidth() != pTag.getByte(NBT_TRAIN_NAME_WIDTH) ||
+                (getPredictions().isEmpty() ^ !pTag.contains(NBT_PREDICTIONS))
             ) {
                 updateClient = true;
             }
