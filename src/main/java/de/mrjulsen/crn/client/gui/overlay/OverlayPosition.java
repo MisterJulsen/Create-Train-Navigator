@@ -1,4 +1,4 @@
-package de.mrjulsen.crn.data;
+package de.mrjulsen.crn.client.gui.overlay;
 
 import java.util.Arrays;
 

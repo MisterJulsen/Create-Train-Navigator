@@ -1,5 +1,6 @@
 package de.mrjulsen.crn.data;
 
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -18,6 +19,9 @@ public class DeparturePrediction {
     private String nextStop;
     private StationInfo info;
 
+    // Special data
+    private TrainExitSide exit = TrainExitSide.UNKNOWN;
+
     private int cycle;
 
     public DeparturePrediction(Train train, int ticks, String scheduleTitle, String nextStop, int cycle, StationInfo info) {
@@ -34,16 +38,16 @@ public class DeparturePrediction {
     }
 
     public DeparturePrediction copy() {
-        return new DeparturePrediction(getTrain(), getTicks(), getScheduleTitle(), getNextStopStation(), getCycle(), getInfo());
+        return new DeparturePrediction(getTrain(), getTicks(), getScheduleTitle(), getStationName(), getCycle(), getInfo());
     }
 
     public static DeparturePrediction withNextCycleTicks(DeparturePrediction current) {
         int cycle = current.getCycle() + 1;
-        return new DeparturePrediction(current.getTrain(), (getTrainCycleDuration(current.getTrain()) * cycle) + current.getTicks(), current.getScheduleTitle(), current.getNextStopStation(), cycle, current.getInfo());
+        return new DeparturePrediction(current.getTrain(), (getTrainCycleDuration(current.getTrain()) * cycle) + current.getTicks(), current.getScheduleTitle(), current.getStationName(), cycle, current.getInfo());
     }
 
     public static DeparturePrediction withCycleTicks(DeparturePrediction current, int cycles) {
-        return new DeparturePrediction(current.getTrain(), (getTrainCycleDuration(current.getTrain()) * cycles) + current.getTicks(), current.getScheduleTitle(), current.getNextStopStation(), cycles, current.getInfo());
+        return new DeparturePrediction(current.getTrain(), (getTrainCycleDuration(current.getTrain()) * cycles) + current.getTicks(), current.getScheduleTitle(), current.getStationName(), cycles, current.getInfo());
     }
 
     public Train getTrain() {
@@ -58,7 +62,7 @@ public class DeparturePrediction {
         return scheduleTitle;
     }
 
-    public String getNextStopStation() {
+    public String getStationName() {
         return nextStop;
     }
 
@@ -82,15 +86,23 @@ public class DeparturePrediction {
         return TrainListener.getInstance().getApproximatedTrainDuration(train);
     }
 
+    public TrainExitSide getExitSide() {
+        return this.exit;
+    }
+
+    public void setExit(TrainExitSide exit) {
+        this.exit = exit;
+    }
+
     public SimpleDeparturePrediction simplify() {
-        return new SimpleDeparturePrediction(getNextStop().getAliasName().get(), getTicks(), getScheduleTitle(), getTrain().id, getInfo());
+        return new SimpleDeparturePrediction(getNextStop().getAliasName().get(), nextStop, getTicks(), getScheduleTitle(), getTrain().name.getString(), getTrain().id, getInfo(), getExitSide());
     }
 
 
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof DeparturePrediction other) {
-            return getTrain().id == other.getTrain().id && getTicks() == other.getTicks() && getScheduleTitle().equals(other.getScheduleTitle()) && getNextStopStation().equals(other.getNextStopStation());
+            return getTrain().id == other.getTrain().id && getTicks() == other.getTicks() && getScheduleTitle().equals(other.getScheduleTitle()) && getStationName().equals(other.getStationName());
         }
 
         return false;
@@ -98,11 +110,11 @@ public class DeparturePrediction {
 
     @Override
     public int hashCode() {
-        return 19 * Objects.hash(getTrain().id, getTicks(), getScheduleTitle(), getNextStopStation());
+        return 19 * Objects.hash(getTrain().id, getTicks(), getScheduleTitle(), getStationName());
     }
 
     public boolean similar(DeparturePrediction other) {
-        return getTicks() == other.getTicks() && getNextStopStation().equals(other.getNextStopStation());
+        return getTicks() == other.getTicks() && getStationName().equals(other.getStationName());
     }
 
     @Override
@@ -110,30 +122,63 @@ public class DeparturePrediction {
         return String.format("%s, Next stop: %s in %st", getTrain().name.getString(), getNextStop().getAliasName(), getTicks());
     }
 
-    public static record SimpleDeparturePrediction(String station, int ticks, String scheduleTitle, UUID id, StationInfo info) {
+    public static enum TrainExitSide {
+        UNKNOWN((byte)0),
+        RIGHT((byte)1),
+        LEFT((byte)-1);
+
+        private byte side;
+
+        TrainExitSide(byte side) {
+            this.side = side;
+        }
+
+        public byte getAsByte() {
+            return side;
+        }
+
+        public static TrainExitSide getFromByte(byte side) {
+            return Arrays.stream(values()).filter(x -> x.getAsByte() == side).findFirst().orElse(UNKNOWN);
+        }
+
+        public TrainExitSide getOpposite() {
+            return getFromByte((byte)-getAsByte());
+        }
+    }
+
+    public static record SimpleDeparturePrediction(String stationTagName, String stationName, int departureTicks, String scheduleTitle, String trainName, UUID trainId, StationInfo stationInfo, TrainExitSide exitSide) {
 
         private static final String NBT_STATION = "station";
+        private static final String NBT_STATION_NAME = "stationName";
         private static final String NBT_TICKS = "ticks";
         private static final String NBT_SCHEDULE_TITLE = "title";
+        private static final String NBT_TRAIN_NAME = "tname";
         private static final String NBT_ID = "id";
+        private static final String NBT_EXIT_SIDE = "exit";
 
         public CompoundTag toNbt() {
             CompoundTag nbt = new CompoundTag();
-            nbt.putString(NBT_STATION, station);
-            nbt.putInt(NBT_TICKS, ticks);
+            nbt.putString(NBT_STATION, stationTagName);
+            nbt.putString(NBT_STATION_NAME, stationName);
+            nbt.putInt(NBT_TICKS, departureTicks);
             nbt.putString(NBT_SCHEDULE_TITLE, scheduleTitle);
-            nbt.putUUID(NBT_ID, id);
-            info().writeNbt(nbt);
+            nbt.putString(NBT_TRAIN_NAME, trainName);
+            nbt.putUUID(NBT_ID, trainId);
+            stationInfo().writeNbt(nbt);
+            nbt.putByte(NBT_EXIT_SIDE, exitSide.getAsByte());
             return nbt;
         }
 
         public static SimpleDeparturePrediction fromNbt(CompoundTag nbt) {
             return new SimpleDeparturePrediction(
-                nbt.getString(NBT_STATION), 
+                nbt.getString(NBT_STATION),
+                nbt.getString(NBT_STATION_NAME),
                 nbt.getInt(NBT_TICKS), 
-                nbt.getString(NBT_SCHEDULE_TITLE), 
+                nbt.getString(NBT_SCHEDULE_TITLE),
+                nbt.getString(NBT_TRAIN_NAME),
                 nbt.getUUID(NBT_ID),
-                StationInfo.fromNbt(nbt)
+                StationInfo.fromNbt(nbt),
+                TrainExitSide.getFromByte(nbt.getByte(NBT_EXIT_SIDE))
             );
         }
     }

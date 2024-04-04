@@ -2,6 +2,7 @@ package de.mrjulsen.crn.event;
 
 import net.minecraftforge.event.TickEvent.ClientTickEvent;
 import net.minecraftforge.event.TickEvent.Phase;
+import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -12,6 +13,7 @@ import de.mrjulsen.crn.data.ClientTrainStationSnapshot;
 import de.mrjulsen.crn.event.listeners.JourneyListenerManager;
 import de.mrjulsen.crn.event.listeners.TrainListener;
 import de.mrjulsen.crn.network.InstanceManager;
+import de.mrjulsen.crn.registry.ModExtras;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent.LoggingIn;
@@ -33,7 +35,12 @@ public class ClientEvents {
     }
 
     @SubscribeEvent
-    public static void onWorldLeave(LoggingOut event) {
+	public static void onWorldLoad(WorldEvent.Load event) {
+		ModExtras.register();
+	}
+
+    @SubscribeEvent
+    public static void onWorldLeave(LoggedOutEvent event) {
         int count = HudOverlays.removeAll();
         ModMain.LOGGER.info("Removed all " + count + " overlays.");
 

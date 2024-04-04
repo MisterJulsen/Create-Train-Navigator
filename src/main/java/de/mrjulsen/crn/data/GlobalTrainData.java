@@ -7,10 +7,10 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import com.simibubi.create.content.trains.entity.Train;
 import com.simibubi.create.content.trains.station.GlobalStation;
@@ -31,14 +31,17 @@ public class GlobalTrainData {
         instance = this;
         trains = TrainUtils.getAllTrains();
 
-        stationByName = new HashMap<>();
+        stationByName = TrainUtils.getAllStations().stream().collect(Collectors.groupingBy(x -> x.name, Collectors.toSet()));
+        /*
         for (GlobalStation sta : TrainUtils.getAllStations()) {
+            stationByName.computeIfAbsent(sta.name, x -> new HashSet<>()).add(sta);
             if (stationByName.containsKey(sta.name)) {
                 stationByName.get(sta.name).add(sta);
             } else {
                 stationByName.put(sta.name, new HashSet<>(Set.of(sta)));
             }
         } 
+            */
         TrainUtils.getMappedDeparturePredictions(aliasPredictions, trainPredictions);
         this.updateTime = updateTime;
     }

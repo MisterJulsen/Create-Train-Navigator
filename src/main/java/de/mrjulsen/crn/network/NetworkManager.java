@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 
 import de.mrjulsen.crn.ModMain;
+import de.mrjulsen.crn.network.packets.cts.AdvancedDisplayUpdatePacket;
 import de.mrjulsen.crn.network.packets.cts.GlobalSettingsRequestPacket;
 import de.mrjulsen.crn.network.packets.cts.GlobalSettingsUpdatePacket;
 import de.mrjulsen.crn.network.packets.cts.NavigationRequestPacket;
@@ -33,7 +34,7 @@ public class NetworkManager extends NetworkManagerBase<NetworkManager> {
     }
 
     public static void create() {
-        instance = NetworkManagerBase.create(NetworkManager.class, ModMain.MOD_ID, "crn_network", "3");
+        instance = NetworkManagerBase.create(NetworkManager.class, ModMain.MOD_ID, "crn_network", "5");
     }
 
     public static NetworkManager getInstance() {
@@ -52,6 +53,7 @@ public class NetworkManager extends NetworkManagerBase<NetworkManager> {
             RealtimeRequestPacket.class,
             TrackStationsRequestPacket.class,
             TrainDataRequestPacket.class,
+            AdvancedDisplayUpdatePacket.class,
 
             // stc
             GlobalSettingsResponsePacket.class,
