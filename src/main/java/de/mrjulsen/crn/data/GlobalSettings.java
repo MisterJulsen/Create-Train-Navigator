@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.ArrayList;
 import java.util.Optional;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 import com.simibubi.create.content.trains.entity.Train;
@@ -24,10 +25,10 @@ public class GlobalSettings {
     private static final String NBT_TRAIN_BLACKLIST = "TrainBlacklist";
     private static final String NBT_TRAIN_GROUP_REGISTRY = "RegisteredTrainGroups";
 
-    private final Collection<TrainStationAlias> registeredAlias = new ArrayList<>();
-    private final Collection<TrainGroup> registeredTrainGroups = new ArrayList<>();
-    private final Collection<String> blacklist = new ArrayList<>();
-    private final Collection<String> trainsBlacklist = new ArrayList<>();
+    private final Collection<TrainStationAlias> registeredAlias = new CopyOnWriteArrayList<>();
+    private final Collection<TrainGroup> registeredTrainGroups = new CopyOnWriteArrayList<>();
+    private final Collection<String> blacklist = new CopyOnWriteArrayList<>();
+    private final Collection<String> trainsBlacklist = new CopyOnWriteArrayList<>();
 
 
     protected GlobalSettings() {      

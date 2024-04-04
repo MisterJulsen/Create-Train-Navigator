@@ -181,6 +181,7 @@ public class SearchSettingsScreen extends CommonScreen {
     public void tick() {
         super.tick();
 		scroll.tickChaser();
+        transferTimeInput.tick();
     }
 
     private void renderDefaultOptionWidget(GuiGraphics graphics, int x, int y, String text, MultiLineLabel label) {

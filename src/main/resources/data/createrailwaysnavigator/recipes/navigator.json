@@ -6,16 +6,16 @@
         "item": "create:andesite_alloy"
       },
       "I": {
-        "item": "create:iron_sheet"
+        "tag": "forge:plates/iron"
       },
       "G": {
-        "item": "minecraft:glass_pane"
+        "tag": "forge:glass_panes/colorless"
       },
       "P": {
         "item": "create:precision_mechanism"
       },
       "C": {
-        "item": "create:copper_sheet"
+        "tag": "forge:plates/copper"
       }
     },
     "pattern": [

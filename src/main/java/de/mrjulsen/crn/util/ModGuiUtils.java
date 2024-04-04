@@ -131,14 +131,24 @@ public class ModGuiUtils {
         int green = (color >> 8) & 0xFF;
         int blue = color & 0xFF;
 
-        red = (int) ((red * (1 - factor)) + (255 * factor));
-        green = (int) ((green * (1 - factor)) + (255 * factor));
-        blue = (int) ((blue * (1 - factor)) + (255 * factor));
+        red = (int) ((red * (1 - factor)) + (factor < 0 ? 0 : (255 * factor)));
+        green = (int) ((green * (1 - factor)) + (factor < 0 ? 0 : (255 * factor)));
+        blue = (int) ((blue * (1 - factor)) + (factor < 0 ? 0 : (255 * factor)));
 
         red = Math.min(255, Math.max(0, red));
         green = Math.min(255, Math.max(0, green));
         blue = Math.min(255, Math.max(0, blue));
 
         return 0xFF000000 | (red << 16) | (green << 8) | blue;
+    }
+
+	public static int darkenColor(int color, float darkenFactor) {
+        int red = (color >> 16) & 0xFF;
+        int green = (color >> 8) & 0xFF;
+        int blue = color & 0xFF;
+        int r = (int) (red * (1 - darkenFactor));
+        int g = (int) (green * (1 - darkenFactor));
+        int b = (int) (blue * (1 - darkenFactor));
+        return 0xFF000000 | (r << 16) | (g << 8) | b;
     }
 }

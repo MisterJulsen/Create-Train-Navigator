@@ -50,6 +50,17 @@ public class SimpleTrainSchedule {
         return new SimpleTrainSchedule(stops.stream().map(x -> x.copy()).toList());
     }
 
+    public SimpleTrainSchedule makeScheduleUntilNextRepeat() {
+        List<TrainStop> newList = new ArrayList<>();
+        for (TrainStop stop : getAllStops()) {
+            if (newList.contains(stop)) {
+                break;
+            }
+            newList.add(stop);
+        }
+        return SimpleTrainSchedule.of(newList);
+    }
+
     public SimpleTrainSchedule makeScheduleFrom(TrainStationAlias alias, boolean preventDuplicates) {
         List<TrainStop> newList = new ArrayList<>();
         int idx = 0;
@@ -125,6 +136,10 @@ public class SimpleTrainSchedule {
 
     public List<TrainStop> getAllStopsOf(TrainStationAlias alias) {
         return this.getAllStops().stream().filter(x -> x.getStationAlias().equals(alias)).toList();
+    }
+
+    public List<TrainStop> getAllStopsOf(String station) {
+        return this.getAllStops().stream().filter(x -> x.getPrediction().getStationName().equals(station)).toList();
     }
 
     public boolean isInDirection(TrainStationAlias start, TrainStationAlias end) {
@@ -204,10 +219,33 @@ public class SimpleTrainSchedule {
                 cycle++;
             }
             cycle += x.getPrediction().getCycle();
-            return new TrainStop(x.getStationAlias(), new DeparturePrediction(x.getPrediction().getTrain(), estimatedTicks, x.getPrediction().getScheduleTitle(), x.getPrediction().getNextStopStation(), cycle, x.getPrediction().getInfo()));
+            return new TrainStop(x.getStationAlias(), new DeparturePrediction(x.getPrediction().getTrain(), estimatedTicks, x.getPrediction().getScheduleTitle(), x.getPrediction().getStationName(), cycle, x.getPrediction().getInfo()));
         }).sorted(Comparator.comparingInt(x -> x.getPrediction().getTicks())).toList(), new SimulationData(getFirstStop().get().getPrediction().getTrain(), simulationTime, timeToTargetAfterSim));
     }
 
+    public SimulatedTrainSchedule simulate(Train train, int simulationTime, String simulationTarget) {
+        final int cycleDuration = getTrainCycleDuration(train);
+
+        int timeToTargetAfterSim = getAllStopsOf(simulationTarget).stream().mapToInt(x -> {
+            int v = (int)((double)(x.getPrediction().getTicks() - simulationTime) % cycleDuration);
+            if (v < 0) {
+                v += cycleDuration;
+            }
+            return v;
+        }).min().getAsInt();
+        int simToTargetTime = simulationTime + timeToTargetAfterSim;
+
+        return new SimulatedTrainSchedule(getAllStops().parallelStream().map(x -> {
+            int cycle = (int)((double)(x.getPrediction().getTicks() - simToTargetTime) / cycleDuration);
+            int estimatedTicks = (x.getPrediction().getTicks() - simToTargetTime) % cycleDuration;
+            while (estimatedTicks < 0) {
+                estimatedTicks += cycleDuration;
+                cycle++;
+            }
+            cycle += x.getPrediction().getCycle();
+            return new TrainStop(x.getStationAlias(), new DeparturePrediction(x.getPrediction().getTrain(), estimatedTicks, x.getPrediction().getScheduleTitle(), x.getPrediction().getStationName(), cycle, x.getPrediction().getInfo()));
+        }).sorted(Comparator.comparingInt(x -> x.getPrediction().getTicks())).toList(), new SimulationData(getFirstStop().get().getPrediction().getTrain(), simulationTime, timeToTargetAfterSim));
+    }
     
     public SimpleTrainSchedule simulate(Train train, int simulationTime) {
         final int cycleDuration = getTrainCycleDuration(train);
@@ -220,7 +258,7 @@ public class SimpleTrainSchedule {
                 cycle++;
             }
             cycle += x.getPrediction().getCycle();
-            return new TrainStop(x.getStationAlias(), new DeparturePrediction(x.getPrediction().getTrain(), estimatedTicks, x.getPrediction().getScheduleTitle(), x.getPrediction().getNextStopStation(), cycle, x.getPrediction().getInfo()));
+            return new TrainStop(x.getStationAlias(), new DeparturePrediction(x.getPrediction().getTrain(), estimatedTicks, x.getPrediction().getScheduleTitle(), x.getPrediction().getStationName(), cycle, x.getPrediction().getInfo()));
         }).sorted(Comparator.comparingInt(x -> x.getPrediction().getTicks())).toList());
     }
     
