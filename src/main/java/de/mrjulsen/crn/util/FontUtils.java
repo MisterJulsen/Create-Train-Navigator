@@ -60,12 +60,6 @@ public class FontUtils {
         return true;
     }
 
-    public void popAll() {
-        for (int charcode : uvStack.keySet()) {
-            while (popUV(charcode));
-        }
-    }
-
     public GlyphInfo getGlyphInfo(int charCode) {
         return fontSet.getGlyphInfo(charCode, false);
     }

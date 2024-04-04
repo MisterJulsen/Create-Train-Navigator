@@ -60,15 +60,14 @@ public final class ModMain {
 
     public ModMain() {
         IEventBus eventBus = FMLJavaModLoadingContext.get().getModEventBus();
+        
+        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ModClientConfig.SPEC, MOD_ID + "-client.toml");
+        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ModCommonConfig.SPEC, MOD_ID + "-common.toml");
+
         eventBus.addListener(ServerInit::setup);
         eventBus.addListener(ClientInitWrapper::setup);
-        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ModClientConfig.SPEC, MOD_ID + "-client.toml");
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ModCommonConfig.SPEC, MOD_ID + "-common.toml");
 
 		REGISTRATE.registerEventListeners(eventBus);
-
-        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ModClientConfig.SPEC, MOD_ID + "-client.toml");
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ModCommonConfig.SPEC, MOD_ID + "-common.toml");
         
         new ModCreativeModeTab("createrailwaysnavigatortab");
         ModBlocks.register();

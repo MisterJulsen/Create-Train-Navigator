@@ -81,11 +81,10 @@ public class ClientEvents {
         public static void registerGuiOverlay(final RegisterGuiOverlaysEvent event) {        
             event.registerBelowAll("route_details_overlay", HudOverlays.HUD_ROUTE_DETAILS);
         }
-
         
         @SubscribeEvent
         public static void onKeyRegister(RegisterKeyMappingsEvent event) {
-            event.register(ModKeys.registerKey("route_overlay_options", "crn", KeyConflictContext.IN_GAME, KeyModifier.CONTROL, GLFW.GLFW_KEY_R));
+            event.register(ModKeys.keyRouteOverlayOptions = ModKeys.registerKey("route_overlay_options", "crn", KeyConflictContext.IN_GAME, KeyModifier.CONTROL, GLFW.GLFW_KEY_R));
         }
     }
 }
