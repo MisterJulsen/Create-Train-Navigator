@@ -2,13 +2,15 @@ package de.mrjulsen.crn.event;
 
 import net.minecraftforge.event.TickEvent.ClientTickEvent;
 import net.minecraftforge.event.TickEvent.Phase;
-import net.minecraftforge.event.world.WorldEvent;
+import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
+import org.lwjgl.glfw.GLFW;
+
 import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.client.gui.overlay.HudOverlays;
-import de.mrjulsen.crn.client.input.KeyBinding;
+import de.mrjulsen.crn.client.input.ModKeys;
 import de.mrjulsen.crn.data.ClientTrainStationSnapshot;
 import de.mrjulsen.crn.event.listeners.JourneyListenerManager;
 import de.mrjulsen.crn.event.listeners.TrainListener;
@@ -21,6 +23,8 @@ import net.minecraftforge.client.event.ClientPlayerNetworkEvent.LoggingOut;
 import net.minecraftforge.client.event.CustomizeGuiOverlayEvent;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
+import net.minecraftforge.client.settings.KeyConflictContext;
+import net.minecraftforge.client.settings.KeyModifier;
 
 @Mod.EventBusSubscriber(modid = ModMain.MOD_ID, value = Dist.CLIENT)
 public class ClientEvents {
@@ -35,12 +39,12 @@ public class ClientEvents {
     }
 
     @SubscribeEvent
-	public static void onWorldLoad(WorldEvent.Load event) {
+	public static void onWorldLoad(LevelEvent.Load event) {
 		ModExtras.register();
 	}
 
     @SubscribeEvent
-    public static void onWorldLeave(LoggedOutEvent event) {
+    public static void onWorldLeave(LoggingOut event) {
         int count = HudOverlays.removeAll();
         ModMain.LOGGER.info("Removed all " + count + " overlays.");
 
@@ -75,13 +79,13 @@ public class ClientEvents {
     public static class ClientModBusEvents {
         @SubscribeEvent
         public static void registerGuiOverlay(final RegisterGuiOverlaysEvent event) {        
-            event.registerAboveAll("route_details_overlay", HudOverlays.HUD_ROUTE_DETAILS);
+            event.registerBelowAll("route_details_overlay", HudOverlays.HUD_ROUTE_DETAILS);
         }
 
         
         @SubscribeEvent
         public static void onKeyRegister(RegisterKeyMappingsEvent event) {
-            event.register(KeyBinding.OPEN_SETTINGS_KEY);
+            event.register(ModKeys.registerKey("route_overlay_options", "crn", KeyConflictContext.IN_GAME, KeyModifier.CONTROL, GLFW.GLFW_KEY_R));
         }
     }
 }

@@ -1,6 +1,6 @@
 package de.mrjulsen.crn.item.creativemodetab;
 
-import de.mrjulsen.crn.item.ModItems;
+import de.mrjulsen.crn.registry.ModItems;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 

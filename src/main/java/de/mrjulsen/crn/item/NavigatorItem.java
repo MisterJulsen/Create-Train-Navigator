@@ -1,7 +1,6 @@
 package de.mrjulsen.crn.item;
 
 import de.mrjulsen.crn.client.ClientWrapper;
-import de.mrjulsen.crn.client.ModCreativeModeTab;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;

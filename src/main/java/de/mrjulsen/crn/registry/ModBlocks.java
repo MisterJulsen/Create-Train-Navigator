@@ -25,7 +25,6 @@ import de.mrjulsen.crn.block.TrainStationClockBlock;
 import de.mrjulsen.crn.block.connected.AdvancedDisplayCTBehaviour;
 import de.mrjulsen.crn.block.connected.AdvancedDisplaySmallCTBehaviour;
 import de.mrjulsen.crn.block.display.AdvancedDisplayTarget;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.api.distmarker.Dist;
@@ -48,7 +47,6 @@ public class ModBlocks {
 
 	public static final BlockEntry<AdvancedDisplayBlock> ADVANCED_DISPLAY_BLOCK = ModMain.REGISTRATE.block("advanced_display_block", AdvancedDisplayBlock::new)
 		.onRegister(connectedTextures(() -> new AdvancedDisplayCTBehaviour(CT_ADVANCED_DISPLAY_ALL)))
-		.addLayer(() -> RenderType::cutout)
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
 		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
@@ -58,7 +56,6 @@ public class ModBlocks {
 
     public static final BlockEntry<AdvancedDisplayBoardBlock> ADVANCED_DISPLAY = ModMain.REGISTRATE.block("advanced_display", AdvancedDisplayBoardBlock::new)
 		.onRegister(connectedTextures(() -> new AdvancedDisplayCTBehaviour(CT_ADVANCED_DISPLAY)))
-		.addLayer(() -> RenderType::cutout)
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
 		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
@@ -68,7 +65,6 @@ public class ModBlocks {
 
 	public static final BlockEntry<AdvancedDisplaySmallBlock> ADVANCED_DISPLAY_SMALL = ModMain.REGISTRATE.block("advanced_display_small", AdvancedDisplaySmallBlock::new)
 		.onRegister(connectedTextures(() -> new AdvancedDisplaySmallCTBehaviour(CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL, CT_ADVANCED_DISPLAY_SMALL)))
-		.addLayer(() -> RenderType::cutout)
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
 		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
@@ -78,7 +74,6 @@ public class ModBlocks {
 
 	public static final BlockEntry<AdvancedDisplayPanelBlock> ADVANCED_DISPLAY_PANEL = ModMain.REGISTRATE.block("advanced_display_panel", AdvancedDisplayPanelBlock::new)
 		.onRegister(connectedTextures(() -> new AdvancedDisplayCTBehaviour(CT_ADVANCED_DISPLAY)))
-		.addLayer(() -> RenderType::cutout)
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
 		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
@@ -87,7 +82,6 @@ public class ModBlocks {
 		.register();
 
 	public static final BlockEntry<TrainStationClockBlock> TRAIN_STATION_CLOCK = ModMain.REGISTRATE.block("train_station_clock", TrainStationClockBlock::new)
-		.addLayer(() -> RenderType::cutout)
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
 		.item()

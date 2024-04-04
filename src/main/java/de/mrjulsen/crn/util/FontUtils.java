@@ -4,11 +4,8 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
-
 import com.mojang.blaze3d.font.GlyphInfo;
 
-import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.mixin.BakedGlyphAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -70,7 +67,7 @@ public class FontUtils {
     }
 
     public GlyphInfo getGlyphInfo(int charCode) {
-        return fontSet.getGlyphInfo(charCode);
+        return fontSet.getGlyphInfo(charCode, false);
     }
 
     public BakedGlyph getGlyph(int charCode) {

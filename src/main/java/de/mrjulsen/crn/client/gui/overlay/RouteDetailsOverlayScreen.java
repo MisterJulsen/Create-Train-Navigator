@@ -18,7 +18,7 @@ import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.NavigatorToast;
-import de.mrjulsen.crn.client.input.KeyBinding;
+import de.mrjulsen.crn.client.input.ModKeys;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.SimpleRoute;
 import de.mrjulsen.crn.data.SimpleTrainConnection;
@@ -196,7 +196,7 @@ public class RouteDetailsOverlayScreen implements IHudOverlay, IJourneyListenerC
     @Override
     public void tick() {
 
-        if (KeyBinding.OPEN_SETTINGS_KEY.isDown() && Minecraft.getInstance().player.getInventory().hasAnyOf(Set.of(ModItems.NAVIGATOR.get()))) {
+        if (ModKeys.keyRouteOverlayOptions.isDown() && Minecraft.getInstance().player.getInventory().hasAnyOf(Set.of(ModItems.NAVIGATOR.get()))) {
             ClientWrapper.showRouteOverlaySettingsGui(this);
         }
 
