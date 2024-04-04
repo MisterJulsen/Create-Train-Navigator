@@ -84,7 +84,7 @@ public class AdvancedDisplayTarget extends DisplayBoardTarget {
 		AdvancedDisplayBlockEntity controller = getController(context);
 		if (controller == null)
 			return new DisplayTargetStats(1, 1, this);
-		return new DisplayTargetStats(controller.getYSize() * 2, 150, this);
+		return new DisplayTargetStats(1, 1, this);
 	}
 
 	private AdvancedDisplayBlockEntity getController(DisplayLinkContext context) {
