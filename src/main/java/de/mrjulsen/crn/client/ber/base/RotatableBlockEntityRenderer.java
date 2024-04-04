@@ -1,7 +1,7 @@
 package de.mrjulsen.crn.client.ber.base;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import com.simibubi.create.foundation.blockEntity.renderer.SafeBlockEntityRenderer;
 
 import net.minecraft.client.gui.Font;
@@ -26,7 +26,7 @@ public abstract class RotatableBlockEntityRenderer<T extends BlockEntity> extend
         
         pPoseStack.pushPose();
         pPoseStack.translate(0.5D, 0, 0.5F);
-        pPoseStack.mulPose(Vector3f.YP.rotationDegrees(
+        pPoseStack.mulPose(Axis.YP.rotationDegrees(
             blockState.getValue(HorizontalDirectionalBlock.FACING) == Direction.EAST || blockState.getValue(HorizontalDirectionalBlock.FACING) == Direction.WEST
                 ? blockState.getValue(HorizontalDirectionalBlock.FACING).getOpposite().toYRot()
                 : blockState.getValue(HorizontalDirectionalBlock.FACING).toYRot()

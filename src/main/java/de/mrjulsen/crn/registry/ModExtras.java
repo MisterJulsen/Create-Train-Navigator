@@ -5,7 +5,7 @@ import com.simibubi.create.Create;
 import com.simibubi.create.content.redstone.displayLink.AllDisplayBehaviours;
 
 import de.mrjulsen.crn.block.display.AdvancedDisplaySource;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.Block;
 
 public class ModExtras {
@@ -19,7 +19,7 @@ public class ModExtras {
         } catch (NullPointerException ignored) {
             maybeRegistered = null;
         }
-		Create.REGISTRATE.addRegisterCallback("track_station", Registry.BLOCK_REGISTRY, ModExtras::addSignalSource);
+		Create.REGISTRATE.addRegisterCallback("track_station", Registries.BLOCK, ModExtras::addSignalSource);
         if (maybeRegistered != null) {
             addSignalSource(maybeRegistered);
         }        

@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 
 import de.mrjulsen.crn.block.AbstractAdvancedDisplayBlock;
 import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
@@ -120,7 +120,7 @@ public class AdvancedDisplayRenderInstance extends AbstractBlockEntityRenderInst
             }
             if (pBlockEntity.getBlockState().getValue(AbstractAdvancedDisplayBlock.SIDE) == ESide.BACK || pBlockEntity.getBlockState().getValue(AbstractAdvancedDisplayBlock.SIDE) == ESide.BOTH) {
                 pPoseStack.pushPose();
-                pPoseStack.mulPose(Vector3f.YP.rotationDegrees(180));
+                pPoseStack.mulPose(Axis.YP.rotationDegrees(180));
                 pPoseStack.translate(-pBlockEntity.getXSize() * 16, 0, -16);
                 pPoseStack.translate(offset.getFirst(), offset.getSecond(), zOffset.getSecond());
                 pPoseStack.scale(scale, scale, 1); 

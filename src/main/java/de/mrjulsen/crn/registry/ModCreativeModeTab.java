@@ -1,18 +1,50 @@
 package de.mrjulsen.crn.registry;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Supplier;
+
+import de.mrjulsen.crn.ModMain;
+import de.mrjulsen.mcdragonlib.utils.Utils;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ItemLike;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.RegistryObject;
 
-public class ModCreativeModeTab extends CreativeModeTab {
-    public static ModCreativeModeTab MAIN;
-    
-    public ModCreativeModeTab(String name) {
-        super(name);
-        MAIN = this;
+@Mod.EventBusSubscriber(modid = ModMain.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
+public class ModCreativeModeTab {
+
+	private static final Map<ModTab, Collection<RegistryObject<? extends ItemLike>>> CREATIVE_MODE_TAB_REGISTRY = new HashMap<>();
+
+    public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, ModMain.MOD_ID);
+
+    public static final RegistryObject<CreativeModeTab> MAIN_TAB = registerTab("crn_tab", () -> CreativeModeTab.builder()
+            .icon(() -> new ItemStack(ModItems.NAVIGATOR.get()))
+            .title(Utils.translate("itemGroup.createrailwaysnavigatortab"))
+            .displayItems((pParameters, pOutput) -> {
+                Collection<RegistryObject<? extends ItemLike>> content = CREATIVE_MODE_TAB_REGISTRY.get(ModTab.MAIN);
+                if (content != null) {
+                    pOutput.acceptAll(content.stream().map(x -> new ItemStack(x.get())).toList());
+                }
+            })
+            .build()
+        );
+
+    private static RegistryObject<CreativeModeTab> registerTab(String id, Supplier<? extends CreativeModeTab> sup) { 
+        RegistryObject<CreativeModeTab> cTab = CREATIVE_MODE_TABS.register(id, sup);
+        return cTab;
     }
 
-    @Override
-    public ItemStack makeIcon() {
-        return new ItemStack(ModItems.NAVIGATOR.get());
+    public static void register(IEventBus event) {
+        CREATIVE_MODE_TABS.register(event);
+    }
+
+    public static enum ModTab {
+        MAIN;
     }
 }

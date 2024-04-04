@@ -77,7 +77,7 @@ public class AdvancedDisplayUpdatePacket implements IPacketBase<AdvancedDisplayU
         NetworkManagerBase.handlePacket(packet, context, () -> {
             ServerPlayer player = context.get().getSender();
             if (player != null) {
-                Level level = player.getLevel();
+                Level level = player.level();
                 apply(level, packet);
             }
         });

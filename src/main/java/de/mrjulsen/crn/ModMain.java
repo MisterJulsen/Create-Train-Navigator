@@ -69,10 +69,10 @@ public final class ModMain {
 
 		REGISTRATE.registerEventListeners(eventBus);
         
-        new ModCreativeModeTab("createrailwaysnavigatortab");
         ModBlocks.register();
         ModItems.register();
         ModBlockEntities.register();
+        ModCreativeModeTab.register(eventBus);
         NetworkManager.create();
         ModExtras.register();
         MinecraftForge.EVENT_BUS.register(this);

@@ -52,7 +52,7 @@ public class RealtimeRequestPacket implements IPacketBase<RealtimeRequestPacket>
     public void handle(RealtimeRequestPacket packet, Supplier<NetworkEvent.Context> context) {        
         context.get().enqueueWork(() ->
         {
-            final Level level = context.get().getSender().getLevel();
+            final Level level = context.get().getSender().level();
             new Thread(() -> {
                 final long updateTime = level.getDayTime();
                 Collection<SimpleDeparturePrediction> predictions = new ArrayList<>();
@@ -61,7 +61,7 @@ public class RealtimeRequestPacket implements IPacketBase<RealtimeRequestPacket>
                         return;
                     }
                     
-                    predictions.addAll(TrainUtils.getTrainDeparturePredictions(x, context.get().getSender().getLevel()).stream().map(a -> a.simplify()).sorted(Comparator.comparingInt(a -> a.departureTicks())).toList());
+                    predictions.addAll(TrainUtils.getTrainDeparturePredictions(x, context.get().getSender().level()).stream().map(a -> a.simplify()).sorted(Comparator.comparingInt(a -> a.departureTicks())).toList());
                 });
                 NetworkManager.getInstance().sendToClient(new RealtimeResponsePacket(packet.requestId, predictions, updateTime), context.get().getSender());
             }, "Realtime Provider").run();

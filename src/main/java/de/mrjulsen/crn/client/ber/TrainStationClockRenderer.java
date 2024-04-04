@@ -1,7 +1,7 @@
 package de.mrjulsen.crn.client.ber;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.block.be.TrainStationClockBlockEntity;
@@ -25,25 +25,25 @@ public class TrainStationClockRenderer extends AbstractBlockEntityRenderInstance
 
         pPoseStack.translate(8, 8, 8 + z);
         pPoseStack.pushPose();
-        pPoseStack.mulPose(Vector3f.ZP.rotationDegrees(-90 + ModUtils.clockHandDegrees(pBlockEntity.getLevel().getDayTime() + Constants.TIME_SHIFT, 12000)));
+        pPoseStack.mulPose(Axis.ZP.rotationDegrees(-90 + ModUtils.clockHandDegrees(pBlockEntity.getLevel().getDayTime() + Constants.TIME_SHIFT, 12000)));
         context.renderUtils().fillColor(pBufferSource, pBlockEntity, 0xFF191919, pPoseStack, -0.5f, -0.5f, 0, 6, 1, pBlockEntity.getBlockState().getValue(HorizontalDirectionalBlock.FACING), pPackedLight);
         pPoseStack.popPose();
 
         pPoseStack.pushPose();
-        pPoseStack.mulPose(Vector3f.ZP.rotationDegrees(-90 + ModUtils.clockHandDegrees(pBlockEntity.getLevel().getDayTime() + Constants.TIME_SHIFT, 1000)));
+        pPoseStack.mulPose(Axis.ZP.rotationDegrees(-90 + ModUtils.clockHandDegrees(pBlockEntity.getLevel().getDayTime() + Constants.TIME_SHIFT, 1000)));
         context.renderUtils().fillColor(pBufferSource, pBlockEntity, 0xFF222222, pPoseStack, -0.5f, -0.5f, 0.1f, 7, 1, pBlockEntity.getBlockState().getValue(HorizontalDirectionalBlock.FACING), pPackedLight);
         pPoseStack.popPose();
 
         pPoseStack.translate(0, 0, -z * 2);
         pPoseStack.pushPose();
-        pPoseStack.mulPose(Vector3f.ZN.rotationDegrees(-90 + ModUtils.clockHandDegrees(pBlockEntity.getLevel().getDayTime() + Constants.TIME_SHIFT, 12000)));
-        pPoseStack.mulPose(Vector3f.YP.rotationDegrees(180));
+        pPoseStack.mulPose(Axis.ZN.rotationDegrees(-90 + ModUtils.clockHandDegrees(pBlockEntity.getLevel().getDayTime() + Constants.TIME_SHIFT, 12000)));
+        pPoseStack.mulPose(Axis.YP.rotationDegrees(180));
         context.renderUtils().fillColor(pBufferSource, pBlockEntity, 0xFF191919, pPoseStack, -0.5f, -0.5f, 0, 6, 1, pBlockEntity.getBlockState().getValue(HorizontalDirectionalBlock.FACING), pPackedLight);
         pPoseStack.popPose();
 
         pPoseStack.pushPose();
-        pPoseStack.mulPose(Vector3f.ZN.rotationDegrees(-90 + ModUtils.clockHandDegrees(pBlockEntity.getLevel().getDayTime() + Constants.TIME_SHIFT, 1000)));
-        pPoseStack.mulPose(Vector3f.YP.rotationDegrees(180));
+        pPoseStack.mulPose(Axis.ZN.rotationDegrees(-90 + ModUtils.clockHandDegrees(pBlockEntity.getLevel().getDayTime() + Constants.TIME_SHIFT, 1000)));
+        pPoseStack.mulPose(Axis.YP.rotationDegrees(180));
         context.renderUtils().fillColor(pBufferSource, pBlockEntity, 0xFF222222, pPoseStack, -0.5f, -0.5f, 0.1f, 7, 1, pBlockEntity.getBlockState().getValue(HorizontalDirectionalBlock.FACING), pPackedLight);
         pPoseStack.popPose();
     }

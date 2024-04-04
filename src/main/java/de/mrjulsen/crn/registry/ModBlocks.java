@@ -34,7 +34,7 @@ import net.minecraftforge.fml.DistExecutor;
 public class ModBlocks {	
 
 	static {
-		ModMain.REGISTRATE.creativeModeTab(() -> ModCreativeModeTab.MAIN);
+		ModMain.REGISTRATE.setCreativeTab(ModCreativeModeTab.MAIN_TAB);
 	}
 
 	public static final CTSpriteShiftEntry CT_ADVANCED_DISPLAY_ALL = getCT(AllCTTypes.OMNIDIRECTIONAL, "advanced_display", "advanced_display");
@@ -51,6 +51,7 @@ public class ModBlocks {
 		.transform(TagGen.pickaxeOnly())
 		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
 		.item()
+		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
 		.register();
 
@@ -60,6 +61,7 @@ public class ModBlocks {
 		.transform(TagGen.pickaxeOnly())
 		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
 		.item()
+		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
 		.register();
 
@@ -69,6 +71,7 @@ public class ModBlocks {
 		.transform(TagGen.pickaxeOnly())
 		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
 		.item()
+		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
 		.register();
 
@@ -78,6 +81,7 @@ public class ModBlocks {
 		.transform(TagGen.pickaxeOnly())
 		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
 		.item()
+		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
 		.register();
 
@@ -85,6 +89,7 @@ public class ModBlocks {
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
 		.item()
+		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
 		.register();
 
