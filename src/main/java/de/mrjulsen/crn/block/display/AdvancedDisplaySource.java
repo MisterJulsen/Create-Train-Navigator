@@ -46,7 +46,7 @@ public class AdvancedDisplaySource extends DisplaySource {
 		if (!conf.contains(NBT_TRAIN_NAME_WIDTH))
 			conf.putInt(NBT_TRAIN_NAME_WIDTH, 16);
 		if (!conf.contains(NBT_PLATFORM_WIDTH))
-			conf.putInt(NBT_PLATFORM_WIDTH, 0);
+			conf.putInt(NBT_PLATFORM_WIDTH, -1);
 
 		if (conf.contains(NBT_FILTER))
 			return;
