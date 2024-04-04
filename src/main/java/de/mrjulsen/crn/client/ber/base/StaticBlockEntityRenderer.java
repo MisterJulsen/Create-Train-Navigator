@@ -21,6 +21,7 @@ public class StaticBlockEntityRenderer<T extends BlockEntity & IBERInstance<T>> 
     protected void renderBlock(T pBlockEntity, float pPartialTicks, PoseStack pPoseStack, MultiBufferSource pBufferSource, int pPackedLight, int pOverlay) {
         context.renderUtils().initRenderEngine();
         pBlockEntity.getRenderer().render(context, pBlockEntity, pPartialTicks, pPoseStack, pBufferSource, pPackedLight, pOverlay);
+        pBlockEntity.getRenderer().postRender(context, pBlockEntity, pPartialTicks, pPoseStack, pBufferSource, pPackedLight, pOverlay);
     }
 
 }

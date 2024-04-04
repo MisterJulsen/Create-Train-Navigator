@@ -4,9 +4,11 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import com.mojang.blaze3d.font.GlyphInfo;
 
+import de.mrjulsen.crn.ModMain;
 import de.mrjulsen.crn.mixin.BakedGlyphAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -43,8 +45,12 @@ public class FontUtils {
         uvStack.get(charCode).addLast(new UVData(u0, v0, u1, v1));
     }
 
-    public void popUV(int charCode) {
-        UVData data = uvStack.get(charCode).getLast();
+    public boolean popUV(int charCode) {
+        if (!uvStack.containsKey(charCode)) {
+            return false;
+        }
+
+        UVData data = uvStack.get(charCode).pollLast();
         if (uvStack.get(charCode).isEmpty()) {
             uvStack.remove(charCode);
         }
@@ -54,6 +60,13 @@ public class FontUtils {
         glyph.setV0(data.v0());
         glyph.setU1(data.u1());
         glyph.setV1(data.v1());
+        return true;
+    }
+
+    public void popAll() {
+        for (int charcode : uvStack.keySet()) {
+            while (popUV(charcode));
+        }
     }
 
     public GlyphInfo getGlyphInfo(int charCode) {

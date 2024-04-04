@@ -97,6 +97,7 @@ public class AdvancedDisplayRenderInstance extends AbstractBlockEntityRenderInst
 
     @Override
     public void render(BlockEntityRendererContext context, AdvancedDisplayBlockEntity pBlockEntity, float pPartialTicks, PoseStack pPoseStack, MultiBufferSource pBufferSource, int pPackedLight, int pOverlay) {
+        
         if (!pBlockEntity.isController()) {
             return;
         }

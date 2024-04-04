@@ -28,6 +28,10 @@ public interface IBlockEntityRendererInstance<T extends BlockEntity> {
      */
     void render(BlockEntityRendererContext context, T pBlockEntity, float pPartialTicks, PoseStack pPoseStack, MultiBufferSource pBufferSource, int pPackedLight, int pOverlay);
 
+    default void postRender(BlockEntityRendererContext context, T pBlockEntity, float pPartialTicks, PoseStack pPoseStack, MultiBufferSource pBufferSource, int pPackedLight, int pOverlay) {
+        getFontUtils().popAll();
+    }
+
     /**
      * Called every tick. Can be used for animations.
      * @param level
