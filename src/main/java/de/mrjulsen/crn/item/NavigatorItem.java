@@ -10,8 +10,8 @@ import net.minecraft.world.level.Level;
 
 public class NavigatorItem extends Item {
 
-    public NavigatorItem() {
-        super(new Properties().stacksTo(1));
+    public NavigatorItem(Properties props) {
+        super(props);
     }
 
     @Override

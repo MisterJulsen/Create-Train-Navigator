@@ -15,6 +15,7 @@ public enum ModGuiIcons {
     CHECK("check", 1, 0),
     CROSS("cross", 2, 0),
     WARN("warn", 3, 0),
+    
     SETTINGS("settings", 0, 1),
     FILTER("filter", 1, 1),
     BOOKMARK("bookmark", 2, 1),
@@ -31,11 +32,21 @@ public enum ModGuiIcons {
     TARGET("target", 13, 1),
     TIME("target", 14, 1),
     WALK("walk", 15, 1),
+
     INFO("info", 0, 2),
     EXPAND("expand", 1, 2),
     COLLAPSE("collapse", 2, 2),
     DELETE("delete", 3, 2),
-    ADD("add", 4, 2);
+    ADD("add", 4, 2),
+    DOUBLE_SIDED("double_sided", 5, 2),
+    TRAIN_DESTINATION("train_destination", 6, 2),
+    PASSENGER_INFORMATION("passenger_information", 7, 2),
+    PLATFORM_INFORMATION("platform_information", 8, 2),
+    LESS_DETAILS("less_details", 9, 2),
+    DETAILED("detailed", 10, 2),
+    VERY_DETAILED("very_detailed", 11, 2),
+    ARROW_RIGHT("arrow_right", 12, 2),
+    ARROW_LEFT("arrow_left", 13, 2);
 
     private String id;
     private int u;

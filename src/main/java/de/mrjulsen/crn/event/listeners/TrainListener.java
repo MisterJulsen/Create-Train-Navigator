@@ -59,7 +59,7 @@ public class TrainListener {
                     return;
                 }
 
-                OptionalInt maxTrainDuration = TrainUtils.getTrainDeparturePredictions(train.id).stream().mapToInt(x -> x.getTicks()).max();
+                OptionalInt maxTrainDuration = TrainUtils.getTrainDeparturePredictions(train.id, null).stream().mapToInt(x -> x.getTicks()).max();
 
                 if (maxTrainDuration.isPresent()) {
                     if (!lastTicks.containsKey(train.id)) {
@@ -117,7 +117,8 @@ public class TrainListener {
 
 
     public int getApproximatedTrainDuration(Train train) {
-        return getApproximatedTrainDuration(train.id);
+        int a = getApproximatedTrainDuration(train.id);
+        return a == 0 ? 1 : a;
     }
 
     public int getApproximatedTrainDuration(UUID trainId) {

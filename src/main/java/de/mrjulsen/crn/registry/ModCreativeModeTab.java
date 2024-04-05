@@ -1,13 +1,11 @@
-package de.mrjulsen.crn.item.creativemodetab;
+package de.mrjulsen.crn.registry;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
 import de.mrjulsen.crn.ModMain;
-import de.mrjulsen.crn.item.ModItems;
 import de.mrjulsen.mcdragonlib.utils.Utils;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.CreativeModeTab;
@@ -20,12 +18,12 @@ import net.minecraftforge.registries.RegistryObject;
 
 @Mod.EventBusSubscriber(modid = ModMain.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class ModCreativeModeTab {
-    
-    private static final Map<ModTab, Collection<RegistryObject<? extends ItemLike>>> CREATIVE_MODE_TAB_REGISTRY = new HashMap<>();
+
+	private static final Map<ModTab, Collection<RegistryObject<? extends ItemLike>>> CREATIVE_MODE_TAB_REGISTRY = new HashMap<>();
 
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, ModMain.MOD_ID);
 
-    public static final RegistryObject<CreativeModeTab> MAIN_TAB = registerTab("createrailwaysnavigatortab", () -> CreativeModeTab.builder()
+    public static final RegistryObject<CreativeModeTab> MAIN_TAB = registerTab("crn_tab", () -> CreativeModeTab.builder()
             .icon(() -> new ItemStack(ModItems.NAVIGATOR.get()))
             .title(Utils.translate("itemGroup.createrailwaysnavigatortab"))
             .displayItems((pParameters, pOutput) -> {
@@ -44,13 +42,6 @@ public class ModCreativeModeTab {
 
     public static void register(IEventBus event) {
         CREATIVE_MODE_TABS.register(event);
-    }
-
-    public static void put(ModTab tab, RegistryObject<? extends ItemLike> item) {
-        if (!CREATIVE_MODE_TAB_REGISTRY.containsKey(tab)) {
-            CREATIVE_MODE_TAB_REGISTRY.put(tab, new ArrayList<>());
-        }
-        CREATIVE_MODE_TAB_REGISTRY.get(tab).add(item);
     }
 
     public static enum ModTab {

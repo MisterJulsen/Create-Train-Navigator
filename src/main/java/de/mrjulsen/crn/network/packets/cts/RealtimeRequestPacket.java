@@ -12,6 +12,7 @@ import de.mrjulsen.mcdragonlib.network.IPacketBase;
 import de.mrjulsen.crn.network.packets.stc.RealtimeResponsePacket;
 import de.mrjulsen.crn.util.TrainUtils;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkEvent;
 
@@ -51,14 +52,16 @@ public class RealtimeRequestPacket implements IPacketBase<RealtimeRequestPacket>
     public void handle(RealtimeRequestPacket packet, Supplier<NetworkEvent.Context> context) {        
         context.get().enqueueWork(() ->
         {
+            final Level level = context.get().getSender().level();
             new Thread(() -> {
-                final long updateTime = context.get().getSender().level().getDayTime();
+                final long updateTime = level.getDayTime();
                 Collection<SimpleDeparturePrediction> predictions = new ArrayList<>();
                 packet.ids.forEach(x -> {
                     if (!TrainUtils.isTrainIdValid(x)) {
                         return;
                     }
-                    predictions.addAll(TrainUtils.getTrainDeparturePredictions(x).stream().map(a -> a.simplify()).sorted(Comparator.comparingInt(a -> a.ticks())).toList());
+                    
+                    predictions.addAll(TrainUtils.getTrainDeparturePredictions(x, context.get().getSender().level()).stream().map(a -> a.simplify()).sorted(Comparator.comparingInt(a -> a.departureTicks())).toList());
                 });
                 NetworkManager.getInstance().sendToClient(new RealtimeResponsePacket(packet.requestId, predictions, updateTime), context.get().getSender());
             }, "Realtime Provider").run();

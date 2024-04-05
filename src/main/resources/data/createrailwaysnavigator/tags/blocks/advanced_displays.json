@@ -1,0 +1,9 @@
+{
+    "replace": false,
+    "values": [
+        "createrailwaysnavigator:advanced_display",
+        "createrailwaysnavigator:advanced_display_block",
+        "createrailwaysnavigator:advanced_display_panel",
+        "createrailwaysnavigator:advanced_display_small"
+    ]
+}
