@@ -23,7 +23,6 @@ import de.mrjulsen.crn.network.packets.stc.TimeCorrectionPacket;
 import de.mrjulsen.crn.network.packets.stc.TrackStationResponsePacket;
 import de.mrjulsen.crn.network.packets.stc.TrainDataResponsePacket;
 import de.mrjulsen.mcdragonlib.network.IPacketBase;
-import de.mrjulsen.mcdragonlib.network.NetworkManagerBase;
 
 public class NetworkManager extends NetworkManagerBase<NetworkManager> {
 
@@ -34,7 +33,7 @@ public class NetworkManager extends NetworkManagerBase<NetworkManager> {
     }
 
     public static void create() {
-        instance = NetworkManagerBase.create(NetworkManager.class, ModMain.MOD_ID, "crn_network", "5");
+        instance = NetworkManagerBase.create(NetworkManager.class, ModMain.MOD_ID, "createrailwaysnavigator_network", "v6");
     }
 
     public static NetworkManager getInstance() {
