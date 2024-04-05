@@ -1,0 +1,31 @@
+{
+    "display": {
+      "icon": {
+        "item": "createrailwaysnavigator:advanced_display"
+      },
+      "title": {
+        "translate": "advancement.createrailwaysnavigator.advanced_display"
+      },
+      "description": {
+        "color": "#DBA213",
+        "translate": "advancement.createrailwaysnavigator.advanced_display.description"
+      },
+      "frame": "task",
+      "show_toast": true,
+      "announce_to_chat": true
+    },
+    "parent": "create:display_board_0",
+    "criteria": {
+      "requirement": {
+        "trigger": "minecraft:inventory_changed",
+        "conditions": {
+          "items": [
+            {
+              "tag": "createrailwaysnavigator:advanced_displays"
+            }
+          ]
+        }
+      }
+    }
+  }
+  

@@ -323,7 +323,7 @@ public class SimpleRoute {
         public StationEntry(TrainStop stop, long refreshTime) {
             this(
                 stop.getStationAlias().getAliasName().get(),
-                stop.getStationAlias().getInfoForStation(stop.getPrediction().getNextStopStation()),
+                stop.getStationAlias().getInfoForStation(stop.getPrediction().getStationName()),
                 stop.getPrediction().getTicks(), refreshTime
             );
         }

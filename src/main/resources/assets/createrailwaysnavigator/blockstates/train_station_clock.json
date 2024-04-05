@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "createrailwaysnavigator:block/train_station_clock"
+    },
+    "facing=east": {
+      "model": "createrailwaysnavigator:block/train_station_clock",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "createrailwaysnavigator:block/train_station_clock",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "createrailwaysnavigator:block/train_station_clock",
+      "y": 270
+    }
+  }
+}

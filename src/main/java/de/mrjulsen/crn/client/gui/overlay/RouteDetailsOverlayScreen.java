@@ -19,10 +19,8 @@ import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.NavigatorToast;
 import de.mrjulsen.crn.client.input.ModKeys;
 import de.mrjulsen.crn.config.ModClientConfig;
-import de.mrjulsen.crn.data.OverlayPosition;
 import de.mrjulsen.crn.data.SimpleRoute;
 import de.mrjulsen.crn.data.SimpleTrainConnection;
-import de.mrjulsen.crn.item.ModItems;
 import de.mrjulsen.crn.data.SimpleRoute.StationEntry;
 import de.mrjulsen.crn.data.SimpleRoute.StationTag;
 import de.mrjulsen.crn.event.listeners.IJourneyListenerClient;
@@ -40,6 +38,7 @@ import de.mrjulsen.crn.network.InstanceManager;
 import de.mrjulsen.crn.network.NetworkManager;
 import de.mrjulsen.crn.network.packets.cts.NextConnectionsRequestPacket;
 import de.mrjulsen.crn.network.packets.cts.TrainDataRequestPacket;
+import de.mrjulsen.crn.registry.ModItems;
 import de.mrjulsen.crn.util.ModGuiUtils;
 import de.mrjulsen.mcdragonlib.DragonLibConstants;
 import de.mrjulsen.mcdragonlib.client.gui.GuiUtils;
@@ -455,7 +454,7 @@ public class RouteDetailsOverlayScreen implements IHudOverlay, IJourneyListenerC
                     ));
                     trainDataSubPageTime = 0;
                 });
-                NetworkManager.getInstance().sendToServer(Minecraft.getInstance().getConnection().getConnection(), new TrainDataRequestPacket(id, getListener().currentStation().getTrain().trainId()));
+                NetworkManager.getInstance().sendToServer(Minecraft.getInstance().getConnection().getConnection(), new TrainDataRequestPacket(id, getListener().currentStation().getTrain().trainId(), false));
                 break;
         }
     }
