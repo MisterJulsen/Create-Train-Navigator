@@ -124,7 +124,7 @@ public abstract class AbstractBlacklistScreen extends CommonScreen {
         addTooltip(Tooltip.of(tooltipAdd).assignedTo(addButton));
 
         searchBox = addRenderableWidget(new HintTextBox(font, guiLeft + AREA_X + 1, guiTop + 16 + 1, AREA_W - 2, 16));
-        searchBox.setHint(Constants.TEXT_SEARCH);
+        searchBox.setHint(Constants.TEXT_SEARCH.getString());
         searchBox.setResponder(text -> {
             initStationDeleteButtons();
         });
