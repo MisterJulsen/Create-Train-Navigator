@@ -226,7 +226,7 @@
     "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width": "Train Name Column Width",
     "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width.description": "The width of the train name column in block pixels. (Default: 16)",
     "gui.createrailwaysnavigator.display_source.advanced_display.platform_width": "Platform Column Width",
-    "gui.createrailwaysnavigator.display_source.advanced_display.platform_width.description": "The width of the platform column in block pixels. (-1 = Auto, Default: 0)",
+    "gui.createrailwaysnavigator.display_source.advanced_display.platform_width.description": "The width of the platform column in block pixels. (-1 = Auto, Default: -1)",
 
     "createrailwaysnavigator.moin": "moin"
 }

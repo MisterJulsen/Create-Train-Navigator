@@ -226,7 +226,7 @@
     "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width": "Zugname Spaltenbreite",
     "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width.description": "Die Breite der Spalte für den Zugname in Pixel. (Standard: 16)",
     "gui.createrailwaysnavigator.display_source.advanced_display.platform_width": "Gleis Spaltenbreite",
-    "gui.createrailwaysnavigator.display_source.advanced_display.platform_width.description": "Die Breite der Spalte für das Gleis in Pixel. (-1 = Autom., Standard: 0)",
+    "gui.createrailwaysnavigator.display_source.advanced_display.platform_width.description": "Die Breite der Spalte für das Gleis in Pixel. (-1 = Autom., Standard: -1)",
 
     "createrailwaysnavigator.moin": "moin"
 }
