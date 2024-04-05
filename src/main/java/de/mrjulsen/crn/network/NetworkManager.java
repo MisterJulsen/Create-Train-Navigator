@@ -34,7 +34,7 @@ public class NetworkManager extends NetworkManagerBase<NetworkManager> {
     }
 
     public static void create() {
-        instance = NetworkManagerBase.create(NetworkManager.class, ModMain.MOD_ID, "crn_network", "5");
+        instance = NetworkManagerBase.create(NetworkManager.class, ModMain.MOD_ID, "crn_network_channel", "5");
     }
 
     public static NetworkManager getInstance() {
