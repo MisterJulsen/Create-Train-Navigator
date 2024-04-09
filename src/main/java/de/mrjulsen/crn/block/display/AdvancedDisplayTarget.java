@@ -7,6 +7,7 @@ import com.simibubi.create.content.redstone.displayLink.DisplayLinkContext;
 import com.simibubi.create.content.redstone.displayLink.target.DisplayBoardTarget;
 import com.simibubi.create.content.redstone.displayLink.target.DisplayTargetStats;
 import com.simibubi.create.content.trains.display.GlobalTrainDisplayData;
+import com.simibubi.create.content.trains.entity.Train;
 
 import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.data.DeparturePrediction;
@@ -44,20 +45,24 @@ public class AdvancedDisplayTarget extends DisplayBoardTarget {
 
 				if (!preds.isEmpty()) {
 					SimpleDeparturePrediction pred = preds.iterator().next();
-					SimulatedTrainSchedule sched = SimpleTrainSchedule.of(TrainUtils.getTrainStopsSorted(pred.trainId(), context.blockEntity().getLevel())).simulate(TrainUtils.getTrain(pred.trainId()), 0, pred.stationName());
+					Train train = TrainUtils.getTrain(pred.trainId());
+					
+					if (train != null) {
+						SimulatedTrainSchedule sched = SimpleTrainSchedule.of(TrainUtils.getTrainStopsSorted(pred.trainId(), context.blockEntity().getLevel())).simulate(train, 0, pred.stationName());
 						
-					List<TrainStop> stops = new ArrayList<>(sched.getAllStops());
-					boolean foundStart = false;
-
-					if (!stops.isEmpty()) {
-						for (int i = 0; i < stops.size() - 1; i++) {
-							TrainStop x = stops.get(i);
-							if (foundStart) {
-								stopovers.add(x.getStationAlias().getAliasName().get());
+						List<TrainStop> stops = new ArrayList<>(sched.getAllStops());
+						boolean foundStart = false;
+	
+						if (!stops.isEmpty()) {
+							for (int i = 0; i < stops.size() - 1; i++) {
+								TrainStop x = stops.get(i);
+								if (foundStart) {
+									stopovers.add(x.getStationAlias().getAliasName().get());
+								}
+								foundStart = foundStart || x.getPrediction().getStationName().equals(pred.stationName());
 							}
-							foundStart = foundStart || x.getPrediction().getStationName().equals(pred.stationName());
 						}
-					}
+					}					
 				}
 				
 				controller.setDepartureData(
