@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 
+import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
 import de.mrjulsen.crn.client.ber.base.BERText;
@@ -150,8 +151,8 @@ public class BERPassengerInfoDetailed implements IBERRenderSubtype<AdvancedDispl
             Utils.text(blockEntity.getTrainData().trainName()).append(" ").append(Utils.text(blockEntity.getTrainData().getNextStop().get().scheduleTitle())),
             Utils.text("" + (int)Math.abs(Math.round(blockEntity.getTrainData().speed() * 20 * 3.6F))).append(" km/h"),
             isSingleBlock ?
-                    Utils.text(TimeUtils.parseTime((int)(blockEntity.getLevel().dayTime() % 24000), ModClientConfig.TIME_FORMAT.get())) :
-                    Utils.translate(keyDate, blockEntity.getLevel().getDayTime() / 24000, TimeUtils.parseTime((int)(blockEntity.getLevel().dayTime() % 24000), ModClientConfig.TIME_FORMAT.get()))
+                    Utils.text(TimeUtils.parseTime((int)(blockEntity.getLevel().getDayTime() % 24000 + Constants.TIME_SHIFT), ModClientConfig.TIME_FORMAT.get())) :
+                    Utils.translate(keyDate, blockEntity.getLevel().getDayTime() / 24000, TimeUtils.parseTime((int)(blockEntity.getLevel().dayTime() % 24000 + Constants.TIME_SHIFT), ModClientConfig.TIME_FORMAT.get()))
         ), 0)
             .withIsCentered(true)
             .withMaxWidth(maxWidth, true)
