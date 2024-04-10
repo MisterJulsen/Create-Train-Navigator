@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 
+import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
 import de.mrjulsen.crn.client.ber.base.BERText;
@@ -62,8 +63,8 @@ public class BERPlatformSimple implements IBERRenderSubtype<AdvancedDisplayBlock
         float maxWidth = displayWidth * 16 - 6;        
         parent.labels.add(new BERText(parent.getFontUtils(), () -> {
             List<Component> texts = new ArrayList<>();
-            texts.add(Utils.translate(keyTime, TimeUtils.parseTime((int)(blockEntity.getLevel().getDayTime() % 24000 + 6000), ModClientConfig.TIME_FORMAT.get())));
-            texts.addAll(preds.stream().map(x -> Utils.translate(keyTrainDeparture, x.trainName(), x.scheduleTitle(), TimeUtils.parseTime((int)(blockEntity.getLastRefreshedTime() % 24000 + 6000 + x.departureTicks()), ModClientConfig.TIME_FORMAT.get()), x.stationInfo().platform())).toList());
+            texts.add(Utils.translate(keyTime, TimeUtils.parseTime((int)(blockEntity.getLevel().getDayTime() % 24000 + Constants.TIME_SHIFT), ModClientConfig.TIME_FORMAT.get())));
+            texts.addAll(preds.stream().map(x -> Utils.translate(keyTrainDeparture, x.trainName(), x.scheduleTitle(), TimeUtils.parseTime((int)(blockEntity.getLastRefreshedTime() % 24000 + Constants.TIME_SHIFT + x.departureTicks()), ModClientConfig.TIME_FORMAT.get()), x.stationInfo().platform())).toList());
             
             return List.of(ModUtils.concat(texts.toArray(Component[]::new)));
         }, 0)
