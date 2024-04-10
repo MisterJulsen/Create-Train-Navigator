@@ -67,9 +67,9 @@ public class BERPlatformSimple implements IBERRenderSubtype<AdvancedDisplayBlock
             texts.add(Utils.translate(keyTime, TimeUtils.parseTime((int)(blockEntity.getLevel().getDayTime() % 24000 + Constants.TIME_SHIFT), ModClientConfig.TIME_FORMAT.get())));
             texts.addAll(preds.stream().map(x -> {
                 if (x.stationInfo().platform() == null || x.stationInfo().platform().isBlank()) {
-                    return Utils.translate(keyTrainDeparture, x.trainName(), x.scheduleTitle(), TimeUtils.parseTime((int)(blockEntity.getLastRefreshedTime() % 24000 + Constants.TIME_SHIFT + x.departureTicks()), ModClientConfig.TIME_FORMAT.get()), x.stationInfo().platform());
+                    return Utils.translate(keyTrainDeparture, x.trainName(), x.scheduleTitle(), TimeUtils.parseTime((int)(blockEntity.getLastRefreshedTime() % 24000 + Constants.TIME_SHIFT + x.departureTicks()), ModClientConfig.TIME_FORMAT.get()));
                 }
-                return Utils.translate(keyTrainDepartureWithPlatform, x.trainName(), x.scheduleTitle(), TimeUtils.parseTime((int)(blockEntity.getLastRefreshedTime() % 24000 + Constants.TIME_SHIFT + x.departureTicks()), ModClientConfig.TIME_FORMAT.get()));
+                return Utils.translate(keyTrainDepartureWithPlatform, x.trainName(), x.scheduleTitle(), TimeUtils.parseTime((int)(blockEntity.getLastRefreshedTime() % 24000 + Constants.TIME_SHIFT + x.departureTicks()), ModClientConfig.TIME_FORMAT.get()), x.stationInfo().platform());
             }).toList());
             
             return List.of(ModUtils.concat(texts.toArray(Component[]::new)));
