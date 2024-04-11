@@ -40,8 +40,10 @@ public class JourneyListener {
     private boolean isStarted;
     
     private static final String keyJourneyBegins = "gui.createrailwaysnavigator.route_overview.journey_begins";
+    private static final String keyJourneyBeginsWithPlatform = "gui.createrailwaysnavigator.route_overview.journey_begins_with_platform";
     private static final String keyNextStop = "gui.createrailwaysnavigator.route_overview.next_stop";
     private static final String keyTransfer = "gui.createrailwaysnavigator.route_overview.transfer";
+    private static final String keyTransferWithPlatform = "gui.createrailwaysnavigator.route_overview.transfer_with_platform";
     private static final String keyAfterJourney = "gui.createrailwaysnavigator.route_overview.after_journey";
     private static final String keyJourneyInterruptedTitle = "gui.createrailwaysnavigator.route_overview.train_canceled_title";
     private static final String keyJourneyInterrupted = "gui.createrailwaysnavigator.route_overview.train_canceled_info";
@@ -50,12 +52,14 @@ public class JourneyListener {
     private static final String keyKeybindOptions = "key.createrailwaysnavigator.route_overlay_options";
     private static final String keyNotificationJourneyBeginsTitle = "gui.createrailwaysnavigator.route_overview.notification.journey_begins.title";
     private static final String keyNotificationJourneyBegins = "gui.createrailwaysnavigator.route_overview.notification.journey_begins";
+    private static final String keyNotificationJourneyBeginsWithPlatform = "gui.createrailwaysnavigator.route_overview.notification.journey_begins_with_platform";
     private static final String keyNotificationPlatformChangedTitle = "gui.createrailwaysnavigator.route_overview.notification.platform_changed.title";
     private static final String keyNotificationPlatformChanged = "gui.createrailwaysnavigator.route_overview.notification.platform_changed";    
     private static final String keyNotificationTrainDelayedTitle = "gui.createrailwaysnavigator.route_overview.notification.train_delayed.title";
     private static final String keyNotificationTrainDelayed = "gui.createrailwaysnavigator.route_overview.notification.train_delayed";
     private static final String keyNotificationTransferTitle = "gui.createrailwaysnavigator.route_overview.notification.transfer.title";
     private static final String keyNotificationTransfer = "gui.createrailwaysnavigator.route_overview.notification.transfer";
+    private static final String keyNotificationTransferWithPlatform = "gui.createrailwaysnavigator.route_overview.notification.transfer_with_platform";
     private static final String keyNotificationConnectionEndangeredTitle = "gui.createrailwaysnavigator.route_overview.notification.connection_endangered.title";
     private static final String keyNotificationConnectionEndangered = "gui.createrailwaysnavigator.route_overview.notification.connection_endangered";
     private static final String keyNotificationConnectionMissedTitle = "gui.createrailwaysnavigator.route_overview.notification.connection_missed.title";
@@ -106,7 +110,13 @@ public class JourneyListener {
     }
 
     public JourneyListener start() {
-        Component text = Utils.translate(keyJourneyBegins,
+        Component text = currentStation().getInfo().platform() == null || currentStation().getInfo().platform().isBlank() ?
+        Utils.translate(keyJourneyBegins,
+            currentStation().getTrain().trainName(),
+            currentStation().getTrain().scheduleTitle(),
+            TimeUtils.parseTime((int)currentStation().getEstimatedTimeWithThreshold() + Constants.TIME_SHIFT, ModClientConfig.TIME_FORMAT.get())
+        ) :
+        Utils.translate(keyJourneyBeginsWithPlatform,
             currentStation().getTrain().trainName(),
             currentStation().getTrain().scheduleTitle(),
             TimeUtils.parseTime((int)currentStation().getEstimatedTimeWithThreshold() + Constants.TIME_SHIFT, ModClientConfig.TIME_FORMAT.get()),
@@ -299,12 +309,19 @@ public class JourneyListener {
             Component title = Utils.translate(keyNotificationJourneyBeginsTitle,
                 lastStation().getStationName()
             );
-            Component description = Utils.translate(keyNotificationJourneyBegins,
-                currentStation().getTrain().trainName(),
-                currentStation().getTrain().scheduleTitle(),
-                TimeUtils.parseTime((int)currentStation().getEstimatedTimeWithThreshold() + Constants.TIME_SHIFT, ModClientConfig.TIME_FORMAT.get()),
-                currentStation().getInfo().platform()
-            );
+            Component description = currentStation().getInfo().platform() == null || currentStation().getInfo().platform().isBlank() ?
+                Utils.translate(keyNotificationJourneyBegins,
+                    currentStation().getTrain().trainName(),
+                    currentStation().getTrain().scheduleTitle(),
+                    TimeUtils.parseTime((int)currentStation().getEstimatedTimeWithThreshold() + Constants.TIME_SHIFT, ModClientConfig.TIME_FORMAT.get())
+                )
+            :
+                Utils.translate(keyNotificationJourneyBeginsWithPlatform,
+                    currentStation().getTrain().trainName(),
+                    currentStation().getTrain().scheduleTitle(),
+                    TimeUtils.parseTime((int)currentStation().getEstimatedTimeWithThreshold() + Constants.TIME_SHIFT, ModClientConfig.TIME_FORMAT.get()),
+                    currentStation().getInfo().platform()
+                );
 
             setNotificationText(new NotificationData(currentState, title, description));
             setNarratorText(title.getString() + " " + description.getString());
@@ -643,18 +660,30 @@ public class JourneyListener {
             currentStation().getStationName()
         );
         if (currentStation().getTag() == StationTag.PART_END && currentStation().getIndex() + 1 < route.getStationCount(true)) {
-            Component transferText = textB = Utils.translate(keyTransfer,
+            Component transferText = textB = nextStation().get().getInfo().platform() == null || nextStation().get().getInfo().platform().isBlank() ?
+            Utils.translate(keyTransfer,
+                nextStation().get().getTrain().trainName(),
+                nextStation().get().getTrain().scheduleTitle()
+            ) :
+            Utils.translate(keyTransferWithPlatform,
                 nextStation().get().getTrain().trainName(),
                 nextStation().get().getTrain().scheduleTitle(),
                 nextStation().get().getInfo().platform()
             );
             text = ModUtils.concat(text, transferText);
             setState(State.BEFORE_TRANSFER);
-            setNotificationText(new NotificationData(currentState, Utils.translate(keyNotificationTransferTitle), Utils.translate(keyNotificationTransfer,
-                nextStation().get().getTrain().trainName(),
-                nextStation().get().getTrain().scheduleTitle(),
-                nextStation().get().getInfo().platform()
-            )));
+            setNotificationText(new NotificationData(currentState, Utils.translate(keyNotificationTransferTitle), 
+                nextStation().get().getInfo().platform() == null || nextStation().get().getInfo().platform().isBlank() ?
+                Utils.translate(keyNotificationTransfer,
+                    nextStation().get().getTrain().trainName(),
+                    nextStation().get().getTrain().scheduleTitle()
+                ) : 
+                Utils.translate(keyNotificationTransferWithPlatform,
+                    nextStation().get().getTrain().trainName(),
+                    nextStation().get().getTrain().scheduleTitle(),
+                    nextStation().get().getInfo().platform()
+                )
+            ));
         } else {
             setState(State.BEFORE_NEXT_STOP);
         }
@@ -688,10 +717,17 @@ public class JourneyListener {
     }
 
     private void reachTransferStop() {
-        Component text = nextStation().isPresent() ? Utils.translate(keyTransfer,
-            nextStation().get().getTrain().trainName(),
-            nextStation().get().getTrain().scheduleTitle(),
-            nextStation().get().getInfo().platform()
+        Component text = nextStation().isPresent() ? (
+            nextStation().get().getInfo().platform() == null || nextStation().get().getInfo().platform().isBlank() ?
+            Utils.translate(keyTransfer,
+                nextStation().get().getTrain().trainName(),
+                nextStation().get().getTrain().scheduleTitle()
+            ) :
+            Utils.translate(keyTransferWithPlatform,
+                nextStation().get().getTrain().trainName(),
+                nextStation().get().getTrain().scheduleTitle(),
+                nextStation().get().getInfo().platform()
+            )
         ) : Utils.emptyText();
         String narratorText = text.getString();
         
