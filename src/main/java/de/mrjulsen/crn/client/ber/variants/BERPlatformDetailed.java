@@ -206,7 +206,7 @@ public class BERPlatformDetailed implements IBERRenderSubtype<AdvancedDisplayBlo
 
     public void setTimer(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason, float y) {
         float displayWidth = blockEntity.getXSizeScaled() * 16 - 6;
-        timeLabel = new BERText(parent.getFontUtils(), () -> List.of(Utils.translate(keyTime, TimeUtils.parseTime((int)(blockEntity.getLevel().getDayTime() % 24000 + 6000), ModClientConfig.TIME_FORMAT.get()))), 0)
+        timeLabel = new BERText(parent.getFontUtils(), () -> List.of(Utils.translate(keyTime, TimeUtils.parseTime((int)(blockEntity.getLevel().getDayTime() % 24000 + Constants.TIME_SHIFT), ModClientConfig.TIME_FORMAT.get()))), 0)
             .withIsCentered(true)
             .withMaxWidth(displayWidth, true)
             .withStretchScale(0.4f, 0.4f)

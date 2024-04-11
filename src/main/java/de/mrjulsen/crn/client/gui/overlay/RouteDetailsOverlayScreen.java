@@ -115,6 +115,7 @@ public class RouteDetailsOverlayScreen implements IHudOverlay, IJourneyListenerC
     private static final String keyTrainDetails = "gui.createrailwaysnavigator.route_overview.train_details";
     private static final String keyTrainSpeed = "gui.createrailwaysnavigator.route_overview.train_speed";
     private static final String keyTransfer = "gui.createrailwaysnavigator.route_overview.transfer";
+    private static final String keyTransferWithPlatform = "gui.createrailwaysnavigator.route_overview.transfer_with_platform";
     private static final String keyTransferCount = "gui.createrailwaysnavigator.navigator.route_entry.transfer";
     private static final String keyTrainCanceled = "gui.createrailwaysnavigator.route_overview.stop_canceled";
     private static final String keyAfterJourney = "gui.createrailwaysnavigator.route_overview.after_journey";
@@ -356,7 +357,13 @@ public class RouteDetailsOverlayScreen implements IHudOverlay, IJourneyListenerC
             currentPage = Page.TRANSFER;  
             StationEntry station = getListener().currentStation();          
             if (station != null) {
-                this.messageLabel = MultiLineLabel.create(shadowlessFont, Utils.translate(keyTransfer,
+                this.messageLabel = MultiLineLabel.create(shadowlessFont,
+                station.getInfo().platform() == null || station.getInfo().platform().isBlank() ?
+                Utils.translate(keyTransfer,
+                    station.getTrain().trainName(),
+                    station.getTrain().scheduleTitle()
+                ) : 
+                Utils.translate(keyTransferWithPlatform,
                     station.getTrain().trainName(),
                     station.getTrain().scheduleTitle(),
                     station.getInfo().platform()

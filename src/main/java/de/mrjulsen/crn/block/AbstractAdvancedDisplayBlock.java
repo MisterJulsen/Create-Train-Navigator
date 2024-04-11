@@ -243,6 +243,11 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
                 be.setColor(dye == DyeColor.ORANGE ? 0xFF9900 : dye.getMaterialColor().col);				
 				be.notifyUpdate();
             });
+
+			if (pLevel.isClientSide) {
+				blockEntity.getRenderer().update(pLevel, pPos, pState, blockEntity, EUpdateReason.BLOCK_CHANGED);
+			}
+
             return InteractionResult.SUCCESS;
 		}
        
@@ -252,6 +257,11 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
                 be.setGlowing(true);
 				be.notifyUpdate();
             });
+			
+			if (pLevel.isClientSide) {
+				blockEntity.getRenderer().update(pLevel, pPos, pState, blockEntity, EUpdateReason.BLOCK_CHANGED);
+			}
+
             return InteractionResult.SUCCESS;
 		}
 
