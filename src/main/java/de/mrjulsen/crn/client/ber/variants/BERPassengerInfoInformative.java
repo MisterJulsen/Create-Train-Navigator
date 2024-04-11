@@ -137,7 +137,7 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
             return;
         }
 
-        generateTitleBar(level, pos, state, blockEntity, parent);
+        generateTitleBar(level, pos, state, blockEntity, parent, reason);
 
         if (this.state == State.BEFORE_NEXT_STOP && this.nextConnections != null && !this.nextConnections.isEmpty()) {
             return;
@@ -279,7 +279,7 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
         return rawTextWidth + arrowOffset;
     }
 
-    private void generateTitleBar(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent) {
+    private void generateTitleBar(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason) {
         int displayWidth = blockEntity.getXSizeScaled();
 
         float maxWidth = displayWidth * 16 - 6 - (this.state != State.WHILE_TRAVELING && blockEntity.relativeExitDirection.get() != TrainExitSide.UNKNOWN ? 4 : 0);
@@ -299,18 +299,18 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
             }
         }
 
-        if (titleLabel != null && line.getString().equals(titleLabel.getCurrentText().getString())) {
+        if (titleLabel != null && line.getString().equals(titleLabel.getCurrentText().getString()) && reason == EUpdateReason.DATA_CHANGED) {
             return;
         }
 
         titleLabel = new BERText(parent.getFontUtils(), line, 0)
             .withIsCentered(false)
             .withMaxWidth(maxWidth - timeWidth, true)
-            .withStretchScale(0.3f, 0.5f)
+            .withStretchScale(0.15f, 0.25f)
             .withStencil(0, maxWidth - timeWidth)
             .withCanScroll(true, 0.5f)
             .withColor((0xFF << 24) | (blockEntity.getColor() & 0x00FFFFFF))
-            .withPredefinedTextTransformation(new TextTransformation(3.0f, 2.5f, 0.0f, 0.5f, 0.25f))
+            .withPredefinedTextTransformation(new TextTransformation(3.0f, 2.5f, 0.0f, 1, 0.25f))
             .build();
     }
 
