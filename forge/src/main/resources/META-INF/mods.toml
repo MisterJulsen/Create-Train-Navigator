@@ -1,0 +1,35 @@
+modLoader = "javafml"
+loaderVersion = "[40,)"
+#issueTrackerURL = ""
+license = "Insert License Here"
+
+[[mods]]
+modId = "createrailwaysnavigator"
+version = "${version}"
+displayName = "Example Mod"
+authors = "Me!"
+description = '''
+This is an example description! Tell everyone what your mod is about!
+'''
+#logoFile = ""
+
+[[dependencies.createrailwaysnavigator]]
+modId = "forge"
+mandatory = true
+versionRange = "[40,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.createrailwaysnavigator]]
+modId = "minecraft"
+mandatory = true
+versionRange = "[1.18.2,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.createrailwaysnavigator]]
+modId = "architectury"
+mandatory = true
+versionRange = "[4.11.93,)"
+ordering = "AFTER"
+side = "BOTH"
