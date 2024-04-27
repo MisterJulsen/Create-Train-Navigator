@@ -8,6 +8,7 @@ import de.mrjulsen.crn.ExampleMod;
 import de.mrjulsen.crn.block.display.AdvancedDisplaySource;
 import net.minecraft.core.Registry;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 
 public class ModExtras {
 
@@ -15,21 +16,25 @@ public class ModExtras {
 
     public static void register() {
         Block maybeRegistered = null;
-        System.out.println("pain");;
+
         try {
             maybeRegistered = AllBlocks.TRACK_STATION.get();
+            if (maybeRegistered == Blocks.AIR) {
+                throw new NullPointerException();
+            }
         } catch (NullPointerException ignored) {
             maybeRegistered = null;
-            ExampleMod.LOGGER.error("Unable to register custom track station type.", ignored);
         }
-		Create.REGISTRATE.addRegisterCallback("track_station", Registry.BLOCK_REGISTRY, ModExtras::addSignalSource);
+        
+		Create.REGISTRATE.addRegisterCallback("track_station", Registry.BLOCK_REGISTRY, ModExtras::addDisplaySource);
         if (maybeRegistered != null) {
-            addSignalSource(maybeRegistered);
-        }        
+            addDisplaySource(maybeRegistered);
+        }
     }
 
-	public static void addSignalSource(Block block) {
+	public static void addDisplaySource(Block block) {
         if (registeredTrackStationSource) return;
+        ExampleMod.LOGGER.info("Custom display sources registered!");
         AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplaySource()).accept(block);
         registeredTrackStationSource = true;
     }
