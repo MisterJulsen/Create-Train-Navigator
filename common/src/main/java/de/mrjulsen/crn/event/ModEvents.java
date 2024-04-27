@@ -3,6 +3,7 @@ package de.mrjulsen.crn.event;
 import de.mrjulsen.crn.ExampleMod;
 import de.mrjulsen.crn.event.listeners.TrainListener;
 import de.mrjulsen.crn.network.packets.stc.TimeCorrectionPacket;
+import de.mrjulsen.crn.registry.ModExtras;
 import dev.architectury.event.events.common.LifecycleEvent;
 import dev.architectury.event.events.common.TickEvent;
 import net.minecraft.server.level.ServerLevel;
@@ -14,6 +15,10 @@ public class ModEvents {
     private static ServerLevel serverLevel;
 
     public static void init() {
+        LifecycleEvent.SERVER_LEVEL_LOAD.register((level) -> {
+            ModExtras.register();
+        });        
+
         LifecycleEvent.SERVER_STARTED.register((server) -> {
             TrainListener.start(server.overworld());
             serverLevel = server.overworld();

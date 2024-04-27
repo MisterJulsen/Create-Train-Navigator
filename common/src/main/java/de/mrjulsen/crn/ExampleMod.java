@@ -89,7 +89,7 @@ public final class ExampleMod {
         ModBlockEntities.register();        
         ModExtras.register();
         
-        crnNet = new NetworkManagerBase(MOD_ID, "pain", List.of(
+        crnNet = new NetworkManagerBase(MOD_ID, "crn_network", List.of(
             // cts
             GlobalSettingsRequestPacket.class,
             GlobalSettingsUpdatePacket.class,

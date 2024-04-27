@@ -8,6 +8,7 @@ import de.mrjulsen.crn.network.InstanceManager;
 import de.mrjulsen.crn.registry.ModExtras;
 import de.mrjulsen.mcdragonlib.client.OverlayManager;
 import dev.architectury.event.events.client.ClientGuiEvent;
+import dev.architectury.event.events.client.ClientLifecycleEvent;
 import dev.architectury.event.events.common.LifecycleEvent;
 import dev.architectury.event.events.common.PlayerEvent;
 import dev.architectury.event.events.common.TickEvent;
@@ -19,6 +20,10 @@ public class ClientEvents {
     public static void init() {
         TickEvent.PLAYER_POST.register((mc) -> {
             JourneyListenerManager.tick();
+        });
+
+        ClientLifecycleEvent.CLIENT_LEVEL_LOAD.register((level) -> {
+            ModExtras.register();
         });
 
         LifecycleEvent.SERVER_LEVEL_LOAD.register((server) -> {
