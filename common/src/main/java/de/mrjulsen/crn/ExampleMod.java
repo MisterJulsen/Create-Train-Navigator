@@ -4,8 +4,8 @@ import com.mojang.logging.LogUtils;
 import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.simibubi.create.foundation.item.ItemDescription;
 import com.simibubi.create.foundation.item.KineticStats;
-import com.simibubi.create.foundation.item.TooltipHelper;
 import com.simibubi.create.foundation.item.TooltipModifier;
+import com.simibubi.create.foundation.item.TooltipHelper.Palette;
 
 import de.mrjulsen.crn.block.AdvancedDisplayBlock;
 import de.mrjulsen.crn.event.ClientEvents;
@@ -56,6 +56,13 @@ public final class ExampleMod {
     
     public static final CreateRegistrate REGISTRATE = CreateRegistrate.create(MOD_ID);
 
+    static {
+		REGISTRATE.setTooltipModifierFactory(item -> {
+			return new ItemDescription.Modifier(item, Palette.STANDARD_CREATE)
+				.andThen(TooltipModifier.mapNull(KineticStats.create(item)));
+		});
+	}
+
     @Nullable
     public static KineticStats create(Item item) {
         if (item instanceof BlockItem blockItem) {
@@ -67,12 +74,7 @@ public final class ExampleMod {
         return null;
     }
 
-	static {
-        ExampleMod.REGISTRATE.setTooltipModifierFactory(item ->
-            new ItemDescription.Modifier(item, TooltipHelper.Palette.STANDARD_CREATE)
-                    .andThen(TooltipModifier.mapNull(ExampleMod.create(item)))
-        );
-    }
+	
 
     private static NetworkManagerBase crnNet;
 
@@ -81,13 +83,6 @@ public final class ExampleMod {
     public static void init() {
         LifecycleEvent.SETUP.register(ServerInit::setup);
         ClientLifecycleEvent.CLIENT_SETUP.register(ClientInit::setup);
-
-        ExampleExpectPlatform.registerConfig();
-
-        ModEvents.init();
-        if (Platform.getEnv() == EnvType.CLIENT) {
-            ClientEvents.init();
-        }       
    
         ModBlocks.register();
         ModItems.register();
@@ -117,6 +112,13 @@ public final class ExampleMod {
             TrainDataResponsePacket.class,
             TimeCorrectionPacket.class
         ));
+        
+        ExampleExpectPlatform.registerConfig();
+
+        ModEvents.init();
+        if (Platform.getEnv() == EnvType.CLIENT) {
+            ClientEvents.init();
+        }
     }
 
     public static NetworkManagerBase net() {
