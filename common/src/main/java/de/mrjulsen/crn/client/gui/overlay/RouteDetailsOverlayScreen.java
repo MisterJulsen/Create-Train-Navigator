@@ -600,7 +600,7 @@ public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourn
             GuiUtils.drawString(graphics, shadowlessFont, x + 10, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, TextUtils.translate(keyTrainCanceled), DELAYED | fontAlpha, EAlignment.LEFT, false);
         } else {
             long timeDiff = station.getDifferenceTime();
-            MutableComponent timeText = TextUtils.text(TimeUtils.parseTime((int)(station.getScheduleTime() + DragonLib.DAYTIME_SHIFT), ModClientConfig.TIME_FORMAT.get())).withStyle(reachable ? ChatFormatting.RESET : ChatFormatting.STRIKETHROUGH);
+            MutableComponent timeText = TextUtils.text(TimeUtils.parseTime((int)((station.getScheduleTime() + DragonLib.DAYTIME_SHIFT) % DragonLib.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get())).withStyle(reachable ? ChatFormatting.RESET : ChatFormatting.STRIKETHROUGH);
             
             float scale = shadowlessFont.width(timeText) >= 30 ? 0.7F : 1;
             graphics.poseStack().pushPose();
@@ -609,7 +609,7 @@ public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourn
             graphics.poseStack().popPose();
             
             if (station.reachable(false) && station.shouldRenderRealtime()) {
-                MutableComponent realtimeText = TextUtils.text(TimeUtils.parseTime((int)(station.getEstimatedTimeWithThreshold() + DragonLib.DAYTIME_SHIFT), ModClientConfig.TIME_FORMAT.get())).withStyle(reachable ? ChatFormatting.RESET : ChatFormatting.STRIKETHROUGH);
+                MutableComponent realtimeText = TextUtils.text(TimeUtils.parseTime((int)((station.getEstimatedTimeWithThreshold() + DragonLib.DAYTIME_SHIFT) % DragonLib.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get())).withStyle(reachable ? ChatFormatting.RESET : ChatFormatting.STRIKETHROUGH);
                 
                 float realtimeScale = shadowlessFont.width(realtimeText) >= 30 ? 0.7F : 1;
                 graphics.poseStack().pushPose();
@@ -714,7 +714,7 @@ public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourn
         // Title
         ModGuiIcons.TIME.render(graphics, x + 10, y + 3);
         long time = getListener().currentStation().getEstimatedTimeWithThreshold() - level.getDayTime();
-        GuiUtils.drawString(graphics, shadowlessFont, x + 15 + ModGuiIcons.ICON_SIZE, y + 3 + ModGuiIcons.ICON_SIZE / 2 - shadowlessFont.lineHeight / 2, TextUtils.translate(keyDepartureIn).append(" ").append(time > 0 ? TextUtils.text(TimeUtils.parseTime((int)(time % 24000), TimeFormat.HOURS_24)) : TextUtils.translate(keyTimeNow)).withStyle(ChatFormatting.BOLD), 0xFFFFFF | fontAlpha, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, shadowlessFont, x + 15 + ModGuiIcons.ICON_SIZE, y + 3 + ModGuiIcons.ICON_SIZE / 2 - shadowlessFont.lineHeight / 2, TextUtils.translate(keyDepartureIn).append(" ").append(time > 0 ? TextUtils.text(TimeUtils.parseTime((int)(time % DragonLib.TICKS_PER_DAY), TimeFormat.HOURS_24)) : TextUtils.translate(keyTimeNow)).withStyle(ChatFormatting.BOLD), 0xFFFFFF | fontAlpha, EAlignment.LEFT, false);
         y += 5 + ModGuiIcons.ICON_SIZE;
         
         // Details
@@ -725,7 +725,7 @@ public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourn
         Component platformText = TextUtils.text(endStation.getInfo().platform());
         int platformTextWidth = shadowlessFont.width(platformText);
         final int maxStationNameWidth = SLIDING_TEXT_AREA_WIDTH - platformTextWidth - 10 - 5;
-        MutableComponent stationText = TextUtils.text(TimeUtils.parseTime((int)(endStation.getEstimatedTimeWithThreshold() + DragonLib.DAYTIME_SHIFT % 24000), ModClientConfig.TIME_FORMAT.get())).append(TextUtils.text(" " + endStation.getStationName()));
+        MutableComponent stationText = TextUtils.text(TimeUtils.parseTime((int)((endStation.getEstimatedTimeWithThreshold() + DragonLib.DAYTIME_SHIFT) % DragonLib.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get())).append(TextUtils.text(" " + endStation.getStationName()));
         if (shadowlessFont.width(stationText) > maxStationNameWidth) {
             stationText = TextUtils.text(shadowlessFont.substrByWidth(stationText, maxStationNameWidth).getString()).append(TextUtils.text("...")).withStyle(stationText.getStyle());
         }
@@ -748,7 +748,7 @@ public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourn
         // Title
         ModGuiIcons.WALK.render(graphics, x + 10, y + 3);        
         long transferTime = getListener().currentStation().getEstimatedTimeWithThreshold() - level.getDayTime();//getListener().getTransferTime(getListener().getIndex());
-        GuiUtils.drawString(graphics, shadowlessFont, x + 15 + ModGuiIcons.ICON_SIZE, y + 3 + ModGuiIcons.ICON_SIZE / 2 - shadowlessFont.lineHeight / 2, TextUtils.translate(keyScheduleTransfer).append(" ").append(transferTime > 0 ? TextUtils.text(TimeUtils.parseTime((int)(transferTime % 24000), TimeFormat.HOURS_24)) : TextUtils.translate(keyTimeNow)).withStyle(ChatFormatting.BOLD), 0xFFFFFF | fontAlpha, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, shadowlessFont, x + 15 + ModGuiIcons.ICON_SIZE, y + 3 + ModGuiIcons.ICON_SIZE / 2 - shadowlessFont.lineHeight / 2, TextUtils.translate(keyScheduleTransfer).append(" ").append(transferTime > 0 ? TextUtils.text(TimeUtils.parseTime((int)(transferTime % DragonLib.TICKS_PER_DAY), TimeFormat.HOURS_24)) : TextUtils.translate(keyTimeNow)).withStyle(ChatFormatting.BOLD), 0xFFFFFF | fontAlpha, EAlignment.LEFT, false);
         y += 5 + ModGuiIcons.ICON_SIZE;
         
         // Details

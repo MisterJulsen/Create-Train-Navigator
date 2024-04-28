@@ -39,13 +39,13 @@ public class RouteEntryOverviewWidget extends DLButton {
     private final SimpleRoute route;
     private final NavigatorScreen parent;
     private final Level level;
-    private final int lastRefreshedTime;
+    private final long lastRefreshedTime;
 
     private static final MutableComponent transferText = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".navigator.route_entry.transfer");
     private static final MutableComponent connectionInPast = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".navigator.route_entry.connection_in_past");
     private static final MutableComponent trainCanceled = TextUtils.translate("gui.createrailwaysnavigator.route_overview.stop_canceled");
 
-    public RouteEntryOverviewWidget(NavigatorScreen parent, Level level, int lastRefreshedTime, int pX, int pY, SimpleRoute route, Consumer<RouteEntryOverviewWidget> onClick) {
+    public RouteEntryOverviewWidget(NavigatorScreen parent, Level level, long lastRefreshedTime, int pX, int pY, SimpleRoute route, Consumer<RouteEntryOverviewWidget> onClick) {
         super(pX, pY, WIDTH, HEIGHT, TextUtils.text(route.getName()), onClick); // 48
         this.route = route;
         this.parent = parent;
@@ -80,8 +80,8 @@ public class RouteEntryOverviewWidget extends DLButton {
         SimpleRoutePart[] parts = route.getParts().toArray(SimpleRoutePart[]::new);
         Font shadowlessFont = new NoShadowFontWrapper(minecraft.font);
 
-        String timeStart = TimeUtils.parseTime(lastRefreshedTime + DragonLib.DAYTIME_SHIFT + route.getStartStation().getTicks(), ModClientConfig.TIME_FORMAT.get());
-        String timeEnd = TimeUtils.parseTime(lastRefreshedTime + DragonLib.DAYTIME_SHIFT + route.getEndStation().getTicks(), ModClientConfig.TIME_FORMAT.get());
+        String timeStart = TimeUtils.parseTime((int)((lastRefreshedTime + DragonLib.DAYTIME_SHIFT) % DragonLib.TICKS_PER_DAY) + route.getStartStation().getTicks(), ModClientConfig.TIME_FORMAT.get());
+        String timeEnd = TimeUtils.parseTime((int)((lastRefreshedTime + DragonLib.DAYTIME_SHIFT) % DragonLib.TICKS_PER_DAY) + route.getEndStation().getTicks(), ModClientConfig.TIME_FORMAT.get());
         String dash = " - ";
         MutableComponent line = TextUtils.text(String.format("%s%s%s | %s %s | %s",
             timeStart,

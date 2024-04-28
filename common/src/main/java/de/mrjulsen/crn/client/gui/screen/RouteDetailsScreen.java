@@ -353,7 +353,7 @@ public class RouteDetailsScreen extends DLScreen implements IJourneyListenerClie
                 GuiUtils.drawString(graphics, shadowlessFont, x + ENTRY_TIME_X + ModGuiIcons.ICON_SIZE + 4, y + 8, textConnectionEndangered, 0xFFFFFF, EAlignment.LEFT, false);
             }
         } else {
-            GuiUtils.drawString(graphics, shadowlessFont, x + ENTRY_TIME_X, y + 8, TextUtils.text(transferText.getString() + " " + (time < 0 ? "" : "(" + TimeUtils.parseDuration((int)time) + ")")), 0xFFFFFF, EAlignment.LEFT, false);
+            GuiUtils.drawString(graphics, shadowlessFont, x + ENTRY_TIME_X, y + 8, TextUtils.text(transferText.getString() + " " + (time < 0 ? "" : "(" + TimeUtils.parseDuration(time) + ")")), 0xFFFFFF, EAlignment.LEFT, false);
         }
 
         return HEIGHT;

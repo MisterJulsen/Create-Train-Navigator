@@ -90,7 +90,7 @@ public class NavigatorScreen extends DLScreen implements IJourneyListenerClient 
     private SimpleRoute[] routes;
     private String stationFrom;
     private String stationTo;
-    private int lastRefreshedTime;
+    private long lastRefreshedTime;
     private final NavigatorScreen instance;
     private final Level level;
     private final Font shadowlessFont;
@@ -150,7 +150,7 @@ public class NavigatorScreen extends DLScreen implements IJourneyListenerClient 
     }
 
     private void setLastRefreshedTime() {
-        lastRefreshedTime = (int)(level.getDayTime());
+        lastRefreshedTime = level.getDayTime();
     }
 
     @Override

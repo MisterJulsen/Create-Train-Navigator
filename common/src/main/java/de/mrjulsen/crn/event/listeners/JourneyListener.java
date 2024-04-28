@@ -114,12 +114,12 @@ public class JourneyListener {
         TextUtils.translate(keyJourneyBegins,
             currentStation().getTrain().trainName(),
             currentStation().getTrain().scheduleTitle(),
-            TimeUtils.parseTime((int)currentStation().getEstimatedTimeWithThreshold() + DragonLib.DAYTIME_SHIFT, ModClientConfig.TIME_FORMAT.get())
+            TimeUtils.parseTime((int)((currentStation().getEstimatedTimeWithThreshold() + DragonLib.DAYTIME_SHIFT) % DragonLib.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get())
         ) :
         TextUtils.translate(keyJourneyBeginsWithPlatform,
             currentStation().getTrain().trainName(),
             currentStation().getTrain().scheduleTitle(),
-            TimeUtils.parseTime((int)currentStation().getEstimatedTimeWithThreshold() + DragonLib.DAYTIME_SHIFT, ModClientConfig.TIME_FORMAT.get()),
+            TimeUtils.parseTime((int)((currentStation().getEstimatedTimeWithThreshold() + DragonLib.DAYTIME_SHIFT) % DragonLib.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get()),
             currentStation().getInfo().platform()
         );
         String narratorText = text.getString() + ". " + TextUtils.translate(keyOptionsText, new KeybindComponent(keyKeybindOptions)).getString();
@@ -313,13 +313,13 @@ public class JourneyListener {
                 TextUtils.translate(keyNotificationJourneyBegins,
                     currentStation().getTrain().trainName(),
                     currentStation().getTrain().scheduleTitle(),
-                    TimeUtils.parseTime((int)currentStation().getEstimatedTimeWithThreshold() + DragonLib.DAYTIME_SHIFT, ModClientConfig.TIME_FORMAT.get())
+                    TimeUtils.parseTime((int)((currentStation().getEstimatedTimeWithThreshold() + DragonLib.DAYTIME_SHIFT) % DragonLib.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get())
                 )
             :
                 TextUtils.translate(keyNotificationJourneyBeginsWithPlatform,
                     currentStation().getTrain().trainName(),
                     currentStation().getTrain().scheduleTitle(),
-                    TimeUtils.parseTime((int)currentStation().getEstimatedTimeWithThreshold() + DragonLib.DAYTIME_SHIFT, ModClientConfig.TIME_FORMAT.get()),
+                    TimeUtils.parseTime((int)((currentStation().getEstimatedTimeWithThreshold() + DragonLib.DAYTIME_SHIFT) % DragonLib.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get()),
                     currentStation().getInfo().platform()
                 );
 
@@ -512,10 +512,10 @@ public class JourneyListener {
         if (!wasDelayed && last.isDelayed()) {
             setNotificationText(new NotificationData(currentState, TextUtils.translate(keyNotificationTrainDelayedTitle,
                 last.getTrain().trainName(),
-                TimeUtils.parseDuration((int)last.getDifferenceTime())
+                TimeUtils.parseDuration(last.getDifferenceTime())
             ), TextUtils.translate(keyNotificationTrainDelayed,
-                TimeUtils.parseTime((int)(last.getEstimatedTimeWithThreshold() % 24000) + DragonLib.DAYTIME_SHIFT, ModClientConfig.TIME_FORMAT.get()),
-                TimeUtils.parseTime((int)(last.getScheduleTime() % 24000) + DragonLib.DAYTIME_SHIFT, ModClientConfig.TIME_FORMAT.get()),
+                TimeUtils.parseTime((int)(last.getEstimatedTimeWithThreshold() % DragonLib.TICKS_PER_DAY) + DragonLib.DAYTIME_SHIFT, ModClientConfig.TIME_FORMAT.get()),
+                TimeUtils.parseTime((int)(last.getScheduleTime() % DragonLib.TICKS_PER_DAY) + DragonLib.DAYTIME_SHIFT, ModClientConfig.TIME_FORMAT.get()),
                 last.getStationName()
             )));
         }
