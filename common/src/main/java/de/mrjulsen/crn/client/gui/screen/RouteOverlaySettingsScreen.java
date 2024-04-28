@@ -234,7 +234,7 @@ public class RouteOverlaySettingsScreen extends DLScreen {
 
         CreateDynamicWidgets.renderTextBox(graphics, guiLeft + 63, guiTop + 23, 43);
 
-        GuiUtils.drawString(graphics, font, guiLeft + 67, guiTop + 28, scaleLabel, 0xFFFFFF, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, guiLeft + 67, guiTop + 28, scaleLabel, 0xFFFFFF, EAlignment.LEFT, true);
 
         super.renderMainLayer(graphics, pMouseX, pMouseY, pPartialTick);
     }
