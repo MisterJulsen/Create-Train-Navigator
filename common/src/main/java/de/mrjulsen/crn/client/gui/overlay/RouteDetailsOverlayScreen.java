@@ -6,12 +6,15 @@ import java.util.Set;
 import java.util.UUID;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
+import com.simibubi.create.foundation.gui.UIRenderHelper;
 import com.simibubi.create.foundation.utility.animation.LerpedFloat;
 import com.simibubi.create.foundation.utility.animation.LerpedFloat.Chaser;
 
 import de.mrjulsen.crn.ExampleMod;
 import de.mrjulsen.crn.client.ClientWrapper;
+import de.mrjulsen.crn.client.ModGuiUtils;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.NavigatorToast;
 import de.mrjulsen.crn.client.input.ModKeys;
@@ -40,7 +43,6 @@ import de.mrjulsen.mcdragonlib.client.gui.DLOverlayScreen;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import de.mrjulsen.mcdragonlib.core.EAlignment;
-import de.mrjulsen.mcdragonlib.util.MathUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.TimeUtils;
 import de.mrjulsen.mcdragonlib.util.TimeUtils.TimeFormat;
@@ -58,6 +60,8 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 
 public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourneyListenerClient {
+
+    public static final int ID = 1;
 
     private static final ResourceLocation GUI = new ResourceLocation(ExampleMod.MOD_ID, "textures/gui/overview.png");
     private static final Component title = TextUtils.translate("gui.createrailwaysnavigator.route_overview.title");
@@ -260,6 +264,16 @@ public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourn
             slidingTextOffset = (int)(SLIDING_TEXT_AREA_WIDTH * 0.75f / 2);
         }
     }
+
+    private void startStencil(Graphics graphics, int x, int y, int w, int h) {
+        UIRenderHelper.swapAndBlitColor(Minecraft.getInstance().getMainRenderTarget(), UIRenderHelper.framebuffer);
+        ModGuiUtils.startStencil(graphics, x, y, w, h);
+    }
+
+    private void endStencil() {
+        ModGuiUtils.endStencil();
+        UIRenderHelper.swapAndBlitColor(UIRenderHelper.framebuffer, Minecraft.getInstance().getMainRenderTarget());
+    }
     //#endregion
 
     //#region ACTIONS
@@ -450,8 +464,7 @@ public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourn
 
     //#region RENDERING
     @Override
-    public void render(Graphics graphics, float partialTicks, int width, int height) { 
-        partialTicks = Minecraft.getInstance().getFrameTime();
+    public void render(Graphics graphics, float partialTicks, int width, int height) {
         OverlayPosition pos = ModClientConfig.ROUTE_OVERLAY_POSITION.get();
         final int x = pos == OverlayPosition.TOP_LEFT || pos == OverlayPosition.BOTTOM_LEFT ? 8 : (int)(width - GUI_WIDTH * getUIScale() - 10);
         final int y = pos == OverlayPosition.TOP_LEFT || pos == OverlayPosition.TOP_RIGHT ? 8 : (int)(height - GUI_HEIGHT * getUIScale() - 10);
@@ -467,23 +480,26 @@ public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourn
 
     private void renderInternal(Graphics graphics, int x, int y, int width, int height, float partialTicks) {
         graphics.poseStack().pushPose();
-        float fadePercentage = this.fading ? MathUtils.clamp((float)(Util.getMillis() - this.fadeStart) / 500.0F, 0.0F, 1.0F) : 1.0F;
-        float alpha = fadeInvert ? MathUtils.clamp(1.0f - fadePercentage, 0, 1) : MathUtils.clamp(fadePercentage, 0, 1);
+        float fadePercentage = this.fading ? Mth.clamp((float)(Util.getMillis() - this.fadeStart) / 500.0F, 0.0F, 1.0F) : 1.0F;
+        float alpha = fadeInvert ? Mth.clamp(1.0f - fadePercentage, 0, 1) : Mth.clamp(fadePercentage, 0, 1);
         int fontAlpha = Mth.ceil(alpha * 255.0F) << 24; // <color> | fontAlpha
 
         graphics.poseStack().scale(getUIScale(), getUIScale(), getUIScale());
-        GuiUtils.drawTexture(GUI, graphics, x, y, 0, getListener().getCurrentState().important() ? 138 : 0, GUI_WIDTH, GUI_HEIGHT, 256, 256);
+        RenderSystem.setShaderTexture(0, GUI);
+        GuiUtils.drawTexture(GUI, graphics, x, y, GUI_WIDTH, GUI_HEIGHT, 0, getListener().getCurrentState().important() ? 138 : 0, 256, 256);
         
         GuiUtils.drawString(graphics, shadowlessFont, x + 6, y + 4, title, 0x4F4F4F, EAlignment.LEFT, false);
         GuiUtils.drawString(graphics, shadowlessFont, x + 6, y + GUI_HEIGHT - 2 - shadowlessFont.lineHeight, TextUtils.translate(keyOptionsText, new KeybindComponent(keyKeybindOptions).withStyle(ChatFormatting.BOLD)), 0x4F4F4F, EAlignment.LEFT, false);
         
         String timeString = TimeUtils.parseTime((int)((level.getDayTime() + DragonLib.DAYTIME_SHIFT) % DragonLib.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get());
-        GuiUtils.drawString(graphics, shadowlessFont, x + GUI_WIDTH - 4 - shadowlessFont.width(timeString), y + 4, TextUtils.text(timeString), 0x4F4F4F, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, shadowlessFont, x + GUI_WIDTH - 4 - shadowlessFont.width(timeString), y + 4, timeString, 0x4F4F4F, EAlignment.LEFT, false);
         
         // Test
         renderSlidingText(graphics, x, y + 2);
 
-        GuiUtils.enableScissor(graphics, x + 3, y + 40, 220, 62);
+        startStencil(graphics, x + 3, y + 40, 220, 62);
+        graphics.poseStack().pushPose();
+
         graphics.poseStack().translate((fadeInvert ? 0 : -20) + fadePercentage * 20, 0, 0);
         if (alpha > 0.1f && (fontAlpha & -67108864) != 0) {
             
@@ -514,8 +530,9 @@ public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourn
                     break;
             }
         }
-        GuiUtils.disableScissor(graphics);
 
+        graphics.poseStack().popPose();
+        endStencil();
         graphics.poseStack().popPose();
 
         if (fadePercentage >= 1.0f) {
@@ -527,10 +544,12 @@ public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourn
     }
 
     public void renderSlidingText(Graphics graphics, int x, int y) {
-        GuiUtils.enableScissor(graphics, x + 3, y + 16, 220, 21);
+        startStencil(graphics, x + 3, y + 16, 220, 21);
+        graphics.poseStack().pushPose();        
         graphics.poseStack().scale(1.0f / 0.75f, 1.0f / 0.75f, 1.0f / 0.75f);
         GuiUtils.drawString(graphics, shadowlessFont, (int)((x + 3) + slidingTextOffset), y + 14, slidingText, 0xFF9900, EAlignment.CENTER, false);
-        GuiUtils.disableScissor(graphics);
+        graphics.poseStack().popPose();
+        endStencil();
     }
 
     public int renderRouteOverview(Graphics graphics, int index, int x, int y, float alphaPercentage, int fontAlpha) {
@@ -564,14 +583,14 @@ public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourn
             default:
                 break;
         }        
-        GuiUtils.drawTexture(GUI, graphics, x + 75, y, 226, dY, 7, ROUTE_LINE_HEIGHT, 256, 256);
+        GuiUtils.drawTexture(GUI, graphics, x + 75, y, 7, ROUTE_LINE_HEIGHT, 226, dY, 256, 256);
         if (index >= getListener().getIndex() + MAX_STATION_PER_PAGE - 1 && station.getTag() != StationTag.END) {            
-            GuiUtils.drawTexture(GUI, graphics, x + 75, y + ROUTE_LINE_HEIGHT, 226, ROUTE_LINE_HEIGHT, 7, ROUTE_LINE_HEIGHT, 256, 256);
+            GuiUtils.drawTexture(GUI, graphics, x + 75, y + ROUTE_LINE_HEIGHT, 7, ROUTE_LINE_HEIGHT, 226, ROUTE_LINE_HEIGHT, 256, 256);
         }
 
         // time display
         if (station.isTrainCanceled()) {
-            GuiUtils.drawString(graphics, shadowlessFont, x + 10, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, TextUtils.translate(keyTrainCanceled), DELAYED | fontAlpha, EAlignment.LEFT, false);  
+            GuiUtils.drawString(graphics, shadowlessFont, x + 10, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, TextUtils.translate(keyTrainCanceled), DELAYED | fontAlpha, EAlignment.LEFT, false);
         } else {
             long timeDiff = station.getDifferenceTime();
             MutableComponent timeText = TextUtils.text(TimeUtils.parseTime((int)(station.getScheduleTime() + DragonLib.DAYTIME_SHIFT), ModClientConfig.TIME_FORMAT.get())).withStyle(reachable ? ChatFormatting.RESET : ChatFormatting.STRIKETHROUGH);
@@ -611,11 +630,11 @@ public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourn
         // render transfer
         if (station.getTag() == StationTag.PART_END) {
             y += ROUTE_LINE_HEIGHT;
-            GuiUtils.setTint(1, 1, 1, alphaPercentage);        
+            RenderSystem.setShaderColor(1, 1, 1, alphaPercentage);        
             RenderSystem.enableBlend();
             RenderSystem.defaultBlendFunc();
             RenderSystem.enableDepthTest();
-            GuiUtils.drawTexture(GUI, graphics, x + 75, y, 226, transferY, 7, ROUTE_LINE_HEIGHT, 256, 256);
+            GuiUtils.drawTexture(GUI, graphics, x + 75, y, 7, ROUTE_LINE_HEIGHT,  226, transferY,256, 256);
             if (nextStation.isPresent() && !nextStation.get().reachable(true)) {
                 if (nextStation.get().isDeparted() || nextStation.get().isTrainCanceled()) {
                     ModGuiIcons.CROSS.render(graphics, x + 10, y + ROUTE_LINE_HEIGHT - 2 - ModGuiIcons.ICON_SIZE / 2);
@@ -676,14 +695,14 @@ public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourn
             int dX = startX + i * dotSize * 3 - (i == connectionsSubPageIndex ? 1 : 0);
             int dY = dotY - (i == connectionsSubPageIndex ? 1 : 0);
             GuiUtils.fill(graphics, dX, dY, s, s, i == connectionsSubPageIndex ? 0xFFFFFF | fontAlpha : 0xDBDBDB | fontAlpha);
-            GuiUtils.fill(graphics, dX + 1, dY + 1, s - 1, s - 1, i == connectionsSubPageIndex ? 0xAAAAAA | fontAlpha : 0x888888 | fontAlpha);
+            GuiUtils.fill(graphics, dX + 1, dY + 1, s - 2, s - 2, i == connectionsSubPageIndex ? 0xAAAAAA | fontAlpha : 0x888888 | fontAlpha);
         }
 
     }
 
     public void renderPageJourneyStart(Graphics graphics, int x, int y, float alphaPercentage, int fontAlpha) {
         y += 3 + renderRouteOverview(graphics, getListener().getIndex(), x, y - 3, alphaPercentage, fontAlpha);
-        GuiUtils.fill(graphics, x + 3, y, x + 3 + SLIDING_TEXT_AREA_WIDTH, y + 1, 0xDBDBDB | fontAlpha);
+        GuiUtils.fill(graphics, x + 3, y, SLIDING_TEXT_AREA_WIDTH, 1, 0xDBDBDB | fontAlpha);
         
         // Title
         ModGuiIcons.TIME.render(graphics, x + 10, y + 3);
@@ -705,7 +724,7 @@ public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourn
         }
 
         ModGuiIcons.TARGET.render(graphics, x + 10, y + shadowlessFont.lineHeight / 2 - ModGuiIcons.ICON_SIZE / 2);
-        GuiUtils.drawString(graphics, shadowlessFont, x + 15 + ModGuiIcons.ICON_SIZE, y, stationText, 0xDBDBDB | fontAlpha, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, shadowlessFont, x + 15 + ModGuiIcons.ICON_SIZE, y, stationText, 0xDBDBDB | fontAlpha,  EAlignment.LEFT, false);
         GuiUtils.drawString(graphics, shadowlessFont, x + SLIDING_TEXT_AREA_WIDTH - platformTextWidth, y, platformText, endStation.stationInfoChanged() ? DELAYED | fontAlpha : 0xDBDBDB | fontAlpha, EAlignment.LEFT, false);
         ModGuiIcons.INFO.render(graphics, x + 10, y + detailsLineHeight + shadowlessFont.lineHeight / 2 - ModGuiIcons.ICON_SIZE / 2);
         GuiUtils.drawString(graphics, shadowlessFont, x + 15 + ModGuiIcons.ICON_SIZE, y + detailsLineHeight, TextUtils.text(String.format("%s %s | %s",
