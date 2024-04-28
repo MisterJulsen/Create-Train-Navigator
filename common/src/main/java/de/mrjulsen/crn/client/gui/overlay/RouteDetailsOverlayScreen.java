@@ -60,8 +60,6 @@ import net.minecraft.world.level.Level;
 
 public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourneyListenerClient {
 
-    public static final int ID = 1;
-
     private static final ResourceLocation GUI = new ResourceLocation(ExampleMod.MOD_ID, "textures/gui/overview.png");
     private static final Component title = TextUtils.translate("gui.createrailwaysnavigator.route_overview.title");
     private static final int GUI_WIDTH = 226;
@@ -203,13 +201,7 @@ public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourn
         xPos.tickChaser();
         yPos.tickChaser();
 
-        // Sliding text
-        if (slidingTextWidth > SLIDING_TEXT_AREA_WIDTH * 0.75f) {
-            slidingTextOffset -= 2;
-            if (slidingTextOffset < -(slidingTextWidth / 2)) {
-                slidingTextOffset = (int)((SLIDING_TEXT_AREA_WIDTH + slidingTextWidth / 2) + 20);                
-            }
-        }
+        //tickSlidingText(2);
         
         // train info while traveling
         if (getListener() != null && getListener().getCurrentState() == JourneyListener.State.WHILE_TRAVELING) {
@@ -233,6 +225,16 @@ public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourn
             case ROUTE_OVERVIEW:
             default:
                 break; 
+        }
+    }
+
+    public void tickSlidingText(float delta) {
+        // Sliding text
+        if (slidingTextWidth > SLIDING_TEXT_AREA_WIDTH * 0.75f) {
+            slidingTextOffset -= delta;
+            if (slidingTextOffset < -(slidingTextWidth / 2)) {
+                slidingTextOffset = (int)((SLIDING_TEXT_AREA_WIDTH + slidingTextWidth / 2) + 20);                
+            }
         }
     }
 
@@ -475,6 +477,8 @@ public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourn
         graphics.poseStack().translate((int)xPos.getValue(), (int)yPos.getValue(), 0);
         renderInternal(graphics, 0, 0, width, height, partialTicks);
         graphics.poseStack().popPose();
+
+        tickSlidingText(2 * Minecraft.getInstance().getDeltaFrameTime());
     }
 
     private void renderInternal(Graphics graphics, int x, int y, int width, int height, float partialTicks) {
