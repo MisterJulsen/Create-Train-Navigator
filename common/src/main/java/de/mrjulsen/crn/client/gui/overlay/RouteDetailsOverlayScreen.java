@@ -467,6 +467,9 @@ public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourn
     //#region RENDERING
     @Override
     public void render(Graphics graphics, float partialTicks, int width, int height) {
+        width = Minecraft.getInstance().getWindow().getGuiScaledWidth();
+        height = Minecraft.getInstance().getWindow().getGuiScaledHeight();
+        partialTicks = Minecraft.getInstance().getFrameTime();
         OverlayPosition pos = ModClientConfig.ROUTE_OVERLAY_POSITION.get();
         final int x = pos == OverlayPosition.TOP_LEFT || pos == OverlayPosition.BOTTOM_LEFT ? 8 : (int)(width - GUI_WIDTH * getUIScale() - 10);
         final int y = pos == OverlayPosition.TOP_LEFT || pos == OverlayPosition.TOP_RIGHT ? 8 : (int)(height - GUI_HEIGHT * getUIScale() - 10);
@@ -475,7 +478,7 @@ public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourn
         yPos.chase(y, 0.2f, Chaser.EXP);
 
         graphics.poseStack().pushPose();
-        graphics.poseStack().translate((int)xPos.getValue(), (int)yPos.getValue(), 0);
+        graphics.poseStack().translate((int)xPos.getValue(partialTicks), (int)yPos.getValue(partialTicks), 0);
         renderInternal(graphics, 0, 0, width, height, partialTicks);
         graphics.poseStack().popPose();
 
