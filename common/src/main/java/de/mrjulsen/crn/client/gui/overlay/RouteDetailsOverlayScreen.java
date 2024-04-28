@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 import com.simibubi.create.foundation.gui.UIRenderHelper;
@@ -51,6 +52,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.chat.NarratorChatListener;
 import net.minecraft.client.gui.components.MultiLineLabel;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.KeybindComponent;
 import net.minecraft.network.chat.MutableComponent;
@@ -193,8 +195,7 @@ public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourn
 
     @Override
     public void tick() {
-
-        if (ModKeys.KEY_OVERLAY_SETTINGS.isDown() && Minecraft.getInstance().player.getInventory().hasAnyOf(Set.of(ModItems.NAVIGATOR.get()))) {
+        if (Screen.hasControlDown() && ModKeys.KEY_OVERLAY_SETTINGS.isDown() && Minecraft.getInstance().player.getInventory().hasAnyOf(Set.of(ModItems.NAVIGATOR.get()))) {
             ClientWrapper.showRouteOverlaySettingsGui(this);
         }
 
@@ -492,7 +493,7 @@ public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourn
         GuiUtils.drawTexture(GUI, graphics, x, y, GUI_WIDTH, GUI_HEIGHT, 0, getListener().getCurrentState().important() ? 138 : 0, 256, 256);
         
         GuiUtils.drawString(graphics, shadowlessFont, x + 6, y + 4, title, 0x4F4F4F, EAlignment.LEFT, false);
-        GuiUtils.drawString(graphics, shadowlessFont, x + 6, y + GUI_HEIGHT - 2 - shadowlessFont.lineHeight, TextUtils.translate(keyOptionsText, new KeybindComponent(keyKeybindOptions).withStyle(ChatFormatting.BOLD)), 0x4F4F4F, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, shadowlessFont, x + 6, y + GUI_HEIGHT - 2 - shadowlessFont.lineHeight, TextUtils.translate(keyOptionsText, TextUtils.translate(InputConstants.getKey(Minecraft.ON_OSX ? InputConstants.KEY_LWIN : InputConstants.KEY_LCONTROL, 0).getName()).append(" + ").append(new KeybindComponent(keyKeybindOptions)).withStyle(ChatFormatting.BOLD)), 0x4F4F4F, EAlignment.LEFT, false);
         
         String timeString = TimeUtils.parseTime((int)((level.getDayTime() + DragonLib.DAYTIME_SHIFT) % DragonLib.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get());
         GuiUtils.drawString(graphics, shadowlessFont, x + GUI_WIDTH - 4 - shadowlessFont.width(timeString), y + 4, timeString, 0x4F4F4F, EAlignment.LEFT, false);
