@@ -17,7 +17,7 @@ public class ModKeys {
         "key." + ExampleMod.MOD_ID + ".route_overlay_options",
         InputConstants.Type.KEYSYM,
         GLFW.GLFW_KEY_R,
-        "category." + ExampleMod.MOD_ID + ".category.crn"
+        "category." + ExampleMod.MOD_ID + ".crn"
     );
 
     public static void init() {

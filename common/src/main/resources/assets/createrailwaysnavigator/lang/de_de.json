@@ -29,7 +29,7 @@
     
     "block.createrailwaysnavigator.advanced_display.ber.not_in_service": "Außer Betrieb",
 
-    "key.createrailwaysnavigator.category.crn": "Create Railways Navigator",
+    "category.createrailwaysnavigator.crn": "Create Railways Navigator",
     "key.createrailwaysnavigator.route_overlay_options": "Routenanzeige Einstellungen",
     
     "enum.createrailwaysnavigator.overlay_position": "Anzeigeposition",
