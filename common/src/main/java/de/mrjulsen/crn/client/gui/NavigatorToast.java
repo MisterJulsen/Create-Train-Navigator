@@ -84,8 +84,8 @@ public class NavigatorToast implements Toast {
         
         int toastHeight = this.height() + Math.max(0, this.messageLines.size() - 1) * lineHeight + 3;
         GuiUtils.fill(graphics, 0, 0, lineWidth, toastHeight, COLOR_BORDER);
-        GuiUtils.fill(graphics, 1, 1, lineWidth - 1, toastHeight - 1, COLOR_INNER_BORDER);
-        GuiUtils.fill(graphics, 3, 3, lineWidth - 3, toastHeight - 3, COLOR_CANVAS);
+        GuiUtils.fill(graphics, 1, 1, lineWidth - 2, toastHeight - 2, COLOR_INNER_BORDER);
+        GuiUtils.fill(graphics, 3, 3, lineWidth - 6, toastHeight - 6, COLOR_CANVAS);
 
         GuiUtils.drawTexture(MOD_ICON, graphics, 4, this.messageLines == null || this.messageLines.size() <= 1 ? 0 : 4, 32, 32, 0, 0, 64, 64, 64, 64);
 
