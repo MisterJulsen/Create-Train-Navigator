@@ -22,6 +22,7 @@ import de.mrjulsen.crn.data.SimpleRoute.StationTag;
 import de.mrjulsen.crn.event.listeners.IJourneyListenerClient;
 import de.mrjulsen.crn.event.listeners.JourneyListener;
 import de.mrjulsen.crn.event.listeners.JourneyListenerManager;
+import de.mrjulsen.crn.network.InstanceManager;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.OverlayManager;
 import de.mrjulsen.mcdragonlib.client.gui.DLScreen;
@@ -156,7 +157,7 @@ public class RouteDetailsScreen extends DLScreen implements IJourneyListenerClie
             public void onClick(double mouseX, double mouseY) {
                 super.onClick(mouseX, mouseY);
                 if (JourneyListenerManager.getInstance().exists(route.getListenerId())) {
-                    OverlayManager.add(new RouteDetailsOverlayScreen(level, route, fWidth, fHeight)); // TODO: STORE ID
+                    InstanceManager.setRouteOverlay(OverlayManager.add(new RouteDetailsOverlayScreen(level, route, fWidth, fHeight)));
                 }
             }
         });

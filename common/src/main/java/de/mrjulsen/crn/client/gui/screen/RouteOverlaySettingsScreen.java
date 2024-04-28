@@ -24,6 +24,7 @@ import de.mrjulsen.crn.client.gui.overlay.RouteDetailsOverlayScreen;
 import de.mrjulsen.crn.client.gui.widgets.DLCreateIconButton;
 import de.mrjulsen.crn.client.gui.widgets.DLCreateIndicator;
 import de.mrjulsen.crn.config.ModClientConfig;
+import de.mrjulsen.crn.network.InstanceManager;
 import de.mrjulsen.crn.registry.ModItems;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.gui.DLScreen;
@@ -126,7 +127,7 @@ public class RouteOverlaySettingsScreen extends DLScreen {
         removeOverlayButton.withCallback(() -> {
             Minecraft minecraft = Minecraft.getInstance();
             minecraft.setScreen(new RouteDetailsScreen(null, Minecraft.getInstance().level, overlay.getListener().getListeningRoute(), overlay.getListenerId()));
-            //HudOverlays.remove(overlay.getId());             //TODO: ID
+            InstanceManager.removeRouteOverlay();
         });
         removeOverlayButton.setToolTip(textUnpin);
         buttons.add(removeOverlayButton);

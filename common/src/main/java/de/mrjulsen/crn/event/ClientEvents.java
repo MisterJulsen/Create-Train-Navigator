@@ -35,7 +35,7 @@ public class ClientEvents {
         });
 
         PlayerEvent.PLAYER_QUIT.register((player) -> {
-            OverlayManager.remove(0);
+            InstanceManager.removeRouteOverlay();
             ExampleMod.LOGGER.info("Removed all overlays.");
 
             ClientTrainStationSnapshot.getInstance().dispose();        

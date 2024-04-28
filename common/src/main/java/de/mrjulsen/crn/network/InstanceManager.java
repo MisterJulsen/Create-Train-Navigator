@@ -10,6 +10,7 @@ import de.mrjulsen.crn.data.SimpleTrainConnection;
 import de.mrjulsen.crn.data.DeparturePrediction.SimpleDeparturePrediction;
 import de.mrjulsen.crn.network.packets.cts.TrainDataRequestPacket.TrainData;
 import de.mrjulsen.crn.network.packets.stc.NavigationResponsePacket.NavigationResponseData;
+import de.mrjulsen.mcdragonlib.client.OverlayManager;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -23,6 +24,8 @@ public class InstanceManager {
     private static final Map<Long, BiConsumer<Collection<SimpleDeparturePrediction>, Long>> CLIENT_REALTIME_RESPONSE_ACTION = new HashMap<>();
     private static final Map<Long, BiConsumer<Collection<SimpleTrainConnection>, Long>> CLIENT_NEXT_CONNECTIONS_RESPONSE_ACTION = new HashMap<>();
     private static final Map<Long, BiConsumer<TrainData, Long>> CLIENT_NEXT_TRAIN_DATA_RESPONSE_ACTION = new HashMap<>();
+
+    private static long currentRouteOverlayId;
 
     public static String getInstancesCountString() {
         return String.format("[%s, %s, %s, %s, %s, %s]",
@@ -131,6 +134,17 @@ public class InstanceManager {
             BiConsumer<TrainData, Long> action = CLIENT_NEXT_TRAIN_DATA_RESPONSE_ACTION.remove(id);
             if (action != null)
                 action.accept(data, time);
+        }
+    }
+
+    public static void setRouteOverlay(long id) {
+        removeRouteOverlay();
+        currentRouteOverlayId = id;
+    }
+
+    public static void removeRouteOverlay() {
+        if (OverlayManager.has(currentRouteOverlayId)) {
+            OverlayManager.remove(currentRouteOverlayId);
         }
     }
 }
