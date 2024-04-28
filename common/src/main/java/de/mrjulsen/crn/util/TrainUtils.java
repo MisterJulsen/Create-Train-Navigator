@@ -49,7 +49,7 @@ public class TrainUtils {
      * @return a Map where the key is the station name and the value is a list of data from all trains that will arrive at this stations.
      */
     public static Map<String, Collection<TrainDeparturePrediction>> Gott() {
-        return GlobalTrainDisplayData.statusByDestination;
+        return new HashMap<>(GlobalTrainDisplayData.statusByDestination);
     }
 
     public static Map<TrainStationAlias, Collection<DeparturePrediction>> getMappedDeparturePredictions() {
