@@ -454,7 +454,7 @@ public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourn
             case 1:
                 long id = InstanceManager.registerClientTrainDataResponseAction((data, time) -> {
                     setSlidingText(TextUtils.translate(keyTrainSpeed,
-                        (int)Math.abs(Math.round(data.speed() * 20 * 3.6F))
+                        ModUtils.calcSpeedString(data.speed(), ModClientConfig.SPEED_UNIT.get())
                     ));
                     trainDataSubPageTime = 0;
                 });

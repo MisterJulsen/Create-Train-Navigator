@@ -15,6 +15,7 @@ import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.DeparturePrediction.TrainExitSide;
 import de.mrjulsen.crn.data.GlobalSettingsManager;
 import de.mrjulsen.crn.event.listeners.JourneyListener.State;
+import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.TimeUtils;
@@ -149,7 +150,7 @@ public class BERPassengerInfoDetailed implements IBERRenderSubtype<AdvancedDispl
         float maxWidth = displayWidth * 16 - 6;
         parent.labels.add(new BERText(parent.getFontUtils(), () -> List.of(
             TextUtils.text(blockEntity.getTrainData().trainName()).append(" ").append(TextUtils.text(blockEntity.getTrainData().getNextStop().get().scheduleTitle())),
-            TextUtils.text("" + (int)Math.abs(Math.round(blockEntity.getTrainData().speed() * 20 * 3.6F))).append(" km/h"),
+            ModUtils.calcSpeedString(blockEntity.getTrainData().speed(), ModClientConfig.SPEED_UNIT.get()),
             isSingleBlock ?
                     TextUtils.text(TimeUtils.parseTime((int)(blockEntity.getLevel().getDayTime() % 24000 + DragonLib.DAYTIME_SHIFT), ModClientConfig.TIME_FORMAT.get())) :
                     TextUtils.translate(keyDate, blockEntity.getLevel().getDayTime() / 24000, TimeUtils.parseTime((int)(blockEntity.getLevel().dayTime() % 24000 + DragonLib.DAYTIME_SHIFT), ModClientConfig.TIME_FORMAT.get()))
