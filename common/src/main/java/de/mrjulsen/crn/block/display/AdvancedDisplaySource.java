@@ -88,7 +88,12 @@ public class AdvancedDisplaySource extends DisplaySource {
 				.withRange(-1, 65)
 				.withShiftStep(4);				
 			si.setState(16);
-			l.withSuffix("px");
+			si.format((val) -> {
+				if (val >= 0) {
+					return TextUtils.text(String.valueOf(val) + "px");
+				}
+				return TextUtils.translate("gui.createrailwaysnavigator.common.auto");
+			});
 		}, NBT_PLATFORM_WIDTH);
 
 	}

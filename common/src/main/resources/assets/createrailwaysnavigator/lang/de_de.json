@@ -62,6 +62,7 @@
     "gui.createrailwaysnavigator.common.true": "Ja",
     "gui.createrailwaysnavigator.common.false": "Nein",
     "gui.createrailwaysnavigator.common.search": "Suchen",
+    "gui.createrailwaysnavigator.common.auto": "Autom.",
     "gui.createrailwaysnavigator.common.server_error": "Fehler beim Ausführen der Aufgabe. Schaue in die Serverkonsole.",
     
     "gui.createrailwaysnavigator.navigator.title": "Create Railways Navigator",
