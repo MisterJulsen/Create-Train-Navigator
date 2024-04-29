@@ -27,7 +27,7 @@
     "fabric": "*",
     "minecraft": ">=1.18.2",
     "architectury": ">=4.11.93",
-    "dragonlib": "1.18.2-2.1.2",
+    "dragonlib": "1.18.2-2.1.3",
     "create": "*"
   }
 }
