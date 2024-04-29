@@ -66,9 +66,9 @@ public class BERPlatformSimple implements IBERRenderSubtype<AdvancedDisplayBlock
             texts.add(TextUtils.translate(keyTime, TimeUtils.parseTime((int)(blockEntity.getLevel().getDayTime() % 24000 + DragonLib.DAYTIME_SHIFT), ModClientConfig.TIME_FORMAT.get())));
             texts.addAll(preds.stream().map(x -> {
                 if (x.stationInfo().platform() == null || x.stationInfo().platform().isBlank()) {
-                    return TextUtils.translate(keyTrainDeparture, x.trainName(), x.scheduleTitle(), TimeUtils.parseTime((int)(blockEntity.getLastRefreshedTime() % 24000 + DragonLib.DAYTIME_SHIFT + x.departureTicks()), ModClientConfig.TIME_FORMAT.get()), x.stationInfo().platform());
+                    return ELanguage.translate(keyTrainDeparture, x.trainName(), x.scheduleTitle(), TimeUtils.parseTime((int)(blockEntity.getLastRefreshedTime() % 24000 + DragonLib.DAYTIME_SHIFT + x.departureTicks()), ModClientConfig.TIME_FORMAT.get()));
                 }
-                return TextUtils.translate(keyTrainDepartureWithPlatform, x.trainName(), x.scheduleTitle(), TimeUtils.parseTime((int)(blockEntity.getLastRefreshedTime() % 24000 + DragonLib.DAYTIME_SHIFT + x.departureTicks()), ModClientConfig.TIME_FORMAT.get()));
+                return ELanguage.translate(keyTrainDepartureWithPlatform, x.trainName(), x.scheduleTitle(), TimeUtils.parseTime((int)(blockEntity.getLastRefreshedTime() % 24000 + DragonLib.DAYTIME_SHIFT + x.departureTicks()), ModClientConfig.TIME_FORMAT.get()), x.stationInfo().platform());
             }).toList());
             
             return List.of(TextUtils.concatWithStarChars(texts.toArray(Component[]::new)));
