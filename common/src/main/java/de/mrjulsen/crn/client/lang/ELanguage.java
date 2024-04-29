@@ -14,7 +14,8 @@ import net.minecraft.util.StringRepresentable;
 public enum ELanguage implements StringRepresentable {
     DEFAULT("defaut", "def"),
     ENGLISH("english", "en_us"),
-    GERMAN("german", "de_de");
+    GERMAN("german", "de_de"),
+    DUTCH("dutch", "nl_nl");
 
     private String name;
     private String code;
