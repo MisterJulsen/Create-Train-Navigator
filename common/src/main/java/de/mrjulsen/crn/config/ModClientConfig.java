@@ -61,9 +61,9 @@ public class ModClientConfig {
             .defineList("search_settings.train_group_blacklist", new ArrayList<String>(), x -> x instanceof String);
         
         LANGUAGE = BUILDER.comment("The language that should be used for announcements of the navigator. Can be different from the game's language settings. (Default: Default)")
-            .define("language", ELanguage.DEFAULT);
+            .defineEnum("language", ELanguage.DEFAULT);
         SPEED_UNIT = BUILDER.comment("The unit to be used to represent speed. (Default: KMH)")
-            .define("speed_unit", ESpeedUnit.KMH);
+            .defineEnum("speed_unit", ESpeedUnit.KMH);
         TIME_FORMAT = BUILDER.comment("Display Time Format. (Default: Hours 24)")
             .defineEnum("time_format", TimeFormat.HOURS_24);
 
