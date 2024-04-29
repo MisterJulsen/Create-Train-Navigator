@@ -9,6 +9,7 @@ import de.mrjulsen.crn.client.ber.base.BERText.TextTransformation;
 import de.mrjulsen.crn.client.ber.base.IBlockEntityRendererInstance.BlockEntityRendererContext;
 import de.mrjulsen.crn.client.ber.base.IBlockEntityRendererInstance.EUpdateReason;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
+import de.mrjulsen.crn.client.lang.ELanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.GlobalSettingsManager;
 import de.mrjulsen.crn.data.DeparturePrediction.TrainExitSide;
@@ -156,7 +157,7 @@ public class BERPassengerInfoSimple implements IBERRenderSubtype<AdvancedDisplay
         int displayWidth = blockEntity.getXSizeScaled();
         TrainExitSide side = blockEntity.relativeExitDirection.get();
 
-        MutableComponent line = TextUtils.translate(keyNextStop, GlobalSettingsManager.getInstance().getSettingsData().getAliasFor(blockEntity.getTrainData().getNextStop().get().stationTagName()).getAliasName().get());
+        MutableComponent line = ELanguage.translate(keyNextStop, GlobalSettingsManager.getInstance().getSettingsData().getAliasFor(blockEntity.getTrainData().getNextStop().get().stationTagName()).getAliasName().get());
         float maxWidth = displayWidth * 16 - 6 - (side != TrainExitSide.UNKNOWN ? 10 : 0);        
         parent.labels.add(new BERText(parent.getFontUtils(), line, 0)
             .withIsCentered(true)

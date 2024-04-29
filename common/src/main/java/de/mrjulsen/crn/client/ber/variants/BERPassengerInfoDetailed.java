@@ -11,6 +11,7 @@ import de.mrjulsen.crn.client.ber.base.BERText.TextTransformation;
 import de.mrjulsen.crn.client.ber.base.IBlockEntityRendererInstance.BlockEntityRendererContext;
 import de.mrjulsen.crn.client.ber.base.IBlockEntityRendererInstance.EUpdateReason;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
+import de.mrjulsen.crn.client.lang.ELanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.DeparturePrediction.TrainExitSide;
 import de.mrjulsen.crn.data.GlobalSettingsManager;
@@ -152,8 +153,8 @@ public class BERPassengerInfoDetailed implements IBERRenderSubtype<AdvancedDispl
             TextUtils.text(blockEntity.getTrainData().trainName()).append(" ").append(TextUtils.text(blockEntity.getTrainData().getNextStop().get().scheduleTitle())),
             ModUtils.calcSpeedString(blockEntity.getTrainData().speed(), ModClientConfig.SPEED_UNIT.get()),
             isSingleBlock ?
-                    TextUtils.text(TimeUtils.parseTime((int)(blockEntity.getLevel().getDayTime() % 24000 + DragonLib.DAYTIME_SHIFT), ModClientConfig.TIME_FORMAT.get())) :
-                    TextUtils.translate(keyDate, blockEntity.getLevel().getDayTime() / 24000, TimeUtils.parseTime((int)(blockEntity.getLevel().dayTime() % 24000 + DragonLib.DAYTIME_SHIFT), ModClientConfig.TIME_FORMAT.get()))
+                    TextUtils.text(TimeUtils.parseTime((int)(blockEntity.getLevel().getDayTime() % DragonLib.TICKS_PER_DAY + DragonLib.DAYTIME_SHIFT), ModClientConfig.TIME_FORMAT.get())) :
+                    ELanguage.translate(keyDate, blockEntity.getLevel().getDayTime() / DragonLib.TICKS_PER_DAY, TimeUtils.parseTime((int)(blockEntity.getLevel().dayTime() % DragonLib.TICKS_PER_DAY + DragonLib.DAYTIME_SHIFT), ModClientConfig.TIME_FORMAT.get()))
         ), 0)
             .withIsCentered(true)
             .withMaxWidth(maxWidth, true)
@@ -170,7 +171,7 @@ public class BERPassengerInfoDetailed implements IBERRenderSubtype<AdvancedDispl
         int displayWidth = blockEntity.getXSizeScaled();
         TrainExitSide side = blockEntity.relativeExitDirection.get();
 
-        MutableComponent line = TextUtils.translate(keyNextStop, GlobalSettingsManager.getInstance().getSettingsData().getAliasFor(blockEntity.getTrainData().getNextStop().get().stationTagName()).getAliasName().get());
+        MutableComponent line = ELanguage.translate(keyNextStop, GlobalSettingsManager.getInstance().getSettingsData().getAliasFor(blockEntity.getTrainData().getNextStop().get().stationTagName()).getAliasName().get());
         float maxWidth = displayWidth * 16 - 6 - (side != TrainExitSide.UNKNOWN ? 10 : 0);        
         parent.labels.add(new BERText(parent.getFontUtils(), line, 0)
             .withIsCentered(true)

@@ -13,6 +13,7 @@ import de.mrjulsen.crn.client.ber.base.BERText;
 import de.mrjulsen.crn.client.ber.base.BERText.TextTransformation;
 import de.mrjulsen.crn.client.ber.base.IBlockEntityRendererInstance.BlockEntityRendererContext;
 import de.mrjulsen.crn.client.ber.base.IBlockEntityRendererInstance.EUpdateReason;
+import de.mrjulsen.crn.client.lang.ELanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.DeparturePrediction.SimpleDeparturePrediction;
 import de.mrjulsen.mcdragonlib.DragonLib;
@@ -63,7 +64,7 @@ public class BERPlatformSimple implements IBERRenderSubtype<AdvancedDisplayBlock
         float maxWidth = displayWidth * 16 - 6;        
         parent.labels.add(new BERText(parent.getFontUtils(), () -> {
             List<Component> texts = new ArrayList<>();
-            texts.add(TextUtils.translate(keyTime, TimeUtils.parseTime((int)(blockEntity.getLevel().getDayTime() % 24000 + DragonLib.DAYTIME_SHIFT), ModClientConfig.TIME_FORMAT.get())));
+            texts.add(ELanguage.translate(keyTime, TimeUtils.parseTime((int)(blockEntity.getLevel().getDayTime() % 24000 + DragonLib.DAYTIME_SHIFT), ModClientConfig.TIME_FORMAT.get())));
             texts.addAll(preds.stream().map(x -> {
                 if (x.stationInfo().platform() == null || x.stationInfo().platform().isBlank()) {
                     return ELanguage.translate(keyTrainDeparture, x.trainName(), x.scheduleTitle(), TimeUtils.parseTime((int)(blockEntity.getLastRefreshedTime() % 24000 + DragonLib.DAYTIME_SHIFT + x.departureTicks()), ModClientConfig.TIME_FORMAT.get()));

@@ -11,6 +11,7 @@ import de.mrjulsen.crn.client.ber.base.BERText;
 import de.mrjulsen.crn.client.ber.base.BERText.TextTransformation;
 import de.mrjulsen.crn.client.ber.base.IBlockEntityRendererInstance.BlockEntityRendererContext;
 import de.mrjulsen.crn.client.ber.base.IBlockEntityRendererInstance.EUpdateReason;
+import de.mrjulsen.crn.client.lang.ELanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.DeparturePrediction.SimpleDeparturePrediction;
 import de.mrjulsen.mcdragonlib.DragonLib;
@@ -205,7 +206,7 @@ public class BERPlatformDetailed implements IBERRenderSubtype<AdvancedDisplayBlo
 
     public void setTimer(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason, float y) {
         float displayWidth = blockEntity.getXSizeScaled() * 16 - 6;
-        timeLabel = new BERText(parent.getFontUtils(), () -> List.of(TextUtils.translate(keyTime, TimeUtils.parseTime((int)(blockEntity.getLevel().getDayTime() % 24000 + DragonLib.DAYTIME_SHIFT), ModClientConfig.TIME_FORMAT.get()))), 0)
+        timeLabel = new BERText(parent.getFontUtils(), () -> List.of(ELanguage.translate(keyTime, TimeUtils.parseTime((int)(blockEntity.getLevel().getDayTime() % DragonLib.TICKS_PER_DAY + DragonLib.DAYTIME_SHIFT), ModClientConfig.TIME_FORMAT.get()))), 0)
             .withIsCentered(true)
             .withMaxWidth(displayWidth, true)
             .withStretchScale(0.4f, 0.4f)

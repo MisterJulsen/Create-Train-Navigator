@@ -11,6 +11,7 @@ import de.mrjulsen.crn.client.ber.base.BERText;
 import de.mrjulsen.crn.client.ber.base.BERText.TextTransformation;
 import de.mrjulsen.crn.client.ber.base.IBlockEntityRendererInstance.BlockEntityRendererContext;
 import de.mrjulsen.crn.client.ber.base.IBlockEntityRendererInstance.EUpdateReason;
+import de.mrjulsen.crn.client.lang.ELanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.DeparturePrediction.SimpleDeparturePrediction;
 import de.mrjulsen.mcdragonlib.DragonLib;
@@ -257,7 +258,7 @@ public class BERPlatformInformative implements IBERRenderSubtype<AdvancedDisplay
         );
 
         if (extendedDisplay(blockEntity)) {
-            parent.labels.add(new BERText(parent.getFontUtils(), TextUtils.translate(keyFollowingTrains), 0)
+            parent.labels.add(new BERText(parent.getFontUtils(), ELanguage.translate(keyFollowingTrains), 0)
                 .withIsCentered(false)
                 .withMaxWidth(displayWidth, true)
                 .withStretchScale(0.15f, 0.2f)
@@ -274,7 +275,7 @@ public class BERPlatformInformative implements IBERRenderSubtype<AdvancedDisplay
         float TIME_LABEL_WIDTH = 16;
         
         // TIME
-        parent.labels.add(new BERText(parent.getFontUtils(), TextUtils.translate(keyDeparture).withStyle(ChatFormatting.BOLD).withStyle(ChatFormatting.ITALIC), 0)
+        parent.labels.add(new BERText(parent.getFontUtils(), ELanguage.translate(keyDeparture).withStyle(ChatFormatting.BOLD).withStyle(ChatFormatting.ITALIC), 0)
             .withIsCentered(false)
             .withMaxWidth(TIME_LABEL_WIDTH - 4, true)
             .withStretchScale(0.15f, 0.3f)
@@ -285,7 +286,7 @@ public class BERPlatformInformative implements IBERRenderSubtype<AdvancedDisplay
         );
 
         // PLATFORM
-        Component label = TextUtils.translate(keyPlatform).withStyle(ChatFormatting.BOLD).withStyle(ChatFormatting.ITALIC);
+        Component label = ELanguage.translate(keyPlatform).withStyle(ChatFormatting.BOLD).withStyle(ChatFormatting.ITALIC);
         float labelWidth = blockEntity.getPlatformWidth() < 0 ? parent.getFontUtils().font.width(label) * 0.3f : Math.min(parent.getFontUtils().font.width(label) * 0.4f, blockEntity.getPlatformWidth() - 2);
         int platformMaxWidth = blockEntity.getPlatformWidth() < 0 ? (int)(displayWidth - 6) : blockEntity.getPlatformWidth() - 2;
         
@@ -302,7 +303,7 @@ public class BERPlatformInformative implements IBERRenderSubtype<AdvancedDisplay
         float platformWidth = blockEntity.getPlatformWidth() < 0 ? lastLabel.getScaledTextWidth() + 2 : blockEntity.getPlatformWidth();
         int trainNameWidth = blockEntity.getTrainNameWidth();
 
-        lastLabel = new BERText(parent.getFontUtils(), TextUtils.translate(keyLine).withStyle(ChatFormatting.BOLD).withStyle(ChatFormatting.ITALIC), 0)
+        lastLabel = new BERText(parent.getFontUtils(), ELanguage.translate(keyLine).withStyle(ChatFormatting.BOLD).withStyle(ChatFormatting.ITALIC), 0)
             .withIsCentered(false)
             .withMaxWidth(Math.min(trainNameWidth - 1, displayWidth - TIME_LABEL_WIDTH - platformWidth - 1), true)
             .withStretchScale(0.15f, 0.3f)
@@ -313,7 +314,7 @@ public class BERPlatformInformative implements IBERRenderSubtype<AdvancedDisplay
         ;        
         parent.labels.add(lastLabel);
 
-        lastLabel = new BERText(parent.getFontUtils(), TextUtils.translate(keyDestination).withStyle(ChatFormatting.BOLD).withStyle(ChatFormatting.ITALIC), 0)
+        lastLabel = new BERText(parent.getFontUtils(), ELanguage.translate(keyDestination).withStyle(ChatFormatting.BOLD).withStyle(ChatFormatting.ITALIC), 0)
             .withIsCentered(false)
             .withMaxWidth(displayWidth - TIME_LABEL_WIDTH - trainNameWidth - platformWidth + 1, true)
             .withStretchScale(0.15f, 0.3f)

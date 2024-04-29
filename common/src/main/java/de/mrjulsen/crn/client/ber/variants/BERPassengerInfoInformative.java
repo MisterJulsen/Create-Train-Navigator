@@ -14,6 +14,7 @@ import de.mrjulsen.crn.client.ber.base.BERText.TextTransformation;
 import de.mrjulsen.crn.client.ber.base.IBlockEntityRendererInstance.BlockEntityRendererContext;
 import de.mrjulsen.crn.client.ber.base.IBlockEntityRendererInstance.EUpdateReason;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
+import de.mrjulsen.crn.client.lang.ELanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.SimpleTrainConnection;
 import de.mrjulsen.crn.data.DeparturePrediction.TrainExitSide;
@@ -59,7 +60,7 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
     private TrainExitSide lastKnownExitSide = TrainExitSide.UNKNOWN;
 
     private static final String keyNextStop = "gui.createrailwaysnavigator.route_overview.next_stop";
-    private static final Component textNextConnections = TextUtils.translate("gui.createrailwaysnavigator.route_overview.next_connections").withStyle(ChatFormatting.BOLD);
+    private static final Component textNextConnections = ELanguage.translate("gui.createrailwaysnavigator.route_overview.next_connections").withStyle(ChatFormatting.BOLD);
 
     @Override
     public boolean isSingleLined() {
@@ -286,10 +287,10 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
         if (blockEntity.getTrainData().getNextStop().isPresent()) {
             switch (this.state) {
                 case BEFORE_NEXT_STOP:
-                    line = TextUtils.translate(keyNextStop, blockEntity.getTrainData().getNextStop().get().stationTagName());
+                    line = ELanguage.translate(keyNextStop, blockEntity.getTrainData().getNextStop().get().stationTagName());
                     break;
                 case WHILE_NEXT_STOP:
-                    line = TextUtils.translate(blockEntity.getTrainData().trainName() + " " + blockEntity.getTrainData().getNextStop().get().stationTagName()).withStyle(ChatFormatting.BOLD);
+                    line = ELanguage.translate(blockEntity.getTrainData().trainName() + " " + blockEntity.getTrainData().getNextStop().get().stationTagName()).withStyle(ChatFormatting.BOLD);
                     break;
                 default:
                     break;
