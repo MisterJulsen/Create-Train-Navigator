@@ -110,7 +110,7 @@ public class RouteDetailsScreen extends DLScreen implements IJourneyListenerClie
         int count = route.getParts().size();
         expandButtons = new ExpandButton[count];
         for (int i = 0; i < count; i++) {
-            expandButtons[i] = new ExpandButton(font, 0, 0, false, (btn) -> {});
+            expandButtons[i] = new ExpandButton(0, 0, false, (btn) -> {});
             expandButtonCollection.components.add(expandButtons[i]);
         }
     }
