@@ -28,15 +28,11 @@ import de.mrjulsen.crn.network.packets.stc.ServerErrorPacket;
 import de.mrjulsen.crn.network.packets.stc.TimeCorrectionPacket;
 import de.mrjulsen.crn.network.packets.stc.TrackStationResponsePacket;
 import de.mrjulsen.crn.network.packets.stc.TrainDataResponsePacket;
-import de.mrjulsen.crn.proxy.ClientInit;
-import de.mrjulsen.crn.proxy.ServerInit;
 import de.mrjulsen.crn.registry.ModBlockEntities;
 import de.mrjulsen.crn.registry.ModBlocks;
 import de.mrjulsen.crn.registry.ModExtras;
 import de.mrjulsen.crn.registry.ModItems;
 import de.mrjulsen.mcdragonlib.net.NetworkManagerBase;
-import dev.architectury.event.events.client.ClientLifecycleEvent;
-import dev.architectury.event.events.common.LifecycleEvent;
 import dev.architectury.platform.Platform;
 import net.fabricmc.api.EnvType;
 import net.minecraft.world.item.BlockItem;
@@ -81,9 +77,7 @@ public final class ExampleMod {
     public static void load() {}
 
     public static void init() {
-        LifecycleEvent.SETUP.register(ServerInit::setup);
-        ClientLifecycleEvent.CLIENT_SETUP.register(ClientInit::setup);
-   
+           
         ModBlocks.register();
         ModItems.register();
         ModBlockEntities.register();        

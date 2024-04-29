@@ -3,13 +3,29 @@ package de.mrjulsen.crn.client;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 
+import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.resources.ResourceLocation;
 
 public class ModGuiUtils {
+
+    private static ResourceLocation blankTextureLocation;
+
+    public static ResourceLocation getBlankTexture() {
+        if (blankTextureLocation == null) {
+            NativeImage img = new NativeImage(1, 1, false);
+            img.setPixelRGBA(0, 0, 0xFFFFFFFF);
+            blankTextureLocation = Minecraft.getInstance().getTextureManager().register("blank", new DynamicTexture(img));
+        }
+
+        return blankTextureLocation;
+    }
+	
     /**
 	 * @see https://github.com/Creators-of-Create/Create/blob/mc1.18/dev/src/main/java/com/simibubi/create/content/trains/schedule/ScheduleScreen.java
 	 */
@@ -41,4 +57,5 @@ public class ModGuiUtils {
 	public static void endStencil() {
 		GL11.glDisable(GL11.GL_STENCIL_TEST);
 	}
+	
 }

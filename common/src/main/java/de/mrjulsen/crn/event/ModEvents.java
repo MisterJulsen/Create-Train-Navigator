@@ -15,6 +15,11 @@ public class ModEvents {
     private static ServerLevel serverLevel;
 
     public static void init() {
+
+        LifecycleEvent.SETUP.register(() -> {
+            ExampleMod.LOGGER.info("Welcome to the CREATE RAILWAYS NAVIGATOR mod by MRJULSEN.");
+        });
+
         LifecycleEvent.SERVER_LEVEL_LOAD.register((level) -> {
             ModExtras.register();
         });        

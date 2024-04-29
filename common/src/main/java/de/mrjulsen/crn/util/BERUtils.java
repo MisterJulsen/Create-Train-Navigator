@@ -4,7 +4,8 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import de.mrjulsen.crn.proxy.ClientInit;
+
+import de.mrjulsen.crn.client.ModGuiUtils;
 import de.mrjulsen.mcdragonlib.util.ColorUtils;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -56,7 +57,7 @@ public class BERUtils {
     }
 
     public void fillColor(MultiBufferSource pBufferSource, BlockEntity blockEntity, int color, PoseStack poseStack, float x, float y, float z, float w, float h, Direction facing, int light) {
-        renderTexture(ClientInit.getBlankTexture(), pBufferSource, blockEntity, poseStack, x, y, z, w, h, 0, 0, 1, 1, facing, color, light);
+        renderTexture(ModGuiUtils.getBlankTexture(), pBufferSource, blockEntity, poseStack, x, y, z, w, h, 0, 0, 1, 1, facing, color, light);
     }
 
 

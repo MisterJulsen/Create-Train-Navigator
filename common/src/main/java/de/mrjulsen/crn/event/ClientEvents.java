@@ -1,12 +1,14 @@
 package de.mrjulsen.crn.event;
 
 import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.client.input.ModKeys;
 import de.mrjulsen.crn.client.lang.ELanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.ClientTrainStationSnapshot;
 import de.mrjulsen.crn.event.listeners.JourneyListenerManager;
 import de.mrjulsen.crn.event.listeners.TrainListener;
 import de.mrjulsen.crn.network.InstanceManager;
+import de.mrjulsen.crn.registry.ModDisplayTags;
 import de.mrjulsen.crn.registry.ModExtras;
 import de.mrjulsen.mcdragonlib.client.OverlayManager;
 import dev.architectury.event.events.client.ClientGuiEvent;
@@ -22,6 +24,12 @@ public class ClientEvents {
 
     @SuppressWarnings("resource")
     public static void init() {
+
+        ClientLifecycleEvent.CLIENT_SETUP.register((mc) -> {
+            ModKeys.init();
+            ModDisplayTags.register();
+        });
+
         TickEvent.PLAYER_POST.register((mc) -> {
             JourneyListenerManager.tick();
             langCheckerTicks++;
