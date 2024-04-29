@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.mrjulsen.crn.client.gui.overlay.OverlayPosition;
+import de.mrjulsen.crn.client.lang.ELanguage;
 import de.mrjulsen.crn.util.ESpeedUnit;
 import de.mrjulsen.mcdragonlib.util.TimeUtils.TimeFormat;
 import net.minecraftforge.common.ForgeConfigSpec;
@@ -25,6 +26,7 @@ public class ModClientConfig {
     public static final ForgeConfigSpec.ConfigValue<Boolean> ROUTE_NOTIFICATIONS;
     public static final ForgeConfigSpec.ConfigValue<OverlayPosition> ROUTE_OVERLAY_POSITION;
     public static final ForgeConfigSpec.ConfigValue<TimeFormat> TIME_FORMAT;
+    public static final ForgeConfigSpec.ConfigValue<ELanguage> LANGUAGE;
     public static final ForgeConfigSpec.ConfigValue<ESpeedUnit> SPEED_UNIT;
 
     public static final int MAX_TRANSFER_TIME = 24000;
@@ -57,6 +59,9 @@ public class ModClientConfig {
             .defineInRange("search_settings.transfer_time", 1000, 0, MAX_TRANSFER_TIME);
         TRAIN_GROUP_FILTER_BLACKLIST = BUILDER.comment("List of train groups that should NOT be used in navigation. (Default: <empty>)")
             .defineList("search_settings.train_group_blacklist", new ArrayList<String>(), x -> x instanceof String);
+        
+        LANGUAGE = BUILDER.comment("The language that should be used for announcements of the navigator. Can be different from the game's language settings. (Default: Default)")
+            .define("language", ELanguage.DEFAULT);
         SPEED_UNIT = BUILDER.comment("The unit to be used to represent speed. (Default: KMH)")
             .define("speed_unit", ESpeedUnit.KMH);
         TIME_FORMAT = BUILDER.comment("Display Time Format. (Default: Hours 24)")

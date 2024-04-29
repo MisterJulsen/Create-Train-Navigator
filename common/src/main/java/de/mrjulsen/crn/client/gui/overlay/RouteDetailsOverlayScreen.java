@@ -18,6 +18,7 @@ import de.mrjulsen.crn.client.ModGuiUtils;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.NavigatorToast;
 import de.mrjulsen.crn.client.input.ModKeys;
+import de.mrjulsen.crn.client.lang.ELanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.SimpleRoute;
 import de.mrjulsen.crn.data.SimpleTrainConnection;
@@ -38,6 +39,7 @@ import de.mrjulsen.crn.network.InstanceManager;
 import de.mrjulsen.crn.network.packets.cts.NextConnectionsRequestPacket;
 import de.mrjulsen.crn.network.packets.cts.TrainDataRequestPacket;
 import de.mrjulsen.crn.registry.ModItems;
+import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.gui.DLOverlayScreen;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
@@ -356,11 +358,11 @@ public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourn
             if (station != null) {
                 this.messageLabel = MultiLineLabel.create(shadowlessFont,
                 station.getInfo().platform() == null || station.getInfo().platform().isBlank() ?
-                TextUtils.translate(keyTransfer,
+                ELanguage.translate(keyTransfer,
                     station.getTrain().trainName(),
                     station.getTrain().scheduleTitle()
                 ) : 
-                TextUtils.translate(keyTransferWithPlatform,
+                ELanguage.translate(keyTransferWithPlatform,
                     station.getTrain().trainName(),
                     station.getTrain().scheduleTitle(),
                     station.getInfo().platform()
@@ -445,7 +447,7 @@ public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourn
         switch (trainDataSubPageIndex) {
             default:
             case 0:
-                setSlidingText(TextUtils.translate(keyTrainDetails,
+                setSlidingText(ELanguage.translate(keyTrainDetails,
                     getListener().currentStation().getTrain().trainName(),
                     getListener().currentStation().getTrain().scheduleTitle()
                 ));
@@ -453,7 +455,7 @@ public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourn
                 break;
             case 1:
                 long id = InstanceManager.registerClientTrainDataResponseAction((data, time) -> {
-                    setSlidingText(TextUtils.translate(keyTrainSpeed,
+                    setSlidingText(ELanguage.translate(keyTrainSpeed,
                         ModUtils.calcSpeedString(data.speed(), ModClientConfig.SPEED_UNIT.get())
                     ));
                     trainDataSubPageTime = 0;
@@ -597,7 +599,7 @@ public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourn
 
         // time display
         if (station.isTrainCanceled()) {
-            GuiUtils.drawString(graphics, shadowlessFont, x + 10, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, TextUtils.translate(keyTrainCanceled), DELAYED | fontAlpha, EAlignment.LEFT, false);
+            GuiUtils.drawString(graphics, shadowlessFont, x + 10, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, ELanguage.translate(keyTrainCanceled), DELAYED | fontAlpha, EAlignment.LEFT, false);
         } else {
             long timeDiff = station.getDifferenceTime();
             MutableComponent timeText = TextUtils.text(TimeUtils.parseTime((int)((station.getScheduleTime() + DragonLib.DAYTIME_SHIFT) % DragonLib.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get())).withStyle(reachable ? ChatFormatting.RESET : ChatFormatting.STRIKETHROUGH);
@@ -645,14 +647,14 @@ public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourn
             if (nextStation.isPresent() && !nextStation.get().reachable(true)) {
                 if (nextStation.get().isDeparted() || nextStation.get().isTrainCanceled()) {
                     ModGuiIcons.CROSS.render(graphics, x + 10, y + ROUTE_LINE_HEIGHT - 2 - ModGuiIcons.ICON_SIZE / 2);
-                    GuiUtils.drawString(graphics, shadowlessFont, x + 90, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, TextUtils.translate(nextStation.get().isTrainCanceled() ? keyConnectionCanceled : keyConnectionMissed).withStyle(ChatFormatting.BOLD), DELAYED | fontAlpha, EAlignment.LEFT, false);
+                    GuiUtils.drawString(graphics, shadowlessFont, x + 90, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, ELanguage.translate(nextStation.get().isTrainCanceled() ? keyConnectionCanceled : keyConnectionMissed).withStyle(ChatFormatting.BOLD), DELAYED | fontAlpha, EAlignment.LEFT, false);
                 } else {
                     ModGuiIcons.WARN.render(graphics, x + 10, y + ROUTE_LINE_HEIGHT - 2 - ModGuiIcons.ICON_SIZE / 2);
-                    GuiUtils.drawString(graphics, shadowlessFont, x + 90, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, TextUtils.translate(keyConnectionEndangered).withStyle(ChatFormatting.BOLD), COLOR_WARN | fontAlpha, EAlignment.LEFT, false);
+                    GuiUtils.drawString(graphics, shadowlessFont, x + 90, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, ELanguage.translate(keyConnectionEndangered).withStyle(ChatFormatting.BOLD), COLOR_WARN | fontAlpha, EAlignment.LEFT, false);
                 }
             } else {
                 GuiUtils.drawString(graphics, shadowlessFont, x + 10, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, TextUtils.text(TimeUtils.parseDurationShort((int)(getListener().getTransferTime(index)))).withStyle(ChatFormatting.ITALIC), 0xDBDBDB | fontAlpha, EAlignment.LEFT, false);
-                GuiUtils.drawString(graphics, shadowlessFont, x + 90, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, TextUtils.translate(keyScheduleTransfer).withStyle(ChatFormatting.ITALIC), 0xDBDBDB | fontAlpha, EAlignment.LEFT, false);
+                GuiUtils.drawString(graphics, shadowlessFont, x + 90, y + ROUTE_LINE_HEIGHT - 2 - shadowlessFont.lineHeight / 2, ELanguage.translate(keyScheduleTransfer).withStyle(ChatFormatting.ITALIC), 0xDBDBDB | fontAlpha, EAlignment.LEFT, false);
             }
                     
             return ROUTE_LINE_HEIGHT * 2;
@@ -662,7 +664,7 @@ public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourn
     }
 
     public void renderNextConnections(Graphics graphics, int x, int y, float alphaPercentage, int fontAlpha, StationEntry station) {
-        GuiUtils.drawString(graphics, shadowlessFont, x + 10, y + 4, TextUtils.translate(keyNextConnections).withStyle(ChatFormatting.BOLD), 0xFFFFFF | fontAlpha, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, shadowlessFont, x + 10, y + 4, ELanguage.translate(keyNextConnections).withStyle(ChatFormatting.BOLD), 0xFFFFFF | fontAlpha, EAlignment.LEFT, false);
 
         SimpleTrainConnection[] conns = connections.toArray(SimpleTrainConnection[]::new);
         for (int i = connectionsSubPageIndex * CONNECTION_ENTRIES_PER_PAGE, k = 0; i < Math.min((connectionsSubPageIndex + 1) * CONNECTION_ENTRIES_PER_PAGE, connections.size()); i++, k++) {
@@ -714,7 +716,7 @@ public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourn
         // Title
         ModGuiIcons.TIME.render(graphics, x + 10, y + 3);
         long time = getListener().currentStation().getEstimatedTimeWithThreshold() - level.getDayTime();
-        GuiUtils.drawString(graphics, shadowlessFont, x + 15 + ModGuiIcons.ICON_SIZE, y + 3 + ModGuiIcons.ICON_SIZE / 2 - shadowlessFont.lineHeight / 2, TextUtils.translate(keyDepartureIn).append(" ").append(time > 0 ? TextUtils.text(TimeUtils.parseTime((int)(time % DragonLib.TICKS_PER_DAY), TimeFormat.HOURS_24)) : TextUtils.translate(keyTimeNow)).withStyle(ChatFormatting.BOLD), 0xFFFFFF | fontAlpha, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, shadowlessFont, x + 15 + ModGuiIcons.ICON_SIZE, y + 3 + ModGuiIcons.ICON_SIZE / 2 - shadowlessFont.lineHeight / 2, ELanguage.translate(keyDepartureIn).append(" ").append(time > 0 ? TextUtils.text(TimeUtils.parseTime((int)(time % DragonLib.TICKS_PER_DAY), TimeFormat.HOURS_24)) : ELanguage.translate(keyTimeNow)).withStyle(ChatFormatting.BOLD), 0xFFFFFF | fontAlpha, EAlignment.LEFT, false);
         y += 5 + ModGuiIcons.ICON_SIZE;
         
         // Details
@@ -736,7 +738,7 @@ public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourn
         ModGuiIcons.INFO.render(graphics, x + 10, y + detailsLineHeight + shadowlessFont.lineHeight / 2 - ModGuiIcons.ICON_SIZE / 2);
         GuiUtils.drawString(graphics, shadowlessFont, x + 15 + ModGuiIcons.ICON_SIZE, y + detailsLineHeight, TextUtils.text(String.format("%s %s | %s",
             getListener().getListeningRoute().getTransferCount(),
-            TextUtils.translate(keyTransferCount).getString(),
+            ELanguage.translate(keyTransferCount).getString(),
             TimeUtils.parseDurationShort(getListener().getListeningRoute().getTotalDuration())
         )), 0xDBDBDB | fontAlpha, EAlignment.LEFT, false);
     }
@@ -748,7 +750,7 @@ public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourn
         // Title
         ModGuiIcons.WALK.render(graphics, x + 10, y + 3);        
         long transferTime = getListener().currentStation().getEstimatedTimeWithThreshold() - level.getDayTime();//getListener().getTransferTime(getListener().getIndex());
-        GuiUtils.drawString(graphics, shadowlessFont, x + 15 + ModGuiIcons.ICON_SIZE, y + 3 + ModGuiIcons.ICON_SIZE / 2 - shadowlessFont.lineHeight / 2, TextUtils.translate(keyScheduleTransfer).append(" ").append(transferTime > 0 ? TextUtils.text(TimeUtils.parseTime((int)(transferTime % DragonLib.TICKS_PER_DAY), TimeFormat.HOURS_24)) : TextUtils.translate(keyTimeNow)).withStyle(ChatFormatting.BOLD), 0xFFFFFF | fontAlpha, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, shadowlessFont, x + 15 + ModGuiIcons.ICON_SIZE, y + 3 + ModGuiIcons.ICON_SIZE / 2 - shadowlessFont.lineHeight / 2, ELanguage.translate(keyScheduleTransfer).append(" ").append(transferTime > 0 ? TextUtils.text(TimeUtils.parseTime((int)(transferTime % DragonLib.TICKS_PER_DAY), TimeFormat.HOURS_24)) : ELanguage.translate(keyTimeNow)).withStyle(ChatFormatting.BOLD), 0xFFFFFF | fontAlpha, EAlignment.LEFT, false);
         y += 5 + ModGuiIcons.ICON_SIZE;
         
         // Details

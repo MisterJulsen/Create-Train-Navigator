@@ -13,6 +13,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.client.lang.ELanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.DeparturePrediction.SimpleDeparturePrediction;
 import de.mrjulsen.crn.data.SimpleRoute;
@@ -111,18 +112,18 @@ public class JourneyListener {
 
     public JourneyListener start() {
         Component text = currentStation().getInfo().platform() == null || currentStation().getInfo().platform().isBlank() ?
-        TextUtils.translate(keyJourneyBegins,
+        ELanguage.translate(keyJourneyBegins,
             currentStation().getTrain().trainName(),
             currentStation().getTrain().scheduleTitle(),
             TimeUtils.parseTime((int)((currentStation().getEstimatedTimeWithThreshold() + DragonLib.DAYTIME_SHIFT) % DragonLib.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get())
         ) :
-        TextUtils.translate(keyJourneyBeginsWithPlatform,
+        ELanguage.translate(keyJourneyBeginsWithPlatform,
             currentStation().getTrain().trainName(),
             currentStation().getTrain().scheduleTitle(),
             TimeUtils.parseTime((int)((currentStation().getEstimatedTimeWithThreshold() + DragonLib.DAYTIME_SHIFT) % DragonLib.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get()),
             currentStation().getInfo().platform()
         );
-        String narratorText = text.getString() + ". " + TextUtils.translate(keyOptionsText, new KeybindComponent(keyKeybindOptions)).getString();
+        String narratorText = text.getString() + ". " + ELanguage.translate(keyOptionsText, new KeybindComponent(keyKeybindOptions)).getString();
 
         onJourneyBegin.values().forEach(x -> {
             if (x.isPresent()) {
@@ -306,17 +307,17 @@ public class JourneyListener {
         }
 
         if (!beginAnnounced && firstStation().getEstimatedTime() - ModClientConfig.NEXT_STOP_ANNOUNCEMENT.get() < Minecraft.getInstance().level.getDayTime()) {
-            Component title = TextUtils.translate(keyNotificationJourneyBeginsTitle,
+            Component title = ELanguage.translate(keyNotificationJourneyBeginsTitle,
                 lastStation().getStationName()
             );
             Component description = currentStation().getInfo().platform() == null || currentStation().getInfo().platform().isBlank() ?
-                TextUtils.translate(keyNotificationJourneyBegins,
+                ELanguage.translate(keyNotificationJourneyBegins,
                     currentStation().getTrain().trainName(),
                     currentStation().getTrain().scheduleTitle(),
                     TimeUtils.parseTime((int)((currentStation().getEstimatedTimeWithThreshold() + DragonLib.DAYTIME_SHIFT) % DragonLib.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get())
                 )
             :
-                TextUtils.translate(keyNotificationJourneyBeginsWithPlatform,
+                ELanguage.translate(keyNotificationJourneyBeginsWithPlatform,
                     currentStation().getTrain().trainName(),
                     currentStation().getTrain().scheduleTitle(),
                     TimeUtils.parseTime((int)((currentStation().getEstimatedTimeWithThreshold() + DragonLib.DAYTIME_SHIFT) % DragonLib.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get()),
@@ -412,8 +413,8 @@ public class JourneyListener {
                     routePart.forEach(x -> x.setDeparted(true));
                     departed = true;
 
-                    Component title = TextUtils.translate(keyNotificationConnectionMissedTitle);
-                    Component description = TextUtils.translate(keyNotificationConnectionMissed,
+                    Component title = ELanguage.translate(keyNotificationConnectionMissedTitle);
+                    Component description = ELanguage.translate(keyNotificationConnectionMissed,
                         routePart.get(0).getTrain().trainName(),
                         routePart.get(0).getTrain().scheduleTitle()
                     );
@@ -503,17 +504,17 @@ public class JourneyListener {
         }
 
         if (oldInfo != null && !first.getUpdatedInfo().equals(oldInfo)) {
-            setNotificationText(new NotificationData(currentState, TextUtils.translate(keyNotificationPlatformChangedTitle), TextUtils.translate(keyNotificationPlatformChanged,
+            setNotificationText(new NotificationData(currentState, ELanguage.translate(keyNotificationPlatformChangedTitle), ELanguage.translate(keyNotificationPlatformChanged,
                 first.getStationName(),
                 first.getUpdatedInfo().platform()
             )));
         }
 
         if (!wasDelayed && last.isDelayed()) {
-            setNotificationText(new NotificationData(currentState, TextUtils.translate(keyNotificationTrainDelayedTitle,
+            setNotificationText(new NotificationData(currentState, ELanguage.translate(keyNotificationTrainDelayedTitle,
                 last.getTrain().trainName(),
                 TimeUtils.parseDuration(last.getDifferenceTime())
-            ), TextUtils.translate(keyNotificationTrainDelayed,
+            ), ELanguage.translate(keyNotificationTrainDelayed,
                 TimeUtils.parseTime((int)(last.getEstimatedTimeWithThreshold() % DragonLib.TICKS_PER_DAY) + DragonLib.DAYTIME_SHIFT, ModClientConfig.TIME_FORMAT.get()),
                 TimeUtils.parseTime((int)(last.getScheduleTime() % DragonLib.TICKS_PER_DAY) + DragonLib.DAYTIME_SHIFT, ModClientConfig.TIME_FORMAT.get()),
                 last.getStationName()
@@ -557,7 +558,7 @@ public class JourneyListener {
             station.setWillMiss(willMiss);
 
             if (station.getTag() == StationTag.PART_START && !wasWillMiss && station.willMissStop()) {
-                setNotificationText(new NotificationData(currentState, TextUtils.translate(keyNotificationConnectionEndangeredTitle), TextUtils.translate(keyNotificationConnectionEndangered,
+                setNotificationText(new NotificationData(currentState, ELanguage.translate(keyNotificationConnectionEndangeredTitle), ELanguage.translate(keyNotificationConnectionEndangered,
                     station.getTrain().trainName(),
                     station.getTrain().scheduleTitle()
                 )));
@@ -638,7 +639,7 @@ public class JourneyListener {
     }    
 
     private void finishJourney() {
-        Component text = TextUtils.translate(keyAfterJourney, route.getStationArray()[route.getStationCount(true) - 1].getStationName());
+        Component text = ELanguage.translate(keyAfterJourney, route.getStationArray()[route.getStationCount(true) - 1].getStationName());
         setState(State.AFTER_JOURNEY);
         
         onFinishJourney.values().forEach(x -> {
@@ -647,7 +648,7 @@ public class JourneyListener {
             }
         });
         setInfoText(text);
-        setNotificationText(new NotificationData(currentState, TextUtils.translate(keyNotificationJourneyCompletedTitle), TextUtils.translate(keyNotificationJourneyCompleted)));
+        setNotificationText(new NotificationData(currentState, ELanguage.translate(keyNotificationJourneyCompletedTitle), ELanguage.translate(keyNotificationJourneyCompleted)));
 
         stop();
     }
@@ -656,29 +657,29 @@ public class JourneyListener {
         Component textA = TextUtils.empty();
         Component textB = TextUtils.empty();
         Component text;
-        text = textA = TextUtils.translate(keyNextStop,
+        text = textA = ELanguage.translate(keyNextStop,
             currentStation().getStationName()
         );
         if (currentStation().getTag() == StationTag.PART_END && currentStation().getIndex() + 1 < route.getStationCount(true)) {
             Component transferText = textB = nextStation().get().getInfo().platform() == null || nextStation().get().getInfo().platform().isBlank() ?
-            TextUtils.translate(keyTransfer,
+            ELanguage.translate(keyTransfer,
                 nextStation().get().getTrain().trainName(),
                 nextStation().get().getTrain().scheduleTitle()
             ) :
-            TextUtils.translate(keyTransferWithPlatform,
+            ELanguage.translate(keyTransferWithPlatform,
                 nextStation().get().getTrain().trainName(),
                 nextStation().get().getTrain().scheduleTitle(),
                 nextStation().get().getInfo().platform()
             );
             text = TextUtils.concatWithStarChars(text, transferText);
             setState(State.BEFORE_TRANSFER);
-            setNotificationText(new NotificationData(currentState, TextUtils.translate(keyNotificationTransferTitle), 
+            setNotificationText(new NotificationData(currentState, ELanguage.translate(keyNotificationTransferTitle), 
                 nextStation().get().getInfo().platform() == null || nextStation().get().getInfo().platform().isBlank() ?
-                TextUtils.translate(keyNotificationTransfer,
+                ELanguage.translate(keyNotificationTransfer,
                     nextStation().get().getTrain().trainName(),
                     nextStation().get().getTrain().scheduleTitle()
                 ) : 
-                TextUtils.translate(keyNotificationTransferWithPlatform,
+                ELanguage.translate(keyNotificationTransferWithPlatform,
                     nextStation().get().getTrain().trainName(),
                     nextStation().get().getTrain().scheduleTitle(),
                     nextStation().get().getInfo().platform()
@@ -719,11 +720,11 @@ public class JourneyListener {
     private void reachTransferStop() {
         Component text = nextStation().isPresent() ? (
             nextStation().get().getInfo().platform() == null || nextStation().get().getInfo().platform().isBlank() ?
-            TextUtils.translate(keyTransfer,
+            ELanguage.translate(keyTransfer,
                 nextStation().get().getTrain().trainName(),
                 nextStation().get().getTrain().scheduleTitle()
             ) :
-            TextUtils.translate(keyTransferWithPlatform,
+            ELanguage.translate(keyTransferWithPlatform,
                 nextStation().get().getTrain().trainName(),
                 nextStation().get().getTrain().scheduleTitle(),
                 nextStation().get().getInfo().platform()
@@ -746,7 +747,7 @@ public class JourneyListener {
     private void reachTransferStopConnectionMissed() {
         Component text = TextUtils.concatWithStarChars(
             TextUtils.text(currentStation().getStationName()),
-            TextUtils.translate(keyConnectionMissedInfo)
+            ELanguage.translate(keyConnectionMissedInfo)
         );
         String narratorText = "";
 
@@ -763,8 +764,8 @@ public class JourneyListener {
     }
 
     private void journeyInterrupt(StationEntry station) {
-        Component text = TextUtils.translate(keyJourneyInterruptedTitle);
-        Component desc = TextUtils.translate(keyJourneyInterrupted, station.getTrain().trainName());
+        Component text = ELanguage.translate(keyJourneyInterruptedTitle);
+        Component desc = ELanguage.translate(keyJourneyInterrupted, station.getTrain().trainName());
         String narratorText = "";
 
         setState(State.JOURNEY_INTERRUPTED);

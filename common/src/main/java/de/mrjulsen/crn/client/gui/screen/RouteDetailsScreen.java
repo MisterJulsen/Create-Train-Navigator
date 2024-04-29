@@ -14,6 +14,7 @@ import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.overlay.RouteDetailsOverlayScreen;
 import de.mrjulsen.crn.client.gui.widgets.DLCreateIconButton;
 import de.mrjulsen.crn.client.gui.widgets.ExpandButton;
+import de.mrjulsen.crn.client.lang.ELanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.SimpleRoute;
 import de.mrjulsen.crn.data.SimpleRoute.SimpleRoutePart;
@@ -83,14 +84,14 @@ public class RouteDetailsScreen extends DLScreen implements IJourneyListenerClie
     private final Level level;
 
     // Tooltips
-    private final MutableComponent textDeparture = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".route_details.departure");
-    private final MutableComponent textTransferIn = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".route_details.next_transfer_time");
-    private final MutableComponent transferText = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".route_details.transfer");
-    private final MutableComponent textJourneyCompleted = TextUtils.translate("gui.createrailwaysnavigator.route_overview.journey_completed");
-    private final MutableComponent timeNowText = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".time.now");    
-    private final MutableComponent textConnectionEndangered = TextUtils.translate("gui.createrailwaysnavigator.route_overview.connection_endangered").withStyle(ChatFormatting.GOLD).withStyle(ChatFormatting.BOLD);
-    private final MutableComponent textConnectionMissed = TextUtils.translate("gui.createrailwaysnavigator.route_overview.connection_missed").withStyle(ChatFormatting.RED).withStyle(ChatFormatting.BOLD);
-    private final MutableComponent textTrainCanceled = TextUtils.translate("gui.createrailwaysnavigator.route_overview.train_canceled").withStyle(ChatFormatting.RED).withStyle(ChatFormatting.BOLD);
+    private final MutableComponent textDeparture = ELanguage.translate("gui." + ExampleMod.MOD_ID + ".route_details.departure");
+    private final MutableComponent textTransferIn = ELanguage.translate("gui." + ExampleMod.MOD_ID + ".route_details.next_transfer_time");
+    private final MutableComponent transferText = ELanguage.translate("gui." + ExampleMod.MOD_ID + ".route_details.transfer");
+    private final MutableComponent textJourneyCompleted = ELanguage.translate("gui.createrailwaysnavigator.route_overview.journey_completed");
+    private final MutableComponent timeNowText = ELanguage.translate("gui." + ExampleMod.MOD_ID + ".time.now");    
+    private final MutableComponent textConnectionEndangered = ELanguage.translate("gui.createrailwaysnavigator.route_overview.connection_endangered").withStyle(ChatFormatting.GOLD).withStyle(ChatFormatting.BOLD);
+    private final MutableComponent textConnectionMissed = ELanguage.translate("gui.createrailwaysnavigator.route_overview.connection_missed").withStyle(ChatFormatting.RED).withStyle(ChatFormatting.BOLD);
+    private final MutableComponent textTrainCanceled = ELanguage.translate("gui.createrailwaysnavigator.route_overview.train_canceled").withStyle(ChatFormatting.RED).withStyle(ChatFormatting.BOLD);
     private final MutableComponent textSaveRoute = TextUtils.translate("gui.createrailwaysnavigator.route_details.save_route");
     private final String keyTrainCancellationReason = "gui.createrailwaysnavigator.route_overview.train_cancellation_info";
 

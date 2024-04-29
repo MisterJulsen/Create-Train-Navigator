@@ -10,6 +10,7 @@ import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.ColorShade;
 import de.mrjulsen.crn.client.gui.screen.NavigatorScreen;
 import de.mrjulsen.crn.client.gui.screen.RouteDetailsScreen;
+import de.mrjulsen.crn.client.lang.ELanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.SimpleRoute;
 import de.mrjulsen.crn.data.SimpleRoute.SimpleRoutePart;
@@ -41,9 +42,9 @@ public class RouteEntryOverviewWidget extends DLButton {
     private final Level level;
     private final long lastRefreshedTime;
 
-    private static final MutableComponent transferText = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".navigator.route_entry.transfer");
-    private static final MutableComponent connectionInPast = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".navigator.route_entry.connection_in_past");
-    private static final MutableComponent trainCanceled = TextUtils.translate("gui.createrailwaysnavigator.route_overview.stop_canceled");
+    private final MutableComponent transferText = ELanguage.translate("gui." + ExampleMod.MOD_ID + ".navigator.route_entry.transfer");
+    private final MutableComponent connectionInPast = ELanguage.translate("gui." + ExampleMod.MOD_ID + ".navigator.route_entry.connection_in_past");
+    private final MutableComponent trainCanceled = ELanguage.translate("gui.createrailwaysnavigator.route_overview.stop_canceled");
 
     public RouteEntryOverviewWidget(NavigatorScreen parent, Level level, long lastRefreshedTime, int pX, int pY, SimpleRoute route, Consumer<RouteEntryOverviewWidget> onClick) {
         super(pX, pY, WIDTH, HEIGHT, TextUtils.text(route.getName()), onClick); // 48

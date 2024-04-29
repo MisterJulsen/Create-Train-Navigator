@@ -1,6 +1,8 @@
 package de.mrjulsen.crn.event;
 
 import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.client.lang.ELanguage;
+import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.ClientTrainStationSnapshot;
 import de.mrjulsen.crn.event.listeners.JourneyListenerManager;
 import de.mrjulsen.crn.event.listeners.TrainListener;
@@ -16,10 +18,17 @@ import net.minecraft.client.Minecraft;
 
 public class ClientEvents {
 
+    private static int langCheckerTicks = 0;
+
     @SuppressWarnings("resource")
     public static void init() {
         TickEvent.PLAYER_POST.register((mc) -> {
             JourneyListenerManager.tick();
+            langCheckerTicks++;
+
+            if ((langCheckerTicks %= 20) == 0) {
+                ELanguage.updateLanguage(ModClientConfig.LANGUAGE.get());
+            }
         });
 
         ClientLifecycleEvent.CLIENT_LEVEL_LOAD.register((level) -> {

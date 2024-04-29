@@ -14,7 +14,6 @@ public class ClientInit {
 
     public static void setup(Minecraft minecraft) {        
         ModKeys.init();
-        //OverlayRegistry.registerOverlayBottom("route_details_overlay", HudOverlays.HUD_ROUTE_DETAILS);
         ModDisplayTags.register();
     }
 
