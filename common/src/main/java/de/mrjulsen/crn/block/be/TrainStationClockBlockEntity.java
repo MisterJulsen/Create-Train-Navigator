@@ -6,8 +6,8 @@ import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 
 import de.mrjulsen.crn.client.ber.TrainStationClockRenderer;
-import de.mrjulsen.crn.client.ber.base.IBERInstance;
-import de.mrjulsen.crn.client.ber.base.IBlockEntityRendererInstance;
+import de.mrjulsen.mcdragonlib.block.IBERInstance;
+import de.mrjulsen.mcdragonlib.client.ber.IBlockEntityRendererInstance;
 import de.mrjulsen.mcdragonlib.data.Cache;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntityType;

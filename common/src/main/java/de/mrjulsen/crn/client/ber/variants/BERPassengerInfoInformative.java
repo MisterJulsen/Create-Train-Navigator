@@ -11,8 +11,6 @@ import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
 import de.mrjulsen.crn.client.ber.base.BERText;
 import de.mrjulsen.crn.client.ber.base.BERText.TextTransformation;
-import de.mrjulsen.crn.client.ber.base.IBlockEntityRendererInstance.BlockEntityRendererContext;
-import de.mrjulsen.crn.client.ber.base.IBlockEntityRendererInstance.EUpdateReason;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.lang.ELanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
@@ -23,6 +21,8 @@ import de.mrjulsen.crn.event.listeners.JourneyListener.State;
 import de.mrjulsen.crn.network.InstanceManager;
 import de.mrjulsen.crn.network.packets.cts.NextConnectionsRequestPacket;
 import de.mrjulsen.mcdragonlib.DragonLib;
+import de.mrjulsen.mcdragonlib.client.ber.IBlockEntityRendererInstance.BlockEntityRendererContext;
+import de.mrjulsen.mcdragonlib.client.ber.IBlockEntityRendererInstance.EUpdateReason;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.TimeUtils;
 import net.minecraft.ChatFormatting;
@@ -168,6 +168,7 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
                 pBufferSource,
                 pBlockEntity,
                 pPoseStack,
+                false,
                 8,
                 y,
                 0.0f,
@@ -188,6 +189,7 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
                     pBufferSource,
                     pBlockEntity,
                     pPoseStack,
+                    false,
                     8,
                     y,
                     0.0f,
@@ -210,6 +212,7 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
                     pBufferSource,
                     pBlockEntity,
                     pPoseStack,
+                    false,
                     8,
                     y,
                     0.0f,
@@ -238,6 +241,7 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
                 pBufferSource,
                 pBlockEntity,
                 pPoseStack,
+                false,
                 pBlockEntity.getXSizeScaled() * 16 - 3f - 2,
                 2.25f,
                 0,

@@ -6,8 +6,8 @@ import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
 import de.mrjulsen.crn.client.ber.base.BERText;
 import de.mrjulsen.crn.client.ber.base.BERText.TextTransformation;
-import de.mrjulsen.crn.client.ber.base.IBlockEntityRendererInstance.BlockEntityRendererContext;
-import de.mrjulsen.crn.client.ber.base.IBlockEntityRendererInstance.EUpdateReason;
+import de.mrjulsen.mcdragonlib.client.ber.IBlockEntityRendererInstance.BlockEntityRendererContext;
+import de.mrjulsen.mcdragonlib.client.ber.IBlockEntityRendererInstance.EUpdateReason;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -111,6 +111,7 @@ public class BERTrainDestinationInformative implements IBERRenderSubtype<Advance
             pBufferSource,
             pBlockEntity,
             pPoseStack,
+            false,
             pBlockEntity.getXSizeScaled() * 16 - 6f - (parent.carriageIndexLabel == null ? 0 : parent.carriageIndexLabel.getScaledTextWidth() * 0.5f),
             2.5f,
             0.0f,

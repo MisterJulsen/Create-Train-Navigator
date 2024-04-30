@@ -1,7 +1,7 @@
 package de.mrjulsen.crn.client.ber.variants;
 
-import de.mrjulsen.crn.client.ber.base.AbstractBlockEntityRenderInstance;
-import de.mrjulsen.crn.client.ber.base.IBlockEntityRendererInstance.EUpdateReason;
+import de.mrjulsen.mcdragonlib.client.ber.AbstractBlockEntityRenderInstance;
+import de.mrjulsen.mcdragonlib.client.ber.IBlockEntityRendererInstance.EUpdateReason;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;

@@ -2,9 +2,9 @@ package de.mrjulsen.crn.client.ber.variants;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 
-import de.mrjulsen.crn.client.ber.base.AbstractBlockEntityRenderInstance;
-import de.mrjulsen.crn.client.ber.base.IBlockEntityRendererInstance.BlockEntityRendererContext;
-import de.mrjulsen.crn.client.ber.base.IBlockEntityRendererInstance.EUpdateReason;
+import de.mrjulsen.mcdragonlib.client.ber.AbstractBlockEntityRenderInstance;
+import de.mrjulsen.mcdragonlib.client.ber.IBlockEntityRendererInstance.BlockEntityRendererContext;
+import de.mrjulsen.mcdragonlib.client.ber.IBlockEntityRendererInstance.EUpdateReason;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;

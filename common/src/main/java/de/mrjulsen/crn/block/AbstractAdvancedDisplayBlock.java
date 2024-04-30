@@ -9,9 +9,9 @@ import com.simibubi.create.foundation.utility.Iterate;
 
 import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.client.ClientWrapper;
-import de.mrjulsen.crn.client.ber.base.IBlockEntityRendererInstance.EUpdateReason;
 import de.mrjulsen.crn.data.ESide;
 import de.mrjulsen.crn.registry.ModBlockEntities;
+import de.mrjulsen.mcdragonlib.client.ber.IBlockEntityRendererInstance.EUpdateReason;
 import de.mrjulsen.mcdragonlib.data.Pair;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;

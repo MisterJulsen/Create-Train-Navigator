@@ -5,7 +5,7 @@ import com.tterrag.registrate.util.entry.BlockEntityEntry;
 import de.mrjulsen.crn.ExampleMod;
 import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.block.be.TrainStationClockBlockEntity;
-import de.mrjulsen.crn.client.ber.base.StaticBlockEntityRenderer;
+import de.mrjulsen.mcdragonlib.client.ber.StaticBlockEntityRenderer;
 
 public class ModBlockEntities {
 	

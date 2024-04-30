@@ -12,7 +12,6 @@ import com.mojang.math.Vector3f;
 
 import de.mrjulsen.crn.block.AbstractAdvancedDisplayBlock;
 import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
-import de.mrjulsen.crn.client.ber.base.AbstractBlockEntityRenderInstance;
 import de.mrjulsen.crn.client.ber.base.BERText;
 import de.mrjulsen.crn.client.ber.variants.BERPassengerInfoDetailed;
 import de.mrjulsen.crn.client.ber.variants.BERPassengerInfoInformative;
@@ -29,6 +28,7 @@ import de.mrjulsen.crn.data.EDisplayInfo;
 import de.mrjulsen.crn.data.EDisplayType;
 import de.mrjulsen.crn.data.ESide;
 import de.mrjulsen.crn.data.EDisplayType.EDisplayTypeDataSource;
+import de.mrjulsen.mcdragonlib.client.ber.AbstractBlockEntityRenderInstance;
 import de.mrjulsen.mcdragonlib.data.Pair;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.client.renderer.LightTexture;

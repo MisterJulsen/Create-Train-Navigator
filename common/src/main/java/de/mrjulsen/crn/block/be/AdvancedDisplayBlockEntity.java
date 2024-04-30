@@ -3,7 +3,6 @@ package de.mrjulsen.crn.block.be;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import javax.annotation.Nullable;
 
 import com.simibubi.create.content.contraptions.Contraption;
 import com.simibubi.create.content.trains.display.FlapDisplayBlock;
@@ -17,9 +16,6 @@ import de.mrjulsen.crn.block.AbstractAdvancedDisplayBlock;
 import de.mrjulsen.crn.block.AdvancedDisplaySmallBlock;
 import de.mrjulsen.crn.block.display.AdvancedDisplaySource.ETimeDisplay;
 import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
-import de.mrjulsen.crn.client.ber.base.IBERInstance;
-import de.mrjulsen.crn.client.ber.base.IBlockEntityRendererInstance;
-import de.mrjulsen.crn.client.ber.base.IBlockEntityRendererInstance.EUpdateReason;
 import de.mrjulsen.crn.data.CarriageData;
 import de.mrjulsen.crn.data.EDisplayInfo;
 import de.mrjulsen.crn.data.EDisplayType;
@@ -31,6 +27,9 @@ import de.mrjulsen.crn.data.DeparturePrediction.SimpleDeparturePrediction;
 import de.mrjulsen.crn.network.InstanceManager;
 import de.mrjulsen.crn.network.packets.cts.TrainDataRequestPacket;
 import de.mrjulsen.crn.network.packets.cts.TrainDataRequestPacket.TrainData;
+import de.mrjulsen.mcdragonlib.block.IBERInstance;
+import de.mrjulsen.mcdragonlib.client.ber.IBlockEntityRendererInstance;
+import de.mrjulsen.mcdragonlib.client.ber.IBlockEntityRendererInstance.EUpdateReason;
 import de.mrjulsen.mcdragonlib.data.Cache;
 import de.mrjulsen.mcdragonlib.data.Pair;
 import net.minecraft.core.BlockPos;
@@ -41,8 +40,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.Connection;
-import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -299,6 +296,9 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         if (level.isClientSide) {
             getRenderer().update(level, worldPosition, getBlockState(), this, EUpdateReason.BLOCK_CHANGED);
         }
+        notifyUpdate();
+        level.setBlockAndUpdate(worldPosition, getBlockState());
+
     }
 
     public void setGlowing(boolean glowing) {
@@ -306,6 +306,9 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         if (level.isClientSide) {
             getRenderer().update(level, worldPosition, getBlockState(), this, EUpdateReason.BLOCK_CHANGED);
         }
+        notifyUpdate();
+        level.setBlockAndUpdate(worldPosition, getBlockState());
+
     }
 
     public void setInfoType(EDisplayInfo type) {
@@ -313,6 +316,8 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         if (level.isClientSide) {
             getRenderer().update(level, worldPosition, getBlockState(), this, EUpdateReason.BLOCK_CHANGED);
         }
+        notifyUpdate();
+        level.setBlockAndUpdate(worldPosition, getBlockState());
     }
 
     public void setDisplayType(EDisplayType type) {
@@ -320,6 +325,10 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         if (level.isClientSide) {
             getRenderer().update(level, worldPosition, getBlockState(), this, EUpdateReason.BLOCK_CHANGED);
         }
+        notifyUpdate();
+        level.setBlockAndUpdate(worldPosition, getBlockState());
+
+
     }
 
     public void setDepartureData(List<SimpleDeparturePrediction> predictions, List<String> nextDepartureStopovers, String stationNameFilter, StationInfo staionInfo, long lastRefreshedTime, byte platformWidth, byte trainNameWidth, byte timeDisplayId) {
@@ -651,24 +660,6 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 			.orElse(Direction.SOUTH)
 			.getOpposite();
 	}
-
-    @Nullable
-    @Override
-    public ClientboundBlockEntityDataPacket getUpdatePacket() {
-        return ClientboundBlockEntityDataPacket.create(this, BlockEntity::getUpdateTag);
-    }
-
-    @Override
-    public CompoundTag getUpdateTag() {
-        return this.saveWithFullMetadata();
-    }
-
-    @Override
-    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
-        this.load(pkt.getTag());
-        this.getLevel().sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), lazyTickCounter);
-        //this.level.markAndNotifyBlock(this.worldPosition, this.level.getChunkAt(this.worldPosition), this.getBlockState(), this.getBlockState(), 3, 512);
-    }
 
     @Override
     public IBlockEntityRendererInstance<AdvancedDisplayBlockEntity> getRenderer() {

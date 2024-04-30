@@ -4,9 +4,9 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Vector3f;
 
 import de.mrjulsen.crn.block.be.TrainStationClockBlockEntity;
-import de.mrjulsen.crn.client.ber.base.AbstractBlockEntityRenderInstance;
 import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.DragonLib;
+import de.mrjulsen.mcdragonlib.client.ber.AbstractBlockEntityRenderInstance;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 
@@ -20,6 +20,8 @@ public class TrainStationClockRenderer extends AbstractBlockEntityRenderInstance
     public void render(BlockEntityRendererContext context, TrainStationClockBlockEntity pBlockEntity, float pPartialTicks, PoseStack pPoseStack, MultiBufferSource pBufferSource, int pPackedLight, int pOverlay) {
 
         context.renderUtils().initRenderEngine();
+
+        
 
         float z = 3.2f;
 
