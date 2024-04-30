@@ -57,34 +57,36 @@ public class NavigationRequestPacket implements IPacketBase<NavigationRequestPac
     
     @Override
     public void handle(NavigationRequestPacket packet, Supplier<PacketContext> contextSupplier) {
-        Thread navigationThread = new Thread(() -> {
-            List<Route> routes = new ArrayList<>();
-            final long updateTime = contextSupplier.get().getPlayer().level.getDayTime();
-            final long startTime = System.currentTimeMillis();
-            
-            try {
-                TrainStationAlias startAlias = GlobalSettingsManager.getInstance().getSettingsData().getAliasFor(packet.start);
-                TrainStationAlias endAlias = GlobalSettingsManager.getInstance().getSettingsData().getAliasFor(packet.end);
-
-                if (startAlias == null || endAlias == null) {
-                    return;
-                }
+        contextSupplier.get().queue(() -> {
+            Thread navigationThread = new Thread(() -> {
+                List<Route> routes = new ArrayList<>();
+                final long updateTime = contextSupplier.get().getPlayer().level.getDayTime();
+                final long startTime = System.currentTimeMillis();
                 
-                Graph graph = new Graph(contextSupplier.get().getPlayer().getLevel(), packet.filterSettings);
-                routes.addAll(graph.navigate(startAlias, endAlias, true));
-            } catch (Exception e) {
-                ExampleMod.LOGGER.error("Navigation error: ", e);
-                ExampleMod.net().CHANNEL.sendToPlayer((ServerPlayer)contextSupplier.get().getPlayer(), new ServerErrorPacket(e.getMessage()));
-            } finally {         
-                final long estimatedTime = System.currentTimeMillis() - startTime;
-                ExampleMod.LOGGER.info(String.format("Route calculated. Took %sms.",
-                    estimatedTime
-                ));
-                ExampleMod.net().CHANNEL.sendToPlayer((ServerPlayer)contextSupplier.get().getPlayer(), new NavigationResponsePacket(packet.id, new ArrayList<>(routes.stream().filter(x -> !x.isEmpty()).map(x -> new SimpleRoute(x)).toList()), estimatedTime, updateTime));
-            }
+                try {
+                    TrainStationAlias startAlias = GlobalSettingsManager.getInstance().getSettingsData().getAliasFor(packet.start);
+                    TrainStationAlias endAlias = GlobalSettingsManager.getInstance().getSettingsData().getAliasFor(packet.end);
+    
+                    if (startAlias == null || endAlias == null) {
+                        return;
+                    }
+                    
+                    Graph graph = new Graph(contextSupplier.get().getPlayer().getLevel(), packet.filterSettings);
+                    routes.addAll(graph.navigate(startAlias, endAlias, true));
+                } catch (Exception e) {
+                    ExampleMod.LOGGER.error("Navigation error: ", e);
+                    ExampleMod.net().CHANNEL.sendToPlayer((ServerPlayer)contextSupplier.get().getPlayer(), new ServerErrorPacket(e.getMessage()));
+                } finally {         
+                    final long estimatedTime = System.currentTimeMillis() - startTime;
+                    ExampleMod.LOGGER.info(String.format("Route calculated. Took %sms.",
+                        estimatedTime
+                    ));
+                    ExampleMod.net().CHANNEL.sendToPlayer((ServerPlayer)contextSupplier.get().getPlayer(), new NavigationResponsePacket(packet.id, new ArrayList<>(routes.stream().filter(x -> !x.isEmpty()).map(x -> new SimpleRoute(x)).toList()), estimatedTime, updateTime));
+                }
+            });
+            navigationThread.setPriority(Thread.MIN_PRIORITY);
+            navigationThread.setName("Navigator");
+            navigationThread.start();
         });
-        navigationThread.setPriority(Thread.MIN_PRIORITY);
-        navigationThread.setName("Navigator");
-        navigationThread.start();
     }
 }

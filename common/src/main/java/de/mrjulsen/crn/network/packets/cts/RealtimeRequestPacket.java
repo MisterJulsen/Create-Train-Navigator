@@ -50,7 +50,8 @@ public class RealtimeRequestPacket implements IPacketBase<RealtimeRequestPacket>
 
     @Override
     public void handle(RealtimeRequestPacket packet, Supplier<PacketContext> contextSupplier) {
-        final Level level = contextSupplier.get().getPlayer().getLevel();
+        contextSupplier.get().queue(() -> {
+            final Level level = contextSupplier.get().getPlayer().getLevel();
             new Thread(() -> {
                 final long updateTime = level.getDayTime();
                 Collection<SimpleDeparturePrediction> predictions = new ArrayList<>();
@@ -63,6 +64,7 @@ public class RealtimeRequestPacket implements IPacketBase<RealtimeRequestPacket>
                 });
                 ExampleMod.net().CHANNEL.sendToPlayer((ServerPlayer)contextSupplier.get().getPlayer(), (new RealtimeResponsePacket(packet.requestId, predictions, updateTime)));
             }, "Realtime Provider").run();
+        });
     }
     
     public static record StationData(Collection<String> stationName, Collection<Integer> indices, UUID trainId) {}

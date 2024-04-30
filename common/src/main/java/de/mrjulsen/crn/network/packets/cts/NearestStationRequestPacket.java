@@ -45,19 +45,21 @@ public class NearestStationRequestPacket implements IPacketBase<NearestStationRe
     
     @Override
     public void handle(NearestStationRequestPacket packet, Supplier<PacketContext> contextSupplier) {
-        Thread navigationThread = new Thread(() -> {   
-            NearestTrackStationResult result = NearestTrackStationResult.empty();
-            try {
-                result = TrainUtils.getNearestTrackStation(contextSupplier.get().getPlayer().getLevel(), packet.pos);                    
-            } catch (Exception e) {
-                ExampleMod.LOGGER.error("Error while trying to find nearest track station ", e);
-                ExampleMod.net().CHANNEL.sendToPlayer((ServerPlayer)contextSupplier.get().getPlayer(), new ServerErrorPacket(e.getMessage()));
-            } finally {                    
-                ExampleMod.net().CHANNEL.sendToPlayer((ServerPlayer)contextSupplier.get().getPlayer(), new NearestStationResponsePacket(packet.id, result));
-            }                
+        contextSupplier.get().queue(() -> {
+            Thread navigationThread = new Thread(() -> {   
+                NearestTrackStationResult result = NearestTrackStationResult.empty();
+                try {
+                    result = TrainUtils.getNearestTrackStation(contextSupplier.get().getPlayer().getLevel(), packet.pos);                    
+                } catch (Exception e) {
+                    ExampleMod.LOGGER.error("Error while trying to find nearest track station ", e);
+                    ExampleMod.net().CHANNEL.sendToPlayer((ServerPlayer)contextSupplier.get().getPlayer(), new ServerErrorPacket(e.getMessage()));
+                } finally {                    
+                    ExampleMod.net().CHANNEL.sendToPlayer((ServerPlayer)contextSupplier.get().getPlayer(), new NearestStationResponsePacket(packet.id, result));
+                }                
+            });
+            navigationThread.setPriority(Thread.MIN_PRIORITY);
+            navigationThread.setName("Station Location Calculator");
+            navigationThread.start();
         });
-        navigationThread.setPriority(Thread.MIN_PRIORITY);
-        navigationThread.setName("Station Location Calculator");
-        navigationThread.start();
     }   
 }

@@ -64,18 +64,20 @@ public class AdvancedDisplayUpdatePacket implements IPacketBase<AdvancedDisplayU
                     if (level.getBlockState(be.getBlockPos()).getBlock() instanceof AbstractAdvancedDisplayBlock) {
                         level.setBlockAndUpdate(be.getBlockPos(), level.getBlockState(be.getBlockPos()).setValue(AbstractAdvancedDisplayBlock.SIDE, packet.side));
                     }
-                    be.notifyUpdate();
+                    be.notifyUpdate();                    
                 });
             }
         }
     }
     
     @Override
-    public void handle(AdvancedDisplayUpdatePacket packet, Supplier<PacketContext> contextSupplier) {
-        Player player = contextSupplier.get().getPlayer();
-        if (player != null) {
-            Level level = player.getLevel();
-            apply(level, packet);
-        }
+    public void handle(AdvancedDisplayUpdatePacket packet, Supplier<PacketContext> contextSupplier) {        
+        contextSupplier.get().queue(() -> {
+            Player player = contextSupplier.get().getPlayer();
+            if (player != null) {
+                Level level = player.getLevel();
+                apply(level, packet);
+            }
+        });
     }
 }

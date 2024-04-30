@@ -33,6 +33,8 @@ public class GlobalSettingsRequestPacket implements IPacketBase<GlobalSettingsRe
     
     @Override
     public void handle(GlobalSettingsRequestPacket packet, Supplier<PacketContext> contextSupplier) {
-        ExampleMod.net().CHANNEL.sendToPlayer((ServerPlayer)contextSupplier.get().getPlayer(), new GlobalSettingsResponsePacket(packet.id, GlobalSettingsManager.getInstance().getSettingsData()));
+        contextSupplier.get().queue(() -> {
+            ExampleMod.net().CHANNEL.sendToPlayer((ServerPlayer)contextSupplier.get().getPlayer(), new GlobalSettingsResponsePacket(packet.id, GlobalSettingsManager.getInstance().getSettingsData()));
+        });
     }
 }

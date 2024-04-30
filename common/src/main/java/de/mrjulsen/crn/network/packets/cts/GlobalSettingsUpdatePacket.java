@@ -84,53 +84,55 @@ public class GlobalSettingsUpdatePacket implements IPacketBase<GlobalSettingsUpd
     
     @Override
     public void handle(GlobalSettingsUpdatePacket packet, Supplier<PacketContext> contextSupplier) {
-        if (GlobalSettingsManager.getInstance().getSettingsData() == null) {
-            ExampleMod.LOGGER.error("Failed to handle GlobalSettingsUpdatePacket! The settings instance of the global settings manager is null.");
-            return;
-        }
-
-        switch (packet.action) {
-            case ADD_TO_BLACKLIST:
-                GlobalSettingsManager.getInstance().getSettingsData().addToBlacklistServer(packet.data.getString(NBT_STRING));
-                break;
-            case REMOVE_FROM_BLACKLIST:
-                GlobalSettingsManager.getInstance().getSettingsData().removeFromBlacklistServer(packet.data.getString(NBT_STRING));
-                break;
-            case ADD_TRAIN_TO_BLACKLIST:
-                GlobalSettingsManager.getInstance().getSettingsData().addTrainToBlacklistServer(packet.data.getString(NBT_STRING));
-                break;
-            case REMOVE_TRAIN_FROM_BLACKLIST:
-                GlobalSettingsManager.getInstance().getSettingsData().removeTrainFromBlacklistServer(packet.data.getString(NBT_STRING));
-                break;
-            case UNREGISTER_ALIAS_STRING:
-                GlobalSettingsManager.getInstance().getSettingsData().unregisterAliasServer(packet.data.getString(NBT_STRING));
-                break;
-            case UNREGISTER_ALIAS:
-                GlobalSettingsManager.getInstance().getSettingsData().unregisterAliasServer(TrainStationAlias.fromNbt(packet.data));
-                break;
-            case REGISTER_ALIAS:
-                GlobalSettingsManager.getInstance().getSettingsData().registerAliasServer(TrainStationAlias.fromNbt(packet.data));
-                break;
-            case UPDATE_ALIAS:
-                GlobalSettingsManager.getInstance().getSettingsData().updateAliasServer(AliasName.of(packet.data.getString(NBT_STRING)), TrainStationAlias.fromNbt(packet.data.getCompound(NBT_COMPOUND_TAG)));
-                break;
-            case UNREGISTER_TRAIN_GROUP_TRAIN:
-                GlobalSettingsManager.getInstance().getSettingsData().unregisterTrainGroupServer(packet.data.getString(NBT_STRING));
-                break;
-            case UNREGISTER_TRAIN_GROUP:
-                GlobalSettingsManager.getInstance().getSettingsData().unregisterTrainGroupServer(TrainGroup.fromNbt(packet.data).getGroupName());
-                break;
-            case REGISTER_TRAIN_GROUP:
-                GlobalSettingsManager.getInstance().getSettingsData().registerTrainGroupServer(TrainGroup.fromNbt(packet.data));
-                break;
-            case UPDATE_TRAIN_GROUP:
-                GlobalSettingsManager.getInstance().getSettingsData().updateTrainGroupServer(packet.data.getString(NBT_STRING), TrainGroup.fromNbt(packet.data.getCompound(NBT_COMPOUND_TAG)));
-                break;
-            default:
+        contextSupplier.get().queue(() -> {
+            if (GlobalSettingsManager.getInstance().getSettingsData() == null) {
+                ExampleMod.LOGGER.error("Failed to handle GlobalSettingsUpdatePacket! The settings instance of the global settings manager is null.");
                 return;
-        }
-        GlobalSettingsManager.getInstance().setDirty();
-        ExampleMod.net().CHANNEL.sendToPlayer((ServerPlayer)contextSupplier.get().getPlayer(), new GlobalSettingsResponsePacket(packet.id, GlobalSettingsManager.getInstance().getSettingsData()));
+            }
+    
+            switch (packet.action) {
+                case ADD_TO_BLACKLIST:
+                    GlobalSettingsManager.getInstance().getSettingsData().addToBlacklistServer(packet.data.getString(NBT_STRING));
+                    break;
+                case REMOVE_FROM_BLACKLIST:
+                    GlobalSettingsManager.getInstance().getSettingsData().removeFromBlacklistServer(packet.data.getString(NBT_STRING));
+                    break;
+                case ADD_TRAIN_TO_BLACKLIST:
+                    GlobalSettingsManager.getInstance().getSettingsData().addTrainToBlacklistServer(packet.data.getString(NBT_STRING));
+                    break;
+                case REMOVE_TRAIN_FROM_BLACKLIST:
+                    GlobalSettingsManager.getInstance().getSettingsData().removeTrainFromBlacklistServer(packet.data.getString(NBT_STRING));
+                    break;
+                case UNREGISTER_ALIAS_STRING:
+                    GlobalSettingsManager.getInstance().getSettingsData().unregisterAliasServer(packet.data.getString(NBT_STRING));
+                    break;
+                case UNREGISTER_ALIAS:
+                    GlobalSettingsManager.getInstance().getSettingsData().unregisterAliasServer(TrainStationAlias.fromNbt(packet.data));
+                    break;
+                case REGISTER_ALIAS:
+                    GlobalSettingsManager.getInstance().getSettingsData().registerAliasServer(TrainStationAlias.fromNbt(packet.data));
+                    break;
+                case UPDATE_ALIAS:
+                    GlobalSettingsManager.getInstance().getSettingsData().updateAliasServer(AliasName.of(packet.data.getString(NBT_STRING)), TrainStationAlias.fromNbt(packet.data.getCompound(NBT_COMPOUND_TAG)));
+                    break;
+                case UNREGISTER_TRAIN_GROUP_TRAIN:
+                    GlobalSettingsManager.getInstance().getSettingsData().unregisterTrainGroupServer(packet.data.getString(NBT_STRING));
+                    break;
+                case UNREGISTER_TRAIN_GROUP:
+                    GlobalSettingsManager.getInstance().getSettingsData().unregisterTrainGroupServer(TrainGroup.fromNbt(packet.data).getGroupName());
+                    break;
+                case REGISTER_TRAIN_GROUP:
+                    GlobalSettingsManager.getInstance().getSettingsData().registerTrainGroupServer(TrainGroup.fromNbt(packet.data));
+                    break;
+                case UPDATE_TRAIN_GROUP:
+                    GlobalSettingsManager.getInstance().getSettingsData().updateTrainGroupServer(packet.data.getString(NBT_STRING), TrainGroup.fromNbt(packet.data.getCompound(NBT_COMPOUND_TAG)));
+                    break;
+                default:
+                    return;
+            }
+            GlobalSettingsManager.getInstance().setDirty();
+            ExampleMod.net().CHANNEL.sendToPlayer((ServerPlayer)contextSupplier.get().getPlayer(), new GlobalSettingsResponsePacket(packet.id, GlobalSettingsManager.getInstance().getSettingsData()));    
+        });
     }
     
     public static enum EGlobalSettingsAction {

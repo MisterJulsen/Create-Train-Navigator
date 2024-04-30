@@ -47,9 +47,11 @@ public class NextConnectionsRequestPacket implements IPacketBase<NextConnections
     
     @Override
     public void handle(NextConnectionsRequestPacket packet, Supplier<PacketContext> contextSupplier) {
-        new Thread(() -> {
-            final long updateTime = contextSupplier.get().getPlayer().getLevel().getDayTime();
-            ExampleMod.net().CHANNEL.sendToPlayer((ServerPlayer)contextSupplier.get().getPlayer(), new NextConnectionsResponsePacket(packet.requestId, TrainUtils.getConnectionsAt(packet.currentStationName, packet.trainId, (int)packet.ticksToNextStop), updateTime));
-        }, "Connections Loader").run();
+        contextSupplier.get().queue(() -> {
+            new Thread(() -> {
+                final long updateTime = contextSupplier.get().getPlayer().getLevel().getDayTime();
+                ExampleMod.net().CHANNEL.sendToPlayer((ServerPlayer)contextSupplier.get().getPlayer(), new NextConnectionsResponsePacket(packet.requestId, TrainUtils.getConnectionsAt(packet.currentStationName, packet.trainId, (int)packet.ticksToNextStop), updateTime));
+            }, "Connections Loader").run();
+        });
     }
 }

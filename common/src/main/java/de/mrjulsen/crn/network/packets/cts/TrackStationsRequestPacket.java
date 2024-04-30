@@ -34,12 +34,14 @@ public class TrackStationsRequestPacket implements IPacketBase<TrackStationsRequ
     
     @Override
     public void handle(TrackStationsRequestPacket packet, Supplier<PacketContext> contextSupplier) {
-        ExampleMod.net().CHANNEL.sendToPlayer((ServerPlayer)contextSupplier.get().getPlayer(), new TrackStationResponsePacket(
-            packet.id,
-            TrainUtils.getAllStations().stream().map(x -> x.name).toList(),
-            TrainUtils.getAllTrains().stream().map(x -> x.name.getString()).toList(),
-            TrainListener.getInstance().getListeningTrainCount(),
-            TrainListener.getInstance().getTotalTrainCount()
-        ));
+        contextSupplier.get().queue(() -> {
+            ExampleMod.net().CHANNEL.sendToPlayer((ServerPlayer)contextSupplier.get().getPlayer(), new TrackStationResponsePacket(
+                packet.id,
+                TrainUtils.getAllStations().stream().map(x -> x.name).toList(),
+                TrainUtils.getAllTrains().stream().map(x -> x.name.getString()).toList(),
+                TrainListener.getInstance().getListeningTrainCount(),
+                TrainListener.getInstance().getTotalTrainCount()
+            ));
+        });
     }
 }
