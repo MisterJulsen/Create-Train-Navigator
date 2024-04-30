@@ -208,7 +208,7 @@ public class SimpleTrainSchedule {
                 v += cycleDuration;
             }
             return v;
-        }).min().getAsInt();
+        }).min().orElse(0);
         int simToTargetTime = simulationTime + timeToTargetAfterSim;
 
         return new SimulatedTrainSchedule(getAllStops().parallelStream().map(x -> {
