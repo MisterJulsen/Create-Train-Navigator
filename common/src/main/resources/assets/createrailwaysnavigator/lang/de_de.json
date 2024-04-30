@@ -227,6 +227,13 @@
     "enum.createrailwaysnavigator.side.both": "Beidseitig",
     "enum.createrailwaysnavigator.side.info.both": "Die Informationen werden auf beiden Seiten dargestellt.",
 
+    "enum.createrailwaysnavigator.time_display": "Zeitanzeige",
+    "enum.createrailwaysnavigator.time_display.description": "Gibt an, in welchem Format die Zeit angegeben wird.",
+    "enum.createrailwaysnavigator.time_display.abs": "ABS",
+    "enum.createrailwaysnavigator.time_display.info.abs": "ABS (Absolut)",
+    "enum.createrailwaysnavigator.time_display.eta": "ETA",
+    "enum.createrailwaysnavigator.time_display.info.eta": "ETA (Geschätzte Ankunftszeit)",
+
     "create.display_source.advanced_display": "Verbesserte Anzeige",
     "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width": "Zugname Spaltenbreite",
     "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width.description": "Die Breite der Spalte für den Zugname in Pixel. (Standard: 16)",

@@ -2,11 +2,13 @@ package de.mrjulsen.crn.block.display;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import com.simibubi.create.content.redstone.displayLink.DisplayLinkContext;
 import com.simibubi.create.content.redstone.displayLink.target.DisplayBoardTarget;
 import com.simibubi.create.content.redstone.displayLink.target.DisplayTargetStats;
 import com.simibubi.create.content.trains.display.GlobalTrainDisplayData;
+import com.simibubi.create.content.trains.display.GlobalTrainDisplayData.TrainDeparturePrediction;
 import com.simibubi.create.content.trains.entity.Train;
 
 import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
@@ -40,7 +42,7 @@ public class AdvancedDisplayTarget extends DisplayBoardTarget {
 		if (context.getTargetBlockEntity() instanceof AdvancedDisplayBlockEntity blockEntity) {
 			final AdvancedDisplayBlockEntity controller = blockEntity.getController();
 			if (controller != null) {
-				List<SimpleDeparturePrediction> preds = GlobalTrainDisplayData.prepare(filter, controller.getPlatformInfoLinesCount()).stream().map(x -> new DeparturePrediction(x).simplify()).sorted(Comparator.comparingInt(x -> x.departureTicks())).toList();
+				List<SimpleDeparturePrediction> preds = prepare(filter, controller.getPlatformInfoLinesCount()).stream().map(x -> new DeparturePrediction(x).simplify()).sorted(Comparator.comparingInt(x -> x.departureTicks())).toList();
  				List<String> stopovers = new ArrayList<>();
 
 				if (!preds.isEmpty()) {
@@ -72,11 +74,25 @@ public class AdvancedDisplayTarget extends DisplayBoardTarget {
 					GlobalSettingsManager.getInstance().getSettingsData().getAliasFor(filter).getInfoForStation(filter),
 					context.getTargetBlockEntity().getLevel().getDayTime(),
 					(byte)context.sourceConfig().getInt(AdvancedDisplaySource.NBT_PLATFORM_WIDTH),
-					(byte)context.sourceConfig().getInt(AdvancedDisplaySource.NBT_TRAIN_NAME_WIDTH)
+					(byte)context.sourceConfig().getInt(AdvancedDisplaySource.NBT_TRAIN_NAME_WIDTH),
+					context.sourceConfig().getByte(AdvancedDisplaySource.NBT_TIME_DISPLAY_TYPE)
 				);
 				controller.sendData();
 			}
 		}
+	}
+
+	public static List<TrainDeparturePrediction> prepare(String filter, int maxLines) {
+		String regex = filter.isBlank() ? filter : "\\Q" + filter.replace("*", "\\E.*\\Q") + "\\E";
+		return new HashMap<>(GlobalTrainDisplayData.statusByDestination).entrySet()
+			.stream()
+			.filter(e -> e.getKey()
+				.matches(regex))
+			.flatMap(e -> e.getValue()
+				.stream())
+			.sorted()
+			.limit(maxLines)
+			.toList();
 	}
 
 	@Override

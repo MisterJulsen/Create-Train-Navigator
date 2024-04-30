@@ -15,6 +15,7 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 import de.mrjulsen.crn.ExampleMod;
 import de.mrjulsen.crn.block.AbstractAdvancedDisplayBlock;
 import de.mrjulsen.crn.block.AdvancedDisplaySmallBlock;
+import de.mrjulsen.crn.block.display.AdvancedDisplaySource.ETimeDisplay;
 import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
 import de.mrjulsen.crn.client.ber.base.IBERInstance;
 import de.mrjulsen.crn.client.ber.base.IBlockEntityRendererInstance;
@@ -71,6 +72,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     private static final String NBT_LAST_REFRESH_TIME = "LastRefreshed";
     private static final String NBT_PLATFORM_WIDTH = "PlatformWidth";
     private static final String NBT_TRAIN_NAME_WIDTH = "TrainNameWidth";
+    private static final String NBT_TIME_DISPLAY = "TimeDisplay";
 
     public static final byte MAX_XSIZE = 16;
     public static final byte MAX_YSIZE = 16;
@@ -85,6 +87,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     private StationInfo stationInfo;
     private byte trainNameWidth;
     private byte platformWidth;
+    private ETimeDisplay timeDisplay = ETimeDisplay.ABS; 
 
     // USER SETTINGS
     private int color = DyeColor.WHITE.getTextColor();
@@ -146,7 +149,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 
     public final Cache<Float> renderScale = new Cache<>(() -> {        
         return 1.0F / Math.max(this.renderAspectRatio.get().getFirst(), this.renderAspectRatio.get().getSecond());
-    }); 
+    });
 
 
 
@@ -169,6 +172,10 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 
     public byte getTrainNameWidth() {
         return trainNameWidth;
+    }
+
+    public ETimeDisplay getTimeDisplay() {
+        return timeDisplay;
     }
 
     public byte getPlatformWidth() {
@@ -315,7 +322,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         }
     }
 
-    public void setDepartureData(List<SimpleDeparturePrediction> predictions, List<String> nextDepartureStopovers, String stationNameFilter, StationInfo staionInfo, long lastRefreshedTime, byte platformWidth, byte trainNameWidth) {
+    public void setDepartureData(List<SimpleDeparturePrediction> predictions, List<String> nextDepartureStopovers, String stationNameFilter, StationInfo staionInfo, long lastRefreshedTime, byte platformWidth, byte trainNameWidth, byte timeDisplayId) {
         this.predictions = predictions.stream().sorted(Comparator.comparingInt(x -> x.departureTicks())).toList();
         this.stationNameFilter = stationNameFilter;
         this.stationInfo = staionInfo;
@@ -323,6 +330,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         this.lastRefreshedTime = lastRefreshedTime;
         this.platformWidth = platformWidth;
         this.trainNameWidth = trainNameWidth;
+        this.timeDisplay = ETimeDisplay.getById(timeDisplayId);
     }
     
     @Override
@@ -555,6 +563,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         pTag.putLong(NBT_LAST_REFRESH_TIME, getLastRefreshedTime());
         pTag.putByte(NBT_PLATFORM_WIDTH, getPlatformWidth());
         pTag.putByte(NBT_TRAIN_NAME_WIDTH, getTrainNameWidth());
+        pTag.putByte(NBT_TIME_DISPLAY, getTimeDisplay().getId());
 
         getStationInfo().writeNbt(pTag);
 
@@ -605,7 +614,8 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
             info,
             pTag.getLong(NBT_LAST_REFRESH_TIME),
             pTag.getByte(NBT_PLATFORM_WIDTH),
-            pTag.getByte(NBT_TRAIN_NAME_WIDTH)
+            pTag.getByte(NBT_TRAIN_NAME_WIDTH),
+            pTag.getByte(NBT_TIME_DISPLAY)
         );
 
         if (updateClient) {

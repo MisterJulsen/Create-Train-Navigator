@@ -16,6 +16,7 @@ import de.mrjulsen.crn.client.ber.base.IBlockEntityRendererInstance.EUpdateReaso
 import de.mrjulsen.crn.client.lang.ELanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.DeparturePrediction.SimpleDeparturePrediction;
+import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.TimeUtils;
@@ -64,12 +65,22 @@ public class BERPlatformSimple implements IBERRenderSubtype<AdvancedDisplayBlock
         float maxWidth = displayWidth * 16 - 6;        
         parent.labels.add(new BERText(parent.getFontUtils(), () -> {
             List<Component> texts = new ArrayList<>();
-            texts.add(ELanguage.translate(keyTime, TimeUtils.parseTime((int)(blockEntity.getLevel().getDayTime() % 24000 + DragonLib.DAYTIME_SHIFT), ModClientConfig.TIME_FORMAT.get())));
+            texts.add(ELanguage.translate(keyTime, TimeUtils.parseTime((int)(blockEntity.getLevel().getDayTime() % DragonLib.TICKS_PER_DAY + DragonLib.DAYTIME_SHIFT), ModClientConfig.TIME_FORMAT.get())));
             texts.addAll(preds.stream().map(x -> {
-                if (x.stationInfo().platform() == null || x.stationInfo().platform().isBlank()) {
-                    return ELanguage.translate(keyTrainDeparture, x.trainName(), x.scheduleTitle(), TimeUtils.parseTime((int)(blockEntity.getLastRefreshedTime() % 24000 + DragonLib.DAYTIME_SHIFT + x.departureTicks()), ModClientConfig.TIME_FORMAT.get()));
+                String timeString;
+                switch (blockEntity.getTimeDisplay()) {
+                    case ETA:
+                        timeString = ModUtils.timeRemainingString(x.departureTicks());
+                        break;
+                    default:
+                        timeString = TimeUtils.parseTime((int)(blockEntity.getLastRefreshedTime() % DragonLib.TICKS_PER_DAY + DragonLib.DAYTIME_SHIFT + x.departureTicks()), ModClientConfig.TIME_FORMAT.get());
+                        break;
                 }
-                return ELanguage.translate(keyTrainDepartureWithPlatform, x.trainName(), x.scheduleTitle(), TimeUtils.parseTime((int)(blockEntity.getLastRefreshedTime() % 24000 + DragonLib.DAYTIME_SHIFT + x.departureTicks()), ModClientConfig.TIME_FORMAT.get()), x.stationInfo().platform());
+
+                if (x.stationInfo().platform() == null || x.stationInfo().platform().isBlank()) {
+                    return ELanguage.translate(keyTrainDeparture, x.trainName(), x.scheduleTitle(), timeString);
+                }
+                return ELanguage.translate(keyTrainDepartureWithPlatform, x.trainName(), x.scheduleTitle(), timeString, x.stationInfo().platform());
             }).toList());
             
             return List.of(TextUtils.concatWithStarChars(texts.toArray(Component[]::new)));

@@ -67,7 +67,6 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
         return false;
     }
 
-    @SuppressWarnings("resource")
     @Override
     public void tick(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity pBlockEntity, AdvancedDisplayRenderInstance parent) {
         if (pBlockEntity.getTrainData() == null) {

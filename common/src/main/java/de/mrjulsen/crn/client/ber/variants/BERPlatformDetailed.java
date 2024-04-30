@@ -14,6 +14,7 @@ import de.mrjulsen.crn.client.ber.base.IBlockEntityRendererInstance.EUpdateReaso
 import de.mrjulsen.crn.client.lang.ELanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.DeparturePrediction.SimpleDeparturePrediction;
+import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
@@ -153,8 +154,15 @@ public class BERPlatformDetailed implements IBERRenderSubtype<AdvancedDisplayBlo
         // TIME
         labels[1] = new BERText(parent.getFontUtils(), () -> {
             List<Component> texts = new ArrayList<>();
-            int rawTime = (int)(blockEntity.getLastRefreshedTime() % DragonLib.TICKS_PER_DAY + DragonLib.DAYTIME_SHIFT + lastPredictions.get(predictionIdx).departureTicks());
-            texts.add(TextUtils.text(TimeUtils.parseTime(rawTime - rawTime % ModClientConfig.REALTIME_PRECISION_THRESHOLD.get(), ModClientConfig.TIME_FORMAT.get())));
+            switch (blockEntity.getTimeDisplay()) {
+                case ETA:
+                    texts.add(TextUtils.text(ModUtils.timeRemainingString(lastPredictions.get(predictionIdx).departureTicks())));
+                    break;
+                default:
+                    int rawTime = (int)(blockEntity.getLastRefreshedTime() % DragonLib.TICKS_PER_DAY + DragonLib.DAYTIME_SHIFT + lastPredictions.get(predictionIdx).departureTicks());
+                    texts.add(TextUtils.text(TimeUtils.parseTime(rawTime - rawTime % ModClientConfig.REALTIME_PRECISION_THRESHOLD.get(), ModClientConfig.TIME_FORMAT.get())));
+                    break;
+            }
             return texts;
         }, 0)
             .withIsCentered(false)

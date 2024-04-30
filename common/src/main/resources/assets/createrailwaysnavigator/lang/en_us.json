@@ -226,12 +226,19 @@
     "enum.createrailwaysnavigator.side.info.back": "The information will only be rendered on the back side.",
     "enum.createrailwaysnavigator.side.both": "Both sides",
     "enum.createrailwaysnavigator.side.info.both": "The information will be rendered on both sides.",
+    
+    "enum.createrailwaysnavigator.time_display": "Time Display",
+    "enum.createrailwaysnavigator.time_display.description": "Determines how the time should be displayed.",
+    "enum.createrailwaysnavigator.time_display.abs": "ABS",
+    "enum.createrailwaysnavigator.time_display.info.abs": "ABS (absolute)",
+    "enum.createrailwaysnavigator.time_display.eta": "ETA",
+    "enum.createrailwaysnavigator.time_display.info.eta": "ETA (estimated time of arrival)",
 
     "create.display_source.advanced_display": "Advanced Displays",
     "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width": "Train Name Column Width",
-    "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width.description": "The width of the train name column in block pixels. (Default: 16)",
+    "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width.description": "in block pixels. (Default: 16)",
     "gui.createrailwaysnavigator.display_source.advanced_display.platform_width": "Platform Column Width",
-    "gui.createrailwaysnavigator.display_source.advanced_display.platform_width.description": "The width of the platform column in block pixels. (-1 = Auto, Default: -1)",
+    "gui.createrailwaysnavigator.display_source.advanced_display.platform_width.description": "in block pixels. (Default: Auto)",
 
     "createrailwaysnavigator.moin": "moin"
 }
