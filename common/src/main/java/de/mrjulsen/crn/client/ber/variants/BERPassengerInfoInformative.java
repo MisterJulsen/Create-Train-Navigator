@@ -112,9 +112,10 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
             }
         }
 
-        if (this.state != State.WHILE_TRAVELING && lastKnownExitSide != pBlockEntity.relativeExitDirection.get()) {
+        if (lastKnownExitSide != pBlockEntity.relativeExitDirection.get()) {
             dirty = true;
         }
+
         lastKnownExitSide = pBlockEntity.relativeExitDirection.get();
 
         if (dirty) {
@@ -267,25 +268,26 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
         float arrowOffset = (this.state != State.WHILE_TRAVELING && blockEntity.relativeExitDirection.get() != TrainExitSide.UNKNOWN ? 4 : 0);     
         float maxWidth = blockEntity.getXSizeScaled() * 16 - arrowOffset;
         MutableComponent line = TextUtils.text(TimeUtils.parseTime((int)(blockEntity.getLevel().getDayTime() % DragonLib.TICKS_PER_DAY + DragonLib.DAYTIME_SHIFT), ModClientConfig.TIME_FORMAT.get())).withStyle(ChatFormatting.BOLD);
-        float rawTextWidth = Math.min(parent.getFontUtils().font.width(line) * 0.5f, maxWidth);
-        float textWidth = rawTextWidth * 0.5f;
+        float rawTextWidth = Math.min(parent.getFontUtils().font.width(line), maxWidth);
+        float textWidth = rawTextWidth * 0.25f;
         timeLabel = parent.carriageIndexLabel = new BERText(parent.getFontUtils(), line, 0)
             .withIsCentered(false)
             .withMaxWidth(maxWidth, true)
-            .withStretchScale(0.5f, 0.5f)
+            .withStretchScale(0.25f, 0.25f)
             .withColor((0xFF << 24) | (blockEntity.getColor() & 0x00FFFFFF))
-            .withPredefinedTextTransformation(new TextTransformation(blockEntity.getXSizeScaled() * 16 - 2.5f - textWidth - (this.state != State.WHILE_TRAVELING && blockEntity.relativeExitDirection.get() != TrainExitSide.UNKNOWN ? 4 : 0), 2.5f, 0.0f, 0.5f, 0.25f))
+            .withPredefinedTextTransformation(new TextTransformation(blockEntity.getXSizeScaled() * 16 - 2.5f - textWidth - (this.state != State.WHILE_TRAVELING && blockEntity.relativeExitDirection.get() != TrainExitSide.UNKNOWN ? 4 : 0), 2.5f, 0.0f, 1, 0.25f))
             .build();
 
-        return rawTextWidth + arrowOffset;
+        return textWidth;
     }
 
     private void generateTitleBar(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason) {
         int displayWidth = blockEntity.getXSizeScaled();
 
         float maxWidth = displayWidth * 16 - 6 - (this.state != State.WHILE_TRAVELING && blockEntity.relativeExitDirection.get() != TrainExitSide.UNKNOWN ? 4 : 0);
-        maxWidth *= 2;
+        //maxWidth *= 2;
         float timeWidth = generateTimeLabel(level, pos, state, blockEntity, parent);
+
         MutableComponent line = TextUtils.text(blockEntity.getTrainData().trainName()).withStyle(ChatFormatting.BOLD);
         if (blockEntity.getTrainData().getNextStop().isPresent()) {
             switch (this.state) {
@@ -306,9 +308,9 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
 
         titleLabel = new BERText(parent.getFontUtils(), line, 0)
             .withIsCentered(false)
-            .withMaxWidth(maxWidth - timeWidth, true)
+            .withMaxWidth(maxWidth - timeWidth - 1, true)
             .withStretchScale(0.15f, 0.25f)
-            .withStencil(0, maxWidth - timeWidth)
+            .withStencil(0, maxWidth - timeWidth - 1)
             .withCanScroll(true, 0.5f)
             .withColor((0xFF << 24) | (blockEntity.getColor() & 0x00FFFFFF))
             .withPredefinedTextTransformation(new TextTransformation(3.0f, 2.5f, 0.0f, 1, 0.25f))
