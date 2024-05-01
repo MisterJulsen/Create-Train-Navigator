@@ -68,7 +68,7 @@ public class TrainDataRequestPacket implements IPacketBase<TrainDataRequestPacke
             Train train = TrainUtils.getTrain(packet.trainId);
             List<SimpleDeparturePrediction> departurePredictions = new ArrayList<>();
             if (packet.getPredictions && train != null) {
-                Collection<TrainStop> stops = new ArrayList<>(TrainUtils.getTrainStopsSorted(packet.trainId, level).stream().filter(x -> !GlobalSettingsManager.getInstance().getSettingsData().isBlacklisted(x.getStationAlias())).toList());
+                Collection<TrainStop> stops = new ArrayList<>(TrainUtils.getTrainStopsSorted(packet.trainId, level).stream().filter(x -> !GlobalSettingsManager.getInstance().getSettingsData().isBlacklisted(x.getPrediction().getStationName())).toList());
                 if (stops != null) {
                     departurePredictions.addAll(SimpleTrainSchedule.of(stops).makeScheduleUntilNextRepeat().getAllStops().stream().map(x -> x.getPrediction().simplify()).toList());
                 }

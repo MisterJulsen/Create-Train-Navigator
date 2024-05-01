@@ -79,7 +79,7 @@ public class GlobalTrainData {
     
 
     public Collection<DeparturePrediction> getPredictionsOfTrain(Train train) {
-        return trainPredictions.get(train.id);
+        return trainPredictions.get(train.id).stream().filter(x -> !GlobalSettingsManager.getInstance().getSettingsData().isBlacklisted(x.getStationName())).toList();
     }
 
     public Collection<DeparturePrediction> getPredictionsOfTrainChronologically(Train train) {

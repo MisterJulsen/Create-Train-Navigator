@@ -350,6 +350,8 @@ public class JourneyListener {
                     }
                 }
 
+                System.out.println((!currentState.isWaitingForNextTrainToDepart() || currentState == State.BEFORE_JOURNEY || currentState == State.WHILE_TRANSFER) + ", " + currentStation().shouldRenderRealtime() + ", " + isStationValidForShedule(currentTrainSchedule, currentStation().getTrain().trainId(), stationIndex) + ", " + (time >= currentStation().getEstimatedTime()));
+
                 if (((!currentState.isWaitingForNextTrainToDepart() || currentState == State.BEFORE_JOURNEY || currentState == State.WHILE_TRANSFER) && currentStation().shouldRenderRealtime())
                     && isStationValidForShedule(currentTrainSchedule, currentStation().getTrain().trainId(), stationIndex) && time >= currentStation().getEstimatedTime()) {                    
                     if (currentStation().getTag() == StationTag.PART_END) {
@@ -362,7 +364,7 @@ public class JourneyListener {
                         }
                     } else if (currentStation().getTag() == StationTag.END) {
                         finishJourney();
-                    }else {
+                    } else {
                         reachNextStop();
                     }
                 }
