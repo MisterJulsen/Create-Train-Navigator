@@ -20,6 +20,7 @@ import de.mrjulsen.crn.ExampleMod;
 import de.mrjulsen.crn.block.AdvancedDisplayBlock;
 import de.mrjulsen.crn.block.AdvancedDisplayBoardBlock;
 import de.mrjulsen.crn.block.AdvancedDisplayPanelBlock;
+import de.mrjulsen.crn.block.AdvancedDisplaySlopedBlock;
 import de.mrjulsen.crn.block.AdvancedDisplaySmallBlock;
 import de.mrjulsen.crn.block.TrainStationClockBlock;
 import de.mrjulsen.crn.block.connected.AdvancedDisplayCTBehaviour;
@@ -78,6 +79,16 @@ public class ModBlocks {
 
 	public static final BlockEntry<AdvancedDisplayPanelBlock> ADVANCED_DISPLAY_PANEL = ExampleMod.REGISTRATE.block("advanced_display_panel", AdvancedDisplayPanelBlock::new)
 		.onRegister(connectedTextures(() -> new AdvancedDisplayCTBehaviour(CT_ADVANCED_DISPLAY)))
+		.addLayer(() -> RenderType::cutout)
+		.initialProperties(SharedProperties::softMetal)
+		.transform(TagGen.pickaxeOnly())
+		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
+		.item()
+		.build()
+		.register();
+
+	public static final BlockEntry<AdvancedDisplaySlopedBlock> ADVANCED_DISPLAY_SLOPED = ExampleMod.REGISTRATE.block("advanced_display_sloped", AdvancedDisplaySlopedBlock::new)
+		.onRegister(connectedTextures(() -> new AdvancedDisplaySmallCTBehaviour(CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL, CT_ADVANCED_DISPLAY_SMALL)))
 		.addLayer(() -> RenderType::cutout)
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())

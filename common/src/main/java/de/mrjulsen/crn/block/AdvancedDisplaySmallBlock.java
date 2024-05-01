@@ -3,6 +3,7 @@ package de.mrjulsen.crn.block;
 import java.util.Map;
 
 import de.mrjulsen.mcdragonlib.data.Pair;
+import de.mrjulsen.mcdragonlib.data.Tripple;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -90,5 +91,10 @@ public class AdvancedDisplaySmallBlock extends AbstractAdvancedDisplayBlock {
     @Override
     public Pair<Float, Float> getRenderZOffset(Level level, BlockState blockState, BlockPos pos) {
         return Pair.of(8.05f, 16.05f);
+    }
+
+    @Override
+    public Tripple<Float, Float, Float> getRenderRotation(Level level, BlockState blockState, BlockPos pos) {
+        return Tripple.of(0.0F, 0.0F, 0.0F);
     }
 }

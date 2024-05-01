@@ -1,6 +1,7 @@
 package de.mrjulsen.crn.block;
 
 import de.mrjulsen.mcdragonlib.data.Pair;
+import de.mrjulsen.mcdragonlib.data.Tripple;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
@@ -42,5 +43,10 @@ public class AdvancedDisplayBoardBlock extends AbstractAdvancedDisplayBlock {
     @Override
     public Pair<Float, Float> getRenderZOffset(Level level, BlockState blockState, BlockPos pos) {
         return Pair.of(13.05f, 13.05f);
+    }
+
+    @Override
+    public Tripple<Float, Float, Float> getRenderRotation(Level level, BlockState blockState, BlockPos pos) {
+        return Tripple.of(0.0F, 0.0F, 0.0F);
     }
 }

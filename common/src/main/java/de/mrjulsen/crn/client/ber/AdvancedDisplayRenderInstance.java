@@ -30,6 +30,7 @@ import de.mrjulsen.crn.data.ESide;
 import de.mrjulsen.crn.data.EDisplayType.EDisplayTypeDataSource;
 import de.mrjulsen.mcdragonlib.client.ber.AbstractBlockEntityRenderInstance;
 import de.mrjulsen.mcdragonlib.data.Pair;
+import de.mrjulsen.mcdragonlib.data.Tripple;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -106,12 +107,16 @@ public class AdvancedDisplayRenderInstance extends AbstractBlockEntityRenderInst
 
         if (pBlockEntity.getBlockState().getBlock() instanceof AbstractAdvancedDisplayBlock) {
             
+            Tripple<Float, Float, Float> rotation = pBlockEntity.renderRotation.get();
             Pair<Float, Float> offset = pBlockEntity.renderOffset.get();
             Pair<Float, Float> zOffset = pBlockEntity.renderZOffset.get();
             float scale = pBlockEntity.renderScale.get();
 
             if (pBlockEntity.getBlockState().getValue(AbstractAdvancedDisplayBlock.SIDE) == ESide.FRONT || pBlockEntity.getBlockState().getValue(AbstractAdvancedDisplayBlock.SIDE) == ESide.BOTH) {
                 pPoseStack.pushPose();
+                pPoseStack.mulPose(Vector3f.XP.rotationDegrees(rotation.getFirst()));
+                pPoseStack.mulPose(Vector3f.YP.rotationDegrees(rotation.getSecond()));
+                pPoseStack.mulPose(Vector3f.ZP.rotationDegrees(rotation.getThird()));
                 pPoseStack.translate(offset.getFirst(), offset.getSecond(), zOffset.getFirst());
                 pPoseStack.scale(scale, scale, 1);   
                 renderSubtype.renderAdditional(context, pBlockEntity, this, pPartialTicks, pPoseStack, pBufferSource, light, pOverlay, false);
@@ -120,7 +125,10 @@ public class AdvancedDisplayRenderInstance extends AbstractBlockEntityRenderInst
             }
             if (pBlockEntity.getBlockState().getValue(AbstractAdvancedDisplayBlock.SIDE) == ESide.BACK || pBlockEntity.getBlockState().getValue(AbstractAdvancedDisplayBlock.SIDE) == ESide.BOTH) {
                 pPoseStack.pushPose();
-                pPoseStack.mulPose(Vector3f.YP.rotationDegrees(180));
+                pPoseStack.mulPose(Vector3f.YP.rotationDegrees(180));                
+                pPoseStack.mulPose(Vector3f.XP.rotationDegrees(rotation.getFirst()));
+                pPoseStack.mulPose(Vector3f.YP.rotationDegrees(rotation.getSecond()));
+                pPoseStack.mulPose(Vector3f.ZP.rotationDegrees(rotation.getThird()));
                 pPoseStack.translate(-pBlockEntity.getXSize() * 16, 0, -16);
                 pPoseStack.translate(offset.getFirst(), offset.getSecond(), zOffset.getSecond());
                 pPoseStack.scale(scale, scale, 1); 

@@ -13,6 +13,7 @@ import de.mrjulsen.crn.data.ESide;
 import de.mrjulsen.crn.registry.ModBlockEntities;
 import de.mrjulsen.mcdragonlib.client.ber.IBlockEntityRendererInstance.EUpdateReason;
 import de.mrjulsen.mcdragonlib.data.Pair;
+import de.mrjulsen.mcdragonlib.data.Tripple;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.Direction;
@@ -315,6 +316,7 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
         return ModBlockEntities.ADVANCED_DISPLAY_BLOCK_ENTITY.get();
     }
 
+    public abstract Tripple<Float, Float, Float> getRenderRotation(Level level, BlockState blockState, BlockPos pos);
     public abstract Pair<Float, Float> getRenderOffset(Level level, BlockState blockState, BlockPos pos);
     /** First value: Front side, Second value: Back side */ public abstract Pair<Float, Float> getRenderZOffset(Level level, BlockState blockState, BlockPos pos);
     public abstract Pair<Float, Float> getRenderAspectRatio(Level level, BlockState blockState, BlockPos pos);

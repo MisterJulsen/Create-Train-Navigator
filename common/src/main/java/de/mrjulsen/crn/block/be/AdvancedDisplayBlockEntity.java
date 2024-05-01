@@ -32,6 +32,7 @@ import de.mrjulsen.mcdragonlib.client.ber.IBlockEntityRendererInstance;
 import de.mrjulsen.mcdragonlib.client.ber.IBlockEntityRendererInstance.EUpdateReason;
 import de.mrjulsen.mcdragonlib.data.Cache;
 import de.mrjulsen.mcdragonlib.data.Pair;
+import de.mrjulsen.mcdragonlib.data.Tripple;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.Direction;
@@ -119,6 +120,13 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
             result = TrainExitSide.UNKNOWN;
         }
         return result;
+    });
+
+    public final Cache<Tripple<Float, Float, Float>> renderRotation = new Cache<>(() -> {
+        if (getBlockState().getBlock() instanceof AbstractAdvancedDisplayBlock block) {
+            return block.getRenderRotation(level, getBlockState(), worldPosition);
+        }
+        return Tripple.of(0.0F, 0.0F, 0.0F);
     });
 
     public final Cache<Pair<Float, Float>> renderOffset = new Cache<>(() -> {
