@@ -113,7 +113,6 @@ public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourn
     private LerpedFloat yPos;
     
     private static final String keyTrainDetails = "gui.createrailwaysnavigator.route_overview.train_details";
-    private static final String keyTrainSpeed = "gui.createrailwaysnavigator.route_overview.train_speed";
     private static final String keyTransfer = "gui.createrailwaysnavigator.route_overview.transfer";
     private static final String keyTransferWithPlatform = "gui.createrailwaysnavigator.route_overview.transfer_with_platform";
     private static final String keyTransferCount = "gui.createrailwaysnavigator.navigator.route_entry.transfer";
@@ -455,9 +454,7 @@ public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourn
                 break;
             case 1:
                 long id = InstanceManager.registerClientTrainDataResponseAction((data, time) -> {
-                    setSlidingText(ELanguage.translate(keyTrainSpeed,
-                        ModUtils.calcSpeedString(data.speed(), ModClientConfig.SPEED_UNIT.get())
-                    ));
+                    setSlidingText(ModUtils.calcSpeedString(data.speed(), ModClientConfig.SPEED_UNIT.get()));
                     trainDataSubPageTime = 0;
                 });
                 ExampleMod.net().CHANNEL.sendToServer(new TrainDataRequestPacket(id, getListener().currentStation().getTrain().trainId(), false));

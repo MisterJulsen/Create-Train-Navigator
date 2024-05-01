@@ -91,7 +91,6 @@
     "gui.createrailwaysnavigator.route_overview.journey_begins": "Your journey begins! %s to %s, departure %s",
     "gui.createrailwaysnavigator.route_overview.journey_begins_with_platform": "Your journey begins! %s to %s, departure %s on platform %s",
     "gui.createrailwaysnavigator.route_overview.train_details": "%s to %s",
-    "gui.createrailwaysnavigator.route_overview.train_speed": "%s km/h",
     "gui.createrailwaysnavigator.route_overview.next_stop": "Next Stop: %s",
     "gui.createrailwaysnavigator.route_overview.transfer": "Change to %s → %s",
     "gui.createrailwaysnavigator.route_overview.transfer_with_platform": "Change to %s → %s on platform %s",
