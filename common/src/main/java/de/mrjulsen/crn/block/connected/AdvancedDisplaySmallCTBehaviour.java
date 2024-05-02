@@ -3,7 +3,7 @@ package de.mrjulsen.crn.block.connected;
 import com.simibubi.create.foundation.block.connected.CTSpriteShiftEntry;
 import com.simibubi.create.foundation.block.connected.ConnectedTextureBehaviour;
 
-import de.mrjulsen.crn.block.AbstractAdvancedDisplayBlock;
+import de.mrjulsen.crn.block.AbstractAdvancedSidedDisplayBlock;
 import de.mrjulsen.crn.block.AdvancedDisplaySmallBlock;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
@@ -30,15 +30,20 @@ public class AdvancedDisplaySmallCTBehaviour extends ConnectedTextureBehaviour.B
 	@Override
 	public CTSpriteShiftEntry getShift(BlockState state, Direction direction, TextureAtlasSprite sprite) {
 		boolean b = false;
-		switch (state.getValue(AbstractAdvancedDisplayBlock.SIDE)) {
+
+		if (!(state.getBlock() instanceof AbstractAdvancedSidedDisplayBlock)) {
+			return layerShift;
+		}
+
+		switch (state.getValue(AbstractAdvancedSidedDisplayBlock.SIDE)) {
 			case BOTH:
-				b = state.getValue(HorizontalDirectionalBlock.FACING).getAxis() == direction.getAxis();
+				b = state.getValue(AbstractAdvancedSidedDisplayBlock.FACING).getAxis() == direction.getAxis();
 				break;
 			case BACK:
-				b = state.getValue(HorizontalDirectionalBlock.FACING).getOpposite() == direction;
+				b = state.getValue(AbstractAdvancedSidedDisplayBlock.FACING).getOpposite() == direction;
 				break;
 			default:
-				b = state.getValue(HorizontalDirectionalBlock.FACING) == direction;
+				b = state.getValue(AbstractAdvancedSidedDisplayBlock.FACING) == direction;
 				break;
 		}
 		return b ? layerShift : null;
@@ -52,10 +57,10 @@ public class AdvancedDisplaySmallCTBehaviour extends ConnectedTextureBehaviour.B
 		if (other.getValue(HorizontalDirectionalBlock.FACING) != state.getValue(HorizontalDirectionalBlock.FACING)) {
 			return false;
 		}
-		if (other.getValue(AbstractAdvancedDisplayBlock.SIDE) != state.getValue(AbstractAdvancedDisplayBlock.SIDE)) {
+		if (other.getBlock() instanceof AbstractAdvancedSidedDisplayBlock && other.getValue(AbstractAdvancedSidedDisplayBlock.SIDE) != state.getValue(AbstractAdvancedSidedDisplayBlock.SIDE)) {
 			return false;
 		}
-		if (other.getValue(AdvancedDisplaySmallBlock.HALF) != state.getValue(AdvancedDisplaySmallBlock.HALF)) {
+		if (other.getBlock() instanceof AdvancedDisplaySmallBlock && other.getValue(AdvancedDisplaySmallBlock.HALF) != state.getValue(AdvancedDisplaySmallBlock.HALF)) {
 			return false;
 		}
             

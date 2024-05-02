@@ -12,7 +12,7 @@ import com.simibubi.create.foundation.gui.widget.ScrollInput;
 import com.simibubi.create.foundation.utility.Components;
 
 import de.mrjulsen.crn.ExampleMod;
-import de.mrjulsen.crn.block.AbstractAdvancedDisplayBlock;
+import de.mrjulsen.crn.block.AbstractAdvancedSidedDisplayBlock;
 import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.widgets.DLCreateIconButton;
@@ -61,6 +61,7 @@ public class AdvancedDisplaySettingsScreen extends DLScreen {
     private EDisplayInfo info;
     private EDisplayType type;
     private ESide side;
+    private final boolean isDoubleSided;
 
     private ScrollInput infoTypeInput;
     private Label infoTypeLabel;
@@ -90,8 +91,9 @@ public class AdvancedDisplaySettingsScreen extends DLScreen {
         this.level = blockEntity.getLevel();
         this.info = blockEntity.getInfoType();
         this.type = blockEntity.getDisplayType();        
-        this.side = blockEntity.getBlockState().getValue(AbstractAdvancedDisplayBlock.SIDE);
+        this.side = blockEntity.getBlockState().getBlock() instanceof AbstractAdvancedSidedDisplayBlock ? blockEntity.getBlockState().getValue(AbstractAdvancedSidedDisplayBlock.SIDE) : ESide.BOTH;
         this.renderedItem = new ItemStack(blockEntity.getBlockState().getBlock());
+        this.isDoubleSided = !(blockEntity.getBlockState().getBlock() instanceof AbstractAdvancedSidedDisplayBlock);
     }
 
     @Override
@@ -145,6 +147,7 @@ public class AdvancedDisplaySettingsScreen extends DLScreen {
             })
             .addHint(tooltipSidesDescription)
             .setState(side.getId()));
+        sidesInput.active = !isDoubleSided;
         sidesInput.onChanged();
 
         // Global Options Button

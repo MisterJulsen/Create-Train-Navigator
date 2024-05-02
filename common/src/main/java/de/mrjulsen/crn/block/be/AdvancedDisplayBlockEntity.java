@@ -13,7 +13,7 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 
 import de.mrjulsen.crn.ExampleMod;
 import de.mrjulsen.crn.block.AbstractAdvancedDisplayBlock;
-import de.mrjulsen.crn.block.AdvancedDisplaySmallBlock;
+import de.mrjulsen.crn.block.AbstractAdvancedSidedDisplayBlock;
 import de.mrjulsen.crn.block.display.AdvancedDisplaySource.ETimeDisplay;
 import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
 import de.mrjulsen.crn.data.CarriageData;
@@ -276,15 +276,14 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     }
 
 	public boolean isSingleLine() {
-		if (!(getBlockState().getBlock() instanceof AbstractAdvancedDisplayBlock)) {
-			return false;
+		if (getBlockState().getBlock() instanceof AbstractAdvancedDisplayBlock block) {
+			return block.isSingleLined() || !(
+                (getDisplayType() == EDisplayType.PASSENGER_INFORMATION && getInfoType() == EDisplayInfo.INFORMATIVE) ||
+                (getDisplayType() == EDisplayType.PLATFORM && getInfoType() == EDisplayInfo.DETAILED) ||
+                (getDisplayType() == EDisplayType.PLATFORM && getInfoType() == EDisplayInfo.INFORMATIVE) 
+            ); 
 		}
-
-		return getBlockState().getBlock() instanceof AdvancedDisplaySmallBlock || !(
-            (getDisplayType() == EDisplayType.PASSENGER_INFORMATION && getInfoType() == EDisplayInfo.INFORMATIVE) ||
-            (getDisplayType() == EDisplayType.PLATFORM && getInfoType() == EDisplayInfo.DETAILED) ||
-            (getDisplayType() == EDisplayType.PLATFORM && getInfoType() == EDisplayInfo.INFORMATIVE) 
-        ); 
+        return false;		
 	}
 
     public int getPlatformInfoLinesCount() {
@@ -360,7 +359,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
             return  block1 == block2 &&
                     be1.getDisplayType() == be2.getDisplayType() &&
                     be1.getInfoType() == be2.getInfoType() &&
-                    be1.getBlockState().getValue(AbstractAdvancedDisplayBlock.SIDE) == be2.getBlockState().getValue(AbstractAdvancedDisplayBlock.SIDE) &&
+                    (!(be1.getBlockState().getBlock() instanceof AbstractAdvancedSidedDisplayBlock) || be1.getBlockState().getValue(AbstractAdvancedSidedDisplayBlock.SIDE) == be2.getBlockState().getValue(AbstractAdvancedSidedDisplayBlock.SIDE)) &&
                     be1.getBlockState().getValue(AbstractAdvancedDisplayBlock.FACING) == be2.getBlockState().getValue(AbstractAdvancedDisplayBlock.FACING) &&
                     block1.canConnectWithBlock(level, a, b) && block2.canConnectWithBlock(level, b, a) && 
                     (!a.above().equals(b) || (be1.getBlockState().getValue(AbstractAdvancedDisplayBlock.UP) && !be1.isSingleLine())) &&

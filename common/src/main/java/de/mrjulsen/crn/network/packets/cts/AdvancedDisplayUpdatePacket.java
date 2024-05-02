@@ -3,6 +3,7 @@ package de.mrjulsen.crn.network.packets.cts;
 import java.util.function.Supplier;
 
 import de.mrjulsen.crn.block.AbstractAdvancedDisplayBlock;
+import de.mrjulsen.crn.block.AbstractAdvancedSidedDisplayBlock;
 import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.data.EDisplayInfo;
 import de.mrjulsen.crn.data.EDisplayType;
@@ -13,6 +14,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class AdvancedDisplayUpdatePacket implements IPacketBase<AdvancedDisplayUpdatePacket> {
     private BlockPos pos;
@@ -62,7 +64,11 @@ public class AdvancedDisplayUpdatePacket implements IPacketBase<AdvancedDisplayU
                     be.setDisplayType(packet.type);
                     be.setInfoType(packet.info);
                     if (level.getBlockState(be.getBlockPos()).getBlock() instanceof AbstractAdvancedDisplayBlock) {
-                        level.setBlockAndUpdate(be.getBlockPos(), level.getBlockState(be.getBlockPos()).setValue(AbstractAdvancedDisplayBlock.SIDE, packet.side));
+                        BlockState state = level.getBlockState(be.getBlockPos());
+                        if (state.getBlock() instanceof AbstractAdvancedSidedDisplayBlock) {
+                            state = state.setValue(AbstractAdvancedSidedDisplayBlock.SIDE, packet.side);
+                        }
+                        level.setBlockAndUpdate(be.getBlockPos(), state);
                     }
                     be.notifyUpdate();                    
                 });

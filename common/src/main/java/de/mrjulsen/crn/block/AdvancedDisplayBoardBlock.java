@@ -11,7 +11,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class AdvancedDisplayBoardBlock extends AbstractAdvancedDisplayBlock {
+public class AdvancedDisplayBoardBlock extends AbstractAdvancedSidedDisplayBlock {
     
     private static final VoxelShape SHAPE_SN = Block.box(0, 0, 3, 16, 16, 13);
     private static final VoxelShape SHAPE_EW = Block.box(3, 0, 0, 13, 16, 16);
@@ -49,4 +49,9 @@ public class AdvancedDisplayBoardBlock extends AbstractAdvancedDisplayBlock {
     public Tripple<Float, Float, Float> getRenderRotation(Level level, BlockState blockState, BlockPos pos) {
         return Tripple.of(0.0F, 0.0F, 0.0F);
     }
+
+    @Override
+    public boolean isSingleLined() {
+        return false;
+    }    
 }

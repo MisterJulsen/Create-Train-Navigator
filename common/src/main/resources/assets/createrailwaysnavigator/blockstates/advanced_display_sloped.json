@@ -1,50 +1,18 @@
 {
   "variants": {
-    "facing=north,side=front": {
+    "facing=north": {
       "model": "createrailwaysnavigator:block/advanced_display_sloped"
     },
-    "facing=east,side=front": {
+    "facing=east": {
       "model": "createrailwaysnavigator:block/advanced_display_sloped",
       "y": 90
     },
-    "facing=south,side=front": {
+    "facing=south": {
       "model": "createrailwaysnavigator:block/advanced_display_sloped",
       "y": 180
     },
-    "facing=west,side=front": {
+    "facing=west": {
       "model": "createrailwaysnavigator:block/advanced_display_sloped",
-      "y": 270
-    },
-
-    "facing=north,side=back": {
-      "model": "createrailwaysnavigator:block/advanced_display_sloped",
-      "y": 180
-    },
-    "facing=east,side=back": {
-      "model": "createrailwaysnavigator:block/advanced_display_sloped",
-      "y": 270
-    },
-    "facing=south,side=back": {
-      "model": "createrailwaysnavigator:block/advanced_display_sloped"
-    },
-    "facing=west,side=back": {
-      "model": "createrailwaysnavigator:block/advanced_display_sloped",
-      "y": 90
-    },
-
-    "facing=north,side=both": {
-      "model": "createrailwaysnavigator:block/advanced_display_sloped_double"
-    },
-    "facing=east,side=both": {
-      "model": "createrailwaysnavigator:block/advanced_display_sloped_double",
-      "y": 90
-    },
-    "facing=south,side=both": {
-      "model": "createrailwaysnavigator:block/advanced_display_sloped_double",
-      "y": 180
-    },
-    "facing=west,side=both": {
-      "model": "createrailwaysnavigator:block/advanced_display_sloped_double",
       "y": 270
     }
   }

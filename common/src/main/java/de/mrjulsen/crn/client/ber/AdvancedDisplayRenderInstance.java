@@ -11,6 +11,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Vector3f;
 
 import de.mrjulsen.crn.block.AbstractAdvancedDisplayBlock;
+import de.mrjulsen.crn.block.AbstractAdvancedSidedDisplayBlock;
 import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.client.ber.base.BERText;
 import de.mrjulsen.crn.client.ber.variants.BERPassengerInfoDetailed;
@@ -112,26 +113,26 @@ public class AdvancedDisplayRenderInstance extends AbstractBlockEntityRenderInst
             Pair<Float, Float> zOffset = pBlockEntity.renderZOffset.get();
             float scale = pBlockEntity.renderScale.get();
 
-            if (pBlockEntity.getBlockState().getValue(AbstractAdvancedDisplayBlock.SIDE) == ESide.FRONT || pBlockEntity.getBlockState().getValue(AbstractAdvancedDisplayBlock.SIDE) == ESide.BOTH) {
+            if (!(pBlockEntity.getBlockState().getBlock() instanceof AbstractAdvancedSidedDisplayBlock) || pBlockEntity.getBlockState().getValue(AbstractAdvancedSidedDisplayBlock.SIDE) == ESide.FRONT || pBlockEntity.getBlockState().getValue(AbstractAdvancedSidedDisplayBlock.SIDE) == ESide.BOTH) {
                 pPoseStack.pushPose();
+                pPoseStack.translate(offset.getFirst(), offset.getSecond(), zOffset.getFirst());
                 pPoseStack.mulPose(Vector3f.XP.rotationDegrees(rotation.getFirst()));
                 pPoseStack.mulPose(Vector3f.YP.rotationDegrees(rotation.getSecond()));
                 pPoseStack.mulPose(Vector3f.ZP.rotationDegrees(rotation.getThird()));
-                pPoseStack.translate(offset.getFirst(), offset.getSecond(), zOffset.getFirst());
                 pPoseStack.scale(scale, scale, 1);   
                 renderSubtype.renderAdditional(context, pBlockEntity, this, pPartialTicks, pPoseStack, pBufferSource, light, pOverlay, false);
                 labels.forEach(x -> x.render(pPoseStack, pBufferSource, light)); 
                 pPoseStack.popPose();
             }
-            if (pBlockEntity.getBlockState().getValue(AbstractAdvancedDisplayBlock.SIDE) == ESide.BACK || pBlockEntity.getBlockState().getValue(AbstractAdvancedDisplayBlock.SIDE) == ESide.BOTH) {
+            if (!(pBlockEntity.getBlockState().getBlock() instanceof AbstractAdvancedSidedDisplayBlock) || pBlockEntity.getBlockState().getValue(AbstractAdvancedSidedDisplayBlock.SIDE) == ESide.BACK || pBlockEntity.getBlockState().getValue(AbstractAdvancedSidedDisplayBlock.SIDE) == ESide.BOTH) {
                 pPoseStack.pushPose();
-                pPoseStack.mulPose(Vector3f.YP.rotationDegrees(180));                
+                pPoseStack.mulPose(Vector3f.YP.rotationDegrees(180));
+                pPoseStack.translate(-pBlockEntity.getXSize() * 16, 0, -16);
+                pPoseStack.translate(offset.getFirst(), offset.getSecond(), zOffset.getSecond());
                 pPoseStack.mulPose(Vector3f.XP.rotationDegrees(rotation.getFirst()));
                 pPoseStack.mulPose(Vector3f.YP.rotationDegrees(rotation.getSecond()));
                 pPoseStack.mulPose(Vector3f.ZP.rotationDegrees(rotation.getThird()));
-                pPoseStack.translate(-pBlockEntity.getXSize() * 16, 0, -16);
-                pPoseStack.translate(offset.getFirst(), offset.getSecond(), zOffset.getSecond());
-                pPoseStack.scale(scale, scale, 1); 
+                pPoseStack.scale(scale, scale, 1);
                 renderSubtype.renderAdditional(context, pBlockEntity, this, pPartialTicks, pPoseStack, pBufferSource, light, pOverlay, true);
                 labels.forEach(x -> x.render(pPoseStack, pBufferSource, light));
                 pPoseStack.popPose();

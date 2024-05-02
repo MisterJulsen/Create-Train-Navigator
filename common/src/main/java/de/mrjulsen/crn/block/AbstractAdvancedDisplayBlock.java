@@ -9,7 +9,6 @@ import com.simibubi.create.foundation.utility.Iterate;
 
 import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.client.ClientWrapper;
-import de.mrjulsen.crn.data.ESide;
 import de.mrjulsen.crn.registry.ModBlockEntities;
 import de.mrjulsen.mcdragonlib.client.ber.IBlockEntityRendererInstance.EUpdateReason;
 import de.mrjulsen.mcdragonlib.data.Pair;
@@ -43,14 +42,12 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition.Builder;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
-import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.ticks.LevelTickAccess;
 
 public abstract class AbstractAdvancedDisplayBlock extends Block implements IWrenchable, IBE<AdvancedDisplayBlockEntity> {
 
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
-    public static final EnumProperty<ESide> SIDE = EnumProperty.create("side", ESide.class);
     
 	public static final BooleanProperty UP = BooleanProperty.create("up");
 	public static final BooleanProperty DOWN = BooleanProperty.create("down");
@@ -62,7 +59,6 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
             .setValue(UP, false)
             .setValue(DOWN, false)
             .setValue(FACING, Direction.NORTH)
-            .setValue(SIDE, ESide.FRONT)
         );
     }
 
@@ -79,7 +75,7 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
     @Override
     protected void createBlockStateDefinition(Builder<Block, BlockState> pBuilder) {
         super.createBlockStateDefinition(pBuilder);
-        pBuilder.add(UP, DOWN, FACING, SIDE);
+        pBuilder.add(UP, DOWN, FACING);
     }
 
     @Override
@@ -270,8 +266,8 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 
 		return InteractionResult.FAIL;
     }
-
-    private boolean updateNeighbour(BlockState pState, Level pLevel, BlockPos pPos, BlockPos neighbourPos) {
+	
+    protected boolean updateNeighbour(BlockState pState, Level pLevel, BlockPos pPos, BlockPos neighbourPos) {
         if (pLevel.getBlockState(neighbourPos).is(this) && pLevel.getBlockEntity(neighbourPos) instanceof AdvancedDisplayBlockEntity otherBe && pLevel.getBlockEntity(pPos) instanceof AdvancedDisplayBlockEntity be) {
             be.setColor(otherBe.getColor());
             be.setGlowing(otherBe.isGlowing());
@@ -282,7 +278,7 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
                 be.getController().getRenderer().update(pLevel, neighbourPos, pState, otherBe, EUpdateReason.BLOCK_CHANGED);
             }
 
-			pLevel.setBlockAndUpdate(pPos, pState.setValue(SIDE, pLevel.getBlockState(neighbourPos).getValue(SIDE)));
+			pLevel.setBlockAndUpdate(pPos, pState);
             return true;
         }
 		return false;
@@ -315,6 +311,8 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
     public BlockEntityType<? extends AdvancedDisplayBlockEntity> getBlockEntityType() {
         return ModBlockEntities.ADVANCED_DISPLAY_BLOCK_ENTITY.get();
     }
+
+	public abstract boolean isSingleLined();
 
     public abstract Tripple<Float, Float, Float> getRenderRotation(Level level, BlockState blockState, BlockPos pos);
     public abstract Pair<Float, Float> getRenderOffset(Level level, BlockState blockState, BlockPos pos);

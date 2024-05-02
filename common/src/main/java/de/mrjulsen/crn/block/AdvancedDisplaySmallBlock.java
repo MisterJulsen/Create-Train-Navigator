@@ -1,11 +1,15 @@
 package de.mrjulsen.crn.block;
 
 import java.util.Map;
+import java.util.Objects;
 
+import de.mrjulsen.crn.data.EBlockAlignment;
 import de.mrjulsen.mcdragonlib.data.Pair;
 import de.mrjulsen.mcdragonlib.data.Tripple;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Direction.Axis;
+import net.minecraft.core.Direction.AxisDirection;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -19,48 +23,111 @@ import net.minecraft.world.level.block.state.properties.Half;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class AdvancedDisplaySmallBlock extends AbstractAdvancedDisplayBlock {
+public class AdvancedDisplaySmallBlock extends AbstractAdvancedSidedDisplayBlock {
     
 	public static final EnumProperty<Half> HALF = BlockStateProperties.HALF;
+	public static final EnumProperty<EBlockAlignment> Y_ALIGN = EnumProperty.create("y_alignment", EBlockAlignment.class);
+	public static final EnumProperty<EBlockAlignment> Z_ALIGN = EnumProperty.create("z_alignment", EBlockAlignment.class);
 
-    private static final Map<Direction, Map<Half, VoxelShape>> SHAPES = Map.of(
-        Direction.SOUTH, Map.of(
-            Half.BOTTOM, Block.box(0, 0, 0, 16, 8, 8),
-            Half.TOP, Block.box(0, 8, 0, 16, 16, 8)
-        ),
-        Direction.WEST, Map.of(
-            Half.BOTTOM, Block.box(8, 0, 0, 16, 8, 16),
-            Half.TOP, Block.box(8, 8, 0, 16, 16, 16)
-        ),
-        Direction.NORTH, Map.of(
-            Half.BOTTOM, Block.box(0, 0, 8, 16, 8, 16),
-            Half.TOP, Block.box(0, 8, 8, 16, 16, 16)
-        ),
-        Direction.EAST, Map.of(
-            Half.BOTTOM, Block.box(0, 0, 0, 8, 8, 16),
-            Half.TOP, Block.box(0, 8, 0, 8, 16, 16)
-        )
+    private static final Map<ShapeKey, VoxelShape> SHAPES = Map.ofEntries(
+        Map.entry(new ShapeKey(Direction.SOUTH, EBlockAlignment.NEGATIVE, EBlockAlignment.NEGATIVE), Block.box(0 , 0 , 8 , 16, 8 , 16)),
+        Map.entry(new ShapeKey(Direction.NORTH, EBlockAlignment.NEGATIVE, EBlockAlignment.NEGATIVE), Block.box(0 , 0 , 0 , 16, 8 , 8 )),
+        Map.entry(new ShapeKey(Direction.EAST,  EBlockAlignment.NEGATIVE, EBlockAlignment.NEGATIVE), Block.box(8 , 0 , 0 , 16, 8 , 16)),
+        Map.entry(new ShapeKey(Direction.WEST,  EBlockAlignment.NEGATIVE, EBlockAlignment.NEGATIVE), Block.box(0 , 0 , 0 , 8 , 8 , 16)),
+        
+        Map.entry(new ShapeKey(Direction.SOUTH, EBlockAlignment.CENTER,   EBlockAlignment.NEGATIVE), Block.box(0 , 4 , 8 , 16, 12, 16)),
+        Map.entry(new ShapeKey(Direction.NORTH, EBlockAlignment.CENTER,   EBlockAlignment.NEGATIVE), Block.box(0 , 4 , 0 , 16, 12, 8 )),
+        Map.entry(new ShapeKey(Direction.EAST,  EBlockAlignment.CENTER,   EBlockAlignment.NEGATIVE), Block.box(8 , 4 , 0 , 16, 12, 16)),
+        Map.entry(new ShapeKey(Direction.WEST,  EBlockAlignment.CENTER,   EBlockAlignment.NEGATIVE), Block.box(0 , 4 , 0 , 8 , 12, 16)),
+        
+        Map.entry(new ShapeKey(Direction.SOUTH, EBlockAlignment.POSITIVE, EBlockAlignment.NEGATIVE), Block.box(0 , 8 , 8 , 16, 16, 16)),
+        Map.entry(new ShapeKey(Direction.NORTH, EBlockAlignment.POSITIVE, EBlockAlignment.NEGATIVE), Block.box(0 , 8 , 0 , 16, 16, 8 )),
+        Map.entry(new ShapeKey(Direction.EAST,  EBlockAlignment.POSITIVE, EBlockAlignment.NEGATIVE), Block.box(8 , 8 , 0 , 16, 16, 16)),
+        Map.entry(new ShapeKey(Direction.WEST,  EBlockAlignment.POSITIVE, EBlockAlignment.NEGATIVE), Block.box(0 , 8 , 0 , 8 , 16, 16)),
+        
+
+
+        Map.entry(new ShapeKey(Direction.SOUTH, EBlockAlignment.NEGATIVE, EBlockAlignment.CENTER),   Block.box(0 , 0 , 4 , 16, 8 , 12)),
+        Map.entry(new ShapeKey(Direction.NORTH, EBlockAlignment.NEGATIVE, EBlockAlignment.CENTER),   Block.box(0 , 0 , 4 , 16, 8 , 12)),
+        Map.entry(new ShapeKey(Direction.EAST,  EBlockAlignment.NEGATIVE, EBlockAlignment.CENTER),   Block.box(4 , 0 , 0 , 12, 8 , 16)),
+        Map.entry(new ShapeKey(Direction.WEST,  EBlockAlignment.NEGATIVE, EBlockAlignment.CENTER),   Block.box(4 , 0 , 0 , 12, 8 , 16)),
+        
+        Map.entry(new ShapeKey(Direction.SOUTH, EBlockAlignment.CENTER,   EBlockAlignment.CENTER),   Block.box(0 , 4 , 4 , 16, 12, 12)),
+        Map.entry(new ShapeKey(Direction.NORTH, EBlockAlignment.CENTER,   EBlockAlignment.CENTER),   Block.box(0 , 4 , 4 , 16, 12, 12)),
+        Map.entry(new ShapeKey(Direction.EAST,  EBlockAlignment.CENTER,   EBlockAlignment.CENTER),   Block.box(4 , 4 , 0 , 12, 12, 16)),
+        Map.entry(new ShapeKey(Direction.WEST,  EBlockAlignment.CENTER,   EBlockAlignment.CENTER),   Block.box(4 , 4 , 0 , 12, 12, 16)),
+        
+        Map.entry(new ShapeKey(Direction.SOUTH, EBlockAlignment.POSITIVE, EBlockAlignment.CENTER),   Block.box(0 , 8 , 4 , 16, 16, 12)),
+        Map.entry(new ShapeKey(Direction.NORTH, EBlockAlignment.POSITIVE, EBlockAlignment.CENTER),   Block.box(0 , 8 , 4 , 16, 16, 12)),
+        Map.entry(new ShapeKey(Direction.EAST,  EBlockAlignment.POSITIVE, EBlockAlignment.CENTER),   Block.box(4 , 8 , 0 , 12, 16, 16)),
+        Map.entry(new ShapeKey(Direction.WEST,  EBlockAlignment.POSITIVE, EBlockAlignment.CENTER),   Block.box(4 , 8 , 0 , 12, 16, 16)),
+
+
+        
+        Map.entry(new ShapeKey(Direction.SOUTH, EBlockAlignment.NEGATIVE, EBlockAlignment.POSITIVE), Block.box(0 , 0 , 0 , 16, 8 , 8 )),
+        Map.entry(new ShapeKey(Direction.NORTH, EBlockAlignment.NEGATIVE, EBlockAlignment.POSITIVE), Block.box(0 , 0 , 8 , 16, 8 , 16)),
+        Map.entry(new ShapeKey(Direction.EAST,  EBlockAlignment.NEGATIVE, EBlockAlignment.POSITIVE), Block.box(0 , 0 , 0 , 8 , 8 , 16)),
+        Map.entry(new ShapeKey(Direction.WEST,  EBlockAlignment.NEGATIVE, EBlockAlignment.POSITIVE), Block.box(8 , 0 , 0 , 16, 8 , 16)),
+        
+        Map.entry(new ShapeKey(Direction.SOUTH, EBlockAlignment.CENTER,   EBlockAlignment.POSITIVE), Block.box(0 , 4 , 0 , 16, 12, 8 )),
+        Map.entry(new ShapeKey(Direction.NORTH, EBlockAlignment.CENTER,   EBlockAlignment.POSITIVE), Block.box(0 , 4 , 8 , 16, 12, 16)),
+        Map.entry(new ShapeKey(Direction.EAST,  EBlockAlignment.CENTER,   EBlockAlignment.POSITIVE), Block.box(0 , 4 , 0 , 8 , 12, 16)),
+        Map.entry(new ShapeKey(Direction.WEST,  EBlockAlignment.CENTER,   EBlockAlignment.POSITIVE), Block.box(8 , 4 , 0 , 16, 12, 16)),
+
+        Map.entry(new ShapeKey(Direction.SOUTH, EBlockAlignment.POSITIVE, EBlockAlignment.POSITIVE), Block.box(0 , 8 , 0 , 16, 16, 8 )),
+        Map.entry(new ShapeKey(Direction.NORTH, EBlockAlignment.POSITIVE, EBlockAlignment.POSITIVE), Block.box(0 , 8 , 8 , 16, 16, 16)),
+        Map.entry(new ShapeKey(Direction.EAST,  EBlockAlignment.POSITIVE, EBlockAlignment.POSITIVE), Block.box(0 , 8 , 0 , 8 , 16, 16)),
+        Map.entry(new ShapeKey(Direction.WEST,  EBlockAlignment.POSITIVE, EBlockAlignment.POSITIVE), Block.box(8 , 8 , 0 , 16, 16, 16))
     );
 
     public AdvancedDisplaySmallBlock(Properties properties) {
         super(properties);
-		registerDefaultState(defaultBlockState().setValue(HALF, Half.BOTTOM));
+		registerDefaultState(defaultBlockState()
+            .setValue(HALF, Half.BOTTOM)
+            .setValue(Y_ALIGN, EBlockAlignment.CENTER)
+            .setValue(Z_ALIGN, EBlockAlignment.CENTER)
+        );
     }
 
     @Override
     public VoxelShape getShape(BlockState pState, BlockGetter pLevel, BlockPos pPos, CollisionContext pContext) {
-        return SHAPES.get(pState.getValue(FACING)).get(pState.getValue(HALF));
+        return SHAPES.get(new ShapeKey(pState.getValue(FACING), pState.getValue(Y_ALIGN), pState.getValue(Z_ALIGN)));
     }
 
     @Override
 	public BlockState getStateForPlacement(BlockPlaceContext pContext) {
 		BlockState stateForPlacement = super.getStateForPlacement(pContext);
 		Direction direction = pContext.getClickedFace();
-		if (direction == Direction.UP)
-			return stateForPlacement;
-		if (direction == Direction.DOWN || (pContext.getClickLocation().y - pContext.getClickedPos().getY() > 0.5D))
-			return stateForPlacement.setValue(HALF, Half.TOP);
-		return stateForPlacement;
+        Direction looking = pContext.getHorizontalDirection();
+        Axis axis = looking.getAxis();
+        AxisDirection axisDirection = looking.getAxisDirection();
+
+        double xzPos = 0.5f;
+        if (axis == Axis.X) {
+            xzPos = pContext.getClickLocation().x - pContext.getClickedPos().getX();
+        } else if (axis == Axis.Z) {            
+            xzPos = pContext.getClickLocation().z - pContext.getClickedPos().getZ();
+        }
+
+        EBlockAlignment yAlign = EBlockAlignment.CENTER;
+        EBlockAlignment zAlign = EBlockAlignment.CENTER;
+
+		if (direction == Direction.UP || (pContext.getClickLocation().y - pContext.getClickedPos().getY() < 0.33333333D)) {
+			yAlign = EBlockAlignment.NEGATIVE;
+        } else if (direction == Direction.DOWN || (pContext.getClickLocation().y - pContext.getClickedPos().getY() > 0.66666666D)) {
+            yAlign = EBlockAlignment.POSITIVE;
+        }
+
+        if (direction == pContext.getPlayer().getDirection().getOpposite() || (axisDirection == AxisDirection.POSITIVE ? xzPos > 0.66666666D : xzPos < 0.33333333D)) {
+			zAlign = EBlockAlignment.POSITIVE;
+        } else if (direction == pContext.getPlayer().getDirection() || (axisDirection == AxisDirection.POSITIVE ? xzPos < 0.33333333D : xzPos > 0.66666666D)) {
+            zAlign = EBlockAlignment.NEGATIVE;
+        }
+
+		return stateForPlacement
+            .setValue(Y_ALIGN, yAlign)
+            .setValue(Z_ALIGN, zAlign)
+        ;
 	}
 
     @Override
@@ -75,7 +142,7 @@ public class AdvancedDisplaySmallBlock extends AbstractAdvancedDisplayBlock {
 
 	@Override
 	protected void createBlockStateDefinition(Builder<Block, BlockState> pBuilder) {
-		super.createBlockStateDefinition(pBuilder.add(HALF));
+		super.createBlockStateDefinition(pBuilder.add(HALF, Y_ALIGN, Z_ALIGN));
 	}
 
     @Override
@@ -90,11 +157,57 @@ public class AdvancedDisplaySmallBlock extends AbstractAdvancedDisplayBlock {
 
     @Override
     public Pair<Float, Float> getRenderZOffset(Level level, BlockState blockState, BlockPos pos) {
-        return Pair.of(8.05f, 16.05f);
+        float z1;
+        float z2;
+        switch (blockState.getValue(Z_ALIGN)) {
+            case NEGATIVE:
+                z1 = 16.05f;
+                z2 = 8.05f;
+                break;
+            case POSITIVE:
+                z1 = 8.05f;
+                z2 = 16.05f;
+                break;
+            default:
+                z1 = 12.05f;
+                z2 = 12.05f;
+                break;
+        }
+        return Pair.of(z1, z2);
     }
 
     @Override
     public Tripple<Float, Float, Float> getRenderRotation(Level level, BlockState blockState, BlockPos pos) {
         return Tripple.of(0.0F, 0.0F, 0.0F);
+    }
+
+    @Override
+    public boolean isSingleLined() {
+        return true;
+    }
+
+    private static final class ShapeKey {
+        private final Direction facing;
+        private final EBlockAlignment xAlign;
+        private final EBlockAlignment zAlign;
+    
+        public ShapeKey(Direction facing, EBlockAlignment xAlign, EBlockAlignment zAlign) {
+            this.facing = facing;
+            this.xAlign = xAlign;
+            this.zAlign = zAlign;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o instanceof ShapeKey other) {
+                return facing == other.facing && xAlign == other.xAlign && zAlign == other.zAlign;
+            }
+            return false;
+        }
+    
+        @Override
+        public int hashCode() {
+            return Objects.hash(facing, xAlign, zAlign);
+        }
     }
 }
