@@ -1,17 +1,20 @@
 modLoader = "javafml"
 loaderVersion = "[40,)"
 #issueTrackerURL = ""
-license = "Insert License Here"
+license = "GNU General Public License v3.0"
 
 [[mods]]
 modId = "createrailwaysnavigator"
 version = "${version}"
-displayName = "Example Mod"
-authors = "Me!"
+displayName = "Create Railways Navigator"
+authors = "MrJulsen"
+updateJSONURL="https://raw.githubusercontent.com/MisterJulsen/Create-Train-Navigator/1.18.2/update.json"
+displayURL="https://www.curseforge.com/minecraft/mc-mods/create-railways-navigator"
+issueTrackerURL="https://github.com/MisterJulsen/Create-Train-Navigator/issues"
 description = '''
-This is an example description! Tell everyone what your mod is about!
+Get possible train connections in your world from one station to another using the Create Railways Navigator. An addon for the Create Mod.
 '''
-#logoFile = ""
+logoFile="icon.png"
 
 [[dependencies.createrailwaysnavigator]]
 modId = "forge"

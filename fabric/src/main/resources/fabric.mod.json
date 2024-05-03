@@ -2,17 +2,18 @@
   "schemaVersion": 1,
   "id": "createrailwaysnavigator",
   "version": "${version}",
-  "name": "Example Mod",
-  "description": "This is an example description! Tell everyone what your mod is about!",
+  "name": "Create Railways Navigator",
+  "description": "Get possible train connections in your world from one station to another using the Create Railways Navigator. An addon for the Create Mod.",
   "authors": [
-    "Me!"
+    "MrJulsen"
   ],
   "contact": {
-    "homepage": "https://fabricmc.net/",
-    "sources": "https://github.com/FabricMC/fabric-example-mod"
+    "homepage": "https://www.curseforge.com/minecraft/mc-mods/create-railways-navigator",
+    "issues": "https://github.com/MisterJulsen/Create-Train-Navigator/issues",
+    "sources": "https://github.com/MisterJulsen/Create-Train-Navigator"
   },
-  "license": "Insert License Here",
-  "icon": "assets/examplemod/icon.png",
+  "license": "GNU General Public License v3.0",
+  "icon": "icon.png",
   "environment": "*",
   "entrypoints": {
     "main": [
@@ -27,7 +28,7 @@
     "fabric": "*",
     "minecraft": ">=1.18.2",
     "architectury": ">=4.11.93",
-    "dragonlib": "1.18.2-2.1.5",
+    "dragonlib": "1.18.2-2.1.6",
     "create": "*"
   }
 }
