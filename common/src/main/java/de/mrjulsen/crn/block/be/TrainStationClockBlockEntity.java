@@ -65,8 +65,12 @@ public class TrainStationClockBlockEntity extends SmartBlockEntity implements IB
     @Override
     protected void read(CompoundTag tag, boolean clientPacket) {
         super.read(tag, clientPacket);
-        color = tag.getInt(NBT_COLOR);
-        glowing = tag.getBoolean(NBT_GLOWING);
+        if (tag.contains(NBT_COLOR)) {
+            color = tag.getInt(NBT_COLOR);
+        }
+        if (tag.contains(NBT_GLOWING)) {
+            glowing = tag.getBoolean(NBT_GLOWING);
+        }
     }
 
 }
