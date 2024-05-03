@@ -16,22 +16,6 @@
       "y": 270
     },
 
-    "facing=north,side=back": {
-      "model": "createrailwaysnavigator:block/advanced_display_block",
-      "y": 180
-    },
-    "facing=east,side=back": {
-      "model": "createrailwaysnavigator:block/advanced_display_block",
-      "y": 270
-    },
-    "facing=south,side=back": {
-      "model": "createrailwaysnavigator:block/advanced_display_block"
-    },
-    "facing=west,side=back": {
-      "model": "createrailwaysnavigator:block/advanced_display_block",
-      "y": 90
-    },
-
     "facing=north,side=both": {
       "model": "createrailwaysnavigator:block/advanced_display_block_double"
     },
