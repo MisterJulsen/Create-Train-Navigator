@@ -9,18 +9,10 @@ import com.simibubi.create.foundation.block.connected.CTSpriteShiftEntry;
 import com.simibubi.create.foundation.block.connected.CTSpriteShifter;
 import com.simibubi.create.foundation.block.connected.CTType;
 import com.simibubi.create.foundation.block.connected.ConnectedTextureBehaviour;
-import com.simibubi.create.foundation.data.SharedProperties;
-import com.simibubi.create.foundation.data.TagGen;
 import com.simibubi.create.foundation.utility.RegisteredObjects;
-import com.tterrag.registrate.util.entry.BlockEntry;
-import com.tterrag.registrate.util.nullness.NonNullConsumer;
-
 import de.mrjulsen.crn.ExampleMod;
-import de.mrjulsen.crn.block.TrainStationClockBlock;
-import dev.architectury.utils.EnvExecutor;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 
