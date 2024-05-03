@@ -202,26 +202,26 @@ public class AdvancedDisplaySmallBlock extends AbstractAdvancedSidedDisplayBlock
 
     private static final class ShapeKey {
         private final Direction facing;
-        private final EBlockAlignment xAlign;
+        private final EBlockAlignment yAlign;
         private final EBlockAlignment zAlign;
     
-        public ShapeKey(Direction facing, EBlockAlignment xAlign, EBlockAlignment zAlign) {
+        public ShapeKey(Direction facing, EBlockAlignment yAlign, EBlockAlignment zAlign) {
             this.facing = facing;
-            this.xAlign = xAlign;
+            this.yAlign = yAlign;
             this.zAlign = zAlign;
         }
 
         @Override
         public boolean equals(Object o) {
             if (o instanceof ShapeKey other) {
-                return facing == other.facing && xAlign == other.xAlign && zAlign == other.zAlign;
+                return facing == other.facing && yAlign == other.yAlign && zAlign == other.zAlign;
             }
             return false;
         }
     
         @Override
         public int hashCode() {
-            return Objects.hash(facing, xAlign, zAlign);
+            return Objects.hash(facing, yAlign, zAlign);
         }
     }
 }
