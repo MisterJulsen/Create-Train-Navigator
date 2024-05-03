@@ -22,6 +22,7 @@ import net.minecraft.world.level.block.state.StateDefinition.Builder;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class AdvancedDisplayBoardBlock extends AbstractAdvancedSidedDisplayBlock {
@@ -45,11 +46,23 @@ public class AdvancedDisplayBoardBlock extends AbstractAdvancedSidedDisplayBlock
         Map.entry(new ShapeKey(Direction.WEST,  EBlockAlignment.POSITIVE), Block.box(8 , 0 , 0 , 16, 16, 16))
     );
 
+    private static final Map<Direction, VoxelShape> SUPPORT_SHAPES = Map.ofEntries(        
+        Map.entry(Direction.SOUTH, Shapes.or(Block.box(0 , 0 , 0 , 1 , 16, 16), Block.box(15, 0 , 0 , 16, 16, 16))),
+        Map.entry(Direction.NORTH, Shapes.or(Block.box(0 , 0 , 0 , 1 , 16, 16), Block.box(15, 0 , 0 , 16, 16, 16))),
+        Map.entry(Direction.EAST,  Shapes.or(Block.box(0 , 0 , 0 , 16, 16, 1 ), Block.box(0 , 0 , 15, 16, 16, 16))),
+        Map.entry(Direction.WEST,  Shapes.or(Block.box(0 , 0 , 0 , 16, 16, 1 ), Block.box(0 , 0 , 15, 16, 16, 16)))
+    );
+
     public AdvancedDisplayBoardBlock(Properties properties) {
         super(properties);        
 		registerDefaultState(defaultBlockState()
             .setValue(Z_ALIGN, EBlockAlignment.CENTER)
         );
+    }
+
+    @Override
+    public VoxelShape getBlockSupportShape(BlockState state, BlockGetter reader, BlockPos pos) {
+        return state.getValue(Z_ALIGN) == EBlockAlignment.CENTER ? SUPPORT_SHAPES.get(state.getValue(FACING)) : SHAPES.get(new ShapeKey(state.getValue(FACING), state.getValue(Z_ALIGN)));
     }
     
     @Override
