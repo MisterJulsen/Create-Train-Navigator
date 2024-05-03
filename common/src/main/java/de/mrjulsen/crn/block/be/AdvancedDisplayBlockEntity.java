@@ -76,6 +76,8 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     public static final byte MAX_XSIZE = 16;
     public static final byte MAX_YSIZE = 16;
 
+    private static final int REFRESH_FREQUENCY = 100;
+
     // DATA
     private byte xSize = 1;
 	private byte ySize = 1;
@@ -101,7 +103,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     private CarriageData carriageData = new CarriageData(0, Direction.NORTH, false);
     
     // OTHER
-    private int syncTicks = Integer.MAX_VALUE;
+    private int syncTicks = REFRESH_FREQUENCY - 1;
     private final Cache<IBlockEntityRendererInstance<AdvancedDisplayBlockEntity>> renderer = new Cache<>(() -> new AdvancedDisplayRenderInstance(this));
 
     public final Cache<TrainExitSide> relativeExitDirection = new Cache<>(() -> {        
@@ -498,7 +500,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         }
 
         syncTicks++;       
-        if ((syncTicks %= 100) == 0) {
+        if ((syncTicks %= REFRESH_FREQUENCY) == 0) {
             if (level.isClientSide)  {
                 boolean shouldUpdate = getPredictions().size() > 0;
 
