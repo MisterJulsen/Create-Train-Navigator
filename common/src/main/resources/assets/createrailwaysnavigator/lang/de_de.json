@@ -200,8 +200,7 @@
     "gui.createrailwaysnavigator.advanced_display_settings.display_type.description": "Die Informationen, die angezeigt werden sollen.",
     "gui.createrailwaysnavigator.advanced_display_settings.info_type": "Informationsart",
     "gui.createrailwaysnavigator.advanced_display_settings.info_type.description": "Gibt an, wie detailliert die Informationen sind.",
-    "gui.createrailwaysnavigator.advanced_display_settings.sides": "Seite",
-    "gui.createrailwaysnavigator.advanced_display_settings.sides.description": "Auf welchen Seiten des Blocks etwas angezeigt wird.",
+    "gui.createrailwaysnavigator.advanced_display_settings.double_sided": "Beidseitig",
 
     "enum.createrailwaysnavigator.display_info_type": "Informationsart",
     "enum.createrailwaysnavigator.display_info_type.description": "Gibt an, wie viele Informationen dargestellt werden sollen.",
@@ -225,8 +224,6 @@
     "enum.createrailwaysnavigator.side.description": "Die Seite des Blocks, auf dem die Informationen angezeigt werden sollen.",
     "enum.createrailwaysnavigator.side.front": "Vorderseite",
     "enum.createrailwaysnavigator.side.info.front": "Die Informationen werden nur auf der Vorderseite dargestellt.",
-    "enum.createrailwaysnavigator.side.back": "Rückseite",
-    "enum.createrailwaysnavigator.side.info.back": "Die Informationen werden nur auf der Rückseite dargestellt.",
     "enum.createrailwaysnavigator.side.both": "Beidseitig",
     "enum.createrailwaysnavigator.side.info.both": "Die Informationen werden auf beiden Seiten dargestellt.",
 

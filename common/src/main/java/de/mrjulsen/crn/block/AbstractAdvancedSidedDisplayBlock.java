@@ -4,6 +4,7 @@ import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.data.ESide;
 import de.mrjulsen.mcdragonlib.client.ber.IBlockEntityRendererInstance.EUpdateReason;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -21,8 +22,6 @@ public abstract class AbstractAdvancedSidedDisplayBlock extends AbstractAdvanced
             .setValue(SIDE, ESide.FRONT)
         );
     }
-
-    
     
     @Override
     protected void createBlockStateDefinition(Builder<Block, BlockState> pBuilder) {
@@ -30,19 +29,23 @@ public abstract class AbstractAdvancedSidedDisplayBlock extends AbstractAdvanced
         pBuilder.add(SIDE);
     }
 
+    @Override
+    public boolean canConnectWithBlock(BlockAndTintGetter level, BlockPos selfPos, BlockPos otherPos) {
+		return super.canConnectWithBlock(level, selfPos, otherPos) &&
+            level.getBlockState(selfPos).getValue(SIDE) == level.getBlockState(otherPos).getValue(SIDE)
+		;
+	}
+
 	@Override
     protected boolean updateNeighbour(BlockState pState, Level pLevel, BlockPos pPos, BlockPos neighbourPos) {
         if (pLevel.getBlockState(neighbourPos).is(this) && pLevel.getBlockEntity(neighbourPos) instanceof AdvancedDisplayBlockEntity otherBe && pLevel.getBlockEntity(pPos) instanceof AdvancedDisplayBlockEntity be) {
-            be.setColor(otherBe.getColor());
-            be.setGlowing(otherBe.isGlowing());
-            be.setDisplayType(otherBe.getDisplayType());
-            be.setInfoType(otherBe.getInfoType());
-			be.notifyUpdate();
+            be.copyFrom(otherBe);
+			pLevel.setBlockAndUpdate(pPos, pState.setValue(SIDE, pLevel.getBlockState(neighbourPos).getValue(SIDE)));
+
             if (pLevel.isClientSide) {
                 be.getController().getRenderer().update(pLevel, neighbourPos, pState, otherBe, EUpdateReason.BLOCK_CHANGED);
             }
 
-			pLevel.setBlockAndUpdate(pPos, pState.setValue(SIDE, pLevel.getBlockState(neighbourPos).getValue(SIDE)));
             return true;
         }
 		return false;

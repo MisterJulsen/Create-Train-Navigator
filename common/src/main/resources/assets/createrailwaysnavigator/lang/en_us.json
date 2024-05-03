@@ -200,8 +200,7 @@
     "gui.createrailwaysnavigator.advanced_display_settings.display_type.description": "Determines the information displayed.",
     "gui.createrailwaysnavigator.advanced_display_settings.info_type": "Information Type",
     "gui.createrailwaysnavigator.advanced_display_settings.info_type.description": "Determines how detailed the information is.",
-    "gui.createrailwaysnavigator.advanced_display_settings.sides": "Render Sides",
-    "gui.createrailwaysnavigator.advanced_display_settings.sides.description": "Determines which sides the content should be rendered on.",
+    "gui.createrailwaysnavigator.advanced_display_settings.double_sided": "Double-sided",
 
     "enum.createrailwaysnavigator.display_info_type": "Display Info Type",
     "enum.createrailwaysnavigator.display_info_type.description": "Determines how much information should be displayed on your display board.",
@@ -225,8 +224,6 @@
     "enum.createrailwaysnavigator.side.description": "The side of the block where the information should be rendered on.",
     "enum.createrailwaysnavigator.side.front": "Front side",
     "enum.createrailwaysnavigator.side.info.front": "The information will only be rendered on the front side. This is the default behaviour.",
-    "enum.createrailwaysnavigator.side.back": "Back side",
-    "enum.createrailwaysnavigator.side.info.back": "The information will only be rendered on the back side.",
     "enum.createrailwaysnavigator.side.both": "Both sides",
     "enum.createrailwaysnavigator.side.info.both": "The information will be rendered on both sides.",
     

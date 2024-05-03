@@ -4,7 +4,7 @@
 	"textures": {
 		"1": "createrailwaysnavigator:block/advanced_display_small",
 		"2": "createrailwaysnavigator:block/advanced_display_back",
-		"particle": "createrailwaysnavigator:block/advanced_display_small_connected"
+		"particle": "createrailwaysnavigator:block/advanced_display"
 	},
 	"elements": [
 		{

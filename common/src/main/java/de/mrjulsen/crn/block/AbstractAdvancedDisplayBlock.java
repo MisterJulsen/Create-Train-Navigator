@@ -1,5 +1,7 @@
 package de.mrjulsen.crn.block;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Random;
 
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
@@ -30,6 +32,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
@@ -42,6 +45,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition.Builder;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.ticks.LevelTickAccess;
 
@@ -186,15 +190,39 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 		if (!canConnect(pLevel, pCurrentPos, state, pNeighborState))
 			return setConnection(state, pDirection, false);
 		if (pDirection.getAxis() == getConnectionAxis(state))
-			return withPropertiesOf(pNeighborState);
+			return applyPropertiesOf(state, pNeighborState);
 		return setConnection(state, pDirection, getConnection(pNeighborState, pDirection.getOpposite()));
 	}
+
+	public BlockState applyPropertiesOf(BlockState currentState, BlockState state) {
+        BlockState blockState = this.defaultBlockState();
+        for (Property<?> property : state.getBlock().getStateDefinition().getProperties()) {
+            if (!blockState.hasProperty(property)) continue;
+			
+			if (getExcludedProperties().contains(property)) {
+				blockState = copyPropertyOf(currentState, blockState, property);
+				continue;
+			}
+			
+            blockState = copyPropertyOf(state, blockState, property);
+        }
+        return blockState;
+    }
+
+	private static <T extends Comparable<T>> BlockState copyPropertyOf(BlockState sourceState, BlockState targetState, Property<T> property) {
+        return (BlockState)targetState.setValue(property, sourceState.getValue(property));
+    }
 
     protected boolean canConnect(LevelAccessor level, BlockPos pos, BlockState state, BlockState other) {
 		return other.getBlock() == this && state.getValue(FACING) == other.getValue(FACING);
 	}
 
-	public abstract boolean canConnectWithBlock(Level level, BlockPos selfPos, BlockPos otherPos);
+	public boolean canConnectWithBlock(BlockAndTintGetter level, BlockPos selfPos, BlockPos otherPos) {
+		return level.getBlockState(selfPos).getBlock() instanceof AbstractAdvancedDisplayBlock && level.getBlockState(otherPos).getBlock() instanceof AbstractAdvancedDisplayBlock &&
+			level.getBlockState(selfPos).getBlock() == level.getBlockState(otherPos).getBlock() &&
+			level.getBlockState(selfPos).getValue(FACING) == level.getBlockState(otherPos).getValue(FACING)
+		;
+	}
 
 	protected Axis getConnectionAxis(BlockState state) {
 		return state.getValue(FACING).getClockWise().getAxis();
@@ -269,16 +297,14 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 	
     protected boolean updateNeighbour(BlockState pState, Level pLevel, BlockPos pPos, BlockPos neighbourPos) {
         if (pLevel.getBlockState(neighbourPos).is(this) && pLevel.getBlockEntity(neighbourPos) instanceof AdvancedDisplayBlockEntity otherBe && pLevel.getBlockEntity(pPos) instanceof AdvancedDisplayBlockEntity be) {
-            be.setColor(otherBe.getColor());
-            be.setGlowing(otherBe.isGlowing());
-            be.setDisplayType(otherBe.getDisplayType());
-            be.setInfoType(otherBe.getInfoType());
-			be.notifyUpdate();
+	    	be.copyFrom(otherBe);
+			pLevel.setBlockAndUpdate(pPos, pState);
+
             if (pLevel.isClientSide) {
                 be.getController().getRenderer().update(pLevel, neighbourPos, pState, otherBe, EUpdateReason.BLOCK_CHANGED);
             }
 
-			pLevel.setBlockAndUpdate(pPos, pState);
+
             return true;
         }
 		return false;
@@ -318,4 +344,8 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
     public abstract Pair<Float, Float> getRenderOffset(Level level, BlockState blockState, BlockPos pos);
     /** First value: Front side, Second value: Back side */ public abstract Pair<Float, Float> getRenderZOffset(Level level, BlockState blockState, BlockPos pos);
     public abstract Pair<Float, Float> getRenderAspectRatio(Level level, BlockState blockState, BlockPos pos);
+
+	public Collection<Property<?>> getExcludedProperties() {
+		return List.of();
+	}
 }

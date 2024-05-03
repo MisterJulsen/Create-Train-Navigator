@@ -1,5 +1,8 @@
 package de.mrjulsen.crn.util;
 
+import java.util.Map;
+import java.util.Set;
+
 import com.simibubi.create.foundation.utility.Components;
 import com.simibubi.create.foundation.utility.Lang;
 
@@ -46,5 +49,19 @@ public class ModUtils {
         }
 
         return sb.toString();
+    }
+
+    public static <Key, Value> boolean areEqual(Set<Map.Entry<Key, Value>> set1, Set<Map.Entry<Key, Value>> set2) {
+        if (set1.size() != set2.size()) {
+            return false;
+        }
+
+        for (Map.Entry<Key, Value> entry : set1) {
+            if(!set2.contains(entry)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

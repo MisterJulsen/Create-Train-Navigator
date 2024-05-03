@@ -27,6 +27,7 @@ import de.mrjulsen.crn.data.GlobalSettingsManager;
 import de.mrjulsen.crn.network.packets.cts.AdvancedDisplayUpdatePacket;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.gui.DLScreen;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.DLCheckBox;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLTooltip;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
@@ -60,15 +61,13 @@ public class AdvancedDisplaySettingsScreen extends DLScreen {
     private final BlockPos pos;
     private EDisplayInfo info;
     private EDisplayType type;
-    private ESide side;
-    private final boolean isDoubleSided;
+    private final boolean canBeDoubleSided;
+    private boolean doubleSided;
 
     private ScrollInput infoTypeInput;
     private Label infoTypeLabel;
     private ScrollInput displayTypeInput;
-    private Label displayTypeLabel;    
-    private ScrollInput sidesInput;
-    private Label sidesLabel;
+    private Label displayTypeLabel;
     
     private DLCreateIconButton globalSettingsButton;
     private final MutableComponent tooltipGlobalSettings = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".navigator.global_settings.tooltip");
@@ -76,8 +75,7 @@ public class AdvancedDisplaySettingsScreen extends DLScreen {
     private final MutableComponent tooltipDisplayTypeDescription = TextUtils.translate("gui.createrailwaysnavigator.advanced_display_settings.display_type.description");
     private final MutableComponent tooltipInfoType = TextUtils.translate("gui.createrailwaysnavigator.advanced_display_settings.info_type");
     private final MutableComponent tooltipInfoTypeDescription = TextUtils.translate("gui.createrailwaysnavigator.advanced_display_settings.info_type.description");
-    private final MutableComponent tooltipSides = TextUtils.translate("gui.createrailwaysnavigator.advanced_display_settings.sides");
-    private final MutableComponent tooltipSidesDescription = TextUtils.translate("gui.createrailwaysnavigator.advanced_display_settings.sides.description");
+    private final MutableComponent textDoubleSided = TextUtils.translate("gui.createrailwaysnavigator.advanced_display_settings.double_sided");
 
     private int guiLeft, guiTop;
 
@@ -90,15 +88,15 @@ public class AdvancedDisplaySettingsScreen extends DLScreen {
         this.pos = blockEntity.getBlockPos();
         this.level = blockEntity.getLevel();
         this.info = blockEntity.getInfoType();
-        this.type = blockEntity.getDisplayType();        
-        this.side = blockEntity.getBlockState().getBlock() instanceof AbstractAdvancedSidedDisplayBlock ? blockEntity.getBlockState().getValue(AbstractAdvancedSidedDisplayBlock.SIDE) : ESide.BOTH;
+        this.type = blockEntity.getDisplayType();
         this.renderedItem = new ItemStack(blockEntity.getBlockState().getBlock());
-        this.isDoubleSided = !(blockEntity.getBlockState().getBlock() instanceof AbstractAdvancedSidedDisplayBlock);
+        this.canBeDoubleSided = blockEntity.getBlockState().getBlock() instanceof AbstractAdvancedSidedDisplayBlock;
+        this.doubleSided = !canBeDoubleSided || blockEntity.getBlockState().getValue(AbstractAdvancedSidedDisplayBlock.SIDE) == ESide.BOTH;
     }
 
     @Override
     public void onClose() {        
-        ExampleMod.net().CHANNEL.sendToServer(new AdvancedDisplayUpdatePacket(level, pos, type, info, side));
+        ExampleMod.net().CHANNEL.sendToServer(new AdvancedDisplayUpdatePacket(level, pos, type, info, doubleSided));
         super.onClose();
     }
 
@@ -137,18 +135,10 @@ public class AdvancedDisplaySettingsScreen extends DLScreen {
             .setState(info.getId()));
         infoTypeInput.onChanged();
         
-        sidesLabel = addRenderableWidget(new DLCreateLabel(guiLeft + 45 + 5, guiTop + 67 + 5, Components.immutableEmpty()).withShadow());
-        sidesInput = addRenderableWidget(new DLCreateSelectionScrollInput(guiLeft + 45, guiTop + 67, 138, 18)
-            .forOptions(Arrays.stream(ESide.values()).map(x -> TextUtils.translate(x.getValueTranslationKey(ExampleMod.MOD_ID))).toList())
-			.titled(tooltipSides)
-            .writingTo(sidesLabel)
-            .calling((i) -> {
-                side = ESide.getSideById(i);
-            })
-            .addHint(tooltipSidesDescription)
-            .setState(side.getId()));
-        sidesInput.active = !isDoubleSided;
-        sidesInput.onChanged();
+
+        addRenderableWidget(new DLCheckBox(guiLeft + 45, guiTop + 67 + 1, 138, textDoubleSided.getString(), doubleSided, (box) -> {
+            this.doubleSided = box.isChecked();
+        })).active = canBeDoubleSided;
 
         // Global Options Button
         if (minecraft.player.hasPermissions(ModCommonConfig.GLOBAL_SETTINGS_PERMISSION_LEVEL.get())) {
@@ -179,7 +169,6 @@ public class AdvancedDisplaySettingsScreen extends DLScreen {
         super.tick();
         infoTypeInput.tick();
         displayTypeInput.tick();
-        sidesInput.tick();
     }
     
     @Override

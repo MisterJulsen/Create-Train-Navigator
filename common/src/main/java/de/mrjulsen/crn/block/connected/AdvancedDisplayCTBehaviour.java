@@ -24,7 +24,7 @@ public class AdvancedDisplayCTBehaviour extends ConnectedTextureBehaviour.Base {
 	}
 
     @Override
-	public boolean connectsTo(BlockState state, BlockState other, BlockAndTintGetter reader, BlockPos pos, BlockPos otherPos, Direction face, Direction primaryOffset, Direction secondaryOffset) {		
+	public boolean connectsTo(BlockState state, BlockState other, BlockAndTintGetter reader, BlockPos pos, BlockPos otherPos, Direction face, Direction primaryOffset, Direction secondaryOffset) {	
 		return reader.getBlockEntity(pos) instanceof AdvancedDisplayBlockEntity blockEntity && blockEntity.connectable(reader, pos, otherPos);
 	}
 

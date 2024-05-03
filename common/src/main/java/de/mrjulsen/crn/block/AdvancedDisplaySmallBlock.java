@@ -1,5 +1,7 @@
 package de.mrjulsen.crn.block;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -11,21 +13,19 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.Direction.AxisDirection;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition.Builder;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
-import net.minecraft.world.level.block.state.properties.Half;
+import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class AdvancedDisplaySmallBlock extends AbstractAdvancedSidedDisplayBlock {
     
-	public static final EnumProperty<Half> HALF = BlockStateProperties.HALF;
 	public static final EnumProperty<EBlockAlignment> Y_ALIGN = EnumProperty.create("y_alignment", EBlockAlignment.class);
 	public static final EnumProperty<EBlockAlignment> Z_ALIGN = EnumProperty.create("z_alignment", EBlockAlignment.class);
 
@@ -83,10 +83,14 @@ public class AdvancedDisplaySmallBlock extends AbstractAdvancedSidedDisplayBlock
     public AdvancedDisplaySmallBlock(Properties properties) {
         super(properties);
 		registerDefaultState(defaultBlockState()
-            .setValue(HALF, Half.BOTTOM)
             .setValue(Y_ALIGN, EBlockAlignment.CENTER)
             .setValue(Z_ALIGN, EBlockAlignment.CENTER)
         );
+    }
+
+    @Override
+    public Collection<Property<?>> getExcludedProperties() {
+        return List.of(Y_ALIGN, Z_ALIGN);
     }
 
     @Override
@@ -131,18 +135,16 @@ public class AdvancedDisplaySmallBlock extends AbstractAdvancedSidedDisplayBlock
 	}
 
     @Override
-    public boolean canConnectWithBlock(Level level, BlockPos selfPos, BlockPos otherPos) {
-        return level.getBlockState(otherPos).getBlock() instanceof AdvancedDisplaySmallBlock && level.getBlockState(selfPos).getValue(HALF) == level.getBlockState(otherPos).getValue(HALF);
-    }
-
-    @Override
-    protected boolean canConnect(LevelAccessor level, BlockPos pos, BlockState state, BlockState other) {
-        return super.canConnect(level, pos, state, other) && state.getValue(HALF) == other.getValue(HALF);
-    }
+    public boolean canConnectWithBlock(BlockAndTintGetter level, BlockPos selfPos, BlockPos otherPos) {
+		return super.canConnectWithBlock(level, selfPos, otherPos) &&
+            level.getBlockState(selfPos).getValue(Y_ALIGN) == level.getBlockState(otherPos).getValue(Y_ALIGN) && 
+            level.getBlockState(selfPos).getValue(Z_ALIGN) == level.getBlockState(otherPos).getValue(Z_ALIGN)
+		;
+	}
 
 	@Override
 	protected void createBlockStateDefinition(Builder<Block, BlockState> pBuilder) {
-		super.createBlockStateDefinition(pBuilder.add(HALF, Y_ALIGN, Z_ALIGN));
+		super.createBlockStateDefinition(pBuilder.add(Y_ALIGN, Z_ALIGN));
 	}
 
     @Override
@@ -152,7 +154,19 @@ public class AdvancedDisplaySmallBlock extends AbstractAdvancedSidedDisplayBlock
 
     @Override
     public Pair<Float, Float> getRenderOffset(Level level, BlockState blockState, BlockPos pos) {
-        return Pair.of(0.0f, blockState.getValue(HALF) == Half.BOTTOM ? 8.0F : 0.0F);
+        float y;
+        switch (blockState.getValue(Y_ALIGN)) {
+            case NEGATIVE:
+                y = 8.0f;
+                break;
+            case POSITIVE:
+                y = 0.0f;
+                break;
+            default:
+                y = 4.0f;
+                break;
+        }
+        return Pair.of(0.0f, y);
     }
 
     @Override

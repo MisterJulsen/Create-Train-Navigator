@@ -4,7 +4,7 @@ import com.simibubi.create.foundation.block.connected.CTSpriteShiftEntry;
 import com.simibubi.create.foundation.block.connected.ConnectedTextureBehaviour;
 
 import de.mrjulsen.crn.block.AbstractAdvancedSidedDisplayBlock;
-import de.mrjulsen.crn.block.AdvancedDisplaySmallBlock;
+import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -39,9 +39,6 @@ public class AdvancedDisplaySmallCTBehaviour extends ConnectedTextureBehaviour.B
 			case BOTH:
 				b = state.getValue(AbstractAdvancedSidedDisplayBlock.FACING).getAxis() == direction.getAxis();
 				break;
-			case BACK:
-				b = state.getValue(AbstractAdvancedSidedDisplayBlock.FACING).getOpposite() == direction;
-				break;
 			default:
 				b = state.getValue(AbstractAdvancedSidedDisplayBlock.FACING) == direction;
 				break;
@@ -51,20 +48,7 @@ public class AdvancedDisplaySmallCTBehaviour extends ConnectedTextureBehaviour.B
     
     @Override
 	public boolean connectsTo(BlockState state, BlockState other, BlockAndTintGetter reader, BlockPos pos, BlockPos otherPos, Direction face, Direction primaryOffset, Direction secondaryOffset) {
-		if (other.getBlock() != state.getBlock()) {
-			return false;
-		}
-		if (other.getValue(HorizontalDirectionalBlock.FACING) != state.getValue(HorizontalDirectionalBlock.FACING)) {
-			return false;
-		}
-		if (other.getBlock() instanceof AbstractAdvancedSidedDisplayBlock && other.getValue(AbstractAdvancedSidedDisplayBlock.SIDE) != state.getValue(AbstractAdvancedSidedDisplayBlock.SIDE)) {
-			return false;
-		}
-		if (other.getBlock() instanceof AdvancedDisplaySmallBlock && other.getValue(AdvancedDisplaySmallBlock.HALF) != state.getValue(AdvancedDisplaySmallBlock.HALF)) {
-			return false;
-		}
-            
-		return true;
+		return reader.getBlockEntity(pos) instanceof AdvancedDisplayBlockEntity blockEntity && blockEntity.connectable(reader, pos, otherPos);
 	}
 
 	@Override

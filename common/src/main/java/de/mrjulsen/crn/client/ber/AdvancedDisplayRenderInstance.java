@@ -124,7 +124,7 @@ public class AdvancedDisplayRenderInstance extends AbstractBlockEntityRenderInst
                 labels.forEach(x -> x.render(pPoseStack, pBufferSource, light)); 
                 pPoseStack.popPose();
             }
-            if (!(pBlockEntity.getBlockState().getBlock() instanceof AbstractAdvancedSidedDisplayBlock) || pBlockEntity.getBlockState().getValue(AbstractAdvancedSidedDisplayBlock.SIDE) == ESide.BACK || pBlockEntity.getBlockState().getValue(AbstractAdvancedSidedDisplayBlock.SIDE) == ESide.BOTH) {
+            if (!(pBlockEntity.getBlockState().getBlock() instanceof AbstractAdvancedSidedDisplayBlock) || pBlockEntity.getBlockState().getValue(AbstractAdvancedSidedDisplayBlock.SIDE) == ESide.BOTH) {
                 pPoseStack.pushPose();
                 pPoseStack.mulPose(Vector3f.YP.rotationDegrees(180));
                 pPoseStack.translate(-pBlockEntity.getXSize() * 16, 0, -16);

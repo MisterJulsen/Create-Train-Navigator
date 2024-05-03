@@ -2,7 +2,6 @@ package de.mrjulsen.crn.network.packets.cts;
 
 import java.util.function.Supplier;
 
-import de.mrjulsen.crn.block.AbstractAdvancedDisplayBlock;
 import de.mrjulsen.crn.block.AbstractAdvancedSidedDisplayBlock;
 import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.data.EDisplayInfo;
@@ -20,23 +19,23 @@ public class AdvancedDisplayUpdatePacket implements IPacketBase<AdvancedDisplayU
     private BlockPos pos;
     private EDisplayType type;
     private EDisplayInfo info;
-    private ESide side;
+    private boolean doubleSided;
 
     public AdvancedDisplayUpdatePacket() {}
 
-    public AdvancedDisplayUpdatePacket(Level level, BlockPos pos, EDisplayType type, EDisplayInfo info, ESide side) {
+    public AdvancedDisplayUpdatePacket(Level level, BlockPos pos, EDisplayType type, EDisplayInfo info, boolean doubleSided) {
         this.pos = pos;
         this.info = info;
         this.type = type;
-        this.side = side;
+        this.doubleSided = doubleSided;
         apply(level, this);
     }
 
-    protected AdvancedDisplayUpdatePacket(BlockPos pos, EDisplayType type, EDisplayInfo info, ESide side) {
+    protected AdvancedDisplayUpdatePacket(BlockPos pos, EDisplayType type, EDisplayInfo info, boolean doubleSided) {
         this.pos = pos;
         this.info = info;
         this.type = type;
-        this.side = side;
+        this.doubleSided = doubleSided;
     }
 
     @Override
@@ -44,7 +43,7 @@ public class AdvancedDisplayUpdatePacket implements IPacketBase<AdvancedDisplayU
         buffer.writeBlockPos(packet.pos);
         buffer.writeInt(packet.info.getId());
         buffer.writeInt(packet.type.getId());
-        buffer.writeEnum(packet.side);
+        buffer.writeBoolean(packet.doubleSided);
     }
 
     @Override
@@ -52,9 +51,9 @@ public class AdvancedDisplayUpdatePacket implements IPacketBase<AdvancedDisplayU
         BlockPos pos = buffer.readBlockPos();
         EDisplayInfo info = EDisplayInfo.getTypeById(buffer.readInt());
         EDisplayType type = EDisplayType.getTypeById(buffer.readInt());
-        ESide side = buffer.readEnum(ESide.class);
+        boolean doubleSided = buffer.readBoolean();
 
-        return new AdvancedDisplayUpdatePacket(pos, type, info, side);
+        return new AdvancedDisplayUpdatePacket(pos, type, info, doubleSided);
     }
 
     private void apply(Level level, AdvancedDisplayUpdatePacket packet) {
@@ -63,11 +62,9 @@ public class AdvancedDisplayUpdatePacket implements IPacketBase<AdvancedDisplayU
                 blockEntity.applyToAll(be -> {
                     be.setDisplayType(packet.type);
                     be.setInfoType(packet.info);
-                    if (level.getBlockState(be.getBlockPos()).getBlock() instanceof AbstractAdvancedDisplayBlock) {
+                    if (level.getBlockState(be.getBlockPos()).getBlock() instanceof AbstractAdvancedSidedDisplayBlock) {
                         BlockState state = level.getBlockState(be.getBlockPos());
-                        if (state.getBlock() instanceof AbstractAdvancedSidedDisplayBlock) {
-                            state = state.setValue(AbstractAdvancedSidedDisplayBlock.SIDE, packet.side);
-                        }
+                        state = state.setValue(AbstractAdvancedSidedDisplayBlock.SIDE, packet.doubleSided ? ESide.BOTH : ESide.FRONT);
                         level.setBlockAndUpdate(be.getBlockPos(), state);
                     }
                     be.notifyUpdate();                    

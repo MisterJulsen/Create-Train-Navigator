@@ -7,7 +7,6 @@ import net.minecraft.util.StringRepresentable;
 
 public enum ESide implements StringRepresentable, ITranslatableEnum {
 	FRONT(0, "front"),
-	BACK(1, "back"),
     BOTH(2, "both");
 	
 	private String name;

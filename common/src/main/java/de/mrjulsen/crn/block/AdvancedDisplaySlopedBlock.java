@@ -6,7 +6,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -35,16 +34,6 @@ public class AdvancedDisplaySlopedBlock extends AbstractAdvancedDisplayBlock {
     @Override
     public VoxelShape getShape(BlockState pState, BlockGetter pLevel, BlockPos pPos, CollisionContext pContext) {
         return pState.getValue(FACING) == Direction.NORTH || pState.getValue(FACING) == Direction.SOUTH ? SHAPE_SN : SHAPE_EW;
-    }
-
-    @Override
-    public boolean canConnectWithBlock(Level level, BlockPos selfPos, BlockPos otherPos) {
-        return level.getBlockState(otherPos).getBlock() instanceof AdvancedDisplaySlopedBlock;
-    }
-
-    @Override
-    protected boolean canConnect(LevelAccessor level, BlockPos pos, BlockState state, BlockState other) {
-        return super.canConnect(level, pos, state, other);
     }
 
     @Override

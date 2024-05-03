@@ -27,11 +27,6 @@ public class AdvancedDisplayPanelBlock extends AbstractAdvancedSidedDisplayBlock
     }
 
     @Override
-    public boolean canConnectWithBlock(Level level, BlockPos selfPos, BlockPos otherPos) {
-        return true;
-    }
-
-    @Override
     public VoxelShape getShape(BlockState pState, BlockGetter pLevel, BlockPos pPos, CollisionContext pContext) {
         return SHAPES.get(pState.getValue(FACING));
     }

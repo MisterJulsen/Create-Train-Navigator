@@ -41,6 +41,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -303,8 +305,6 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         if (level.isClientSide) {
             getRenderer().update(level, worldPosition, getBlockState(), this, EUpdateReason.BLOCK_CHANGED);
         }
-        notifyUpdate();
-        level.setBlockAndUpdate(worldPosition, getBlockState());
 
     }
 
@@ -313,8 +313,6 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         if (level.isClientSide) {
             getRenderer().update(level, worldPosition, getBlockState(), this, EUpdateReason.BLOCK_CHANGED);
         }
-        notifyUpdate();
-        level.setBlockAndUpdate(worldPosition, getBlockState());
 
     }
 
@@ -323,8 +321,6 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         if (level.isClientSide) {
             getRenderer().update(level, worldPosition, getBlockState(), this, EUpdateReason.BLOCK_CHANGED);
         }
-        notifyUpdate();
-        level.setBlockAndUpdate(worldPosition, getBlockState());
     }
 
     public void setDisplayType(EDisplayType type) {
@@ -332,10 +328,6 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         if (level.isClientSide) {
             getRenderer().update(level, worldPosition, getBlockState(), this, EUpdateReason.BLOCK_CHANGED);
         }
-        notifyUpdate();
-        level.setBlockAndUpdate(worldPosition, getBlockState());
-
-
     }
 
     public void setDepartureData(List<SimpleDeparturePrediction> predictions, List<String> nextDepartureStopovers, String stationNameFilter, StationInfo staionInfo, long lastRefreshedTime, byte platformWidth, byte trainNameWidth, byte timeDisplayId) {
@@ -357,13 +349,11 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 
         if (getter.getBlockEntity(a) instanceof AdvancedDisplayBlockEntity be1 && getter.getBlockEntity(b) instanceof AdvancedDisplayBlockEntity be2 && be1.getBlockState().getBlock() instanceof AbstractAdvancedDisplayBlock block1 && be2.getBlockState().getBlock() instanceof AbstractAdvancedDisplayBlock block2) {
             return  block1 == block2 &&
-                    be1.getDisplayType() == be2.getDisplayType() &&
-                    be1.getInfoType() == be2.getInfoType() &&
-                    (!(be1.getBlockState().getBlock() instanceof AbstractAdvancedSidedDisplayBlock) || be1.getBlockState().getValue(AbstractAdvancedSidedDisplayBlock.SIDE) == be2.getBlockState().getValue(AbstractAdvancedSidedDisplayBlock.SIDE)) &&
-                    be1.getBlockState().getValue(AbstractAdvancedDisplayBlock.FACING) == be2.getBlockState().getValue(AbstractAdvancedDisplayBlock.FACING) &&
-                    block1.canConnectWithBlock(level, a, b) && block2.canConnectWithBlock(level, b, a) && 
-                    (!a.above().equals(b) || (be1.getBlockState().getValue(AbstractAdvancedDisplayBlock.UP) && !be1.isSingleLine())) &&
-                    (!a.below().equals(b) || (be1.getBlockState().getValue(AbstractAdvancedDisplayBlock.DOWN) && !be1.isSingleLine()))
+                be1.getDisplayType() == be2.getDisplayType() &&
+                be1.getInfoType() == be2.getInfoType() &&
+                block1.canConnectWithBlock(level, a, b) && block2.canConnectWithBlock(level, b, a) && 
+                (!a.above().equals(b) || (be1.getBlockState().getValue(AbstractAdvancedDisplayBlock.UP) && !be1.isSingleLine())) &&
+                (!a.below().equals(b) || (be1.getBlockState().getValue(AbstractAdvancedDisplayBlock.DOWN) && !be1.isSingleLine()))
             ;
         }
         return false;
@@ -684,5 +674,21 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {}
+
+    @Override
+    public ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this, BlockEntity::getUpdateTag);
+    }
+
+    @Override
+    public CompoundTag getUpdateTag() {
+        return this.saveWithFullMetadata();
+    }
+
+    @Override
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
+        this.load(pkt.getTag());
+        this.level.sendBlockUpdated(this.worldPosition, this.getBlockState(), this.getBlockState(), 512);
+    }
 
 }
