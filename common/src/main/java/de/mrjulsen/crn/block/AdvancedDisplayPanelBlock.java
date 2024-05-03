@@ -24,7 +24,7 @@ import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class AdvancedDisplayPanelBlock extends AbstractAdvancedDisplayBlock {
+public class AdvancedDisplayPanelBlock extends AbstractAdvancedSidedDisplayBlock {
         
 	public static final EnumProperty<EBlockAlignment> Z_ALIGN = EnumProperty.create("z_alignment", EBlockAlignment.class);
 
@@ -48,7 +48,7 @@ public class AdvancedDisplayPanelBlock extends AbstractAdvancedDisplayBlock {
     public AdvancedDisplayPanelBlock(Properties properties) {
         super(properties);
     registerDefaultState(defaultBlockState()
-            .setValue(Z_ALIGN, EBlockAlignment.CENTER)
+            .setValue(Z_ALIGN, EBlockAlignment.POSITIVE)
         );
     }
     
@@ -77,12 +77,10 @@ public class AdvancedDisplayPanelBlock extends AbstractAdvancedDisplayBlock {
             xzPos = pContext.getClickLocation().z - pContext.getClickedPos().getZ();
         }
 
-        EBlockAlignment zAlign = EBlockAlignment.CENTER;
+        EBlockAlignment zAlign = EBlockAlignment.POSITIVE;
 
-        if (direction == pContext.getPlayer().getDirection().getOpposite() || (axisDirection == AxisDirection.POSITIVE ? xzPos > 0.66666666D : xzPos < 0.33333333D)) {
-			zAlign = EBlockAlignment.POSITIVE;
-        } else if (direction == pContext.getPlayer().getDirection() || (axisDirection == AxisDirection.POSITIVE ? xzPos < 0.33333333D : xzPos > 0.66666666D)) {
-            zAlign = EBlockAlignment.NEGATIVE;
+        if (direction == pContext.getPlayer().getDirection().getOpposite() || (axisDirection == AxisDirection.POSITIVE ? xzPos < 0.5D : xzPos > 0.5D)) {
+			zAlign = EBlockAlignment.NEGATIVE;
         }
 
 		return stateForPlacement

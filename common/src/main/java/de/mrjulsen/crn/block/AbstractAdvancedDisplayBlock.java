@@ -11,7 +11,6 @@ import com.simibubi.create.foundation.utility.Iterate;
 
 import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.client.ClientWrapper;
-import de.mrjulsen.crn.data.ESide;
 import de.mrjulsen.crn.registry.ModBlockEntities;
 import de.mrjulsen.mcdragonlib.client.ber.IBlockEntityRendererInstance.EUpdateReason;
 import de.mrjulsen.mcdragonlib.data.Pair;
@@ -46,7 +45,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition.Builder;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
-import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.ticks.LevelTickAccess;
@@ -54,7 +52,6 @@ import net.minecraft.world.ticks.LevelTickAccess;
 public abstract class AbstractAdvancedDisplayBlock extends Block implements IWrenchable, IBE<AdvancedDisplayBlockEntity> {
 
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
-    public static final EnumProperty<ESide> SIDE = EnumProperty.create("side", ESide.class);
     
 	public static final BooleanProperty UP = BooleanProperty.create("up");
 	public static final BooleanProperty DOWN = BooleanProperty.create("down");
@@ -66,7 +63,6 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
             .setValue(UP, false)
             .setValue(DOWN, false)
             .setValue(FACING, Direction.NORTH)
-            .setValue(SIDE, ESide.FRONT)
         );
     }
 
@@ -83,7 +79,7 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
     @Override
     protected void createBlockStateDefinition(Builder<Block, BlockState> pBuilder) {
         super.createBlockStateDefinition(pBuilder);
-        pBuilder.add(UP, DOWN, FACING, SIDE);
+        pBuilder.add(UP, DOWN, FACING);
     }
 
     @Override
@@ -97,10 +93,9 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 
 		if ((blockState.getBlock() != this) || (context.getPlayer() != null && context.getPlayer().isShiftKeyDown())) {
 			stateForPlacement = super.getStateForPlacement(context).setValue(FACING, context.getHorizontalDirection().getOpposite());
-			stateForPlacement = getPropertyFromNeighbours(stateForPlacement, level, clickedPos, SIDE);
 		} else { // Clicked on existing block
 			Direction otherFacing = blockState.getValue(FACING);
-			stateForPlacement = stateForPlacement.setValue(FACING, otherFacing).setValue(SIDE, blockState.getValue(SIDE));
+			stateForPlacement = stateForPlacement.setValue(FACING, otherFacing);
 		}
 
 		return updateColumn(level, clickedPos, stateForPlacement, true);

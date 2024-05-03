@@ -24,7 +24,7 @@ import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class AdvancedDisplaySmallBlock extends AbstractAdvancedDisplayBlock {
+public class AdvancedDisplaySmallBlock extends AbstractAdvancedSidedDisplayBlock {
     
 	public static final EnumProperty<EBlockAlignment> Y_ALIGN = EnumProperty.create("y_alignment", EBlockAlignment.class);
 	public static final EnumProperty<EBlockAlignment> Z_ALIGN = EnumProperty.create("z_alignment", EBlockAlignment.class);
