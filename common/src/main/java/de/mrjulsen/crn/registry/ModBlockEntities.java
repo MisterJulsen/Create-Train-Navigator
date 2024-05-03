@@ -29,7 +29,6 @@ public class ModBlockEntities {
 		.renderer(() -> StaticBlockEntityRenderer::new)
 		.register();
 
-
     public static void register() {
     } 
 }

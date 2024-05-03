@@ -13,7 +13,6 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 
 import de.mrjulsen.crn.ExampleMod;
 import de.mrjulsen.crn.block.AbstractAdvancedDisplayBlock;
-import de.mrjulsen.crn.block.AbstractAdvancedSidedDisplayBlock;
 import de.mrjulsen.crn.block.display.AdvancedDisplaySource.ETimeDisplay;
 import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
 import de.mrjulsen.crn.data.CarriageData;
@@ -102,7 +101,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     private CarriageData carriageData = new CarriageData(0, Direction.NORTH, false);
     
     // OTHER
-    private int syncTicks = 0;
+    private int syncTicks = Integer.MAX_VALUE;
     private final Cache<IBlockEntityRendererInstance<AdvancedDisplayBlockEntity>> renderer = new Cache<>(() -> new AdvancedDisplayRenderInstance(this));
 
     public final Cache<TrainExitSide> relativeExitDirection = new Cache<>(() -> {        
@@ -421,6 +420,9 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         stationNameFilter = "";
         platformWidth = -1;
         trainNameWidth = 16;
+        xSize = 1;
+        ySize = 1;
+        isController = false;
         stationInfo = StationInfo.empty();
     }
 
@@ -479,6 +481,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         if (!isController) {
             reset();
         }
+
         notifyUpdate();
 	}    
 

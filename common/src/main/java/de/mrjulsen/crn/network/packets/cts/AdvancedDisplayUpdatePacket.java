@@ -2,7 +2,7 @@ package de.mrjulsen.crn.network.packets.cts;
 
 import java.util.function.Supplier;
 
-import de.mrjulsen.crn.block.AbstractAdvancedSidedDisplayBlock;
+import de.mrjulsen.crn.block.AbstractAdvancedDisplayBlock;
 import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.data.EDisplayInfo;
 import de.mrjulsen.crn.data.EDisplayType;
@@ -62,9 +62,9 @@ public class AdvancedDisplayUpdatePacket implements IPacketBase<AdvancedDisplayU
                 blockEntity.applyToAll(be -> {
                     be.setDisplayType(packet.type);
                     be.setInfoType(packet.info);
-                    if (level.getBlockState(be.getBlockPos()).getBlock() instanceof AbstractAdvancedSidedDisplayBlock) {
+                    if (level.getBlockState(be.getBlockPos()).getBlock() instanceof AbstractAdvancedDisplayBlock) {
                         BlockState state = level.getBlockState(be.getBlockPos());
-                        state = state.setValue(AbstractAdvancedSidedDisplayBlock.SIDE, packet.doubleSided ? ESide.BOTH : ESide.FRONT);
+                        state = state.setValue(AbstractAdvancedDisplayBlock.SIDE, packet.doubleSided ? ESide.BOTH : ESide.FRONT);
                         level.setBlockAndUpdate(be.getBlockPos(), state);
                     }
                     be.notifyUpdate();                    

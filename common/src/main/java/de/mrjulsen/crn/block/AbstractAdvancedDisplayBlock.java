@@ -11,6 +11,7 @@ import com.simibubi.create.foundation.utility.Iterate;
 
 import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.client.ClientWrapper;
+import de.mrjulsen.crn.data.ESide;
 import de.mrjulsen.crn.registry.ModBlockEntities;
 import de.mrjulsen.mcdragonlib.client.ber.IBlockEntityRendererInstance.EUpdateReason;
 import de.mrjulsen.mcdragonlib.data.Pair;
@@ -45,6 +46,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition.Builder;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.ticks.LevelTickAccess;
@@ -52,6 +54,7 @@ import net.minecraft.world.ticks.LevelTickAccess;
 public abstract class AbstractAdvancedDisplayBlock extends Block implements IWrenchable, IBE<AdvancedDisplayBlockEntity> {
 
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
+    public static final EnumProperty<ESide> SIDE = EnumProperty.create("side", ESide.class);
     
 	public static final BooleanProperty UP = BooleanProperty.create("up");
 	public static final BooleanProperty DOWN = BooleanProperty.create("down");
@@ -63,6 +66,7 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
             .setValue(UP, false)
             .setValue(DOWN, false)
             .setValue(FACING, Direction.NORTH)
+            .setValue(SIDE, ESide.FRONT)
         );
     }
 
@@ -79,7 +83,7 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
     @Override
     protected void createBlockStateDefinition(Builder<Block, BlockState> pBuilder) {
         super.createBlockStateDefinition(pBuilder);
-        pBuilder.add(UP, DOWN, FACING);
+        pBuilder.add(UP, DOWN, FACING, SIDE);
     }
 
     @Override
@@ -93,15 +97,16 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 
 		if ((blockState.getBlock() != this) || (context.getPlayer() != null && context.getPlayer().isShiftKeyDown())) {
 			stateForPlacement = super.getStateForPlacement(context).setValue(FACING, context.getHorizontalDirection().getOpposite());
-		} else {
+			stateForPlacement = getPropertyFromNeighbours(stateForPlacement, level, clickedPos, SIDE);
+		} else { // Clicked on existing block
 			Direction otherFacing = blockState.getValue(FACING);
-			stateForPlacement = stateForPlacement.setValue(FACING, otherFacing);
+			stateForPlacement = stateForPlacement.setValue(FACING, otherFacing).setValue(SIDE, blockState.getValue(SIDE));
 		}
 
 		return updateColumn(level, clickedPos, stateForPlacement, true);
 	}
 
-    private BlockState updateColumn(Level level, BlockPos pos, BlockState state, boolean present) {
+    protected BlockState updateColumn(Level level, BlockPos pos, BlockState state, boolean present) {
 		MutableBlockPos currentPos = new MutableBlockPos();
 		Axis axis = getConnectionAxis(state);
 
@@ -150,6 +155,35 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 		}
 	}
 
+	public <T extends Comparable<T>> BlockState getPropertyFromNeighbours(BlockState pState, Level pLevel, BlockPos pPos, Property<T> property) {
+		Direction leftDirection = pState.getValue(HorizontalDirectionalBlock.FACING).getClockWise();
+		BlockPos relPos = pPos.relative(leftDirection);
+		BlockState newState = null;
+		if ((newState = getPropertyFromNeighbour(pState, pLevel, pPos, relPos, property)) != null) {
+			return newState;
+		}
+		relPos = pPos.relative(Direction.UP);        
+		if ((newState = getPropertyFromNeighbour(pState, pLevel, pPos, relPos, property)) != null) {
+			return newState;
+		}
+		relPos = pPos.relative(leftDirection.getOpposite());
+		if ((newState = getPropertyFromNeighbour(pState, pLevel, pPos, relPos, property)) != null) {
+			return newState;
+		}
+		relPos = pPos.relative(Direction.DOWN);        
+		if ((newState = getPropertyFromNeighbour(pState, pLevel, pPos, relPos, property)) != null) {
+			return newState;
+		}
+		return pState;
+	}
+
+	public <T extends Comparable<T>> BlockState getPropertyFromNeighbour(BlockState pState, Level pLevel, BlockPos pPos, BlockPos relPos, Property<T> property) {
+		if (pState.getBlock() == pLevel.getBlockState(relPos).getBlock()) {
+			return pState.setValue(property, pLevel.getBlockState(relPos).getValue(property));
+		}
+		return null;
+	}
+
 	public void updateNeighbours(BlockState pState, Level pLevel, BlockPos pPos) {
 		Direction leftDirection = pState.getValue(HorizontalDirectionalBlock.FACING).getClockWise();
 		BlockPos relPos = pPos.relative(leftDirection);
@@ -194,13 +228,14 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 		return setConnection(state, pDirection, getConnection(pNeighborState, pDirection.getOpposite()));
 	}
 
-	public BlockState applyPropertiesOf(BlockState currentState, BlockState state) {
+	public BlockState applyPropertiesOf(BlockState current, BlockState state) {
         BlockState blockState = this.defaultBlockState();
         for (Property<?> property : state.getBlock().getStateDefinition().getProperties()) {
-            if (!blockState.hasProperty(property)) continue;
-			
+            if (!blockState.hasProperty(property))
+				continue;
+
 			if (getExcludedProperties().contains(property)) {
-				blockState = copyPropertyOf(currentState, blockState, property);
+				blockState = copyPropertyOf(current, blockState, property);
 				continue;
 			}
 			
@@ -298,13 +333,6 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
     protected boolean updateNeighbour(BlockState pState, Level pLevel, BlockPos pPos, BlockPos neighbourPos) {
         if (pLevel.getBlockState(neighbourPos).is(this) && pLevel.getBlockEntity(neighbourPos) instanceof AdvancedDisplayBlockEntity otherBe && pLevel.getBlockEntity(pPos) instanceof AdvancedDisplayBlockEntity be) {
 	    	be.copyFrom(otherBe);
-			pLevel.setBlockAndUpdate(pPos, pState);
-
-            if (pLevel.isClientSide) {
-                be.getController().getRenderer().update(pLevel, neighbourPos, pState, otherBe, EUpdateReason.BLOCK_CHANGED);
-            }
-
-
             return true;
         }
 		return false;

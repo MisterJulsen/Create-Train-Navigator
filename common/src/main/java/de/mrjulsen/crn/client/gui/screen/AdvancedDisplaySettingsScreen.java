@@ -12,7 +12,7 @@ import com.simibubi.create.foundation.gui.widget.ScrollInput;
 import com.simibubi.create.foundation.utility.Components;
 
 import de.mrjulsen.crn.ExampleMod;
-import de.mrjulsen.crn.block.AbstractAdvancedSidedDisplayBlock;
+import de.mrjulsen.crn.block.AbstractAdvancedDisplayBlock;
 import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.widgets.DLCreateIconButton;
@@ -90,8 +90,8 @@ public class AdvancedDisplaySettingsScreen extends DLScreen {
         this.info = blockEntity.getInfoType();
         this.type = blockEntity.getDisplayType();
         this.renderedItem = new ItemStack(blockEntity.getBlockState().getBlock());
-        this.canBeDoubleSided = blockEntity.getBlockState().getBlock() instanceof AbstractAdvancedSidedDisplayBlock;
-        this.doubleSided = !canBeDoubleSided || blockEntity.getBlockState().getValue(AbstractAdvancedSidedDisplayBlock.SIDE) == ESide.BOTH;
+        this.canBeDoubleSided = blockEntity.getBlockState().getBlock() instanceof AbstractAdvancedDisplayBlock;
+        this.doubleSided = !canBeDoubleSided || blockEntity.getBlockState().getValue(AbstractAdvancedDisplayBlock.SIDE) == ESide.BOTH;
     }
 
     @Override

@@ -6,7 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class AdvancedDisplayBlock extends AbstractAdvancedSidedDisplayBlock {
+public class AdvancedDisplayBlock extends AbstractAdvancedDisplayBlock {
 
     public AdvancedDisplayBlock(Properties properties) {
         super(properties.noOcclusion());

@@ -3,7 +3,7 @@ package de.mrjulsen.crn.block.connected;
 import com.simibubi.create.foundation.block.connected.CTSpriteShiftEntry;
 import com.simibubi.create.foundation.block.connected.ConnectedTextureBehaviour;
 
-import de.mrjulsen.crn.block.AbstractAdvancedSidedDisplayBlock;
+import de.mrjulsen.crn.block.AbstractAdvancedDisplayBlock;
 import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
@@ -31,18 +31,11 @@ public class AdvancedDisplaySmallCTBehaviour extends ConnectedTextureBehaviour.B
 	public CTSpriteShiftEntry getShift(BlockState state, Direction direction, TextureAtlasSprite sprite) {
 		boolean b = false;
 
-		if (!(state.getBlock() instanceof AbstractAdvancedSidedDisplayBlock)) {
+		if (!(state.getBlock() instanceof AbstractAdvancedDisplayBlock)) {
 			return layerShift;
 		}
-
-		switch (state.getValue(AbstractAdvancedSidedDisplayBlock.SIDE)) {
-			case BOTH:
-				b = state.getValue(AbstractAdvancedSidedDisplayBlock.FACING).getAxis() == direction.getAxis();
-				break;
-			default:
-				b = state.getValue(AbstractAdvancedSidedDisplayBlock.FACING) == direction;
-				break;
-		}
+		
+		b = state.getValue(AbstractAdvancedDisplayBlock.FACING) == direction;
 		return b ? layerShift : null;
 	}
     

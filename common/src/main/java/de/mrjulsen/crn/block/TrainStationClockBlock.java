@@ -125,6 +125,6 @@ public class TrainStationClockBlock extends Block implements IWrenchable, IBE<Tr
 
     @Override
     public BlockEntityType<? extends TrainStationClockBlockEntity> getBlockEntityType() {
-        return ModBlockEntities.TRAIN_STATION_CLOCK_BLOCK_ENTITY.get();
+       return ModBlockEntities.TRAIN_STATION_CLOCK_BLOCK_ENTITY.get();
     }
 }
