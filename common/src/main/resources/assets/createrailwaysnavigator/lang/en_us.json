@@ -14,7 +14,7 @@
 	"block.createrailwaysnavigator.advanced_display_block.tooltip.summary": "Use it on _trains_, as a _train destination display_ or _passenger information display_, or at _train stations_ as improved _platform displays_ which also shows more information than regular display boards.",
     "block.createrailwaysnavigator.advanced_display_block.tooltip.condition1": "When R-Clicked using a Wrench",
 	"block.createrailwaysnavigator.advanced_display_block.tooltip.behaviour1": "Open a menu to _configure_ the _display_.",
-    "block.createrailwaysnavigator.advanced_display": "Advanced Display",
+    "block.createrailwaysnavigator.advanced_display": "Advanced Display Board",
 	"block.createrailwaysnavigator.advanced_display.tooltip.summary": "Use it on _trains_, as a _train destination display_ or _passenger information display_, or at _train stations_ as improved _platform displays_ which also shows more information than regular display boards.",
     "block.createrailwaysnavigator.advanced_display.tooltip.condition1": "When R-Clicked using a Wrench",
 	"block.createrailwaysnavigator.advanced_display.tooltip.behaviour1": "Open a menu to _configure_ the _display_.",
