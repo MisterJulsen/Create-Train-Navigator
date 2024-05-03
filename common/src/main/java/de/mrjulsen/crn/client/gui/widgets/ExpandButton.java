@@ -2,7 +2,7 @@ package de.mrjulsen.crn.client.gui.widgets;
 
 import java.util.function.Consumer;
 
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLButton;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
@@ -18,8 +18,8 @@ public class ExpandButton extends DLButton {
     // Data
     private boolean expanded;
 
-    private static final String expandText = "▼ " + TextUtils.translate("gui." + ExampleMod.MOD_ID + ".common.expand").getString();
-    private static final String collapseText = "▲ " + TextUtils.translate("gui." + ExampleMod.MOD_ID + ".common.collapse").getString();
+    private static final String expandText = "▼ " + TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.expand").getString();
+    private static final String collapseText = "▲ " + TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.collapse").getString();
     
 
     public ExpandButton(int pX, int pY, boolean initialState, Consumer<ExpandButton> onClick) {

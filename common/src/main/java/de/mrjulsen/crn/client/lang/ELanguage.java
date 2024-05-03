@@ -3,7 +3,7 @@ package de.mrjulsen.crn.client.lang;
 import java.util.Arrays;
 import java.util.List;
 
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.language.ClientLanguage;
 import net.minecraft.client.resources.language.LanguageInfo;
@@ -51,7 +51,7 @@ public enum ELanguage implements StringRepresentable {
         }
         currentLanguage = lang;
         currentClientLanguage = ClientLanguage.loadFrom(Minecraft.getInstance().getResourceManager(), List.of(info));
-        ExampleMod.LOGGER.info("Updated custom language to: " + (info == null ? null : info.getName()));
+        CreateRailwaysNavigator.LOGGER.info("Updated custom language to: " + (info == null ? null : info.getName()));
     }
 
     public static ClientLanguage getCurrentClientLanguage() {

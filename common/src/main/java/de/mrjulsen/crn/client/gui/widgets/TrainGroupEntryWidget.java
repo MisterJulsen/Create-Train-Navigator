@@ -10,7 +10,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 
 import de.mrjulsen.crn.Constants;
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
 import de.mrjulsen.crn.client.gui.screen.AbstractEntryListSettingsScreen;
 import de.mrjulsen.crn.data.ClientTrainStationSnapshot;
@@ -31,7 +31,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class TrainGroupEntryWidget extends AbstractEntryListOptionWidget {
 
-    private static final ResourceLocation GUI_WIDGETS = new ResourceLocation(ExampleMod.MOD_ID, "textures/gui/settings_widgets.png");
+    private static final ResourceLocation GUI_WIDGETS = new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/settings_widgets.png");
     public static final int WIDTH = 200;
     public static final int HEIGHT = 48;
     private static final int STATION_ENTRY_HEIGHT = 20;
@@ -61,9 +61,9 @@ public class TrainGroupEntryWidget extends AbstractEntryListOptionWidget {
 	private ModStationSuggestions suggestions;
 
     // Tooltips
-    private final MutableComponent tooltipDeleteAlias = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".train_group_settings.delete_alias.tooltip");
-    private final MutableComponent tooltipDeleteStation = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".train_group_settings.delete_station.tooltip");
-    private final MutableComponent tooltipAddStation = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".train_group_settings.add_station.tooltip");
+    private final MutableComponent tooltipDeleteAlias = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".train_group_settings.delete_alias.tooltip");
+    private final MutableComponent tooltipDeleteStation = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".train_group_settings.delete_station.tooltip");
+    private final MutableComponent tooltipAddStation = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".train_group_settings.add_station.tooltip");
     
 
     public TrainGroupEntryWidget(AbstractEntryListSettingsScreen<TrainGroup, TrainGroupEntryWidget> parent, int pX, int pY, TrainGroup trainGroup, Runnable onUpdate, boolean expanded) {
@@ -272,9 +272,9 @@ public class TrainGroupEntryWidget extends AbstractEntryListOptionWidget {
             GuiUtils.drawString(graphics, shadowlessFont, x + 30, y + 10, name, 0xFFFFFF, EAlignment.LEFT, false);
 
             graphics.poseStack().scale(0.75f, 0.75f, 0.75f);
-            GuiUtils.drawString(graphics, shadowlessFont, (int)((x + 5) / 0.75f), (int)((y + 30) / 0.75f), TextUtils.translate("gui." + ExampleMod.MOD_ID + ".train_group_settings.summary", trainGroup.getTrainNames().size()), 0xDBDBDB, EAlignment.LEFT, false);
+            GuiUtils.drawString(graphics, shadowlessFont, (int)((x + 5) / 0.75f), (int)((y + 30) / 0.75f), TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".train_group_settings.summary", trainGroup.getTrainNames().size()), 0xDBDBDB, EAlignment.LEFT, false);
             if (trainGroup.getLastEditorName() != null && !trainGroup.getLastEditorName().isBlank()) {
-                GuiUtils.drawString(graphics, shadowlessFont, (int)((x + 5) / 0.75f), (int)((y + 38) / 0.75f), TextUtils.translate("gui." + ExampleMod.MOD_ID + ".train_group_settings.editor", trainGroup.getLastEditorName(), trainGroup.getLastEditedTimeFormatted()), 0xDBDBDB, EAlignment.LEFT, false);
+                GuiUtils.drawString(graphics, shadowlessFont, (int)((x + 5) / 0.75f), (int)((y + 38) / 0.75f), TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".train_group_settings.editor", trainGroup.getLastEditorName(), trainGroup.getLastEditedTimeFormatted()), 0xDBDBDB, EAlignment.LEFT, false);
             }
             float s = 1 / 0.75f;
             graphics.poseStack().scale(s, s, s);

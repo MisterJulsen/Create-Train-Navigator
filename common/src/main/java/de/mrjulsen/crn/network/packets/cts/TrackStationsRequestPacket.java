@@ -2,7 +2,7 @@ package de.mrjulsen.crn.network.packets.cts;
 
 import java.util.function.Supplier;
 
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.event.listeners.TrainListener;
 import de.mrjulsen.crn.network.packets.stc.TrackStationResponsePacket;
 import de.mrjulsen.crn.util.TrainUtils;
@@ -35,7 +35,7 @@ public class TrackStationsRequestPacket implements IPacketBase<TrackStationsRequ
     @Override
     public void handle(TrackStationsRequestPacket packet, Supplier<PacketContext> contextSupplier) {
         contextSupplier.get().queue(() -> {
-            ExampleMod.net().CHANNEL.sendToPlayer((ServerPlayer)contextSupplier.get().getPlayer(), new TrackStationResponsePacket(
+            CreateRailwaysNavigator.net().CHANNEL.sendToPlayer((ServerPlayer)contextSupplier.get().getPlayer(), new TrackStationResponsePacket(
                 packet.id,
                 TrainUtils.getAllStations().stream().map(x -> x.name).toList(),
                 TrainUtils.getAllTrains().stream().map(x -> x.name.getString()).toList(),

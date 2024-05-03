@@ -2,7 +2,7 @@ package de.mrjulsen.crn.network.packets.cts;
 
 import java.util.function.Supplier;
 
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.data.GlobalSettingsManager;
 import de.mrjulsen.crn.network.packets.stc.GlobalSettingsResponsePacket;
 import de.mrjulsen.mcdragonlib.net.IPacketBase;
@@ -34,7 +34,7 @@ public class GlobalSettingsRequestPacket implements IPacketBase<GlobalSettingsRe
     @Override
     public void handle(GlobalSettingsRequestPacket packet, Supplier<PacketContext> contextSupplier) {
         contextSupplier.get().queue(() -> {
-            ExampleMod.net().CHANNEL.sendToPlayer((ServerPlayer)contextSupplier.get().getPlayer(), new GlobalSettingsResponsePacket(packet.id, GlobalSettingsManager.getInstance().getSettingsData()));
+            CreateRailwaysNavigator.net().CHANNEL.sendToPlayer((ServerPlayer)contextSupplier.get().getPlayer(), new GlobalSettingsResponsePacket(packet.id, GlobalSettingsManager.getInstance().getSettingsData()));
         });
     }
 }

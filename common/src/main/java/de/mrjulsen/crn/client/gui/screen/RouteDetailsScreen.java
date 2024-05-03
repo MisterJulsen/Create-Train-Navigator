@@ -9,7 +9,7 @@ import com.simibubi.create.foundation.utility.animation.LerpedFloat;
 import com.simibubi.create.foundation.utility.animation.LerpedFloat.Chaser;
 
 import de.mrjulsen.crn.Constants;
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.overlay.RouteDetailsOverlayScreen;
 import de.mrjulsen.crn.client.gui.widgets.DLCreateIconButton;
@@ -48,7 +48,7 @@ import net.minecraft.world.level.Level;
 
 public class RouteDetailsScreen extends DLScreen implements IJourneyListenerClient {
 
-    private static final ResourceLocation GUI = new ResourceLocation(ExampleMod.MOD_ID, "textures/gui/route_details.png");  
+    private static final ResourceLocation GUI = new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/route_details.png");  
     private static final int GUI_WIDTH = 255;
     private static final int GUI_HEIGHT = 247;
 
@@ -84,11 +84,11 @@ public class RouteDetailsScreen extends DLScreen implements IJourneyListenerClie
     private final Level level;
 
     // Tooltips
-    private final MutableComponent textDeparture = ELanguage.translate("gui." + ExampleMod.MOD_ID + ".route_details.departure");
-    private final MutableComponent textTransferIn = ELanguage.translate("gui." + ExampleMod.MOD_ID + ".route_details.next_transfer_time");
-    private final MutableComponent transferText = ELanguage.translate("gui." + ExampleMod.MOD_ID + ".route_details.transfer");
+    private final MutableComponent textDeparture = ELanguage.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".route_details.departure");
+    private final MutableComponent textTransferIn = ELanguage.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".route_details.next_transfer_time");
+    private final MutableComponent transferText = ELanguage.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".route_details.transfer");
     private final MutableComponent textJourneyCompleted = ELanguage.translate("gui.createrailwaysnavigator.route_overview.journey_completed");
-    private final MutableComponent timeNowText = ELanguage.translate("gui." + ExampleMod.MOD_ID + ".time.now");    
+    private final MutableComponent timeNowText = ELanguage.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".time.now");    
     private final MutableComponent textConnectionEndangered = ELanguage.translate("gui.createrailwaysnavigator.route_overview.connection_endangered").withStyle(ChatFormatting.GOLD).withStyle(ChatFormatting.BOLD);
     private final MutableComponent textConnectionMissed = ELanguage.translate("gui.createrailwaysnavigator.route_overview.connection_missed").withStyle(ChatFormatting.RED).withStyle(ChatFormatting.BOLD);
     private final MutableComponent textTrainCanceled = ELanguage.translate("gui.createrailwaysnavigator.route_overview.train_canceled").withStyle(ChatFormatting.RED).withStyle(ChatFormatting.BOLD);
@@ -99,7 +99,7 @@ public class RouteDetailsScreen extends DLScreen implements IJourneyListenerClie
 
     @SuppressWarnings("resource")
     public RouteDetailsScreen(Screen lastScreen, Level level, SimpleRoute route, UUID listenerId) {
-        super(TextUtils.translate("gui." + ExampleMod.MOD_ID + ".route_details.title"));
+        super(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".route_details.title"));
         this.lastScreen = lastScreen;
         this.route = route;
         this.font = Minecraft.getInstance().font;  

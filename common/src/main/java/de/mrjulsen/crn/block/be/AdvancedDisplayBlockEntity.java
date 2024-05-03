@@ -11,7 +11,7 @@ import com.simibubi.create.content.trains.entity.CarriageContraptionEntity;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.AbstractAdvancedDisplayBlock;
 import de.mrjulsen.crn.block.display.AdvancedDisplaySource.ETimeDisplay;
 import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
@@ -556,7 +556,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
                     getRenderer().update(level, pos, state, this, EUpdateReason.DATA_CHANGED);
                 }
             });
-            ExampleMod.net().CHANNEL.sendToServer(new TrainDataRequestPacket(id, ((CarriageContraptionEntity)carriage.entity).trainId, true));
+            CreateRailwaysNavigator.net().CHANNEL.sendToServer(new TrainDataRequestPacket(id, ((CarriageContraptionEntity)carriage.entity).trainId, true));
         }
     }    
 

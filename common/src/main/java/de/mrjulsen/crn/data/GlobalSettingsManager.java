@@ -1,7 +1,7 @@
 package de.mrjulsen.crn.data;
 
-import de.mrjulsen.crn.ExampleExpectPlatform;
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CRNPlatformSpecific;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.network.InstanceManager;
 import de.mrjulsen.crn.network.packets.cts.GlobalSettingsRequestPacket;
 import net.minecraft.nbt.CompoundTag;
@@ -11,7 +11,7 @@ import net.minecraft.world.level.saveddata.SavedData;
 
 public class GlobalSettingsManager extends SavedData {
 
-    private static final String FILE_ID = ExampleMod.MOD_ID + "_global_settings";
+    private static final String FILE_ID = CreateRailwaysNavigator.MOD_ID + "_global_settings";
     private static volatile GlobalSettingsManager instance;
     
     private GlobalSettings settingsData;
@@ -35,13 +35,13 @@ public class GlobalSettingsManager extends SavedData {
 
     public static GlobalSettingsManager getInstance() {
         if (instance == null) {
-            MinecraftServer server = ExampleExpectPlatform.getServer();
+            MinecraftServer server = CRNPlatformSpecific.getServer();
             if (server == null) {
                 // execute on client             
                 instance = new GlobalSettingsManager();
             } else {
                 // execute on server
-                ExampleMod.LOGGER.debug("Create Instance");
+                CreateRailwaysNavigator.LOGGER.debug("Create Instance");
                 ServerLevel level = server.overworld();
                 instance = level.getDataStorage().computeIfAbsent(GlobalSettingsManager::load, GlobalSettingsManager::new, FILE_ID);
             }
@@ -71,6 +71,6 @@ public class GlobalSettingsManager extends SavedData {
 
     public static void syncToClient(Runnable then) {
         long id = InstanceManager.registerClientResponseReceievedAction(then);
-        ExampleMod.net().CHANNEL.sendToServer(new GlobalSettingsRequestPacket(id));
+        CreateRailwaysNavigator.net().CHANNEL.sendToServer(new GlobalSettingsRequestPacket(id));
     }
 }

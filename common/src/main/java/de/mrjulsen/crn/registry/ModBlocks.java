@@ -9,7 +9,7 @@ import com.simibubi.create.foundation.data.TagGen;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import com.tterrag.registrate.util.nullness.NonNullConsumer;
 
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.AdvancedDisplayBlock;
 import de.mrjulsen.crn.block.AdvancedDisplayBoardBlock;
 import de.mrjulsen.crn.block.AdvancedDisplayPanelBlock;
@@ -27,10 +27,10 @@ import net.minecraft.world.level.block.Block;
 public class ModBlocks {	
 
 	static {
-		ExampleMod.REGISTRATE.creativeModeTab(() -> ModCreativeModeTab.MAIN);
+		CreateRailwaysNavigator.REGISTRATE.creativeModeTab(() -> ModCreativeModeTab.MAIN);
 	}
 
-	public static final BlockEntry<AdvancedDisplayBlock> ADVANCED_DISPLAY_BLOCK = ExampleMod.REGISTRATE.block("advanced_display_block", AdvancedDisplayBlock::new)
+	public static final BlockEntry<AdvancedDisplayBlock> ADVANCED_DISPLAY_BLOCK = CreateRailwaysNavigator.REGISTRATE.block("advanced_display_block", AdvancedDisplayBlock::new)
 		.onRegister(connectedTextures(() -> new AdvancedDisplayCTBehaviour(ClientWrapper.CT_ADVANCED_DISPLAY_ALL)))
 		.addLayer(() -> RenderType::cutout)
 		.initialProperties(SharedProperties::softMetal)
@@ -40,7 +40,7 @@ public class ModBlocks {
 		.build()
 		.register();
 
-    public static final BlockEntry<AdvancedDisplayBoardBlock> ADVANCED_DISPLAY = ExampleMod.REGISTRATE.block("advanced_display", AdvancedDisplayBoardBlock::new)
+    public static final BlockEntry<AdvancedDisplayBoardBlock> ADVANCED_DISPLAY = CreateRailwaysNavigator.REGISTRATE.block("advanced_display", AdvancedDisplayBoardBlock::new)
 		.onRegister(connectedTextures(() -> new AdvancedDisplayCTBehaviour(ClientWrapper.CT_ADVANCED_DISPLAY)))
 		.addLayer(() -> RenderType::cutout)
 		.initialProperties(SharedProperties::softMetal)
@@ -50,7 +50,7 @@ public class ModBlocks {
 		.build()
 		.register();
 
-	public static final BlockEntry<AdvancedDisplaySmallBlock> ADVANCED_DISPLAY_SMALL = ExampleMod.REGISTRATE.block("advanced_display_small", AdvancedDisplaySmallBlock::new)
+	public static final BlockEntry<AdvancedDisplaySmallBlock> ADVANCED_DISPLAY_SMALL = CreateRailwaysNavigator.REGISTRATE.block("advanced_display_small", AdvancedDisplaySmallBlock::new)
 		.onRegister(connectedTextures(() -> new AdvancedDisplaySmallCTBehaviour(ClientWrapper.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL, ClientWrapper.CT_ADVANCED_DISPLAY_SMALL)))
 		.addLayer(() -> RenderType::cutout)
 		.initialProperties(SharedProperties::softMetal)
@@ -60,7 +60,7 @@ public class ModBlocks {
 		.build()
 		.register();
 
-	public static final BlockEntry<AdvancedDisplayPanelBlock> ADVANCED_DISPLAY_PANEL = ExampleMod.REGISTRATE.block("advanced_display_panel", AdvancedDisplayPanelBlock::new)
+	public static final BlockEntry<AdvancedDisplayPanelBlock> ADVANCED_DISPLAY_PANEL = CreateRailwaysNavigator.REGISTRATE.block("advanced_display_panel", AdvancedDisplayPanelBlock::new)
 		.onRegister(connectedTextures(() -> new AdvancedDisplayCTBehaviour(ClientWrapper.CT_ADVANCED_DISPLAY)))
 		.addLayer(() -> RenderType::cutout)
 		.initialProperties(SharedProperties::softMetal)
@@ -70,7 +70,7 @@ public class ModBlocks {
 		.build()
 		.register();
 
-	public static final BlockEntry<AdvancedDisplaySlopedBlock> ADVANCED_DISPLAY_SLOPED = ExampleMod.REGISTRATE.block("advanced_display_sloped", AdvancedDisplaySlopedBlock::new)
+	public static final BlockEntry<AdvancedDisplaySlopedBlock> ADVANCED_DISPLAY_SLOPED = CreateRailwaysNavigator.REGISTRATE.block("advanced_display_sloped", AdvancedDisplaySlopedBlock::new)
 		.onRegister(connectedTextures(() -> new AdvancedDisplaySmallCTBehaviour(ClientWrapper.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL, ClientWrapper.CT_ADVANCED_DISPLAY_SMALL)))
 		.addLayer(() -> RenderType::cutout)
 		.initialProperties(SharedProperties::softMetal)
@@ -80,7 +80,7 @@ public class ModBlocks {
 		.build()
 		.register();	
 	
-    public static final BlockEntry<TrainStationClockBlock> TRAIN_STATION_CLOCK = ExampleMod.REGISTRATE.block("train_station_clock", TrainStationClockBlock::new)
+    public static final BlockEntry<TrainStationClockBlock> TRAIN_STATION_CLOCK = CreateRailwaysNavigator.REGISTRATE.block("train_station_clock", TrainStationClockBlock::new)
 		.addLayer(() -> RenderType::cutout)
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())

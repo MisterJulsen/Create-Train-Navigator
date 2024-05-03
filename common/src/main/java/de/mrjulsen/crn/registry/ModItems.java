@@ -2,16 +2,16 @@ package de.mrjulsen.crn.registry;
 
 import com.tterrag.registrate.util.entry.ItemEntry;
 
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.item.NavigatorItem;
 
 public class ModItems {
 
     static {
-		ExampleMod.REGISTRATE.creativeModeTab(() -> ModCreativeModeTab.MAIN);
+		CreateRailwaysNavigator.REGISTRATE.creativeModeTab(() -> ModCreativeModeTab.MAIN);
 	}
 
-    public static final ItemEntry<NavigatorItem> NAVIGATOR = ExampleMod.REGISTRATE.item("navigator", NavigatorItem::new)
+    public static final ItemEntry<NavigatorItem> NAVIGATOR = CreateRailwaysNavigator.REGISTRATE.item("navigator", NavigatorItem::new)
 			.properties(p -> p.stacksTo(1))
 			.register();
     

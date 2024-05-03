@@ -8,7 +8,7 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import de.mrjulsen.mcdragonlib.core.EAlignment;
@@ -25,7 +25,7 @@ public class NavigatorToast implements Toast {
     private static final long DISPLAY_TIME = 5000L;
     private static final int MAX_LINE_SIZE = 200;
 
-    private static final ResourceLocation MOD_ICON = new ResourceLocation(ExampleMod.MOD_ID, "textures/mod_icon.png");
+    private static final ResourceLocation MOD_ICON = new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/mod_icon.png");
 
     private static final int COLOR_BORDER = 0xFF000000;
     private static final int COLOR_INNER_BORDER = 0xFF286485;

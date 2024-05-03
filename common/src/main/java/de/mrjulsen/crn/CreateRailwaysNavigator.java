@@ -44,7 +44,7 @@ import javax.annotation.Nullable;
 
 import org.slf4j.Logger;
 
-public final class ExampleMod {
+public final class CreateRailwaysNavigator {
 
     public static final String MOD_ID = "createrailwaysnavigator";
     public static final Logger LOGGER = LogUtils.getLogger();
@@ -106,7 +106,7 @@ public final class ExampleMod {
             TimeCorrectionPacket.class
         ));
         
-        ExampleExpectPlatform.registerConfig();
+        CRNPlatformSpecific.registerConfig();
 
         ModEvents.init();
         if (Platform.getEnv() == EnvType.CLIENT) {

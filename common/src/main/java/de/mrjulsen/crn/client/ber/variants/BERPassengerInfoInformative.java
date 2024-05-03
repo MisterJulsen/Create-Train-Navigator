@@ -6,7 +6,7 @@ import java.util.Optional;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
 import de.mrjulsen.crn.client.ber.base.BERText;
@@ -37,7 +37,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDisplayBlockEntity, AdvancedDisplayRenderInstance, Boolean> {
 
-    private static final ResourceLocation TEXTURE = new ResourceLocation(ExampleMod.MOD_ID, "textures/gui/overview.png");
+    private static final ResourceLocation TEXTURE = new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/overview.png");
     private static final int TEX_ROUTE_PATH_U = 226;
     private static final int TEX_ROUTE_PATH_H = 14;    
     private static final float PANEL_LINE_HEIGHT = 2.0f;
@@ -93,7 +93,7 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
                         updateNextConnections(level, pos, state, pBlockEntity, parent);
                     }
                 });
-                ExampleMod.net().CHANNEL.sendToServer(new NextConnectionsRequestPacket(id, pBlockEntity.getTrainData().trainId(), pBlockEntity.getTrainData().getNextStop().get().stationTagName(), pBlockEntity.getTrainData().getNextStop().get().departureTicks()));
+                CreateRailwaysNavigator.net().CHANNEL.sendToServer(new NextConnectionsRequestPacket(id, pBlockEntity.getTrainData().trainId(), pBlockEntity.getTrainData().getNextStop().get().stationTagName(), pBlockEntity.getTrainData().getNextStop().get().departureTicks()));
                 dirty = true;
             } else if (this.state != State.WHILE_TRAVELING && pBlockEntity.getTrainData().getNextStop().get().departureTicks() > ModClientConfig.NEXT_STOP_ANNOUNCEMENT.get()) {
                 this.state = State.WHILE_TRAVELING;

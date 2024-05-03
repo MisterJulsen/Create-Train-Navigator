@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.function.Supplier;
 
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.core.navigation.Graph;
 import de.mrjulsen.crn.data.GlobalSettingsManager;
 import de.mrjulsen.crn.data.Route;
@@ -74,14 +74,14 @@ public class NavigationRequestPacket implements IPacketBase<NavigationRequestPac
                     Graph graph = new Graph(contextSupplier.get().getPlayer().getLevel(), packet.filterSettings);
                     routes.addAll(graph.navigate(startAlias, endAlias, true));
                 } catch (Exception e) {
-                    ExampleMod.LOGGER.error("Navigation error: ", e);
-                    ExampleMod.net().CHANNEL.sendToPlayer((ServerPlayer)contextSupplier.get().getPlayer(), new ServerErrorPacket(e.getMessage()));
+                    CreateRailwaysNavigator.LOGGER.error("Navigation error: ", e);
+                    CreateRailwaysNavigator.net().CHANNEL.sendToPlayer((ServerPlayer)contextSupplier.get().getPlayer(), new ServerErrorPacket(e.getMessage()));
                 } finally {         
                     final long estimatedTime = System.currentTimeMillis() - startTime;
-                    ExampleMod.LOGGER.info(String.format("Route calculated. Took %sms.",
+                    CreateRailwaysNavigator.LOGGER.info(String.format("Route calculated. Took %sms.",
                         estimatedTime
                     ));
-                    ExampleMod.net().CHANNEL.sendToPlayer((ServerPlayer)contextSupplier.get().getPlayer(), new NavigationResponsePacket(packet.id, new ArrayList<>(routes.stream().filter(x -> !x.isEmpty()).map(x -> new SimpleRoute(x)).toList()), estimatedTime, updateTime));
+                    CreateRailwaysNavigator.net().CHANNEL.sendToPlayer((ServerPlayer)contextSupplier.get().getPlayer(), new NavigationResponsePacket(packet.id, new ArrayList<>(routes.stream().filter(x -> !x.isEmpty()).map(x -> new SimpleRoute(x)).toList()), estimatedTime, updateTime));
                 }
             });
             navigationThread.setPriority(Thread.MIN_PRIORITY);

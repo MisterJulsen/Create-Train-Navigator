@@ -2,7 +2,7 @@ package de.mrjulsen.crn.client.gui.screen;
 
 import java.util.Collection;
 
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.data.ClientTrainStationSnapshot;
 import de.mrjulsen.crn.data.GlobalSettingsManager;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
@@ -12,7 +12,7 @@ import net.minecraft.world.level.Level;
 public class StationBlacklistScreen extends AbstractBlacklistScreen {
 
     public StationBlacklistScreen(Level level, Screen lastScreen) {
-        super(level, lastScreen, TextUtils.translate("gui." + ExampleMod.MOD_ID + ".blacklist.title"));
+        super(level, lastScreen, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".blacklist.title"));
     }
 
     @Override

@@ -1,6 +1,6 @@
 package de.mrjulsen.crn.event;
 
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.event.listeners.TrainListener;
 import de.mrjulsen.crn.network.packets.stc.TimeCorrectionPacket;
 import de.mrjulsen.crn.registry.ModExtras;
@@ -17,7 +17,7 @@ public class ModEvents {
     public static void init() {
 
         LifecycleEvent.SETUP.register(() -> {
-            ExampleMod.LOGGER.info("Welcome to the CREATE RAILWAYS NAVIGATOR mod by MRJULSEN.");
+            CreateRailwaysNavigator.LOGGER.info("Welcome to the CREATE RAILWAYS NAVIGATOR mod by MRJULSEN.");
         });
 
         LifecycleEvent.SERVER_LEVEL_LOAD.register((level) -> {
@@ -37,7 +37,7 @@ public class ModEvents {
             if (serverLevel != null) {
                 long currentTicks = serverLevel.dayTime();
                 if (Math.abs(currentTicks - lastTicks) > 1) {
-                    serverLevel.players().stream().filter(p -> p instanceof ServerPlayer).forEach(x -> ExampleMod.net().CHANNEL.sendToPlayer(x, new TimeCorrectionPacket((int)(currentTicks - lastTicks))));
+                    serverLevel.players().stream().filter(p -> p instanceof ServerPlayer).forEach(x -> CreateRailwaysNavigator.net().CHANNEL.sendToPlayer(x, new TimeCorrectionPacket((int)(currentTicks - lastTicks))));
                 }
                 lastTicks = currentTicks;
             }

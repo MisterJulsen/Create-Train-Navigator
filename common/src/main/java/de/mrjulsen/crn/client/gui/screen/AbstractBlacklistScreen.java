@@ -12,7 +12,7 @@ import com.simibubi.create.foundation.utility.animation.LerpedFloat;
 import com.simibubi.create.foundation.utility.animation.LerpedFloat.Chaser;
 
 import de.mrjulsen.crn.Constants;
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.gui.widgets.DLCreateIconButton;
 import de.mrjulsen.crn.client.gui.widgets.ModStationSuggestions;
 import de.mrjulsen.crn.config.ModClientConfig;
@@ -37,8 +37,8 @@ import net.minecraft.world.level.Level;
 
 public abstract class AbstractBlacklistScreen extends DLScreen {
 
-    private static final ResourceLocation GUI = new ResourceLocation(ExampleMod.MOD_ID, "textures/gui/settings.png");
-    public static final ResourceLocation WIDGETS = new ResourceLocation(ExampleMod.MOD_ID, "textures/gui/settings_widgets.png");
+    private static final ResourceLocation GUI = new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/settings.png");
+    public static final ResourceLocation WIDGETS = new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/settings_widgets.png");
     private static final int GUI_WIDTH = 255;
     private static final int GUI_HEIGHT = 247;
 
@@ -73,8 +73,8 @@ public abstract class AbstractBlacklistScreen extends DLScreen {
     private final Map<String, GuiAreaDefinition> entryAreas = new HashMap<>();
 
     // Tooltips
-    private final MutableComponent tooltipAdd = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".blacklist.add.tooltip");
-    private final MutableComponent tooltipRemove = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".blacklist.delete.tooltip");
+    private final MutableComponent tooltipAdd = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".blacklist.add.tooltip");
+    private final MutableComponent tooltipRemove = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".blacklist.delete.tooltip");
 
     @SuppressWarnings("resource")
     public AbstractBlacklistScreen(Level level, Screen lastScreen, Component title) {

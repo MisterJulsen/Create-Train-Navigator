@@ -6,7 +6,7 @@ import java.util.Comparator;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.data.GlobalSettingsManager;
 import de.mrjulsen.crn.data.DeparturePrediction.SimpleDeparturePrediction;
 import de.mrjulsen.crn.network.packets.stc.RealtimeResponsePacket;
@@ -63,7 +63,7 @@ public class RealtimeRequestPacket implements IPacketBase<RealtimeRequestPacket>
                     
                     predictions.addAll(TrainUtils.getTrainDeparturePredictions(x, contextSupplier.get().getPlayer().getLevel()).stream().map(a -> a.simplify()).filter(a -> !GlobalSettingsManager.getInstance().getSettingsData().isBlacklisted(a.stationName())).sorted(Comparator.comparingInt(a -> a.departureTicks())).toList());
                 });
-                ExampleMod.net().CHANNEL.sendToPlayer((ServerPlayer)contextSupplier.get().getPlayer(), (new RealtimeResponsePacket(packet.requestId, predictions, updateTime)));
+                CreateRailwaysNavigator.net().CHANNEL.sendToPlayer((ServerPlayer)contextSupplier.get().getPlayer(), (new RealtimeResponsePacket(packet.requestId, predictions, updateTime)));
             }, "Realtime Provider").run();
         });
     }

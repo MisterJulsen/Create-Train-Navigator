@@ -12,7 +12,7 @@ import com.simibubi.create.foundation.gui.UIRenderHelper;
 import com.simibubi.create.foundation.utility.animation.LerpedFloat;
 import com.simibubi.create.foundation.utility.animation.LerpedFloat.Chaser;
 
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.client.ModGuiUtils;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
@@ -64,7 +64,7 @@ import net.minecraft.world.level.Level;
 
 public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourneyListenerClient {
 
-    private static final ResourceLocation GUI = new ResourceLocation(ExampleMod.MOD_ID, "textures/gui/overview.png");
+    private static final ResourceLocation GUI = new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/overview.png");
     private static final Component title = TextUtils.translate("gui.createrailwaysnavigator.route_overview.title");
     private static final int GUI_WIDTH = 226;
     private static final int GUI_HEIGHT = 118;
@@ -418,7 +418,7 @@ public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourn
                 });
             }
         });
-        ExampleMod.net().CHANNEL.sendToServer(new NextConnectionsRequestPacket(id, getListener().currentStation().getTrain().trainId(), getListener().currentStation().getStationName(), getListener().currentStation().getCurrentTicks() + ModClientConfig.TRANSFER_TIME.get()));
+        CreateRailwaysNavigator.net().CHANNEL.sendToServer(new NextConnectionsRequestPacket(id, getListener().currentStation().getTrain().trainId(), getListener().currentStation().getStationName(), getListener().currentStation().getCurrentTicks() + ModClientConfig.TRANSFER_TIME.get()));
     }
 
     private void setNextConnectionsSubPage() {
@@ -457,7 +457,7 @@ public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourn
                     setSlidingText(ModUtils.calcSpeedString(data.speed(), ModClientConfig.SPEED_UNIT.get()));
                     trainDataSubPageTime = 0;
                 });
-                ExampleMod.net().CHANNEL.sendToServer(new TrainDataRequestPacket(id, getListener().currentStation().getTrain().trainId(), false));
+                CreateRailwaysNavigator.net().CHANNEL.sendToServer(new TrainDataRequestPacket(id, getListener().currentStation().getTrain().trainId(), false));
                 break;
         }
     }

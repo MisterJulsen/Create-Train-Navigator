@@ -2,7 +2,7 @@ package de.mrjulsen.crn.network.packets.cts;
 
 import java.util.function.Supplier;
 
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.data.AliasName;
 import de.mrjulsen.crn.data.GlobalSettingsManager;
 import de.mrjulsen.crn.data.TrainGroup;
@@ -63,7 +63,7 @@ public class GlobalSettingsUpdatePacket implements IPacketBase<GlobalSettingsUpd
             default:
                 return;
         }
-        ExampleMod.net().CHANNEL.sendToServer(new GlobalSettingsUpdatePacket(InstanceManager.registerClientResponseReceievedAction(then), nbt, action));
+        CreateRailwaysNavigator.net().CHANNEL.sendToServer(new GlobalSettingsUpdatePacket(InstanceManager.registerClientResponseReceievedAction(then), nbt, action));
     }
 
     @Override
@@ -86,7 +86,7 @@ public class GlobalSettingsUpdatePacket implements IPacketBase<GlobalSettingsUpd
     public void handle(GlobalSettingsUpdatePacket packet, Supplier<PacketContext> contextSupplier) {
         contextSupplier.get().queue(() -> {
             if (GlobalSettingsManager.getInstance().getSettingsData() == null) {
-                ExampleMod.LOGGER.error("Failed to handle GlobalSettingsUpdatePacket! The settings instance of the global settings manager is null.");
+                CreateRailwaysNavigator.LOGGER.error("Failed to handle GlobalSettingsUpdatePacket! The settings instance of the global settings manager is null.");
                 return;
             }
     
@@ -131,7 +131,7 @@ public class GlobalSettingsUpdatePacket implements IPacketBase<GlobalSettingsUpd
                     return;
             }
             GlobalSettingsManager.getInstance().setDirty();
-            ExampleMod.net().CHANNEL.sendToPlayer((ServerPlayer)contextSupplier.get().getPlayer(), new GlobalSettingsResponsePacket(packet.id, GlobalSettingsManager.getInstance().getSettingsData()));    
+            CreateRailwaysNavigator.net().CHANNEL.sendToPlayer((ServerPlayer)contextSupplier.get().getPlayer(), new GlobalSettingsResponsePacket(packet.id, GlobalSettingsManager.getInstance().getSettingsData()));    
         });
     }
     

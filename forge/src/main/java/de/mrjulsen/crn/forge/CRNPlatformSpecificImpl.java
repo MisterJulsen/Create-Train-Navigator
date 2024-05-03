@@ -8,16 +8,16 @@ import net.minecraftforge.server.ServerLifecycleHooks;
 
 import java.nio.file.Path;
 
-import de.mrjulsen.crn.ExampleExpectPlatform;
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CRNPlatformSpecific;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.config.ModCommonConfig;
 import dev.architectury.platform.Platform;
 import dev.architectury.utils.Env;
 
-public class ExampleExpectPlatformImpl {
+public class CRNPlatformSpecificImpl {
     /**
-     * This is our actual method to {@link ExampleExpectPlatform#getConfigDirectory()}.
+     * This is our actual method to {@link CRNPlatformSpecific#getConfigDirectory()}.
      */
     public static Path getConfigDirectory() {
         return FMLPaths.CONFIGDIR.get();
@@ -29,8 +29,8 @@ public class ExampleExpectPlatformImpl {
 
     public static void registerConfig() {
         if (Platform.getEnvironment() == Env.CLIENT) {
-            ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ModClientConfig.SPEC, ExampleMod.MOD_ID + "-client.toml");
+            ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ModClientConfig.SPEC, CreateRailwaysNavigator.MOD_ID + "-client.toml");
         }
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ModCommonConfig.SPEC, ExampleMod.MOD_ID + "-common.toml");
+        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ModCommonConfig.SPEC, CreateRailwaysNavigator.MOD_ID + "-common.toml");
     }
 }

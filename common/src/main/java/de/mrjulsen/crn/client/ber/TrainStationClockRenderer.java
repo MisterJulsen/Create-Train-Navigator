@@ -3,7 +3,7 @@ package de.mrjulsen.crn.client.ber;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Vector3f;
 
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.be.TrainStationClockBlockEntity;
 import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.DragonLib;
@@ -15,7 +15,7 @@ import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 
 public class TrainStationClockRenderer extends AbstractBlockEntityRenderInstance<TrainStationClockBlockEntity> {
 
-    private static final ResourceLocation DIAL_TEXTURE = new ResourceLocation(ExampleMod.MOD_ID, "textures/block/dial.png");
+    private static final ResourceLocation DIAL_TEXTURE = new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/block/dial.png");
 
     public TrainStationClockRenderer(TrainStationClockBlockEntity blockEntity) {
         super(blockEntity);

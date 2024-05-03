@@ -12,7 +12,7 @@ import com.simibubi.create.content.trains.entity.Train;
 import com.simibubi.create.content.trains.schedule.condition.ScheduleWaitCondition;
 import com.simibubi.create.content.trains.schedule.condition.TimedWaitCondition;
 
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.mixin.ScheduleDataAccessor;
 import de.mrjulsen.crn.util.TrainUtils;
@@ -99,7 +99,7 @@ public class TrainListener {
 
         ScheduledTask.create(instance, level, ModCommonConfig.TRAIN_WATCHER_INTERVALL.get(), Integer.MAX_VALUE, instance::performTask);
 
-        ExampleMod.LOGGER.info("TrainListener started.");
+        CreateRailwaysNavigator.LOGGER.info("TrainListener started.");
         return instance;
     }
 
@@ -112,7 +112,7 @@ public class TrainListener {
 
     private void stopInstance() {
         isRunning = false;
-        ExampleMod.LOGGER.info("TrainListener stopped.");
+        CreateRailwaysNavigator.LOGGER.info("TrainListener stopped.");
     }
 
 

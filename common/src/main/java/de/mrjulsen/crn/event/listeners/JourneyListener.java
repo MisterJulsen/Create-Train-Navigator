@@ -12,7 +12,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.lang.ELanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.DeparturePrediction.SimpleDeparturePrediction;
@@ -442,7 +442,7 @@ public class JourneyListener {
                 }
             });
         });
-        ExampleMod.net().CHANNEL.sendToServer(new RealtimeRequestPacket(id, ids));
+        CreateRailwaysNavigator.net().CHANNEL.sendToServer(new RealtimeRequestPacket(id, ids));
     }
 
     private boolean isStationValidForShedule(List<SimpleDeparturePrediction> schedule, UUID trainId, int startIndex) {

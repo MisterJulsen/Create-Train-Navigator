@@ -2,7 +2,7 @@ package de.mrjulsen.crn.block.be;
 
 import java.util.function.Consumer;
 
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos.MutableBlockPos;
@@ -52,7 +52,7 @@ public interface IMultiblockBlockEntity<T extends BlockEntity & IMultiblockBlock
                 if (otherBlockEntity != null) {
                     apply.accept(otherBlockEntity);
                 } else {
-                    ExampleMod.LOGGER.error(String.format("BlockEntity at %s does not exist!", newPos2));
+                    CreateRailwaysNavigator.LOGGER.error(String.format("BlockEntity at %s does not exist!", newPos2));
                 }
             }
 		}

@@ -17,7 +17,7 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "de.mrjulsen.crn.fabric.ExampleModFabric"
+      "de.mrjulsen.crn.fabric.CreateRailwaysNavigatorFabric"
     ]
   },
   "mixins": [

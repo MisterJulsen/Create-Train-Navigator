@@ -5,7 +5,7 @@ import java.util.function.Consumer;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 
 import de.mrjulsen.crn.Constants;
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.ColorShade;
 import de.mrjulsen.crn.client.gui.screen.NavigatorScreen;
@@ -42,8 +42,8 @@ public class RouteEntryOverviewWidget extends DLButton {
     private final Level level;
     private final long lastRefreshedTime;
 
-    private final MutableComponent transferText = ELanguage.translate("gui." + ExampleMod.MOD_ID + ".navigator.route_entry.transfer");
-    private final MutableComponent connectionInPast = ELanguage.translate("gui." + ExampleMod.MOD_ID + ".navigator.route_entry.connection_in_past");
+    private final MutableComponent transferText = ELanguage.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.route_entry.transfer");
+    private final MutableComponent connectionInPast = ELanguage.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.route_entry.connection_in_past");
     private final MutableComponent trainCanceled = ELanguage.translate("gui.createrailwaysnavigator.route_overview.stop_canceled");
 
     public RouteEntryOverviewWidget(NavigatorScreen parent, Level level, long lastRefreshedTime, int pX, int pY, SimpleRoute route, Consumer<RouteEntryOverviewWidget> onClick) {

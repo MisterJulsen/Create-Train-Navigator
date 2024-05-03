@@ -2,7 +2,7 @@ package de.mrjulsen.crn.client.gui.screen;
 
 import java.util.Collection;
 
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.gui.widgets.AliasEntryWidget;
 import de.mrjulsen.crn.data.AliasName;
 import de.mrjulsen.crn.data.GlobalSettingsManager;
@@ -13,7 +13,7 @@ import net.minecraft.world.level.Level;
 
 public class AliasSettingsScreen extends AbstractEntryListSettingsScreen<TrainStationAlias, AliasEntryWidget> {
     public AliasSettingsScreen(Level level, Screen lastScreen) {
-        super(level, lastScreen, TextUtils.translate("gui." + ExampleMod.MOD_ID + ".alias_settings.title"));
+        super(level, lastScreen, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".alias_settings.title"));
     }
 
     @Override

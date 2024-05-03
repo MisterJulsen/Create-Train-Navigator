@@ -14,7 +14,7 @@ import com.simibubi.create.foundation.utility.animation.LerpedFloat;
 import com.simibubi.create.foundation.utility.animation.LerpedFloat.Chaser;
 
 import de.mrjulsen.crn.Constants;
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.widgets.DLCreateIconButton;
 import de.mrjulsen.crn.client.gui.widgets.ModDestinationSuggestions;
@@ -55,7 +55,7 @@ import net.minecraft.world.level.Level;
 
 public class NavigatorScreen extends DLScreen implements IJourneyListenerClient {
 
-    private static final ResourceLocation GUI = new ResourceLocation(ExampleMod.MOD_ID, "textures/gui/navigator.png");
+    private static final ResourceLocation GUI = new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/navigator.png");
     private static final int GUI_WIDTH = 255;
     private static final int GUI_HEIGHT = 247;
 
@@ -101,23 +101,23 @@ public class NavigatorScreen extends DLScreen implements IJourneyListenerClient 
     private boolean generatingRouteEntries = false;
 
     // Tooltips
-    private final MutableComponent searchingText = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".navigator.searching");
-    private final MutableComponent noConnectionsText = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".navigator.no_connections");
-    private final MutableComponent notSearchedText = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".navigator.not_searched");
-    private final MutableComponent errorTitle = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".navigator.error_title");
-    private final MutableComponent startEndEqualText = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".navigator.start_end_equal");
-    private final MutableComponent startEndNullText = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".navigator.start_end_null");
+    private final MutableComponent searchingText = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.searching");
+    private final MutableComponent noConnectionsText = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.no_connections");
+    private final MutableComponent notSearchedText = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.not_searched");
+    private final MutableComponent errorTitle = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.error_title");
+    private final MutableComponent startEndEqualText = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.start_end_equal");
+    private final MutableComponent startEndNullText = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.start_end_null");
 
-    private final MutableComponent tooltipSearch = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".navigator.search.tooltip");
-    private final MutableComponent tooltipLocation = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".navigator.location.tooltip");
-    private final MutableComponent tooltipSwitch = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".navigator.switch.tooltip");
-    private final MutableComponent tooltipGlobalSettings = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".navigator.global_settings.tooltip");
-    private final MutableComponent tooltipSearchSettings = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".navigator.search_settings.tooltip");
+    private final MutableComponent tooltipSearch = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.search.tooltip");
+    private final MutableComponent tooltipLocation = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.location.tooltip");
+    private final MutableComponent tooltipSwitch = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.switch.tooltip");
+    private final MutableComponent tooltipGlobalSettings = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.global_settings.tooltip");
+    private final MutableComponent tooltipSearchSettings = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.search_settings.tooltip");
 
 
     @SuppressWarnings("resource")
     public NavigatorScreen(Level level) {
-        super(TextUtils.translate("gui." + ExampleMod.MOD_ID + ".navigator.title"));
+        super(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.title"));
         this.instance = this;
         this.level = level;
         this.shadowlessFont = new NoShadowFontWrapper(Minecraft.getInstance().font); 
@@ -191,7 +191,7 @@ public class NavigatorScreen extends DLScreen implements IJourneyListenerClient 
                         fromBox.setValue(result.aliasName.get().getAliasName().get());
                     }
                 });
-                ExampleMod.net().CHANNEL.sendToServer(new NearestStationRequestPacket(id, minecraft.player.position()));
+                CreateRailwaysNavigator.net().CHANNEL.sendToServer(new NearestStationRequestPacket(id, minecraft.player.position()));
             }
         });
         addTooltip(DLTooltip.of(tooltipLocation).assignedTo(locationButton));
@@ -227,7 +227,7 @@ public class NavigatorScreen extends DLScreen implements IJourneyListenerClient 
                     }
                 });
                 scroll.chase(0, 0.7f, Chaser.EXP);
-                ExampleMod.net().CHANNEL.sendToServer(new NavigationRequestPacket(id, stationFrom, stationTo));
+                CreateRailwaysNavigator.net().CHANNEL.sendToServer(new NavigationRequestPacket(id, stationFrom, stationTo));
                
             }
         });

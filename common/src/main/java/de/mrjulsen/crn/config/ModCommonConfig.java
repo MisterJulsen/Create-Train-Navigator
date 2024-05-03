@@ -1,6 +1,6 @@
 package de.mrjulsen.crn.config;
 
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import net.minecraftforge.common.ForgeConfigSpec;
 
 public class ModCommonConfig {
@@ -11,7 +11,7 @@ public class ModCommonConfig {
     public static final ForgeConfigSpec.ConfigValue<Integer> TRAIN_WATCHER_INTERVALL;
 
     static {
-        BUILDER.push(ExampleMod.MOD_ID + "_common_config");
+        BUILDER.push(CreateRailwaysNavigator.MOD_ID + "_common_config");
         
         TRAIN_WATCHER_INTERVALL = BUILDER.comment("The time interval (in ticks) in which the Train Listener collects tick data of all trains. Higher values may result in less precise time information in the route details view, while lower values may result in higher CPU usage. Default: 100 (5s)")
             .defineInRange("train_watcher_intervall", 100, 100, 1000);

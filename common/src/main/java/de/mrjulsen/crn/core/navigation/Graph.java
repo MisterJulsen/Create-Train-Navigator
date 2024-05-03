@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 import com.simibubi.create.content.trains.entity.Train;
 
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.data.GlobalSettings;
 import de.mrjulsen.crn.data.GlobalSettingsManager;
 import de.mrjulsen.crn.data.GlobalTrainData;
@@ -76,7 +76,7 @@ public class Graph {
         });
         
         long estimatedTime = System.currentTimeMillis() - startTime;
-        ExampleMod.LOGGER.info(String.format("Graph generated. Took %sms. Contains %s nodes, %s edges and %s schedules. %s train processed.",
+        CreateRailwaysNavigator.LOGGER.info(String.format("Graph generated. Took %sms. Contains %s nodes, %s edges and %s schedules. %s train processed.",
             estimatedTime,
             nodesById.size(),
             edgesById.size(),
@@ -299,7 +299,7 @@ public class Graph {
         SimulatedTrainSchedule selectedPrediction = trainPredictions.stream().filter(x -> x.isInDirection(lastNode.getStationAlias(), filteredTransferNodes[lastTransferByTrain.get(x.getSimulationData().train().id)].getStationAlias())).findFirst().orElse(trainPredictions.stream().findFirst().orElse(null));
         
         if (selectedPrediction == null) {
-            ExampleMod.LOGGER.warn("Unable to find route from " + lastNode.getStationAlias().getAliasName());
+            CreateRailwaysNavigator.LOGGER.warn("Unable to find route from " + lastNode.getStationAlias().getAliasName());
             return routes;
         }
 
@@ -362,7 +362,7 @@ public class Graph {
                 SimulatedTrainSchedule selectedPrediction = trainPredictions.stream().filter(x -> x.isInDirection(lastNode.getStationAlias(), node.getStationAlias())).findFirst().orElse(trainPredictions.stream().findFirst().orElse(null));
                 
                 if (selectedPrediction == null) {
-                    ExampleMod.LOGGER.warn("Route aborted! No train was found at " + lastNode.getStationAlias().getAliasName());
+                    CreateRailwaysNavigator.LOGGER.warn("Route aborted! No train was found at " + lastNode.getStationAlias().getAliasName());
                     return routes;
                 }
 

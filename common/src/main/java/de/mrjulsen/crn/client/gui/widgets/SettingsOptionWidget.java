@@ -6,7 +6,7 @@ import java.util.function.Consumer;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 
 import de.mrjulsen.crn.Constants;
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLButton;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
@@ -31,7 +31,7 @@ public class SettingsOptionWidget extends DLButton {
 
     // Controls
     private final MultiLineLabel messageLabel;    
-    private final MutableComponent tooltipOptionText = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".global_settings.option.tooltip");
+    private final MutableComponent tooltipOptionText = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.option.tooltip");
     
 
     public SettingsOptionWidget(Screen parent, int pX, int pY, Component title, Component description, Consumer<SettingsOptionWidget> onClick) {

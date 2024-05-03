@@ -3,7 +3,7 @@ package de.mrjulsen.crn.network.packets.cts;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.network.packets.stc.NextConnectionsResponsePacket;
 import de.mrjulsen.crn.util.TrainUtils;
 import de.mrjulsen.mcdragonlib.net.IPacketBase;
@@ -50,7 +50,7 @@ public class NextConnectionsRequestPacket implements IPacketBase<NextConnections
         contextSupplier.get().queue(() -> {
             new Thread(() -> {
                 final long updateTime = contextSupplier.get().getPlayer().getLevel().getDayTime();
-                ExampleMod.net().CHANNEL.sendToPlayer((ServerPlayer)contextSupplier.get().getPlayer(), new NextConnectionsResponsePacket(packet.requestId, TrainUtils.getConnectionsAt(packet.currentStationName, packet.trainId, (int)packet.ticksToNextStop), updateTime));
+                CreateRailwaysNavigator.net().CHANNEL.sendToPlayer((ServerPlayer)contextSupplier.get().getPlayer(), new NextConnectionsResponsePacket(packet.requestId, TrainUtils.getConnectionsAt(packet.currentStationName, packet.trainId, (int)packet.ticksToNextStop), updateTime));
             }, "Connections Loader").run();
         });
     }

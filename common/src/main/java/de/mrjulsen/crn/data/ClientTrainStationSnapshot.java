@@ -3,7 +3,7 @@ package de.mrjulsen.crn.data;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.network.InstanceManager;
 import de.mrjulsen.crn.network.packets.cts.TrackStationsRequestPacket;
 
@@ -44,7 +44,7 @@ public class ClientTrainStationSnapshot {
 
     public static void syncToClient(Runnable then) {
         long id = InstanceManager.registerClientResponseReceievedAction(then);
-        ExampleMod.net().CHANNEL.sendToServer(new TrackStationsRequestPacket(id));
+        CreateRailwaysNavigator.net().CHANNEL.sendToServer(new TrackStationsRequestPacket(id));
     }
 
 

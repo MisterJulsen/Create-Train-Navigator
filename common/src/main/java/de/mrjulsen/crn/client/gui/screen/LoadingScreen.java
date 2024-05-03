@@ -1,7 +1,7 @@
 package de.mrjulsen.crn.client.gui.screen;
 
 import com.simibubi.create.foundation.gui.AllIcons;
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.mcdragonlib.client.gui.DLScreen;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
@@ -13,7 +13,7 @@ public class LoadingScreen extends DLScreen {
     int angle = 0;
     
     public LoadingScreen() {
-        super(TextUtils.translate("gui." + ExampleMod.MOD_ID + ".loading.title"));
+        super(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".loading.title"));
     }
 
     @Override

@@ -9,7 +9,7 @@ import com.simibubi.create.foundation.utility.animation.LerpedFloat;
 import com.simibubi.create.foundation.utility.animation.LerpedFloat.Chaser;
 
 import de.mrjulsen.crn.Constants;
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.gui.widgets.AbstractEntryListOptionWidget;
 import de.mrjulsen.crn.client.gui.widgets.DLCreateIconButton;
 import de.mrjulsen.crn.client.gui.widgets.WidgetContainerCollection;
@@ -36,7 +36,7 @@ import net.minecraft.world.level.Level;
 
 public abstract class AbstractEntryListSettingsScreen<D, W extends AbstractEntryListOptionWidget> extends DLScreen {
 
-    private static final ResourceLocation GUI = new ResourceLocation(ExampleMod.MOD_ID, "textures/gui/settings.png");
+    private static final ResourceLocation GUI = new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/settings.png");
     private static final int GUI_WIDTH = 255;
     private static final int GUI_HEIGHT = 247;
 
@@ -72,8 +72,8 @@ public abstract class AbstractEntryListSettingsScreen<D, W extends AbstractEntry
 	private LerpedFloat scroll = LerpedFloat.linear().startWithValue(0);
 
     // Tooltips
-    private final MutableComponent tooltipAdd = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".alias_settings.add.tooltip");
-    private final MutableComponent textEnterName = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".alias_settings.enter_name");
+    private final MutableComponent tooltipAdd = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".alias_settings.add.tooltip");
+    private final MutableComponent textEnterName = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".alias_settings.enter_name");
 
     public static record WidgetCreationData<D, W extends AbstractEntryListSettingsScreen<D, ?>>(W parent, int x, int y, List<?> previousEntries) {}
 

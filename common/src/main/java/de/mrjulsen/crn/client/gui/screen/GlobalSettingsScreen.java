@@ -7,7 +7,7 @@ import com.simibubi.create.foundation.utility.animation.LerpedFloat;
 import com.simibubi.create.foundation.utility.animation.LerpedFloat.Chaser;
 
 import de.mrjulsen.crn.Constants;
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.gui.widgets.DLCreateIconButton;
 import de.mrjulsen.crn.client.gui.widgets.SettingsOptionWidget;
 import de.mrjulsen.crn.config.ModClientConfig;
@@ -31,7 +31,7 @@ import net.minecraft.world.level.Level;
 
 public class GlobalSettingsScreen extends DLScreen {
 
-    private static final ResourceLocation GUI = new ResourceLocation(ExampleMod.MOD_ID, "textures/gui/settings.png");
+    private static final ResourceLocation GUI = new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/settings.png");
     private static final int GUI_WIDTH = 255;
     private static final int GUI_HEIGHT = 247;
 
@@ -61,18 +61,18 @@ public class GlobalSettingsScreen extends DLScreen {
     private final WidgetsCollection optionsCollection = new WidgetsCollection();
 
     // Tooltips
-    private final Component optionAliasTitle = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".global_settings.option_alias.title");
-    private final Component optionAliasDescription = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".global_settings.option_alias.description");
-    private final Component optionBlacklistTitle = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".global_settings.option_blacklist.title");
-    private final Component optionBlacklistDescription = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".global_settings.option_blacklist.description");    
-    private final Component optionTrainGroupTitle = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".global_settings.train_group.title");
-    private final Component optionTrainGroupDescription = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".global_settings.train_group.description");    
-    private final Component optionTrainBlacklistTitle = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".global_settings.train_blacklist.title");
-    private final Component optionTrainBlacklistDescription = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".global_settings.train_blacklist.description");
+    private final Component optionAliasTitle = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.option_alias.title");
+    private final Component optionAliasDescription = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.option_alias.description");
+    private final Component optionBlacklistTitle = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.option_blacklist.title");
+    private final Component optionBlacklistDescription = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.option_blacklist.description");    
+    private final Component optionTrainGroupTitle = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.train_group.title");
+    private final Component optionTrainGroupDescription = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.train_group.description");    
+    private final Component optionTrainBlacklistTitle = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.train_blacklist.title");
+    private final Component optionTrainBlacklistDescription = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.train_blacklist.description");
 
     @SuppressWarnings("resource")
     public GlobalSettingsScreen(Level level, Screen lastScreen) {
-        super(TextUtils.translate("gui." + ExampleMod.MOD_ID + ".global_settings.title"));
+        super(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.title"));
         this.level = level;
         this.lastScreen = lastScreen;
         this.shadowlessFont = new NoShadowFontWrapper(Minecraft.getInstance().font); 

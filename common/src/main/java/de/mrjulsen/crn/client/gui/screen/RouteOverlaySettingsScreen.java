@@ -15,7 +15,7 @@ import com.simibubi.create.foundation.item.TooltipHelper.Palette;
 import com.simibubi.create.foundation.gui.widget.Indicator.State;
 import com.simibubi.create.foundation.utility.Components;
 
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.NavigatorToast;
@@ -46,7 +46,7 @@ import net.minecraft.world.item.ItemStack;
 public class RouteOverlaySettingsScreen extends DLScreen {
 
     private static final Component title = TextUtils.translate("gui.createrailwaysnavigator.overlay_settings.title");
-    private static final ResourceLocation GUI = new ResourceLocation(ExampleMod.MOD_ID, "textures/gui/route_overlay_settings.png");
+    private static final ResourceLocation GUI = new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/route_overlay_settings.png");
     private static final int GUI_WIDTH = 213;
     private static final int GUI_HEIGHT = 79;
     private static final int DEFAULT_ICON_BUTTON_WIDTH = 18;
@@ -143,8 +143,8 @@ public class RouteOverlaySettingsScreen extends DLScreen {
 
                 ModClientConfig.ROUTE_OVERLAY_POSITION.set(pos);
             });
-            remOverlayButton.setToolTip(TextUtils.translate(pos.getEnumTranslationKey(ExampleMod.MOD_ID)));
-            remOverlayButton.getToolTip().add(TextUtils.translate(pos.getValueInfoTranslationKey(ExampleMod.MOD_ID)).withStyle(ChatFormatting.GRAY));
+            remOverlayButton.setToolTip(TextUtils.translate(pos.getEnumTranslationKey(CreateRailwaysNavigator.MOD_ID)));
+            remOverlayButton.getToolTip().add(TextUtils.translate(pos.getValueInfoTranslationKey(CreateRailwaysNavigator.MOD_ID)).withStyle(ChatFormatting.GRAY));
             remOverlayButton.active = pos != ModClientConfig.ROUTE_OVERLAY_POSITION.get();
 
             removeOverlayButton = remOverlayButton;

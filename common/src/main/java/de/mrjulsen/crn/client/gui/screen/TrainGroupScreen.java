@@ -2,7 +2,7 @@ package de.mrjulsen.crn.client.gui.screen;
 
 import java.util.Collection;
 
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.gui.widgets.TrainGroupEntryWidget;
 import de.mrjulsen.crn.data.GlobalSettingsManager;
 import de.mrjulsen.crn.data.TrainGroup;
@@ -13,7 +13,7 @@ import net.minecraft.world.level.Level;
 public class TrainGroupScreen extends AbstractEntryListSettingsScreen<TrainGroup, TrainGroupEntryWidget> {
 
     public TrainGroupScreen(Level level, Screen lastScreen) {
-        super(level, lastScreen, TextUtils.translate("gui." + ExampleMod.MOD_ID + ".train_group_settings.title"));
+        super(level, lastScreen, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".train_group_settings.title"));
     }
 
     @Override

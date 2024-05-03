@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.data.SimpleRoute;
 import de.mrjulsen.crn.event.listeners.JourneyListener.State;
 import net.minecraft.client.Minecraft;
@@ -104,7 +104,7 @@ public class JourneyListenerManager {
     public static JourneyListenerManager start() {
         stop();
         instance = new JourneyListenerManager();
-        ExampleMod.LOGGER.info("Journey Listener started.");
+        CreateRailwaysNavigator.LOGGER.info("Journey Listener started.");
         return instance;
     }
 
@@ -119,7 +119,7 @@ public class JourneyListenerManager {
     private void stopInstance() {
         dataListeners.clear();
         journeyListenerCache.clear();
-        ExampleMod.LOGGER.info("Journey Listener stopped.");
+        CreateRailwaysNavigator.LOGGER.info("Journey Listener stopped.");
     }
 
 }

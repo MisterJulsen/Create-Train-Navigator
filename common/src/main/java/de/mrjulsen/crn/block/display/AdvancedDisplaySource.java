@@ -12,7 +12,7 @@ import com.simibubi.create.content.trains.station.StationBlockEntity;
 import com.simibubi.create.foundation.gui.ModularGuiLineBuilder;
 import com.simibubi.create.foundation.utility.Lang;
 
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.mcdragonlib.core.ITranslatableEnum;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.ChatFormatting;
@@ -105,11 +105,11 @@ public class AdvancedDisplaySource extends DisplaySource {
 
 		builder.addSelectionScrollInput(47 * 2, 43, (si, l) -> {
 			si
-			.forOptions(Arrays.stream(ETimeDisplay.values()).map(x -> TextUtils.translate(x.getValueInfoTranslationKey(ExampleMod.MOD_ID))).toList())
+			.forOptions(Arrays.stream(ETimeDisplay.values()).map(x -> TextUtils.translate(x.getValueInfoTranslationKey(CreateRailwaysNavigator.MOD_ID))).toList())
 			.titled(TextUtils.translate("enum.createrailwaysnavigator.time_display"))
 			.addHint(TextUtils.translate("enum.createrailwaysnavigator.time_display.description"))
 			.format((val) -> {
-				return TextUtils.translate(ETimeDisplay.getById(val).getValueTranslationKey(ExampleMod.MOD_ID));
+				return TextUtils.translate(ETimeDisplay.getById(val).getValueTranslationKey(CreateRailwaysNavigator.MOD_ID));
 			})
 			.setState(ETimeDisplay.ABS.getId());
 		}, NBT_TIME_DISPLAY_TYPE);

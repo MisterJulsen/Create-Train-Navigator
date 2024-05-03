@@ -10,7 +10,7 @@ import com.simibubi.create.foundation.block.connected.CTSpriteShifter;
 import com.simibubi.create.foundation.block.connected.CTType;
 import com.simibubi.create.foundation.block.connected.ConnectedTextureBehaviour;
 import com.simibubi.create.foundation.utility.RegisteredObjects;
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.resources.ResourceLocation;
@@ -35,7 +35,7 @@ public class ClientWrapper {
 	}
     
 	public static CTSpriteShiftEntry getCT(CTType type, String blockTextureName, String connectedTextureName) {
-		return CTSpriteShifter.getCT(type, new ResourceLocation(ExampleMod.MOD_ID, "block/" + blockTextureName),
-			new ResourceLocation(ExampleMod.MOD_ID, "block/" + connectedTextureName + "_connected"));
+		return CTSpriteShifter.getCT(type, new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "block/" + blockTextureName),
+			new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "block/" + connectedTextureName + "_connected"));
 	}
 }

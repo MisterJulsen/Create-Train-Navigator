@@ -11,7 +11,7 @@ import com.simibubi.create.foundation.gui.widget.Label;
 import com.simibubi.create.foundation.gui.widget.ScrollInput;
 import com.simibubi.create.foundation.utility.Components;
 
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.AbstractAdvancedSidedDisplayBlock;
 import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
@@ -47,7 +47,7 @@ import net.minecraft.world.level.Level;
 public class AdvancedDisplaySettingsScreen extends DLScreen {
 
     private static final MutableComponent title = TextUtils.translate("gui.createrailwaysnavigator.advanced_display_settings.title");
-    private static final ResourceLocation GUI = new ResourceLocation(ExampleMod.MOD_ID, "textures/gui/advanced_display_settings.png");
+    private static final ResourceLocation GUI = new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/advanced_display_settings.png");
     private static final int GUI_WIDTH = 212;
     private static final int GUI_HEIGHT = 123;
     private static final int DEFAULT_ICON_BUTTON_WIDTH = 18;
@@ -70,7 +70,7 @@ public class AdvancedDisplaySettingsScreen extends DLScreen {
     private Label displayTypeLabel;
     
     private DLCreateIconButton globalSettingsButton;
-    private final MutableComponent tooltipGlobalSettings = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".navigator.global_settings.tooltip");
+    private final MutableComponent tooltipGlobalSettings = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.global_settings.tooltip");
     private final MutableComponent tooltipDisplayType = TextUtils.translate("gui.createrailwaysnavigator.advanced_display_settings.display_type");
     private final MutableComponent tooltipDisplayTypeDescription = TextUtils.translate("gui.createrailwaysnavigator.advanced_display_settings.display_type.description");
     private final MutableComponent tooltipInfoType = TextUtils.translate("gui.createrailwaysnavigator.advanced_display_settings.info_type");
@@ -96,7 +96,7 @@ public class AdvancedDisplaySettingsScreen extends DLScreen {
 
     @Override
     public void onClose() {        
-        ExampleMod.net().CHANNEL.sendToServer(new AdvancedDisplayUpdatePacket(level, pos, type, info, doubleSided));
+        CreateRailwaysNavigator.net().CHANNEL.sendToServer(new AdvancedDisplayUpdatePacket(level, pos, type, info, doubleSided));
         super.onClose();
     }
 
@@ -113,7 +113,7 @@ public class AdvancedDisplaySettingsScreen extends DLScreen {
 
         displayTypeLabel = addRenderableWidget(new DLCreateLabel(guiLeft + 45 + 5, guiTop + 23 + 5, Components.immutableEmpty()).withShadow());
         displayTypeInput = addRenderableWidget(new DLCreateSelectionScrollInput(guiLeft + 45, guiTop + 23, 138, 18)
-            .forOptions(Arrays.stream(EDisplayType.values()).map(x -> TextUtils.translate(x.getValueTranslationKey(ExampleMod.MOD_ID))).toList())
+            .forOptions(Arrays.stream(EDisplayType.values()).map(x -> TextUtils.translate(x.getValueTranslationKey(CreateRailwaysNavigator.MOD_ID))).toList())
             .titled(tooltipDisplayType)
             .writingTo(displayTypeLabel)
             .calling((i) -> {
@@ -125,7 +125,7 @@ public class AdvancedDisplaySettingsScreen extends DLScreen {
 
         infoTypeLabel = addRenderableWidget(new DLCreateLabel(guiLeft + 45 + 5, guiTop + 45 + 5, Components.immutableEmpty()).withShadow());
         infoTypeInput = addRenderableWidget(new DLCreateSelectionScrollInput(guiLeft + 45, guiTop + 45, 138, 18)
-            .forOptions(Arrays.stream(EDisplayInfo.values()).map(x -> TextUtils.translate(x.getValueTranslationKey(ExampleMod.MOD_ID))).toList())
+            .forOptions(Arrays.stream(EDisplayInfo.values()).map(x -> TextUtils.translate(x.getValueTranslationKey(CreateRailwaysNavigator.MOD_ID))).toList())
             .titled(tooltipInfoType)
             .writingTo(infoTypeLabel)
             .calling((i) -> {

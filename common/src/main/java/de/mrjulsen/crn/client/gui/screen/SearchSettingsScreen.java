@@ -15,7 +15,7 @@ import com.simibubi.create.foundation.utility.animation.LerpedFloat;
 import com.simibubi.create.foundation.utility.animation.LerpedFloat.Chaser;
 
 import de.mrjulsen.crn.Constants;
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.MutableGuiAreaDefinition;
@@ -46,7 +46,7 @@ import net.minecraft.world.level.Level;
 
 public class SearchSettingsScreen extends DLScreen {
 
-    private static final ResourceLocation GUI = new ResourceLocation(ExampleMod.MOD_ID, "textures/gui/settings.png");
+    private static final ResourceLocation GUI = new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/settings.png");
     private static final int GUI_WIDTH = 255;
     private static final int GUI_HEIGHT = 247;
 
@@ -93,19 +93,19 @@ public class SearchSettingsScreen extends DLScreen {
     private MutableGuiAreaDefinition trainGroupExpandButton;
 
     // Tooltips
-    private final MutableComponent transferTimeBoxText = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".search_settings.transfer_time");
-    private final MutableComponent transferTimeBoxDescription = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".search_settings.transfer_time.description");
-    private final MutableComponent trainGroupsText = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".search_settings.train_groups");
-    private final MutableComponent trainGroupsDescription = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".search_settings.train_groups.description");
-    private final MutableComponent trainGroupsOverviewAll = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".search_settings.train_groups.overview.all");
-    private final MutableComponent trainGroupsOverviewNone = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".search_settings.train_groups.overview.none");
-    private final MutableComponent tooltipTrainGroupsReset = TextUtils.translate("gui." + ExampleMod.MOD_ID + ".search_settings.train_groups.tooltip.reset");
-    private final String trainGroupsOverviewKey = "gui." + ExampleMod.MOD_ID + ".search_settings.train_groups.overview";
+    private final MutableComponent transferTimeBoxText = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_settings.transfer_time");
+    private final MutableComponent transferTimeBoxDescription = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_settings.transfer_time.description");
+    private final MutableComponent trainGroupsText = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_settings.train_groups");
+    private final MutableComponent trainGroupsDescription = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_settings.train_groups.description");
+    private final MutableComponent trainGroupsOverviewAll = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_settings.train_groups.overview.all");
+    private final MutableComponent trainGroupsOverviewNone = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_settings.train_groups.overview.none");
+    private final MutableComponent tooltipTrainGroupsReset = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_settings.train_groups.tooltip.reset");
+    private final String trainGroupsOverviewKey = "gui." + CreateRailwaysNavigator.MOD_ID + ".search_settings.train_groups.overview";
 
 
     @SuppressWarnings("resource")
     public SearchSettingsScreen(Level level, Screen lastScreen) {
-        super(TextUtils.translate("gui." + ExampleMod.MOD_ID + ".search_settings.title"));
+        super(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_settings.title"));
         this.level = level;
         this.lastScreen = lastScreen;
         this.shadowlessFont = new NoShadowFontWrapper(Minecraft.getInstance().font); 

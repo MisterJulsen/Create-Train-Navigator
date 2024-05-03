@@ -4,7 +4,7 @@ import com.simibubi.create.AllBlocks;
 import com.simibubi.create.Create;
 import com.simibubi.create.content.redstone.displayLink.AllDisplayBehaviours;
 
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.display.AdvancedDisplaySource;
 import net.minecraft.core.Registry;
 import net.minecraft.world.level.block.Block;
@@ -34,7 +34,7 @@ public class ModExtras {
 
 	public static void addDisplaySource(Block block) {
         if (registeredTrackStationSource) return;
-        ExampleMod.LOGGER.info("Custom display sources registered!");
+        CreateRailwaysNavigator.LOGGER.info("Custom display sources registered!");
         AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplaySource()).accept(block);
         registeredTrackStationSource = true;
     }

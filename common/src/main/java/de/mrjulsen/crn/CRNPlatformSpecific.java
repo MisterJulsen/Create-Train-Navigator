@@ -6,7 +6,7 @@ import net.minecraft.server.MinecraftServer;
 
 import java.nio.file.Path;
 
-public class ExampleExpectPlatform {
+public class CRNPlatformSpecific {
     /**
      * We can use {@link Platform#getConfigFolder()} but this is just an example of {@link ExpectPlatform}.
      * <p>

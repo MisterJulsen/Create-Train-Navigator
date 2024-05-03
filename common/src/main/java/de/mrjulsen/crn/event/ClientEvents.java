@@ -1,6 +1,6 @@
 package de.mrjulsen.crn.event;
 
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.input.ModKeys;
 import de.mrjulsen.crn.client.lang.ELanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
@@ -53,7 +53,7 @@ public class ClientEvents {
 
         PlayerEvent.PLAYER_QUIT.register((player) -> {
             InstanceManager.removeRouteOverlay();
-            ExampleMod.LOGGER.info("Removed all overlays.");
+            CreateRailwaysNavigator.LOGGER.info("Removed all overlays.");
 
             ClientTrainStationSnapshot.getInstance().dispose();        
             InstanceManager.clearAll();

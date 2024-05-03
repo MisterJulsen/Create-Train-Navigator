@@ -10,7 +10,7 @@ import java.util.function.Supplier;
 import com.simibubi.create.content.trains.entity.Train;
 
 import de.mrjulsen.crn.Constants;
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.data.DeparturePrediction.TrainExitSide;
 import de.mrjulsen.crn.data.DeparturePrediction.SimpleDeparturePrediction;
 import de.mrjulsen.crn.data.GlobalSettingsManager;
@@ -74,7 +74,7 @@ public class TrainDataRequestPacket implements IPacketBase<TrainDataRequestPacke
                 }
             }
 
-            ExampleMod.net().CHANNEL.sendToPlayer((ServerPlayer)contextSupplier.get().getPlayer(), new TrainDataResponsePacket(packet.requestId, new TrainData(
+            CreateRailwaysNavigator.net().CHANNEL.sendToPlayer((ServerPlayer)contextSupplier.get().getPlayer(), new TrainDataResponsePacket(packet.requestId, new TrainData(
                 packet.trainId,
                 train.name.getString(),
                 departurePredictions,

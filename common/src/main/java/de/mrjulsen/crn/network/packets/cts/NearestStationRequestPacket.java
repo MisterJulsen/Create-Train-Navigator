@@ -2,7 +2,7 @@ package de.mrjulsen.crn.network.packets.cts;
 
 import java.util.function.Supplier;
 
-import de.mrjulsen.crn.ExampleMod;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.data.NearestTrackStationResult;
 import de.mrjulsen.crn.network.packets.stc.NearestStationResponsePacket;
 import de.mrjulsen.crn.network.packets.stc.ServerErrorPacket;
@@ -51,10 +51,10 @@ public class NearestStationRequestPacket implements IPacketBase<NearestStationRe
                 try {
                     result = TrainUtils.getNearestTrackStation(contextSupplier.get().getPlayer().getLevel(), packet.pos);                    
                 } catch (Exception e) {
-                    ExampleMod.LOGGER.error("Error while trying to find nearest track station ", e);
-                    ExampleMod.net().CHANNEL.sendToPlayer((ServerPlayer)contextSupplier.get().getPlayer(), new ServerErrorPacket(e.getMessage()));
+                    CreateRailwaysNavigator.LOGGER.error("Error while trying to find nearest track station ", e);
+                    CreateRailwaysNavigator.net().CHANNEL.sendToPlayer((ServerPlayer)contextSupplier.get().getPlayer(), new ServerErrorPacket(e.getMessage()));
                 } finally {                    
-                    ExampleMod.net().CHANNEL.sendToPlayer((ServerPlayer)contextSupplier.get().getPlayer(), new NearestStationResponsePacket(packet.id, result));
+                    CreateRailwaysNavigator.net().CHANNEL.sendToPlayer((ServerPlayer)contextSupplier.get().getPlayer(), new NearestStationResponsePacket(packet.id, result));
                 }                
             });
             navigationThread.setPriority(Thread.MIN_PRIORITY);
