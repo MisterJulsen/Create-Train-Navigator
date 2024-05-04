@@ -169,6 +169,7 @@
   "gui.createrailwaysnavigator.destination": "Stacja docelowa",
   "gui.createrailwaysnavigator.line": "Linia",
   "gui.createrailwaysnavigator.following_trains": "Następne pociągi:",
+  "gui.createrailwaysnavigator.via": "przez",
   "gui.createrailwaysnavigator.advanced_display_settings.title": "Ustawienia Zaawansowanego Wyświetlacza",
   "gui.createrailwaysnavigator.advanced_display_settings.display_type": "Rodzaj wyświetlacza",
   "gui.createrailwaysnavigator.advanced_display_settings.display_type.description": "Decyduje o wyświetlanej informacji.",

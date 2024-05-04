@@ -190,6 +190,7 @@
     "gui.createrailwaysnavigator.destination": "Ziel",
     "gui.createrailwaysnavigator.line": "Linie",
     "gui.createrailwaysnavigator.following_trains": "Folgezüge:",
+    "gui.createrailwaysnavigator.via": "über",
 
     "gui.createrailwaysnavigator.advanced_display_settings.title": "Verbesserte Anzeige Einstellungen",
     "gui.createrailwaysnavigator.advanced_display_settings.display_type": "Anzeigetyp",

@@ -61,7 +61,7 @@ public class BERTrainDestinationDetailed implements IBERRenderSubtype<AdvancedDi
 
 
         maxWidth = isSingleBlock ? 11.0f : 12.0f;
-        line = Utils.text("via").withStyle(ChatFormatting.ITALIC);
+        line = Utils.translate("gui.createrailwaysnavigator.via").withStyle(ChatFormatting.ITALIC);
         maxWidth = displayWidth * 16 - 8;
         maxWidth /= 0.75f;
         lastLabel = new BERText(parent.getFontUtils(), line, 0)
