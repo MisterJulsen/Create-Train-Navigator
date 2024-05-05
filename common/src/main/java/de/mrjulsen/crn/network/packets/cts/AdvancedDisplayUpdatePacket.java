@@ -78,7 +78,7 @@ public class AdvancedDisplayUpdatePacket implements IPacketBase<AdvancedDisplayU
         contextSupplier.get().queue(() -> {
             Player player = contextSupplier.get().getPlayer();
             if (player != null) {
-                Level level = player.getLevel();
+                Level level = player.level();
                 apply(level, packet);
             }
         });

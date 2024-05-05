@@ -750,7 +750,7 @@ public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourn
         y += 5 + ModGuiIcons.ICON_SIZE;
         
         // Details
-        this.messageLabel.renderLeftAligned(graphics.poseStack(), x + 15 + ModGuiIcons.ICON_SIZE, y, 12, 0xDBDBDB | fontAlpha);
+        this.messageLabel.renderLeftAligned(graphics.graphics(), x + 15 + ModGuiIcons.ICON_SIZE, y, 12, 0xDBDBDB | fontAlpha);
     }
 
     public void renderPageJourneyInterrupted(Graphics graphics, int x, int y, float alphaPercentage, int fontAlpha) {
@@ -760,7 +760,7 @@ public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourn
         y += 5 + ModGuiIcons.ICON_SIZE;
         
         // Details
-        this.messageLabel.renderLeftAligned(graphics.poseStack(), x + 10, y, 10, 0xDBDBDB | fontAlpha);
+        this.messageLabel.renderLeftAligned(graphics.graphics(), x + 10, y, 10, 0xDBDBDB | fontAlpha);
     }
 
     public void renderPageJourneyCompleted(Graphics graphics, int x, int y, float alphaPercentage, int fontAlpha) {
@@ -770,7 +770,7 @@ public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourn
         y += 5 + ModGuiIcons.ICON_SIZE;
         
         // Details
-        this.messageLabel.renderLeftAligned(graphics.poseStack(), x + 10, y, 10, 0xDBDBDB | fontAlpha);
+        this.messageLabel.renderLeftAligned(graphics.graphics(), x + 10, y, 10, 0xDBDBDB | fontAlpha);
     }
     //#endregion
 

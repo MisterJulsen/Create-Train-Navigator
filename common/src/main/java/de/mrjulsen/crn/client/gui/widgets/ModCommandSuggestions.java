@@ -3,7 +3,6 @@ package de.mrjulsen.crn.client.gui.widgets;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.Message;
 import com.mojang.brigadier.ParseResults;
@@ -17,7 +16,6 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import com.mojang.text2speech.Narrator;
 
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 
@@ -34,7 +32,7 @@ import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.Rect2i;
@@ -71,7 +69,6 @@ public class ModCommandSuggestions {
    private CompletableFuture<Suggestions> pendingSuggestions;
    @Nullable
    protected ModCommandSuggestions.SuggestionsList suggestions;
-   private boolean allowSuggestions;
    boolean keepSuggestions;
 
    public ModCommandSuggestions(Minecraft pMinecraft, Screen pScreen, EditBox pInput, Font pFont, boolean pCommandsOnly, boolean pOnlyShowIfCursorPastError, int pLineStartOffset, int pSuggestionLineLimit, boolean pAnchorToBottom, int pFillColor) {
@@ -89,7 +86,6 @@ public class ModCommandSuggestions {
    }
 
    public void setAllowSuggestions(boolean pAutoSuggest) {
-      this.allowSuggestions = pAutoSuggest;
       if (!pAutoSuggest) {
          this.suggestions = null;
       }
@@ -244,10 +240,6 @@ public class ModCommandSuggestions {
       }
 
       this.suggestions = null;
-      if (this.allowSuggestions && this.minecraft.options.autoSuggestions().get()) {
-         this.showSuggestions(false);
-      }
-
    }
 
    private void fillNodeUsage(ChatFormatting pFormatting) {
@@ -321,20 +313,31 @@ public class ModCommandSuggestions {
       return FormattedCharSequence.composite(list);
    }
 
-   public void render(PoseStack pPoseStack, int pMouseX, int pMouseY) {
-      if (this.suggestions != null) {
-         this.suggestions.render(pPoseStack, pMouseX, pMouseY);
-      } else {
-         int i = 0;
+   public void render(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY) {
+      if (!this.renderSuggestions(pGuiGraphics, pMouseX, pMouseY)) {
+         this.renderUsage(pGuiGraphics);
+      }
+   }
 
-         for(FormattedCharSequence formattedcharsequence : this.commandUsage) {
-            int j = this.anchorToBottom ? this.screen.height - 14 - 13 - 12 * i : 72 + 12 * i;
-            GuiComponent.fill(pPoseStack, this.commandUsagePosition - 1, j, this.commandUsagePosition + this.commandUsageWidth + 1, j + 12, this.fillColor);
-            this.font.drawShadow(pPoseStack, formattedcharsequence, (float)this.commandUsagePosition, (float)(j + 2), -1);
-            ++i;
-         }
+   public void renderUsage(GuiGraphics pGuiGraphics) {
+      int i = 0;
+
+      for(FormattedCharSequence formattedcharsequence : this.commandUsage) {
+         int j = this.anchorToBottom ? this.screen.height - 14 - 13 - 12 * i : 72 + 12 * i;
+         pGuiGraphics.fill(this.commandUsagePosition - 1, j, this.commandUsagePosition + this.commandUsageWidth + 1, j + 12, this.fillColor);
+         pGuiGraphics.drawString(this.font, formattedcharsequence, this.commandUsagePosition, j + 2, -1);
+         ++i;
       }
 
+   }
+
+   public boolean renderSuggestions(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY) {
+      if (this.suggestions != null) {
+         this.suggestions.render(pGuiGraphics, pMouseX, pMouseY);
+         return true;
+      } else {
+         return false;
+      }
    }
 
    public String getNarrationMessage() {
@@ -349,20 +352,18 @@ public class ModCommandSuggestions {
       private int current;
       private Vec2 lastMouse = Vec2.ZERO;
       private boolean tabCycles;
-      private int lastNarratedEntry;
 
       SuggestionsList(int pXPos, int pYPos, int pWidth, List<Suggestion> pSuggestionList, boolean pNarrateFirstSuggestion) {
          int i = pXPos - 1;
          int j = ModCommandSuggestions.this.anchorToBottom ? pYPos - 3 - Math.min(pSuggestionList.size(), ModCommandSuggestions.this.suggestionLineLimit) * 12 : pYPos;
          this.rect = new Rect2i(i, j, pWidth + 1, Math.min(pSuggestionList.size(), ModCommandSuggestions.this.suggestionLineLimit) * 12);
          this.originalContents = ModCommandSuggestions.this.input.getValue();
-         this.lastNarratedEntry = pNarrateFirstSuggestion ? -1 : 0;
          this.suggestionList = pSuggestionList;
          this.select(0);
       }
 
-      public void render(PoseStack pPoseStack, int pMouseX, int pMouseY) {
-         int i = Math.min(this.suggestionList.size(), ModCommandSuggestions.this.suggestionLineLimit);
+      public void render(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY) {
+         int i = Math.min(this.suggestionList.size(), suggestionLineLimit);
          boolean flag = this.offset > 0;
          boolean flag1 = this.suggestionList.size() > this.offset + i;
          boolean flag2 = flag || flag1;
@@ -372,12 +373,12 @@ public class ModCommandSuggestions {
          }
 
          if (flag2) {
-            GuiComponent.fill(pPoseStack, this.rect.getX(), this.rect.getY() - 1, this.rect.getX() + this.rect.getWidth(), this.rect.getY(), ModCommandSuggestions.this.fillColor);
-            GuiComponent.fill(pPoseStack, this.rect.getX(), this.rect.getY() + this.rect.getHeight(), this.rect.getX() + this.rect.getWidth(), this.rect.getY() + this.rect.getHeight() + 1, ModCommandSuggestions.this.fillColor);
+            pGuiGraphics.fill(this.rect.getX(), this.rect.getY() - 1, this.rect.getX() + this.rect.getWidth(), this.rect.getY(), fillColor);
+            pGuiGraphics.fill(this.rect.getX(), this.rect.getY() + this.rect.getHeight(), this.rect.getX() + this.rect.getWidth(), this.rect.getY() + this.rect.getHeight() + 1, fillColor);
             if (flag) {
                for(int k = 0; k < this.rect.getWidth(); ++k) {
                   if (k % 2 == 0) {
-                     GuiComponent.fill(pPoseStack, this.rect.getX() + k, this.rect.getY() - 1, this.rect.getX() + k + 1, this.rect.getY(), -1);
+                     pGuiGraphics.fill(this.rect.getX() + k, this.rect.getY() - 1, this.rect.getX() + k + 1, this.rect.getY(), -1);
                   }
                }
             }
@@ -385,7 +386,7 @@ public class ModCommandSuggestions {
             if (flag1) {
                for(int i1 = 0; i1 < this.rect.getWidth(); ++i1) {
                   if (i1 % 2 == 0) {
-                     GuiComponent.fill(pPoseStack, this.rect.getX() + i1, this.rect.getY() + this.rect.getHeight(), this.rect.getX() + i1 + 1, this.rect.getY() + this.rect.getHeight() + 1, -1);
+                     pGuiGraphics.fill(this.rect.getX() + i1, this.rect.getY() + this.rect.getHeight(), this.rect.getX() + i1 + 1, this.rect.getY() + this.rect.getHeight() + 1, -1);
                   }
                }
             }
@@ -395,7 +396,7 @@ public class ModCommandSuggestions {
 
          for(int l = 0; l < i; ++l) {
             Suggestion suggestion = this.suggestionList.get(l + this.offset);
-            GuiComponent.fill(pPoseStack, this.rect.getX(), this.rect.getY() + 12 * l, this.rect.getX() + this.rect.getWidth(), this.rect.getY() + 12 * l + 12, ModCommandSuggestions.this.fillColor);
+            pGuiGraphics.fill(this.rect.getX(), this.rect.getY() + 12 * l, this.rect.getX() + this.rect.getWidth(), this.rect.getY() + 12 * l + 12, fillColor);
             if (pMouseX > this.rect.getX() && pMouseX < this.rect.getX() + this.rect.getWidth() && pMouseY > this.rect.getY() + 12 * l && pMouseY < this.rect.getY() + 12 * l + 12) {
                if (flag3) {
                   this.select(l + this.offset);
@@ -404,13 +405,13 @@ public class ModCommandSuggestions {
                flag4 = true;
             }
 
-            ModCommandSuggestions.this.font.drawShadow(pPoseStack, suggestion.getText(), (float)(this.rect.getX() + 1), (float)(this.rect.getY() + 2 + 12 * l), l + this.offset == this.current ? -256 : -5592406);
+            pGuiGraphics.drawString(font, suggestion.getText(), this.rect.getX() + 1, this.rect.getY() + 2 + 12 * l, l + this.offset == this.current ? -256 : -5592406);
          }
 
          if (flag4) {
             Message message = this.suggestionList.get(this.current).getTooltip();
             if (message != null) {
-               ModCommandSuggestions.this.screen.renderTooltip(pPoseStack, ComponentUtils.fromMessage(message), pMouseX, pMouseY);
+               pGuiGraphics.renderTooltip(font, ComponentUtils.fromMessage(message), pMouseX, pMouseY);
             }
          }
 
@@ -487,9 +488,7 @@ public class ModCommandSuggestions {
 
          Suggestion suggestion = this.suggestionList.get(this.current);
          ModCommandSuggestions.this.input.setSuggestion(ModCommandSuggestions.calculateSuggestionSuffix(ModCommandSuggestions.this.input.getValue(), suggestion.apply(this.originalContents)));
-         if (this.lastNarratedEntry != this.current) {
-            Narrator.getNarrator().say(this.getNarrationMessage().getString(), true);
-         }
+         
 
       }
 
@@ -506,7 +505,6 @@ public class ModCommandSuggestions {
       }
 
       Component getNarrationMessage() {
-         this.lastNarratedEntry = this.current;
          Suggestion suggestion = this.suggestionList.get(this.current);
          Message message = suggestion.getTooltip();
          return message != null ? TextUtils.translate("narration.suggestion.tooltip", this.current + 1, this.suggestionList.size(), suggestion.getText(), message) : TextUtils.translate("narration.suggestion", this.current + 1, this.suggestionList.size(), suggestion.getText());

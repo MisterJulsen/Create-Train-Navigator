@@ -1,12 +1,12 @@
 package de.mrjulsen.crn.client.gui.widgets;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+import de.mrjulsen.mcdragonlib.client.util.Graphics;
 
 public interface IEntryListSettingsOption {
     void setYPos(int y);
     void tick();
     int calcHeight();
-    void renderSuggestions(PoseStack poseStack, int mouseX, int mouseY, float partialTicks);
+    void renderSuggestions(Graphics graphics, int mouseX, int mouseY, float partialTicks);
     /**
      * This method is always called, even if the used clicked outside the working area of the container window.
      * This additional method should fix the usage of the suggestions popup, which can be rendered outside of the working area.

@@ -63,7 +63,7 @@ public class TrainDataRequestPacket implements IPacketBase<TrainDataRequestPacke
     @Override
     public void handle(TrainDataRequestPacket packet, Supplier<PacketContext> contextSupplier) {
         contextSupplier.get().queue(() -> {
-            final Level level = contextSupplier.get().getPlayer().getLevel();
+            final Level level = contextSupplier.get().getPlayer().level();
             final long updateTime = level.getDayTime();
             Train train = TrainUtils.getTrain(packet.trainId);
             List<SimpleDeparturePrediction> departurePredictions = new ArrayList<>();

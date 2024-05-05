@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 
 import de.mrjulsen.crn.Constants;
@@ -159,7 +158,7 @@ public class AliasEntryWidget extends AbstractEntryListOptionWidget {
         deleteButton = new GuiAreaDefinition(x + 165, y + 6, 16, 16);
         expandButton = new GuiAreaDefinition(x + 182, y + 6, 16, 16);
         addButton = new GuiAreaDefinition(x + 165, y + 26 + (alias.getAllStationNames().size() * STATION_ENTRY_HEIGHT) + 2, 16, 16);
-        titleBox.y = y + 10;
+        titleBox.setY(y + 10);
         initStationDeleteButtons();
     }
 
@@ -217,9 +216,9 @@ public class AliasEntryWidget extends AbstractEntryListOptionWidget {
         });
         
         newEntryBox.setValue("");
-        newEntryBox.setFocus(false);
+        newEntryBox.setFocused(false);
         newEntryPlatformBox.setValue("");
-        newEntryPlatformBox.setFocus(false);
+        newEntryPlatformBox.setFocused(false);
     }
 
     private boolean setAliasName(String name) {
@@ -273,10 +272,10 @@ public class AliasEntryWidget extends AbstractEntryListOptionWidget {
 
         selectedStationName = stationName;
         editAliasPlatform.setValue(alias.getInfoForStation(selectedStationName).platform());
-        editAliasPlatform.x = buttonArea.getLeft() + 1;
-        editAliasPlatform.y = buttonArea.getTop() + 1;
+        editAliasPlatform.setX(buttonArea.getLeft() + 1);
+        editAliasPlatform.setY(buttonArea.getTop() + 1);
         editAliasPlatform.visible = true;
-        editAliasPlatform.setFocus(true);
+        editAliasPlatform.setFocused(true);
     }
 
     @Override
@@ -289,8 +288,8 @@ public class AliasEntryWidget extends AbstractEntryListOptionWidget {
         if (expanded) {
             Map<String, StationInfo> names = alias.getAllStations();
             GuiUtils.drawTexture(GUI_WIDGETS, graphics, x + 25, y + 5, 0, 92, 139, 18); // textbox
-            newEntryBox.y = y + 26 + (names.size() * STATION_ENTRY_HEIGHT) + 6;
-            newEntryPlatformBox.y = y + 26 + (names.size() * STATION_ENTRY_HEIGHT) + 6;
+            newEntryBox.setY(y + 26 + (names.size() * STATION_ENTRY_HEIGHT) + 6);
+            newEntryPlatformBox.setY(y + 26 + (names.size() * STATION_ENTRY_HEIGHT) + 6);
 
             for (int i = 0; i < names.size(); i++) {
                 GuiUtils.drawTexture(GUI_WIDGETS, graphics, x, y + 26 + (i * STATION_ENTRY_HEIGHT), 0, 48, 200, STATION_ENTRY_HEIGHT);
@@ -404,12 +403,12 @@ public class AliasEntryWidget extends AbstractEntryListOptionWidget {
     }
 
     @Override
-    public void renderSuggestions(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+    public void renderSuggestions(Graphics graphics, int mouseX, int mouseY, float partialTicks) {
         if (destinationSuggestions != null) {
-			matrixStack.pushPose();
-			matrixStack.translate(0, -parent.getScrollOffset(partialTicks), 500);
-			destinationSuggestions.render(matrixStack, mouseX, mouseY + parent.getScrollOffset(partialTicks));
-			matrixStack.popPose();
+			graphics.poseStack().pushPose();
+			graphics.poseStack().translate(0, -parent.getScrollOffset(partialTicks), 500);
+			destinationSuggestions.render(graphics.graphics(), mouseX, mouseY + parent.getScrollOffset(partialTicks));
+			graphics.poseStack().popPose();
 		}
     }
 
@@ -435,7 +434,7 @@ public class AliasEntryWidget extends AbstractEntryListOptionWidget {
             }
         }
 
-        editAliasPlatform.setFocus(false);
+        editAliasPlatform.setFocused(false);
 
         if (deleteButton.isInBounds(pMouseX, pMouseY)) {
             deleteAlias();
@@ -477,7 +476,7 @@ public class AliasEntryWidget extends AbstractEntryListOptionWidget {
     protected void updateEditorSubwidgets(DLEditBox field) {
         clearSuggestions();
 
-		destinationSuggestions = new ModStationSuggestions(minecraft, parent, field, minecraft.font, getViableStations(field), field.getHeight() + 2 + field.y);
+		destinationSuggestions = new ModStationSuggestions(minecraft, parent, field, minecraft.font, getViableStations(field), field.getHeight() + 2 + field.getY());
         destinationSuggestions.setAllowSuggestions(true);
         destinationSuggestions.updateCommandInfo();
 	}

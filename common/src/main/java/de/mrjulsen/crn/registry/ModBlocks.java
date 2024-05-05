@@ -27,7 +27,7 @@ import net.minecraft.world.level.block.Block;
 public class ModBlocks {	
 
 	static {
-		CreateRailwaysNavigator.REGISTRATE.creativeModeTab(() -> ModCreativeModeTab.MAIN);
+		//CreateRailwaysNavigator.REGISTRATE.setCreativeTab(ModCreativeModeTab.MAIN_TAB.getKey());
 	}
 
 	public static final BlockEntry<AdvancedDisplayBlock> ADVANCED_DISPLAY_BLOCK = CreateRailwaysNavigator.REGISTRATE.block("advanced_display_block", AdvancedDisplayBlock::new)
@@ -37,6 +37,7 @@ public class ModBlocks {
 		.transform(TagGen.pickaxeOnly())
 		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
 		.item()
+		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
 		.register();
 
@@ -47,6 +48,7 @@ public class ModBlocks {
 		.transform(TagGen.pickaxeOnly())
 		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
 		.item()
+		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
 		.register();
 
@@ -57,6 +59,7 @@ public class ModBlocks {
 		.transform(TagGen.pickaxeOnly())
 		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
 		.item()
+		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
 		.register();
 
@@ -67,6 +70,7 @@ public class ModBlocks {
 		.transform(TagGen.pickaxeOnly())
 		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
 		.item()
+		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
 		.register();
 
@@ -77,6 +81,7 @@ public class ModBlocks {
 		.transform(TagGen.pickaxeOnly())
 		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
 		.item()
+		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
 		.register();	
 	
@@ -85,6 +90,7 @@ public class ModBlocks {
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
 		.item()
+		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
 		.register();
 

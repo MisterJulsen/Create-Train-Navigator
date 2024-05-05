@@ -6,7 +6,6 @@ import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
@@ -14,6 +13,7 @@ import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import de.mrjulsen.mcdragonlib.core.EAlignment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.toasts.Toast;
 import net.minecraft.client.gui.components.toasts.ToastComponent;
 import net.minecraft.network.chat.Component;
@@ -69,13 +69,13 @@ public class NavigatorToast implements Toast {
      * @param pTimeSinceLastVisible time in milliseconds
      */
     @SuppressWarnings("resource")
-    public Toast.Visibility render(PoseStack pPoseStack, ToastComponent pToastComponent, long pTimeSinceLastVisible) {
+    public Toast.Visibility render(GuiGraphics guiGraphics, ToastComponent pToastComponent, long pTimeSinceLastVisible) {
         if (this.changed) {
             this.lastChanged = pTimeSinceLastVisible;
             this.changed = false;
         }
 
-        Graphics graphics = new Graphics(pPoseStack);
+        Graphics graphics = new Graphics(guiGraphics, guiGraphics.pose());
 
         RenderSystem.setShaderTexture(0, TEXTURE);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
@@ -97,8 +97,8 @@ public class NavigatorToast implements Toast {
             //pToastComponent.getMinecraft().font.draw(pPoseStack, this.title, 40, 7.0F, -256);
 
             for (int i = 0; i < this.messageLines.size(); ++i) {
-                //GuiUtils.drawString(graphics, pToastComponent.getMinecraft().font, 40, (20 + i * lineHeight), this.messageLines.get(i), -1, EAlignment.LEFT, false);
-                pToastComponent.getMinecraft().font.draw(pPoseStack, this.messageLines.get(i), 40, (float) (20 + i * lineHeight), -1);
+            //GuiUtils.drawString(graphics, pToastComponent.getMinecraft().font, 40, 7, title, -256, EAlignment.LEFT, false);
+                graphics.graphics().drawString(Minecraft.getInstance().font, this.messageLines.get(i), 40, (20 + i * lineHeight), -1, false);
             }
         }
 

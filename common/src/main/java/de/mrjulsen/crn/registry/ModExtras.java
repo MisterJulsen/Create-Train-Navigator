@@ -6,7 +6,7 @@ import com.simibubi.create.content.redstone.displayLink.AllDisplayBehaviours;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.display.AdvancedDisplaySource;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
@@ -26,7 +26,7 @@ public class ModExtras {
             maybeRegistered = null;
         }
         
-		Create.REGISTRATE.addRegisterCallback("track_station", Registry.BLOCK_REGISTRY, ModExtras::addDisplaySource);
+		Create.REGISTRATE.addRegisterCallback("track_station", Registries.BLOCK, ModExtras::addDisplaySource);
         if (maybeRegistered != null) {
             addDisplaySource(maybeRegistered);
         }

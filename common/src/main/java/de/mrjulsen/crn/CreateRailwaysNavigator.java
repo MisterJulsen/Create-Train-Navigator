@@ -30,6 +30,7 @@ import de.mrjulsen.crn.network.packets.stc.TrackStationResponsePacket;
 import de.mrjulsen.crn.network.packets.stc.TrainDataResponsePacket;
 import de.mrjulsen.crn.registry.ModBlockEntities;
 import de.mrjulsen.crn.registry.ModBlocks;
+import de.mrjulsen.crn.registry.ModCreativeModeTab;
 import de.mrjulsen.crn.registry.ModExtras;
 import de.mrjulsen.crn.registry.ModItems;
 import de.mrjulsen.mcdragonlib.net.NetworkManagerBase;
@@ -77,6 +78,7 @@ public final class CreateRailwaysNavigator {
 
     public static void init() {
            
+        ModCreativeModeTab.setup();
         ModBlocks.register();
         ModItems.register();
         ModBlockEntities.register();        

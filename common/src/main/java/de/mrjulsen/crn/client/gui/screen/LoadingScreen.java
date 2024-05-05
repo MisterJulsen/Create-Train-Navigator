@@ -40,6 +40,6 @@ public class LoadingScreen extends DLScreen {
         double offsetY = Math.cos(Math.toRadians(angle)) * 5; 
         
         GuiUtils.drawString(graphics, font, width / 2, height / 2, title, 0xFFFFFF, EAlignment.CENTER, true);
-        AllIcons.I_MTD_SCAN.render(graphics.poseStack(), (int)(width / 2 + offsetX), (int)(height / 2 - 50 + offsetY));
+        AllIcons.I_MTD_SCAN.render(graphics.graphics(), (int)(width / 2 + offsetX), (int)(height / 2 - 50 + offsetY));
     }
 }

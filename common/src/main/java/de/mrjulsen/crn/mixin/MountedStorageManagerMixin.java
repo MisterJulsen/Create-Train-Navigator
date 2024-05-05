@@ -25,7 +25,7 @@ public class MountedStorageManagerMixin {
 
         for (BlockEntity be : beList) {            
             if (be instanceof IContraptionBlockEntity tile) {
-                tile.contraptionTick(entity.level, be.getBlockPos(), be.getBlockState(), entity.getContraption());
+                tile.contraptionTick(entity.level(), be.getBlockPos(), be.getBlockState(), entity.getContraption());
             }
         }
 

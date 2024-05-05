@@ -60,7 +60,7 @@ public class NavigationRequestPacket implements IPacketBase<NavigationRequestPac
         contextSupplier.get().queue(() -> {
             Thread navigationThread = new Thread(() -> {
                 List<Route> routes = new ArrayList<>();
-                final long updateTime = contextSupplier.get().getPlayer().level.getDayTime();
+                final long updateTime = contextSupplier.get().getPlayer().level().getDayTime();
                 final long startTime = System.currentTimeMillis();
                 
                 try {
@@ -71,7 +71,7 @@ public class NavigationRequestPacket implements IPacketBase<NavigationRequestPac
                         return;
                     }
                     
-                    Graph graph = new Graph(contextSupplier.get().getPlayer().getLevel(), packet.filterSettings);
+                    Graph graph = new Graph(contextSupplier.get().getPlayer().level(), packet.filterSettings);
                     routes.addAll(graph.navigate(startAlias, endAlias, true));
                 } catch (Exception e) {
                     CreateRailwaysNavigator.LOGGER.error("Navigation error: ", e);

@@ -6,7 +6,6 @@ import java.util.Set;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 
 import de.mrjulsen.crn.Constants;
@@ -166,7 +165,7 @@ public class TrainGroupEntryWidget extends AbstractEntryListOptionWidget {
         });        
         
         newEntryBox.setValue("");
-        newEntryBox.setFocus(false);
+        newEntryBox.setFocused(false);
     }
 
     private boolean setGroupName(String name) {
@@ -218,18 +217,19 @@ public class TrainGroupEntryWidget extends AbstractEntryListOptionWidget {
         deleteButton = new GuiAreaDefinition(x + 165, y + 6, 16, 16);
         expandButton = new GuiAreaDefinition(x + 182, y + 6, 16, 16);
         addButton = new GuiAreaDefinition(x + 165, y + 26 + (trainGroup.getTrainNames().size() * STATION_ENTRY_HEIGHT) + 2, 16, 16);
-        titleBox.y = y + 10;
+        titleBox.setY(y + 10);
         initStationDeleteButtons();
     }
 
     @Override
-    public void renderSuggestions(PoseStack poseStack, int mouseX, int mouseY, float partialTicks) {
+    public void renderSuggestions(Graphics graphics, int mouseX, int mouseY, float partialTicks) {
         if (suggestions != null) {
-			poseStack.pushPose();
-			poseStack.translate(0, -parent.getScrollOffset(partialTicks), 500);
-			suggestions.render(poseStack, mouseX, mouseY + parent.getScrollOffset(partialTicks));
-			poseStack.popPose();
+			graphics.poseStack().pushPose();
+			graphics.poseStack().translate(0, -parent.getScrollOffset(partialTicks), 500);
+			suggestions.render(graphics.graphics(), mouseX, mouseY + parent.getScrollOffset(partialTicks));
+			graphics.poseStack().popPose();
 		}
+
     }
 
     @Override
@@ -243,7 +243,7 @@ public class TrainGroupEntryWidget extends AbstractEntryListOptionWidget {
         if (expanded) {
             Set<String> names = trainGroup.getTrainNames();
             GuiUtils.drawTexture(GUI_WIDGETS, graphics, x + 25, y + 5, 0, 92, 139, 18); // textbox
-            newEntryBox.y = y + 26 + (names.size() * STATION_ENTRY_HEIGHT) + 6;
+            newEntryBox.setY(y + 26 + (names.size() * STATION_ENTRY_HEIGHT) + 6);
             
             for (int i = 0; i < names.size(); i++) {
                 GuiUtils.drawTexture(GUI_WIDGETS, graphics, x, y + 26 + (i * STATION_ENTRY_HEIGHT), 0, 48, 200, STATION_ENTRY_HEIGHT);
@@ -303,7 +303,7 @@ public class TrainGroupEntryWidget extends AbstractEntryListOptionWidget {
 		if (suggestions != null) {
 			graphics.poseStack().pushPose();
 			graphics.poseStack().translate(0, -parent.getScrollOffset(partialTicks), 500);
-			suggestions.render(graphics.poseStack(), mouseX, mouseY + parent.getScrollOffset(partialTicks));
+			suggestions.render(graphics.graphics(), mouseX, mouseY + parent.getScrollOffset(partialTicks));
 			graphics.poseStack().popPose();
 		}
         
@@ -383,7 +383,7 @@ public class TrainGroupEntryWidget extends AbstractEntryListOptionWidget {
     protected void updateEditorSubwidgets(DLEditBox field) {
         clearSuggestions();
 
-		suggestions = new ModStationSuggestions(minecraft, parent, field, minecraft.font, getViableTrains(field), field.getHeight() + 2 + field.y);
+		suggestions = new ModStationSuggestions(minecraft, parent, field, minecraft.font, getViableTrains(field), field.getHeight() + 2 + field.getY());
         suggestions.setAllowSuggestions(true);
         suggestions.updateCommandInfo();
 	}

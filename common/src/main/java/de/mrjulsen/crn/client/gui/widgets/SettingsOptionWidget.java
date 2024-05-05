@@ -48,11 +48,11 @@ public class SettingsOptionWidget extends DLButton {
     public void renderMainLayer(Graphics graphics, int pMouseX, int pMouseY, float pPartialTick) {        
         float l = isMouseOver(pMouseX, pMouseY) && isHovered ? 0.2f : 0;
         GuiUtils.setTint(1 + l, 1 + l, 1 + l, 1);
-        GuiUtils.drawTexture(Constants.GUI_WIDGETS, graphics, x, y, 0, 0, WIDTH, HEIGHT);
+        GuiUtils.drawTexture(Constants.GUI_WIDGETS, graphics, getX(), getY(), 0, 0, WIDTH, HEIGHT);
 
-        GuiUtils.drawString(graphics, shadowlessFont, x + 6, y + 5, getMessage(), 0xFFFFFF, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, shadowlessFont, getX() + 6, getY() + 5, getMessage(), 0xFFFFFF, EAlignment.LEFT, false);
         graphics.poseStack().scale(0.75f, 0.75f, 0.75f);        
-        this.messageLabel.renderLeftAligned(graphics.poseStack(), (int)((x + 6) / 0.75f), (int)((y + 20) / 0.75f), 10, 0xDBDBDB);
+        this.messageLabel.renderLeftAligned(graphics.graphics(), (int)((getX() + 6) / 0.75f), (int)((getY() + 20) / 0.75f), 10, 0xDBDBDB);
         float s = 1 / 0.75f;
         graphics.poseStack().scale(s, s, s);
     }

@@ -1,10 +1,10 @@
 package de.mrjulsen.crn.client.gui.screen;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.foundation.gui.element.ScreenElement;
 
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 
 public class CustomIconScreenElement implements ScreenElement {
@@ -28,8 +28,8 @@ public class CustomIconScreenElement implements ScreenElement {
     }
 
     @Override
-    public void render(PoseStack poseStack, int x, int y) {
-        GuiUtils.drawTexture(texture, new Graphics(poseStack), x, y, u, v, uW, vH, texW, texH);
+    public void render(GuiGraphics graphics, int x, int y) {
+        GuiUtils.drawTexture(texture, new Graphics(graphics, graphics.pose()), x, y, u, v, uW, vH, texW, texH);
     }
     
 }

@@ -49,7 +49,7 @@ public class NextConnectionsRequestPacket implements IPacketBase<NextConnections
     public void handle(NextConnectionsRequestPacket packet, Supplier<PacketContext> contextSupplier) {
         contextSupplier.get().queue(() -> {
             new Thread(() -> {
-                final long updateTime = contextSupplier.get().getPlayer().getLevel().getDayTime();
+                final long updateTime = contextSupplier.get().getPlayer().level().getDayTime();
                 CreateRailwaysNavigator.net().CHANNEL.sendToPlayer((ServerPlayer)contextSupplier.get().getPlayer(), new NextConnectionsResponsePacket(packet.requestId, TrainUtils.getConnectionsAt(packet.currentStationName, packet.trainId, (int)packet.ticksToNextStop), updateTime));
             }, "Connections Loader").run();
         });

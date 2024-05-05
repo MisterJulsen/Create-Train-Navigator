@@ -35,7 +35,7 @@ import de.mrjulsen.mcdragonlib.core.EAlignment;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.components.Widget;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -180,7 +180,7 @@ public class AdvancedDisplaySettingsScreen extends DLScreen {
         GuiGameElement.of(renderedItem).<GuiGameElement
 			.GuiRenderBuilder>at(guiLeft + GUI_WIDTH, guiTop + GUI_HEIGHT - 48, -200)
 			.scale(4f)
-			.render(graphics.poseStack());
+			.render(graphics.graphics());
 
         type.getIcon().render(graphics, guiLeft + 22, guiTop + 24);
         info.getIcon().render(graphics, guiLeft + 22, guiTop + 46);
@@ -192,15 +192,15 @@ public class AdvancedDisplaySettingsScreen extends DLScreen {
     @Override
     public void renderFrontLayer(Graphics graphics, int pMouseX, int pMouseY, float pPartialTick) {
         super.renderFrontLayer(graphics, pMouseX, pMouseY, pPartialTick);
-        for (Widget widget : renderables) {
+        for (Renderable widget : renderables) {
             if (widget instanceof AbstractSimiWidget simiWidget && simiWidget.isHoveredOrFocused()
                 && simiWidget.visible) {
                 List<Component> tooltip = simiWidget.getToolTip();
                 if (tooltip.isEmpty())
                     continue;
-                int ttx = simiWidget.lockedTooltipX == -1 ? pMouseX : simiWidget.lockedTooltipX + simiWidget.x;
-                int tty = simiWidget.lockedTooltipY == -1 ? pMouseY : simiWidget.lockedTooltipY + simiWidget.y;
-                renderComponentTooltip(graphics.poseStack(), tooltip, ttx, tty);
+                int ttx = simiWidget.lockedTooltipX == -1 ? pMouseX : simiWidget.lockedTooltipX + simiWidget.getX();
+                int tty = simiWidget.lockedTooltipY == -1 ? pMouseY : simiWidget.lockedTooltipY + simiWidget.getY();
+                graphics.graphics().renderComponentTooltip(font, tooltip, ttx, tty);
             }
         }
     }

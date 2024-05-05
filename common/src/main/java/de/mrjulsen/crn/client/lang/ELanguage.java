@@ -47,11 +47,11 @@ public enum ELanguage implements StringRepresentable {
 
         LanguageInfo info = lang == DEFAULT ? null : Minecraft.getInstance().getLanguageManager().getLanguage(lang.getCode());
         if (info == null) {
-            info = Minecraft.getInstance().getLanguageManager().getSelected();
+            info = Minecraft.getInstance().getLanguageManager().getLanguage(Minecraft.getInstance().getLanguageManager().getSelected());
         }
         currentLanguage = lang;
-        currentClientLanguage = ClientLanguage.loadFrom(Minecraft.getInstance().getResourceManager(), List.of(info));
-        CreateRailwaysNavigator.LOGGER.info("Updated custom language to: " + (info == null ? null : info.getName()));
+        currentClientLanguage = ClientLanguage.loadFrom(Minecraft.getInstance().getResourceManager(), List.of(Minecraft.getInstance().getLanguageManager().getSelected()), false);
+        CreateRailwaysNavigator.LOGGER.info("Updated custom language to: " + (info == null ? null : info.name()));
     }
 
     public static ClientLanguage getCurrentClientLanguage() {

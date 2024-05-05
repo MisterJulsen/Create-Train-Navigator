@@ -52,7 +52,7 @@ public class RealtimeRequestPacket implements IPacketBase<RealtimeRequestPacket>
     @Override
     public void handle(RealtimeRequestPacket packet, Supplier<PacketContext> contextSupplier) {
         contextSupplier.get().queue(() -> {
-            final Level level = contextSupplier.get().getPlayer().getLevel();
+            final Level level = contextSupplier.get().getPlayer().level();
             new Thread(() -> {
                 final long updateTime = level.getDayTime();
                 Collection<SimpleDeparturePrediction> predictions = new ArrayList<>();
@@ -61,7 +61,7 @@ public class RealtimeRequestPacket implements IPacketBase<RealtimeRequestPacket>
                         return;
                     }
                     
-                    predictions.addAll(TrainUtils.getTrainDeparturePredictions(x, contextSupplier.get().getPlayer().getLevel()).stream().map(a -> a.simplify()).filter(a -> !GlobalSettingsManager.getInstance().getSettingsData().isBlacklisted(a.stationName())).sorted(Comparator.comparingInt(a -> a.departureTicks())).toList());
+                    predictions.addAll(TrainUtils.getTrainDeparturePredictions(x, contextSupplier.get().getPlayer().level()).stream().map(a -> a.simplify()).filter(a -> !GlobalSettingsManager.getInstance().getSettingsData().isBlacklisted(a.stationName())).sorted(Comparator.comparingInt(a -> a.departureTicks())).toList());
                 });
                 CreateRailwaysNavigator.net().CHANNEL.sendToPlayer((ServerPlayer)contextSupplier.get().getPlayer(), (new RealtimeResponsePacket(packet.requestId, predictions, updateTime)));
             }, "Realtime Provider").run();

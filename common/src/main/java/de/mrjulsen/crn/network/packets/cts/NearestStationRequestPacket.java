@@ -22,7 +22,7 @@ public class NearestStationRequestPacket implements IPacketBase<NearestStationRe
     public NearestStationRequestPacket() { }
     
     public NearestStationRequestPacket(long id, Vec3 pos) {
-        this(id, new BlockPos(pos));
+        this(id, new BlockPos((int)pos.x, (int)pos.y, (int)pos.z));
     }
 
     public NearestStationRequestPacket(long id, BlockPos pos) {
@@ -49,7 +49,7 @@ public class NearestStationRequestPacket implements IPacketBase<NearestStationRe
             Thread navigationThread = new Thread(() -> {   
                 NearestTrackStationResult result = NearestTrackStationResult.empty();
                 try {
-                    result = TrainUtils.getNearestTrackStation(contextSupplier.get().getPlayer().getLevel(), packet.pos);                    
+                    result = TrainUtils.getNearestTrackStation(contextSupplier.get().getPlayer().level(), packet.pos);                    
                 } catch (Exception e) {
                     CreateRailwaysNavigator.LOGGER.error("Error while trying to find nearest track station ", e);
                     CreateRailwaysNavigator.net().CHANNEL.sendToPlayer((ServerPlayer)contextSupplier.get().getPlayer(), new ServerErrorPacket(e.getMessage()));

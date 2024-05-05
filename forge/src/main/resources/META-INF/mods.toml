@@ -1,5 +1,5 @@
 modLoader = "javafml"
-loaderVersion = "[43,)"
+loaderVersion = "[47,)"
 #issueTrackerURL = ""
 license = "GNU General Public License v3.0"
 
@@ -8,7 +8,7 @@ modId = "createrailwaysnavigator"
 version = "${version}"
 displayName = "Create Railways Navigator"
 authors = "MrJulsen"
-updateJSONURL="https://raw.githubusercontent.com/MisterJulsen/Create-Train-Navigator/1.18.2/update.json"
+updateJSONURL="https://raw.githubusercontent.com/MisterJulsen/Create-Train-Navigator/1.20.1/update.json"
 displayURL="https://www.curseforge.com/minecraft/mc-mods/create-railways-navigator"
 issueTrackerURL="https://github.com/MisterJulsen/Create-Train-Navigator/issues"
 description = '''
@@ -19,27 +19,34 @@ logoFile="icon.png"
 [[dependencies.createrailwaysnavigator]]
 modId = "forge"
 mandatory = true
-versionRange = "[43,)"
+versionRange = "[47,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.createrailwaysnavigator]]
 modId = "minecraft"
 mandatory = true
-versionRange = "[1.19.2,)"
+versionRange = "[1.20.1,1.21)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.createrailwaysnavigator]]
 modId = "architectury"
 mandatory = true
-versionRange = "[6.5.85,)"
+versionRange = "[9.1.12,)"
 ordering = "AFTER"
 side = "BOTH"
 
 [[dependencies.createrailwaysnavigator]]
 modId = "dragonlib"
 mandatory = true
-versionRange = "[1.19.2-2.1.6,)"
+versionRange = "[1.20.1-2.1.6,)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.createrailwaysnavigator]]
+modId = "create"
+mandatory = true
+versionRange = "[0.5.1.f-26,)"
 ordering = "AFTER"
 side = "BOTH"

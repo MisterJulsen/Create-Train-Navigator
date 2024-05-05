@@ -246,7 +246,7 @@ public abstract class AbstractEntryListSettingsScreen<D, W extends AbstractEntry
                 widget.setYPos(currentY);
                 widget.calcHeight();
                 if (currentY < guiTop + AREA_Y + AREA_H - scrollOffset && currentY + widget.getHeight() > guiTop + AREA_Y - scrollOffset) {
-                    widget.render(graphics.poseStack(), pMouseX, (int)(pMouseY - scrollOffset), pPartialTick);
+                    widget.render(graphics.graphics(), pMouseX, (int)(pMouseY - scrollOffset), pPartialTick);
                 }
                 currentY += widget.getHeight() + ENTRY_SPACING;
             }
@@ -280,7 +280,7 @@ public abstract class AbstractEntryListSettingsScreen<D, W extends AbstractEntry
             if (pMouseX > guiLeft + AREA_X && pMouseX < guiLeft + AREA_X + AREA_W && pMouseY > guiTop + AREA_Y && pMouseY < guiTop + AREA_Y + AREA_H) {
                 x.renderFrontLayer(graphics, pMouseX, pMouseY, pPartialTicks);
             }      
-            x.renderSuggestions(graphics.poseStack(), pMouseX, pMouseY, pPartialTicks);
+            x.renderSuggestions(graphics, pMouseX, pMouseY, pPartialTicks);
         });
         
         super.renderFrontLayer(graphics, pMouseX, pMouseY, pPartialTicks);

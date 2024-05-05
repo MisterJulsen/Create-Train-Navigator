@@ -7,7 +7,7 @@ import com.simibubi.create.foundation.gui.AllIcons;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
-import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 
 public enum ModGuiIcons {
@@ -90,19 +90,29 @@ public enum ModGuiIcons {
     }
 
     public void render(Graphics graphics, int x, int y) {
-        GuiUtils.drawTexture(ModGuiIcons.ICON_LOCATION, graphics, x, y, getU(), getV(), ICON_SIZE, ICON_SIZE);
+        graphics.graphics().blit(ModGuiIcons.ICON_LOCATION, x, y, getU(), getV(), ICON_SIZE, ICON_SIZE);
     }
 
     public static class ModAllIcons extends AllIcons {
 
+        int u, v;
+
         public ModAllIcons(int x, int y) {
             super(x, y);
+            this.u = x * ICON_SIZE;
+            this.v = y * ICON_SIZE;
+        }
+
+        
+
+        @Override
+        public void render(GuiGraphics graphics, int x, int y) {
+            graphics.blit(ICON_LOCATION, x, y, 0, u, v, ICON_SIZE, ICON_SIZE, 256, 256);
         }
 
         @Override
         public void bind() {
             RenderSystem.setShaderTexture(0, ICON_LOCATION);
-        }
-        
+        }        
     }
 }

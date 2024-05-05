@@ -7,7 +7,6 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 import com.simibubi.create.foundation.gui.AllIcons;
 import com.simibubi.create.foundation.utility.animation.LerpedFloat;
@@ -43,6 +42,7 @@ import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.TimeUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.components.toasts.SystemToast.SystemToastIds;
@@ -291,7 +291,7 @@ public class NavigatorScreen extends DLScreen implements IJourneyListenerClient 
     protected void updateEditorSubwidgets(DLEditBox field) {
         clearSuggestions();
 
-		destinationSuggestions = new ModDestinationSuggestions(this.minecraft, this, field, this.font, getViableStations(field), field.getHeight() + 2 + field.y);
+		destinationSuggestions = new ModDestinationSuggestions(this.minecraft, this, field, this.font, getViableStations(field), field.getHeight() + 2 + field.getY());
         destinationSuggestions.setAllowSuggestions(true);
         destinationSuggestions.updateCommandInfo();
 	}
@@ -331,7 +331,7 @@ public class NavigatorScreen extends DLScreen implements IJourneyListenerClient 
         super.tick();
     }
 
-    protected void startStencil(PoseStack matrixStack, float x, float y, float w, float h) {
+    protected void startStencil(GuiGraphics graphics, float x, float y, float w, float h) {
 		RenderSystem.clear(GL30.GL_STENCIL_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
 
 		GL11.glDisable(GL11.GL_STENCIL_TEST);
@@ -342,11 +342,11 @@ public class NavigatorScreen extends DLScreen implements IJourneyListenerClient 
 		RenderSystem.stencilMask(0xFF);
 		RenderSystem.stencilFunc(GL11.GL_NEVER, 1, 0xFF);
 
-		matrixStack.pushPose();
-		matrixStack.translate(x, y, 0);
-		matrixStack.scale(w, h, 1);
-		io.github.fabricators_of_create.porting_lib.util.client.GuiUtils.drawGradientRect(matrixStack.last().pose(), -100, 0, 0, 1, 1, 0xff000000, 0xff000000);
-		matrixStack.popPose();
+		graphics.pose().pushPose();
+		graphics.pose().translate(x, y, 0);
+		graphics.pose().scale(w, h, 1);
+		graphics.fillGradient(0, 0, 1, 1, -100, 0xff000000, 0xff000000);
+		graphics.pose().popPose();
 
 		GL11.glEnable(GL11.GL_STENCIL_TEST);
 		RenderSystem.stencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_KEEP);
@@ -378,7 +378,7 @@ public class NavigatorScreen extends DLScreen implements IJourneyListenerClient 
                 ModGuiIcons.INFO.render(graphics, (int)(guiLeft + GUI_WIDTH / 2 - 8), (int)(guiTop + GUI_HEIGHT / 2));
             } else if (routes.length <= 0) {
                 GuiUtils.drawString(graphics, font, guiLeft + GUI_WIDTH / 2, guiTop + 32 + GUI_HEIGHT / 2, noConnectionsText, 0xFFFFFF, EAlignment.CENTER, false);
-                AllIcons.I_ACTIVE.render(graphics.poseStack(), (int)(guiLeft + GUI_WIDTH / 2 - 8), (int)(guiTop + GUI_HEIGHT / 2));
+                AllIcons.I_ACTIVE.render(graphics.graphics(), (int)(guiLeft + GUI_WIDTH / 2 - 8), (int)(guiTop + GUI_HEIGHT / 2));
             } else {
                 //GuiUtils.swapAndBlitColor(minecraft.getMainRenderTarget(), GuiUtils.getFramebuffer());
                 //GuiUtils.startStencil(graphics, guiLeft + AREA_X, guiTop + AREA_Y, AREA_W, AREA_H);
@@ -392,7 +392,7 @@ public class NavigatorScreen extends DLScreen implements IJourneyListenerClient 
                 int start = (int)(Math.abs(scrollOffset + ENTRIES_START_Y_OFFSET) / (ENTRY_SPACING + RouteEntryOverviewWidget.HEIGHT));
                 int end = Math.min(routesCollection.components.size(), start + 2 + (int)(AREA_H / (ENTRY_SPACING + RouteEntryOverviewWidget.HEIGHT)));
                 for (int i = start; i < end; i++) {
-                    routesCollection.components.get(i).render(graphics.poseStack(), (int)(pMouseX), (int)(pMouseY - scrollOffset), pPartialTick);
+                    routesCollection.components.get(i).render(graphics.graphics(), (int)(pMouseX), (int)(pMouseY - scrollOffset), pPartialTick);
                 }
 
                 //graphics.poseStack().popPose();
@@ -419,7 +419,7 @@ public class NavigatorScreen extends DLScreen implements IJourneyListenerClient 
             double offsetY = Math.cos(Math.toRadians(angle)) * 5; 
             
             GuiUtils.drawString(graphics, font, guiLeft + GUI_WIDTH / 2, guiTop + 32 + GUI_HEIGHT / 2, searchingText, 0xFFFFFF, EAlignment.CENTER, false);
-            AllIcons.I_MTD_SCAN.render(graphics.poseStack(), (int)(guiLeft + GUI_WIDTH / 2 - 8 + offsetX), (int)(guiTop + GUI_HEIGHT / 2 + offsetY));
+            AllIcons.I_MTD_SCAN.render(graphics.graphics(), (int)(guiLeft + GUI_WIDTH / 2 - 8 + offsetX), (int)(guiTop + GUI_HEIGHT / 2 + offsetY));
         }
 
         if (switchButtonsArea.isInBounds(pMouseX, pMouseY)) {
@@ -432,7 +432,7 @@ public class NavigatorScreen extends DLScreen implements IJourneyListenerClient 
 		if (destinationSuggestions != null) {
 			graphics.poseStack().pushPose();
 			graphics.poseStack().translate(0, 0, 500);
-			destinationSuggestions.render(graphics.poseStack(), mouseX, mouseY);
+			destinationSuggestions.render(graphics.graphics(), mouseX, mouseY);
 			graphics.poseStack().popPose();
 		}
         super.renderFrontLayer(graphics, mouseX, mouseY, partialTicks);

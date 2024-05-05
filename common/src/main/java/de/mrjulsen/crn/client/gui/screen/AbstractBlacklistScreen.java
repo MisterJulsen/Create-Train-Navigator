@@ -172,7 +172,7 @@ public abstract class AbstractBlacklistScreen extends DLScreen {
 
         clearSuggestions();
 
-		suggestions = new ModStationSuggestions(minecraft, this, field, minecraft.font, getViableStations(field), field.getHeight() + 2 + field.y);
+		suggestions = new ModStationSuggestions(minecraft, this, field, minecraft.font, getViableStations(field), field.getHeight() + 2 + field.getY());
         suggestions.setAllowSuggestions(true);
         suggestions.updateCommandInfo();
 	}
@@ -280,7 +280,7 @@ public abstract class AbstractBlacklistScreen extends DLScreen {
         if (suggestions != null) {
 			graphics.poseStack().pushPose();
 			graphics.poseStack().translate(0, 0, 500);
-			suggestions.render(graphics.poseStack(), mouseX, mouseY);
+			suggestions.render(graphics.graphics(), mouseX, mouseY);
 			graphics.poseStack().popPose();
 		}
 

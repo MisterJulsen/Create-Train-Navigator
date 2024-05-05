@@ -45,10 +45,10 @@ public class ExpandButton extends DLButton {
     @Override
     public void renderMainLayer(Graphics graphics, int pMouseX, int pMouseY, float pPartialTick) {
         if (isMouseOver(pMouseX, pMouseY)) {
-            GuiUtils.fill(graphics, x, y, width, height, 0x1AFFFFFF);
-            GuiUtils.drawString(graphics, font, x + width / 2, y + height / 2 - font.lineHeight / 2, expanded ? TextUtils.text(collapseText).withStyle(ChatFormatting.UNDERLINE) : TextUtils.text(expandText).withStyle(ChatFormatting.UNDERLINE), 0xFFFFFF, EAlignment.CENTER, true);
+            GuiUtils.fill(graphics, getX(), getY(), width, height, 0x1AFFFFFF);
+            GuiUtils.drawString(graphics, font, getX() + width / 2, getY() + height / 2 - font.lineHeight / 2, expanded ? TextUtils.text(collapseText).withStyle(ChatFormatting.UNDERLINE) : TextUtils.text(expandText).withStyle(ChatFormatting.UNDERLINE), 0xFFFFFF, EAlignment.CENTER, true);
         } else {            
-            GuiUtils.drawString(graphics, font, x + width / 2, y + height / 2 - font.lineHeight / 2, expanded ? TextUtils.text(collapseText) : TextUtils.text(expandText), 0xFFFFFF, EAlignment.CENTER, true);
+            GuiUtils.drawString(graphics, font, getX() + width / 2, getY() + height / 2 - font.lineHeight / 2, expanded ? TextUtils.text(collapseText) : TextUtils.text(expandText), 0xFFFFFF, EAlignment.CENTER, true);
         }        
     }
 

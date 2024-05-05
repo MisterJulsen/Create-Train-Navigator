@@ -74,8 +74,8 @@ public class RouteEntryOverviewWidget extends DLButton {
         if (!beforeJourney) {
             color = ColorUtils.applyTint(color, 0x663300);
         }
-        CreateDynamicWidgets.renderSingleShadeWidget(graphics, x, y, WIDTH, HEIGHT, color);
-        CreateDynamicWidgets.renderHorizontalSeparator(graphics, x + 6, y + 22, 188);
+        CreateDynamicWidgets.renderSingleShadeWidget(graphics, getX(), getY(), WIDTH, HEIGHT, color);
+        CreateDynamicWidgets.renderHorizontalSeparator(graphics, getX() + 6, getY() + 22, 188);
 
         Minecraft minecraft = Minecraft.getInstance();
         SimpleRoutePart[] parts = route.getParts().toArray(SimpleRoutePart[]::new);
@@ -100,7 +100,7 @@ public class RouteEntryOverviewWidget extends DLButton {
         float localScale = shadowlessFont.width(line) > WIDTH - 12 ? scale : 1;
         graphics.poseStack().pushPose();
         graphics.poseStack().scale(localScale, 1, 1);
-        GuiUtils.drawString(graphics, minecraft.font, (int)((x + 6) / localScale), y + 5, line, 0xFFFFFF, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, minecraft.font, (int)((getX() + 6) / localScale), getY() + 5, line, 0xFFFFFF, EAlignment.LEFT, false);
         graphics.poseStack().popPose();
 
         int routePartWidth = DISPLAY_WIDTH / parts.length;
@@ -108,32 +108,32 @@ public class RouteEntryOverviewWidget extends DLButton {
         int textW = shadowlessFont.width(end);
         
         for (int i = 0; i < parts.length; i++) {
-            GuiUtils.fill(graphics, x + 5 + (i * routePartWidth) + 1, y + 27, routePartWidth - 2, 11, 0xFF393939);
+            GuiUtils.fill(graphics, getX() + 5 + (i * routePartWidth) + 1, getY() + 27, routePartWidth - 2, 11, 0xFF393939);
         }
 
         graphics.poseStack().pushPose();
         graphics.poseStack().scale(scale, scale, scale);
         
         if (route.getStartStation().shouldRenderRealtime()) {
-            GuiUtils.drawString(graphics, shadowlessFont, (int)((x + 6 + shadowlessFont.width(timeStart) * localScale / 2.0f) / scale) - shadowlessFont.width(timeStart) / 2, (int)((y + 15) / scale), TextUtils.text(TimeUtils.parseTime((int)(route.getStartStation().getEstimatedTimeWithThreshold() % 24000 + DragonLib.DAYTIME_SHIFT), ModClientConfig.TIME_FORMAT.get())), route.getStartStation().isDelayed() ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME, EAlignment.LEFT, false);
+            GuiUtils.drawString(graphics, shadowlessFont, (int)((getX() + 6 + shadowlessFont.width(timeStart) * localScale / 2.0f) / scale) - shadowlessFont.width(timeStart) / 2, (int)((getY() + 15) / scale), TextUtils.text(TimeUtils.parseTime((int)(route.getStartStation().getEstimatedTimeWithThreshold() % 24000 + DragonLib.DAYTIME_SHIFT), ModClientConfig.TIME_FORMAT.get())), route.getStartStation().isDelayed() ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME, EAlignment.LEFT, false);
         }
         if (route.getEndStation().shouldRenderRealtime()) {
-            GuiUtils.drawString(graphics, shadowlessFont, (int)((x + 6 + shadowlessFont.width(timeEnd) * localScale * 1.5f + (shadowlessFont.width(dash)) * localScale) / scale) - shadowlessFont.width(timeEnd) / 2, (int)((y + 15) / scale), TextUtils.text(TimeUtils.parseTime((int)(route.getEndStation().getEstimatedTimeWithThreshold() % 24000 + DragonLib.DAYTIME_SHIFT), ModClientConfig.TIME_FORMAT.get())), route.getEndStation().isDelayed() ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME, EAlignment.LEFT, false);
+            GuiUtils.drawString(graphics, shadowlessFont, (int)((getX() + 6 + shadowlessFont.width(timeEnd) * localScale * 1.5f + (shadowlessFont.width(dash)) * localScale) / scale) - shadowlessFont.width(timeEnd) / 2, (int)((getY() + 15) / scale), TextUtils.text(TimeUtils.parseTime((int)(route.getEndStation().getEstimatedTimeWithThreshold() % 24000 + DragonLib.DAYTIME_SHIFT), ModClientConfig.TIME_FORMAT.get())), route.getEndStation().isDelayed() ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME, EAlignment.LEFT, false);
         }
 
         if (!route.isValid()) {
-            GuiUtils.drawString(graphics, shadowlessFont, (int)((x + WIDTH - 5) / scale) - shadowlessFont.width(trainCanceled), (int)((y + 15) / scale), trainCanceled, Constants.COLOR_DELAYED, EAlignment.LEFT, false);
+            GuiUtils.drawString(graphics, shadowlessFont, (int)((getX() + WIDTH - 5) / scale) - shadowlessFont.width(trainCanceled), (int)((getY() + 15) / scale), trainCanceled, Constants.COLOR_DELAYED, EAlignment.LEFT, false);
         } else if (!beforeJourney) {
-            GuiUtils.drawString(graphics, shadowlessFont, (int)((x + WIDTH - 5) / scale) - shadowlessFont.width(connectionInPast), (int)((y + 15) / scale), connectionInPast, Constants.COLOR_DELAYED, EAlignment.LEFT, false);
+            GuiUtils.drawString(graphics, shadowlessFont, (int)((getX() + WIDTH - 5) / scale) - shadowlessFont.width(connectionInPast), (int)((getY() + 15) / scale), connectionInPast, Constants.COLOR_DELAYED, EAlignment.LEFT, false);
         }
 
 
         for (int i = 0; i < parts.length; i++) {
-            GuiUtils.drawString(graphics, shadowlessFont, (int)((x + 5 + (i * routePartWidth) + (routePartWidth / 2)) / 0.75f), (int)((y + 30) / 0.75f), TextUtils.text(parts[i].getTrainName()), 0xFFFFFF, EAlignment.CENTER, false);
+            GuiUtils.drawString(graphics, shadowlessFont, (int)((getX() + 5 + (i * routePartWidth) + (routePartWidth / 2)) / 0.75f), (int)((getY() + 30) / 0.75f), TextUtils.text(parts[i].getTrainName()), 0xFFFFFF, EAlignment.CENTER, false);
         }
 
-        GuiUtils.drawString(graphics, shadowlessFont, (int)((x + 6) / scale), (int)((y + 43) / scale), TextUtils.text(route.getStartStation().getStationName()), 0xDBDBDB, EAlignment.LEFT, false);
-        GuiUtils.drawString(graphics, shadowlessFont, (int)((x + WIDTH - 6) / scale) - textW, (int)((y + 43) / scale), TextUtils.text(end), 0xDBDBDB, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, shadowlessFont, (int)((getX() + 6) / scale), (int)((getY() + 43) / scale), TextUtils.text(route.getStartStation().getStationName()), 0xDBDBDB, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, shadowlessFont, (int)((getX() + WIDTH - 6) / scale) - textW, (int)((getY() + 43) / scale), TextUtils.text(end), 0xDBDBDB, EAlignment.LEFT, false);
         
         graphics.poseStack().popPose();
     }

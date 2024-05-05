@@ -230,7 +230,7 @@ public class RouteOverlaySettingsScreen extends DLScreen {
         GuiGameElement.of(renderedItem).<GuiGameElement
 			.GuiRenderBuilder>at(guiLeft + GUI_WIDTH, guiTop + GUI_HEIGHT - 48, -200)
 			.scale(5)
-			.render(graphics.poseStack());
+			.render(graphics.graphics());
 
         CreateDynamicWidgets.renderTextBox(graphics, guiLeft + 63, guiTop + 23, 43);
 
@@ -246,9 +246,9 @@ public class RouteOverlaySettingsScreen extends DLScreen {
 				List<Component> tooltip = simiWidget.getToolTip();
 				if (tooltip.isEmpty())
 					return;
-				int ttx = simiWidget.lockedTooltipX == -1 ? pMouseX : simiWidget.lockedTooltipX + simiWidget.x;
-				int tty = simiWidget.lockedTooltipY == -1 ? pMouseY : simiWidget.lockedTooltipY + simiWidget.y;
-				renderComponentTooltip(graphics.poseStack(), tooltip, ttx, tty);
+				int ttx = simiWidget.lockedTooltipX == -1 ? pMouseX : simiWidget.lockedTooltipX + simiWidget.getX();
+				int tty = simiWidget.lockedTooltipY == -1 ? pMouseY : simiWidget.lockedTooltipY + simiWidget.getY();
+				graphics.graphics().renderComponentTooltip(font, tooltip, ttx, tty);
 			}
         });
         super.renderFrontLayer(graphics, pMouseX, pMouseY, pPartialTick);

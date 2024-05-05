@@ -296,7 +296,7 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 			if (dye != null) {
 				pLevel.playSound(null, pPos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
 				blockEntity.applyToAll(be -> {
-					be.setColor(dye == DyeColor.ORANGE ? 0xFF9900 : dye.getMaterialColor().col);				
+					be.setColor(dye == DyeColor.ORANGE ? 0xFF9900 : dye.getMapColor().col);				
 					be.notifyUpdate();
 				});
 

@@ -223,7 +223,7 @@ public class RouteDetailsScreen extends DLScreen implements IJourneyListenerClie
         final float mul = 1 / scale;
 
         GuiUtils.drawTexture(Constants.GUI_WIDGETS, graphics, x, y, 0, V, ENTRY_WIDTH, HEIGHT);
-        part.getTrainIcon().render(TrainIconType.ENGINE, graphics.poseStack(), x + ENTRY_DEST_X, y + 7);
+        part.getTrainIcon().render(TrainIconType.ENGINE, graphics.graphics(), x + ENTRY_DEST_X, y + 7);
 
         graphics.poseStack().pushPose();
         graphics.poseStack().scale(scale, scale, scale);
@@ -398,10 +398,10 @@ public class RouteDetailsScreen extends DLScreen implements IJourneyListenerClie
             btn.active = part.getStopovers().size() > 0;
 
             if (btn.active) {
-                btn.x = guiLeft + 78;
-                btn.y = yOffs - 14;
+                btn.setX(guiLeft + 78);
+                btn.setY(yOffs - 14);
 
-                btn.render(graphics.poseStack(), pMouseX, (int)(pMouseY - scrollOffset), pPartialTick);
+                btn.render(graphics.graphics(), pMouseX, (int)(pMouseY - scrollOffset), pPartialTick);
             }
 
             if (btn.isExpanded()) {

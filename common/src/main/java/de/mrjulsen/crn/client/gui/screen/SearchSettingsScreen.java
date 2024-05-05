@@ -36,7 +36,7 @@ import de.mrjulsen.mcdragonlib.util.TimeUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.MultiLineLabel;
-import net.minecraft.client.gui.components.Widget;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -186,7 +186,7 @@ public class SearchSettingsScreen extends DLScreen {
         graphics.poseStack().pushPose();
         GuiUtils.drawString(graphics, shadowlessFont, x + 25, y + 6, TextUtils.text(text), 0xFFFFFF, EAlignment.LEFT, false);
         graphics.poseStack().scale(0.75f, 0.75f, 0.75f);        
-        label.renderLeftAligned(graphics.poseStack(), (int)((x + 25) / 0.75f), (int)((y + 19) / 0.75f), 10, 0xDBDBDB);
+        label.renderLeftAligned(graphics.graphics(), (int)((x + 25) / 0.75f), (int)((y + 19) / 0.75f), 10, 0xDBDBDB);
         graphics.poseStack().popPose();
     }
 
@@ -271,7 +271,7 @@ public class SearchSettingsScreen extends DLScreen {
                 CreateDynamicWidgets.renderTextSlotOverlay(graphics, wX + 6, dY + (i * ARRAY_ENTRY_HEIGHT) + 1, 16, ARRAY_ENTRY_HEIGHT - 2);
                 
                 if (ModClientConfig.TRAIN_GROUP_FILTER_BLACKLIST.get().stream().noneMatch(x -> x.equals(group.getGroupName()))) {
-                    AllIcons.I_CONFIRM.render(graphics.poseStack(), wX + 6, dY + (i * ARRAY_ENTRY_HEIGHT) + 2);
+                    AllIcons.I_CONFIRM.render(graphics.graphics(), wX + 6, dY + (i * ARRAY_ENTRY_HEIGHT) + 2);
                 }
 
                 if (workingArea.isInBounds(pMouseX, pMouseY) && area.isInBounds(pMouseX, pMouseY - scrollOffset)) {
@@ -300,7 +300,7 @@ public class SearchSettingsScreen extends DLScreen {
         trainGroupResetButton.setXOffset(wX + defaultWidth - 2 - 32);
         trainGroupResetButton.setYOffset(wY + defaultDescriptionHeight / 2 - 7);
 
-        AllIcons.I_REFRESH.render(graphics.poseStack(), trainGroupResetButton.getX(), trainGroupResetButton.getY());
+        AllIcons.I_REFRESH.render(graphics.graphics(), trainGroupResetButton.getX(), trainGroupResetButton.getY());
         if (trainGroupsExpanded) {
             ModGuiIcons.COLLAPSE.render(graphics, trainGroupExpandButton.getX(), trainGroupExpandButton.getY());
         } else {
@@ -323,7 +323,7 @@ public class SearchSettingsScreen extends DLScreen {
         GuiUtils.fillGradient(graphics, guiLeft + AREA_X, guiTop + AREA_Y + AREA_H - 10, 0, AREA_W, 10, 0x00000000, 0x77000000);
 
         // widgets y offset
-        transferTimeInput.y = (int)(transferTimeInputInitialY + scrollOffset);
+        transferTimeInput.setY((int)(transferTimeInputInitialY + scrollOffset));
 
         // set scrollbar values
         maxY = wY - AREA_H;
@@ -354,15 +354,15 @@ public class SearchSettingsScreen extends DLScreen {
             GuiUtils.renderTooltipWithOffset(this, trainGroupResetButton, List.of(tooltipTrainGroupsReset), width, graphics, pMouseX, pMouseY, 0, scrollOffset);
         }
 
-        for (Widget widget : renderables) {
+        for (Renderable widget : renderables) {
             if (widget instanceof AbstractSimiWidget simiWidget && simiWidget.isHoveredOrFocused()
                 && simiWidget.visible) {
                 List<Component> tooltip = simiWidget.getToolTip();
                 if (tooltip.isEmpty())
                     continue;
-                int ttx = simiWidget.lockedTooltipX == -1 ? pMouseX : simiWidget.lockedTooltipX + simiWidget.x;
-                int tty = simiWidget.lockedTooltipY == -1 ? pMouseY : simiWidget.lockedTooltipY + simiWidget.y;
-                renderComponentTooltip(graphics.poseStack(), tooltip, ttx, tty);
+                int ttx = simiWidget.lockedTooltipX == -1 ? pMouseX : simiWidget.lockedTooltipX + simiWidget.getX();
+                int tty = simiWidget.lockedTooltipY == -1 ? pMouseY : simiWidget.lockedTooltipY + simiWidget.getY();
+                graphics.graphics().renderComponentTooltip(font, tooltip, ttx, tty);
             }
         }
 

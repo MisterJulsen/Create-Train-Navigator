@@ -26,9 +26,9 @@
   ],
   "depends": {
     "fabric": "*",
-    "minecraft": ">=1.19.2",
-    "architectury": ">=6.5.85",
-    "dragonlib": "1.19.2-2.1.6",
+    "minecraft": ">=1.20.1",
+    "architectury": ">=9.1.12",
+    "dragonlib": "1.20.1-2.1.6",
     "create": "*"
   }
 }
