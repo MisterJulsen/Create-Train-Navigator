@@ -15,7 +15,8 @@ public enum ELanguage implements StringRepresentable {
     DEFAULT("defaut", "def"),
     ENGLISH("english", "en_us"),
     GERMAN("german", "de_de"),
-    DUTCH("dutch", "nl_nl");
+    DUTCH("dutch", "nl_nl"),
+    POLISH("polish", "pl_pl");
 
     private String name;
     private String code;
