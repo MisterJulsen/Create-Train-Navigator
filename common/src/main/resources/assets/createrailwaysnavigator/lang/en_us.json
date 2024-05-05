@@ -194,6 +194,7 @@
     "gui.createrailwaysnavigator.destination": "Destination",
     "gui.createrailwaysnavigator.line": "Line",
     "gui.createrailwaysnavigator.following_trains": "Following trains:",
+    "gui.createrailwaysnavigator.via": "via",
 
     "gui.createrailwaysnavigator.advanced_display_settings.title": "Advanced Display Settings",
     "gui.createrailwaysnavigator.advanced_display_settings.display_type": "Display Type",
