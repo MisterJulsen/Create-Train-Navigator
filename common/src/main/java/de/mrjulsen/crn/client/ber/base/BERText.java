@@ -253,7 +253,7 @@ public class BERText {
 
         for (int i = 0; i < text.getString().length(); i++) {
             int charCode = text.getString().charAt(i);
-            GlyphInfo info = fontUtils.fontSet.getGlyphInfo(charCode);
+            GlyphInfo info = fontUtils.fontSet.getGlyphInfo(charCode, false);
             float glyphWidth = info.getAdvance(text.getStyle().isBold());
             float oldX = newX;
             newX += glyphWidth;

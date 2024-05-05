@@ -17,6 +17,10 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
+import com.mojang.text2speech.Narrator;
+
+import de.mrjulsen.mcdragonlib.util.TextUtils;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
@@ -31,7 +35,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiComponent;
-import net.minecraft.client.gui.chat.NarratorChatListener;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.Rect2i;
@@ -40,7 +43,6 @@ import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.Style;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec2;
@@ -210,7 +212,7 @@ public class ModCommandSuggestions {
    private static FormattedCharSequence getExceptionMessage(CommandSyntaxException pException) {
       Component component = ComponentUtils.fromMessage(pException.getRawMessage());
       String s = pException.getContext();
-      return s == null ? component.getVisualOrderText() : (new TranslatableComponent("command.context.parse_error", component, pException.getCursor(), s)).getVisualOrderText();
+      return s == null ? component.getVisualOrderText() : (TextUtils.translate("command.context.parse_error", component, pException.getCursor(), s)).getVisualOrderText();
    }
 
    private void updateUsageInfo() {
@@ -242,7 +244,7 @@ public class ModCommandSuggestions {
       }
 
       this.suggestions = null;
-      if (this.allowSuggestions && this.minecraft.options.autoSuggestions) {
+      if (this.allowSuggestions && this.minecraft.options.autoSuggestions().get()) {
          this.showSuggestions(false);
       }
 
@@ -486,7 +488,7 @@ public class ModCommandSuggestions {
          Suggestion suggestion = this.suggestionList.get(this.current);
          ModCommandSuggestions.this.input.setSuggestion(ModCommandSuggestions.calculateSuggestionSuffix(ModCommandSuggestions.this.input.getValue(), suggestion.apply(this.originalContents)));
          if (this.lastNarratedEntry != this.current) {
-            NarratorChatListener.INSTANCE.sayNow(this.getNarrationMessage());
+            Narrator.getNarrator().say(this.getNarrationMessage().getString(), true);
          }
 
       }
@@ -507,7 +509,7 @@ public class ModCommandSuggestions {
          this.lastNarratedEntry = this.current;
          Suggestion suggestion = this.suggestionList.get(this.current);
          Message message = suggestion.getTooltip();
-         return message != null ? new TranslatableComponent("narration.suggestion.tooltip", this.current + 1, this.suggestionList.size(), suggestion.getText(), message) : new TranslatableComponent("narration.suggestion", this.current + 1, this.suggestionList.size(), suggestion.getText());
+         return message != null ? TextUtils.translate("narration.suggestion.tooltip", this.current + 1, this.suggestionList.size(), suggestion.getText(), message) : TextUtils.translate("narration.suggestion", this.current + 1, this.suggestionList.size(), suggestion.getText());
       }
 
       public void hide() {

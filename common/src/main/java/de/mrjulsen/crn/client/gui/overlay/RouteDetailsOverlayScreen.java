@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.text2speech.Narrator;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 import com.simibubi.create.foundation.gui.UIRenderHelper;
 import com.simibubi.create.foundation.utility.animation.LerpedFloat;
@@ -52,11 +53,9 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.chat.NarratorChatListener;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.KeybindComponent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -329,7 +328,7 @@ public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourn
 
     private void narratorAnnouncement(String text) {
         if (ModClientConfig.ROUTE_NARRATOR.get()) {
-            NarratorChatListener.INSTANCE.narrator.say(text, true);
+            Narrator.getNarrator().say(text, true);
         }
     }
 
@@ -495,7 +494,7 @@ public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourn
         GuiUtils.drawTexture(GUI, graphics, x, y, GUI_WIDTH, GUI_HEIGHT, 0, getListener().getCurrentState().important() ? 138 : 0, 256, 256);
         
         GuiUtils.drawString(graphics, shadowlessFont, x + 6, y + 4, title, 0x4F4F4F, EAlignment.LEFT, false);
-        GuiUtils.drawString(graphics, shadowlessFont, x + 6, y + GUI_HEIGHT - 2 - shadowlessFont.lineHeight, TextUtils.translate(keyOptionsText, TextUtils.translate(InputConstants.getKey(Minecraft.ON_OSX ? InputConstants.KEY_LWIN : InputConstants.KEY_LCONTROL, 0).getName()).append(" + ").append(new KeybindComponent(keyKeybindOptions)).withStyle(ChatFormatting.BOLD)), 0x4F4F4F, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, shadowlessFont, x + 6, y + GUI_HEIGHT - 2 - shadowlessFont.lineHeight, TextUtils.translate(keyOptionsText, TextUtils.translate(InputConstants.getKey(Minecraft.ON_OSX ? InputConstants.KEY_LWIN : InputConstants.KEY_LCONTROL, 0).getName()).append(" + ").append(TextUtils.keybind(keyKeybindOptions)).withStyle(ChatFormatting.BOLD)), 0x4F4F4F, EAlignment.LEFT, false);
         
         String timeString = TimeUtils.parseTime((int)((level.getDayTime() + DragonLib.DAYTIME_SHIFT) % DragonLib.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get());
         GuiUtils.drawString(graphics, shadowlessFont, x + GUI_WIDTH - 4 - shadowlessFont.width(timeString), y + 4, timeString, 0x4F4F4F, EAlignment.LEFT, false);

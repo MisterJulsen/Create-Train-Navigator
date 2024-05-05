@@ -59,11 +59,11 @@ public enum ELanguage implements StringRepresentable {
     }
 
     public static MutableComponent translate(String key) {
-        return new ModTranslatableComponent(key);
+        return MutableComponent.create(new ModTranslatableComponent(key));
     }
 
     public static MutableComponent translate(String key, Object... args) {
-        return new ModTranslatableComponent(key, args);
+        return MutableComponent.create(new ModTranslatableComponent(key, args));
     }
 
 

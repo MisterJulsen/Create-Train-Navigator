@@ -4,6 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.mojang.text2speech.Narrator;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 import com.simibubi.create.foundation.gui.AllIcons;
 import com.simibubi.create.foundation.gui.element.GuiGameElement;
@@ -37,7 +38,6 @@ import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.chat.NarratorChatListener;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -158,9 +158,9 @@ public class RouteOverlaySettingsScreen extends DLScreen {
             ModClientConfig.ROUTE_NARRATOR.set(!ModClientConfig.ROUTE_NARRATOR.get());
 
             if (ModClientConfig.ROUTE_NARRATOR.get()) {
-                NarratorChatListener.INSTANCE.narrator.say(narratorOn.getString(), true);
+                Narrator.getNarrator().say(narratorOn.getString(), true);
             } else {
-                NarratorChatListener.INSTANCE.narrator.say(narratorOff.getString(), true);
+                Narrator.getNarrator().say(narratorOff.getString(), true);
             }
         });
         buttons.add(soundButton);

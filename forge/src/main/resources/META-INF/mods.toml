@@ -1,5 +1,5 @@
 modLoader = "javafml"
-loaderVersion = "[40,)"
+loaderVersion = "[43,)"
 #issueTrackerURL = ""
 license = "GNU General Public License v3.0"
 
@@ -19,20 +19,27 @@ logoFile="icon.png"
 [[dependencies.createrailwaysnavigator]]
 modId = "forge"
 mandatory = true
-versionRange = "[40,)"
+versionRange = "[43,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.createrailwaysnavigator]]
 modId = "minecraft"
 mandatory = true
-versionRange = "[1.18.2,)"
+versionRange = "[1.19.2,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.createrailwaysnavigator]]
 modId = "architectury"
 mandatory = true
-versionRange = "[4.11.93,)"
+versionRange = "[6.5.85,)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.createrailwaysnavigator]]
+modId = "dragonlib"
+mandatory = true
+versionRange = "[1.19.2-2.1.6,)"
 ordering = "AFTER"
 side = "BOTH"

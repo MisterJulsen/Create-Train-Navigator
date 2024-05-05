@@ -1,3 +1,2 @@
 accessWidener   v2  named
 accessible class net/minecraft/client/gui/Font$StringRenderOutput
-accessible field net/minecraft/client/gui/chat/NarratorChatListener narrator Lcom/mojang/text2speech/Narrator;
