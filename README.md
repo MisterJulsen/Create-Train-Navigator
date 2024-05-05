@@ -16,6 +16,8 @@ This mod adds a new item, the Create Railways Navigator, which is inspired by th
 ## Supported Languages
 - English (100%)
 - German (100%)
+- Dutch (100%) (by TheSatanicFlame)
+- Polish (100%) (by Slasherss)
 
 ## **Please note!**
 To protect your world from damage, you should always create a backup of your world before installing an update of this mod. Alpha versions in particular may contain critical bugs!
