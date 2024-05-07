@@ -13,8 +13,8 @@ import de.mrjulsen.crn.registry.ModExtras;
 import de.mrjulsen.mcdragonlib.client.OverlayManager;
 import dev.architectury.event.events.client.ClientGuiEvent;
 import dev.architectury.event.events.client.ClientLifecycleEvent;
+import dev.architectury.event.events.client.ClientPlayerEvent;
 import dev.architectury.event.events.common.LifecycleEvent;
-import dev.architectury.event.events.common.PlayerEvent;
 import dev.architectury.event.events.common.TickEvent;
 import net.minecraft.client.Minecraft;
 
@@ -47,11 +47,11 @@ public class ClientEvents {
             ModExtras.register();
         });
 
-        PlayerEvent.PLAYER_JOIN.register((player) -> {
+        ClientPlayerEvent.CLIENT_PLAYER_JOIN.register((player) -> {
             JourneyListenerManager.start();
         });
 
-        PlayerEvent.PLAYER_QUIT.register((player) -> {
+        ClientPlayerEvent.CLIENT_PLAYER_QUIT.register((player) -> {
             InstanceManager.removeRouteOverlay();
             CreateRailwaysNavigator.LOGGER.info("Removed all overlays.");
 
