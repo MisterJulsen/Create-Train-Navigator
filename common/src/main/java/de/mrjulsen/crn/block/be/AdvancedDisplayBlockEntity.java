@@ -349,10 +349,10 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         }
 
         if (getter.getBlockEntity(a) instanceof AdvancedDisplayBlockEntity be1 && getter.getBlockEntity(b) instanceof AdvancedDisplayBlockEntity be2 && be1.getBlockState().getBlock() instanceof AbstractAdvancedDisplayBlock block1 && be2.getBlockState().getBlock() instanceof AbstractAdvancedDisplayBlock block2) {
-            return  block1 == block2 &&
+            return block1 == block2 &&
                 be1.getDisplayType() == be2.getDisplayType() &&
                 be1.getInfoType() == be2.getInfoType() &&
-                block1.canConnectWithBlock(level, a, b) && block2.canConnectWithBlock(level, b, a) && 
+                block1.canConnectWithBlock(getter, a, b) && block2.canConnectWithBlock(getter, b, a) && 
                 (!a.above().equals(b) || (be1.getBlockState().getValue(AbstractAdvancedDisplayBlock.UP) && !be1.isSingleLine())) &&
                 (!a.below().equals(b) || (be1.getBlockState().getValue(AbstractAdvancedDisplayBlock.DOWN) && !be1.isSingleLine()))
             ;

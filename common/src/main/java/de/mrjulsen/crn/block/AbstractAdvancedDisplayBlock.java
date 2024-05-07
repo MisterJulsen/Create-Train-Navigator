@@ -32,7 +32,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
@@ -247,7 +247,7 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 		return other.getBlock() == this && state.getValue(FACING) == other.getValue(FACING);
 	}
 
-	public boolean canConnectWithBlock(BlockAndTintGetter level, BlockPos selfPos, BlockPos otherPos) {
+	public boolean canConnectWithBlock(BlockGetter level, BlockPos selfPos, BlockPos otherPos) {
 		return level.getBlockState(selfPos).getBlock() instanceof AbstractAdvancedDisplayBlock && level.getBlockState(otherPos).getBlock() instanceof AbstractAdvancedDisplayBlock &&
 			level.getBlockState(selfPos).getBlock() == level.getBlockState(otherPos).getBlock() &&
 			level.getBlockState(selfPos).getValue(FACING) == level.getBlockState(otherPos).getValue(FACING)
