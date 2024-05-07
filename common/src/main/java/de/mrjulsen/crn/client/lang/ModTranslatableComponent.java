@@ -46,7 +46,7 @@ public class ModTranslatableComponent implements ComponentContents {
    }
 
    private void decompose() {
-      Language language = Language.getInstance();
+      Language language = ELanguage.getCurrentClientLanguage();
       if (language != this.decomposedWith) {
          this.decomposedWith = language;
          String string = language.getOrDefault(this.key);

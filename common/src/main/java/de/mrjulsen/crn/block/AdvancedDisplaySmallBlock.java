@@ -13,7 +13,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.Direction.AxisDirection;
 import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -135,7 +134,7 @@ public class AdvancedDisplaySmallBlock extends AbstractAdvancedSidedDisplayBlock
 	}
 
     @Override
-    public boolean canConnectWithBlock(BlockAndTintGetter level, BlockPos selfPos, BlockPos otherPos) {
+    public boolean canConnectWithBlock(BlockGetter level, BlockPos selfPos, BlockPos otherPos) {
 		return super.canConnectWithBlock(level, selfPos, otherPos) &&
             level.getBlockState(selfPos).getValue(Y_ALIGN) == level.getBlockState(otherPos).getValue(Y_ALIGN) && 
             level.getBlockState(selfPos).getValue(Z_ALIGN) == level.getBlockState(otherPos).getValue(Z_ALIGN)
