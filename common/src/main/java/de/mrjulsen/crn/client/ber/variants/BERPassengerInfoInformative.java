@@ -270,14 +270,13 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
         MutableComponent line = TextUtils.text(TimeUtils.parseTime((int)(blockEntity.getLevel().getDayTime() % DragonLib.TICKS_PER_DAY + DragonLib.DAYTIME_SHIFT), ModClientConfig.TIME_FORMAT.get())).withStyle(ChatFormatting.BOLD);
         float rawTextWidth = Math.min(parent.getFontUtils().font.width(line), maxWidth);
         float textWidth = rawTextWidth * 0.25f;
-        timeLabel = parent.carriageIndexLabel = new BERText(parent.getFontUtils(), line, 0)
+        timeLabel = parent.carriageIndexLabel = new BERText(parent.getFontUtils(), textWidth > parent.getFontUtils().font.width(line) * 0.1f ? line : TextUtils.empty(), 0)
             .withIsCentered(false)
-            .withMaxWidth(maxWidth, true)
-            .withStretchScale(0.25f, 0.25f)
+            .withMaxWidth(textWidth, true)
+            .withStretchScale(0.1f, 0.25f)
             .withColor((0xFF << 24) | (blockEntity.getColor() & 0x00FFFFFF))
             .withPredefinedTextTransformation(new TextTransformation(blockEntity.getXSizeScaled() * 16 - 2.5f - textWidth - (this.state != State.WHILE_TRAVELING && blockEntity.relativeExitDirection.get() != TrainExitSide.UNKNOWN ? 4 : 0), 2.5f, 0.0f, 1, 0.25f))
             .build();
-
         return textWidth;
     }
 
