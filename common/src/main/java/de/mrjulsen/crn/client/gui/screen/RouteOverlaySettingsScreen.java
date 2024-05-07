@@ -242,7 +242,7 @@ public class RouteOverlaySettingsScreen extends DLScreen {
     @Override
     public void renderFrontLayer(Graphics graphics, int pMouseX, int pMouseY, float pPartialTick) {
         buttons.performForEach(widget -> {
-            if (widget instanceof AbstractSimiWidget simiWidget && simiWidget.isHoveredOrFocused()) {
+            if (widget instanceof AbstractSimiWidget simiWidget && simiWidget.isHovered()) {
 				List<Component> tooltip = simiWidget.getToolTip();
 				if (tooltip.isEmpty())
 					return;
