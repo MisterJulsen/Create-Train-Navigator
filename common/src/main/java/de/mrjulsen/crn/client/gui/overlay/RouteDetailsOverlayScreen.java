@@ -481,6 +481,8 @@ public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourn
         graphics.poseStack().popPose();
 
         tickSlidingText(2 * Minecraft.getInstance().getDeltaFrameTime());
+
+        GuiUtils.setTint(1, 1, 1, 1);
     }
 
     private void renderInternal(Graphics graphics, int x, int y, int width, int height, float partialTicks) {

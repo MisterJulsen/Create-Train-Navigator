@@ -55,6 +55,7 @@ public class SettingsOptionWidget extends DLButton {
         this.messageLabel.renderLeftAligned(graphics.graphics(), (int)((getX() + 6) / 0.75f), (int)((getY() + 20) / 0.75f), 10, 0xDBDBDB);
         float s = 1 / 0.75f;
         graphics.poseStack().scale(s, s, s);
+        GuiUtils.setTint(1, 1, 1, 1);
     }
 
     @Override
