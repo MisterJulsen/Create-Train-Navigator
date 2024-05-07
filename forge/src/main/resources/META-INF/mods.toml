@@ -36,3 +36,10 @@ mandatory = true
 versionRange = "[4.11.93,)"
 ordering = "AFTER"
 side = "BOTH"
+
+[[dependencies.createrailwaysnavigator]]
+modId = "dragonlib"
+mandatory = true
+versionRange = "[1.18.2-2.1.8,)"
+ordering = "AFTER"
+side = "BOTH"
