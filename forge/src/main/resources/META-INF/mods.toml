@@ -43,3 +43,10 @@ mandatory = true
 versionRange = "[1.18.2-2.1.8,)"
 ordering = "AFTER"
 side = "BOTH"
+
+[[dependencies.createrailwaysnavigator]]
+modId = "create"
+mandatory = true
+versionRange = "[0.5.1.e-318,)"
+ordering = "AFTER"
+side = "BOTH"
