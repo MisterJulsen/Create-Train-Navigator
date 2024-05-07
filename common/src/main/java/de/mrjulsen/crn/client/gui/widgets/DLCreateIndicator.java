@@ -34,5 +34,15 @@ public class DLCreateIndicator extends Indicator implements IDragonLibWidget {
     public void setMouseSelected(boolean selected) {
         this.mouseSelected = selected;
     }
+
+    @Override
+    public int getX() {
+        return x;
+    }
+
+    @Override
+    public int getY() {
+        return y;
+    }
     
 }

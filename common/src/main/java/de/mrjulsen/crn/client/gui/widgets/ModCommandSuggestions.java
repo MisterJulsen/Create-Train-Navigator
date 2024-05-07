@@ -17,7 +17,6 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import com.mojang.text2speech.Narrator;
 
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 
@@ -488,7 +487,7 @@ public class ModCommandSuggestions {
          Suggestion suggestion = this.suggestionList.get(this.current);
          ModCommandSuggestions.this.input.setSuggestion(ModCommandSuggestions.calculateSuggestionSuffix(ModCommandSuggestions.this.input.getValue(), suggestion.apply(this.originalContents)));
          if (this.lastNarratedEntry != this.current) {
-            Narrator.getNarrator().say(this.getNarrationMessage().getString(), true);
+            //Narrator.getNarrator().say(this.getNarrationMessage().getString(), true);
          }
 
       }
