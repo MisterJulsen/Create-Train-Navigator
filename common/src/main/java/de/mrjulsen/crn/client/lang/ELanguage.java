@@ -1,13 +1,9 @@
 package de.mrjulsen.crn.client.lang;
 
 import java.util.Arrays;
-import java.util.List;
-
-import de.mrjulsen.crn.CreateRailwaysNavigator;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.language.ClientLanguage;
-import net.minecraft.client.resources.language.LanguageInfo;
-import net.minecraft.locale.Language;
+import de.mrjulsen.mcdragonlib.util.TextUtils;
+import dev.architectury.platform.Platform;
+import net.fabricmc.api.EnvType;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.StringRepresentable;
 
@@ -21,8 +17,6 @@ public enum ELanguage implements StringRepresentable {
     private String name;
     private String code;
 
-    private static ELanguage currentLanguage;
-    private static ClientLanguage currentClientLanguage;
 
     private ELanguage(String name, String code) {
         this.name = name;
@@ -41,33 +35,21 @@ public enum ELanguage implements StringRepresentable {
         return Arrays.stream(values()).filter(x -> x.getCode().equals(code)).findFirst().orElse(DEFAULT);
     }
 
-    public static void updateLanguage(ELanguage lang) {
-        if (currentLanguage == lang) {
-            return;
-        }
-
-        LanguageInfo info = lang == DEFAULT ? null : Minecraft.getInstance().getLanguageManager().getLanguage(lang.getCode());
-        if (info == null) {
-            info = Minecraft.getInstance().getLanguageManager().getSelected();
-        }
-        currentLanguage = lang;
-        currentClientLanguage = ClientLanguage.loadFrom(Minecraft.getInstance().getResourceManager(), List.of(info));
-        CreateRailwaysNavigator.LOGGER.info("Updated custom language to: " + (info == null ? null : info.getName()));
-    }
-
-    public static ClientLanguage getCurrentClientLanguage() {
-        return currentClientLanguage == null ? (ClientLanguage)Language.getInstance() : currentClientLanguage;
-    }
-
     public static MutableComponent translate(String key) {
-        return MutableComponent.create(new ModTranslatableComponent(key));
+        if (Platform.getEnv() == EnvType.CLIENT) {
+            return MutableComponent.create(new ModTranslatableComponent(key));
+        } else {
+            return TextUtils.translate(key);
+        }
     }
 
     public static MutableComponent translate(String key, Object... args) {
-        return MutableComponent.create(new ModTranslatableComponent(key, args));
+        if (Platform.getEnv() == EnvType.CLIENT) {
+            return MutableComponent.create(new ModTranslatableComponent(key, args));
+        } else {
+            return TextUtils.translate(key, args);
+        }
     }
-
-
     
     @Override
     public String getSerializedName() {

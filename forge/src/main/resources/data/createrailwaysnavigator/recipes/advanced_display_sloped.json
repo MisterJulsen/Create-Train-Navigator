@@ -1,0 +1,16 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+      "B B",
+      " B "
+    ],
+    "key": {
+      "B": {
+        "item": "createrailwaysnavigator:advanced_display_small"
+      }
+    },
+    "result": {
+      "item": "createrailwaysnavigator:advanced_display_sloped",
+      "count": 3
+    }
+  }

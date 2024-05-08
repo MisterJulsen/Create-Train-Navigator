@@ -44,7 +44,7 @@ public class BERTrainDestinationSimple implements IBERRenderSubtype<AdvancedDisp
             .build();
         parent.labels.add(lastLabel);
 
-        if (!isSingleBlock) {
+        if (!isSingleBlock && blockEntity.getTrainData().getNextStop().isPresent()) {
             // DESTINATION
             float startX = lastLabel.getScaledTextWidth();
             line = TextUtils.text(blockEntity.getTrainData().getNextStop().get().scheduleTitle());

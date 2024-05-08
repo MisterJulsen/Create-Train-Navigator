@@ -2,6 +2,9 @@ package de.mrjulsen.crn.client.lang;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+
+import de.mrjulsen.crn.client.ClientWrapper;
+
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -45,11 +48,11 @@ public class ModTranslatableComponent implements ComponentContents {
       this.args = objects;
    }
 
-   private void decompose() {
-      Language language = Language.getInstance();
-      if (language != this.decomposedWith) {
-         this.decomposedWith = language;
-         String string = language.getOrDefault(this.key);
+    private void decompose() {
+        Language language = ClientWrapper.getCurrentClientLanguage();
+        if (language != this.decomposedWith) {
+            this.decomposedWith = language;
+            String string = language.getOrDefault(this.key);
 
          try {
             ImmutableList.Builder<FormattedText> builder = ImmutableList.builder();

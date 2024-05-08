@@ -320,7 +320,7 @@ public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDi
         int displayWidth = blockEntity.getXSizeScaled();
 
         // ### CONTENT PANEL
-        if (notInService(blockEntity)) {            
+        if (notInService(blockEntity) || !blockEntity.getTrainData().getNextStop().isPresent()) {            
             return;
         }
 
