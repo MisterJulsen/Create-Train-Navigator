@@ -1,8 +1,8 @@
 package de.mrjulsen.crn.event;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.client.input.ModKeys;
-import de.mrjulsen.crn.client.lang.ELanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.ClientTrainStationSnapshot;
 import de.mrjulsen.crn.event.listeners.JourneyListenerManager;
@@ -14,8 +14,7 @@ import de.mrjulsen.mcdragonlib.client.OverlayManager;
 import dev.architectury.event.events.client.ClientGuiEvent;
 import dev.architectury.event.events.client.ClientLifecycleEvent;
 import dev.architectury.event.events.client.ClientPlayerEvent;
-import dev.architectury.event.events.common.LifecycleEvent;
-import dev.architectury.event.events.common.TickEvent;
+import dev.architectury.event.events.client.ClientTickEvent;
 import net.minecraft.client.Minecraft;
 
 public class ClientEvents {
@@ -35,15 +34,11 @@ public class ClientEvents {
             langCheckerTicks++;
 
             if ((langCheckerTicks %= 20) == 0) {
-                ELanguage.updateLanguage(ModClientConfig.LANGUAGE.get());
+                ClientWrapper.updateLanguage(ModClientConfig.LANGUAGE.get());
             }
         });
 
         ClientLifecycleEvent.CLIENT_LEVEL_LOAD.register((level) -> {
-            ModExtras.register();
-        });
-
-        LifecycleEvent.SERVER_LEVEL_LOAD.register((server) -> {
             ModExtras.register();
         });
 
