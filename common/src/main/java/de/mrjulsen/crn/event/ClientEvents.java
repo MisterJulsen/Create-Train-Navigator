@@ -5,6 +5,7 @@ import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.client.input.ModKeys;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.ClientTrainStationSnapshot;
+import de.mrjulsen.crn.data.GlobalSettingsManager;
 import de.mrjulsen.crn.event.listeners.JourneyListenerManager;
 import de.mrjulsen.crn.event.listeners.TrainListener;
 import de.mrjulsen.crn.network.InstanceManager;
@@ -53,6 +54,7 @@ public class ClientEvents {
             ClientTrainStationSnapshot.getInstance().dispose();        
             InstanceManager.clearAll();
             JourneyListenerManager.stop();
+            GlobalSettingsManager.close();
         });
 
         ClientGuiEvent.DEBUG_TEXT_LEFT.register((texts) -> {

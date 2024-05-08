@@ -18,6 +18,7 @@ public class GlobalSettingsManager extends SavedData {
 
     private GlobalSettingsManager() {
         settingsData = new GlobalSettings();
+        CreateRailwaysNavigator.LOGGER.info("Created new Create Railways Navigator settings instance.");
     }
     
     private GlobalSettingsManager(GlobalSettings settings) {
@@ -72,5 +73,10 @@ public class GlobalSettingsManager extends SavedData {
     public static void syncToClient(Runnable then) {
         long id = InstanceManager.registerClientResponseReceievedAction(then);
         CreateRailwaysNavigator.net().CHANNEL.sendToServer(new GlobalSettingsRequestPacket(id));
+    }
+
+    public static void close() {
+        instance = null;
+        CreateRailwaysNavigator.LOGGER.info("Closed current Create Railways Navigator settings instance.");
     }
 }
