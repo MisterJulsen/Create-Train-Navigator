@@ -30,7 +30,7 @@ public class ClientEvents {
             ModDisplayTags.register();
         });
 
-        TickEvent.PLAYER_POST.register((mc) -> {
+        ClientTickEvent.CLIENT_POST.register((mc) -> {
             JourneyListenerManager.tick();
             langCheckerTicks++;
 
