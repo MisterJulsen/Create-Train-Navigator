@@ -1,0 +1,23 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+      "AZA",
+      "BBB",
+      "AZA"
+    ],
+    "key": {
+      "A": {
+        "item": "create:andesite_alloy"
+      },
+      "Z": {
+        "item": "create:sturdy_sheet"
+      },
+      "B": {
+        "item": "create:display_board"
+      }
+    },
+    "result": {
+      "item": "createrailwaysnavigator:advanced_display",
+      "count": 6
+    }
+  }
