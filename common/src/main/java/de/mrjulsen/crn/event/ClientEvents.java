@@ -1,10 +1,11 @@
 package de.mrjulsen.crn.event;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.client.input.ModKeys;
-import de.mrjulsen.crn.client.lang.ELanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.ClientTrainStationSnapshot;
+import de.mrjulsen.crn.data.GlobalSettingsManager;
 import de.mrjulsen.crn.event.listeners.JourneyListenerManager;
 import de.mrjulsen.crn.event.listeners.TrainListener;
 import de.mrjulsen.crn.network.InstanceManager;
@@ -14,8 +15,7 @@ import de.mrjulsen.mcdragonlib.client.OverlayManager;
 import dev.architectury.event.events.client.ClientGuiEvent;
 import dev.architectury.event.events.client.ClientLifecycleEvent;
 import dev.architectury.event.events.client.ClientPlayerEvent;
-import dev.architectury.event.events.common.LifecycleEvent;
-import dev.architectury.event.events.common.TickEvent;
+import dev.architectury.event.events.client.ClientTickEvent;
 import net.minecraft.client.Minecraft;
 
 public class ClientEvents {
@@ -30,20 +30,16 @@ public class ClientEvents {
             ModDisplayTags.register();
         });
 
-        TickEvent.PLAYER_POST.register((mc) -> {
+        ClientTickEvent.CLIENT_POST.register((mc) -> {
             JourneyListenerManager.tick();
             langCheckerTicks++;
 
             if ((langCheckerTicks %= 20) == 0) {
-                ELanguage.updateLanguage(ModClientConfig.LANGUAGE.get());
+                ClientWrapper.updateLanguage(ModClientConfig.LANGUAGE.get());
             }
         });
 
         ClientLifecycleEvent.CLIENT_LEVEL_LOAD.register((level) -> {
-            ModExtras.register();
-        });
-
-        LifecycleEvent.SERVER_LEVEL_LOAD.register((server) -> {
             ModExtras.register();
         });
 
@@ -58,6 +54,7 @@ public class ClientEvents {
             ClientTrainStationSnapshot.getInstance().dispose();        
             InstanceManager.clearAll();
             JourneyListenerManager.stop();
+            GlobalSettingsManager.close();
         });
 
         ClientGuiEvent.DEBUG_TEXT_LEFT.register((texts) -> {

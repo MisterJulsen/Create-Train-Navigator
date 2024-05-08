@@ -78,7 +78,7 @@ public class AdvancedDisplayPanelBlock extends AbstractAdvancedSidedDisplayBlock
 
         EBlockAlignment zAlign = EBlockAlignment.POSITIVE;
 
-        if (direction == pContext.getPlayer().getDirection().getOpposite() || (axisDirection == AxisDirection.POSITIVE ? xzPos < 0.5D : xzPos > 0.5D)) {
+        if (direction == pContext.getPlayer().getDirection() || (axisDirection == AxisDirection.POSITIVE ? xzPos < 0.5D : xzPos > 0.5D)) {
 			zAlign = EBlockAlignment.NEGATIVE;
         }
 

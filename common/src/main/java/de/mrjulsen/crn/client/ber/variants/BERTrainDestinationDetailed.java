@@ -46,18 +46,20 @@ public class BERTrainDestinationDetailed implements IBERRenderSubtype<AdvancedDi
 
         // DESTINATION
         float startX = lastLabel.getScaledTextWidth();
-        line = TextUtils.text(blockEntity.getTrainData().getNextStop().get().scheduleTitle());
-        maxWidth = displayWidth * 16 - 7 - startX;        
-        parent.labels.add(new BERText(parent.getFontUtils(), line, 0)
-            .withIsCentered(true)
-            .withMaxWidth(maxWidth, true)
-            .withStretchScale(0.25f, 0.5f)
-            .withStencil(0, maxWidth)
-            .withCanScroll(true, 1)
-            .withColor((0xFF << 24) | (blockEntity.getColor()))
-            .withPredefinedTextTransformation(new TextTransformation(2 + startX + 2, 4, 0.0f, 1, 0.5f))
-            .build()
-        );
+        if (blockEntity.getTrainData().getNextStop().isPresent()) {
+            line = TextUtils.text(blockEntity.getTrainData().getNextStop().get().scheduleTitle());
+            maxWidth = displayWidth * 16 - 7 - startX;        
+            parent.labels.add(new BERText(parent.getFontUtils(), line, 0)
+                .withIsCentered(true)
+                .withMaxWidth(maxWidth, true)
+                .withStretchScale(0.25f, 0.5f)
+                .withStencil(0, maxWidth)
+                .withCanScroll(true, 1)
+                .withColor((0xFF << 24) | (blockEntity.getColor()))
+                .withPredefinedTextTransformation(new TextTransformation(2 + startX + 2, 4, 0.0f, 1, 0.5f))
+                .build()
+            );
+        }
 
 
         maxWidth = isSingleBlock ? 11.0f : 12.0f;
