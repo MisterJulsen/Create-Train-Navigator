@@ -63,17 +63,19 @@ public class BERTrainDestinationInformative implements IBERRenderSubtype<Advance
         parent.labels.add(lastLabel);
 
         // DESTINATION
-        line = TextUtils.text(blockEntity.getTrainData().getNextStop().get().stationTagName()).withStyle(ChatFormatting.BOLD);
-        parent.labels.add(new BERText(parent.getFontUtils(), line, 0)
-            .withIsCentered(false)
-            .withMaxWidth(maxWidth, true)
-            .withStretchScale(0.25f, 0.5f)
-            .withStencil(0, maxWidth)
-            .withCanScroll(true, 1)
-            .withColor((0xFF << 24) | (blockEntity.getColor()))
-            .withPredefinedTextTransformation(new TextTransformation(3.0f, 6.0f, 0.0f, 0.5f, 0.25f))
-            .build()
-        );
+        if (blockEntity.getTrainData().getNextStop().isPresent()) {
+            line = TextUtils.text(blockEntity.getTrainData().getNextStop().get().stationTagName()).withStyle(ChatFormatting.BOLD);
+            parent.labels.add(new BERText(parent.getFontUtils(), line, 0)
+                .withIsCentered(false)
+                .withMaxWidth(maxWidth, true)
+                .withStretchScale(0.25f, 0.5f)
+                .withStencil(0, maxWidth)
+                .withCanScroll(true, 1)
+                .withColor((0xFF << 24) | (blockEntity.getColor()))
+                .withPredefinedTextTransformation(new TextTransformation(3.0f, 6.0f, 0.0f, 0.5f, 0.25f))
+                .build()
+            );
+        }
 
         // STOPOVERS
         line = parent.getStopoversString(blockEntity);
@@ -89,17 +91,19 @@ public class BERTrainDestinationInformative implements IBERRenderSubtype<Advance
         );
 
         // DESTINATION
-        line = TextUtils.text(blockEntity.getTrainData().getNextStop().get().scheduleTitle()).withStyle(ChatFormatting.BOLD);
-        parent.labels.add(new BERText(parent.getFontUtils(), line, 0)
-            .withIsCentered(false)
-            .withMaxWidth(maxWidth, true)
-            .withStretchScale(0.25f, 0.5f)
-            .withStencil(0, maxWidth)
-            .withCanScroll(true, 1)
-            .withColor((0xFF << 24) | (blockEntity.getColor()))
-            .withPredefinedTextTransformation(new TextTransformation(3.0f, 11.0f, 0.0f, 0.5f, 0.25f))
-            .build()
-        );
+        if (blockEntity.getTrainData().getNextStop().isPresent()) {
+            line = TextUtils.text(blockEntity.getTrainData().getNextStop().get().scheduleTitle()).withStyle(ChatFormatting.BOLD);
+            parent.labels.add(new BERText(parent.getFontUtils(), line, 0)
+                .withIsCentered(false)
+                .withMaxWidth(maxWidth, true)
+                .withStretchScale(0.25f, 0.5f)
+                .withStencil(0, maxWidth)
+                .withCanScroll(true, 1)
+                .withColor((0xFF << 24) | (blockEntity.getColor()))
+                .withPredefinedTextTransformation(new TextTransformation(3.0f, 11.0f, 0.0f, 0.5f, 0.25f))
+                .build()
+            );
+        }
     }
 
     @Override

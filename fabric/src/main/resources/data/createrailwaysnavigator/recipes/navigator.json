@@ -1,0 +1,30 @@
+{
+    "type": "create:mechanical_crafting",
+    "acceptMirrored": true,
+    "key": {
+      "A": {
+        "item": "create:andesite_alloy"
+      },
+      "I": {
+        "item": "create:iron_sheet"
+      },
+      "G": {
+        "item": "minecraft:glass_pane"
+      },
+      "P": {
+        "item": "create:precision_mechanism"
+      },
+      "C": {
+        "item": "create:copper_sheet"
+      }
+    },
+    "pattern": [
+      "AIA",
+      "IGI",
+      "IPI",
+      "ACA"
+    ],
+    "result": {
+      "item": "createrailwaysnavigator:navigator"
+    }
+  }

@@ -1,6 +1,7 @@
 package de.mrjulsen.crn.event;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.data.GlobalSettingsManager;
 import de.mrjulsen.crn.event.listeners.TrainListener;
 import de.mrjulsen.crn.network.packets.stc.TimeCorrectionPacket;
 import de.mrjulsen.crn.registry.ModExtras;
@@ -31,6 +32,10 @@ public class ModEvents {
 
         LifecycleEvent.SERVER_STOPPING.register((server) -> {
             TrainListener.stop();
+        });
+
+        LifecycleEvent.SERVER_STOPPED.register((server) -> {
+            GlobalSettingsManager.close();
         });
 
         TickEvent.SERVER_POST.register((server) -> {

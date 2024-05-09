@@ -2,6 +2,9 @@ package de.mrjulsen.crn.client.lang;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+
+import de.mrjulsen.crn.client.ClientWrapper;
+
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -46,7 +49,7 @@ public class ModTranslatableComponent extends BaseComponent implements ContextAw
     }
 
     private void decompose() {
-        Language language = ELanguage.getCurrentClientLanguage();
+        Language language = ClientWrapper.getCurrentClientLanguage();
         if (language != this.decomposedWith) {
             this.decomposedWith = language;
             String string = language.getOrDefault(this.key);
