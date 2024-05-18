@@ -10,12 +10,7 @@ import com.tterrag.registrate.util.entry.BlockEntry;
 import com.tterrag.registrate.util.nullness.NonNullConsumer;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
-import de.mrjulsen.crn.block.AdvancedDisplayBlock;
-import de.mrjulsen.crn.block.AdvancedDisplayBoardBlock;
-import de.mrjulsen.crn.block.AdvancedDisplayPanelBlock;
-import de.mrjulsen.crn.block.AdvancedDisplaySlopedBlock;
-import de.mrjulsen.crn.block.AdvancedDisplaySmallBlock;
-import de.mrjulsen.crn.block.TrainStationClockBlock;
+import de.mrjulsen.crn.block.*;
 import de.mrjulsen.crn.block.connected.AdvancedDisplayCTBehaviour;
 import de.mrjulsen.crn.block.connected.AdvancedDisplaySmallCTBehaviour;
 import de.mrjulsen.crn.block.display.AdvancedDisplayTarget;
@@ -65,6 +60,17 @@ public class ModBlocks {
 
 	public static final BlockEntry<AdvancedDisplayPanelBlock> ADVANCED_DISPLAY_PANEL = CreateRailwaysNavigator.REGISTRATE.block("advanced_display_panel", AdvancedDisplayPanelBlock::new)
 		.onRegister(connectedTextures(() -> new AdvancedDisplayCTBehaviour(ClientWrapper.CT_ADVANCED_DISPLAY)))
+		.addLayer(() -> RenderType::cutout)
+		.initialProperties(SharedProperties::softMetal)
+		.transform(TagGen.pickaxeOnly())
+		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
+		.item()
+		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
+		.build()
+		.register();
+
+	public static final BlockEntry<AdvancedDisplayHalfPanelBlock> ADVANCED_DISPLAY_HALF_PANEL = CreateRailwaysNavigator.REGISTRATE.block("advanced_display_half_panel", AdvancedDisplayHalfPanelBlock::new)
+		.onRegister(connectedTextures(() -> new AdvancedDisplaySmallCTBehaviour(ClientWrapper.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL, ClientWrapper.CT_ADVANCED_DISPLAY_SMALL)))
 		.addLayer(() -> RenderType::cutout)
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
