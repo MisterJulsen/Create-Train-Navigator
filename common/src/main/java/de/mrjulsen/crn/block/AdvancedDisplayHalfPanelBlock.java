@@ -177,7 +177,7 @@ public class AdvancedDisplayHalfPanelBlock extends AbstractAdvancedSidedDisplayB
                 break;
             case POSITIVE:
                 z1 = 3.05f;
-                z2 = 13.05f;
+                z2 = 16.05f;
                 break;
             default:
                 z1 = 9.55f;
