@@ -52,8 +52,8 @@ public class ClientWrapper {
         DLScreen.setScreen(new AdvancedDisplaySettingsScreen(blockEntity));
     }
 
-    public static void updateLanguage(ELanguage lang) {
-        if (currentLanguage == lang) {
+    public static void updateLanguage(ELanguage lang, boolean force) {
+        if (currentLanguage == lang && !force) {
             return;
         }
 

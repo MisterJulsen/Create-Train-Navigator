@@ -12,7 +12,10 @@ public enum ELanguage implements StringRepresentable {
     ENGLISH("english", "en_us"),
     GERMAN("german", "de_de"),
     DUTCH("dutch", "nl_nl"),
-    POLISH("polish", "pl_pl");
+    POLISH("polish", "pl_pl"),
+    CHINESE_SIMPLIFIED("chinese_simplified", "zh_cn"),
+    SAXON("saxon", "sxu"),
+    BAVARIAN("bavarian", "bar");
 
     private String name;
     private String code;
@@ -37,7 +40,11 @@ public enum ELanguage implements StringRepresentable {
 
     public static MutableComponent translate(String key) {
         if (Platform.getEnv() == EnvType.CLIENT) {
-            return MutableComponent.create(new ModTranslatableComponent(key));
+            MutableComponent comp = MutableComponent.create(new ModTranslatableComponent(key));
+            if (comp.getString().equals(key)) {
+                return TextUtils.translate(key);
+            }
+            return comp;
         } else {
             return TextUtils.translate(key);
         }
@@ -45,7 +52,11 @@ public enum ELanguage implements StringRepresentable {
 
     public static MutableComponent translate(String key, Object... args) {
         if (Platform.getEnv() == EnvType.CLIENT) {
-            return MutableComponent.create(new ModTranslatableComponent(key, args));
+            MutableComponent comp = MutableComponent.create(new ModTranslatableComponent(key, args));
+            if (comp.getString().equals(key)) {
+                return TextUtils.translate(key);
+            }
+            return comp;
         } else {
             return TextUtils.translate(key, args);
         }
