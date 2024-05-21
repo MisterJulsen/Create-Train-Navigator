@@ -15,6 +15,7 @@ import net.minecraft.core.Direction.AxisDirection;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition.Builder;
@@ -98,32 +99,32 @@ public class AdvancedDisplaySmallBlock extends AbstractAdvancedSidedDisplayBlock
     }
 
     @Override
-	public BlockState getStateForPlacement(BlockPlaceContext pContext) {
-		BlockState stateForPlacement = super.getStateForPlacement(pContext);
-		Direction direction = pContext.getClickedFace();
-        Direction looking = pContext.getHorizontalDirection();
+    public BlockState getDefaultPlacementState(BlockPlaceContext context, BlockState state, BlockState other) {
+        BlockState stateForPlacement = super.getDefaultPlacementState(context, state, other);
+		Direction direction = context.getClickedFace();
+        Direction looking = context.getHorizontalDirection();
         Axis axis = looking.getAxis();
         AxisDirection axisDirection = looking.getAxisDirection();
 
         double xzPos = 0.5f;
         if (axis == Axis.X) {
-            xzPos = pContext.getClickLocation().x - pContext.getClickedPos().getX();
+            xzPos = context.getClickLocation().x - context.getClickedPos().getX();
         } else if (axis == Axis.Z) {            
-            xzPos = pContext.getClickLocation().z - pContext.getClickedPos().getZ();
+            xzPos = context.getClickLocation().z - context.getClickedPos().getZ();
         }
 
         EBlockAlignment yAlign = EBlockAlignment.CENTER;
         EBlockAlignment zAlign = EBlockAlignment.CENTER;
 
-		if (direction == Direction.UP || (pContext.getClickLocation().y - pContext.getClickedPos().getY() < 0.33333333D)) {
+		if (direction == Direction.UP || (context.getClickLocation().y - context.getClickedPos().getY() < 0.33333333D)) {
 			yAlign = EBlockAlignment.NEGATIVE;
-        } else if (direction == Direction.DOWN || (pContext.getClickLocation().y - pContext.getClickedPos().getY() > 0.66666666D)) {
+        } else if (direction == Direction.DOWN || (context.getClickLocation().y - context.getClickedPos().getY() > 0.66666666D)) {
             yAlign = EBlockAlignment.POSITIVE;
         }
 
-        if (direction == pContext.getPlayer().getDirection().getOpposite() || (axisDirection == AxisDirection.POSITIVE ? xzPos > 0.66666666D : xzPos < 0.33333333D)) {
+        if (direction == context.getPlayer().getDirection().getOpposite() || (axisDirection == AxisDirection.POSITIVE ? xzPos > 0.66666666D : xzPos < 0.33333333D)) {
 			zAlign = EBlockAlignment.POSITIVE;
-        } else if (direction == pContext.getPlayer().getDirection() || (axisDirection == AxisDirection.POSITIVE ? xzPos < 0.33333333D : xzPos > 0.66666666D)) {
+        } else if (direction == context.getPlayer().getDirection() || (axisDirection == AxisDirection.POSITIVE ? xzPos < 0.33333333D : xzPos > 0.66666666D)) {
             zAlign = EBlockAlignment.NEGATIVE;
         }
 
@@ -131,16 +132,32 @@ public class AdvancedDisplaySmallBlock extends AbstractAdvancedSidedDisplayBlock
             .setValue(Y_ALIGN, yAlign)
             .setValue(Z_ALIGN, zAlign)
         ;
-	}
+    }
 
     @Override
-    public boolean canConnectWithBlock(BlockGetter level, BlockPos selfPos, BlockPos otherPos) {
-		return super.canConnectWithBlock(level, selfPos, otherPos) &&
-            level.getBlockState(selfPos).getValue(Y_ALIGN) == level.getBlockState(otherPos).getValue(Y_ALIGN) && 
-            level.getBlockState(selfPos).getValue(Z_ALIGN) == level.getBlockState(otherPos).getValue(Z_ALIGN)
+    public BlockState appendOnPlace(BlockPlaceContext context, BlockState state, BlockState other) {
+        return super.appendOnPlace(context, state, other)
+            .setValue(Y_ALIGN, other.getValue(Y_ALIGN))
+            .setValue(Z_ALIGN, other.getValue(Z_ALIGN))
+        ;
+    }
+
+    @Override
+    public boolean canConnectWithBlock(BlockGetter level, BlockState selfState, BlockState otherState) {
+		return super.canConnectWithBlock(level, selfState, otherState) &&
+            selfState.getValue(Y_ALIGN) == otherState.getValue(Y_ALIGN) && 
+            selfState.getValue(Z_ALIGN) == otherState.getValue(Z_ALIGN)
 		;
 	}
 
+    @Override
+    protected boolean canConnect(LevelAccessor level, BlockPos pos, BlockState state, BlockState other) {
+        return super.canConnect(level, pos, state, other) &&
+            state.getValue(Y_ALIGN) == other.getValue(Y_ALIGN) && 
+            state.getValue(Z_ALIGN) == other.getValue(Z_ALIGN)
+        ;
+    }
+    
 	@Override
 	protected void createBlockStateDefinition(Builder<Block, BlockState> pBuilder) {
 		super.createBlockStateDefinition(pBuilder.add(Y_ALIGN, Z_ALIGN));
