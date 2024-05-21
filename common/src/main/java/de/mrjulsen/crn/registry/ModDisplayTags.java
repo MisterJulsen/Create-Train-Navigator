@@ -9,6 +9,7 @@ public class ModDisplayTags {
             .add(ModBlocks.ADVANCED_DISPLAY)
             .add(ModBlocks.ADVANCED_DISPLAY_BLOCK)
             .add(ModBlocks.ADVANCED_DISPLAY_PANEL)
+            .add(ModBlocks.ADVANCED_DISPLAY_HALF_PANEL)
             .add(ModBlocks.ADVANCED_DISPLAY_SMALL)
         ;
     }
