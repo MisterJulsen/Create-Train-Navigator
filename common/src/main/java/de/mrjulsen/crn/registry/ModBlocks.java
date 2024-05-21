@@ -10,7 +10,13 @@ import com.tterrag.registrate.util.entry.BlockEntry;
 import com.tterrag.registrate.util.nullness.NonNullConsumer;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
-import de.mrjulsen.crn.block.*;
+import de.mrjulsen.crn.block.AdvancedDisplayBlock;
+import de.mrjulsen.crn.block.AdvancedDisplayBoardBlock;
+import de.mrjulsen.crn.block.AdvancedDisplayHalfPanelBlock;
+import de.mrjulsen.crn.block.AdvancedDisplayPanelBlock;
+import de.mrjulsen.crn.block.AdvancedDisplaySlopedBlock;
+import de.mrjulsen.crn.block.AdvancedDisplaySmallBlock;
+import de.mrjulsen.crn.block.TrainStationClockBlock;
 import de.mrjulsen.crn.block.connected.AdvancedDisplayCTBehaviour;
 import de.mrjulsen.crn.block.connected.AdvancedDisplaySmallCTBehaviour;
 import de.mrjulsen.crn.block.display.AdvancedDisplayTarget;

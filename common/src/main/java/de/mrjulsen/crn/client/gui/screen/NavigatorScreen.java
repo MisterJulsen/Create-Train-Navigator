@@ -71,7 +71,8 @@ public class NavigatorScreen extends DLScreen implements IJourneyListenerClient 
     private final int AREA_H = 143;
 
     private int guiLeft, guiTop;
-    private int angle = 0;    
+    private boolean initialized = false;
+    private int angle = 0;
     
     // Controls
     private DLCreateIconButton locationButton;
@@ -88,8 +89,8 @@ public class NavigatorScreen extends DLScreen implements IJourneyListenerClient 
 
     // Data
     private SimpleRoute[] routes;
-    private String stationFrom;
-    private String stationTo;
+    private String stationFrom = "";
+    private String stationTo = "";
     private long lastRefreshedTime;
     private final NavigatorScreen instance;
     private final Level level;
@@ -175,7 +176,8 @@ public class NavigatorScreen extends DLScreen implements IJourneyListenerClient 
 
     @Override
     protected void init() {
-        super.init();        
+        super.init();
+        initialized = false;
         guiLeft = this.width / 2 - GUI_WIDTH / 2;
         guiTop = this.height / 2 - GUI_HEIGHT / 2;
 
@@ -201,7 +203,7 @@ public class NavigatorScreen extends DLScreen implements IJourneyListenerClient 
             public void onClick(double mouseX, double mouseY) {
                 super.onClick(mouseX, mouseY);
                 
-                if (stationFrom == null || stationTo == null) {
+                if (stationFrom == null || stationTo == null || stationFrom.isBlank() || stationTo.isBlank()) {
                     Minecraft.getInstance().getToasts().addToast(new SystemToast(SystemToastIds.PERIODIC_NOTIFICATION, errorTitle, startEndNullText));
                     return;
                 }
@@ -234,13 +236,19 @@ public class NavigatorScreen extends DLScreen implements IJourneyListenerClient 
         addTooltip(DLTooltip.of(tooltipSearch).assignedTo(searchButton));
 
         fromBox = addEditBox(guiLeft + 50, guiTop + 25, 157, 12, stationFrom, TextUtils.empty(), false, (v) -> {
+            if (!initialized) {
+                return;
+            }
             stationFrom = v;
             updateEditorSubwidgets(fromBox);
         }, NO_EDIT_BOX_FOCUS_CHANGE_ACTION, null);
 		fromBox.setMaxLength(25);
 		fromBox.setTextColor(0xFFFFFF);
 
-        toBox = addEditBox(guiLeft + 50, guiTop + 47, 157, 12, stationTo, TextUtils.empty(), false, (v) -> {            
+        toBox = addEditBox(guiLeft + 50, guiTop + 47, 157, 12, stationTo, TextUtils.empty(), false, (v) -> {
+            if (!initialized) {
+                return;
+            }
             stationTo = v;
             updateEditorSubwidgets(toBox);
         }, NO_EDIT_BOX_FOCUS_CHANGE_ACTION, null);
@@ -286,6 +294,7 @@ public class NavigatorScreen extends DLScreen implements IJourneyListenerClient 
         });
 
         generateRouteEntries();
+        initialized = true;
     }
 
     protected void updateEditorSubwidgets(DLEditBox field) {

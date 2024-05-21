@@ -330,7 +330,7 @@ public class GlobalSettings {
 
     // station blacklist
     public boolean isBlacklisted(String stationName) {
-        return blacklist.stream().anyMatch(x -> x.contains(stationName));
+        return blacklist.stream().anyMatch(x -> x.equals(stationName));
     }
 
     public boolean isBlacklisted(TrainStationAlias station) {

@@ -88,17 +88,28 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 		BlockPos clickedPos = context.getClickedPos();
 		BlockPos placedOnPos = clickedPos.relative(face.getOpposite());
 		Level level = context.getLevel();
-		BlockState blockState = level.getBlockState(placedOnPos);
+		BlockState otherState = level.getBlockState(placedOnPos);
 		BlockState stateForPlacement = this.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
 
-		if ((blockState.getBlock() != this) || (context.getPlayer() != null && context.getPlayer().isShiftKeyDown())) {
-			stateForPlacement = super.getStateForPlacement(context).setValue(FACING, context.getHorizontalDirection().getOpposite());
+		if ((otherState.getBlock() != this) || (context.getPlayer() != null && context.getPlayer().isShiftKeyDown())) {
+			stateForPlacement = getDefaultPlacementState(context, stateForPlacement, otherState);
 		} else { // Clicked on existing block
-			Direction otherFacing = blockState.getValue(FACING);
-			stateForPlacement = stateForPlacement.setValue(FACING, otherFacing);
+			stateForPlacement = appendOnPlace(context, stateForPlacement, otherState);
 		}
 
 		return updateColumn(level, clickedPos, stateForPlacement, true);
+	}
+
+	public BlockState appendOnPlace(BlockPlaceContext context, BlockState state, BlockState other) {
+		Direction otherFacing = other.getValue(FACING);
+		state = state
+			.setValue(FACING, otherFacing)
+		;
+		return state;
+	}
+
+	public BlockState getDefaultPlacementState(BlockPlaceContext context, BlockState state, BlockState other) {
+		return super.getStateForPlacement(context).setValue(FACING, context.getHorizontalDirection().getOpposite());
 	}
 
     protected BlockState updateColumn(Level level, BlockPos pos, BlockState state, boolean present) {
@@ -152,8 +163,8 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 
 	public <T extends Comparable<T>> BlockState getPropertyFromNeighbours(BlockState pState, Level pLevel, BlockPos pPos, Property<T> property) {
 		Direction leftDirection = pState.getValue(HorizontalDirectionalBlock.FACING).getClockWise();
-		BlockPos relPos = pPos.relative(leftDirection);
 		BlockState newState = null;
+		BlockPos relPos = pPos.relative(leftDirection);
 		if ((newState = getPropertyFromNeighbour(pState, pLevel, pPos, relPos, property)) != null) {
 			return newState;
 		}
@@ -173,7 +184,7 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 	}
 
 	public <T extends Comparable<T>> BlockState getPropertyFromNeighbour(BlockState pState, Level pLevel, BlockPos pPos, BlockPos relPos, Property<T> property) {
-		if (pState.getBlock() == pLevel.getBlockState(relPos).getBlock()) {
+		if (canConnectWithBlock(pLevel, pState, pLevel.getBlockState(relPos))) {
 			return pState.setValue(property, pLevel.getBlockState(relPos).getValue(property));
 		}
 		return null;
@@ -247,10 +258,10 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 		return other.getBlock() == this && state.getValue(FACING) == other.getValue(FACING);
 	}
 
-	public boolean canConnectWithBlock(BlockGetter level, BlockPos selfPos, BlockPos otherPos) {
-		return level.getBlockState(selfPos).getBlock() instanceof AbstractAdvancedDisplayBlock && level.getBlockState(otherPos).getBlock() instanceof AbstractAdvancedDisplayBlock &&
-			level.getBlockState(selfPos).getBlock() == level.getBlockState(otherPos).getBlock() &&
-			level.getBlockState(selfPos).getValue(FACING) == level.getBlockState(otherPos).getValue(FACING)
+	public boolean canConnectWithBlock(BlockGetter level, BlockState selfState, BlockState otherState) {
+		return selfState.getBlock() instanceof AbstractAdvancedDisplayBlock && otherState.getBlock() instanceof AbstractAdvancedDisplayBlock &&
+			selfState.getBlock() == otherState.getBlock() &&
+			selfState.getValue(FACING) == otherState.getValue(FACING)
 		;
 	}
 
