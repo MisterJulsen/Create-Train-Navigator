@@ -32,6 +32,7 @@
 	"block.createrailwaysnavigator.advanced_display_sloped.tooltip.behaviour1": "Open a menu to _configure_ the _display_.",
 
     "block.createrailwaysnavigator.advanced_display.ber.not_in_service": "Out of service!",
+    "block.createrailwaysnavigator.advanced_display.ber.shunting_trip": "non-passenger ride",
 
     "category.createrailwaysnavigator.crn": "Create Railways Navigator",
     "key.createrailwaysnavigator.route_overlay_options": "Show Route Overlay Options",

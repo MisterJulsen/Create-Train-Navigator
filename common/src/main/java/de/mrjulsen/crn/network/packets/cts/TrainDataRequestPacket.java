@@ -80,7 +80,8 @@ public class TrainDataRequestPacket implements IPacketBase<TrainDataRequestPacke
                 departurePredictions,
                 train.speed,
                 train.navigation.ticksWaitingForSignal,
-                train.currentlyBackwards
+                train.currentlyBackwards,
+                true
             ), updateTime));
         });
     }
@@ -92,6 +93,7 @@ public class TrainDataRequestPacket implements IPacketBase<TrainDataRequestPacke
         private static final String NBT_NAME = "Name";
         private static final String NBT_PREDICTIONS = "Predictions";
         private static final String NBT_TRAIN_DIRECTION = "Direction";
+        private static final String NBT_ON_TRAIN = "OnTrain";
 
         private final UUID trainId;
         private final String trainName;
@@ -99,6 +101,8 @@ public class TrainDataRequestPacket implements IPacketBase<TrainDataRequestPacke
         private final double speed;
         private final int ticksWaitingForSignal;
         private final boolean oppositeDirection;
+
+        private final boolean onTrain;
         
         private final Cache<List<SimpleDeparturePrediction>> stopovers = new Cache<>(() -> {
             List<SimpleDeparturePrediction> s = new ArrayList<>();
@@ -110,13 +114,14 @@ public class TrainDataRequestPacket implements IPacketBase<TrainDataRequestPacke
             return s;
         });
 
-        public TrainData(UUID trainId, String trainName, List<SimpleDeparturePrediction> predictions, double speed, int ticksWaitingForSignal, boolean oppositeDirection) {
+        public TrainData(UUID trainId, String trainName, List<SimpleDeparturePrediction> predictions, double speed, int ticksWaitingForSignal, boolean oppositeDirection, boolean onTrain) {
             this.trainId = trainId;
             this.trainName = trainName;
             this.predictions = predictions;
             this.speed = speed;
             this.ticksWaitingForSignal = ticksWaitingForSignal;
             this.oppositeDirection = oppositeDirection;
+            this.onTrain = onTrain;
         }
 
         public UUID trainId() {
@@ -154,6 +159,7 @@ public class TrainDataRequestPacket implements IPacketBase<TrainDataRequestPacke
             nbt.putInt(NBT_WAITING_FOR_SIGNAL, ticksWaitingForSignal);
             nbt.putString(NBT_NAME, trainName);
             nbt.putBoolean(NBT_TRAIN_DIRECTION, oppositeDirection);
+            nbt.putBoolean(NBT_ON_TRAIN, onTrain);
 
             ListTag list = new ListTag();
             list.addAll(predictions().stream().map(x -> x.toNbt()).toList());
@@ -168,7 +174,8 @@ public class TrainDataRequestPacket implements IPacketBase<TrainDataRequestPacke
                 nbt.getList(NBT_PREDICTIONS, Tag.TAG_COMPOUND).stream().map(x -> SimpleDeparturePrediction.fromNbt(((CompoundTag)x))).toList(),
                 nbt.getDouble(NBT_SPEED),
                 nbt.getInt(NBT_WAITING_FOR_SIGNAL),
-                nbt.getBoolean(NBT_TRAIN_DIRECTION)
+                nbt.getBoolean(NBT_TRAIN_DIRECTION),
+                nbt.getBoolean(NBT_ON_TRAIN)
             );
         }
 
@@ -180,8 +187,8 @@ public class TrainDataRequestPacket implements IPacketBase<TrainDataRequestPacke
             return predictions().size() > 0 ? Optional.of(predictions().get(predictions().size() - 1)) : Optional.empty();
         }
 
-        public static TrainData empty() {
-            MutableComponent text = ELanguage.translate("block.createrailwaysnavigator.advanced_display.ber.not_in_service");
+        public static TrainData empty(boolean onTrain) {
+            MutableComponent text = onTrain ? ELanguage.translate("block.createrailwaysnavigator.advanced_display.ber.shunting_trip") : ELanguage.translate("block.createrailwaysnavigator.advanced_display.ber.not_in_service");
             return new TrainData(Constants.ZERO_UUID, "", List.of(new SimpleDeparturePrediction("", "", 0, text.getString(), "", Constants.ZERO_UUID, null, TrainExitSide.UNKNOWN)), 0, 0, false, onTrain);
         }
 

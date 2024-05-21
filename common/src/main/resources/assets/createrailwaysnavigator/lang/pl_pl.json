@@ -32,6 +32,7 @@
     "block.createrailwaysnavigator.advanced_display_sloped.tooltip.behaviour1": "Otwórz menu _konfiguracji_ _wyświetlacza_.",
 
     "block.createrailwaysnavigator.advanced_display.ber.not_in_service": "Nieczynny!",
+    "block.createrailwaysnavigator.advanced_display.ber.shunting_trip": "Wycieczka manewrowa",
 
     "category.createrailwaysnavigator.crn": "Create Railways Navigator",
     "key.createrailwaysnavigator.route_overlay_options": "Pokaż opcje nakładki trasy",

@@ -32,6 +32,7 @@
 	"block.createrailwaysnavigator.advanced_display_sloped.tooltip.behaviour1": "打开配置菜单.",
 
     "block.createrailwaysnavigator.advanced_display.ber.not_in_service": "线路不可用",
+    "block.createrailwaysnavigator.advanced_display.ber.shunting_trip": "调车行程",
 
     "category.createrailwaysnavigator.crn": "机械动力：铁路导航",
     "key.createrailwaysnavigator.route_overlay_options": "显示路线覆盖选项",

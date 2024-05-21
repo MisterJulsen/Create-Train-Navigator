@@ -11,6 +11,7 @@ import com.simibubi.create.content.trains.entity.CarriageContraptionEntity;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 
+import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.AbstractAdvancedDisplayBlock;
 import de.mrjulsen.crn.block.display.AdvancedDisplaySource.ETimeDisplay;
@@ -99,7 +100,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 
     // CLIENT DISPLAY ONLY - this data is not saved!
     private long lastRefreshedTime;
-    private TrainData trainData = TrainData.empty();
+    private TrainData trainData = TrainData.empty(false);
     private CarriageData carriageData = new CarriageData(0, Direction.NORTH, false);
     
     // OTHER
@@ -547,8 +548,12 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
                         (getInfoType() == EDisplayInfo.INFORMATIVE && getDisplayType() == EDisplayType.PASSENGER_INFORMATION && trainData.getNextStop().get().departureTicks() + lastRefreshedTime != data.getNextStop().get().departureTicks() + refreshTime) // It's not clean but it works ... for now
                     ;
                 }
+                boolean oos = trainData != null && !trainData.trainId().equals(Constants.ZERO_UUID) && !data.getNextStop().isPresent();
+                if (oos) {
+                    shouldUpdate = true;
+                }
                 this.lastRefreshedTime = refreshTime;
-                this.trainData = data;
+                this.trainData = oos ? TrainData.empty(true) : data;
                 this.carriageData = new CarriageData(((CarriageContraptionEntity)carriage.entity).carriageIndex, carriage.getAssemblyDirection(), data.isOppositeDirection());
                 this.relativeExitDirection.clear();
                 
