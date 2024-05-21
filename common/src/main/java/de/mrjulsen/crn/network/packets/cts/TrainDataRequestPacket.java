@@ -182,7 +182,7 @@ public class TrainDataRequestPacket implements IPacketBase<TrainDataRequestPacke
 
         public static TrainData empty() {
             MutableComponent text = ELanguage.translate("block.createrailwaysnavigator.advanced_display.ber.not_in_service");
-            return new TrainData(Constants.ZERO_UUID, "CRN", List.of(new SimpleDeparturePrediction("", "", 0, text.getString(), "", Constants.ZERO_UUID, null, TrainExitSide.UNKNOWN)), 0, 0, false);
+            return new TrainData(Constants.ZERO_UUID, "", List.of(new SimpleDeparturePrediction("", "", 0, text.getString(), "", Constants.ZERO_UUID, null, TrainExitSide.UNKNOWN)), 0, 0, false, onTrain);
         }
 
     }
