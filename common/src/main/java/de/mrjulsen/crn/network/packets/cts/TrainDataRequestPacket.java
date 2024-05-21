@@ -11,6 +11,7 @@ import com.simibubi.create.content.trains.entity.Train;
 
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.client.lang.ELanguage;
 import de.mrjulsen.crn.data.DeparturePrediction.TrainExitSide;
 import de.mrjulsen.crn.data.DeparturePrediction.SimpleDeparturePrediction;
 import de.mrjulsen.crn.data.GlobalSettingsManager;
@@ -20,7 +21,6 @@ import de.mrjulsen.crn.network.packets.stc.TrainDataResponsePacket;
 import de.mrjulsen.crn.util.TrainUtils;
 import de.mrjulsen.mcdragonlib.data.Cache;
 import de.mrjulsen.mcdragonlib.net.IPacketBase;
-import de.mrjulsen.mcdragonlib.util.TextUtils;
 import dev.architectury.networking.NetworkManager.PacketContext;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -181,7 +181,7 @@ public class TrainDataRequestPacket implements IPacketBase<TrainDataRequestPacke
         }
 
         public static TrainData empty() {
-            MutableComponent text = TextUtils.translate("block.createrailwaysnavigator.advanced_display.ber.not_in_service");
+            MutableComponent text = ELanguage.translate("block.createrailwaysnavigator.advanced_display.ber.not_in_service");
             return new TrainData(Constants.ZERO_UUID, "CRN", List.of(new SimpleDeparturePrediction("", "", 0, text.getString(), "", Constants.ZERO_UUID, null, TrainExitSide.UNKNOWN)), 0, 0, false);
         }
 
