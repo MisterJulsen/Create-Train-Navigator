@@ -220,7 +220,7 @@ public class SimpleTrainSchedule {
             }
             cycle += x.getPrediction().getCycle();
             return new TrainStop(x.getStationAlias(), new DeparturePrediction(x.getPrediction().getTrain(), estimatedTicks, x.getPrediction().getScheduleTitle(), x.getPrediction().getStationName(), cycle, x.getPrediction().getInfo()));
-        }).sorted(Comparator.comparingInt(x -> x.getPrediction().getTicks())).toList(), new SimulationData(getFirstStop().get().getPrediction().getTrain(), simulationTime, timeToTargetAfterSim));
+        }).sorted(Comparator.comparingInt(x -> x.getPrediction().getTicks())).toList(), new SimulationData(train, simulationTime, timeToTargetAfterSim));
     }
 
     public SimulatedTrainSchedule simulate(Train train, int simulationTime, String simulationTarget) {
@@ -244,7 +244,7 @@ public class SimpleTrainSchedule {
             }
             cycle += x.getPrediction().getCycle();
             return new TrainStop(x.getStationAlias(), new DeparturePrediction(x.getPrediction().getTrain(), estimatedTicks, x.getPrediction().getScheduleTitle(), x.getPrediction().getStationName(), cycle, x.getPrediction().getInfo()));
-        }).sorted(Comparator.comparingInt(x -> x.getPrediction().getTicks())).toList(), new SimulationData(getFirstStop().get().getPrediction().getTrain(), simulationTime, timeToTargetAfterSim));
+        }).sorted(Comparator.comparingInt(x -> x.getPrediction().getTicks())).toList(), new SimulationData(train, simulationTime, timeToTargetAfterSim));
     }
     
     public SimpleTrainSchedule simulate(Train train, int simulationTime) {

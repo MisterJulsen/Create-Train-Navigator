@@ -35,7 +35,7 @@ public class ClientEvents {
             langCheckerTicks++;
 
             if ((langCheckerTicks %= 20) == 0) {
-                ClientWrapper.updateLanguage(ModClientConfig.LANGUAGE.get());
+                ClientWrapper.updateLanguage(ModClientConfig.LANGUAGE.get(), false);
             }
         });
 
@@ -45,6 +45,7 @@ public class ClientEvents {
 
         ClientPlayerEvent.CLIENT_PLAYER_JOIN.register((player) -> {
             JourneyListenerManager.start();
+            ClientWrapper.updateLanguage(ModClientConfig.LANGUAGE.get(), true);
         });
 
         ClientPlayerEvent.CLIENT_PLAYER_QUIT.register((player) -> {

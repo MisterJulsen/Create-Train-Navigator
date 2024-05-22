@@ -34,17 +34,23 @@ public abstract class AbstractAdvancedSidedDisplayBlock extends AbstractAdvanced
 		BlockPos clickedPos = context.getClickedPos();
 		BlockPos placedOnPos = clickedPos.relative(face.getOpposite());
 		Level level = context.getLevel();
-		BlockState blockState = level.getBlockState(placedOnPos);
+		BlockState otherState = level.getBlockState(placedOnPos);
 		BlockState stateForPlacement = this.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
 
-		if ((blockState.getBlock() != this) || (context.getPlayer() != null && context.getPlayer().isShiftKeyDown())) {
-			stateForPlacement = super.getStateForPlacement(context).setValue(FACING, context.getHorizontalDirection().getOpposite());
+		if ((otherState.getBlock() != this) || (context.getPlayer() != null && context.getPlayer().isShiftKeyDown())) {
+			stateForPlacement = getDefaultPlacementState(context, stateForPlacement, otherState);
 			stateForPlacement = getPropertyFromNeighbours(stateForPlacement, level, clickedPos, SIDE);
 		} else { // Clicked on existing block
-			Direction otherFacing = blockState.getValue(FACING);
-			stateForPlacement = stateForPlacement.setValue(FACING, otherFacing).setValue(SIDE, blockState.getValue(SIDE));
+			stateForPlacement = appendOnPlace(context, stateForPlacement, otherState);
 		}
 
 		return updateColumn(level, clickedPos, stateForPlacement, true);
+	}
+
+	public BlockState appendOnPlace(BlockPlaceContext context, BlockState state, BlockState other) {
+		state = super.appendOnPlace(context, state, other)		
+			.setValue(SIDE, other.getValue(SIDE))
+		;
+		return state;
 	}
 }

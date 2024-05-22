@@ -25,13 +25,18 @@
     "block.createrailwaysnavigator.advanced_display_panel": "Panel Zaawansowanego Wyświetlacza",
     "block.createrailwaysnavigator.advanced_display_panel.tooltip.summary": "Używaj na _pociągach_ jako _wyświetlacz celu podróży_ lub _ekranu informacji pasażerskiej_, albo na _stacjach kolejowych_ jako ulepszonych _wyświetlaczy peronowych_ które pokazują więcej informacji niż zwykłe wyświetlacze.",
     "block.createrailwaysnavigator.advanced_display_panel.tooltip.condition1": "Kliknięcie PPM przy pomocy Klucza",
-    "block.createrailwaysnavigator.advanced_display_panel.tooltip.behaviour1": "Otwórz menu _konfiguracji_ _wyświetlacza_.",
+    "block.createrailwaysnavigator.advanced_display_panel.tooltip.behaviour1": "Otwórz menu _konfiguracji_ _wyświetlacza_.",    
+    "block.createrailwaysnavigator.advanced_display_half_panel": "Pół zaawansowany panel wyświetlacza",
+    "block.createrailwaysnavigator.advanced_display_half_panel.tooltip.summary": "Używaj na _pociągach_ jako _wyświetlacz celu podróży_ lub _ekranu informacji pasażerskiej_, albo na _stacjach kolejowych_ jako ulepszonych _wyświetlaczy peronowych_ które pokazują więcej informacji niż zwykłe wyświetlacze.",
+    "block.createrailwaysnavigator.advanced_display_half_panel.tooltip.condition1": "Kliknięcie PPM przy pomocy Klucza",
+    "block.createrailwaysnavigator.advanced_display_half_panel.tooltip.behaviour1": "Otwórz menu _konfiguracji_ _wyświetlacza_.",
     "block.createrailwaysnavigator.advanced_display_sloped": "Pochylony, Zaawansowanego Wyświetlacza",
     "block.createrailwaysnavigator.advanced_display_sloped.tooltip.summary": "Używaj na _pociągach_ jako _wyświetlacz celu podróży_ lub _ekranu informacji pasażerskiej_, albo na _stacjach kolejowych_ jako ulepszonych _wyświetlaczy peronowych_ które pokazują więcej informacji niż zwykłe wyświetlacze.",
     "block.createrailwaysnavigator.advanced_display_sloped.tooltip.condition1": "Kliknięcie PPM przy pomocy Klucza",
     "block.createrailwaysnavigator.advanced_display_sloped.tooltip.behaviour1": "Otwórz menu _konfiguracji_ _wyświetlacza_.",
 
     "block.createrailwaysnavigator.advanced_display.ber.not_in_service": "Nieczynny!",
+    "block.createrailwaysnavigator.advanced_display.ber.shunting_trip": "Wycieczka manewrowa",
 
     "category.createrailwaysnavigator.crn": "Create Railways Navigator",
     "key.createrailwaysnavigator.route_overlay_options": "Pokaż opcje nakładki trasy",
@@ -243,3 +248,4 @@
 
     "createrailwaysnavigator.moin": "moin"
   }
+  
