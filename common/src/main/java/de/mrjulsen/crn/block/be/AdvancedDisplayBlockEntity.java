@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import com.simibubi.create.content.contraptions.Contraption;
 import com.simibubi.create.content.trains.display.FlapDisplayBlock;
 import com.simibubi.create.content.trains.entity.CarriageContraption;
 import com.simibubi.create.content.trains.entity.CarriageContraptionEntity;
@@ -519,7 +518,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     }
 
     @Override
-    public void contraptionTick(Level level, BlockPos pos, BlockState state, Contraption contraption) {
+    public void contraptionTick(Level level, BlockPos pos, BlockState state, CarriageContraption carriage) {
         getRenderer().tick(level, pos, state, this);
 
         if (!isController()) {
@@ -532,7 +531,6 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 
         syncTicks++;       
         if ((syncTicks %= 100) == 0) {
-            CarriageContraption carriage = (CarriageContraption)contraption; 
             long id = InstanceManager.registerClientTrainDataResponseAction((data, refreshTime) -> {
                 if (data == null) {
                     return;
