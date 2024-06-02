@@ -233,7 +233,7 @@
     "enum.createrailwaysnavigator.side.both": "Ambos lados",
     "enum.createrailwaysnavigator.side.info.both": "La información se renderizará en ambos lados.",
     
-    "enum.createrailwaysnavigator.time_display": "Visualización del tTiempo",
+    "enum.createrailwaysnavigator.time_display": "Visualización del tiempo",
     "enum.createrailwaysnavigator.time_display.description": "Determina cómo se debe mostrar el tiempo.",
     "enum.createrailwaysnavigator.time_display.abs": "ABS",
     "enum.createrailwaysnavigator.time_display.info.abs": "ABS (absoluto)",
