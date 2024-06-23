@@ -35,13 +35,62 @@ public class DLCreateSelectionScrollInput extends SelectionScrollInput implement
     }
 
     @Override
-    public int getX() {
+    public int x() {
         return x;
     }
 
     @Override
-    public int getY() {
+    public int y() {
         return y;
+    }    
+
+    @Override
+    public void set_x(int x) {
+        this.x = x;
     }
-    
+
+    @Override
+    public void set_y(int y) {
+        this.y = y;
+    }
+
+    @Override
+    public void set_width(int w) {
+        this.width = w;
+    }
+
+    @Override
+    public void set_height(int h) {
+        this.height = h;
+    }
+
+    @Override
+    public void set_visible(boolean b) {
+        this.visible = b;
+    }
+
+    @Override
+    public boolean visible() {
+        return visible;
+    }
+
+    @Override
+    public void set_active(boolean b) {
+        this.active = b;
+    }
+
+    @Override
+    public boolean active() {
+        return super.isActive();
+    }
+
+    @Override
+    public int width() {
+        return width;
+    }
+
+    @Override
+    public int height() {
+        return height;
+    }
 }

@@ -42,17 +42,17 @@ public class WidgetContainerCollection {
 
     public void setVisible(boolean v) {
         this.visible = v;
-        performForEach(x -> x.setVisible(v));
+        performForEach(x -> x.set_visible(v));
     }
 
     public void setEnabled(boolean e) {
         this.enabled = e;
-        performForEach(x -> x.setActive(e));
+        performForEach(x -> x.set_active(e));
     }
 
     public <W extends WidgetContainer> void add(W widget) {
-        widget.setActive(enabled);
-        widget.setVisible(visible);
+        widget.set_active(enabled);
+        widget.set_visible(visible);
         components.add(widget);
     }
 
