@@ -56,7 +56,7 @@ public enum ELanguage implements StringRepresentable {
         if (Platform.getEnv() == EnvType.CLIENT) {
             ModTranslatableComponent comp = new ModTranslatableComponent(key, args);
             if (comp.getString().equals(key)) {
-                return TextUtils.translate(key);
+                return TextUtils.translate(key, args);
             }
             return comp;
         } else {
