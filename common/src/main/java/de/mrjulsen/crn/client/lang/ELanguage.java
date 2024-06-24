@@ -3,7 +3,7 @@ package de.mrjulsen.crn.client.lang;
 import java.util.Arrays;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import dev.architectury.platform.Platform;
-import net.fabricmc.api.EnvType;
+import dev.architectury.utils.Env;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.StringRepresentable;
 
@@ -15,7 +15,9 @@ public enum ELanguage implements StringRepresentable {
     POLISH("polish", "pl_pl"),
     CHINESE_SIMPLIFIED("chinese_simplified", "zh_cn"),
     SAXON("saxon", "sxu"),
-    BAVARIAN("bavarian", "bar");
+    BAVARIAN("bavarian", "bar"),
+    SPANISH("spanish", "es_es"),
+    RUSSIAN("russian", "ru_ru");
 
     private String name;
     private String code;
@@ -39,7 +41,7 @@ public enum ELanguage implements StringRepresentable {
     }
 
     public static MutableComponent translate(String key) {
-        if (Platform.getEnv() == EnvType.CLIENT) {
+        if (Platform.getEnvironment() == Env.CLIENT) {
             MutableComponent comp = MutableComponent.create(new ModTranslatableComponent(key));
             if (comp.getString().equals(key)) {
                 return TextUtils.translate(key);
@@ -51,10 +53,10 @@ public enum ELanguage implements StringRepresentable {
     }
 
     public static MutableComponent translate(String key, Object... args) {
-        if (Platform.getEnv() == EnvType.CLIENT) {
+        if (Platform.getEnvironment() == Env.CLIENT) {
             MutableComponent comp = MutableComponent.create(new ModTranslatableComponent(key, args));
             if (comp.getString().equals(key)) {
-                return TextUtils.translate(key);
+                return TextUtils.translate(key, args);
             }
             return comp;
         } else {

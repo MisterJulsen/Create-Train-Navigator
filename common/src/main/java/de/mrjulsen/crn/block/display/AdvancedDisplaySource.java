@@ -12,6 +12,7 @@ import com.simibubi.create.content.trains.station.StationBlockEntity;
 import com.simibubi.create.foundation.gui.ModularGuiLineBuilder;
 import com.simibubi.create.foundation.utility.Lang;
 
+import de.mrjulsen.crn.CRNPlatformSpecific;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.mcdragonlib.core.ITranslatableEnum;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
@@ -57,12 +58,11 @@ public class AdvancedDisplaySource extends DisplaySource {
 
 		if (conf.contains(NBT_FILTER))
 			return;
-		if (!(context.getSourceBlockEntity() instanceof StationBlockEntity stationBe))
+
+		GlobalStation station = CRNPlatformSpecific.getStationFromBlockEntity(context.getSourceBlockEntity());
+		if (station == null) {
 			return;
-		
-            GlobalStation station = stationBe.getStation();
-		if (station == null)
-			return;
+		}
 
 		conf.putString(NBT_FILTER, station.name);
 	}

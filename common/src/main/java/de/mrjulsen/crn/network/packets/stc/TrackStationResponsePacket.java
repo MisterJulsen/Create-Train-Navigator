@@ -10,7 +10,7 @@ import de.mrjulsen.crn.network.InstanceManager;
 import de.mrjulsen.mcdragonlib.net.IPacketBase;
 import dev.architectury.networking.NetworkManager.PacketContext;
 import dev.architectury.utils.EnvExecutor;
-import net.fabricmc.api.EnvType;
+import dev.architectury.utils.Env;
 import net.minecraft.network.FriendlyByteBuf;
 
 public class TrackStationResponsePacket implements IPacketBase<TrackStationResponsePacket> {
@@ -67,7 +67,7 @@ public class TrackStationResponsePacket implements IPacketBase<TrackStationRespo
     
     @Override
     public void handle(TrackStationResponsePacket packet, Supplier<PacketContext> contextSupplier) {
-        EnvExecutor.runInEnv(EnvType.CLIENT, () -> () -> {
+        EnvExecutor.runInEnv(Env.CLIENT, () -> () -> {
             contextSupplier.get().queue(() -> {
                 ClientTrainStationSnapshot.makeNew(
                     packet.stationNames == null || packet.stationNames.isEmpty() ? new ArrayList<>() : new ArrayList<>(packet.stationNames),

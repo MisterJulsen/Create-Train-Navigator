@@ -21,14 +21,13 @@
     ]
   },
   "mixins": [
-    "createrailwaysnavigator.mixins.json",
-    "createrailwaysnavigator-common.mixins.json"
+    "createrailwaysnavigator.mixins.json"
   ],
   "depends": {
     "fabric": "*",
     "minecraft": ">=1.19.2",
     "architectury": ">=6.5.85",
-    "dragonlib": ">=1.19.2-2.1.8",
+    "dragonlib": ">=1.19.2-2.1.12",
     "create": "*"
   }
 }

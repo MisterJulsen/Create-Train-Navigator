@@ -34,7 +34,7 @@ import de.mrjulsen.crn.registry.ModExtras;
 import de.mrjulsen.crn.registry.ModItems;
 import de.mrjulsen.mcdragonlib.net.NetworkManagerBase;
 import dev.architectury.platform.Platform;
-import net.fabricmc.api.EnvType;
+import dev.architectury.utils.Env;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
@@ -109,7 +109,7 @@ public final class CreateRailwaysNavigator {
         CRNPlatformSpecific.registerConfig();
 
         ModEvents.init();
-        if (Platform.getEnv() == EnvType.CLIENT) {
+        if (Platform.getEnvironment() == Env.CLIENT) {
             ClientEvents.init();
         }
     }
