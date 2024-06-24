@@ -16,6 +16,7 @@ import de.mrjulsen.crn.data.ClientTrainStationSnapshot;
 import de.mrjulsen.crn.data.GlobalSettingsManager;
 import de.mrjulsen.crn.network.packets.stc.ServerErrorPacket;
 import de.mrjulsen.mcdragonlib.client.gui.DLScreen;
+import de.mrjulsen.mcdragonlib.util.TextUtils;
 import dev.architectury.networking.NetworkManager.PacketContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
@@ -23,7 +24,6 @@ import net.minecraft.client.gui.components.toasts.SystemToast.SystemToastIds;
 import net.minecraft.client.resources.language.ClientLanguage;
 import net.minecraft.client.resources.language.LanguageInfo;
 import net.minecraft.locale.Language;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.world.level.Level;
 
 public class ClientWrapper {
@@ -45,7 +45,7 @@ public class ClientWrapper {
     }
 
     public static void handleErrorMessagePacket(ServerErrorPacket packet, Supplier<PacketContext> ctx) {        
-        Minecraft.getInstance().getToasts().addToast(new SystemToast(SystemToastIds.PERIODIC_NOTIFICATION, Constants.TEXT_SERVER_ERROR, new TextComponent(packet.message)));   
+        Minecraft.getInstance().getToasts().addToast(new SystemToast(SystemToastIds.PERIODIC_NOTIFICATION, Constants.TEXT_SERVER_ERROR, TextUtils.text(packet.message)));   
     }
     
     public static void showAdvancedDisplaySettingsScreen(AdvancedDisplayBlockEntity blockEntity) {
@@ -58,11 +58,12 @@ public class ClientWrapper {
         }
 
         LanguageInfo info = lang == ELanguage.DEFAULT ? null : Minecraft.getInstance().getLanguageManager().getLanguage(lang.getCode());
-        if (info == null) {
-            info = Minecraft.getInstance().getLanguageManager().getSelected();
-        }
         currentLanguage = lang;
-        currentClientLanguage = ClientLanguage.loadFrom(Minecraft.getInstance().getResourceManager(), List.of(info));
+        if (lang == ELanguage.DEFAULT || info == null) {
+            currentClientLanguage = Language.getInstance();
+        } else {
+            currentClientLanguage = ClientLanguage.loadFrom(Minecraft.getInstance().getResourceManager(), List.of(info));
+        }
         CreateRailwaysNavigator.LOGGER.info("Updated custom language to: " + (info == null ? null : info.getName()));
     }
 
