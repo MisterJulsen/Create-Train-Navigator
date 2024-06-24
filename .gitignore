@@ -5,6 +5,7 @@ run/
 out/
 *.iml
 .gradle/
+.vscode/
 output/
 bin/
 libs/
@@ -14,6 +15,5 @@ libs/
 .idea/
 classes/
 .metadata
-.vscode
 .settings
 *.launch
