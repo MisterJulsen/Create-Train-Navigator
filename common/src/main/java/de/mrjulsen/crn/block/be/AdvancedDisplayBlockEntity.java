@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import com.simibubi.create.content.contraptions.Contraption;
 import com.simibubi.create.content.trains.display.FlapDisplayBlock;
 import com.simibubi.create.content.trains.entity.CarriageContraption;
 import com.simibubi.create.content.trains.entity.CarriageContraptionEntity;
@@ -519,7 +518,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     }
 
     @Override
-    public void contraptionTick(Level level, BlockPos pos, BlockState state, Contraption contraption) {
+    public void contraptionTick(Level level, BlockPos pos, BlockState state, CarriageContraption carriage) {
         getRenderer().tick(level, pos, state, this);
 
         if (!isController()) {
@@ -532,7 +531,6 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 
         syncTicks++;       
         if ((syncTicks %= 100) == 0) {
-            CarriageContraption carriage = (CarriageContraption)contraption; 
             long id = InstanceManager.registerClientTrainDataResponseAction((data, refreshTime) -> {
                 if (data == null) {
                     return;
@@ -618,7 +616,9 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 
         xSize = pTag.getByte(NBT_XSIZE);
         ySize = pTag.getByte(NBT_YSIZE);
-        color = pTag.getInt(NBT_COLOR);
+        if (pTag.contains(NBT_COLOR)) {
+            color = pTag.getInt(NBT_COLOR);
+        }
         glowing = pTag.getBoolean(NBT_GLOWING);
         isController = pTag.getBoolean(NBT_CONTROLLER);
         infoType = EDisplayInfo.getTypeById(pTag.getInt(NBT_INFO_TYPE));

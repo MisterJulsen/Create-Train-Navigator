@@ -1,6 +1,6 @@
 package de.mrjulsen.crn.block.be;
 
-import com.simibubi.create.content.contraptions.Contraption;
+import com.simibubi.create.content.trains.entity.CarriageContraption;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
@@ -15,5 +15,5 @@ public interface IContraptionBlockEntity<T extends BlockEntity> {
      * @param state
      * @param contraption
      */
-    void contraptionTick(Level level, BlockPos pos, BlockState state, Contraption contraption);
+    void contraptionTick(Level level, BlockPos pos, BlockState state, CarriageContraption carriage);
 }

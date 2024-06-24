@@ -21,7 +21,7 @@ import de.mrjulsen.crn.block.connected.AdvancedDisplayCTBehaviour;
 import de.mrjulsen.crn.block.connected.AdvancedDisplaySmallCTBehaviour;
 import de.mrjulsen.crn.block.display.AdvancedDisplayTarget;
 import dev.architectury.utils.EnvExecutor;
-import net.fabricmc.api.EnvType;
+import dev.architectury.utils.Env;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.level.block.Block;
 
@@ -112,7 +112,7 @@ public class ModBlocks {
 	}
 
 	protected static void onClient(Supplier<Runnable> toRun) {
-		EnvExecutor.runInEnv(EnvType.CLIENT, toRun);
+		EnvExecutor.runInEnv(Env.CLIENT, toRun);
 	}
 
     public static void register() {

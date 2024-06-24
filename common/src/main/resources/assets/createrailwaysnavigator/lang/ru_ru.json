@@ -12,27 +12,27 @@
     "block.createrailwaysnavigator.train_station_clock": "Станционные часы",
     "block.createrailwaysnavigator.advanced_display_block": "Блок улучшенного механического табло",
 	"block.createrailwaysnavigator.advanced_display_block.tooltip.summary": "Используйте в _поездах_ в качестве _табло пункта назначения поезда_ или _табло информации для пассажиров_, а на станциях - в качестве _дисплея платформы,_ которые также отображают больше информации, чем обычные табло.",
-    "block.createrailwaysnavigator.advanced_display_block.tooltip.condition1": "ПКМ с гаячным ключом",
+    "block.createrailwaysnavigator.advanced_display_block.tooltip.condition1": "ПКМ с гаечным ключом",
 	"block.createrailwaysnavigator.advanced_display_block.tooltip.behaviour1": "Открывает меню для _настройки дисплея._",
     "block.createrailwaysnavigator.advanced_display": "Улучшенное механическое табло",
 	"block.createrailwaysnavigator.advanced_display.tooltip.summary": "Используйте в _поездах_ в качестве _табло пункта назначения поезда_ или _табло информации для пассажиров_, а на станциях - в качестве _дисплея платформы,_ которые также отображают больше информации, чем обычные табло.",
-    "block.createrailwaysnavigator.advanced_display.tooltip.condition1": "ПКМ с гаячным ключом",
+    "block.createrailwaysnavigator.advanced_display.tooltip.condition1": "ПКМ с гаечным ключом",
 	"block.createrailwaysnavigator.advanced_display.tooltip.behaviour1": "Открывает меню для _настройки дисплея._",
     "block.createrailwaysnavigator.advanced_display_small": "Малое улучшенное механическое табло",
 	"block.createrailwaysnavigator.advanced_display_small.tooltip.summary": "Используйте в _поездах_ в качестве _табло пункта назначения поезда_ или _табло информации для пассажиров_, а на станциях - в качестве _дисплея платформы,_ которые также отображают больше информации, чем обычные табло.",
-    "block.createrailwaysnavigator.advanced_display_small.tooltip.condition1": "ПКМ с гаячным ключом",
+    "block.createrailwaysnavigator.advanced_display_small.tooltip.condition1": "ПКМ с гаечным ключом",
 	"block.createrailwaysnavigator.advanced_display_small.tooltip.behaviour1": "Открывает меню для _настройки дисплея._",
     "block.createrailwaysnavigator.advanced_display_panel": "Панель улучшенного механического табло",
 	"block.createrailwaysnavigator.advanced_display_panel.tooltip.summary": "Используйте в _поездах_ в качестве _табло пункта назначения поезда_ или _табло информации для пассажиров_, а на станциях - в качестве _дисплея платформы,_ которые также отображают больше информации, чем обычные табло.",
-    "block.createrailwaysnavigator.advanced_display_panel.tooltip.condition1": "ПКМ с гаячным ключом",
+    "block.createrailwaysnavigator.advanced_display_panel.tooltip.condition1": "ПКМ с гаечным ключом",
 	"block.createrailwaysnavigator.advanced_display_panel.tooltip.behaviour1": "Открывает меню для _настройки дисплея._",
     "block.createrailwaysnavigator.advanced_display_half_panel": "Полупанель улучшенного механического табло",
 	"block.createrailwaysnavigator.advanced_display_half_panel.tooltip.summary": "Используйте в _поездах_ в качестве _табло пункта назначения поезда_ или _табло информации для пассажиров_, а на станциях - в качестве _дисплея платформы,_ которые также отображают больше информации, чем обычные табло.",
-    "block.createrailwaysnavigator.advanced_display_half_panel.tooltip.condition1": "ПКМ с гаячным ключом",
+    "block.createrailwaysnavigator.advanced_display_half_panel.tooltip.condition1": "ПКМ с гаечным ключом",
 	"block.createrailwaysnavigator.advanced_display_half_panel.tooltip.behaviour1": "Открывает меню для _настройки дисплея._",
     "block.createrailwaysnavigator.advanced_display_sloped": "Наклонное улучшенное механическое табло",
 	"block.createrailwaysnavigator.advanced_display_sloped.tooltip.summary": "Используйте в _поездах_ в качестве _табло пункта назначения поезда_ или _табло информации для пассажиров_, а на станциях - в качестве _дисплея платформы,_ которые также отображают больше информации, чем обычные табло.",
-    "block.createrailwaysnavigator.advanced_display_sloped.tooltip.condition1": "ПКМ с гаячным ключом",
+    "block.createrailwaysnavigator.advanced_display_sloped.tooltip.condition1": "ПКМ с гаечным ключом",
 	"block.createrailwaysnavigator.advanced_display_sloped.tooltip.behaviour1": "Открывает меню для _настройки дисплея._",
 
     "block.createrailwaysnavigator.advanced_display.ber.not_in_service": "Вышел из строя!",
@@ -248,5 +248,5 @@
 
     "createrailwaysnavigator.moin": "moin",
 
-    "_": "Над переводом работал VGamerGroup"
+    "createrailwaysnavigator.credits": "Над переводом работал VGamerGroup"
 }
