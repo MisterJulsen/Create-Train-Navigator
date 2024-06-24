@@ -18,6 +18,7 @@ import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.ber.IBlockEntityRendererInstance.BlockEntityRendererContext;
 import de.mrjulsen.mcdragonlib.client.ber.IBlockEntityRendererInstance.EUpdateReason;
+import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.TimeUtils;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -34,6 +35,9 @@ public class BERPassengerInfoDetailed implements IBERRenderSubtype<AdvancedDispl
     private static final String keyNextStop = "gui.createrailwaysnavigator.route_overview.next_stop";
     private static final String keyDate = "gui.createrailwaysnavigator.route_overview.date";
 
+    private BERText announceNextStopLabel;
+    private BERText whileNextStopLabel;
+
     @Override
     public boolean isSingleLined() {
         return true;
@@ -44,6 +48,9 @@ public class BERPassengerInfoDetailed implements IBERRenderSubtype<AdvancedDispl
         if (pBlockEntity.getTrainData() == null) {
             return;
         }
+        
+        DLUtils.doIfNotNull(announceNextStopLabel, x -> x.tick());
+        DLUtils.doIfNotNull(whileNextStopLabel, x -> x.tick());
 
         boolean dirty = false;
         
@@ -72,6 +79,8 @@ public class BERPassengerInfoDetailed implements IBERRenderSubtype<AdvancedDispl
         }
 
         parent.labels.clear();
+        announceNextStopLabel = null;
+        whileNextStopLabel = null;
 
         switch (this.state) {
             case BEFORE_NEXT_STOP:
@@ -143,8 +152,25 @@ public class BERPassengerInfoDetailed implements IBERRenderSubtype<AdvancedDispl
                 default:
                     break;
             }
+
+            if (backSide) {
+                switch (side) {
+                    case LEFT:
+                        pPoseStack.translate(10, 0, 0);
+                        break;
+                    case RIGHT:                            
+                        pPoseStack.translate(-10, 0, 0);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            DLUtils.doIfNotNull(announceNextStopLabel, x -> x.render(pPoseStack, pBufferSource, pPackedLight));
+            DLUtils.doIfNotNull(whileNextStopLabel, x -> x.render(pPoseStack, pBufferSource, pPackedLight));
         }
     }
+
 
     private void updateDefault(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent) {
         int displayWidth = blockEntity.getXSizeScaled();
@@ -175,7 +201,7 @@ public class BERPassengerInfoDetailed implements IBERRenderSubtype<AdvancedDispl
 
         MutableComponent line = ELanguage.translate(keyNextStop, GlobalSettingsManager.getInstance().getSettingsData().getAliasFor(blockEntity.getTrainData().getNextStop().isPresent() ? blockEntity.getTrainData().getNextStop().get().stationTagName() : "").getAliasName().get());
         float maxWidth = displayWidth * 16 - 6 - (side != TrainExitSide.UNKNOWN ? 10 : 0);        
-        parent.labels.add(new BERText(parent.getFontUtils(), line, 0)
+        announceNextStopLabel = (new BERText(parent.getFontUtils(), line, 0)
             .withIsCentered(true)
             .withMaxWidth(maxWidth, true)
             .withStretchScale(0.75f, 0.75f)
@@ -194,7 +220,7 @@ public class BERPassengerInfoDetailed implements IBERRenderSubtype<AdvancedDispl
         MutableComponent line = TextUtils.text(GlobalSettingsManager.getInstance().getSettingsData().getAliasFor(blockEntity.getTrainData().getNextStop().isPresent() ? blockEntity.getTrainData().getNextStop().get().stationTagName() : null).getAliasName().get());
 
         float maxWidth = displayWidth * 16 - 6 - (side != TrainExitSide.UNKNOWN ? 10 : 0);        
-        parent.labels.add(new BERText(parent.getFontUtils(), line, 0)
+        whileNextStopLabel = (new BERText(parent.getFontUtils(), line, 0)
             .withIsCentered(true)
             .withMaxWidth(maxWidth, true)
             .withStretchScale(0.75f, 0.75f)
