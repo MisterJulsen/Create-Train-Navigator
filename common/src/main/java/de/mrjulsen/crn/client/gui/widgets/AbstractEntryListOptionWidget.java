@@ -10,7 +10,7 @@ public abstract class AbstractEntryListOptionWidget extends WidgetContainer impl
     
     @Override
     public boolean consumeScrolling(double mouseX, double mouseY) {
-        return true;
+        return false;
     }
 
 }
