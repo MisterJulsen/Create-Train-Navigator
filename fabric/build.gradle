@@ -34,7 +34,7 @@ dependencies {
     modImplementation("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${rootProject.forge_config_api_port_version}")
     modImplementation(include("de.mrjulsen.mcdragonlib:dragonlib-fabric:${rootProject.minecraft_version}-${rootProject.dragonlib_version}"))
      
-modImplementation("com.simibubi.create:create-fabric-${rootProject.minecraft_version}:${rootProject.create_fabric_version}")
+    modImplementation("com.simibubi.create:create-fabric-${rootProject.minecraft_version}:${rootProject.create_fabric_version}")
 
     common(project(path: ':common', configuration: 'namedElements')) { transitive false }
     shadowBundle project(path: ':common', configuration: 'transformProductionFabric')
