@@ -616,7 +616,9 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 
         xSize = pTag.getByte(NBT_XSIZE);
         ySize = pTag.getByte(NBT_YSIZE);
-        color = pTag.getInt(NBT_COLOR);
+        if (pTag.contains(NBT_COLOR)) {
+            color = pTag.getInt(NBT_COLOR);
+        }
         glowing = pTag.getBoolean(NBT_GLOWING);
         isController = pTag.getBoolean(NBT_CONTROLLER);
         infoType = EDisplayInfo.getTypeById(pTag.getInt(NBT_INFO_TYPE));
