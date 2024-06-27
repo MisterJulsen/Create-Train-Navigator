@@ -49,10 +49,23 @@ processResources {
 }
 
 shadowJar {
+    exclude "architectury.common.json"
     configurations = [project.configurations.shadowBundle]
     archiveClassifier = 'dev-shadow'
 }
 
 remapJar {
     input.set shadowJar.archiveFile
+}
+
+sourcesJar {
+    def commonSources = project(":common").sourcesJar
+    dependsOn commonSources
+    from commonSources.archiveFile.map { zipTree(it) }
+}
+
+components.java {
+    withVariantsFromConfiguration(project.configurations.shadowRuntimeElements) {
+        skip()
+    }
 }
