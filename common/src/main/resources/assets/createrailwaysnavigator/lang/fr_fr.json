@@ -146,7 +146,7 @@
     "gui.createrailwaysnavigator.global_settings.option_blacklist.title": "Liste Noire de Gare",
     "gui.createrailwaysnavigator.global_settings.option_blacklist.description": "Exclure les gares qui ne devrait pas apparaître dans les résultats de navigations. Ces gares seront ignorés lors de la génération d'itinéraire.",
     "gui.createrailwaysnavigator.global_settings.train_group.title": "Groupes de Train",
-    "gui.createrailwaysnavigator.global_settings.train_group.description": "Créez des groupes de trains pour les organiser (ex. services régionaux, services longue distance, ...). Les utilisateurs peuvent décider quel groupes ils souhaitent utiliser.",
+    "gui.createrailwaysnavigator.global_settings.train_group.description": "Créez des groupes de trains pour les organiser (ex. services régionaux, services longue distance, ...). Les utilisateurs peuvent décider quels groupes ils souhaitent utiliser.",
     "gui.createrailwaysnavigator.global_settings.train_blacklist.title": "Liste Noire de Train",
     "gui.createrailwaysnavigator.global_settings.train_blacklist.description": "Exclure des trains, ex. trains de marchandises, trains spéciaux, etc., de manière à ce qu'ils ne puissent être utilisé dans des itinéraires.",
 
@@ -178,7 +178,7 @@
     
     "gui.createrailwaysnavigator.search_settings.title": "Paramètres de recherche",
     "gui.createrailwaysnavigator.search_settings.transfer_time": "Temps de Correspondance Minimum",
-    "gui.createrailwaysnavigator.search_settings.transfer_time.description": "Le temps minimum qui devrait être disponible pour changer de train. (1h ~ 50 Secondes réelles)",
+    "gui.createrailwaysnavigator.search_settings.transfer_time.description": "Le temps minimum qui devrait être disponible pour changer de train. (1h ~ 50 secondes réelles)",
     "gui.createrailwaysnavigator.search_settings.train_groups": "Filtre de Catégorie de Train",
     "gui.createrailwaysnavigator.search_settings.train_groups.description": "Décidez quels trains et quelles catégories de trains vous souhaitez utiliser.",
     "gui.createrailwaysnavigator.search_settings.train_groups.overview": "%s catégories séléctionés",
