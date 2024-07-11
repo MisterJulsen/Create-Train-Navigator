@@ -118,7 +118,7 @@
     "gui.createrailwaysnavigator.route_overview.train_canceled_info": "Information à propos de %s: Ce train a été annulé pour aujourd'hui! Nous nous excusons pour le dérangement. Rechercher une alternative dans le Navigateur.",
     "gui.createrailwaysnavigator.route_overview.train_canceled_title": "Le train a été annulé",
     "gui.createrailwaysnavigator.route_overview.journey_interrupted_info": "Votre voyage vers %s ne peut pas se poursuivre. Rechercher une alternative dans le Navigateur.",
-    "gui.createrailwaysnavigator.route_overview.options": "Appuyer sur %s pour les options.",
+    "gui.createrailwaysnavigator.route_overview.options": "Appuyer sur %s pour voir les options.",
     "gui.createrailwaysnavigator.route_overview.notification.journey_begins.title": "Votre voyage vers %s commence!",
     "gui.createrailwaysnavigator.route_overview.notification.journey_begins": "%s vers %s, départ %s",
     "gui.createrailwaysnavigator.route_overview.notification.journey_begins_with_platform": "%s vers %s, départ %s depuis la voie %s",
