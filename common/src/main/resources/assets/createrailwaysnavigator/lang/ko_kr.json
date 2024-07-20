@@ -157,7 +157,7 @@
     "gui.createrailwaysnavigator.alias_settings.delete_alias.tooltip": "태그 삭제",
     "gui.createrailwaysnavigator.alias_settings.delete_station.tooltip": "타는 곳 삭제",
     "gui.createrailwaysnavigator.alias_settings.add_station.tooltip": "타는 곳 추가",
-    "gui.createrailwaysnavigator.alias_settings.hint.station_name": "타는 곳 이름",
+    "gui.createrailwaysnavigator.alias_settings.hint.station_name": "정거장 이름",
     "gui.createrailwaysnavigator.alias_settings.hint.platform": "타는 곳",
     "gui.createrailwaysnavigator.alias_settings.enter_name": "이름 입력",
     
