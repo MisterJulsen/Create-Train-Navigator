@@ -7,5 +7,10 @@ public abstract class AbstractEntryListOptionWidget extends WidgetContainer impl
     public AbstractEntryListOptionWidget(int x, int y, int width, int height) {
         super(x, y, width, height);
     }
+    
+    @Override
+    public boolean consumeScrolling(double mouseX, double mouseY) {
+        return false;
+    }
 
 }

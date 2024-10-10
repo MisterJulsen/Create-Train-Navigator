@@ -1,40 +1,18 @@
 architectury {
-    common(rootProject.enabled_platforms.split(","))
+    common rootProject.enabled_platforms.split(',')
 }
 
 loom {
     accessWidenerPath = file("src/main/resources/createrailwaysnavigator.accesswidener")
 }
 
-repositories {
-    maven { url = "https://maven.shedaniel.me/" } // Cloth Config, REI
-	maven { url = "https://maven.blamejared.com/" } // JEI
-	maven { url = "https://maven.parchmentmc.org" } // Parchment mappings
-	maven { url = "https://maven.quiltmc.org/repository/release" } // Quilt Mappings
-	maven { url = "https://api.modrinth.com/maven" } // LazyDFU
-	maven { url = "https://maven.terraformersmc.com/releases/" } // Mod Menu
-	maven { url = "https://mvn.devos.one/snapshots/" } // Create, Porting Lib, Forge Tags, Milk Lib, Registrate
-	maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" } // Forge Config API Port
-	maven { url = "https://maven.jamieswhiteshirt.com/libs-release" } // Reach Entity Attributes
-	maven { url = "https://jitpack.io/" } // Mixin Extras, Fabric ASM
-	maven { url = "https://maven.tterrag.com/" } // Flywheel
-}
-
 dependencies {
-    modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
-    modApi(include("de.mrjulsen.mcdragonlib:dragonlib-fabric:${rootProject.minecraft_version}-${rootProject.dragonlib_version}"))
+    modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
+   
+    modCompileOnly("dev.architectury:architectury:${rootProject.architectury_api_version}")
+    modCompileOnly("com.electronwill.night-config:toml:3.6.0")
+    modCompileOnly("net.minecraftforge:forgeconfigapiport-fabric:${rootProject.forge_config_api_port_version}")
+    modImplementation("de.mrjulsen.mcdragonlib:dragonlib-fabric:${rootProject.minecraft_version}-${rootProject.dragonlib_version}")
 
-    modCompileOnly("com.simibubi.create:create-fabric-${rootProject.minecraft_version}:${rootProject.create_fabric_version}")
-}
-
-publishing {
-    publications {
-        mavenCommon(MavenPublication) {
-            artifactId = rootProject.archives_base_name
-            from components.java
-        }
-    }
-
-    repositories {
-    }
+    modImplementation("com.simibubi.create:create-fabric-${rootProject.minecraft_version}:${rootProject.create_fabric_version}")
 }

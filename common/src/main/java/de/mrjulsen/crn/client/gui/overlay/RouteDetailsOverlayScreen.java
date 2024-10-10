@@ -194,6 +194,7 @@ public class RouteDetailsOverlayScreen extends DLOverlayScreen implements IJourn
     }
 
 
+    @SuppressWarnings("resource")
     @Override
     public void tick() {
         if (Screen.hasControlDown() && ModKeys.KEY_OVERLAY_SETTINGS.isDown() && Minecraft.getInstance().player.getInventory().hasAnyOf(Set.of(ModItems.NAVIGATOR.get()))) {

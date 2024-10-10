@@ -15,7 +15,9 @@ public enum ELanguage implements StringRepresentable {
     POLISH("polish", "pl_pl"),
     CHINESE_SIMPLIFIED("chinese_simplified", "zh_cn"),
     SAXON("saxon", "sxu"),
-    BAVARIAN("bavarian", "bar");
+    BAVARIAN("bavarian", "bar"),
+    SPANISH("spanish", "es_es"),
+    RUSSIAN("russian", "ru_ru");
 
     private String name;
     private String code;
@@ -54,7 +56,7 @@ public enum ELanguage implements StringRepresentable {
         if (Platform.getEnv() == EnvType.CLIENT) {
             ModTranslatableComponent comp = new ModTranslatableComponent(key, args);
             if (comp.getString().equals(key)) {
-                return TextUtils.translate(key);
+                return TextUtils.translate(key, args);
             }
             return comp;
         } else {
