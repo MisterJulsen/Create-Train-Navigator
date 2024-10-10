@@ -5,6 +5,7 @@ run/
 out/
 *.iml
 .gradle/
+.vscode/
 output/
 bin/
 libs/

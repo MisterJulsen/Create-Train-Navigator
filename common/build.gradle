@@ -1,5 +1,5 @@
 architectury {
-    common(rootProject.enabled_platforms.split(","))
+    common rootProject.enabled_platforms.split(',')
 }
 
 loom {
@@ -7,25 +7,11 @@ loom {
 }
 
 dependencies {
-    // We depend on fabric loader here to use the fabric @Environment annotations and get the mixin dependencies
-    // Do NOT use other classes from fabric loader
-    modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
-    
-    modImplementation(include("de.mrjulsen.mcdragonlib:dragonlib-fabric:${rootProject.minecraft_version}-${rootProject.dragonlib_version}"))
+    modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
+   
+    modImplementation("dev.architectury:architectury:${rootProject.architectury_api_version}")
+    modImplementation("com.electronwill.night-config:toml:3.6.0")
+    modImplementation("net.minecraftforge:forgeconfigapiport-fabric:${rootProject.forge_config_api_port_version}")
+    modImplementation("de.mrjulsen.mcdragonlib:dragonlib-fabric:${rootProject.minecraft_version}-${rootProject.dragonlib_version}")
     modImplementation("com.simibubi.create:create-fabric-${rootProject.minecraft_version}:${rootProject.create_fabric_version}")
-
-}
-
-publishing {
-    publications {
-        mavenCommon(MavenPublication) {
-            artifactId = rootProject.archives_base_name
-            from components.java
-        }
-    }
-
-    // See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
-    repositories {
-        // Add repositories to publish to here.
-    }
 }

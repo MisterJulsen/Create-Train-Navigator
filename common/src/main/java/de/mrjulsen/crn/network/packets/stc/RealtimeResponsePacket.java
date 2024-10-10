@@ -10,7 +10,7 @@ import de.mrjulsen.crn.network.InstanceManager;
 import de.mrjulsen.mcdragonlib.net.IPacketBase;
 import dev.architectury.networking.NetworkManager.PacketContext;
 import dev.architectury.utils.EnvExecutor;
-import net.fabricmc.api.EnvType;
+import dev.architectury.utils.Env;
 import net.minecraft.network.FriendlyByteBuf;
 
 public class RealtimeResponsePacket implements IPacketBase<RealtimeResponsePacket> {
@@ -50,7 +50,7 @@ public class RealtimeResponsePacket implements IPacketBase<RealtimeResponsePacke
     
     @Override
     public void handle(RealtimeResponsePacket packet, Supplier<PacketContext> contextSupplier) {
-        EnvExecutor.runInEnv(EnvType.CLIENT, () -> () -> {
+        EnvExecutor.runInEnv(Env.CLIENT, () -> () -> {
             contextSupplier.get().queue(() -> {
                 new Thread(() -> {
                     InstanceManager.runClientRealtimeResponseAction(packet.id, packet.departure, packet.time);

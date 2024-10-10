@@ -58,12 +58,14 @@ public class ClientWrapper {
         }
 
         LanguageInfo info = lang == ELanguage.DEFAULT ? null : Minecraft.getInstance().getLanguageManager().getLanguage(lang.getCode());
-        if (info == null) {
-            info = Minecraft.getInstance().getLanguageManager().getSelected();
-        }
         currentLanguage = lang;
-        currentClientLanguage = ClientLanguage.loadFrom(Minecraft.getInstance().getResourceManager(), List.of(info));
-        CreateRailwaysNavigator.LOGGER.info("Updated custom language to: " + (info == null ? null : info.getName()));
+        if (lang == ELanguage.DEFAULT || info == null) {
+            currentClientLanguage = Language.getInstance();
+            CreateRailwaysNavigator.LOGGER.info("Updated custom language to: (Default)");
+        } else {
+            currentClientLanguage = ClientLanguage.loadFrom(Minecraft.getInstance().getResourceManager(), List.of(info));
+            CreateRailwaysNavigator.LOGGER.info("Updated custom language to: " + (info == null ? null : info.getName()));
+        }
     }
 
     public static Language getCurrentClientLanguage() {

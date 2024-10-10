@@ -10,6 +10,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
 import com.simibubi.create.content.contraptions.MountedStorageManager;
+import com.simibubi.create.content.trains.entity.CarriageContraption;
 
 import de.mrjulsen.crn.block.be.IContraptionBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -19,16 +20,18 @@ public class MountedStorageManagerMixin {
 
     @Inject(method = "entityTick", remap = false, at = @At(value = "HEAD"))
     public void tick$inject(AbstractContraptionEntity entity, CallbackInfo ci) {
-        Set<BlockEntity> beList = new LinkedHashSet<>();
-        beList.addAll(entity.getContraption().maybeInstancedBlockEntities);
-        beList.addAll(entity.getContraption().specialRenderedBlockEntities);
+        if (entity.getContraption() instanceof CarriageContraption carriage) {
+            Set<BlockEntity> beList = new LinkedHashSet<>();
+            beList.addAll(entity.getContraption().maybeInstancedBlockEntities);
+            beList.addAll(entity.getContraption().specialRenderedBlockEntities);
 
-        for (BlockEntity be : beList) {            
-            if (be instanceof IContraptionBlockEntity tile) {
-                tile.contraptionTick(entity.level, be.getBlockPos(), be.getBlockState(), entity.getContraption());
+            for (BlockEntity be : beList) {            
+                if (be instanceof IContraptionBlockEntity tile) {
+                    tile.contraptionTick(entity.level, be.getBlockPos(), be.getBlockState(), carriage);
+                }
             }
-        }
 
-        beList.clear();
+            beList.clear();
+        }
     }
 }

@@ -406,26 +406,27 @@ public class SearchSettingsScreen extends DLScreen {
     }
 
 
-    @Override
-    public boolean mouseScrolled(double pMouseX, double pMouseY, double pDelta) {
-        
-		boolean b = super.mouseScrolled(pMouseX, pMouseY, pDelta) || transferTimeInput.isHoveredOrFocused();
+@Override
+public boolean mouseScrolled(double pMouseX, double pMouseY, double pDelta) {        
+
+    if (transferTimeInput.isHoveredOrFocused()) {            
+        boolean b = transferTimeInput.mouseScrolled(pMouseX, pMouseY, pDelta);
         if (b) {
-            return true;
+            return b;
         }
-
-		float chaseTarget = scroll.getChaseTarget();		
-        float max = -AREA_H + getMaxScrollHeight();
-
-		if (max > 0) {
-			chaseTarget -= pDelta * 12;
-			chaseTarget = Mth.clamp(chaseTarget, 0, max);
-			scroll.chase((int) chaseTarget, 0.7f, Chaser.EXP);
-		} else {
-			scroll.chase(0, 0.7f, Chaser.EXP);
-        }
-
-        return true;
-
     }
+
+    float chaseTarget = scroll.getChaseTarget();		
+    float max = -AREA_H + getMaxScrollHeight();
+
+    if (max > 0) {
+        chaseTarget -= pDelta * 12;
+        chaseTarget = Mth.clamp(chaseTarget, 0, max);
+        scroll.chase((int) chaseTarget, 0.7f, Chaser.EXP);
+    } else {
+        scroll.chase(0, 0.7f, Chaser.EXP);
+    }
+
+    return super.mouseScrolled(pMouseX, pMouseY, pDelta);
+}
 }

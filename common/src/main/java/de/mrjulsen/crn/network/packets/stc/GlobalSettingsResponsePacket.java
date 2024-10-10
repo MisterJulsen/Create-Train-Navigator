@@ -7,8 +7,8 @@ import de.mrjulsen.crn.data.GlobalSettingsManager;
 import de.mrjulsen.crn.network.InstanceManager;
 import de.mrjulsen.mcdragonlib.net.IPacketBase;
 import dev.architectury.networking.NetworkManager.PacketContext;
+import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
-import net.fabricmc.api.EnvType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 
@@ -38,7 +38,7 @@ public class GlobalSettingsResponsePacket implements IPacketBase<GlobalSettingsR
 
     @Override
     public void handle(GlobalSettingsResponsePacket packet, Supplier<PacketContext> contextSupplier) {
-        EnvExecutor.runInEnv(EnvType.CLIENT, () -> () -> {
+        EnvExecutor.runInEnv(Env.CLIENT, () -> () -> {
             contextSupplier.get().queue(() -> {
                 GlobalSettingsManager.createClientInstance().updateSettingsData(packet.settings);
                 InstanceManager.runClientResponseReceievedAction(packet.id);
