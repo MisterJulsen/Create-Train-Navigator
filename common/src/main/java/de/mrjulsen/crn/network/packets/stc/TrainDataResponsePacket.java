@@ -7,7 +7,7 @@ import de.mrjulsen.crn.network.packets.cts.TrainDataRequestPacket.TrainData;
 import de.mrjulsen.mcdragonlib.net.IPacketBase;
 import dev.architectury.networking.NetworkManager.PacketContext;
 import dev.architectury.utils.EnvExecutor;
-import net.fabricmc.api.EnvType;
+import dev.architectury.utils.Env;
 import net.minecraft.network.FriendlyByteBuf;
 
 public class TrainDataResponsePacket implements IPacketBase<TrainDataResponsePacket> {
@@ -40,7 +40,7 @@ public class TrainDataResponsePacket implements IPacketBase<TrainDataResponsePac
     }
     @Override
     public void handle(TrainDataResponsePacket packet, Supplier<PacketContext> contextSupplier) {
-        EnvExecutor.runInEnv(EnvType.CLIENT, () -> () -> {
+        EnvExecutor.runInEnv(Env.CLIENT, () -> () -> {
             contextSupplier.get().queue(() -> {
                 InstanceManager.runClientTrainDataResponseAction(packet.id, packet.departure, packet.time);
             });

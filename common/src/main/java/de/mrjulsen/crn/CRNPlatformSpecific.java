@@ -3,8 +3,11 @@ package de.mrjulsen.crn;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import dev.architectury.platform.Platform;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
 import java.nio.file.Path;
+
+import com.simibubi.create.content.trains.station.GlobalStation;
 
 public class CRNPlatformSpecific {
     /**
@@ -33,6 +36,11 @@ public class CRNPlatformSpecific {
 
     @ExpectPlatform
     public static void registerConfig() {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
+    public static GlobalStation getStationFromBlockEntity(BlockEntity be) {
         throw new AssertionError();
     }
 }

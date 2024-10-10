@@ -9,7 +9,7 @@ import de.mrjulsen.crn.network.InstanceManager;
 import de.mrjulsen.mcdragonlib.net.IPacketBase;
 import dev.architectury.networking.NetworkManager.PacketContext;
 import dev.architectury.utils.EnvExecutor;
-import net.fabricmc.api.EnvType;
+import dev.architectury.utils.Env;
 import net.minecraft.network.FriendlyByteBuf;
 
 public class NavigationResponsePacket implements IPacketBase<NavigationResponsePacket> {
@@ -53,7 +53,7 @@ public class NavigationResponsePacket implements IPacketBase<NavigationResponseP
 
     @Override
     public void handle(NavigationResponsePacket packet, Supplier<PacketContext> contextSupplier) {
-        EnvExecutor.runInEnv(EnvType.CLIENT, () -> () -> {
+        EnvExecutor.runInEnv(Env.CLIENT, () -> () -> {
             contextSupplier.get().queue(() -> {
                 InstanceManager.runClientNavigationResponseAction(packet.id, packet.routes, new NavigationResponseData(packet.lastUpdated, packet.duration));
             });

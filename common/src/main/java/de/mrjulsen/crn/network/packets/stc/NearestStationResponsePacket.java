@@ -7,7 +7,7 @@ import de.mrjulsen.crn.network.InstanceManager;
 import de.mrjulsen.mcdragonlib.net.IPacketBase;
 import dev.architectury.networking.NetworkManager.PacketContext;
 import dev.architectury.utils.EnvExecutor;
-import net.fabricmc.api.EnvType;
+import dev.architectury.utils.Env;
 import net.minecraft.network.FriendlyByteBuf;
 
 public class NearestStationResponsePacket implements IPacketBase<NearestStationResponsePacket> {
@@ -36,7 +36,7 @@ public class NearestStationResponsePacket implements IPacketBase<NearestStationR
 
     @Override
     public void handle(NearestStationResponsePacket packet, Supplier<PacketContext> contextSupplier) {
-        EnvExecutor.runInEnv(EnvType.CLIENT, () -> () -> {
+        EnvExecutor.runInEnv(Env.CLIENT, () -> () -> {
             contextSupplier.get().queue(() -> {
                 InstanceManager.runClientNearestStationResponseAction(packet.id, packet.result);
             });
