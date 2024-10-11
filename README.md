@@ -23,6 +23,11 @@ This mod adds a new item, the Create Railways Navigator, which is inspired by th
 - Bavarian (DE)
 - Spanish (by albertosaurio65)
 - Russian (by VGamerGroup)
+- French (by GeoffreyGx)
+- Portuguese (by AlfredoProgramer)
+- Korean (by queso-gato1355)
+- Swedish (by Geoffrey)
+
 
 ## ⚠️ **Please note!**
 To protect your world from damage, you should always create a backup of your world before installing an update of this mod. Alpha versions in particular may contain critical bugs!

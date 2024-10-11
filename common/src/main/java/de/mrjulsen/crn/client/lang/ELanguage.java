@@ -17,7 +17,11 @@ public enum ELanguage implements StringRepresentable {
     SAXON("saxon", "sxu"),
     BAVARIAN("bavarian", "bar"),
     SPANISH("spanish", "es_es"),
-    RUSSIAN("russian", "ru_ru");
+    RUSSIAN("russian", "ru_ru"),
+    FRENCH("french", "fr_fr"),
+    KOREAN("korean", "ko_kr"),
+    SWEDISH("swedish", "sv_se"),
+    PORTUGUESE("portuguese", "pt_pt");
 
     private String name;
     private String code;

@@ -78,6 +78,7 @@
     "gui.createrailwaysnavigator.common.server_error": "Fehler beim Ausführen der Aufgabe. Schaue in die Serverkonsole.",
     "gui.createrailwaysnavigator.common.delete": "Löschen",
     "gui.createrailwaysnavigator.common.add": "Hinzufügen",
+    "gui.createrailwaysnavigator.common.help": "Hilfe erhalten",
     
     "gui.createrailwaysnavigator.navigator.title": "Create Railways Navigator",
     "gui.createrailwaysnavigator.navigator.no_connections": "Keine Verbindungen gefunden.",
@@ -93,13 +94,13 @@
     "gui.createrailwaysnavigator.navigator.search_settings.tooltip": "Sucheinstellungen",
     "gui.createrailwaysnavigator.navigator.search.tooltip": "Suchen",
     "gui.createrailwaysnavigator.navigator.location.tooltip": "Nächsgelegene Station von aktueller Position",
+    "gui.createrailwaysnavigator.navigator.refresh.tooltip": "Aktualisieren",
     "gui.createrailwaysnavigator.navigator.switch.tooltip": "Eingaben tauschen",
 
     "gui.createrailwaysnavigator.route_details.title": "Streckendetails",
     "gui.createrailwaysnavigator.route_details.departure": "Abfahrt in",
     "gui.createrailwaysnavigator.route_details.next_transfer_time": "Umstieg in",
     "gui.createrailwaysnavigator.route_details.transfer": "Umstieg",
-    "gui.createrailwaysnavigator.route_details.save_route": "Route speichern",
     
     "gui.createrailwaysnavigator.route_overview.title": "Reisebegleitung",
     "gui.createrailwaysnavigator.route_overview.journey_begins": "Ihre Reise beginnt! %s nach %s, Abfahrt %s",
@@ -147,7 +148,7 @@
     "gui.createrailwaysnavigator.global_settings.title": "Globale Einstellungen",
     "gui.createrailwaysnavigator.global_settings.option.tooltip": "Zum Bearbeiten klicken",
     "gui.createrailwaysnavigator.global_settings.option_alias.title": "Bahnhof Tags",
-    "gui.createrailwaysnavigator.global_settings.option_alias.description": "Erstelle Tags, um mehrere Stationen (z.B. MyStation 1, MyStation 2, ...) als einen Bahnhof (z.B. MyStation) zu behandeln.",
+    "gui.createrailwaysnavigator.global_settings.option_alias.description": "Fasse einzelne Bahnhöfe zu einem einzigen Bahnhof mit mehreren Bahnsteigen und eigenem Namen zusammen, damit der Navigator Umsteigemöglichkeiten etc. vorschlagen kann.",
     "gui.createrailwaysnavigator.global_settings.option_blacklist.title": "Bahnhof Blacklist",
     "gui.createrailwaysnavigator.global_settings.option_blacklist.description": "Schließe Stationen aus, die nicht in den Navigtionsergebnissen erscheinen sollen. Diese Stationen werden bei der Suche ignoriert.",
     "gui.createrailwaysnavigator.global_settings.train_group.title": "Zugkategorien",
