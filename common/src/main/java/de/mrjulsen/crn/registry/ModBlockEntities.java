@@ -17,7 +17,8 @@ public class ModBlockEntities {
 			ModBlocks.ADVANCED_DISPLAY_PANEL,
 			ModBlocks.ADVANCED_DISPLAY_HALF_PANEL,
 			ModBlocks.ADVANCED_DISPLAY_SMALL,
-			ModBlocks.ADVANCED_DISPLAY_SLOPED
+			ModBlocks.ADVANCED_DISPLAY_SLOPED,
+			ModBlocks.ADVANCED_DISPLAY_SLAB
 		)
 		.renderer(() -> StaticBlockEntityRenderer::new)
 		.register();
