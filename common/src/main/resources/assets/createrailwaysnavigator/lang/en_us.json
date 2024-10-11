@@ -29,14 +29,17 @@
     "block.createrailwaysnavigator.advanced_display_half_panel": "Half Advanced Display Panel",
 	"block.createrailwaysnavigator.advanced_display_half_panel.tooltip.summary": "Use it on _trains_, as a _train destination display_ or _passenger information display_, or at _train stations_ as improved _platform displays_ which also shows more information than regular display boards.",
     "block.createrailwaysnavigator.advanced_display_half_panel.tooltip.condition1": "When R-Clicked using a Wrench",
-	"block.createrailwaysnavigator.advanced_display_half_panel.tooltip.behaviour1": "Open a menu to _configure_ the _display_.",  
+	"block.createrailwaysnavigator.advanced_display_half_panel.tooltip.behaviour1": "Open a menu to _configure_ the _display_.",
     "block.createrailwaysnavigator.advanced_display_sloped": "Sloped Advanced Display",
 	"block.createrailwaysnavigator.advanced_display_sloped.tooltip.summary": "Use it on _trains_, as a _train destination display_ or _passenger information display_, or at _train stations_ as improved _platform displays_ which also shows more information than regular display boards.",
     "block.createrailwaysnavigator.advanced_display_sloped.tooltip.condition1": "When R-Clicked using a Wrench",
 	"block.createrailwaysnavigator.advanced_display_sloped.tooltip.behaviour1": "Open a menu to _configure_ the _display_.",
+    "block.createrailwaysnavigator.advanced_display_slab": "Advanced Display Slab",
+	"block.createrailwaysnavigator.advanced_display_slab.tooltip.summary": "Use it on _trains_, as a _train destination display_ or _passenger information display_, or at _train stations_ as improved _platform displays_ which also shows more information than regular display boards.",
+    "block.createrailwaysnavigator.advanced_display_slab.tooltip.condition1": "When R-Clicked using a Wrench",
+	"block.createrailwaysnavigator.advanced_display_slab.tooltip.behaviour1": "Open a menu to _configure_ the _display_.",
 
     "block.createrailwaysnavigator.advanced_display.ber.not_in_service": "Out of service!",
-    "block.createrailwaysnavigator.advanced_display.ber.shunting_trip": "non-passenger ride",
 
     "category.createrailwaysnavigator.crn": "Create Railways Navigator",
     "key.createrailwaysnavigator.route_overlay_options": "Show Route Overlay Options",
@@ -73,6 +76,9 @@
     "gui.createrailwaysnavigator.common.search": "Search",
     "gui.createrailwaysnavigator.common.auto": "Auto",
     "gui.createrailwaysnavigator.common.server_error": "Server error while executing task. Look console for details.",
+    "gui.createrailwaysnavigator.common.delete": "Delete",
+    "gui.createrailwaysnavigator.common.add": "Add",
+    "gui.createrailwaysnavigator.common.help": "Get Help",
     
     "gui.createrailwaysnavigator.navigator.title": "Create Railways Navigator",
     "gui.createrailwaysnavigator.navigator.no_connections": "No connections found.",
@@ -88,6 +94,7 @@
     "gui.createrailwaysnavigator.navigator.search_settings.tooltip": "Search Settings",
     "gui.createrailwaysnavigator.navigator.search.tooltip": "Search",
     "gui.createrailwaysnavigator.navigator.location.tooltip": "Nearest station from current position",
+    "gui.createrailwaysnavigator.navigator.refresh.tooltip": "Refresh",
     "gui.createrailwaysnavigator.navigator.switch.tooltip": "Switch fields",
 
     "gui.createrailwaysnavigator.route_details.title": "Route Details",
@@ -149,17 +156,16 @@
     "gui.createrailwaysnavigator.global_settings.train_blacklist.title": "Train Blacklist",
     "gui.createrailwaysnavigator.global_settings.train_blacklist.description": "Exclude trains, e.g. freight trains, special trains, etc., so that they are not used in the route suggestions.",
 
-    "gui.createrailwaysnavigator.alias_settings.title": "Train Station Tag Settings",
-    "gui.createrailwaysnavigator.alias_settings.summary": "Contains %s Train Stations",
-    "gui.createrailwaysnavigator.alias_settings.editor": "Last edited by %s on %s",
-    "gui.createrailwaysnavigator.alias_settings.add.tooltip": "Create new Entry",
-    "gui.createrailwaysnavigator.alias_settings.delete_alias.tooltip": "Delete Tag",
-    "gui.createrailwaysnavigator.alias_settings.delete_station.tooltip": "Remove Station",
-    "gui.createrailwaysnavigator.alias_settings.modify_platform.tooltip": "Click to change",
-    "gui.createrailwaysnavigator.alias_settings.add_station.tooltip": "Add Station",
-    "gui.createrailwaysnavigator.alias_settings.hint.station_name": "Train Station Name",
-    "gui.createrailwaysnavigator.alias_settings.hint.platform": "Platform Label",
-    "gui.createrailwaysnavigator.alias_settings.enter_name": "Enter name here",
+    "gui.createrailwaysnavigator.station_tags.summary": "Contains %s Train Stations",
+    "gui.createrailwaysnavigator.station_tags.editor": "Last edited by %s on %s",
+    "gui.createrailwaysnavigator.station_tags.add.tooltip": "Create new Entry",
+    "gui.createrailwaysnavigator.station_tags.delete_alias.tooltip": "Delete Tag",
+    "gui.createrailwaysnavigator.station_tags.delete_station.tooltip": "Remove Station",
+    "gui.createrailwaysnavigator.station_tags.modify_platform.tooltip": "Click to change",
+    "gui.createrailwaysnavigator.station_tags.add_station.tooltip": "Add Station",
+    "gui.createrailwaysnavigator.station_tags.hint.station_name": "Train Station Name",
+    "gui.createrailwaysnavigator.station_tags.hint.platform": "Platform Label",
+    "gui.createrailwaysnavigator.station_tags.enter_name": "Enter name here",
     
     "gui.createrailwaysnavigator.train_group_settings.title": "Train Group Settings",
     "gui.createrailwaysnavigator.train_group_settings.summary": "Contains %s Trains",
@@ -249,16 +255,9 @@
     "gui.createrailwaysnavigator.section_settings.title": "Section Settings",
     "gui.createrailwaysnavigator.section_settings.train_groups": "Assign Train Group",
     "gui.createrailwaysnavigator.section_settings.train_lines": "Assign Train Line",
-    "gui.createrailwaysnavigator.section_settings.include_previous_station": "Include previous station",
+    "gui.createrailwaysnavigator.section_settings.include_previous_station": "Include start of next section",
     "gui.createrailwaysnavigator.section_settings.usable": "Navigable",
     "gui.createrailwaysnavigator.section_settings.none": "(None)",
-
-    "createrailwaysnavigator.schedule.instruction.terminus.summary": "Train Destination",
-    "createrailwaysnavigator.schedule.instruction.terminus": "Update Train Destination",
-    "createrailwaysnavigator.schedule.instruction.new_cycle.summary": "Reset Timings",
-    "createrailwaysnavigator.schedule.instruction.new_cycle.title": "Reset Timings",
-    "createrailwaysnavigator.schedule.instruction.new_cycle.description": "Updates scheduled departure times to current real-time train data.",
-    "createrailwaysnavigator.schedule.instruction.new_cycle": "Reset Timings",
 
     "createrailwaysnavigator.schedule.condition.dynamic_delay": "Dynamic Delay",
     "createrailwaysnavigator.schedule.condition.dynamic_delay.min_duration": "Minimum Duration",
@@ -270,7 +269,7 @@
     "createrailwaysnavigator.schedule.instruction.travel_section.configure": "Configure...",
     "createrailwaysnavigator.schedule.instruction.travel_section.train_group": " - Set Train Group: ",
     "createrailwaysnavigator.schedule.instruction.travel_section.train_line": " - Set Train Line: ",
-    "createrailwaysnavigator.schedule.instruction.travel_section.include_previous_station": " - Include previous station: ",
+    "createrailwaysnavigator.schedule.instruction.travel_section.include_previous_station": " - Include start of next section: ",
     "createrailwaysnavigator.schedule.instruction.travel_section.usable": " - Navigable: ",
 
     "createrailwaysnavigator.schedule.instruction.reset_timings": "Reset Timings",
@@ -345,8 +344,8 @@
     "gui.createrailwaysnavigator.navigator.my_profile": "My Profile",
     "gui.createrailwaysnavigator.navigator.train_initialization_warning": "Some routes may be incomplete or not suggested at all because Create Railways Navigator has not initialized all trains yet.",
     "gui.createrailwaysnavigator.global_settings.train_line.title": "Train Lines",
+    "gui.createrailwaysnavigator.global_settings.train_line.color": "Select Color",
     "gui.createrailwaysnavigator.global_settings.train_line.description": "Create train lines to group different trains together, overwrite their display name and adjust other settings for each line. (Can only be assigned to the trains in the schedule)",
-
 
     "createrailwaysnavigator.moin": "moin"
 }
