@@ -1,5 +1,5 @@
 # 🚅 Create Railways Navigator (Minecraft Create Mod Addon)
-![Logo](https://github.com/MisterJulsen/Create-Train-Navigator/blob/1.18.2/icon_256px.png)
+![Logo](https://github.com/user-attachments/assets/2ee05cf6-c816-4dd7-8c24-6bb05062758e)
 
 Get a list possible train connections in your world from one station to another using the Create Railways Navigator.
 
