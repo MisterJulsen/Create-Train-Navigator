@@ -116,7 +116,7 @@ public class TrainData implements IListenable<TrainData> {
     private boolean destinationChanged;
     
     /* PLEASE NOTE!
-     * Chronological updating order (once all ~5 seconds):
+     * Chronologically update order (once every ~5 seconds):
      *  refreshPre()           (once)
      *  setPredictionData()    (x times)
      *  refreshPost()          (once)
@@ -394,13 +394,6 @@ public class TrainData implements IListenable<TrainData> {
         sectionChanged = true;
         lastSectionDelayOffset = Math.max(0, getHighestDeviation());
         this.refreshTimingsCounter++;
-
-        if (!isDynamic() || (ModCommonConfig.AUTO_RESET_TIMINGS.get() > 0 && refreshTimingsCounter >= ModCommonConfig.AUTO_RESET_TIMINGS.get())) {
-            resetPredictions();
-        } else {            
-            resetStatus(true);
-        }
-        notifyListeners(EVENT_SECTION_CHANGED, this);
     }
 
     private void clearAll() {      
@@ -469,8 +462,6 @@ public class TrainData implements IListenable<TrainData> {
             destinationChanged = false;
             notifyListeners(EVENT_DESTINATION_CHANGED, this);
         }
-
-        sectionChanged = false;
 
         if (initializationFinishTask) {
             initializationFinishTask = false;
@@ -544,6 +535,16 @@ public class TrainData implements IListenable<TrainData> {
         if (!initializationCompleted && isInitialized()) {
             initializationCompleted = true;
             initializationFinishTask = true;
+        }        
+
+        if (sectionChanged) {            
+            sectionChanged = false;
+            if (!isDynamic() || (ModCommonConfig.AUTO_RESET_TIMINGS.get() > 0 && refreshTimingsCounter >= ModCommonConfig.AUTO_RESET_TIMINGS.get())) {
+                resetPredictions();
+            } else {
+                resetStatus(true);
+            }
+            notifyListeners(EVENT_SECTION_CHANGED, this);
         }
 
         notifyListeners(EVENT_STATION_REACHED, this);

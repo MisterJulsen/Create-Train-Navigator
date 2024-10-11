@@ -10,7 +10,9 @@ import com.google.common.collect.ImmutableSet;
 import de.mrjulsen.crn.data.StationTag;
 import de.mrjulsen.crn.data.UserSettings;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
+import de.mrjulsen.crn.data.train.TrainData;
 import de.mrjulsen.crn.data.train.TrainStop;
+import de.mrjulsen.crn.data.train.TrainTravelSection;
 import de.mrjulsen.crn.data.train.TrainStatus.CompiledTrainStatus;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.data.Pair;
@@ -33,16 +35,29 @@ public class RoutePart implements Comparable<RoutePart> {
     protected final Set<CompiledTrainStatus> status = new HashSet<>();
 
     public static RoutePart get(UUID sessionId, TrainSchedule schedule, StationTag from, StationTag to, UserSettings settings) {
-        List<TrainStop> stops = getBetween(schedule, from, to, settings).stream().findFirst().orElse(List.of());
+        List<TrainStop> stops = getBetween(schedule, from, to, settings).stream().filter(x -> !x.isEmpty() && x.stream().limit(x.size() - 1).allMatch(y -> y.getSectionIndex() == x.get(0).getSectionIndex())).findFirst().orElse(List.of());
         List<TrainStop> entireJourney = List.of();
         if (stops.isEmpty()) {
             return null;
         } else {
             TrainStop firstStop = stops.get(0);
-            TrainStop lastStop = stops.get(stops.size() - 1);
-            entireJourney = TrainSchedule.ofSectionForIndex(sessionId, schedule.getTrain(), lastStop.getScheduleIndex(), firstStop.getScheduleIndex(), firstStop.getSimulationTime()).getAllStops();
+            entireJourney = TrainSchedule.ofSectionForIndex(sessionId, schedule.getTrain(), firstStop.getScheduleIndex(), firstStop.getScheduleIndex(), firstStop.getSimulationTime()).getAllStops();
         }
         return new RoutePart(sessionId, schedule.getTrain().id, stops, entireJourney);
+    }
+
+    public static boolean validate(RoutePart part, TrainData trainData) {
+        if (part == null || part.isEmpty()) {
+            return false;
+        }
+        int startSectionIndex = part.getFirstStop().getSectionIndex();
+        int endSectionIndex = part.getLastStop().getSectionIndex();
+        TrainTravelSection startSection = trainData.getSectionByIndex(startSectionIndex);
+        TrainTravelSection endSection = trainData.getSectionByIndex(endSectionIndex);
+        if (startSectionIndex != endSectionIndex && !(endSection.isFirstStop(part.getLastStop().getScheduleIndex()) && endSection.previousSection() == startSection && startSection.shouldIncludeNextStationOfNextSection() && startSection.isUsable())) {
+            return false;
+        }
+        return true;
     }
 
     public RoutePart(UUID sessionId, TrainSchedule schedule) {

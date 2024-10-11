@@ -13,12 +13,15 @@ public class EdgeData implements Comparable<EdgeData> {
     // Calc
     private long cost = -1;
 
-    public EdgeData(Node node1, Node node2, TrainPrediction prediction) {
+    protected EdgeData(Node node1, Node node2, TrainPrediction prediction, long cost) {
         this.prediction = prediction;
         this.node1 = node1;
         this.node2 = node2;
+        this.cost = cost;
+    }
 
-        this.cost = prediction.getLastTransitTime();
+    public EdgeData(Node node1, Node node2, TrainPrediction prediction) {
+        this(node1, node2, prediction, prediction.getLastTransitTime());
     }
 
     public Node getFirstNode() {
@@ -34,7 +37,7 @@ public class EdgeData implements Comparable<EdgeData> {
     }
 
     public boolean connected(EdgeData other) {
-        return getTrainId().equals(other.getTrainId()) && getSectionIndex() == other.getSectionIndex();
+        return getTrainId().equals(other.getTrainId()) && (getSectionIndex() == other.getSectionIndex());
     }
 
     public int getSectionIndex() {
@@ -47,6 +50,10 @@ public class EdgeData implements Comparable<EdgeData> {
 
     public long getCost() {
         return cost;
+    }
+
+    public EdgeData invert() {
+        return new EdgeData(node2, node1, prediction);
     }
 
     @Override

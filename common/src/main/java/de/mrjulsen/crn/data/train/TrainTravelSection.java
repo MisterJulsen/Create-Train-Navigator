@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.client.lang.ELanguage;
 import de.mrjulsen.crn.data.StationTag;
 import de.mrjulsen.crn.data.TrainGroup;
 import de.mrjulsen.crn.data.TrainLine;
@@ -95,7 +96,7 @@ public class TrainTravelSection {
         return scheduleIndex;
     }
 
-    public boolean shouldIncludeLastStationOfLastSection() {
+    public boolean shouldIncludeNextStationOfNextSection() {
         return includeLastStationOfLastSection;
     }
     
@@ -141,20 +142,15 @@ public class TrainTravelSection {
         for (int i = 0; i < count * 2; i++) {
             final int j = (startIndex + i) % count;
             if (i != 0 && j == stopIndex) {
-                if (!ignoreIncludeLastStationRule && shouldIncludeLastStationOfLastSection()) {
+                if (!ignoreIncludeLastStationRule && shouldIncludeNextStationOfNextSection()) {
                     endReached = true;
                 } else return result;
-            }
-            if (endReached && j == startIndex) {
-                break;
             }
             customStartFound = customStartFound || startingAtIndex < 0 || j == startingAtIndex;
             if (!predictions.containsKey(j) || !customStartFound) continue;
             pred = predictions.get(j);
-            if (!endReached) result.add(pred);            
-        }
-        if (endReached && pred != null) {
-            result.add(0, pred);
+            result.add(pred);
+            if (endReached) break;
         }
         return result;
     }
@@ -198,7 +194,7 @@ public class TrainTravelSection {
     public List<String> getStopoversFrom(int startIndex) {
         List<String> predictions = new ArrayList<>();
         boolean startFound = false;
-        for (int i = 1; i < this.predictions.get().size() - 1; i++) {
+        for (int i = 0; i < this.predictions.get().size() - 1; i++) {
             TrainPrediction prediction = this.predictions.get().get(i);
             boolean wasStartFound = startFound;
             if (prediction.getEntryIndex() == startIndex) startFound = true;
@@ -218,6 +214,21 @@ public class TrainTravelSection {
         return pred.isPresent() && pred.get() == prediction;
     }
 
+    public boolean isFirstStop(TrainPrediction prediction) {
+        Optional<TrainPrediction> pred = getFirstStop();
+        return pred.isPresent() && pred.get() == prediction;
+    }
+
+    public boolean isFinalStop(int scheduleIndex) {
+        Optional<TrainPrediction> pred = getFinalStop();
+        return pred.isPresent() && pred.get().getEntryIndex() == scheduleIndex;
+    }
+
+    public boolean isFirstStop(int scheduleIndex) {
+        Optional<TrainPrediction> pred = getFirstStop();
+        return pred.isPresent() && pred.get().getEntryIndex() == scheduleIndex;
+    }
+
     public Optional<TrainPrediction> getFirstStop() {
         List<TrainPrediction> predictions = this.predictions.get();
         return predictions.isEmpty() ? Optional.empty() : Optional.ofNullable(predictions.get(0));
@@ -230,13 +241,13 @@ public class TrainTravelSection {
 
     public String getDisplayText() {
         if (!isUsable()) {
-            return TextUtils.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.not_in_service").getString();
+            return ELanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.not_in_service").getString();
         }        
         return getFinalStop().map(x -> GlobalSettings.getInstance().getOrCreateStationTagFor(x.getStationName()).getTagName().get()).orElse("?");
     }
 
     public String getDisplayTextStart() {
-        return !isUsable() ? TextUtils.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.not_in_service").getString() : getFirstStop().map(x -> GlobalSettings.getInstance().getOrCreateStationTagFor(x.getStationName()).getTagName().get()).orElse("?");
+        return !isUsable() ? ELanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.not_in_service").getString() : getFirstStop().map(x -> GlobalSettings.getInstance().getOrCreateStationTagFor(x.getStationName()).getTagName().get()).orElse("?");
     }
 
     public String getStartStationName() {

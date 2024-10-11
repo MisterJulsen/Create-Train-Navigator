@@ -14,6 +14,7 @@ public class ModCommonConfig {
     public static final ForgeConfigSpec.ConfigValue<Integer> TRANSFER_COST;
     public static final ForgeConfigSpec.ConfigValue<Integer> TOTAL_DURATION_DEVIATION_THRESHOLD;
     public static final ForgeConfigSpec.ConfigValue<Boolean> CUSTOM_TRANSIT_TIME_CALCULATION;
+    public static final ForgeConfigSpec.ConfigValue<Boolean> EXCLUDE_TRAINS;
 
     static {
         BUILDER.push(CreateRailwaysNavigator.MOD_ID + "_common_config");
@@ -23,6 +24,8 @@ public class ModCommonConfig {
         
 
 
+        EXCLUDE_TRAINS = BUILDER.comment("If activated, used trains are excluded from the route search for all following route parts. This prevents the same train from being suggested multiple times in the same route and forces the navigator to use other trains instead. Normally, however, there are no problems, so this option can be left off if in doubt. (Default: OFF)")
+            .define("navigation.exclude_trains", false);
         TRANSFER_COST = BUILDER.comment("How much transfers should be avoided. Higher values try to use fewer transfers, even if this increases the travel time. (Default: 5000)")
             .defineInRange("navigation.transfer_cost", 10000, 1000, Integer.MAX_VALUE);
 

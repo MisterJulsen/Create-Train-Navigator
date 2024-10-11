@@ -1,6 +1,5 @@
 package de.mrjulsen.crn.data.navigation;
 
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -19,8 +18,10 @@ public class Node implements Comparable<Node> {
     // Dijkstra
     private long cost = Long.MAX_VALUE;
     private Node previousNode = null;
+    private Node nextNode = null;
     //private EdgeData previousEdge = null;
     private final Set<EdgeConnection> connections = new HashSet<>();
+    private final Set<EdgeConnection> nextConnections = new HashSet<>();
     private final Map<Node, EdgeConnection> preferredConnectionForNode = new HashMap<>();
 
     private boolean isTransferPoint = false;
@@ -74,6 +75,17 @@ public class Node implements Comparable<Node> {
 
     public void setPreviousNode(Node previousNode) {
         this.previousNode = previousNode;
+    }
+
+    public void setNextNode(Node nextNode) {
+        this.nextNode = nextNode;
+        nextNode.getConnections().stream().filter(x -> x.target() == this).forEach(x -> {            
+            nextConnections.add(new EdgeConnection(nextNode, x.edge().invert()));
+        });
+    }
+
+    public Node getNextNode() {
+        return nextNode;
     }
 
     public boolean isTransferPoint() {
@@ -142,30 +154,12 @@ public class Node implements Comparable<Node> {
     }
 
 
-
     public Set<EdgeConnection> getConnections() {
         return connections;
     }
 
-    public EdgeConnection getDeepestConnection() {
-        return connections.stream().peek(x -> {
-            x.depth = startDepthTest(x.edge());
-        }).max(Comparator.comparingInt(EdgeConnection::getDepth)).orElse(null);
-    }
-
-    public int startDepthTest(EdgeData ref) {
-        return depthTest(this, ref);
-    }
-
-    // How long this train can be kept
-    public static int depthTest(Node node, EdgeData ref) {
-        if (node.getPreviousNode() == null || !node.hasConnections()) {
-            return 0;
-        }
-        if (node.getPreviousNode().connections.stream().noneMatch(x -> x.edge().connected(ref))) {
-            return 0;
-        }
-        return depthTest(node.getPreviousNode(), ref) + 1;
+    public Set<EdgeConnection> getNextConnections() {
+        return nextConnections;
     }
 
 
@@ -173,7 +167,6 @@ public class Node implements Comparable<Node> {
 
         private final Node target;
         private final EdgeData edge;
-        private int depth = 0;
 
         public EdgeConnection(Node target, EdgeData edge) {
             this.target = target;
@@ -186,10 +179,6 @@ public class Node implements Comparable<Node> {
 
         public EdgeData edge() {
             return edge;
-        }
-
-        public int getDepth() {
-            return depth;
         }
     }
 

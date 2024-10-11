@@ -133,6 +133,13 @@ public final class TrainUtils {
         Set<UUID> usedTrains = new HashSet<>();
         usedTrains.add(selfTrain);
         for (TrainStop stop : list) {
+            if (!TrainListener.data.containsKey(stop.getTrainId())) continue;
+            TrainData data = TrainListener.data.get(stop.getTrainId());
+            TrainTravelSection section = data.getSectionByIndex(stop.getSectionIndex());
+            if (!section.isUsable() && !(section.isFirstStop(stop.getScheduleIndex()) && section.previousSection().isUsable() && section.previousSection().shouldIncludeNextStationOfNextSection())) {
+                continue;
+            }
+            
             if (!usedTrains.contains(stop.getTrainId())) {
                 usedTrains.add(stop.getTrainId());
                 results.add(stop);

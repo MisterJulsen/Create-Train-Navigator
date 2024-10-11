@@ -57,13 +57,18 @@ public class StationDisplayData {
         }
         TrainData data = TrainListener.data.get(stop.getTrainId());
         TrainTravelSection section = data.getSectionByIndex(stop.getSectionIndex());
+        TrainTravelSection previousSection = section.previousSection();
         String firstStop = section.getFirstStop().isPresent() ? section.getFirstStop().get().getStationTag().getTagName().get() : "";
-        boolean isLastStopOfSection = section.getFinalStop().isPresent() && section.getFinalStop().get().getEntryIndex() == stop.getScheduleIndex();
+        boolean isLastStopOfSection = section.getFinalStop().isPresent() && (previousSection.shouldIncludeNextStationOfNextSection() && previousSection.getFinalStop().isPresent() ? previousSection.getFinalStop().get() : section.getFinalStop().get()).getEntryIndex() == stop.getScheduleIndex();
         if (isLastStopOfSection) {
-            TrainTravelSection nextSection = section.nextSection();
-            if (nextSection.shouldIncludeLastStationOfLastSection() && nextSection.getFirstStop().isPresent() && nextSection.getFirstStop().get().getEntryIndex() == stop.getScheduleIndex()) {
-                section = nextSection;
-                isLastStopOfSection = !(data.isWaitingAtStation() && data.getCurrentScheduleIndex() == stop.getScheduleIndex());
+            if (previousSection.shouldIncludeNextStationOfNextSection() && previousSection.getFinalStop().isPresent() && previousSection.getFinalStop().get().getEntryIndex() == stop.getScheduleIndex()) {
+                firstStop = previousSection.getFirstStop().isPresent() ? previousSection.getFirstStop().get().getStationTag().getTagName().get() : "";
+                if ((data.isWaitingAtStation() && data.getCurrentScheduleIndex() == stop.getScheduleIndex()) || !previousSection.isUsable()) {
+                    isLastStopOfSection = false; 
+                }
+                if (!section.isUsable()) {
+                    isLastStopOfSection = true;
+                }
             }
         }
         return new StationDisplayData(
@@ -71,7 +76,7 @@ public class StationDisplayData {
             TrainStopDisplayData.of(stop),
             firstStop,
             isLastStopOfSection,
-            isLastStopOfSection && section.nextSection().isUsable() ? section.nextSection().getStopoversFrom(stop.getScheduleIndex()) : section.getStopoversFrom(stop.getScheduleIndex())
+            section.getStopoversFrom(stop.getScheduleIndex())
         );
     }
 

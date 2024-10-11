@@ -1,6 +1,7 @@
 package de.mrjulsen.crn.data.navigation;
 
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
@@ -23,6 +25,7 @@ import de.mrjulsen.crn.data.storage.GlobalSettings;
 import de.mrjulsen.crn.data.train.TrainData;
 import de.mrjulsen.crn.data.train.TrainListener;
 import de.mrjulsen.crn.data.train.TrainPrediction;
+import de.mrjulsen.crn.data.train.TrainTravelSection;
 import de.mrjulsen.crn.data.train.TrainUtils;
 import de.mrjulsen.crn.event.ModCommonEvents;
 import de.mrjulsen.crn.data.navigation.Node.EdgeConnection;
@@ -37,8 +40,6 @@ import de.mrjulsen.mcdragonlib.data.Single.MutableSingle;
  */ 
 
 public class NavigatableGraph {
-
-    private static boolean useExclusion = false;
 
     protected final UserSettings userSettings;
 
@@ -77,7 +78,7 @@ public class NavigatableGraph {
     }
 
     protected void addTrain(Train train, TrainData data) {
-        List<TrainPrediction> predictions = data.getPredictions();
+        Deque<TrainPrediction> predictions = new ConcurrentLinkedDeque<>(data.getPredictions());
         boolean singleSection = data.isSingleSection();
         if (predictions.isEmpty()) {
             return;
@@ -88,14 +89,22 @@ public class NavigatableGraph {
 
         TrainPrediction lastPrediction = null; // The last prediction in the list
         boolean nothingFound = true;
-        for (int i = predictions.size() - 1; i >= 0; i--) {
-            if (globalSettings().isStationBlacklisted(predictions.get(i).getStationName())) {
+        boolean stationsRemoved = false;
+        while (!predictions.isEmpty()) {
+            TrainPrediction prediction = predictions.peekLast();
+            TrainTravelSection section = prediction.getSection();
+            if ((globalSettings().isStationBlacklisted(prediction.getStationName())) ||
+                (!section.isUsable() && (!section.isFirstStop(prediction) || !section.previousSection().isUsable() || !section.previousSection().shouldIncludeNextStationOfNextSection()))
+            ) {
+                predictions.removeLast();
+                stationsRemoved = true;
                 continue;
             }
+            
             nothingFound = false;
-            lastPrediction = predictions.get(i);
+            lastPrediction = prediction;
             break;
-        }        
+        }
         if (nothingFound || lastPrediction == null) {
             return;
         }
@@ -104,14 +113,14 @@ public class NavigatableGraph {
         TrainPrediction lastTrainPrediction = lastPrediction;
         if (CreateRailwaysNavigator.isDebug()) sb.append(lastTrainPrediction.getStationTag().getTagName().get());
         boolean noEdgePossible = false;
-        for (int i = 0; i < data.getPredictions().size(); i++) {
-            TrainPrediction prediction = data.getPredictions().get(i);
+        while (!predictions.isEmpty()) {
+            TrainPrediction prediction = predictions.poll();
             if (!isPredictionAllowed(prediction)) {
                 noEdgePossible = true;
                 continue;
             }
             Node node = addNode(prediction);
-            if ((!noEdgePossible && lastTrainPrediction.getSection().getScheduleIndex() == prediction.getSection().getScheduleIndex()) || prediction.getSection().shouldIncludeLastStationOfLastSection()) {
+            if ((!noEdgePossible && !stationsRemoved && lastTrainPrediction.getSection().getScheduleIndex() == prediction.getSection().getScheduleIndex()) || lastTrainPrediction.getSection().shouldIncludeNextStationOfNextSection()) {
                 addEdge(lastNode, node, prediction);
                 if (CreateRailwaysNavigator.isDebug()) sb.append(" ----- ");
             } else {
@@ -120,13 +129,16 @@ public class NavigatableGraph {
             lastNode = node;
             lastTrainPrediction = prediction;
             noEdgePossible = false;
+            stationsRemoved = false;
             if (CreateRailwaysNavigator.isDebug()) sb.append(prediction.getStationTag().getTagName().get());
         }
         if (CreateRailwaysNavigator.isDebug()) CreateRailwaysNavigator.LOGGER.info(sb.toString());
     }
 
     protected boolean isPredictionAllowed(TrainPrediction prediction) {
-        return !globalSettings().isStationBlacklisted(prediction.getStationName()) && (prediction.getSection().getTrainGroup() == null || !userSettings.navigationExcludedTrainGroups.getValue().contains(prediction.getSection().getTrainGroup().getGroupName())) && prediction.getSection().isUsable();
+        TrainTravelSection section = prediction.getSection();
+        boolean usable = section.isUsable() || (section.isFirstStop(prediction) && section.previousSection().isUsable() && section.previousSection().shouldIncludeNextStationOfNextSection());
+        return !globalSettings().isStationBlacklisted(prediction.getStationName()) && (prediction.getSection().getTrainGroup() == null || !userSettings.navigationExcludedTrainGroups.getValue().contains(prediction.getSection().getTrainGroup().getGroupName())) && usable;
     }
 
     protected Node addNode(TrainPrediction prediction) {
@@ -169,10 +181,8 @@ public class NavigatableGraph {
 
                         EdgeConnection connection = currentNode.selectBestConnectionFor(targetNode, viaEdge);
                         boolean isTransfer = connection != null && !connection.edge().connected(viaEdge);
-
-                        //TrainSchedule sched = schedulesById.get(edge.getScheduleId());
-                        //int avgTransferTime = (int)trainIdsBySchedule.get(sched).stream().mapToInt(a -> TrainListener.getInstance().getApproximatedTrainDuration(a)).average().getAsDouble();
-                        // TODO: Evtl die kürzeste Umstiegszeit (also Kosten für den Umstieg) berechnen lassen aunahnd der aktuellen Verkehrslage
+                        
+                        // TODO: Evtl die kürzeste Umstiegszeit (also Kosten für den Umstieg) berechnen lassen anhand der aktuellen Verkehrslage
 
                         long newCost = currentNode.getCost() + viaEdge.getCost() + (isTransfer && avoidTransfers ? ModCommonConfig.TRANSFER_COST.get() : 0);
                         targetNode.setConnection(currentNode, viaEdge, newCost);
@@ -187,52 +197,65 @@ public class NavigatableGraph {
         return excludedNodes;
     }
 
+    protected Node dijkstraProcessor(Map<StationTag, Node> nodes, StationTag start, StationTag end) {
+        if (nodes.size() <= 1 || !nodes.containsKey(end) || !nodes.containsKey(start)) {
+            return null;
+        }
+        
+        Node currentNode = nodes.get(end);
+        while (!currentNode.getStationTag().equals(start)) {
+            Node prevNode = currentNode.getPreviousNode();
+            if (prevNode == null || currentNode == prevNode) break;
+            prevNode.setNextNode(currentNode);
+            currentNode = prevNode;
+        }
+        return currentNode;
+    }
+
     public List<Node> searchRoute(StationTag start, StationTag end, boolean avoidTransfers) {        
         if (!nodesByTag.containsKey(start) || !nodesByTag.containsKey(end)) {
             return List.of();
         }
 
-        Map<StationTag, Node> nodes = dijkstra(start, avoidTransfers);
-        Node endNode = nodes.get(end);
-        if (endNode == null) {
+        Node startNode = dijkstraProcessor(dijkstra(start, avoidTransfers), start, end);
+        
+        if (CreateRailwaysNavigator.isDebug()) {            
+            StringBuilder sb = new StringBuilder("Dijkstra Nodes: ");
+            Node node = startNode;
+            while (node != null) {
+                sb.append(node.getStationTag().getTagName().get() + " > ");
+                node = node.getNextNode();
+            }
+            CreateRailwaysNavigator.LOGGER.info(sb.toString());
+        }
+
+        if (startNode == null) {
             return List.of();
         }
-        endNode.setTransferPoint(true);
+        startNode.setTransferPoint(true);
 
         List<Node> route = new ArrayList<>();
-        Node currentNode = endNode;
-        while (!currentNode.getStationTag().equals(start)) {
-            route.add(0, currentNode);
-            //final EdgeConnection connection = currentNode.getDeepestConnection();
-            MutableSingle<Node> prevNode = new MutableSingle<Node>(currentNode.getPreviousNode());
-            List<EdgeConnection> connections = new ArrayList<>(currentNode.getConnections().stream().filter(x -> x.edge().getFirstNode().equals(prevNode.getFirst())).toList());
-            while (prevNode.getFirst() != null && connections != null) {
-                Node pNode = prevNode.getFirst().getPreviousNode();
+        Node currentNode = startNode;
+        while (!currentNode.getStationTag().equals(end)) {
+            route.add(currentNode);
+            MutableSingle<Node> nextNode = new MutableSingle<Node>(currentNode.getNextNode());
+            List<EdgeConnection> connections = new ArrayList<>(currentNode.getNextConnections().stream().filter(x -> x.edge().getSecondNode().equals(nextNode.getFirst())).toList());
+            while (nextNode.getFirst() != null && connections != null && !connections.isEmpty()) {
+                Node pNode = nextNode.getFirst().getNextNode();
                 if (pNode == null) {
                     break;
                 }
-                List<EdgeConnection> pConnections = prevNode.getFirst().getConnections().stream().filter(x -> x.edge().getFirstNode().equals(pNode)).toList();
+                List<EdgeConnection> pConnections = nextNode.getFirst().getNextConnections().stream().filter(x -> x.edge().getSecondNode().equals(pNode)).toList();
                 connections.removeIf(x -> pConnections.stream().noneMatch(y -> x.edge().connected(y.edge())));
                 if (connections.isEmpty()) break;
-                prevNode.setFirst(pNode);
+                nextNode.setFirst(pNode);
             }
 
-
-            /*
-
-            while (prevNode != null && currentNode.getConnections().stream().anyMatch(x -> x.edge().connected(connection.edge()))) {
-                prevNode = currentNode.getPreviousNode();
-            }
-            /*
-            while (currentNode.getPreviousNode() != null && currentNode.getConnections().stream().anyMatch(x -> x.edge().connected(connection.edge()))) {
-                currentNode = currentNode.getPreviousNode();
-            }
-                */
-            currentNode = prevNode.getFirst();
+            currentNode = nextNode.getFirst();
             currentNode.setTransferPoint(true);
         }
-        currentNode.getPreviousNode().setTransferPoint(true);
-        route.add(0, currentNode.getPreviousNode());
+        currentNode.setTransferPoint(true);
+        route.add(currentNode);
 
         return route;
     }
@@ -268,6 +291,7 @@ public class NavigatableGraph {
 
         Set<UUID> excludedTrainIds = new HashSet<>();
         List<Train> departingTrains = TrainUtils.getDepartingTrainsAt(start.getStationTag()).stream().filter(train -> 
+            TrainListener.data.containsKey(train.id) &&
             TrainUtils.isTrainUsable(train) &&
             !excludedTrainIds.contains(train.id) &&
             !globalSettings().isTrainBlacklisted(train) &&
@@ -279,18 +303,19 @@ public class NavigatableGraph {
         List<Route> routes = new ArrayList<>();
 
         for (Train train : departingTrains) {
+            TrainData trainData = TrainListener.data.get(train.id);
             int simulationTime = userSettings.navigationDepartureInTicks.getValue();
             Queue<Node> tempTransferNodes = new ConcurrentLinkedQueue<>(transferNodes);
             Node tempEnd = end;
 
             RoutePart part = RoutePart.get(schedules.get(train.id).getSessionId(), schedules.get(train.id).simulate(simulationTime), start.getStationTag(), end.getStationTag(), userSettings);  
-            if (part == null || part.isEmpty() || part.getAllStops().get(Math.min(1, part.getAllStops().size() - 1)).getSectionIndex() != part.getLastStop().getSectionIndex()) {
+            if (!RoutePart.validate(part, trainData)) {
                 continue;
             }
             
             while (!tempTransferNodes.isEmpty()) {
                 RoutePart tempPart = RoutePart.get(schedules.get(train.id).getSessionId(), schedules.get(train.id).simulate(simulationTime), start.getStationTag(), tempTransferNodes.peek().getStationTag(), userSettings);  
-                if (tempPart == null || tempPart.isEmpty() || tempPart.getAllStops().get(Math.min(1, tempPart.getAllStops().size() - 1)).getSectionIndex() != tempPart.getLastStop().getSectionIndex()) {
+                if (!RoutePart.validate(tempPart, trainData)) {
                     break;
                 }
                 part = tempPart;
@@ -298,17 +323,19 @@ public class NavigatableGraph {
             }
 
 
-            if (useExclusion) excludedTrainIds.add(train.id);
+            if (ModCommonConfig.EXCLUDE_TRAINS.get()) excludedTrainIds.add(train.id);
 
             // Step 2
             List<RoutePart> parts = new ArrayList<>();
             parts.add(part);
             if (!tempTransferNodes.isEmpty()) {
                 Set<UUID> exclTrns = new HashSet<>(excludedTrainIds);
-                if (useExclusion) exclTrns.add(part.getTrainId());
-                parts.addAll(searchForTrainsInternal(tempEnd, schedules, new ConcurrentLinkedQueue<>(tempTransferNodes), exclTrns, part));
+                if (ModCommonConfig.EXCLUDE_TRAINS.get()) exclTrns.add(part.getTrainId());
+                List<RoutePart> res = searchForTrainsInternal(tempEnd, schedules, new ConcurrentLinkedQueue<>(tempTransferNodes), exclTrns, part);
+                if (res == null) continue;                
+                parts.addAll(res);
             }
-            routes.add(new Route(parts, true));
+            routes.add(new Route(parts, false));
         }
 
         return routes;
@@ -317,7 +344,8 @@ public class NavigatableGraph {
     public List<RoutePart> searchForTrainsInternal(Node start, ImmutableMap<UUID, TrainSchedule> schedules, Queue<Node> transferNodes, Set<UUID> excludedTrainIds, RoutePart previousPart) {
         Node end = transferNodes.poll();
 
-        List<Train> departingTrains = TrainUtils.getDepartingTrainsAt(start.getStationTag()).stream().filter(train -> 
+        List<Train> departingTrains = TrainUtils.getDepartingTrainsAt(start.getStationTag()).stream().filter(train ->
+            TrainListener.data.containsKey(train.id) && 
             TrainUtils.isTrainUsable(train) &&
             !excludedTrainIds.contains(train.id) &&
             !globalSettings().isTrainBlacklisted(train) &&
@@ -331,18 +359,19 @@ public class NavigatableGraph {
         Queue<Node> bestPartRemainingTransfers = null;
 
         for (Train train : departingTrains) {
-            long simulationTime = previousPart.timeUntilEnd() + userSettings.navigationTransferTime.getValue();  
+            TrainData trainData = TrainListener.data.get(train.id);
+            long simulationTime = previousPart.timeUntilEnd() - 1 + userSettings.navigationTransferTime.getValue();  
             Queue<Node> tempTransferNodes = new ConcurrentLinkedQueue<>(transferNodes);
             Node tempEnd = end;
 
             RoutePart part = RoutePart.get(schedules.get(train.id).getSessionId(), schedules.get(train.id).simulate(simulationTime), start.getStationTag(), tempEnd.getStationTag(), userSettings); 
-            if (part == null || part.isEmpty() || part.getAllStops().get(Math.min(1, part.getAllStops().size() - 1)).getSectionIndex() != part.getLastStop().getSectionIndex()) {
+            if (!RoutePart.validate(part, trainData)) {
                 continue;
             }
             
             while (!tempTransferNodes.isEmpty()) {
                 RoutePart tempPart = RoutePart.get(schedules.get(train.id).getSessionId(), schedules.get(train.id).simulate(simulationTime), start.getStationTag(), tempTransferNodes.peek().getStationTag(), userSettings);  
-                if (tempPart == null || tempPart.isEmpty() || tempPart.getAllStops().get(Math.min(1, tempPart.getAllStops().size() - 1)).getSectionIndex() != tempPart.getLastStop().getSectionIndex()) {
+                if (!RoutePart.validate(tempPart, trainData)) {
                     break;
                 }
                 part = tempPart;
@@ -354,18 +383,20 @@ public class NavigatableGraph {
                 bestPartEnd = tempEnd;
                 bestPartRemainingTransfers = tempTransferNodes;
             }
-            
-            //possibleParts.add(part);
+        }
+        
+        if (bestPart == null || bestPart.isEmpty()) {
+            return null;
         }
 
-        //RoutePart bestConnection = possibleParts.poll();
-        if (useExclusion) excludedTrainIds.add(bestPart.getTrainId());
+        if (ModCommonConfig.EXCLUDE_TRAINS.get()) excludedTrainIds.add(bestPart.getTrainId());
         List<RoutePart> parts = new ArrayList<>();
         parts.add(bestPart);
-        if (!bestPartRemainingTransfers.isEmpty()) {
-            parts.addAll(searchForTrainsInternal(bestPartEnd, schedules, bestPartRemainingTransfers, excludedTrainIds, bestPart));
+        if (bestPartRemainingTransfers != null && !bestPartRemainingTransfers.isEmpty()) {
+            List<RoutePart> res = searchForTrainsInternal(bestPartEnd, schedules, bestPartRemainingTransfers, excludedTrainIds, bestPart);
+            if (res == null) return null;
+            parts.addAll(res);
         }
-
         return parts;
     }
 
