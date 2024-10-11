@@ -8,9 +8,11 @@ import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.ModGuiUtils;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.ColorShade;
+import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.screen.RouteDetailsScreen;
 import de.mrjulsen.crn.client.lang.ELanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
+import de.mrjulsen.crn.data.SavedRoutesManager;
 import de.mrjulsen.crn.data.navigation.ClientRoute;
 import de.mrjulsen.crn.data.navigation.RoutePart;
 import de.mrjulsen.mcdragonlib.DragonLib;
@@ -46,6 +48,7 @@ public class RouteWidget extends DLButton {
     private final MutableComponent textShowDetails = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".route_widget.show_details");
     private final MutableComponent textSave = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".route_widget.save");
     private final MutableComponent textShare = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".route_widget.share");
+    private final MutableComponent textRemove = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".route_widget.remove");
 
     public RouteWidget(RouteViewer parent, ClientRoute route, int x, int y) {
         super(x, y, WIDTH, HEIGHT, TextUtils.empty(), (b) -> Minecraft.getInstance().setScreen(new RouteDetailsScreen(parent.getParent(), route)));
@@ -55,8 +58,14 @@ public class RouteWidget extends DLButton {
         setMenu(new DLContextMenu(() -> GuiAreaDefinition.of(this), () -> new DLContextMenuItem.Builder()
             .add(new ContextMenuItemData(textShowDetails, Sprite.empty(), true, (b) -> onPress.onPress(b), null))
             .addSeparator()
-            .add(new ContextMenuItemData(textSave, Sprite.empty(), true, (b) -> {}, null))
-            .add(new ContextMenuItemData(textShare, Sprite.empty(), true, (b) -> {}, null))
+            .add(new ContextMenuItemData(SavedRoutesManager.isSaved(route) ? textRemove : textSave, Sprite.empty(), true, (b) -> {
+                if (SavedRoutesManager.isSaved(route)) {
+                    SavedRoutesManager.removeRoute(route);
+                } else {
+                    SavedRoutesManager.saveRoute(route);
+                }
+            }, null))
+            //.add(new ContextMenuItemData(textShare, Sprite.empty(), true, (b) -> {}, null))
         ));
     }
     

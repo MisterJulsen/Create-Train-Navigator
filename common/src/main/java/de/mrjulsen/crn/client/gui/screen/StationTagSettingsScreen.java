@@ -8,9 +8,11 @@ import java.util.Map;
 
 import org.lwjgl.glfw.GLFW;
 
+import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
+import de.mrjulsen.crn.client.gui.widgets.DLCreateIconButton;
 import de.mrjulsen.crn.client.gui.widgets.ModStationSuggestions;
 import de.mrjulsen.crn.client.gui.widgets.ModernVerticalScrollBar;
 import de.mrjulsen.crn.client.gui.widgets.options.DLOptionsList;
@@ -27,6 +29,7 @@ import de.mrjulsen.crn.data.storage.GlobalSettingsClient;
 import de.mrjulsen.crn.registry.ModAccessorTypes;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLEditBox;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.DLTooltip;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiAreaDefinition;
 import de.mrjulsen.mcdragonlib.core.EAlignment;
@@ -35,6 +38,7 @@ import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.MathUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.accessor.DataAccessor;
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
@@ -42,10 +46,16 @@ import net.minecraft.network.chat.MutableComponent;
 
 public class StationTagSettingsScreen extends AbstractNavigatorScreen {
 
+    private static final int DEFAULT_ICON_BUTTON_WIDTH = 18;
+    private static final int DEFAULT_ICON_BUTTON_HEIGHT = 18;
+
     private DLOptionsList viewer;
     private DLEditBox searchBox;
 
-    private final MutableComponent tooltipDeleteTag = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".alias_settings.delete_alias.tooltip");
+    private final MutableComponent tooltipDeleteTag = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".station_tags.delete_alias.tooltip");
+    private final MutableComponent textAdd = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.add");
+    private final MutableComponent textStationName = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".station_tags.hint.station_name");
+    private final MutableComponent textPlatformName = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".station_tags.hint.platform");
     
 	private ModStationSuggestions destinationSuggestions;
     private StationTag selectedTag;
@@ -87,6 +97,15 @@ public class StationTagSettingsScreen extends AbstractNavigatorScreen {
             this.stationNames.clear();
             this.stationNames.addAll(names);
         });
+        
+        DLCreateIconButton helpButton = this.addRenderableWidget(new DLCreateIconButton(guiLeft + GUI_WIDTH - DEFAULT_ICON_BUTTON_WIDTH - 8, guiTop + 223, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, ModGuiIcons.HELP.getAsCreateIcon()) {
+            @Override
+            public void onClick(double mouseX, double mouseY) {
+                super.onClick(mouseX, mouseY);
+                Util.getPlatform().openUri(Constants.HELP_PAGE_STATION_TAGS);
+            }
+        });
+        addTooltip(DLTooltip.of(Constants.TEXT_HELP).assignedTo(helpButton));
 
         int dy = FooterSize.DEFAULT.size() + 1;
 
@@ -120,7 +139,7 @@ public class StationTagSettingsScreen extends AbstractNavigatorScreen {
                 OptionEntry<DataListContainer<StationTag, Map.Entry<String, StationInfo>>> opt = viewer.addOption((option) -> {
                     GuiAreaDefinition workspace = option.getContentSpace();
 
-                    DataListContainer<StationTag, Map.Entry<String, StationInfo>> cont = new DataListContainer<>(this, workspace.getX(), workspace.getY(), workspace.getWidth(), stationTag,
+                    DataListContainer<StationTag, Map.Entry<String, StationInfo>> cont = new DataListContainer<>(option, workspace.getX(), workspace.getY(), workspace.getWidth(), stationTag,
                         (tg) -> {
                             return tg.getAllStations().entrySet().stream().sorted((a, b) -> a.getKey().compareToIgnoreCase(b.getKey())).iterator();
                         }, (data, entryWidget) -> {
@@ -141,7 +160,7 @@ public class StationTagSettingsScreen extends AbstractNavigatorScreen {
                             });
                             return data.getKey();
                         }, (data, entryWidget) -> {
-                            entryWidget.addAddButton(ModGuiIcons.ADD.getAsSprite(16, 16),
+                            entryWidget.addAddButton(ModGuiIcons.ADD.getAsSprite(16, 16), textAdd,
                             (btn, tg, inputValues, refreshAction) -> {
                                 String name = inputValues.get(SimpleDataListNewEntry.MAIN_INPUT_KEY).get();
                                 String platform = inputValues.get("platform").get();
@@ -160,7 +179,8 @@ public class StationTagSettingsScreen extends AbstractNavigatorScreen {
                                 });
                                 box.setMaxLength(StationTag.MAX_NAME_LENGTH);
                             });
-                            entryWidget.addDataSection(40, "platform", (box) -> box.setMaxLength(StationInfo.MAX_PLATFORM_NAME_LENGTH));
+                            entryWidget.setNameEditBoxTooltip((box) -> textStationName);
+                            entryWidget.addDataSection(40, "platform", textPlatformName, (box) -> box.setMaxLength(StationInfo.MAX_PLATFORM_NAME_LENGTH));
                         }, (self) -> {
                             option.notifyContentSizeChanged();
                         }
@@ -188,8 +208,8 @@ public class StationTagSettingsScreen extends AbstractNavigatorScreen {
                 });
 
                 opt.setTooltip(List.of(
-                    TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".alias_settings.summary", stationTag.getAllStationNames().size()),
-                    TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".alias_settings.editor", stationTag.getLastEditorName(), stationTag.getLastEditedTimeFormatted())
+                    TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".station_tags.summary", stationTag.getAllStationNames().size()),
+                    TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".station_tags.editor", stationTag.getLastEditorName(), stationTag.getLastEditedTimeFormatted())
                 ));
             }
 

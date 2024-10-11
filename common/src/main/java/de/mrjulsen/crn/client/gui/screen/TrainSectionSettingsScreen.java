@@ -13,6 +13,7 @@ import com.simibubi.create.foundation.gui.widget.Label;
 import com.simibubi.create.foundation.gui.widget.ScrollInput;
 import com.simibubi.create.foundation.utility.Components;
 
+import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.widgets.DLCreateIconButton;
@@ -32,6 +33,7 @@ import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import de.mrjulsen.mcdragonlib.core.EAlignment;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Widget;
 import net.minecraft.client.gui.screens.Screen;
@@ -114,8 +116,16 @@ public class TrainSectionSettingsScreen extends DLScreen {
         backButton = this.addRenderableWidget(new DLCreateIconButton(guiLeft + 179, guiTop + 119, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, AllIcons.I_CONFIRM));
         backButton.withCallback(() -> {
             onClose();
-        });
+        });        
         
+        DLCreateIconButton helpButton = this.addRenderableWidget(new DLCreateIconButton(guiLeft + 179 - DEFAULT_ICON_BUTTON_WIDTH - 10, guiTop + 119, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, ModGuiIcons.HELP.getAsCreateIcon()) {
+            @Override
+            public void onClick(double mouseX, double mouseY) {
+                super.onClick(mouseX, mouseY);
+                Util.getPlatform().openUri(Constants.HELP_PAGE_SCHEDULE_SECTIONS);
+            }
+        });
+        addTooltip(DLTooltip.of(Constants.TEXT_HELP).assignedTo(helpButton));
 
         // Global Options Button
         if (minecraft.player.hasPermissions(ModCommonConfig.GLOBAL_SETTINGS_PERMISSION_LEVEL.get())) {

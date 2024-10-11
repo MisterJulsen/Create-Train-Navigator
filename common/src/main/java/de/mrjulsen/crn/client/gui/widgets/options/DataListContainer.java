@@ -1,5 +1,7 @@
 package de.mrjulsen.crn.client.gui.widgets.options;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -14,6 +16,7 @@ import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.ColorShade;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLEditBox;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.DLTooltip;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.WidgetContainer;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
@@ -28,6 +31,7 @@ public class DataListContainer<T, S> extends WidgetContainer {
     private static final int BORDER_WIDTH = 2;
 
     private final Screen parent;
+    private final OptionEntry<?> parentEntry;
     private T data;
     private int entriesHeight;
     private int addNewEntryHeight;
@@ -39,6 +43,8 @@ public class DataListContainer<T, S> extends WidgetContainer {
     private int paddingBottom;
     private boolean renderBackground = true;
     private boolean bordered = true;
+
+    private final Collection<DLTooltip> tooltips = new ArrayList<>();
 
     private final Function<T, Iterator<S>> onGetData;
     private final BiFunction<S, SimpleDataListEntry<T, S>, String> onCreateEntry;
@@ -61,9 +67,10 @@ public class DataListContainer<T, S> extends WidgetContainer {
      * @param createNewEntry Called when creating the "Add New Entry" widget. Pass {@code null} if no "Add New Entry" widget should be created.
      * @param onContainerSizeChanged Called when the size of the container changes to adjust the gui surrounding it.
      */
-    public DataListContainer(Screen parent, int x, int y, int width, T initialData, Function<T, Iterator<S>> dataIterator, BiFunction<S, SimpleDataListEntry<T, S>, String> onCreateEntry, BiConsumer<T, SimpleDataListNewEntry<T, S>> createNewEntry, Consumer<DataListContainer<T, S>> onContainerSizeChanged) {
+    public DataListContainer(OptionEntry<?> parentEntry, int x, int y, int width, T initialData, Function<T, Iterator<S>> dataIterator, BiFunction<S, SimpleDataListEntry<T, S>, String> onCreateEntry, BiConsumer<T, SimpleDataListNewEntry<T, S>> createNewEntry, Consumer<DataListContainer<T, S>> onContainerSizeChanged) {
         super(x, y, width, 100);
-        this.parent = parent;
+        this.parent = parentEntry.getParentScreen();
+        this.parentEntry = parentEntry;
 
         this.onGetData = dataIterator;
         this.onCreateEntry = onCreateEntry;
@@ -124,6 +131,7 @@ public class DataListContainer<T, S> extends WidgetContainer {
 
     private int displayData(T data, boolean notifySizeChanged) {
         clearWidgets();
+        tooltips.clear();
         this.data = data;
         contentHeight = paddingTop + BORDER_WIDTH;
         entriesHeight = 0;
@@ -186,6 +194,10 @@ public class DataListContainer<T, S> extends WidgetContainer {
         return parent;
     }
 
+    public OptionEntry<?> getParentEntry() {
+        return parentEntry;
+    }
+
     public T getData() {
         return data;
     }
@@ -207,6 +219,17 @@ public class DataListContainer<T, S> extends WidgetContainer {
             }
         }
         super.renderMainLayer(graphics, mouseX, mouseY, partialTicks);
+    }
+
+    public Collection<DLTooltip> getTooltips() {
+        return tooltips;
+    }
+
+    @Override
+    public void renderFrontLayer(Graphics graphics, int mouseX, int mouseY, float partialTicks) {
+        super.renderFrontLayer(graphics, mouseX, mouseY, partialTicks);
+        tooltips.stream().forEach(x -> x.render(parent, graphics, mouseX, mouseY));
+
     }
 
     @Override

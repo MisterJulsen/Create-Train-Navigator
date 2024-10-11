@@ -7,9 +7,11 @@ import java.util.function.Consumer;
 
 import com.google.common.collect.ImmutableList;
 
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLButton;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLIconButton;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.DLTooltip;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.IDragonLibWidget;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.WidgetContainer;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLAbstractImageButton.ButtonType;
@@ -21,6 +23,8 @@ import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.client.gui.components.Widget;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 
 public abstract class AbstractDataListEntry<T, S, E extends AbstractDataListEntry.AbstractDataSectionDefinition<T, S>> extends WidgetContainer {
 
@@ -39,6 +43,8 @@ public abstract class AbstractDataListEntry<T, S, E extends AbstractDataListEntr
 
     protected final S data;
     private String text;
+
+    private final MutableComponent textDelete = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.delete");
 
     public AbstractDataListEntry(DataListContainer<T, S> parent, int x, int y, int width, S data) {
         super(x, y, width, 20);
@@ -75,7 +81,7 @@ public abstract class AbstractDataListEntry<T, S, E extends AbstractDataListEntr
         return widget;
     }
 
-    public DLIconButton addButton(Sprite icon, DataListEntryContext<DLIconButton, T, S> onClick) {
+    public DLIconButton addButton(Sprite icon, Component text, DataListEntryContext<DLIconButton, T, S> onClick) {
         if (wasBuild) {
             throw new IllegalStateException("Cannot add elements to this widget after finishing creation.");
         }
@@ -85,11 +91,14 @@ public abstract class AbstractDataListEntry<T, S, E extends AbstractDataListEntr
         }));
         btn.setBackColor(0x00000000);
         buttonsXOffset += btn.width();
+        DLTooltip tooltip = DLTooltip.of(text).assignedTo(btn);        
+        tooltip.setDynamicOffset(() -> (int)parent.getParentEntry().getParentList().getXScrollOffset(), () -> (int)parent.getParentEntry().getParentList().getYScrollOffset());
+        parent.getTooltips().add(tooltip);
         return btn;
     }
 
     public DLIconButton addDeleteButton(DataListEntryContext<DLIconButton, T, S> onClick) {
-        return addButton(ModGuiIcons.DELETE.getAsSprite(16, 16), onClick);
+        return addButton(ModGuiIcons.DELETE.getAsSprite(16, 16), textDelete, onClick);
     }
 
     protected E createSection(E section) {

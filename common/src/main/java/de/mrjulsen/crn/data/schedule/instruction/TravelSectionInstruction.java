@@ -104,7 +104,7 @@ public class TravelSectionInstruction extends ScheduleInstruction implements ISt
             @Override
             public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
                 Graphics graphics = new Graphics(poseStack);
-                DynamicGuiRenderer.renderArea(graphics, x, y, width, height, 0, AreaStyle.FLAT, isActive() ? (isFocused() || isMouseOver(mouseX, mouseY) ? ButtonState.SELECTED : ButtonState.BUTTON) : ButtonState.DISABLED);
+				DynamicGuiRenderer.renderArea(graphics, x, y, width, height, AreaStyle.GRAY, isActive() ? (isFocused() || isMouseOver(mouseX, mouseY) ? ButtonState.SELECTED : ButtonState.BUTTON) : ButtonState.DISABLED);
                 int j = isActive() ? DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE : DragonLib.NATIVE_BUTTON_FONT_COLOR_DISABLED;
                 GuiUtils.drawString(graphics, Minecraft.getInstance().font, x + width / 2, y + (height - 8) / 2, this.getMessage(), j, EAlignment.CENTER, true);
             }

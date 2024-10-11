@@ -30,7 +30,6 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
@@ -40,6 +39,7 @@ public class SimpleWebServer {
     static HttpServer server;
 
     public static void start() throws Exception {
+        /*
         server = HttpServer.create(new InetSocketAddress(80), 0);
         server.createContext("/hello", new HelloWorldHandler());
         server.createContext("/api/" + CreateRailwaysNavigator.MOD_ID + "/navigate", new V1NavigationHandler());
@@ -47,7 +47,8 @@ public class SimpleWebServer {
         server.createContext("/" + CreateRailwaysNavigator.SHORT_MOD_ID, new WebsiteHandler(CreateRailwaysNavigator.SHORT_MOD_ID));
         server.createContext("/status", new TestHandler());
         server.setExecutor(null); // creates a default executor
-        //server.start();
+        server.start();
+        */
     }
 
     public static void stop() {

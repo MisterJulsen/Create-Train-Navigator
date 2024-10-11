@@ -40,10 +40,10 @@ public class SavedRouteWidget extends DLButton {
     private final MutableComponent transferText = ELanguage.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.route_entry.transfer");
     private final MutableComponent connectionInPast = ELanguage.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.route_entry.connection_in_past");
     private final MutableComponent trainCanceled = ELanguage.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".route_overview.stop_cancelled");
-    private final MutableComponent textShowDetails = ELanguage.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".saved_route_widget.show_details");
-    private final MutableComponent textRemove = ELanguage.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".saved_route_widget.save");
-    private final MutableComponent textShare = ELanguage.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".saved_route_widget.share");
-    private final MutableComponent textShowNotifications = ELanguage.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".saved_route_widget.notifications");
+    private final MutableComponent textShowDetails = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".saved_route_widget.show_details");
+    private final MutableComponent textRemove = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".route_widget.remove");
+    private final MutableComponent textShare = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".saved_route_widget.share");
+    private final MutableComponent textShowNotifications = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".saved_route_widget.notifications");
 
     public SavedRouteWidget(SavedRoutesViewer parent, int x, int y, ISaveableNavigatorData data) {
         super(x, y, WIDTH, 50, TextUtils.empty(), (b) -> clickAction(parent, data));
@@ -59,7 +59,7 @@ public class SavedRouteWidget extends DLButton {
                 SavedRoutesManager.push(true, null);
                 parent.displayRoutes(SavedRoutesManager.getAllSavedRoutes());
             }, null))
-            .add(new ContextMenuItemData(textShare, Sprite.empty(), true, (b) -> {}, null))
+            //.add(new ContextMenuItemData(textShare, Sprite.empty(), true, (b) -> {}, null))
             .addSeparator()
             .add(new ContextMenuItemData(textShowNotifications, data instanceof ClientRoute route && route.shouldShowNotifications() ? GuiIcons.CHECKMARK.getAsSprite(8, 8) : Sprite.empty(), data instanceof Route, (b) -> {
                 if (data instanceof ClientRoute route) {

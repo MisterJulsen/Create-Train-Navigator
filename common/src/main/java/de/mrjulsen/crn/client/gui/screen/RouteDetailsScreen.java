@@ -103,7 +103,7 @@ public class RouteDetailsScreen extends AbstractNavigatorScreen {
                 if (SavedRoutesManager.isSaved(route)) {
                     SavedRoutesManager.removeRoute(route);
                     this.setIcon(ModGuiIcons.BOOKMARK.getAsCreateIcon());
-                } else {                    
+                } else {
                     SavedRoutesManager.saveRoute(route);
                     this.setIcon(ModGuiIcons.BOOKMARK_FILLED.getAsCreateIcon());
                 }

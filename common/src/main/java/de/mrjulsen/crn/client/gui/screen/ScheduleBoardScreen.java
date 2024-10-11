@@ -29,6 +29,7 @@ import de.mrjulsen.crn.registry.ModAccessorTypes;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLAbstractImageButton.ButtonType;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLEditBox;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLIconButton;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.DLTooltip;
 import de.mrjulsen.mcdragonlib.client.render.DynamicGuiRenderer.AreaStyle;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiAreaDefinition;
@@ -39,6 +40,7 @@ import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.accessor.DataAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.Mth;
 
 public class ScheduleBoardScreen extends AbstractNavigatorScreen {
@@ -57,6 +59,10 @@ public class ScheduleBoardScreen extends AbstractNavigatorScreen {
     private final boolean fixedStation;
 
     private final List<StationTag> stationNames = new ArrayList<>();
+
+    private final MutableComponent tooltipSearch = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.search.tooltip");
+    private final MutableComponent tooltipLocation = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.location.tooltip");
+    private final MutableComponent tooltipRefresh = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.refresh.tooltip");
 
     public ScheduleBoardScreen(Screen lastScreen, ClientStationTag tag) {
         super(lastScreen, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".schedule_board.title"), BarColor.GOLD);
@@ -110,7 +116,7 @@ public class ScheduleBoardScreen extends AbstractNavigatorScreen {
             }, NO_EDIT_BOX_FOCUS_CHANGE_ACTION, null);
             stationBox.setMaxLength(StationTag.MAX_NAME_LENGTH);
 
-            this.addRenderableWidget(new DLCreateIconButton(guiLeft + 190, guiTop + 20, 18, 18, AllIcons.I_MTD_SCAN) {
+            DLCreateIconButton searchButton = this.addRenderableWidget(new DLCreateIconButton(guiLeft + 190, guiTop + 20, 18, 18, AllIcons.I_MTD_SCAN) {
                 @Override
                 public void onClick(double mouseX, double mouseY) {
                     super.onClick(mouseX, mouseY);
@@ -124,8 +130,9 @@ public class ScheduleBoardScreen extends AbstractNavigatorScreen {
                     });
                 }
             });
+            addTooltip(DLTooltip.of(tooltipSearch).assignedTo(searchButton));  
 
-            this.addRenderableWidget(new DLCreateIconButton(guiLeft + 212, guiTop + 20, 18, 18, ModGuiIcons.POSITION.getAsCreateIcon()) {
+            DLCreateIconButton locationButton = this.addRenderableWidget(new DLCreateIconButton(guiLeft + 212, guiTop + 20, 18, 18, ModGuiIcons.POSITION.getAsCreateIcon()) {
                 @Override
                 public void onClick(double mouseX, double mouseY) {
                     super.onClick(mouseX, mouseY);
@@ -136,6 +143,7 @@ public class ScheduleBoardScreen extends AbstractNavigatorScreen {
                     });
                 }
             });
+            addTooltip(DLTooltip.of(tooltipLocation).assignedTo(locationButton)); 
         }
         
         // Search Options
@@ -157,11 +165,12 @@ public class ScheduleBoardScreen extends AbstractNavigatorScreen {
                 reloadUserSettings(() -> this.viewer.displayRoutes(stationTagName, userSettings));
             }).open(b);
         }));
-        DLIconButton moreSearchOptionsBtn = addRenderableWidget(new DLIconButton(ButtonType.DEFAULT, AreaStyle.FLAT, ModGuiIcons.REFRESH.getAsSprite(16, 16), workingArea.getRight() - (workingArea.getWidth() - btnWidth * btnCount), workingArea.getTop() + 16 + FooterSize.DEFAULT.size() - 2, (workingArea.getWidth() - btnWidth * btnCount), 18, TextUtils.empty(),
+        DLIconButton refreshBtn = addRenderableWidget(new DLIconButton(ButtonType.DEFAULT, AreaStyle.FLAT, ModGuiIcons.REFRESH.getAsSprite(16, 16), workingArea.getRight() - (workingArea.getWidth() - btnWidth * btnCount), workingArea.getTop() + 16 + FooterSize.DEFAULT.size() - 2, (workingArea.getWidth() - btnWidth * btnCount), 18, TextUtils.empty(),
         (b) -> {            
             reloadUserSettings(() -> this.viewer.displayRoutes(stationTagName, userSettings));
         }));
-        moreSearchOptionsBtn.setBackColor(0x00000000);
+        refreshBtn.setBackColor(0x00000000);
+        addTooltip(DLTooltip.of(tooltipRefresh).assignedTo(refreshBtn)); 
 
         ModernVerticalScrollBar scrollBar = new ModernVerticalScrollBar(this, workingArea.getRight() - 5, workingArea.getY() + 50, workingArea.getHeight() - 50, GuiAreaDefinition.of(lastScreen));
         this.viewer = new StationDeparturesViewer(this, workingArea.getX(), workingArea.getY() + 50, workingArea.getWidth(), workingArea.getHeight() - 50, scrollBar);

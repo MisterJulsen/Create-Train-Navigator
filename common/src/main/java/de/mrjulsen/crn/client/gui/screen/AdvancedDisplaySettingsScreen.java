@@ -11,6 +11,7 @@ import com.simibubi.create.foundation.gui.widget.Label;
 import com.simibubi.create.foundation.gui.widget.ScrollInput;
 import com.simibubi.create.foundation.utility.Components;
 
+import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.AbstractAdvancedSidedDisplayBlock;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
@@ -33,6 +34,7 @@ import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import de.mrjulsen.mcdragonlib.core.EAlignment;
 import de.mrjulsen.mcdragonlib.data.Cache;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.Widget;
@@ -111,6 +113,15 @@ public class AdvancedDisplaySettingsScreen extends DLScreen {
         backButton.withCallback(() -> {
             onClose();
         });
+        
+        DLCreateIconButton helpButton = this.addRenderableWidget(new DLCreateIconButton(guiLeft + 179 - DEFAULT_ICON_BUTTON_WIDTH - 10, guiTop + 99, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, ModGuiIcons.HELP.getAsCreateIcon()) {
+            @Override
+            public void onClick(double mouseX, double mouseY) {
+                super.onClick(mouseX, mouseY);
+                Util.getPlatform().openUri(Constants.HELP_PAGE_ADVANCED_DISPLAYS);
+            }
+        });
+        addTooltip(DLTooltip.of(Constants.TEXT_HELP).assignedTo(helpButton));
 
         displayTypeLabel = addRenderableWidget(new DLCreateLabel(guiLeft + 45 + 5, guiTop + 23 + 5, Components.immutableEmpty()).withShadow());
         displayTypeInput = addRenderableWidget(new DLCreateSelectionScrollInput(guiLeft + 45, guiTop + 23, 138, 18)

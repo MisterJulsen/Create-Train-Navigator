@@ -5,12 +5,15 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+
+import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.BarColor;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.ContainerColor;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.FooterSize;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
+import de.mrjulsen.crn.client.gui.widgets.DLCreateIconButton;
 import de.mrjulsen.crn.client.gui.widgets.ModStationSuggestions;
 import de.mrjulsen.crn.client.gui.widgets.ModernVerticalScrollBar;
 import de.mrjulsen.crn.client.gui.widgets.flyouts.FlyoutColorPicker;
@@ -25,6 +28,7 @@ import de.mrjulsen.crn.data.storage.GlobalSettingsClient;
 import de.mrjulsen.crn.registry.ModAccessorTypes;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLEditBox;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLIconButton;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.DLTooltip;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLVerticalScrollBar;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiAreaDefinition;
@@ -32,11 +36,15 @@ import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.MathUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.accessor.DataAccessor;
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 public class GlobalSettingsScreen extends AbstractNavigatorScreen {
+    
+    private static final int DEFAULT_ICON_BUTTON_WIDTH = 18;
+    private static final int DEFAULT_ICON_BUTTON_HEIGHT = 18;
 
     private DLOptionsList viewer;
 	private ModStationSuggestions destinationSuggestions;
@@ -50,7 +58,9 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
     private final Component optionTrainBlacklistTitle = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.train_blacklist.title");
     private final Component optionTrainBlacklistDescription = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.train_blacklist.description");
     private final Component optionTrainLineTitle = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.train_line.title");
-    private final Component optionTrainLineDescription = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.train_line.description");    
+    private final Component optionTrainLineDescription = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.train_line.description");
+    private final Component textAdd = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.add");
+    private final Component textColor = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.train_line.color");
 
     private final List<String> stationNames = new ArrayList<>();
     private final List<String> trainNames = new ArrayList<>();
@@ -80,6 +90,16 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
     protected void init() {
         super.init();
         setAllowedLayer(0);
+        
+        DLCreateIconButton helpButton = this.addRenderableWidget(new DLCreateIconButton(guiLeft + GUI_WIDTH - DEFAULT_ICON_BUTTON_WIDTH - 8, guiTop + 223, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, ModGuiIcons.HELP.getAsCreateIcon()) {
+            @Override
+            public void onClick(double mouseX, double mouseY) {
+                super.onClick(mouseX, mouseY);
+                Util.getPlatform().openUri(Constants.HELP_PAGE_GLOBAL_SETTINGS);
+            }
+        });
+        addTooltip(DLTooltip.of(Constants.TEXT_HELP).assignedTo(helpButton));
+
         int dy = FooterSize.DEFAULT.size() + 1;
         ModernVerticalScrollBar scrollBar = new ModernVerticalScrollBar(this, guiLeft + GUI_WIDTH - 8, guiTop + dy, GUI_HEIGHT - dy - FooterSize.SMALL.size() - 1, null);
         viewer = new DLOptionsList(this, guiLeft + 3, guiTop + dy, GUI_WIDTH - 6, GUI_HEIGHT - dy - FooterSize.SMALL.size() - 1, scrollBar);
@@ -116,9 +136,9 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
     }
 
     private void addBlacklistedStationsWidget(List<String> datalist, DLVerticalScrollBar scrollBar) {
-        viewer.addOption((option) -> {
+        OptionEntry<?> opt = viewer.addOption((option) -> {
             GuiAreaDefinition workspace = option.getContentSpace();
-            DataListContainer<Collection<String>, String> cont = new DataListContainer<>(this, workspace.getX(), workspace.getY(), workspace.getWidth(), datalist,
+            DataListContainer<Collection<String>, String> cont = new DataListContainer<>(option, workspace.getX(), workspace.getY(), workspace.getWidth(), datalist,
                 (list) -> {
                     return list.iterator();
                 }, (data, entryWidget) -> {
@@ -129,7 +149,7 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
                     });
                     return data;
                 }, (data, entryWidget) -> {
-                    entryWidget.addAddButton(ModGuiIcons.ADD.getAsSprite(16, 16),
+                    entryWidget.addAddButton(ModGuiIcons.ADD.getAsSprite(16, 16), textAdd,
                     (btn, tg, inputValues, refreshAction) -> {
                         String name = inputValues.get(SimpleDataListNewEntry.MAIN_INPUT_KEY).get();
                         if (name == null || name.isBlank()) {
@@ -158,12 +178,14 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
 
             return cont;
         }, optionBlacklistTitle, optionBlacklistDescription, (a, b) -> OptionEntry.expandOrCollapse(a), null);
+        opt.addAdditionalButton(ModGuiIcons.HELP.getAsSprite(16, 16), Constants.TEXT_HELP, (entry, btn) -> Util.getPlatform().openUri(Constants.HELP_PAGE_STATION_BLACKLIST));
+
     }
 
     private void addBlacklistedTrainsWidget(List<String> datalist, DLVerticalScrollBar scrollBar) {
-        viewer.addOption((option) -> {
+        OptionEntry<?> opt = viewer.addOption((option) -> {
             GuiAreaDefinition workspace = option.getContentSpace();
-            DataListContainer<Collection<String>, String> cont = new DataListContainer<>(this, workspace.getX(), workspace.getY(), workspace.getWidth(), datalist,
+            DataListContainer<Collection<String>, String> cont = new DataListContainer<>(option, workspace.getX(), workspace.getY(), workspace.getWidth(), datalist,
                 (list) -> {
                     return list.iterator();
                 }, (data, entryWidget) -> {
@@ -174,7 +196,7 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
                     });
                     return data;
                 }, (data, entryWidget) -> {
-                    entryWidget.addAddButton(ModGuiIcons.ADD.getAsSprite(16, 16),
+                    entryWidget.addAddButton(ModGuiIcons.ADD.getAsSprite(16, 16), textAdd,
                     (btn, tg, inputValues, refreshAction) -> {
                         String name = inputValues.get(SimpleDataListNewEntry.MAIN_INPUT_KEY).get();
                         if (name == null || name.isBlank()) {
@@ -203,12 +225,14 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
 
             return cont;
         }, optionTrainBlacklistTitle, optionTrainBlacklistDescription, (a, b) -> OptionEntry.expandOrCollapse(a), null);
+        opt.addAdditionalButton(ModGuiIcons.HELP.getAsSprite(16, 16), Constants.TEXT_HELP, (entry, btn) -> Util.getPlatform().openUri(Constants.HELP_PAGE_TRAIN_BLACKLIST));
+
     }
 
     private void addTrainGroupsWidget(List<TrainGroup> datalist, DLVerticalScrollBar scrollBar) {
-        viewer.addOption((option) -> {
+        OptionEntry<?> opt = viewer.addOption((option) -> {
             GuiAreaDefinition workspace = option.getContentSpace();
-            DataListContainer<Collection<TrainGroup>, TrainGroup> cont = new DataListContainer<>(this, workspace.getX(), workspace.getY(), workspace.getWidth(), datalist,
+            DataListContainer<Collection<TrainGroup>, TrainGroup> cont = new DataListContainer<>(option, workspace.getX(), workspace.getY(), workspace.getWidth(), datalist,
                 (list) -> {
                     return list.iterator();
                 }, (data, entryWidget) -> {
@@ -219,7 +243,8 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
                             });
                         });
                     });
-                    DLIconButton colorBtn = entryWidget.addButton(ModGuiIcons.COLOR_PALETTE.getAsSprite(16, 16), (btn, tg, entry, refreshAction) -> {
+                    DLIconButton colorBtn = entryWidget.addButton(ModGuiIcons.COLOR_PALETTE.getAsSprite(16, 16), textColor,
+                    (btn, tg, entry, refreshAction) -> {
                         final TrainGroup e = entry;
                         FlyoutColorPicker<?> flyout = new FlyoutColorPicker<>(this, e.getColor(), this::addRenderableWidget, (w) -> {
                             GlobalSettingsClient.updateTrainGroupColor(e.getGroupName(), ((FlyoutColorPicker<?>)w).getColorPicker().getSelectedColor(), () -> {
@@ -235,7 +260,7 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
                     colorBtn.setBackColor(data.getColor());
                     return data.getGroupName();
                 }, (data, entryWidget) -> {
-                    entryWidget.addAddButton(ModGuiIcons.ADD.getAsSprite(16, 16),
+                    entryWidget.addAddButton(ModGuiIcons.ADD.getAsSprite(16, 16), textAdd,
                     (btn, tg, inputValues, refreshAction) -> {
                         String name = inputValues.get(SimpleDataListNewEntry.MAIN_INPUT_KEY).get();
                         if (name == null || name.isBlank()) {
@@ -265,12 +290,14 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
             cont.setBordered(false);    
             return cont;
         }, optionTrainGroupTitle, optionTrainGroupDescription, (a, b) -> OptionEntry.expandOrCollapse(a), null);
+        opt.addAdditionalButton(ModGuiIcons.HELP.getAsSprite(16, 16), Constants.TEXT_HELP, (entry, btn) -> Util.getPlatform().openUri(Constants.HELP_PAGE_TRAIN_GROUPS));
+
     }
 
     private void addTrainLinesWidget(List<TrainLine> datalist, DLVerticalScrollBar scrollBar) {
-        viewer.addOption((option) -> {
+        OptionEntry<?> opt = viewer.addOption((option) -> {
             GuiAreaDefinition workspace = option.getContentSpace();
-            DataListContainer<Collection<TrainLine>, TrainLine> cont = new DataListContainer<>(this, workspace.getX(), workspace.getY(), workspace.getWidth(), datalist,
+            DataListContainer<Collection<TrainLine>, TrainLine> cont = new DataListContainer<>(option, workspace.getX(), workspace.getY(), workspace.getWidth(), datalist,
                 (list) -> {
                     return list.iterator();
                 }, (data, entryWidget) -> {
@@ -281,7 +308,8 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
                             });
                         });
                     });
-                    DLIconButton colorBtn = entryWidget.addButton(ModGuiIcons.COLOR_PALETTE.getAsSprite(16, 16), (btn, tg, entry, refreshAction) -> {
+                    DLIconButton colorBtn = entryWidget.addButton(ModGuiIcons.COLOR_PALETTE.getAsSprite(16, 16), textColor,
+                    (btn, tg, entry, refreshAction) -> {
                         final TrainLine e = entry;
                         FlyoutColorPicker<?> flyout = new FlyoutColorPicker<>(this, e.getColor(), this::addRenderableWidget, (w) -> {
                             GlobalSettingsClient.updateTrainLineColor(e.getLineName(), ((FlyoutColorPicker<?>)w).getColorPicker().getSelectedColor(), () -> {
@@ -297,7 +325,7 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
                     colorBtn.setBackColor(data.getColor());
                     return data.getLineName();
                 }, (data, entryWidget) -> {
-                    entryWidget.addAddButton(ModGuiIcons.ADD.getAsSprite(16, 16),
+                    entryWidget.addAddButton(ModGuiIcons.ADD.getAsSprite(16, 16), textAdd,
                     (btn, tg, inputValues, refreshAction) -> {
                         String name = inputValues.get(SimpleDataListNewEntry.MAIN_INPUT_KEY).get();
                         if (name == null || name.isBlank()) {
@@ -327,6 +355,7 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
             cont.setBordered(false);    
             return cont;
         }, optionTrainLineTitle, optionTrainLineDescription, (a, b) -> OptionEntry.expandOrCollapse(a), null);
+        opt.addAdditionalButton(ModGuiIcons.HELP.getAsSprite(16, 16), Constants.TEXT_HELP, (entry, btn) -> Util.getPlatform().openUri(Constants.HELP_PAGE_TRAIN_LINES));
     }
 
     @Override

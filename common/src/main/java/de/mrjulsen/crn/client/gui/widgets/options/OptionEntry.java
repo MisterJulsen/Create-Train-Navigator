@@ -188,6 +188,14 @@ public class OptionEntry<T extends WidgetContainer> extends WidgetContainer {
         return descriptionTooltips;
     }
 
+    public DLOptionsList getParentList() {
+        return parentList;
+    }
+
+    public Screen getParentScreen() {
+        return parent;
+    }
+
     @Override
     public NarrationPriority narrationPriority() {
         return NarrationPriority.HOVERED;
