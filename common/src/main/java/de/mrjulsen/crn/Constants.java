@@ -19,8 +19,10 @@ public class Constants {
     public static final Component TEXT_FALSE = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.false");
     public static final Component TEXT_SERVER_ERROR = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.server_error");
     public static final Component TEXT_SEARCH = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.search");
-    public static final UUID ZERO_UUID = UUID.fromString("00000000-0000-0000-0000-000000000000");
+    public static final UUID ZERO_UUID = new UUID(0, 0);
+    public static final int[] DEFAULT_TRAIN_TYPE_COLORS = new int[] { 0xFF393939, 0xFFf0f3f5, 0xFFafb4bb, 0xFF878c96, 0xFF2a7230, 0xFF814997, 0xFF1455c0, 0xFFa9455d, 0xFF55b9e6, 0xFFffd800 };
      
-    public static final int COLOR_ON_TIME = 0x1AEA5F;
-    public static final int COLOR_DELAYED = 0xFF4242;
+    public static final int COLOR_ON_TIME = 0xFF1AEA5F;
+    public static final int COLOR_DELAYED = 0xFFFF4242;
+    public static final int COLOR_TRAIN_BACKGROUND = 0xFF393939;
 }

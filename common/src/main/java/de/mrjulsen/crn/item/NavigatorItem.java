@@ -17,7 +17,8 @@ public class NavigatorItem extends Item {
     @Override
     public InteractionResultHolder<ItemStack> use(Level pLevel, Player pPlayer, InteractionHand pUsedHand) {
         if (pLevel.isClientSide) {
-            ClientWrapper.showNavigatorGui(pLevel);
+            ClientWrapper.showNavigatorGui();
+            return InteractionResultHolder.success(pPlayer.getItemInHand(pUsedHand));
         }        
         return super.use(pLevel, pPlayer, pUsedHand);
     }

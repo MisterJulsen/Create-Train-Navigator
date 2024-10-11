@@ -1,35 +1,33 @@
 package de.mrjulsen.crn.client.ber.variants;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import com.mojang.blaze3d.vertex.PoseStack;
-
+import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
-import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
+import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
+import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity.EUpdateReason;
+import de.mrjulsen.crn.block.display.AdvancedDisplaySource.ETimeDisplay;
+import de.mrjulsen.crn.client.CRNGui;
 import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
-import de.mrjulsen.crn.client.ber.base.BERText;
-import de.mrjulsen.crn.client.ber.base.BERText.TextTransformation;
+import de.mrjulsen.crn.client.ber.IBERRenderSubtype;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.lang.ELanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
-import de.mrjulsen.crn.data.SimpleTrainConnection;
-import de.mrjulsen.crn.data.DeparturePrediction.TrainExitSide;
-import de.mrjulsen.crn.data.DeparturePrediction.SimpleDeparturePrediction;
-import de.mrjulsen.crn.event.listeners.JourneyListener.State;
-import de.mrjulsen.crn.network.InstanceManager;
-import de.mrjulsen.crn.network.packets.cts.NextConnectionsRequestPacket;
+import de.mrjulsen.crn.data.TrainExitSide;
+import de.mrjulsen.crn.data.train.portable.NextConnectionsDisplayData;
+import de.mrjulsen.crn.data.train.portable.TrainDisplayData;
+import de.mrjulsen.crn.data.train.portable.TrainStopDisplayData;
+import de.mrjulsen.crn.registry.ModAccessorTypes;
+import de.mrjulsen.crn.registry.data.NextConnectionsRequestData;
+import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.DragonLib;
-import de.mrjulsen.mcdragonlib.client.ber.IBlockEntityRendererInstance.BlockEntityRendererContext;
-import de.mrjulsen.mcdragonlib.client.ber.IBlockEntityRendererInstance.EUpdateReason;
+import de.mrjulsen.mcdragonlib.client.ber.BERGraphics;
+import de.mrjulsen.mcdragonlib.client.ber.BERLabel;
+import de.mrjulsen.mcdragonlib.client.ber.BERLabel.BoundsHitReaction;
+import de.mrjulsen.mcdragonlib.client.util.BERUtils;
+import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
-import de.mrjulsen.mcdragonlib.util.TimeUtils;
+import de.mrjulsen.mcdragonlib.util.accessor.DataAccessor;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
@@ -37,490 +35,590 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class BERPassengerInfoInformative implements IBERRenderSubtype<AdvancedDisplayBlockEntity, AdvancedDisplayRenderInstance, Boolean> {
 
-    private static final ResourceLocation TEXTURE = new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/overview.png");
-    private static final int TEX_ROUTE_PATH_U = 226;
-    private static final int TEX_ROUTE_PATH_H = 14;    
-    private static final float PANEL_LINE_HEIGHT = 2.0f;
-    private static final float PANEL_Y_START = 5.75f;
-    private static final int NEXT_CONNECTIONS_MAX_ENTRIES_PER_PAGE = 3;
-    private static final int NEXT_CONNECTIONS_PAGE_TIMER = 100;
-
-    private BERText timeLabel;
-    private BERText titleLabel;
-    private State state = State.WHILE_TRAVELING;
-
-    // data
-    private List<SimpleTrainConnection> nextConnections;
-    private long nextConnectionsRefreshTime = 0;
-    private int nextConnectionsPage = 0;
-    private int nextConnectionsMaxPage = 0;
-    private int nextConnectionsTimer = 0;
-
-    // Cache
-    private TrainExitSide lastKnownExitSide = TrainExitSide.UNKNOWN;
-
+    private static final ResourceLocation CARRIAGE_ICON = new ResourceLocation("create:textures/gui/assemble.png");  
+    private static final ResourceLocation ICONS = new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/icons.png");  
+    private static final String keyDate = "gui.createrailwaysnavigator.route_overview.date";
     private static final String keyNextStop = "gui.createrailwaysnavigator.route_overview.next_stop";
-    private static final Component textNextConnections = ELanguage.translate("gui.createrailwaysnavigator.route_overview.next_connections").withStyle(ChatFormatting.BOLD);
+    private static final String keyNextConnections = "gui.createrailwaysnavigator.route_overview.next_connections";
+    private static final int MAX_LINES = 4;
 
-    @Override
-    public boolean isSingleLined() {
-        return false;
+    private NextConnectionsDisplayData nextConnections = null;
+    private boolean nextStopAnnounced = false;
+    private TrainExitSide exitSide = TrainExitSide.UNKNOWN;
+
+    private final BERLabel timeLabel = new BERLabel()
+        .setScale(0.25f, 0.25f)
+        .setYScale(0.25f)
+    ;
+    private final BERLabel carriageLabel = new BERLabel()
+        .setScale(0.25f, 0.25f)
+        .setYScale(0.25f)
+    ;
+    private final BERLabel trainLineLabel = new BERLabel()
+        .setPos(3, 2.5f)
+        .setScale(0.25f, 0.15f)
+        .setYScale(0.25f)
+    ;
+    private final BERLabel speedLabel = new BERLabel()
+        .setPos(3, 6)
+        .setScale(0.25f, 0.2f)
+        .setYScale(0.30f)
+        .setCentered(true)
+    ;
+    private final BERLabel dateLabel = new BERLabel()
+        .setPos(3, 9)
+        .setScale(0.2f, 0.15f)
+        .setYScale(0.2f)
+        .setCentered(true)
+    ;
+    private final BERLabel carriageInfoLabel = new BERLabel()
+        .setPos(4.5f, 11)
+        .setScale(0.2f, 0.15f)
+        .setYScale(0.2f)
+        .setCentered(true)
+    ;
+    private final BERLabel nextConnectionsTitleLabel = new BERLabel(ELanguage.translate(keyNextConnections).withStyle(ChatFormatting.BOLD))
+        .setPos(3, 5.5f)
+        .setScale(0.15f, 0.15f)
+        .setYScale(0.15f)
+    ;
+    private final BERLabel pageIndicatorLabel = new BERLabel()
+        .setPos(3, 12.5f)
+        .setScale(0.15f, 0.15f)
+        .setYScale(0.15f)
+        .setCentered(true)
+    ;
+
+    private BERLabel[][] scheduleLines;
+    private BERLabel[][] nextConnectionsLines = new BERLabel[MAX_LINES - 1][];
+
+
+    private boolean shouldRenderNextConnections() {
+        return nextConnections != null && !nextConnections.getConnections().isEmpty() && nextStopAnnounced;
+    }
+
+    private String generatePageIndexString(int current, int max) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < current; i++) {
+            sb.append(" □");
+        }
+        sb.append(" ■");
+        for (int i = current + 1; i < max; i++) {
+            sb.append(" □");
+        }
+        return sb.toString();
     }
 
     @Override
-    public void tick(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity pBlockEntity, AdvancedDisplayRenderInstance parent) {
-        if (pBlockEntity.getTrainData() == null) {
-            return;
-        }
-
-        boolean dirty = false;
-        
-        if (pBlockEntity.getTrainData().getNextStop().isPresent()) {
-            if (this.state != State.WHILE_NEXT_STOP && pBlockEntity.getTrainData().getNextStop().get().departureTicks() <= 0) {
-                this.state = State.WHILE_NEXT_STOP;
-                dirty = true;
-            } else if (this.state != State.BEFORE_NEXT_STOP && pBlockEntity.getTrainData().getNextStop().get().departureTicks() <= ModClientConfig.NEXT_STOP_ANNOUNCEMENT.get() && pBlockEntity.getTrainData().getNextStop().get().departureTicks() > 0) {
-                this.state = State.BEFORE_NEXT_STOP;
-                this.nextConnections = null;
-                long id = InstanceManager.registerClientNextConnectionsResponseAction((data, refreshTime) -> {
-                    this.nextConnections = new ArrayList<>(data);
-                    nextConnectionsPage = 0;
-                    nextConnectionsTimer = 0;
-                    nextConnectionsRefreshTime = refreshTime;
-                    if (data != null && !data.isEmpty()) {
-                        nextConnectionsMaxPage = (int)(nextConnections.size() / NEXT_CONNECTIONS_MAX_ENTRIES_PER_PAGE + (nextConnections.size() % NEXT_CONNECTIONS_MAX_ENTRIES_PER_PAGE == 0 ? 0 : 1));
-                        parent.labels.clear();
-                        updateNextConnections(level, pos, state, pBlockEntity, parent);
+    public void renderTick(float deltaTime) {
+        timeLabel.renderTick();
+        dateLabel.renderTick();
+        trainLineLabel.renderTick();
+        speedLabel.renderTick();
+        carriageInfoLabel.renderTick();
+        nextConnectionsTitleLabel.renderTick();
+        pageIndicatorLabel.renderTick();
+        DLUtils.doIfNotNull(scheduleLines, x -> {
+            for (int i = 0; i < x.length; i++) {
+                DLUtils.doIfNotNull(x[i], y -> {
+                    for (int j = 0; j < y.length; j++) {
+                        DLUtils.doIfNotNull(y[j], z -> z.renderTick());
                     }
                 });
-                CreateRailwaysNavigator.net().CHANNEL.sendToServer(new NextConnectionsRequestPacket(id, pBlockEntity.getTrainData().trainId(), pBlockEntity.getTrainData().getNextStop().get().stationTagName(), pBlockEntity.getTrainData().getNextStop().get().departureTicks()));
-                dirty = true;
-            } else if (this.state != State.WHILE_TRAVELING && pBlockEntity.getTrainData().getNextStop().get().departureTicks() > ModClientConfig.NEXT_STOP_ANNOUNCEMENT.get()) {
-                this.state = State.WHILE_TRAVELING;
-                dirty = true;
             }
-        }
-
-        if (this.state == State.BEFORE_NEXT_STOP && this.nextConnections != null && !this.nextConnections.isEmpty()) {
-            nextConnectionsTimer++;
-            if ((nextConnectionsTimer %= NEXT_CONNECTIONS_PAGE_TIMER) == 0) {
-                nextConnectionsPage++;
-                nextConnectionsPage %= nextConnectionsMaxPage;
-                
-                parent.labels.clear();
-                updateNextConnections(level, pos, state, pBlockEntity, parent);
+        });
+        DLUtils.doIfNotNull(nextConnectionsLines, x -> {
+            for (int i = 0; i < x.length; i++) {
+                DLUtils.doIfNotNull(x[i], y -> {
+                    for (int j = 0; j < y.length; j++) {
+                        DLUtils.doIfNotNull(y[j], z -> z.renderTick());
+                    }
+                });
             }
-        }
-
-        if (lastKnownExitSide != pBlockEntity.relativeExitDirection.get()) {
-            dirty = true;
-        }
-
-        lastKnownExitSide = pBlockEntity.relativeExitDirection.get();
-
-        if (dirty) {
-            update(level, pos, state, pBlockEntity, parent, EUpdateReason.DATA_CHANGED);
-        } else {
-            generateTimeLabel(level, pos, state, pBlockEntity, parent);
-        }
-
-        if (titleLabel != null) {
-            titleLabel.tick();
-        }
+        });
     }
 
     @Override
-    public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason) {
-        if (blockEntity.getTrainData() == null) {
-            return;
-        }
-
-        generateTitleBar(level, pos, state, blockEntity, parent, reason);
-
-        if (this.state == State.BEFORE_NEXT_STOP && this.nextConnections != null && !this.nextConnections.isEmpty()) {
-            return;
-        }
-
-        parent.labels.clear();
-        updateOverview(level, pos, state, blockEntity, parent);
+    public void tick(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent) {
+        timeLabel
+            .setText(blockEntity.getXSizeScaled() > 1 && !nextStopAnnounced ? TextUtils.text(ModUtils.formatTime(DragonLib.getCurrentWorldTime(), blockEntity.getTimeDisplay() == ETimeDisplay.ETA)).withStyle(ChatFormatting.BOLD) : TextUtils.empty())
+            .setPos(blockEntity.getXSizeScaled() * 16 - 3 - timeLabel.getTextWidth() - (this.exitSide != TrainExitSide.UNKNOWN ? 4 : 0), 2.5f)            
+            .setColor((0xFF << 24) | (blockEntity.getColor() & 0x00FFFFFF))
+        ;
     }
 
-    @Override
-    public void renderAdditional(BlockEntityRendererContext context, AdvancedDisplayBlockEntity pBlockEntity, AdvancedDisplayRenderInstance parent, float pPartialTicks, PoseStack pPoseStack, MultiBufferSource pBufferSource, int pPackedLight, int pOverlay, Boolean backSide) {
-
-        // render title bar
-        timeLabel.render(pPoseStack, pBufferSource, pPackedLight);
-        titleLabel.render(pPoseStack, pBufferSource, pPackedLight);
-
-        context.renderUtils().initRenderEngine();
-        context.renderUtils().fillColor(pBufferSource, pBlockEntity, (0xFF << 24) | (pBlockEntity.getColor() & 0x00FFFFFF), pPoseStack, 2.5f, 4.75f, 0.0f, pBlockEntity.getXSizeScaled() * 16 - 5, 0.25f, pBlockEntity.getBlockState().getValue(HorizontalDirectionalBlock.FACING), pPackedLight);
-        float uv = 1.0f / 256.0f;
-        float y = 5f;
-
-        if (notInService(pBlockEntity)) {
-            return;
-        }
-
-        // Render route path
-        if (this.state != State.BEFORE_NEXT_STOP || nextConnections == null || nextConnections.isEmpty()) {
-            float tempH = PANEL_LINE_HEIGHT - 0.2857142f;
-            context.renderUtils().renderTexture(
-                TEXTURE,
-                pBufferSource,
-                pBlockEntity,
-                pPoseStack,
-                false,
-                8,
-                y,
-                0.0f,
-                1,
-                tempH,
-                uv * TEX_ROUTE_PATH_U,
-                uv * 2,
-                uv * (TEX_ROUTE_PATH_U + 7),
-                uv * (TEX_ROUTE_PATH_H),
-                pBlockEntity.getBlockState().getValue(HorizontalDirectionalBlock.FACING),
-                0xFFFFFFFF,
-                pPackedLight
-            );
-            y += tempH;
-            for (int i = 0; i < 2 && i < pBlockEntity.getTrainData().stopovers().size(); i++) {
-                context.renderUtils().renderTexture(
-                    TEXTURE,
-                    pBufferSource,
-                    pBlockEntity,
-                    pPoseStack,
-                    false,
-                    8,
-                    y,
-                    0.0f,
-                    1,
-                    2,
-                    uv * TEX_ROUTE_PATH_U,
-                    uv * TEX_ROUTE_PATH_H * 1,
-                    uv * (TEX_ROUTE_PATH_U + 7),
-                    uv * (TEX_ROUTE_PATH_H * 2),
-                    pBlockEntity.getBlockState().getValue(HorizontalDirectionalBlock.FACING),
-                    0xFFFFFFFF,
-                    pPackedLight
-                );
-                y += PANEL_LINE_HEIGHT;
-            }
-            
-            if (pBlockEntity.getTrainData().predictions().size() > 1) {
-                context.renderUtils().renderTexture(
-                    TEXTURE,
-                    pBufferSource,
-                    pBlockEntity,
-                    pPoseStack,
-                    false,
-                    8,
-                    y,
-                    0.0f,
-                    1,
-                    2,
-                    uv * TEX_ROUTE_PATH_U,
-                    uv * TEX_ROUTE_PATH_H * 2,
-                    uv * (TEX_ROUTE_PATH_U + 7),
-                    uv * (TEX_ROUTE_PATH_H * 3),
-                    pBlockEntity.getBlockState().getValue(HorizontalDirectionalBlock.FACING),
-                    0xFFFFFFFF,
-                    pPackedLight
-                );
-            }
-            
-        }
-
-        // EXIT ARROW
-        TrainExitSide side = pBlockEntity.relativeExitDirection.get();
+    public void renderHeader(BERGraphics<AdvancedDisplayBlockEntity> graphics, float partialTick, AdvancedDisplayRenderInstance parent, int light, boolean backSide) {
+        final float uv255 = 1f / 256f;
+        TrainExitSide side = exitSide;
         if (backSide) {
             side = side.getOpposite();
         }
-        if (state != State.WHILE_TRAVELING && side != TrainExitSide.UNKNOWN) {
-            context.renderUtils().renderTexture(
-                ModGuiIcons.ICON_LOCATION,
-                pBufferSource,
-                pBlockEntity,
-                pPoseStack,
+
+        graphics.poseStack().pushPose();
+        if (side == TrainExitSide.LEFT) {
+            graphics.poseStack().translate(4, 0, 0);
+        }
+
+        // Render time
+        if (graphics.blockEntity().getXSizeScaled() > 1 && !nextStopAnnounced) {            
+            timeLabel.render(graphics, light);
+            BERUtils.renderTexture(
+                ICONS,
+                graphics,
                 false,
-                pBlockEntity.getXSizeScaled() * 16 - 3f - 2,
-                2.25f,
-                0,
+                timeLabel.getX() - 2.5f,
                 2.5f,
-                2.5f,
-                uv * (side == TrainExitSide.RIGHT ? ModGuiIcons.ARROW_RIGHT : ModGuiIcons.ARROW_LEFT).getU(),
-                uv * (side == TrainExitSide.RIGHT ? ModGuiIcons.ARROW_RIGHT : ModGuiIcons.ARROW_LEFT).getV(),
-                uv * ((side == TrainExitSide.RIGHT ? ModGuiIcons.ARROW_RIGHT : ModGuiIcons.ARROW_LEFT).getU() + ModGuiIcons.ICON_SIZE),
-                uv * ((side == TrainExitSide.RIGHT ? ModGuiIcons.ARROW_RIGHT : ModGuiIcons.ARROW_LEFT).getV() + ModGuiIcons.ICON_SIZE),
-                pBlockEntity.getBlockState().getValue(HorizontalDirectionalBlock.FACING),
-                (0xFF << 24) | (pBlockEntity.getColor()),
-                pPackedLight
+                0.0f,
+                2,
+                2,
+                uv255 * 227,
+                uv255 * 19,
+                uv255 * (227 + 10),
+                uv255 * (19 + 10),
+                graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING),
+                (0xFF << 24) | (graphics.blockEntity().getColor() & 0x00FFFFFF),
+                light
             );
         }
-    }
 
-    private boolean notInService(AdvancedDisplayBlockEntity blockEntity) {
-        Optional<SimpleDeparturePrediction> optPred = blockEntity.getTrainData().getNextStop();
-        return !optPred.isPresent() || optPred.get().stationTagName() == null || optPred.get().stationTagName().isBlank();
-    }
+        if (graphics.blockEntity().getTrainData() == null || graphics.blockEntity().getTrainData().isEmpty()) {
+            graphics.poseStack().popPose();
+            return;
+        }
 
-    private float generateTimeLabel(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent) {   
-        float arrowOffset = (this.state != State.WHILE_TRAVELING && blockEntity.relativeExitDirection.get() != TrainExitSide.UNKNOWN ? 4 : 0);     
-        float maxWidth = blockEntity.getXSizeScaled() * 16 - arrowOffset;
-        MutableComponent line = TextUtils.text(TimeUtils.parseTime((int)(blockEntity.getLevel().getDayTime() % DragonLib.TICKS_PER_DAY + DragonLib.DAYTIME_SHIFT), ModClientConfig.TIME_FORMAT.get())).withStyle(ChatFormatting.BOLD);
-        float rawTextWidth = Math.min(parent.getFontUtils().font.width(line), maxWidth);
-        float textWidth = rawTextWidth * 0.25f;
-        timeLabel = parent.carriageIndexLabel = new BERText(parent.getFontUtils(), textWidth > parent.getFontUtils().font.width(line) * 0.1f ? line : TextUtils.empty(), 0)
-            .withIsCentered(false)
-            .withMaxWidth(textWidth, true)
-            .withStretchScale(0.1f, 0.25f)
-            .withColor((0xFF << 24) | (blockEntity.getColor() & 0x00FFFFFF))
-            .withPredefinedTextTransformation(new TextTransformation(blockEntity.getXSizeScaled() * 16 - 2.5f - textWidth - (this.state != State.WHILE_TRAVELING && blockEntity.relativeExitDirection.get() != TrainExitSide.UNKNOWN ? 4 : 0), 2.5f, 0.0f, 1, 0.25f))
-            .build();
-        return textWidth;
-    }
+        trainLineLabel.render(graphics, light);
 
-    private void generateTitleBar(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason) {
-        int displayWidth = blockEntity.getXSizeScaled();
+        // Carriage label
+        if (graphics.blockEntity().getXSizeScaled() > 2 && !nextStopAnnounced) {            
+            carriageLabel.render(graphics, light);
+            BERUtils.renderTexture(
+                CARRIAGE_ICON,
+                graphics,
+                false,
+                carriageLabel.getX() - 3.5f,
+                2.5f,
+                0.0f,
+                3,
+                2,
+                uv255 * 22,
+                uv255 * 231,
+                uv255 * (22 + 13),
+                uv255 * (231 + 5),
+                graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING),
+                (0xFF << 24) | (graphics.blockEntity().getColor() & 0x00FFFFFF),
+                light
+            );
+        }
+        graphics.poseStack().popPose();
 
-        float maxWidth = displayWidth * 16 - 6 - (this.state != State.WHILE_TRAVELING && blockEntity.relativeExitDirection.get() != TrainExitSide.UNKNOWN ? 4 : 0);
-        //maxWidth *= 2;
-        float timeWidth = generateTimeLabel(level, pos, state, blockEntity, parent);
-
-        MutableComponent line = TextUtils.text(blockEntity.getTrainData().trainName()).withStyle(ChatFormatting.BOLD);
-        if (blockEntity.getTrainData().getNextStop().isPresent()) {
-            switch (this.state) {
-                case BEFORE_NEXT_STOP:
-                    line = ELanguage.translate(keyNextStop, blockEntity.getTrainData().getNextStop().get().stationTagName());
+        if (nextStopAnnounced || graphics.blockEntity().getTrainData().isWaitingAtStation()) {            
+            switch (side) {
+                case RIGHT:
+                    BERUtils.renderTexture(
+                        ModGuiIcons.ICON_LOCATION,
+                        graphics,
+                        false,
+                        graphics.blockEntity().getXSizeScaled() * 16 - 3 - 3,
+                        2.05f,
+                        0,
+                        3,
+                        3,
+                        uv255 * ModGuiIcons.ARROW_RIGHT.getU(),
+                        uv255 * ModGuiIcons.ARROW_RIGHT.getV(),
+                        uv255 * (ModGuiIcons.ARROW_RIGHT.getU() + ModGuiIcons.ICON_SIZE),
+                        uv255 * (ModGuiIcons.ARROW_RIGHT.getV() + ModGuiIcons.ICON_SIZE),
+                        graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING),
+                        (0xFF << 24) | (graphics.blockEntity().getColor()),
+                        light
+                    );
                     break;
-                case WHILE_NEXT_STOP:
-                    line = ELanguage.translate(blockEntity.getTrainData().trainName() + " " + blockEntity.getTrainData().getNextStop().get().stationTagName()).withStyle(ChatFormatting.BOLD);
+                case LEFT:
+                    BERUtils.renderTexture(
+                        ModGuiIcons.ICON_LOCATION,
+                        graphics,
+                        false,
+                        3,
+                        2.05f,
+                        0,
+                        3,
+                        3,
+                        uv255 * ModGuiIcons.ARROW_LEFT.getU(),
+                        uv255 * ModGuiIcons.ARROW_LEFT.getV(),
+                        uv255 * (ModGuiIcons.ARROW_LEFT.getU() + ModGuiIcons.ICON_SIZE),
+                        uv255 * (ModGuiIcons.ARROW_LEFT.getV() + ModGuiIcons.ICON_SIZE),
+                        graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING),
+                        (0xFF << 24) | (graphics.blockEntity().getColor()),
+                        light
+                    );
                     break;
                 default:
                     break;
             }
         }
-
-        if (titleLabel != null && line.getString().equals(titleLabel.getCurrentText().getString()) && reason == EUpdateReason.DATA_CHANGED) {
-            return;
-        }
-
-        titleLabel = new BERText(parent.getFontUtils(), line, 0)
-            .withIsCentered(false)
-            .withMaxWidth(maxWidth - timeWidth - 1, true)
-            .withStretchScale(0.15f, 0.25f)
-            .withStencil(0, maxWidth - timeWidth - 1)
-            .withCanScroll(true, 0.5f)
-            .withColor((0xFF << 24) | (blockEntity.getColor() & 0x00FFFFFF))
-            .withPredefinedTextTransformation(new TextTransformation(3.0f, 2.5f, 0.0f, 1, 0.25f))
-            .build();
     }
 
-    private void updateOverview(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent) {
-        int displayWidth = blockEntity.getXSizeScaled();
+    @Override
+    public void render(BERGraphics<AdvancedDisplayBlockEntity> graphics, float partialTick, AdvancedDisplayRenderInstance parent, int light, boolean backSide) {
+        final float uv255 = 1f / 256f;
+        renderHeader(graphics, partialTick, parent, light, backSide);
+        BERUtils.fillColor(graphics, 2.5f, 5.0f, 0.01f, graphics.blockEntity().getXSizeScaled() * 16 - 5, 0.25f, (0xFF << 24) | (graphics.blockEntity().getColor() & 0x00FFFFFF), graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING), light);
 
-        // ### CONTENT PANEL
-        if (notInService(blockEntity) || !blockEntity.getTrainData().getNextStop().isPresent()) {            
+        if (graphics.blockEntity().getTrainData() == null || graphics.blockEntity().getTrainData().isEmpty()) {
             return;
         }
 
-        float y = PANEL_Y_START;
-        // DESTINATION
-        SimpleDeparturePrediction pred = blockEntity.getTrainData().getNextStop().get();
-        float maxWidth = displayWidth * 16 - 12.5f;
-        int rawTime = (int)(blockEntity.getLastRefreshedTime() % 24000 + pred.departureTicks() + DragonLib.DAYTIME_SHIFT);
-        MutableComponent line = TextUtils.text(TimeUtils.parseTime(rawTime - rawTime % ModClientConfig.REALTIME_PRECISION_THRESHOLD.get(), ModClientConfig.TIME_FORMAT.get()));
-        parent.labels.add(new BERText(parent.getFontUtils(), line, 0)
-            .withIsCentered(false)
-            .withMaxWidth(4, true)
-            .withStretchScale(0.08f, 0.14f)
-            .withStencil(0, 7)
-            .withColor((0xFF << 24) | (blockEntity.getColor()))
-            .withPredefinedTextTransformation(new TextTransformation(3.0f, y + 0.3f, 0.0f, 1, 0.14f))
-            .build()
-        );
-
-
-        line = TextUtils.text(pred.stationTagName()).withStyle(ChatFormatting.BOLD);
-        parent.labels.add(new BERText(parent.getFontUtils(), line, 0)
-            .withIsCentered(false)
-            .withMaxWidth(maxWidth, true)
-            .withStretchScale(0.15f, 0.2f)
-            .withStencil(0, maxWidth)
-            .withCanScroll(true, 0.5f)
-            .withColor((0xFF << 24) | (blockEntity.getColor()))
-            .withPredefinedTextTransformation(new TextTransformation(10.0f, y, 0.0f, 1, 0.2f))
-            .build()
-        );
-        y += PANEL_LINE_HEIGHT;
-
-        for (int i = 0; i < 2 && i < blockEntity.getTrainData().stopovers().size(); i++) {
-            pred = blockEntity.getTrainData().stopovers().get(i);
-            rawTime = (int)(blockEntity.getLastRefreshedTime() % 24000 + pred.departureTicks() + DragonLib.DAYTIME_SHIFT);
-            line = TextUtils.text(TimeUtils.parseTime(rawTime - rawTime % ModClientConfig.REALTIME_PRECISION_THRESHOLD.get(), ModClientConfig.TIME_FORMAT.get()));
-            parent.labels.add(new BERText(parent.getFontUtils(), line, 0)
-                .withIsCentered(false)
-                .withMaxWidth(4, true)
-                .withStretchScale(0.08f, 0.14f)
-                .withStencil(0, 7)
-                .withColor((0xFF << 24) | (blockEntity.getColor()))
-                .withPredefinedTextTransformation(new TextTransformation(3.0f, y + 0.1f, 0.0f, 1, 0.14f))
-                .build()
+        if (shouldRenderNextConnections()) {
+            DLUtils.doIfNotNull(nextConnectionsLines, x -> {
+                for (int i = 0; i < x.length; i++) {
+                    DLUtils.doIfNotNull(x[i], a -> {
+                        for (int j = 0; j < a.length; j++) {
+                            DLUtils.doIfNotNull(a[j], b -> b.render(graphics, light));
+                        }
+                    });
+                }
+            });
+            nextConnectionsTitleLabel.render(graphics, light);
+            pageIndicatorLabel.render(graphics, light);
+        } else if (DragonLib.getCurrentWorldTime() % 500 < 200 && !graphics.blockEntity().getTrainData().isWaitingAtStation()) {
+            // render stats
+            speedLabel.render(graphics, light);
+            dateLabel.render(graphics, light);
+            carriageInfoLabel.render(graphics, light);
+            BERUtils.renderTexture(
+                CARRIAGE_ICON,
+                graphics,
+                false,
+                graphics.blockEntity().getXSizeScaled() * 16 / 2f - carriageInfoLabel.getTextWidth() / 2f - 1.5f,
+                carriageInfoLabel.getY(),
+                0.0f,
+                2.25f,
+                1.5f,
+                uv255 * 22,
+                uv255 * 231,
+                uv255 * (22 + 13),
+                uv255 * (231 + 5),
+                graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING),
+                (0xFF << 24) | (graphics.blockEntity().getColor() & 0x00FFFFFF),
+                light
             );
-            line = TextUtils.text(pred.stationTagName());
-            parent.labels.add(new BERText(parent.getFontUtils(), line, 0)
-                .withIsCentered(false)
-                .withMaxWidth(maxWidth, true)
-                .withStretchScale(0.15f, 0.16f)
-                .withStencil(0, maxWidth)
-                .withCanScroll(true, 0.5f)
-                .withColor((0xFF << 24) | (blockEntity.getColor()))
-                .withPredefinedTextTransformation(new TextTransformation(10.0f, y + 0.2f, 0.0f, 1, 0.16f))
-                .build()
-            );
-            y += PANEL_LINE_HEIGHT;
-        }
+        } else {
+            // Render schedule
+            DLUtils.doIfNotNull(scheduleLines, x -> {
+                for (int i = 0; i < x.length; i++) {
+                    final int idx = i;
+                    DLUtils.doIfNotNull(x[i], a -> {
+                        for (int j = 0; j < a.length; j++) {
+                            DLUtils.doIfNotNull(a[j], b -> b.render(graphics, light));
+                        }
 
-        if (blockEntity.getTrainData().predictions().size() <= 1) {
-            return;
+                        final float uv32 = 1f / CRNGui.GUI_WIDTH;
+                        if (idx == 0 && scheduleLines.length > 1) {
+                            BERUtils.renderTexture(
+                                CRNGui.GUI,
+                                graphics,
+                                false,
+                                (a[LineComponent.REAL_TIME.i()] == null ? a[LineComponent.SCHEDULED_TIME.i()].getX() + a[LineComponent.SCHEDULED_TIME.i()].getMaxWidth() : a[LineComponent.REAL_TIME.i()].getX() + a[LineComponent.REAL_TIME.i()].getMaxWidth()) - 1,
+                                a[LineComponent.SCHEDULED_TIME.i()].getY() - 1,
+                                0.0f,
+                                1,
+                                2,
+                                uv32 * 21,
+                                uv32 * 30,
+                                uv32 * (21 + 7),
+                                uv32 * (30 + 14),
+                                graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING),
+                                (0xFF << 24) | (graphics.blockEntity().getColor() & 0x00FFFFFF),
+                                light
+                            );
+                        } else if (idx >= MAX_LINES - 1) {
+                            BERUtils.renderTexture(
+                                CRNGui.GUI,
+                                graphics,
+                                false,
+                                (a[LineComponent.REAL_TIME.i()] == null ? a[LineComponent.SCHEDULED_TIME.i()].getX() + a[LineComponent.SCHEDULED_TIME.i()].getMaxWidth() : a[LineComponent.REAL_TIME.i()].getX() + a[LineComponent.REAL_TIME.i()].getMaxWidth()) - 1,
+                                a[LineComponent.SCHEDULED_TIME.i()].getY() - 1,
+                                0.0f,
+                                1,
+                                2,
+                                uv32 * 35,
+                                uv32 * 30,
+                                uv32 * (35 + 7),
+                                uv32 * (30 + 14),
+                                graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING),
+                                (0xFF << 24) | (graphics.blockEntity().getColor() & 0x00FFFFFF),
+                                light
+                            );
+                        } else {
+                            BERUtils.renderTexture(
+                                CRNGui.GUI,
+                                graphics,
+                                false,
+                                (a[LineComponent.REAL_TIME.i()] == null ? a[LineComponent.SCHEDULED_TIME.i()].getX() + a[LineComponent.SCHEDULED_TIME.i()].getMaxWidth() : a[LineComponent.REAL_TIME.i()].getX() + a[LineComponent.REAL_TIME.i()].getMaxWidth()) - 1,
+                                a[LineComponent.SCHEDULED_TIME.i()].getY() - 1,
+                                0.0f,
+                                1,
+                                2,
+                                uv32 * 28,
+                                uv32 * 30,
+                                uv32 * (28 + 7),
+                                uv32 * (30 + 14),
+                                graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING),
+                                (0xFF << 24) | (graphics.blockEntity().getColor() & 0x00FFFFFF),
+                                light
+                            );
+                        }
+                    });
+                }
+            });
         }
-
-        // DESTINATION
-        pred = blockEntity.getTrainData().getLastStop().get();
-        rawTime = (int)(blockEntity.getLastRefreshedTime() % 24000 + pred.departureTicks() + DragonLib.DAYTIME_SHIFT);
-        line = TextUtils.text(TimeUtils.parseTime(rawTime - rawTime % ModClientConfig.REALTIME_PRECISION_THRESHOLD.get(), ModClientConfig.TIME_FORMAT.get()));
-        parent.labels.add(new BERText(parent.getFontUtils(), line, 0)
-            .withIsCentered(false)
-            .withMaxWidth(4, true)
-            .withStretchScale(0.08f, 0.14f)
-            .withStencil(0, 7)
-            .withColor((0xFF << 24) | (blockEntity.getColor()))
-            .withPredefinedTextTransformation(new TextTransformation(3.0f, y + 0.3f, 0.0f, 1, 0.14f))
-            .build()
-        );
-        line = TextUtils.text(pred.stationTagName()).withStyle(ChatFormatting.BOLD);
-        parent.labels.add(new BERText(parent.getFontUtils(), line, 0)
-            .withIsCentered(false)
-            .withMaxWidth(maxWidth, true)
-            .withStretchScale(0.2f, 0.2f)
-            .withStencil(0, maxWidth)
-            .withCanScroll(true, 0.5f)
-            .withColor((0xFF << 24) | (blockEntity.getColor()))
-            .withPredefinedTextTransformation(new TextTransformation(10.0f, y, 0.0f, 1, 0.2f))
-            .build()
-        );
+        
     }
 
-    private void updateNextConnections(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent) {
-        int displayWidth = blockEntity.getXSizeScaled();
+    @Override
+    public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason) {
+        if (blockEntity.getTrainData() == null || blockEntity.getTrainData().isEmpty()) {
+            return;
+        }
+        TrainDisplayData data = blockEntity.getTrainData();
+        boolean wasNextStopAnnounced = nextStopAnnounced;
+        nextStopAnnounced = !data.isWaitingAtStation() && data.getNextStop().isPresent() && data.getNextStop().get().getRealTimeArrivalTime() - DragonLib.getCurrentWorldTime() < ModClientConfig.NEXT_STOP_ANNOUNCEMENT.get();
+        this.exitSide = !nextStopAnnounced && !data.isWaitingAtStation() ? TrainExitSide.UNKNOWN : (data.isWaitingAtStation() ? exitSide : blockEntity.relativeExitDirection.get());
 
-        // ### CONTENT PANEL
-        if (notInService(blockEntity)) {            
+        if (blockEntity.getXSizeScaled() > 1 && nextStopAnnounced && !wasNextStopAnnounced && data.getNextStop().isPresent()) {
+            DataAccessor.getFromServer(new NextConnectionsRequestData(data.getNextStop().get().getName(), data.getTrainData().getId()), ModAccessorTypes.GET_NEXT_CONNECTIONS_DISPLAY_DATA, (res) -> {
+                nextConnections = res;
+                updateLayout(blockEntity, data);
+                updateContent(blockEntity, data);
+            });
+        }
+
+        if (reason == EUpdateReason.LAYOUT_CHANGED || !nextStopAnnounced) {
+            updateLayout(blockEntity, data);
+            nextConnections = null;
+        }
+        updateContent(blockEntity, data);
+    }
+
+    private void updateContent(AdvancedDisplayBlockEntity blockEntity, TrainDisplayData data) {        
+        timeLabel
+            .setText(blockEntity.getXSizeScaled() > 1 && !nextStopAnnounced ? TextUtils.text(ModUtils.formatTime(DragonLib.getCurrentWorldTime(), blockEntity.getTimeDisplay() == ETimeDisplay.ETA)).withStyle(ChatFormatting.BOLD) : TextUtils.empty())
+            .setPos(blockEntity.getXSizeScaled() * 16 - 3 - timeLabel.getTextWidth() - (this.exitSide != TrainExitSide.UNKNOWN ? 4 : 0), 2.5f)
+            .setColor((0xFF << 24) | (blockEntity.getColor() & 0x00FFFFFF))
+        ;
+        carriageLabel
+            .setText(blockEntity.getXSizeScaled() > 1 && !nextStopAnnounced ? TextUtils.text(String.format("%02d", blockEntity.getCarriageData().index() + 1)).withStyle(ChatFormatting.BOLD) : TextUtils.empty())
+            .setPos(timeLabel.getX() - 4 - carriageLabel.getTextWidth(), 2.5f)
+            .setColor((0xFF << 24) | (blockEntity.getColor() & 0x00FFFFFF))
+        ;
+        trainLineLabel
+            .setText(nextStopAnnounced ? ELanguage.translate(keyNextStop, data.getNextStop().get().getName()) : TextUtils.text(data.getTrainData().getName()).withStyle(ChatFormatting.BOLD))
+            .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 6 - (blockEntity.getXSizeScaled() > 1 && !nextStopAnnounced ? timeLabel.getTextWidth() - 4 : 0) - (blockEntity.getXSizeScaled() > 1 && !nextStopAnnounced ? carriageLabel.getTextWidth() - 5 : 0) - (this.exitSide != TrainExitSide.UNKNOWN ? 4 : 0), BoundsHitReaction.SCALE_SCROLL)
+            .setColor((0xFF << 24) | (blockEntity.getColor() & 0x00FFFFFF))
+        ;
+        speedLabel
+            .setText(ModUtils.calcSpeedString(data.getSpeed(), ModClientConfig.SPEED_UNIT.get()).withStyle(ChatFormatting.BOLD))
+            .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 6, BoundsHitReaction.CUT_OFF)
+            .setColor((0xFF << 24) | (blockEntity.getColor() & 0x00FFFFFF))
+        ;
+        dateLabel
+            .setText(ELanguage.translate(keyDate, blockEntity.getLevel().getDayTime() / Level.TICKS_PER_DAY, ModUtils.formatTime(DragonLib.getCurrentWorldTime(), blockEntity.getTimeDisplay() == ETimeDisplay.ETA)))
+            .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 6, BoundsHitReaction.CUT_OFF)
+            .setColor((0xFF << 24) | (blockEntity.getColor() & 0x00FFFFFF))
+        ;
+        carriageInfoLabel
+            .setText(TextUtils.text(String.format("%02d", blockEntity.getCarriageData().index() + 1)))
+            .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 6, BoundsHitReaction.CUT_OFF)
+            .setColor((0xFF << 24) | (blockEntity.getColor() & 0x00FFFFFF))
+        ;
+
+        if (shouldRenderNextConnections() && !nextConnections.getConnections().isEmpty()) {
+            final int pages = (int)Math.ceil((float)nextConnections.getConnections().size() / (MAX_LINES - 1));
+            final int page = (int)((DragonLib.getCurrentWorldTime() % (100 * pages)) / 100);
+            pageIndicatorLabel
+                .setText(TextUtils.text(generatePageIndexString(page, pages)))
+                .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 6, BoundsHitReaction.CUT_OFF)
+                .setColor((0xFF << 24) | (blockEntity.getColor() & 0x00FFFFFF))
+            ;
+            nextConnectionsTitleLabel
+                .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 6, BoundsHitReaction.CUT_OFF)
+                .setColor((0xFF << 24) | (blockEntity.getColor() & 0x00FFFFFF))
+            ;
+            DLUtils.doIfNotNull(nextConnectionsLines, x -> {
+                for (int i = 0; i < MAX_LINES - 1; i++) {
+                    final int k = i;
+                    final int connectionIdx = i + (page * (MAX_LINES - 1));
+                    DLUtils.doIfNotNull(nextConnectionsLines[i], a -> {
+                        if (connectionIdx >= nextConnections.getConnections().size()) {
+                            a[LineComponent.SCHEDULED_TIME.i()].setText(TextUtils.empty());
+                            if (a[LineComponent.REAL_TIME.i()] != null) {
+                                a[LineComponent.REAL_TIME.i()].setText(TextUtils.empty());
+                            }
+                            a[LineComponent.TRAIN_NAME.i()].setText(TextUtils.empty());
+                            a[LineComponent.DESTINATION.i()].setText(TextUtils.empty());
+                            a[LineComponent.PLATFORM.i()].setText(TextUtils.empty());
+                            return;
+                        }
+
+                        TrainStopDisplayData stop = nextConnections.getConnections().get(connectionIdx);
+                        a[LineComponent.PLATFORM.i()]
+                            .setText(TextUtils.text(stop.getStationInfo().platform()))
+                            .setPos(blockEntity.getXSizeScaled() * 16 - 3 - a[LineComponent.PLATFORM.i()].getTextWidth(), 7.5f + k * 1.7f)
+                            .setColor((0xFF << 24) | (blockEntity.getColor() & 0x00FFFFFF))
+                        ;
+                        if (a[LineComponent.REAL_TIME.i()] != null) {                              
+                            a[LineComponent.SCHEDULED_TIME.i()]
+                                .setPos(3, 7.5f + k * 1.7f)
+                                .setText(TextUtils.text(ModUtils.formatTime(stop.getScheduledDepartureTime(), blockEntity.getTimeDisplay() == ETimeDisplay.ETA)))
+                                .setColor((0xFF << 24) | (blockEntity.getColor() & 0x00FFFFFF))
+                            ;                        
+                            a[LineComponent.REAL_TIME.i()]
+                                .setPos(a[LineComponent.SCHEDULED_TIME.i()].getX() + a[LineComponent.SCHEDULED_TIME.i()].getTextWidth() + 1, 7.5f + k * 1.7f)
+                                .setText(TextUtils.text(ModUtils.formatTime(stop.getRealTimeDepartureTime(), blockEntity.getTimeDisplay() == ETimeDisplay.ETA)))
+                                .setColor(stop.isDepartureDelayed() ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME)
+                            ;
+                        } else {                            
+                            a[LineComponent.SCHEDULED_TIME.i()]
+                                .setPos(3, 7.5f + k * 1.7f)
+                                .setText(TextUtils.text(ModUtils.formatTime(stop.getRealTimeDepartureTime(), blockEntity.getTimeDisplay() == ETimeDisplay.ETA)))
+                                .setColor(stop.isDepartureDelayed() ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME)
+                            ;
+                        }
+                        float pX = a[LineComponent.SCHEDULED_TIME.i()].getX() + a[LineComponent.SCHEDULED_TIME.i()].getTextWidth() + 1 + (a[LineComponent.REAL_TIME.i()] == null ? 0 : a[LineComponent.REAL_TIME.i()].getTextWidth() + 1);
+                        a[LineComponent.TRAIN_NAME.i()]
+                            .setPos(pX, 7.5f + k * 1.7f)
+                            .setText(TextUtils.text(stop.getTrainName()))
+                            .setMaxWidth(6, BoundsHitReaction.CUT_OFF)
+                            .setColor((0xFF << 24) | (blockEntity.getColor() & 0x00FFFFFF))
+                        ;
+                        a[LineComponent.DESTINATION.i()]
+                            .setPos(pX + 7, 7.5f + k * 1.7f)
+                            .setText(TextUtils.text(stop.getDestination()))
+                            .setMaxWidth(a[LineComponent.PLATFORM.i()].getX() - 1 - pX - 7, BoundsHitReaction.SCALE_SCROLL)
+                            .setColor((0xFF << 24) | (blockEntity.getColor() & 0x00FFFFFF))
+                        ;
+                    });
+                }
+            });
+        } else {            
+            DLUtils.doIfNotNull(scheduleLines, x -> {
+                int totalStationsCount = data.getStopsFromCurrentStation().size();
+                int linesCount = Math.min(scheduleLines.length, totalStationsCount);
+                for (int i = 0; i < linesCount; i++) {
+                    final int j = i;
+                    int k = i >= linesCount - 1 ? totalStationsCount - 1 : i;
+                    DLUtils.doIfNotNull(scheduleLines[i], a -> {
+                        TrainStopDisplayData stop = data.getStopsFromCurrentStation().get(k);
+                        if (a[LineComponent.REAL_TIME.i()] != null) {                            
+                            a[LineComponent.SCHEDULED_TIME.i()]
+                                .setText(TextUtils.text(ModUtils.formatTime(stop.getScheduledArrivalTime(), blockEntity.getTimeDisplay() == ETimeDisplay.ETA)))
+                                .setColor((0xFF << 24) | (blockEntity.getColor() & 0x00FFFFFF))
+                            ;
+                            a[LineComponent.REAL_TIME.i()]
+                                .setPos(a[LineComponent.SCHEDULED_TIME.i()].getX() + a[LineComponent.SCHEDULED_TIME.i()].getTextWidth() + 1, 6 + j * 2)
+                                .setText(TextUtils.text(ModUtils.formatTime(stop.getRealTimeArrivalTime(), blockEntity.getTimeDisplay() == ETimeDisplay.ETA)))
+                                .setColor(stop.isArrivalDelayed() ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME)
+                            ;
+                        } else {
+                            a[LineComponent.SCHEDULED_TIME.i()]
+                                .setText(TextUtils.text(ModUtils.formatTime(stop.getRealTimeArrivalTime(), blockEntity.getTimeDisplay() == ETimeDisplay.ETA)))
+                                .setColor(stop.isArrivalDelayed() ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME)
+                            ;
+                        }
+                        float pX = a[LineComponent.SCHEDULED_TIME.i()].getX() + a[LineComponent.SCHEDULED_TIME.i()].getTextWidth() + 3 + (a[LineComponent.REAL_TIME.i()] == null ? 0 : a[LineComponent.REAL_TIME.i()].getTextWidth() + 1);
+                        a[LineComponent.DESTINATION.i()]
+                            .setPos(pX, 6 + j * 2)
+                            .setText(TextUtils.text(stop.getName()).withStyle(j >= linesCount - 1 ? ChatFormatting.BOLD : ChatFormatting.RESET))
+                            .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 3 - pX, BoundsHitReaction.SCALE_SCROLL)
+                            .setColor((0xFF << 24) | (blockEntity.getColor() & 0x00FFFFFF))
+                        ;
+                    });
+                }
+            });
+        }
+    }
+    
+    private BERLabel[] createStationLine(AdvancedDisplayBlockEntity blockEntity, int index) {
+        BERLabel timeLabel = new BERLabel()
+            .setPos(3, 6 + index * 2)
+            .setScale(0.15f, 0.1f)
+            .setYScale(0.15f)
+            .setMaxWidth(6, BoundsHitReaction.CUT_OFF)
+        ;
+        BERLabel realTimeLabel = null;
+        if (blockEntity.getXSizeScaled() > 1) {
+            realTimeLabel = new BERLabel()
+                .setScale(0.15f, 0.1f)
+                .setYScale(0.15f)
+                .setMaxWidth(6, BoundsHitReaction.CUT_OFF)
+            ;
+        }
+        BERLabel destinationLabel = new BERLabel()
+            .setScale(0.15f, 0.08f)
+            .setYScale(0.15f)
+        ;
+
+        return new BERLabel[] { timeLabel, realTimeLabel, null, destinationLabel };
+    }
+
+    private BERLabel[] createNextConnectionsLine(AdvancedDisplayBlockEntity blockEntity, int index) {
+        BERLabel timeLabel = new BERLabel()
+            .setPos(3, 7 + index * 2)
+            .setScale(0.15f, 0.1f)
+            .setYScale(0.15f)
+            .setMaxWidth(6, BoundsHitReaction.CUT_OFF)
+        ;
+        BERLabel realTimeLabel = null;
+        if (blockEntity.getXSizeScaled() > 2) {
+            realTimeLabel = new BERLabel()
+                .setScale(0.15f, 0.1f)
+                .setYScale(0.15f)
+                .setMaxWidth(6, BoundsHitReaction.CUT_OFF)
+            ;
+        }
+        BERLabel trainNameLabel = new BERLabel()
+            .setScale(0.15f, 0.08f)
+            .setYScale(0.15f)
+        ;
+        BERLabel destinationLabel = new BERLabel()
+            .setScale(0.15f, 0.08f)
+            .setYScale(0.15f)
+        ;
+        BERLabel platformLabel = new BERLabel()
+            .setScale(0.15f, 0.08f)
+            .setYScale(0.15f)
+        ;
+
+        return new BERLabel[] { timeLabel, realTimeLabel, trainNameLabel, destinationLabel, platformLabel };
+    }
+
+    private void updateLayout(AdvancedDisplayBlockEntity blockEntity, TrainDisplayData data) {
+        if (shouldRenderNextConnections()) {
+            for (int i = 0; i < MAX_LINES - 1; i++) {
+                this.nextConnectionsLines[i] = createNextConnectionsLine(blockEntity, i);
+            }
             return;
         }
 
-        float y = PANEL_Y_START;
-        float maxWidth = displayWidth * 16 - 3;
-
-        MutableComponent ln = TextUtils.text(generatePageIndexString());
-        float rawTextWidth = Math.min(parent.getFontUtils().font.width(ln) * 0.2f, maxWidth - 16.0f);
-        parent.labels.add(new BERText(parent.getFontUtils(), ln, 0)
-            .withIsCentered(false)
-            .withMaxWidth(maxWidth - 16.0f, true)
-            .withStretchScale(0.2f, 0.2f)
-            .withStencil(0, maxWidth - 16.0f)
-            .withCanScroll(false, 0.5f)
-            .withColor((0xFF << 24) | (blockEntity.getColor()))
-            .withPredefinedTextTransformation(new TextTransformation(maxWidth - rawTextWidth - 0.25f, y - 0.2f, 0.0f, 1, 0.2f))
-            .build()
-        );
-
-        parent.labels.add(new BERText(parent.getFontUtils(), textNextConnections, 0)
-            .withIsCentered(false)
-            .withMaxWidth(maxWidth - 6.0f - rawTextWidth, true)
-            .withStretchScale(0.1f, 0.15f)
-            .withStencil(0, maxWidth - 6.0f - rawTextWidth)
-            .withCanScroll(true, 0.5f)
-            .withColor((0xFF << 24) | (blockEntity.getColor()))
-            .withPredefinedTextTransformation(new TextTransformation(3.0f, y, 0.0f, 1, 0.15f))
-            .build()
-        );
-        y += PANEL_LINE_HEIGHT;
-       
-        if (this.nextConnections == null) {
-            return;
-        }
-
-        for (int i = nextConnectionsPage * NEXT_CONNECTIONS_MAX_ENTRIES_PER_PAGE; i < (nextConnectionsPage + 1) * NEXT_CONNECTIONS_MAX_ENTRIES_PER_PAGE && i < nextConnections.size(); i++) {
-
-            SimpleTrainConnection connection = nextConnections.get(i);
-            int rawTime = (int)(nextConnectionsRefreshTime % 24000 + connection.ticks() + DragonLib.DAYTIME_SHIFT);
-            MutableComponent line = TextUtils.text(TimeUtils.parseTime(rawTime - rawTime % ModClientConfig.REALTIME_PRECISION_THRESHOLD.get(), ModClientConfig.TIME_FORMAT.get()));
-
-            // Time
-            parent.labels.add(new BERText(parent.getFontUtils(), line, 0)
-                .withIsCentered(false)
-                .withMaxWidth(4, true)
-                .withStretchScale(0.08f, 0.14f)
-                .withStencil(0, 4)
-                .withColor((0xFF << 24) | (blockEntity.getColor()))
-                .withPredefinedTextTransformation(new TextTransformation(4.0f, y + 0.1f, 0.0f, 1, 0.14f))
-                .build()
-            );
-
-            // Train Name
-            line = TextUtils.text(connection.trainName());
-            parent.labels.add(new BERText(parent.getFontUtils(), line, 0)
-                .withIsCentered(false)
-                .withMaxWidth(5, true)
-                .withStretchScale(0.1f, 0.16f)
-                .withStencil(0, 5)
-                .withColor((0xFF << 24) | (blockEntity.getColor()))
-                .withPredefinedTextTransformation(new TextTransformation(8.5f, y, 0.0f, 1, 0.16f))
-                .build()
-            );
-
-            // Platform
-            line = TextUtils.text(connection.stationDetails().platform());
-            rawTextWidth = Math.min(parent.getFontUtils().font.width(line) * 0.14f, maxWidth - 16.0f);
-            parent.labels.add(new BERText(parent.getFontUtils(), line, 0)
-                .withIsCentered(false)
-                .withMaxWidth(maxWidth - 16.0f, true)
-                .withStretchScale(0.14f, 0.16f)
-                .withStencil(0, maxWidth - 16.0f)
-                .withCanScroll(false, 0.5f)
-                .withColor((0xFF << 24) | (blockEntity.getColor()))
-                .withPredefinedTextTransformation(new TextTransformation(maxWidth - rawTextWidth, y, 0.0f, 1, 0.16f))
-                .build()
-            );
-
-            // Destination
-            line = TextUtils.text(connection.scheduleTitle());
-            parent.labels.add(new BERText(parent.getFontUtils(), line, 0)
-                .withIsCentered(false)
-                .withMaxWidth(maxWidth - 17.0f - rawTextWidth, true)
-                .withStretchScale(0.1f, 0.16f)
-                .withStencil(0, maxWidth - 17.0f - rawTextWidth)
-                .withCanScroll(true, 0.5f)
-                .withColor((0xFF << 24) | (blockEntity.getColor()))
-                .withPredefinedTextTransformation(new TextTransformation(14.0f, y, 0.0f, 1, 0.16f))
-                .build()
-            );
-            y += PANEL_LINE_HEIGHT;
+        int totalStationsCount = data.getStopsFromCurrentStation().size();
+        int linesCount = Math.min(MAX_LINES, totalStationsCount);
+        this.scheduleLines = new BERLabel[linesCount][];
+        for (int i = 0; i < linesCount; i++) {
+            this.scheduleLines[i] = createStationLine(blockEntity, i);
         }
     }
 
-    private String generatePageIndexString() {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < nextConnectionsPage; i++) {
-            sb.append(" □");
+    private static enum LineComponent {
+        SCHEDULED_TIME(0),
+        REAL_TIME(1),
+        TRAIN_NAME(2),
+        DESTINATION(3),
+        PLATFORM(4);
+        int i;
+        LineComponent(int i) {
+            this.i = i;
         }
-        sb.append(" ■");
-
-        for (int i = nextConnectionsPage + 1; i < nextConnectionsMaxPage; i++) {
-            sb.append(" □");
+        public int i() {
+            return i;
         }
-
-        return sb.toString();
     }
 }

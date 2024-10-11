@@ -14,7 +14,7 @@ public class ModExtras {
 
     public static boolean registeredTrackStationSource = false;
 
-    public static void register() {
+    public static void init() {
         Block maybeRegistered = null;
 
         try {

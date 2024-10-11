@@ -38,6 +38,7 @@ public class ModBlocks {
 		.transform(TagGen.pickaxeOnly())
 		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
 		.item()
+		.tab(() -> ModCreativeModeTab.MAIN)
 		.build()
 		.register();
 
@@ -108,6 +109,6 @@ public class ModBlocks {
 		EnvExecutor.runInEnv(EnvType.CLIENT, toRun);
 	}
 
-    public static void register() {
+    public static void init() {
     }
 }

@@ -3,8 +3,8 @@ package de.mrjulsen.crn.registry;
 import com.tterrag.registrate.util.entry.BlockEntityEntry;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
-import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
-import de.mrjulsen.crn.block.be.TrainStationClockBlockEntity;
+import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
+import de.mrjulsen.crn.block.blockentity.TrainStationClockBlockEntity;
 import de.mrjulsen.mcdragonlib.client.ber.StaticBlockEntityRenderer;
 
 public class ModBlockEntities {
@@ -30,6 +30,6 @@ public class ModBlockEntities {
 		.renderer(() -> StaticBlockEntityRenderer::new)
 		.register();
 
-    public static void register() {
+    public static void init() {
     } 
 }

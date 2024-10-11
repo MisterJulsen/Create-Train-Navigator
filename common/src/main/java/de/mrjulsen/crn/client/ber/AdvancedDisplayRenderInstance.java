@@ -1,140 +1,72 @@
 package de.mrjulsen.crn.client.ber;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Supplier;
-
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Vector3f;
 
 import de.mrjulsen.crn.block.AbstractAdvancedDisplayBlock;
 import de.mrjulsen.crn.block.AbstractAdvancedSidedDisplayBlock;
-import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
-import de.mrjulsen.crn.client.ber.base.BERText;
-import de.mrjulsen.crn.client.ber.variants.BERPassengerInfoDetailed;
-import de.mrjulsen.crn.client.ber.variants.BERPassengerInfoInformative;
-import de.mrjulsen.crn.client.ber.variants.BERPassengerInfoSimple;
-import de.mrjulsen.crn.client.ber.variants.BERPlatformDetailed;
-import de.mrjulsen.crn.client.ber.variants.BERPlatformInformative;
-import de.mrjulsen.crn.client.ber.variants.BERPlatformSimple;
-import de.mrjulsen.crn.client.ber.variants.BERRenderSubtypeBase;
-import de.mrjulsen.crn.client.ber.variants.BERTrainDestinationDetailed;
-import de.mrjulsen.crn.client.ber.variants.BERTrainDestinationInformative;
-import de.mrjulsen.crn.client.ber.variants.BERTrainDestinationSimple;
-import de.mrjulsen.crn.client.ber.variants.IBERRenderSubtype;
-import de.mrjulsen.crn.data.EDisplayInfo;
-import de.mrjulsen.crn.data.EDisplayType;
-import de.mrjulsen.crn.data.ESide;
-import de.mrjulsen.crn.data.EDisplayType.EDisplayTypeDataSource;
+import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
+import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity.EUpdateReason;
+import de.mrjulsen.crn.block.properties.ESide;
+import de.mrjulsen.crn.client.AdvancedDisplaysRegistry;
+import de.mrjulsen.crn.client.AdvancedDisplaysRegistry.DisplayTypeResourceKey;
 import de.mrjulsen.mcdragonlib.client.ber.AbstractBlockEntityRenderInstance;
+import de.mrjulsen.mcdragonlib.client.ber.BERGraphics;
 import de.mrjulsen.mcdragonlib.data.Pair;
 import de.mrjulsen.mcdragonlib.data.Tripple;
-import de.mrjulsen.mcdragonlib.util.TextUtils;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class AdvancedDisplayRenderInstance extends AbstractBlockEntityRenderInstance<AdvancedDisplayBlockEntity> {
 
-    private Map<EDisplayType, Map<EDisplayInfo, Supplier<IBERRenderSubtype<AdvancedDisplayBlockEntity, AdvancedDisplayRenderInstance, Boolean>>>> renderSubtypes;
-
-    public Collection<BERText> labels;
-    public BERText carriageIndexLabel;
     public IBERRenderSubtype<AdvancedDisplayBlockEntity, AdvancedDisplayRenderInstance, Boolean> renderSubtype;
-
+    private DisplayTypeResourceKey lastType;
     private int lastXSize = 0;
-    private EDisplayType lastType;
-    private EDisplayInfo lastInfo;
 
     public AdvancedDisplayRenderInstance(AdvancedDisplayBlockEntity blockEntity) {
         super(blockEntity);
     }
 
     @Override
-    protected void preinit(AdvancedDisplayBlockEntity blockEntity) {
-        this.labels = new ArrayList<>();
-        this.renderSubtypes = Map.of(
-            EDisplayType.TRAIN_DESTINATION, Map.of(
-                EDisplayInfo.SIMPLE, () -> new BERTrainDestinationSimple(),
-                EDisplayInfo.DETAILED, () -> new BERTrainDestinationDetailed(),
-                EDisplayInfo.INFORMATIVE, () -> new BERTrainDestinationInformative()
-            ),
-            EDisplayType.PASSENGER_INFORMATION, Map.of(
-                EDisplayInfo.SIMPLE, () -> new BERPassengerInfoSimple(),
-                EDisplayInfo.DETAILED, () -> new BERPassengerInfoDetailed(),
-                EDisplayInfo.INFORMATIVE, () -> new BERPassengerInfoInformative()
-            ),
-            EDisplayType.PLATFORM, Map.of(
-                EDisplayInfo.SIMPLE, () -> new BERPlatformSimple(),
-                EDisplayInfo.DETAILED, () -> new BERPlatformDetailed(),
-                EDisplayInfo.INFORMATIVE, () -> new BERPlatformInformative() 
-            )
-        );
-    }
-
-    public MutableComponent getStopoversString(AdvancedDisplayBlockEntity blockEntity) {
-        MutableComponent line = TextUtils.empty();
-
-        List<String> stopovers = blockEntity.getDisplayType().getSource() == EDisplayTypeDataSource.TRAIN_INFORMATION ?
-            blockEntity.getTrainData().stopovers().stream().map(x -> x.stationTagName()).toList() :
-            blockEntity.getNextDepartureStopovers();
-
-        Iterator<String> i = stopovers.iterator();
-        boolean isFirst = true;
-        while (i.hasNext()) {
-            if (!isFirst) {
-                line = line.append(TextUtils.text(" ● "));
-            }
-            line = line.append(TextUtils.text(i.next()));
-            isFirst = false;
-        }
-        return line;
-    }
-
-    @Override
-    public void render(BlockEntityRendererContext context, AdvancedDisplayBlockEntity pBlockEntity, float pPartialTicks, PoseStack pPoseStack, MultiBufferSource pBufferSource, int pPackedLight, int pOverlay) {
+    public void render(BERGraphics<AdvancedDisplayBlockEntity> graphics, float partialTick) {
         
-        if (!pBlockEntity.isController()) {
+        if (!graphics.blockEntity().isController()) {
             return;
         }
         
-        final int light = pBlockEntity.isGlowing() ? LightTexture.FULL_BRIGHT : pPackedLight;
+        final int light = graphics.blockEntity().isGlowing() ? LightTexture.FULL_BRIGHT : graphics.packedLight();
 
-        if (pBlockEntity.getBlockState().getBlock() instanceof AbstractAdvancedDisplayBlock) {
+        if (graphics.blockEntity().getBlockState().getBlock() instanceof AbstractAdvancedDisplayBlock) {
+
+            renderSubtype.renderTick(Minecraft.getInstance().getDeltaFrameTime());
             
-            Tripple<Float, Float, Float> rotation = pBlockEntity.renderRotation.get();
-            Pair<Float, Float> offset = pBlockEntity.renderOffset.get();
-            Pair<Float, Float> zOffset = pBlockEntity.renderZOffset.get();
-            float scale = pBlockEntity.renderScale.get();
+            Tripple<Float, Float, Float> rotation = graphics.blockEntity().renderRotation.get();
+            Pair<Float, Float> offset = graphics.blockEntity().renderOffset.get();
+            Pair<Float, Float> zOffset = graphics.blockEntity().renderZOffset.get();
+            float scale = graphics.blockEntity().renderScale.get();
 
-            pPoseStack.pushPose();
-            pPoseStack.translate(offset.getFirst(), offset.getSecond(), zOffset.getFirst());
-            pPoseStack.mulPose(Vector3f.XP.rotationDegrees(rotation.getFirst()));
-            pPoseStack.mulPose(Vector3f.YP.rotationDegrees(rotation.getSecond()));
-            pPoseStack.mulPose(Vector3f.ZP.rotationDegrees(rotation.getThird()));
-            pPoseStack.scale(scale, scale, 1);   
-            renderSubtype.renderAdditional(context, pBlockEntity, this, pPartialTicks, pPoseStack, pBufferSource, light, pOverlay, false);
-            labels.forEach(x -> x.render(pPoseStack, pBufferSource, light)); 
-            pPoseStack.popPose();
+            graphics.poseStack().pushPose();
+            graphics.poseStack().translate(offset.getFirst(), offset.getSecond(), zOffset.getFirst());
+            graphics.poseStack().mulPose(Vector3f.XP.rotationDegrees(rotation.getFirst()));
+            graphics.poseStack().mulPose(Vector3f.YP.rotationDegrees(rotation.getSecond()));
+            graphics.poseStack().mulPose(Vector3f.ZP.rotationDegrees(rotation.getThird()));
+            graphics.poseStack().scale(scale, scale, 1);   
+            renderSubtype.render(graphics, partialTick, this, light, false);
+            graphics.poseStack().popPose();
 
-            if (!(pBlockEntity.getBlockState().getBlock() instanceof AbstractAdvancedSidedDisplayBlock) || pBlockEntity.getBlockState().getValue(AbstractAdvancedSidedDisplayBlock.SIDE) == ESide.BOTH) {
-                pPoseStack.pushPose();
-                pPoseStack.mulPose(Vector3f.YP.rotationDegrees(180));
-                pPoseStack.translate(-pBlockEntity.getXSize() * 16, 0, -16);
-                pPoseStack.translate(offset.getFirst(), offset.getSecond(), zOffset.getSecond());
-                pPoseStack.mulPose(Vector3f.XP.rotationDegrees(rotation.getFirst()));
-                pPoseStack.mulPose(Vector3f.YP.rotationDegrees(rotation.getSecond()));
-                pPoseStack.mulPose(Vector3f.ZP.rotationDegrees(rotation.getThird()));
-                pPoseStack.scale(scale, scale, 1);
-                renderSubtype.renderAdditional(context, pBlockEntity, this, pPartialTicks, pPoseStack, pBufferSource, light, pOverlay, true);
-                labels.forEach(x -> x.render(pPoseStack, pBufferSource, light));
-                pPoseStack.popPose();
+            if (!(graphics.blockEntity().getBlockState().getBlock() instanceof AbstractAdvancedSidedDisplayBlock) || graphics.blockEntity().getBlockState().getValue(AbstractAdvancedSidedDisplayBlock.SIDE) == ESide.BOTH) {
+                graphics.poseStack().pushPose();
+                graphics.poseStack().mulPose(Vector3f.YP.rotationDegrees(180));
+                graphics.poseStack().translate(-graphics.blockEntity().getXSize() * 16, 0, -16);
+                graphics.poseStack().translate(offset.getFirst(), offset.getSecond(), zOffset.getSecond());
+                graphics.poseStack().mulPose(Vector3f.XP.rotationDegrees(rotation.getFirst()));
+                graphics.poseStack().mulPose(Vector3f.YP.rotationDegrees(rotation.getSecond()));
+                graphics.poseStack().mulPose(Vector3f.ZP.rotationDegrees(rotation.getThird()));
+                graphics.poseStack().scale(scale, scale, 1);
+                renderSubtype.render(graphics, partialTick, this, light, true);
+                graphics.poseStack().popPose();
             }
         }
     }
@@ -142,35 +74,22 @@ public class AdvancedDisplayRenderInstance extends AbstractBlockEntityRenderInst
     @Override
     public void tick(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity) {
         renderSubtype.tick(level, pos, state, blockEntity, this);
-        labels.forEach(x -> x.tick());
 
         if (blockEntity.getXSizeScaled() != lastXSize) {
-            update(level, pos, state, blockEntity, EUpdateReason.BLOCK_CHANGED);
+            update(level, pos, state, blockEntity, EUpdateReason.LAYOUT_CHANGED);
         }
         lastXSize = blockEntity.getXSizeScaled();
     }
 
     @Override
-    public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, EUpdateReason reason) {
-        carriageIndexLabel = null;
-        EDisplayType type = blockEntity.getDisplayType();
-        EDisplayInfo info = blockEntity.getInfoType();
-
-        if (lastType != type || lastInfo != info) {
-            if (renderSubtypes.containsKey(type)) {
-                Map<EDisplayInfo, Supplier<IBERRenderSubtype<AdvancedDisplayBlockEntity, AdvancedDisplayRenderInstance, Boolean>>> selectedType = renderSubtypes.get(type);
-                if (selectedType.containsKey(info)) {
-                    renderSubtype = selectedType.get(info).get();
-                }
-            }
-    
-            if (renderSubtype == null) {
-                renderSubtype = new BERRenderSubtypeBase<>();
-            }
+    public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, Object data) {
+        EUpdateReason reason = (EUpdateReason)data;
+        DisplayTypeResourceKey type = blockEntity.getDisplayTypeKey();
+        if (lastType == null || !lastType.equals(type)) {
+            renderSubtype = AdvancedDisplaysRegistry.getRenderer(type);
         }
 
         lastType = type;
-        lastInfo = info;
 
         renderSubtype.update(level, pos, state, blockEntity, this, reason);
     }

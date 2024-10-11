@@ -18,9 +18,8 @@ import com.simibubi.create.foundation.utility.Components;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
-import de.mrjulsen.crn.client.gui.NavigatorToast;
+import de.mrjulsen.crn.client.gui.overlay.RouteDetailsOverlay;
 import de.mrjulsen.crn.client.gui.overlay.OverlayPosition;
-import de.mrjulsen.crn.client.gui.overlay.RouteDetailsOverlayScreen;
 import de.mrjulsen.crn.client.gui.widgets.DLCreateIconButton;
 import de.mrjulsen.crn.client.gui.widgets.DLCreateIndicator;
 import de.mrjulsen.crn.config.ModClientConfig;
@@ -28,6 +27,7 @@ import de.mrjulsen.crn.network.InstanceManager;
 import de.mrjulsen.crn.registry.ModItems;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.gui.DLScreen;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.IDragonLibWidget;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import de.mrjulsen.mcdragonlib.client.util.WidgetsCollection;
@@ -37,7 +37,6 @@ import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.chat.NarratorChatListener;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -45,7 +44,6 @@ import net.minecraft.world.item.ItemStack;
 
 public class RouteOverlaySettingsScreen extends DLScreen {
 
-    private static final Component title = TextUtils.translate("gui.createrailwaysnavigator.overlay_settings.title");
     private static final ResourceLocation GUI = new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/route_overlay_settings.png");
     private static final int GUI_WIDTH = 213;
     private static final int GUI_HEIGHT = 79;
@@ -56,14 +54,12 @@ public class RouteOverlaySettingsScreen extends DLScreen {
 	private final ItemStack renderedItem = new ItemStack(ModItems.NAVIGATOR.get());
     private int guiLeft, guiTop;
 
-    private final RouteDetailsOverlayScreen overlay;
+    private final RouteDetailsOverlay overlay;
 
     private DLCreateIconButton backButton;
     private DLCreateIconButton detailsButton;
     private IconButton removeOverlayButton;
-    private DLCreateIconButton soundButton;
     private DLCreateIconButton notificationsButton;
-    private DLCreateIndicator soundIndicator;
     private DLCreateIndicator notificationsIndicator;
     private ScrollInput scaleInput;
     private Component scaleLabel;
@@ -87,8 +83,8 @@ public class RouteOverlaySettingsScreen extends DLScreen {
     private static final MutableComponent textNotificationsDescription = TextUtils.translate("gui.createrailwaysnavigator.route_overlay_settings.notifications.description").withStyle(ChatFormatting.GRAY);
     
     @SuppressWarnings("resource")
-    public RouteOverlaySettingsScreen(RouteDetailsOverlayScreen overlay) {
-        super(title);
+    public RouteOverlaySettingsScreen(RouteDetailsOverlay overlay) {
+        super(TextUtils.translate("gui.createrailwaysnavigator.overlay_settings.title"));
         this.shadowlessFont = new NoShadowFontWrapper(Minecraft.getInstance().font);
         this.overlay = overlay;
     }
@@ -100,7 +96,6 @@ public class RouteOverlaySettingsScreen extends DLScreen {
         super.onClose();
     }
 
-    @SuppressWarnings("resource")
     @Override
     protected void init() {
         super.init();        
@@ -118,16 +113,15 @@ public class RouteOverlaySettingsScreen extends DLScreen {
         detailsButton = this.addRenderableWidget(new DLCreateIconButton(guiLeft + 7, guiTop + 55, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, AllIcons.I_VIEW_SCHEDULE));
         detailsButton.withCallback(() -> {
             Minecraft minecraft = Minecraft.getInstance();
-            minecraft.setScreen(new RouteDetailsScreen(this, Minecraft.getInstance().level, overlay.getListener().getListeningRoute(), overlay.getListenerId()));
+            minecraft.setScreen(new RouteDetailsScreen(null, overlay.getRoute()));
         });
         detailsButton.setToolTip(textShowDetails);
         buttons.add(detailsButton);
 
         removeOverlayButton = this.addRenderableWidget(new DLCreateIconButton(guiLeft + 27, guiTop + 55, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, AllIcons.I_CONFIG_DISCARD));
         removeOverlayButton.withCallback(() -> {
-            Minecraft minecraft = Minecraft.getInstance();
-            minecraft.setScreen(new RouteDetailsScreen(null, Minecraft.getInstance().level, overlay.getListener().getListeningRoute(), overlay.getListenerId()));
             InstanceManager.removeRouteOverlay();
+            onClose();
         });
         removeOverlayButton.setToolTip(textUnpin);
         buttons.add(removeOverlayButton);
@@ -152,34 +146,13 @@ public class RouteOverlaySettingsScreen extends DLScreen {
             buttons.add(remOverlayButton);
         }
 
-        // On/Off Buttons
-        soundButton = this.addRenderableWidget(new DLCreateIconButton(guiLeft + 10, guiTop + 26, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, ModGuiIcons.SOUND_ON.getAsCreateIcon()));
-        soundButton.withCallback(() -> {
-            ModClientConfig.ROUTE_NARRATOR.set(!ModClientConfig.ROUTE_NARRATOR.get());
-
-            if (ModClientConfig.ROUTE_NARRATOR.get()) {
-                NarratorChatListener.INSTANCE.narrator.say(narratorOn.getString(), true);
-            } else {
-                NarratorChatListener.INSTANCE.narrator.say(narratorOff.getString(), true);
-            }
-        });
-        buttons.add(soundButton);
-        buttonTooltips.put(soundButton, Pair.of(textNarrator, textNarratorDescription));
-        soundIndicator = this.addRenderableWidget(new DLCreateIndicator(guiLeft + 10, guiTop + 20, Components.immutableEmpty()));
-
-        notificationsButton = this.addRenderableWidget(new DLCreateIconButton(guiLeft + 28, guiTop + 26, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, ModGuiIcons.INFO.getAsCreateIcon()));
+        notificationsButton = this.addRenderableWidget(new DLCreateIconButton(guiLeft + 20, guiTop + 26, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, ModGuiIcons.INFO.getAsCreateIcon()));
         notificationsButton.withCallback(() -> {
-            ModClientConfig.ROUTE_NOTIFICATIONS.set(!ModClientConfig.ROUTE_NOTIFICATIONS.get());
-
-            if (ModClientConfig.ROUTE_NOTIFICATIONS.get()) {
-                Minecraft.getInstance().getToasts().addToast(NavigatorToast.multiline(notificationsOn, TextUtils.empty()));
-            } else {
-                Minecraft.getInstance().getToasts().addToast(NavigatorToast.multiline(notificationsOff, TextUtils.empty()));
-            }
+            overlay.getRoute().setShowNotifications(!overlay.getRoute().shouldShowNotifications());
         });
         buttons.add(notificationsButton);
         buttonTooltips.put(notificationsButton, Pair.of(textNotifications, textNotificationsDescription));
-        notificationsIndicator = this.addRenderableWidget(new DLCreateIndicator(guiLeft + 28, guiTop + 20, Components.immutableEmpty()));
+        notificationsIndicator = this.addRenderableWidget(new DLCreateIndicator(guiLeft + 20, guiTop + 20, Components.immutableEmpty()));
 
         // scale
         scaleInput = addRenderableWidget(new ScrollInput(guiLeft + 63, guiTop + 23, 43, 18)
@@ -204,8 +177,7 @@ public class RouteOverlaySettingsScreen extends DLScreen {
     @Override
     public void tick() {
         super.tick();
-        soundIndicator.state = ModClientConfig.ROUTE_NARRATOR.get() ? State.ON : State.OFF;
-        notificationsIndicator.state = ModClientConfig.ROUTE_NOTIFICATIONS.get() ? State.ON : State.OFF;
+        notificationsIndicator.state = overlay.getRoute().shouldShowNotifications() ? State.ON : State.OFF;
 
         buttons.performForEachOfType(IconButton.class, x -> {
             if (!buttonTooltips.containsKey(x)) {
@@ -219,6 +191,20 @@ public class RouteOverlaySettingsScreen extends DLScreen {
                 x.getToolTip().add(buttonTooltips.get(x).getSecond());
             }
         });
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double pDelta) {
+
+        if (scaleInput.mouseScrolled(mouseX, mouseY, pDelta)) {
+            return true;
+        }
+        
+        if (super.mouseScrolled(mouseX, mouseY, pDelta)) {
+            return true;
+        }
+
+        return false;
     }
     
     @Override
@@ -241,8 +227,9 @@ public class RouteOverlaySettingsScreen extends DLScreen {
 
     @Override
     public void renderFrontLayer(Graphics graphics, int pMouseX, int pMouseY, float pPartialTick) {
+        super.renderFrontLayer(graphics, pMouseX, pMouseY, pPartialTick);
         buttons.performForEach(widget -> {
-            if (widget instanceof AbstractSimiWidget simiWidget && simiWidget.isHoveredOrFocused()) {
+            if (widget instanceof AbstractSimiWidget simiWidget && simiWidget instanceof IDragonLibWidget dlw && dlw.isMouseSelected()) {
 				List<Component> tooltip = simiWidget.getToolTip();
 				if (tooltip.isEmpty())
 					return;
@@ -251,6 +238,5 @@ public class RouteOverlaySettingsScreen extends DLScreen {
 				renderComponentTooltip(graphics.poseStack(), tooltip, ttx, tty);
 			}
         });
-        super.renderFrontLayer(graphics, pMouseX, pMouseY, pPartialTick);
     }
 }

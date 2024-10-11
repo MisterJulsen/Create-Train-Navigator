@@ -1,28 +1,27 @@
 package de.mrjulsen.crn.client.ber.variants;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-
-import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
+import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity.EUpdateReason;
+import de.mrjulsen.crn.block.display.AdvancedDisplaySource.ETimeDisplay;
 import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
-import de.mrjulsen.crn.client.ber.base.BERText;
-import de.mrjulsen.crn.client.ber.base.BERText.TextTransformation;
+import de.mrjulsen.crn.client.ber.IBERRenderSubtype;
 import de.mrjulsen.crn.client.lang.ELanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
-import de.mrjulsen.crn.data.DeparturePrediction.SimpleDeparturePrediction;
+import de.mrjulsen.crn.data.train.portable.StationDisplayData;
 import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.DragonLib;
-import de.mrjulsen.mcdragonlib.client.ber.IBlockEntityRendererInstance.BlockEntityRendererContext;
-import de.mrjulsen.mcdragonlib.client.ber.IBlockEntityRendererInstance.EUpdateReason;
+import de.mrjulsen.mcdragonlib.client.ber.BERGraphics;
+import de.mrjulsen.mcdragonlib.client.ber.BERLabel;
+import de.mrjulsen.mcdragonlib.client.ber.BERLabel.BoundsHitReaction;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.TimeUtils;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -32,69 +31,75 @@ public class BERPlatformSimple implements IBERRenderSubtype<AdvancedDisplayBlock
     private static final String keyTrainDepartureWithPlatform = "gui.createrailwaysnavigator.route_overview.notification.journey_begins_with_platform";
     private static final String keyTime = "gui.createrailwaysnavigator.time";
 
-    private Collection<UUID> lastTrainOrder = new ArrayList<>();
+    private final BERLabel label = new BERLabel()
+        .setPos(3, 5.5f)
+        .setYScale(0.75f)
+        .setScale(0.75f, 0.75f)
+        .setCentered(true)
+        .setScrollingSpeed(2)
+    ;
+    private List<Component> texts;
+    boolean updateLabel = false;
+    
+
 
     @Override
-    public boolean isSingleLined() {
-        return true;
+    public void renderTick(float deltaTime) {
+        label.renderTick();
     }
 
     @Override
-    public void tick(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity pBlockEntity, AdvancedDisplayRenderInstance parent) {
-        
+    public void tick(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent) {
+        List<Component> textContent = new ArrayList<>(texts);
+        textContent.add(0, ELanguage.translate(keyTime, TimeUtils.parseTime((int)(blockEntity.getLevel().getDayTime() % DragonLib.TICKS_PER_DAY + DragonLib.DAYTIME_SHIFT), ModClientConfig.TIME_FORMAT.get())));
+        MutableComponent txt = TextUtils.concat(textContent);
+        label
+            .setText(txt)
+        ;
     }
     
     @Override
-    public void renderAdditional(BlockEntityRendererContext context, AdvancedDisplayBlockEntity pBlockEntity, AdvancedDisplayRenderInstance parent, float pPartialTicks, PoseStack pPoseStack, MultiBufferSource pBufferSource, int pPackedLight, int pOverlay, Boolean backSide) {
-        
+    public void render(BERGraphics<AdvancedDisplayBlockEntity> graphics, float pPartialTicks, AdvancedDisplayRenderInstance parent, int light, boolean backSide) {
+        label.render(graphics, light);
     }
 
     @Override
     public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason) {
-        Collection<SimpleDeparturePrediction> preds = blockEntity.getPredictions().stream().filter(x -> x.departureTicks() < ModClientConfig.DISPLAY_LEAD_TIME.get()).toList();
-        Collection<UUID> uuidOrder = preds.stream().map(x -> x.trainId()).toList();
+        List<StationDisplayData> preds = blockEntity.getStops().stream().filter(x -> x.getStationData().getScheduledArrivalTime() < DragonLib.getCurrentWorldTime() + ModClientConfig.DISPLAY_LEAD_TIME.get() && (!x.getTrainData().isCancelled() || DragonLib.getCurrentWorldTime() < x.getStationData().getScheduledDepartureTime() + ModClientConfig.DISPLAY_LEAD_TIME.get())).toList();
+        
+        label
+            .setColor((0xFF << 24) | (blockEntity.getColor() & 0x00FFFFFF))
+            .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 6, BoundsHitReaction.SCALE_SCROLL)
+        ;
 
-        if (reason == EUpdateReason.DATA_CHANGED && lastTrainOrder.equals(uuidOrder)) {
-            return;
-        }
+        texts = new ArrayList<>();
+        texts.addAll(preds.stream().map(x -> {
+            String timeString;
+            switch (blockEntity.getTimeDisplay()) {
+                case ETA:
+                    timeString = ModUtils.timeRemainingString(x.getStationData().getScheduledDepartureTime());
+                    break;
+                default:
+                    timeString = ModUtils.formatTime(x.getStationData().getScheduledDepartureTime(), blockEntity.getTimeDisplay() == ETimeDisplay.ETA);
+                    break;
+            }
 
-        lastTrainOrder = uuidOrder;
-        parent.labels.clear();
+            MutableComponent text = TextUtils.empty();
+            if (x.getStationData().getStationInfo().platform() == null || x.getStationData().getStationInfo().platform().isBlank()) {
+                text.append(ELanguage.translate(keyTrainDeparture, x.getTrainData().getName(), x.getStationData().getDestination(), timeString));
+            } else {
+                text.append(ELanguage.translate(keyTrainDepartureWithPlatform, x.getTrainData().getName(), x.getStationData().getDestination(), timeString, x.getStationData().getStationInfo().platform()));
+            }
 
-        int displayWidth = blockEntity.getXSizeScaled();
-        float maxWidth = displayWidth * 16 - 6;        
-        parent.labels.add(new BERText(parent.getFontUtils(), () -> {
-            List<Component> texts = new ArrayList<>();
-            texts.add(ELanguage.translate(keyTime, TimeUtils.parseTime((int)(blockEntity.getLevel().getDayTime() % DragonLib.TICKS_PER_DAY + DragonLib.DAYTIME_SHIFT), ModClientConfig.TIME_FORMAT.get())));
-            texts.addAll(preds.stream().map(x -> {
-                String timeString;
-                switch (blockEntity.getTimeDisplay()) {
-                    case ETA:
-                        timeString = ModUtils.timeRemainingString(x.departureTicks());
-                        break;
-                    default:
-                        timeString = TimeUtils.parseTime((int)(blockEntity.getLastRefreshedTime() % DragonLib.TICKS_PER_DAY + DragonLib.DAYTIME_SHIFT + x.departureTicks()), ModClientConfig.TIME_FORMAT.get());
-                        break;
+            if (x.getTrainData().isCancelled()) {
+                text.append(ELanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.cancelled2").getString());
+            } else if (x.getStationData().isDepartureDelayed()) {
+                text.append(ELanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.delayed2", TimeUtils.formatToMinutes(x.getStationData().getDepartureTimeDeviation())).getString());
+                if (x.getTrainData().hasStatusInfo()) {
+                    text.append(" ").append(ELanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.reason").getString()).append(x.getTrainData().getStatus().get(0).text());
                 }
-
-                if (x.stationInfo().platform() == null || x.stationInfo().platform().isBlank()) {
-                    return ELanguage.translate(keyTrainDeparture, x.trainName(), x.scheduleTitle(), timeString);
-                }
-                return ELanguage.translate(keyTrainDepartureWithPlatform, x.trainName(), x.scheduleTitle(), timeString, x.stationInfo().platform());
-            }).toList());
-            
-            return List.of(TextUtils.concatWithStarChars(texts.toArray(Component[]::new)));
-        }, 0)
-            .withIsCentered(false)
-            .withMaxWidth(maxWidth, true)
-            .withStretchScale(0.75f, 0.75f)
-            .withStencil(0, maxWidth)
-            .withCanScroll(true, 1)
-            .withColor((0xFF << 24) | (blockEntity.getColor()))
-            .withTicksPerPage(100)
-            .withRefreshRate(16)
-            .withPredefinedTextTransformation(new TextTransformation(3, 5.5f, 0.0f, 1, 0.75f))
-            .build()
-        );
+            }
+            return text;
+        }).toList());
     }
 }
