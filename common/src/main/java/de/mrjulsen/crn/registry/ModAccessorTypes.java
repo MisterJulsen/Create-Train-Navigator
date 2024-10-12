@@ -862,6 +862,9 @@ public final class ModAccessorTypes {
             return new DeparturesData(nbt.getUUID("Tag"), nbt.getUUID("Train"));
         }, (player, in, temp, nbt, iteration) -> {
             try {
+                if (!GlobalSettings.getInstance().stationTagExists(in.stationTagId())) {
+                    return false;
+                }
                 StationTag tag = GlobalSettings.getInstance().getStationTag(in.stationTagId()).get();
                 ListTag list = new ListTag();            
                 list.addAll(TrainUtils.getDeparturesAt(tag, in.trainId()).stream().map(x -> x.toNbt(true)).toList());
@@ -871,7 +874,7 @@ public final class ModAccessorTypes {
             }
             return false;
         }, (hasMore, data, iteration, nbt) -> {
-            return nbt.getList(DataAccessorType.DEFAULT_NBT_DATA, Tag.TAG_COMPOUND).stream().map(x -> (ClientTrainStop)ClientTrainStop.fromNbt((CompoundTag)x)).toList();
+            return nbt.contains(DataAccessorType.DEFAULT_NBT_DATA) ? nbt.getList(DataAccessorType.DEFAULT_NBT_DATA, Tag.TAG_COMPOUND).stream().map(x -> (ClientTrainStop)ClientTrainStop.fromNbt((CompoundTag)x)).toList() : List.of();
         }
     ));
 
