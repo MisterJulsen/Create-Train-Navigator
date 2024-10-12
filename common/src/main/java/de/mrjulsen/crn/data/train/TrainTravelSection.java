@@ -13,7 +13,6 @@ import de.mrjulsen.crn.data.TrainGroup;
 import de.mrjulsen.crn.data.TrainLine;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
 import de.mrjulsen.mcdragonlib.data.Cache;
-import de.mrjulsen.mcdragonlib.util.TextUtils;
 
 public class TrainTravelSection {
 

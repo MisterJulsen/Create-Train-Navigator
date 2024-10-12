@@ -114,7 +114,7 @@ public class TrainDisplayData {
         TrainTravelSection section = data.getCurrentSection();
         return new TrainDisplayData(
             BasicTrainDisplayData.of(train.id),
-            section.isUsable() ? data.getCurrentSection().getPredictions(-1, true).stream().map(x -> TrainStopDisplayData.of(new TrainStop(x))).toList() : List.of(),
+            section.isUsable() ? data.getCurrentSection().getPredictions(-1, false).stream().map(x -> TrainStopDisplayData.of(new TrainStop(x))).toList() : List.of(),
             data.getCurrentScheduleIndex(),
             side,
             train.speed,
