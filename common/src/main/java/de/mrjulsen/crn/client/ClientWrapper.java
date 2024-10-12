@@ -4,21 +4,42 @@ import java.util.List;
 import java.util.function.Supplier;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.simibubi.create.content.trains.schedule.ScheduleScreen;
+import com.simibubi.create.content.trains.schedule.condition.TimedWaitCondition.TimeUnit;
+import com.simibubi.create.foundation.gui.ModularGuiLineBuilder;
+import com.simibubi.create.foundation.utility.Lang;
+import com.simibubi.create.foundation.utility.Pair;
 
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
+import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.NavigatorToast;
 import de.mrjulsen.crn.client.gui.screen.AdvancedDisplaySettingsScreen;
 import de.mrjulsen.crn.client.gui.screen.NavigatorScreen;
 import de.mrjulsen.crn.client.gui.screen.TrainDebugScreen;
+import de.mrjulsen.crn.client.gui.screen.TrainSectionSettingsScreen;
+import de.mrjulsen.crn.client.gui.widgets.ResizableButton;
 import de.mrjulsen.crn.client.lang.ELanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
+import de.mrjulsen.crn.data.schedule.condition.DynamicDelayCondition;
+import de.mrjulsen.crn.data.schedule.instruction.ResetTimingsInstruction;
+import de.mrjulsen.crn.data.schedule.instruction.TravelSectionInstruction;
+import de.mrjulsen.crn.mixin.ModularGuiLineBuilderAccessor;
+import de.mrjulsen.crn.mixin.ScheduleScreenAccessor;
 import de.mrjulsen.crn.network.packets.stc.ServerErrorPacket;
+import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.gui.DLScreen;
+import de.mrjulsen.mcdragonlib.client.render.DynamicGuiRenderer;
+import de.mrjulsen.mcdragonlib.client.render.DynamicGuiRenderer.AreaStyle;
+import de.mrjulsen.mcdragonlib.client.render.DynamicGuiRenderer.ButtonState;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
+import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
+import de.mrjulsen.mcdragonlib.core.EAlignment;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import dev.architectury.networking.NetworkManager.PacketContext;
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.MultiLineLabel;
@@ -94,5 +115,84 @@ public class ClientWrapper {
         RenderSystem.recordRenderCall(() -> {
             DLScreen.setScreen(new TrainDebugScreen(null));
         });
+    }
+
+    @SuppressWarnings("resource")
+    public static void initScheduleSectionInstruction(TravelSectionInstruction instruction, ModularGuiLineBuilder builder) {
+        
+        ModularGuiLineBuilderAccessor accessor = (ModularGuiLineBuilderAccessor)builder;
+
+        ResizableButton btn = new ResizableButton(accessor.crn$getX(), accessor.crn$getY() - 4, 121, 16, TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule.instruction." + instruction.getId().getPath() + ".configure"), 
+        (b) -> {
+            if (Minecraft.getInstance().screen instanceof ScheduleScreen scheduleScreen) {
+                ((ScheduleScreenAccessor)scheduleScreen).crn$getOnEditorClose().accept(true);
+                builder.customArea(0, 0).speechBubble();
+                Minecraft.getInstance().setScreen(new TrainSectionSettingsScreen(scheduleScreen, instruction.getData()));
+            }
+        }) {
+            @Override
+            public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
+                Graphics graphics = new Graphics(poseStack);
+				DynamicGuiRenderer.renderArea(graphics, x, y, width, height, AreaStyle.GRAY, isActive() ? (isFocused() || isMouseOver(mouseX, mouseY) ? ButtonState.SELECTED : ButtonState.BUTTON) : ButtonState.DISABLED);
+                int j = isActive() ? DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE : DragonLib.NATIVE_BUTTON_FONT_COLOR_DISABLED;
+                GuiUtils.drawString(graphics, Minecraft.getInstance().font, x + width / 2, y + (height - 8) / 2, this.getMessage(), j, EAlignment.CENTER, true);
+            }
+        };
+		accessor.crn$getTarget().add(Pair.of(btn, "config_btn"));
+    }
+
+    public static void initResetTimingsInstruction(ResetTimingsInstruction instruction, ModularGuiLineBuilder builder) {
+        ModularGuiLineBuilderAccessor accessor = (ModularGuiLineBuilderAccessor)builder;
+        ResizableButton btn = new ResizableButton(accessor.crn$getX(), accessor.crn$getY() - 4, 16, 16, TextUtils.empty(), 
+        (b) -> {
+			Util.getPlatform().openUri(Constants.HELP_PAGE_SCHEDULED_TIMES_AND_REAL_TIME);
+        }) {
+			@Override
+            public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
+                Graphics graphics = new Graphics(poseStack);
+				DynamicGuiRenderer.renderArea(graphics, x, y, width, height, AreaStyle.GRAY, isActive() ? (isFocused() || isMouseOver(mouseX, mouseY) ? ButtonState.SELECTED : ButtonState.BUTTON) : ButtonState.DISABLED);
+				ModGuiIcons.HELP.render(graphics, x, y);
+            }
+        };
+		accessor.crn$getTarget().add(Pair.of(btn, "help_btn"));
+    }
+
+    public static void initDynamicDelayCondition(DynamicDelayCondition condition, ModularGuiLineBuilder builder) {
+        
+		builder.addScrollInput(0, 26, (i, l) -> {
+			i.titled(Lang.translateDirect("generic.duration"))
+				.withShiftStep(15)
+				.withRange(0, 121);
+			i.lockedTooltipX = -15;
+			i.lockedTooltipY = 35;
+		}, "Value");
+
+        builder.addScrollInput(26, 26, (i, l) -> {
+			i.titled(TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule.condition." + condition.getId().getPath() + ".min_duration"))
+				.withShiftStep(15)
+				.withRange(0, 121);
+			i.lockedTooltipX = -15;
+			i.lockedTooltipY = 35;
+		}, DynamicDelayCondition.NBT_MIN);
+
+		builder.addSelectionScrollInput(52, 58, (i, l) -> {
+			i.forOptions(TimeUnit.translatedOptions())
+				.titled(Lang.translateDirect("generic.timeUnit"));
+		}, "TimeUnit");
+
+		
+        ModularGuiLineBuilderAccessor accessor = (ModularGuiLineBuilderAccessor)builder;
+        ResizableButton btn = new ResizableButton(accessor.crn$getX() + 110, accessor.crn$getY() - 4, 16, 16, TextUtils.empty(), 
+        (b) -> {
+			Util.getPlatform().openUri(Constants.HELP_PAGE_DYNAMIC_DELAYS);
+        }) {
+			@Override
+            public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
+                Graphics graphics = new Graphics(poseStack);
+				DynamicGuiRenderer.renderArea(graphics, x, y, width, height, AreaStyle.GRAY, isActive() ? (isFocused() || isMouseOver(mouseX, mouseY) ? ButtonState.SELECTED : ButtonState.BUTTON) : ButtonState.DISABLED);
+				ModGuiIcons.HELP.render(graphics, x, y);
+            }
+        };
+		accessor.crn$getTarget().add(Pair.of(btn, "help_btn"));
     }
 }
