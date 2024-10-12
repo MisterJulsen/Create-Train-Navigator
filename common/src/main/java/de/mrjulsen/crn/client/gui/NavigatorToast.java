@@ -97,9 +97,9 @@ public class NavigatorToast implements Toast {
             //pToastComponent.getMinecraft().font.draw(pPoseStack, this.title, 40, 7.0F, -256);
 
             for (int i = 0; i < this.messageLines.size(); ++i) {
-            //GuiUtils.drawString(graphics, pToastComponent.getMinecraft().font, 40, 7, title, -256, EAlignment.LEFT, false);
-                graphics.graphics().drawString(Minecraft.getInstance().font, this.messageLines.get(i), 40, (20 + i * lineHeight), -1, false);
-            }
+                //GuiUtils.drawString(graphics, pToastComponent.getMinecraft().font, 40, 7, title, -256, EAlignment.LEFT, false);
+                    graphics.graphics().drawString(Minecraft.getInstance().font, this.messageLines.get(i), 40, (20 + i * lineHeight), -1, false);
+                }
         }
 
         return pTimeSinceLastVisible - this.lastChanged < DISPLAY_TIME ? Toast.Visibility.SHOW : Toast.Visibility.HIDE;

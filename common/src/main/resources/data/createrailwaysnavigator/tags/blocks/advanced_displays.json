@@ -3,10 +3,10 @@
     "values": [
         "createrailwaysnavigator:advanced_display",
         "createrailwaysnavigator:advanced_display_block",
-        "createrailwaysnavigator:advanced_display_half_panel",
         "createrailwaysnavigator:advanced_display_panel",
         "createrailwaysnavigator:advanced_display_half_panel",
         "createrailwaysnavigator:advanced_display_small",
-        "createrailwaysnavigator:advanced_display_sloped"
+        "createrailwaysnavigator:advanced_display_sloped",
+        "createrailwaysnavigator:advanced_display_slab"
     ]
 }

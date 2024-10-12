@@ -4,10 +4,18 @@
   "compatibilityLevel": "JAVA_17",
   "minVersion": "0.8",
   "client": [
+    "ScheduleScreenAccessor",
+    "ModularGuiLineBuilderAccessor",
+    "ScheduleScreenMixin"
   ],
   "mixins": [
-    "ScheduleDataAccessor",
-    "MountedStorageManagerMixin"
+    "ScheduleRuntimeAccessor",
+    "TrainStatusAccessor",
+    "ControlsHandlerMixin",
+    "MountedStorageManagerMixin",
+    "ScheduleRuntimeMixin",
+    "GlobalTrainDisplayDataMixin",
+    "TrainMixin"
   ],
   "injectors": {
     "defaultRequire": 1

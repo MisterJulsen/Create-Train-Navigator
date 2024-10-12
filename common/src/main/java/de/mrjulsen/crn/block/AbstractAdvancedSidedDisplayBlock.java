@@ -1,6 +1,6 @@
 package de.mrjulsen.crn.block;
 
-import de.mrjulsen.crn.data.ESide;
+import de.mrjulsen.crn.block.properties.ESide;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;

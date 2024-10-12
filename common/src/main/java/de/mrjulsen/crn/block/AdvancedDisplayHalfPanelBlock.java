@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import de.mrjulsen.crn.data.EBlockAlignment;
+import de.mrjulsen.crn.block.properties.EBlockAlignment;
 import de.mrjulsen.mcdragonlib.data.Pair;
 import de.mrjulsen.mcdragonlib.data.Tripple;
 import net.minecraft.core.BlockPos;
@@ -82,7 +82,7 @@ public class AdvancedDisplayHalfPanelBlock extends AbstractAdvancedSidedDisplayB
 
     public AdvancedDisplayHalfPanelBlock(Properties properties) {
         super(properties);
-    registerDefaultState(defaultBlockState()
+        registerDefaultState(defaultBlockState()
             .setValue(Y_ALIGN, EBlockAlignment.CENTER)
             .setValue(Z_ALIGN, EBlockAlignment.CENTER)
         );

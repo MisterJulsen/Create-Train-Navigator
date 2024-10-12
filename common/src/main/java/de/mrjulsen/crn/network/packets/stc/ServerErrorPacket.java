@@ -6,7 +6,7 @@ import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.mcdragonlib.net.IPacketBase;
 import dev.architectury.networking.NetworkManager.PacketContext;
 import dev.architectury.utils.EnvExecutor;
-import dev.architectury.utils.Env;
+import net.fabricmc.api.EnvType;
 import net.minecraft.network.FriendlyByteBuf;
 
 public class ServerErrorPacket implements IPacketBase<ServerErrorPacket> {
@@ -30,7 +30,7 @@ public class ServerErrorPacket implements IPacketBase<ServerErrorPacket> {
 
     @Override
     public void handle(ServerErrorPacket packet, Supplier<PacketContext> contextSupplier) {
-        EnvExecutor.runInEnv(Env.CLIENT, () -> () -> {
+        EnvExecutor.runInEnv(EnvType.CLIENT, () -> () -> {
             contextSupplier.get().queue(() -> {
                 ClientWrapper.handleErrorMessagePacket(packet, contextSupplier);
             });

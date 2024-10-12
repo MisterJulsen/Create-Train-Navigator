@@ -3,11 +3,10 @@ package de.mrjulsen.crn.block;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.foundation.block.IBE;
 
-import de.mrjulsen.crn.block.be.TrainStationClockBlockEntity;
+import de.mrjulsen.crn.block.blockentity.TrainStationClockBlockEntity;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.registry.ModBlockEntities;
 import de.mrjulsen.mcdragonlib.DragonLib;
-import de.mrjulsen.mcdragonlib.client.ber.IBlockEntityRendererInstance.EUpdateReason;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.TimeUtils;
 import net.minecraft.core.BlockPos;
@@ -65,7 +64,7 @@ public class TrainStationClockBlock extends Block implements IWrenchable, IBE<Tr
 				blockEntity.setColor(dye == DyeColor.ORANGE ? 0xFF9900 : dye.getMapColor().col);
 
 				if (pLevel.isClientSide) {
-					blockEntity.getRenderer().update(pLevel, pPos, pState, blockEntity, EUpdateReason.BLOCK_CHANGED);
+					blockEntity.getRenderer().update(pLevel, pPos, pState, blockEntity, null);
 				}
 
 				return InteractionResult.SUCCESS;
@@ -77,7 +76,7 @@ public class TrainStationClockBlock extends Block implements IWrenchable, IBE<Tr
 			blockEntity.setGlowing(true);
 			
 			if (pLevel.isClientSide) {
-				blockEntity.getRenderer().update(pLevel, pPos, pState, blockEntity, EUpdateReason.BLOCK_CHANGED);
+				blockEntity.getRenderer().update(pLevel, pPos, pState, blockEntity, null);
 			}
 
             return InteractionResult.SUCCESS;

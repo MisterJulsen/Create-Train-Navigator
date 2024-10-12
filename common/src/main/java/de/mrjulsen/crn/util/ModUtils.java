@@ -1,17 +1,25 @@
 package de.mrjulsen.crn.util;
 
-import java.util.Map;
-import java.util.Set;
-
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+import java.util.function.Predicate;
 import com.simibubi.create.foundation.utility.Components;
 import com.simibubi.create.foundation.utility.Lang;
 
+import de.mrjulsen.crn.config.ModClientConfig;
+import de.mrjulsen.crn.exceptions.RuntimeSideException;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
+import de.mrjulsen.mcdragonlib.util.TimeUtils;
+import dev.architectury.platform.Platform;
+import dev.architectury.utils.Env;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.Mth;
 
 public class ModUtils {
+    
     public static float clockHandDegrees(long time, int divisor) {
         return 360.0F / divisor * (time % divisor);
     }
@@ -22,14 +30,38 @@ public class ModUtils {
 
     public static MutableComponent calcSpeedString(double metersPerTick, ESpeedUnit unit) {
         return TextUtils.text((int) Math.abs(Math.round(calcSpeed(metersPerTick, unit))) + " " + unit.getUnit());
+    }    
+
+    public static int calculateMedian(Queue<Integer> history, int smoothingThreshold, Predicate<Integer> filter) {
+        if (history.isEmpty()) {
+            return 0;
+        }
+
+        List<Integer> values = new LinkedList<>();
+        for (int i : history) {
+            if (!filter.test(i)) 
+                continue;
+
+            values.add(i);
+        }
+
+        Collections.sort(values);
+        int median = 0;
+        if (values.size() % 2 == 0) {
+            median = (int)(((double)values.get(values.size() / 2) + (double)values.get(values.size() / 2 + 1)) / 2D);
+        }
+        median = values.get(values.size() / 2);
+
+        final int med = median;
+        return (int)history.stream().mapToInt(x -> x).filter(x -> Math.abs(med - x) <= smoothingThreshold).average().orElse(0);
     }
 
-    public static String timeRemainingString(int ticks) {
+    public static String timeRemainingString(long ticks) {
         StringBuilder sb = new StringBuilder();
         final String unpredictable = " ~ ";
         final String whitespace = " ";
 
-        if (ticks == -1 || ticks >= 12000 - 15 * 20) {
+        if (ticks == -1 || ticks >= 120000 - 15 * 20) {
             sb.append(whitespace);
             sb.append(unpredictable);
 
@@ -37,8 +69,8 @@ public class ModUtils {
             sb.append(Lang.translateDirect("display_source.station_summary.now").getString());
 
         } else {
-            int min = ticks / 1200;
-            int sec = (ticks / 20) % 60;
+            long min = ticks / 1200;
+            long sec = (ticks / 20) % 60;
             sec = Mth.ceil(sec / 15f) * 15;
             if (sec == 60) {
                 min++;
@@ -51,17 +83,22 @@ public class ModUtils {
         return sb.toString();
     }
 
-    public static <Key, Value> boolean areEqual(Set<Map.Entry<Key, Value>> set1, Set<Map.Entry<Key, Value>> set2) {
-        if (set1.size() != set2.size()) {
-            return false;
-        }
+    public static long generateId(Predicate<Long> exists) {
+        long id;
+        do {
+            id = DragonLib.RANDOM.nextLong();
+        } while (exists.test(id));
+        return id;
+    }
 
-        for (Map.Entry<Key, Value> entry : set1) {
-            if(!set2.contains(entry)) {
-                return false;
-            }
+    /** Client-side only! */
+    public static String formatTime(long time, boolean asETA) throws RuntimeSideException {
+        if (Platform.getEnvironment() != Env.CLIENT) {
+            throw new RuntimeSideException(true);
         }
-
-        return true;
+        if (asETA) {
+            return timeRemainingString(time - DragonLib.getCurrentWorldTime());
+        }
+        return TimeUtils.parseTime((time + DragonLib.DAYTIME_SHIFT) % DragonLib.TICKS_PER_DAY, ModClientConfig.TIME_FORMAT.get());
     }
 }

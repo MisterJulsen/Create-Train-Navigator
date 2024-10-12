@@ -32,7 +32,7 @@ public class DLCreateSelectionScrollInput extends SelectionScrollInput implement
     @Override
     public void setMouseSelected(boolean selected) {
         this.mouseSelected = selected;
-    }    
+    }
 
     @Override
     public int x() {
