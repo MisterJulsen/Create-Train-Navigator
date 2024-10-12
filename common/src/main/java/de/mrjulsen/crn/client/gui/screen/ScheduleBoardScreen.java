@@ -51,7 +51,7 @@ public class ScheduleBoardScreen extends AbstractNavigatorScreen {
     private UserSettings userSettings = new UserSettings(Minecraft.getInstance().player.getUUID(), false);
 
     private DLEditBox stationBox;
-    private String stationFrom;
+    private String stationFrom = "";
 	private ModDestinationSuggestions destinationSuggestions;
 
     private GuiAreaDefinition workingArea;
@@ -111,6 +111,7 @@ public class ScheduleBoardScreen extends AbstractNavigatorScreen {
 
         if (!fixedStation) {            
             stationBox = addEditBox(guiLeft + 32 + 5, guiTop + 25, 152, 12, stationFrom, TextUtils.empty(), false, (v) -> {
+                if (stationBox == null) return;
                 stationFrom = v;
                 updateEditorSubwidgets(stationBox);
             }, NO_EDIT_BOX_FOCUS_CHANGE_ACTION, null);
