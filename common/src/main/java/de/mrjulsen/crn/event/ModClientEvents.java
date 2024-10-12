@@ -2,7 +2,6 @@ package de.mrjulsen.crn.event;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.ClientWrapper;
-import de.mrjulsen.crn.client.input.ModKeys;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.SavedRoutesManager;
 import de.mrjulsen.crn.data.navigation.ClientTrainListener;
@@ -28,7 +27,6 @@ public class ModClientEvents {
     public static void init() {
 
         ClientLifecycleEvent.CLIENT_SETUP.register((mc) -> {
-            ModKeys.init();
             ModDisplayTags.register();
         });
 
