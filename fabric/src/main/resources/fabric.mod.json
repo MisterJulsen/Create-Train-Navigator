@@ -27,7 +27,7 @@
     "fabric": "*",
     "minecraft": ">=1.19.2",
     "architectury": ">=6.5.85",
-    "dragonlib": ">=1.19.2-2.1.13",
+    "dragonlib": ">=1.19.2-2.2.16",
     "create": "*"
   },
   "accessWidener": "createrailwaysnavigator.accesswidener"

@@ -8,7 +8,6 @@ import com.simibubi.create.content.redstone.displayLink.DisplayLinkContext;
 import com.simibubi.create.content.redstone.displayLink.source.DisplaySource;
 import com.simibubi.create.content.redstone.displayLink.target.DisplayTargetStats;
 import com.simibubi.create.content.trains.station.GlobalStation;
-import com.simibubi.create.content.trains.station.StationBlockEntity;
 import com.simibubi.create.foundation.gui.ModularGuiLineBuilder;
 import com.simibubi.create.foundation.utility.Lang;
 

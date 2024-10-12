@@ -4,40 +4,42 @@ import java.util.Optional;
 
 import com.simibubi.create.content.trains.station.GlobalStation;
 
-import net.minecraft.network.FriendlyByteBuf;
+import de.mrjulsen.crn.data.storage.GlobalSettings;
+import net.minecraft.nbt.CompoundTag;
 
 public class NearestTrackStationResult {
+
+    public static final String NBT_DISTANCE = "Distance";
+    public static final String NBT_TAG = "TagName";
+
+
     public final double distance;
-    public final Optional<TrainStationAlias> aliasName;
+    public final Optional<TagName> tagName;
 
     public NearestTrackStationResult(Optional<GlobalStation> station, double distance) {
-       this(station.isPresent() ? GlobalSettingsManager.getInstance().getSettingsData().getAliasFor(station.get().name) : null, distance);
+       this(station.isPresent() ? GlobalSettings.getInstance().getOrCreateStationTagFor(station.get().name).getTagName() : null, distance);
     }
 
-    private NearestTrackStationResult(TrainStationAlias station, double distance) {
+    private NearestTrackStationResult(TagName tagName, double distance) {
         this.distance = distance;
-        this.aliasName = station != null ? Optional.of(station) : Optional.empty();
+        this.tagName = Optional.ofNullable(tagName);
     }
 
     public static NearestTrackStationResult empty() {
         return new NearestTrackStationResult(Optional.empty(), 0);
     }
 
-    public void serialize(FriendlyByteBuf buffer) {
-        buffer.writeBoolean(aliasName.isPresent());
-        if (aliasName.isPresent()) {
-            buffer.writeNbt(aliasName.get().toNbt());
-        }
-        buffer.writeDouble(distance);
+    public CompoundTag toNbt() {
+        CompoundTag nbt = new CompoundTag();
+        nbt.putDouble(NBT_DISTANCE, distance);
+        tagName.ifPresent(x -> nbt.putString(NBT_TAG, tagName.get().get()));
+        return nbt;
     }
 
-    public static NearestTrackStationResult deserialize(FriendlyByteBuf buffer) {
-        boolean valid = buffer.readBoolean();
-        TrainStationAlias alias = null;
-        if (valid) {
-            alias = TrainStationAlias.fromNbt(buffer.readNbt());
-        }
-        double distance = buffer.readDouble();
-        return new NearestTrackStationResult(alias, distance);
+    public static NearestTrackStationResult fromNbt(CompoundTag nbt) {
+        return new NearestTrackStationResult(
+            nbt.contains(NBT_TAG) ? TagName.of(nbt.getString(NBT_TAG)) : null,
+            nbt.getDouble(NBT_DISTANCE)
+        );
     }
 }

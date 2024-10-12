@@ -1,24 +1,21 @@
 package de.mrjulsen.crn.block.display;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.TimeUnit;
+
 import com.simibubi.create.content.redstone.displayLink.DisplayLinkContext;
 import com.simibubi.create.content.redstone.displayLink.target.DisplayBoardTarget;
 import com.simibubi.create.content.redstone.displayLink.target.DisplayTargetStats;
-import com.simibubi.create.content.trains.display.GlobalTrainDisplayData;
-import com.simibubi.create.content.trains.display.GlobalTrainDisplayData.TrainDeparturePrediction;
-import com.simibubi.create.content.trains.entity.Train;
 
-import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
-import de.mrjulsen.crn.data.DeparturePrediction;
-import de.mrjulsen.crn.data.GlobalSettingsManager;
-import de.mrjulsen.crn.data.TrainStop;
-import de.mrjulsen.crn.data.DeparturePrediction.SimpleDeparturePrediction;
-import de.mrjulsen.crn.data.SimpleTrainSchedule;
-import de.mrjulsen.crn.data.SimulatedTrainSchedule;
-import de.mrjulsen.crn.util.TrainUtils;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
+import de.mrjulsen.crn.block.properties.EDisplayType.EDisplayTypeDataSource;
+import de.mrjulsen.crn.data.storage.GlobalSettings;
+import de.mrjulsen.crn.data.train.TrainUtils;
+import de.mrjulsen.crn.data.train.portable.StationDisplayData;
+import de.mrjulsen.crn.event.ModCommonEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
@@ -27,7 +24,52 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
 
-public class AdvancedDisplayTarget extends DisplayBoardTarget {    
+public class AdvancedDisplayTarget extends DisplayBoardTarget {
+	
+	private static boolean running = false;
+	private static boolean threadRunning = false;
+	private static final Queue<Runnable> workerTasks = new ConcurrentLinkedQueue<>();
+
+	public static void start() {
+		if (running) stop();		
+		while (running && threadRunning) {
+			try {
+				TimeUnit.SECONDS.sleep(1);
+			} catch (InterruptedException e) {}
+		}
+
+		workerTasks.clear();
+		running = true;
+		new Thread(() -> {
+			threadRunning = true;
+			CreateRailwaysNavigator.LOGGER.info("Advanced Display Data Manager has been started.");
+						
+			while (running) {
+				while (!workerTasks.isEmpty()) {
+					try {	
+						workerTasks.poll().run();						
+					} catch (Exception e) {
+						CreateRailwaysNavigator.LOGGER.info("Error while process Advanced Display Data.", e);
+					}
+				}
+				try {
+					TimeUnit.SECONDS.sleep(1);
+				} catch (InterruptedException e) {}
+			}
+			workerTasks.clear();
+			CreateRailwaysNavigator.LOGGER.info("Advanced Display Data Manager has been stopped.");
+			threadRunning = false;
+		}, "Advanced Display Data Manager").start();
+	}
+
+	public static void stop() {
+		CreateRailwaysNavigator.LOGGER.info("Stopping Advanced Display Data Manager...");
+		running = false;
+	}
+
+	private static void queueAdvancedDisplayWorkerTask(Runnable task) {
+		workerTasks.add(task);
+	}
     
 	@Override
 	public void acceptFlapText(int line, List<List<MutableComponent>> text, DisplayLinkContext context) {
@@ -41,58 +83,31 @@ public class AdvancedDisplayTarget extends DisplayBoardTarget {
 
 		if (context.getTargetBlockEntity() instanceof AdvancedDisplayBlockEntity blockEntity) {
 			final AdvancedDisplayBlockEntity controller = blockEntity.getController();
-			if (controller != null) {
-				List<SimpleDeparturePrediction> preds = prepare(filter, controller.getPlatformInfoLinesCount()).stream().map(x -> new DeparturePrediction(x).simplify()).sorted(Comparator.comparingInt(x -> x.departureTicks())).toList();
- 				List<String> stopovers = new ArrayList<>();
+			long dayTime = context.getTargetBlockEntity().getLevel().getDayTime();
 
-				if (!preds.isEmpty()) {
-					SimpleDeparturePrediction pred = preds.iterator().next();
-					Train train = TrainUtils.getTrain(pred.trainId());
+			queueAdvancedDisplayWorkerTask(() -> {
+				if (controller != null & controller.getDisplayTypeKey().category().getSource() == EDisplayTypeDataSource.PLATFORM) {
+					List<StationDisplayData> preds = prepare(filter, controller.getDisplayTypeInfo().platformDisplayTrainsCount().apply(controller));
 					
-					if (train != null) {
-						SimulatedTrainSchedule sched = SimpleTrainSchedule.of(TrainUtils.getTrainStopsSorted(pred.trainId(), context.blockEntity().getLevel())).simulate(train, 0, pred.stationName());
-						
-						List<TrainStop> stops = new ArrayList<>(sched.getAllStops());
-						boolean foundStart = false;
-	
-						if (!stops.isEmpty()) {
-							for (int i = 0; i < stops.size() - 1; i++) {
-								TrainStop x = stops.get(i);
-								if (foundStart) {
-									stopovers.add(x.getStationAlias().getAliasName().get());
-								}
-								foundStart = foundStart || x.getPrediction().getStationName().equals(pred.stationName());
-							}
-						}
-					}					
+					controller.setDepartureData(
+						preds,
+						filter,
+						GlobalSettings.getInstance().getOrCreateStationTagFor(filter).getInfoForStation(filter),
+						dayTime,
+						(byte)context.sourceConfig().getInt(AdvancedDisplaySource.NBT_PLATFORM_WIDTH),
+						(byte)context.sourceConfig().getInt(AdvancedDisplaySource.NBT_TRAIN_NAME_WIDTH),
+						context.sourceConfig().getByte(AdvancedDisplaySource.NBT_TIME_DISPLAY_TYPE)
+					);
+					if (ModCommonEvents.hasServer()) {
+						ModCommonEvents.getCurrentServer().get().executeIfPossible(controller::sendData);
+					}
 				}
-				
-				controller.setDepartureData(
-					preds,
-					stopovers,
-					filter,
-					GlobalSettingsManager.getInstance().getSettingsData().getAliasFor(filter).getInfoForStation(filter),
-					context.getTargetBlockEntity().getLevel().getDayTime(),
-					(byte)context.sourceConfig().getInt(AdvancedDisplaySource.NBT_PLATFORM_WIDTH),
-					(byte)context.sourceConfig().getInt(AdvancedDisplaySource.NBT_TRAIN_NAME_WIDTH),
-					context.sourceConfig().getByte(AdvancedDisplaySource.NBT_TIME_DISPLAY_TYPE)
-				);
-				controller.sendData();
-			}
+			});
 		}
 	}
 
-	public static List<TrainDeparturePrediction> prepare(String filter, int maxLines) {
-		String regex = filter.isBlank() ? filter : "\\Q" + filter.replace("*", "\\E.*\\Q") + "\\E";
-		return new HashMap<>(GlobalTrainDisplayData.statusByDestination).entrySet()
-			.stream()
-			.filter(e -> e.getKey()
-				.matches(regex))
-			.flatMap(e -> e.getValue()
-				.stream())
-			.sorted()
-			.limit(maxLines)
-			.toList();
+	public static List<StationDisplayData> prepare(String filter, int maxLines) {
+		return TrainUtils.getDeparturesAtStationName(filter, null).stream().limit(maxLines).map(x -> StationDisplayData.of(x)).toList();
 	}
 
 	@Override

@@ -33,7 +33,7 @@ public class DLCreateLabel extends Label implements IDragonLibWidget {
     @Override
     public void setMouseSelected(boolean selected) {
         this.mouseSelected = selected;
-    }    
+    }
 
     @Override
     public int x() {

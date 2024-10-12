@@ -8,10 +8,10 @@ import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.foundation.block.IBE;
 import com.simibubi.create.foundation.utility.Iterate;
 
-import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
+import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
+import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity.EUpdateReason;
 import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.registry.ModBlockEntities;
-import de.mrjulsen.mcdragonlib.client.ber.IBlockEntityRendererInstance.EUpdateReason;
 import de.mrjulsen.mcdragonlib.data.Pair;
 import de.mrjulsen.mcdragonlib.data.Tripple;
 import net.minecraft.core.BlockPos;
@@ -46,6 +46,7 @@ import net.minecraft.world.level.block.state.StateDefinition.Builder;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.Property;
+import net.minecraft.world.level.material.MaterialColor;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.ticks.LevelTickAccess;
 
@@ -57,7 +58,7 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 	public static final BooleanProperty DOWN = BooleanProperty.create("down");
 
     public AbstractAdvancedDisplayBlock(Properties properties) {
-        super(properties);
+        super(properties.color(MaterialColor.METAL));
 
         this.registerDefaultState(this.stateDefinition.any()
             .setValue(UP, false)
@@ -157,7 +158,7 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 		updateNeighbours(pState, pLevel, pPos);
 
 		if (pLevel.isClientSide) {
-			withBlockEntityDo(pLevel, pPos, be -> be.getController().getRenderer().update(pLevel, pPos, pState, be, EUpdateReason.BLOCK_CHANGED));			
+			withBlockEntityDo(pLevel, pPos, be -> be.getController().getRenderer().update(pLevel, pPos, pState, be, EUpdateReason.LAYOUT_CHANGED));			
 		}
 	}
 
@@ -312,7 +313,7 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 				});
 
 				if (pLevel.isClientSide) {
-					blockEntity.getRenderer().update(pLevel, pPos, pState, blockEntity, EUpdateReason.BLOCK_CHANGED);
+					blockEntity.getRenderer().update(pLevel, pPos, pState, blockEntity, EUpdateReason.LAYOUT_CHANGED);
 				}
 
 				return InteractionResult.SUCCESS;
@@ -327,7 +328,7 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
             });
 			
 			if (pLevel.isClientSide) {
-				blockEntity.getRenderer().update(pLevel, pPos, pState, blockEntity, EUpdateReason.BLOCK_CHANGED);
+				blockEntity.getRenderer().update(pLevel, pPos, pState, blockEntity, EUpdateReason.LAYOUT_CHANGED);
 			}
 
             return InteractionResult.SUCCESS;
