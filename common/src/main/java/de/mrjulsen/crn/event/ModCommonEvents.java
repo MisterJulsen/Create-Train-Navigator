@@ -100,6 +100,9 @@ public class ModCommonEvents {
         });
 
         LifecycleEvent.SERVER_LEVEL_SAVE.register((server) -> {
+            if (!getCurrentServer().isPresent()) return;
+            if (server != getCurrentServer().get().overworld()) return;
+            
             TrainListener.save();
             if (GlobalSettings.hasInstance()) GlobalSettings.getInstance().save();
         });

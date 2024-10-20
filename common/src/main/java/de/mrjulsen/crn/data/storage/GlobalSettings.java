@@ -166,7 +166,7 @@ public class GlobalSettings implements INBTSerializable {
      * @deprecated For data migration only. Use {@code deserializeNbt} instead.
      */
     @Deprecated
-    public void deserializeNbtLegacy(CompoundTag nbt) {        
+    private void deserializeNbtLegacy(CompoundTag nbt) {        
         final String NBT_ALIAS_REGISTRY = "RegisteredAliasData";
         final String NBT_BLACKLIST = "StationBlacklist";
         final String NBT_TRAIN_BLACKLIST = "TrainBlacklist";
