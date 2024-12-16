@@ -554,9 +554,6 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
                 isController() != pTag.getBoolean(NBT_CONTROLLER) ||
                 getXSize() != pTag.getByte(NBT_XSIZE) ||
                 getYSize() != pTag.getByte(NBT_YSIZE) ||
-                // TODO
-                //getPlatformWidth() != pTag.getByte(LEGACY_NBT_PLATFORM_WIDTH) ||
-                //getTrainNameWidth() != pTag.getByte(LEGACY_NBT_TRAIN_NAME_WIDTH) ||
                 (getStops().isEmpty() ^ !pTag.contains(NBT_TRAIN_STOPS))
             ) {
                 updateClient = true;
@@ -571,6 +568,9 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         ySize = pTag.getByte(NBT_YSIZE);
         glowing = pTag.getBoolean(NBT_GLOWING);
         isController = pTag.getBoolean(NBT_CONTROLLER);
+
+        Class<? extends IDisplaySettings> oldDisplaySettings = displayTypeSettings.getClass();
+        DisplayTypeResourceKey oldDisplayType = displayTypeId;
         
         // ### Convert deprecated data
         if (pTag.contains(LEGACY_NBT_INFO_TYPE) && pTag.contains(LEGACY_NBT_DISPLAY_TYPE)) {
@@ -607,6 +607,10 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
             info,
             pTag.getLong(NBT_LAST_REFRESH_TIME)
         );
+
+        if (level != null && getBlockState() != null && level.isClientSide && (!oldDisplaySettings.isInstance(displayTypeSettings) || !oldDisplayType.equals(displayTypeId))) {
+            updateClient = true;
+        }
 
         if (updateClient) {
             getRenderer().update(level, worldPosition, getBlockState(), this, EUpdateReason.LAYOUT_CHANGED);
