@@ -18,5 +18,4 @@ public interface AbstractAdvancedDisplayRenderer<T extends IDisplaySettings> ext
             throw new IllegalArgumentException("Could not get display data of display at " + blockEntity.getBlockPos(), e);
         }
     }
-
 }

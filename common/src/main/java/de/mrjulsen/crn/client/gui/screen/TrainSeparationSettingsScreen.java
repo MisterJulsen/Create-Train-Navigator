@@ -56,24 +56,30 @@ public class TrainSeparationSettingsScreen extends DLScreen {
     private final CompoundTag nbt;
 
     //private String stationFilter;
-    private int time = 5;
-    private TimeUnit timeUnit = TimeUnit.SECONDS;
+    private int minutes = 0;
+    private int seconds = 5;
+    private int ticks = 0;
     private ETrainFilter filter = ETrainFilter.ANY;
     
     public TrainSeparationSettingsScreen(Screen lastScreen, CompoundTag nbt) {
         super(title);
         this.lastScreen = lastScreen;
         this.nbt = nbt;
-        this.time = nbt.getInt(TrainSeparationCondition.NBT_TIME);
-        this.timeUnit = TimeUnit.values()[nbt.getInt(TrainSeparationCondition.NBT_TIME_UNIT)];
+        @SuppressWarnings("deprecation")
+        int t = nbt.contains(TrainSeparationCondition.NBT_TICKS) ? nbt.getInt(TrainSeparationCondition.NBT_TICKS) : nbt.getInt(TrainSeparationCondition.NBT_TIME) * TimeUnit.values()[nbt.getInt(TrainSeparationCondition.NBT_TIME_UNIT)].ticksPer;
+        ticks = t;
+        minutes = ticks / 1200;
+        ticks %= 1200;
+        seconds = ticks / 20;
+        ticks %= 20;
+
         this.filter = ETrainFilter.getByIndex(nbt.getByte(TrainSeparationCondition.NBT_TRAIN_FILTER));
     }
 
     @Override
     public void onClose() {
         super.onClose();
-        nbt.putInt(TrainSeparationCondition.NBT_TIME, time);
-        nbt.putInt(TrainSeparationCondition.NBT_TIME_UNIT, timeUnit.ordinal());
+        nbt.putInt(TrainSeparationCondition.NBT_TICKS, minutes * TimeUnit.MINUTES.ticksPer + seconds * TimeUnit.SECONDS.ticksPer + ticks);
         nbt.putByte(TrainSeparationCondition.NBT_TRAIN_FILTER, filter.getIndex());
         Minecraft.getInstance().setScreen(lastScreen);
     }
@@ -99,7 +105,55 @@ public class TrainSeparationSettingsScreen extends DLScreen {
                     });
             });
             */
+
+            /*
+            builder.addLine("time_src", (line) -> {
+                line.add(new IconSlotWidget(line.getCurrentX(), line.y() + 2, ModGuiIcons.TIME.getAsSprite(16, 16)));
+                line.add(new DLCreateSelectionScrollInput(this, line.getCurrentX() + 6, line.getY() + 2, line.getRemainingWidth() - 6, 18)
+                    .setRenderArrow(true)
+                    .forOptions(Arrays.stream(ETimeSource.values()).map(x -> TextUtils.translate(x.getValueTranslationKey(CreateRailwaysNavigator.MOD_ID))).toList())
+                    .titled(TextUtils.translate(timeSource.getEnumTranslationKey(CreateRailwaysNavigator.MOD_ID)))
+                    .setState(timeSource.getIndex())
+                    .calling((i) -> {
+                        timeSource = ETimeSource.getByIndex(i);
+                    })
+                );
+            });
+            */
             
+            builder.addLine("times", (line) -> {
+                line.add(new IconSlotWidget(line.getCurrentX(), line.y() + 2, ModGuiIcons.TIME.getAsSprite(16, 16)));
+                line.add(new DLCreateScrollInput(this, line.getCurrentX() + 6, line.getY() + 2, 30, 18)
+                    .setRenderArrow(true)
+                    .titled(Lang.translateDirect("generic.unit.minutes"))
+                    .withShiftStep(10)
+                    .withRange(0, 901)
+                    .setState(minutes)
+                    .calling(x -> {
+                        minutes = x;
+                    })
+                );
+                line.add(new DLCreateScrollInput(this, line.getCurrentX() + 2, line.getY() + 2, 30, 18)
+                    .titled(Lang.translateDirect("generic.unit.seconds"))
+                    .withShiftStep(10)
+                    .withRange(0, 60)
+                    .setState(seconds)
+                    .calling(x -> {
+                        seconds = x;
+                    })
+                );
+                line.add(new DLCreateScrollInput(this, line.getCurrentX() + 2, line.getY() + 2, 30, 18)
+                    .titled(Lang.translateDirect("generic.unit.ticks"))
+                    .withShiftStep(5)
+                    .withRange(0, 20)
+                    .setState(ticks)
+                    .calling(x -> {
+                        ticks = x;
+                    })
+                );
+            });
+            
+            /*
             builder.addLine("time", (line) -> {
                 line.add(new IconSlotWidget(line.getCurrentX(), line.y() + 2, ModGuiIcons.TIME.getAsSprite(16, 16)));
                 line.add(new DLCreateScrollInput(this, line.getCurrentX() + 6, line.getY() + 2, 30, 18)
@@ -107,9 +161,9 @@ public class TrainSeparationSettingsScreen extends DLScreen {
                     .titled(Lang.translateDirect("generic.duration"))
                     .withShiftStep(15)
                     .withRange(0, 121)
-                    .setState(time)
+                    .setState(ticks)
                     .calling(x -> {
-                        time = x;
+                        ticks = x;
                     })
                 );
 
@@ -123,6 +177,7 @@ public class TrainSeparationSettingsScreen extends DLScreen {
                     })
                 );
             });
+            */
             
             builder.addLine("train_filter", (line) -> {
                 line.add(new IconSlotWidget(line.getCurrentX(), line.y() + 2, ModGuiIcons.TRAIN.getAsSprite(16, 16)));
