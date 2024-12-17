@@ -74,6 +74,7 @@ subprojects {
             "maven_group": rootProject.maven_group,
             "create_forge_version": rootProject.create_forge_version,
             "main_class_name": rootProject.main_class_name,
+            "create_forge_version_dependency": rootProject.create_forge_version_dependency,
         ]
         filesMatching(['pack.mcmeta', 'fabric.mod.json', 'META-INF/mods.toml', 'createrailwaysnavigator.mixins.json']) {
             expand expandProps
