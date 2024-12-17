@@ -11,6 +11,7 @@ import com.simibubi.create.foundation.utility.Pair;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.ClientWrapper;
+import de.mrjulsen.crn.data.ETimeSource;
 import de.mrjulsen.crn.data.schedule.IConditionsRequiresInstruction;
 import de.mrjulsen.crn.data.schedule.INavigationExtension;
 import de.mrjulsen.crn.data.train.StationDepartureHistory;
@@ -29,13 +30,16 @@ import net.minecraft.world.level.Level;
 
 public class TrainSeparationCondition extends ScheduledDelay implements IDelayedWaitCondition, IConditionsRequiresInstruction {
 
-    public static final String NBT_TIME = "Value";
+    @Deprecated public static final String NBT_TIME = "Value";
+    @Deprecated public static final String NBT_TIME_UNIT = "TimeUnit";
+    public static final String NBT_TICKS = "Ticks";
     public static final String NBT_TRAIN_FILTER = "TrainFilter";
-    public static final String NBT_TIME_UNIT = "TimeUnit";
+    public static final String NBT_TIME_SOURCE = "TimeSource";
     
     public TrainSeparationCondition() {
         super();
 		data.putByte(NBT_TRAIN_FILTER, ETrainFilter.ANY.getIndex());
+		data.putInt(NBT_TICKS, 100);
     }
 
 	@Override
@@ -46,6 +50,28 @@ public class TrainSeparationCondition extends ScheduledDelay implements IDelayed
 	@Override
 	public ItemStack getSecondLineIcon() {
 		return new ItemStack(Items.OBSERVER);
+	}
+
+	@Override
+	public int totalWaitTicks() {
+		if (data.contains(NBT_TICKS)) {
+			return data.getInt(NBT_TICKS);
+		}
+		return super.totalWaitTicks();
+	}
+
+	@Override
+	protected Component formatTime(boolean compact) {
+        int remainingTicks = totalWaitTicks();
+        int minutes = remainingTicks / 1200;
+        remainingTicks %= 1200;
+        int seconds = remainingTicks / 20;
+        remainingTicks %= 20;
+
+		if (compact) {
+			return TextUtils.text(String.format("%d:%02d,%02d", minutes, seconds, remainingTicks));
+		}
+		return TextUtils.text(String.format("%dm %ds %dt", minutes, seconds, remainingTicks));
 	}
 
     @Override
@@ -92,6 +118,10 @@ public class TrainSeparationCondition extends ScheduledDelay implements IDelayed
     
 	public ETrainFilter getTrainFilter() {
 		return ETrainFilter.getByIndex(data.getByte(NBT_TRAIN_FILTER));
+	}
+
+	public ETimeSource getTimeSource() {
+		return ETimeSource.getByIndex(data.getByte(NBT_TIME_SOURCE));
 	}
 
     @Override
