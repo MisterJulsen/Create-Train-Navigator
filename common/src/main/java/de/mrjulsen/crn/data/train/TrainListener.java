@@ -67,7 +67,7 @@ public final class TrainListener {
 
         CRNEventsManager.getEvent(TrainArrivalAndDepartureEvent.class).register(CreateRailwaysNavigator.MOD_ID, (train, station, isArrival) -> {
             queueTrainListenerTask(() -> {
-                if (data.containsKey(train.id)) {
+                if (data.containsKey(train.id) && train.runtime != null) {
                     if (isArrival) {
                         data.get(train.id).reachDestination(DragonLib.getCurrentWorldTime(), ((ScheduleRuntimeAccessor)train.runtime).crn$getTicksInTransit());
                     } else {
@@ -75,9 +75,9 @@ public final class TrainListener {
                     }
                 }
 
-                if (!isArrival && !((INavigationExtension)(Object)train.navigation).isDelayedWaitConditionPending()) {
+                if (!isArrival && train.navigation != null && station.isPresent() && !((INavigationExtension)(Object)train.navigation).isDelayedWaitConditionPending()) {
                     // If not checking whether a delayed condition is pending, the train would block itself.
-                    StationDepartureHistory.updateDepartureHistory(train, station.name);
+                    StationDepartureHistory.updateDepartureHistory(train, station.get().name);
                 }
             });
         });
