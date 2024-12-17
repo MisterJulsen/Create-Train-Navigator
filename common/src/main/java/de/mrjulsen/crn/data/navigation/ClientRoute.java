@@ -652,8 +652,8 @@ public class ClientRoute extends Route implements AutoCloseable, IListenable<Cli
         CRNEventsManager.getEvent(DefaultTrainDataRefreshEvent.class).unregister(CreateRailwaysNavigator.MOD_ID + "_" + id);
         clearEvents();
         isClosed = true;
-        CreateRailwaysNavigator.LOGGER.info("Route listener closed.");
-        if (ModCommonConfig.ADVANCED_LOGGING.get()) CreateRailwaysNavigator.LOGGER.info("Closed " + this);
+        
+        if (ModCommonConfig.ADVANCED_LOGGING.get()) CreateRailwaysNavigator.LOGGER.info("Route listener closed.");
 
     }
 
