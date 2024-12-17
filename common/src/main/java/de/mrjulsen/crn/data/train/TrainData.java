@@ -67,7 +67,12 @@ public class TrainData implements IListenable<TrainData> {
     private transient final Cache<TrainTravelSection> defaultSection = new Cache<>(() -> TrainTravelSection.def(this), ECachingPriority.LOW);
     private transient final List<TrainPrediction> predictionsChronologically = new LockedList<>();
     private transient final Set<Integer> validPredictionEntries = new HashSet<>();
-    private transient final Cache<Boolean> isDynamic = new Cache<>(() -> getTrain().runtime.getSchedule().entries.stream().anyMatch(x -> x.conditions.stream().flatMap(y -> y.stream()).anyMatch(y -> y instanceof DynamicDelayCondition c && c.minWaitTicks() < c.totalWaitTicks())));
+    private transient final Cache<Boolean> isDynamic = new Cache<>(() -> 
+        getTrain() != null &&
+        getTrain().runtime != null &&
+        getTrain().runtime.getSchedule() != null &&
+        getTrain().runtime.getSchedule().entries.stream().anyMatch(x -> x.conditions.stream().flatMap(y -> y.stream()).anyMatch(y -> y instanceof DynamicDelayCondition c && c.minWaitTicks() < c.totalWaitTicks()))
+    );
     
     private int currentScheduleIndex = INVALID;
     private transient int currentTravelSectionIndex = INVALID;
@@ -635,6 +640,7 @@ public class TrainData implements IListenable<TrainData> {
 
     public void onInitialize() {
         updateTotalDuration();
+        isDynamic.clear();
     }
     
     /** Checks and calculates a new total duration time if necessary. */

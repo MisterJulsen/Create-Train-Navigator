@@ -377,7 +377,7 @@
     "block.createrailwaysnavigator.advanced_display.ber.information_about_cancelled": "Information zu %s: Fällt heute aus!",
     "block.createrailwaysnavigator.advanced_display.ber.information_about_delayed": "Information zu %s: Verspätung ca. %s",
     "block.createrailwaysnavigator.advanced_display.ber.cancelled2": "fällt heute aus. Wir bitten um Entschuldigung.",
-    "block.createrailwaysnavigator.advanced_display.ber.delayed2": "heute circa %s später.",
+    "block.createrailwaysnavigator.advanced_display.ber.delayed2": "heute circa %s%s später.",
     "block.createrailwaysnavigator.advanced_display.ber.reason": "Grund dafür ist eine ",
     "gui.createrailwaysnavigator.route_widget.show_details": "Details ansehen",
     "gui.createrailwaysnavigator.route_widget.save": "Speichern",

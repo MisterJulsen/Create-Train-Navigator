@@ -1,12 +1,14 @@
 package de.mrjulsen.crn.event.events;
 
+import java.util.Optional;
+
 import com.simibubi.create.content.trains.entity.Train;
 import com.simibubi.create.content.trains.station.GlobalStation;
 
 import de.mrjulsen.crn.event.CRNEventsManager.AbstractCRNEvent;
 
 public final class TrainArrivalAndDepartureEvent extends AbstractCRNEvent<TrainArrivalAndDepartureEvent.ITrainApprochEventData> {
-    public void run(Train train, GlobalStation current, boolean arrival) {
+    public void run(Train train, Optional<GlobalStation> current, boolean arrival) {
         listeners.values().forEach(x -> x.run(train, current, arrival));
         tickPost();
     }
@@ -18,6 +20,6 @@ public final class TrainArrivalAndDepartureEvent extends AbstractCRNEvent<TrainA
          * @param current The current station.
          * @param departure {@code true} if the train is arriving at the current station, {@code false} when leaving.
          */
-        void run(Train train, GlobalStation current, boolean arrival);
+        void run(Train train, Optional<GlobalStation> current, boolean arrival);
     }
 }
