@@ -19,12 +19,13 @@ import de.mrjulsen.crn.client.gui.overlay.pages.TransferPage;
 import de.mrjulsen.crn.client.gui.overlay.pages.WelcomePage;
 import de.mrjulsen.crn.client.gui.screen.RouteOverlaySettingsScreen;
 import de.mrjulsen.crn.client.input.ModKeys;
-import de.mrjulsen.crn.client.lang.ELanguage;
+import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.StationTag.StationInfo;
 import de.mrjulsen.crn.data.navigation.ClientRoute;
 import de.mrjulsen.crn.data.navigation.TransferConnection;
 import de.mrjulsen.crn.registry.ModItems;
+import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.gui.DLOverlayScreen;
 import de.mrjulsen.mcdragonlib.client.gui.DLScreen;
@@ -88,7 +89,7 @@ public class RouteDetailsOverlay extends DLOverlayScreen {
             currentPage = new WelcomePage(this.route);
             String terminus = route.getStart().getDisplayTitle();
             StationInfo info = route.getStart().getRealTimeStationTag().info();
-            setSlidingText(info.platform().isEmpty() ? ELanguage.translate(keyJourneyBegins, route.getStart().getTrainDisplayName(), terminus, TimeUtils.parseTime(route.getStart().getScheduledDepartureTime(), ModClientConfig.TIME_FORMAT.get())) : ELanguage.translate(keyJourneyBeginsWithPlatform, route.getStart().getTrainDisplayName(), terminus, TimeUtils.parseTime(route.getStart().getScheduledDepartureTime(), ModClientConfig.TIME_FORMAT.get()), info.platform()));
+            setSlidingText(info.platform().isEmpty() ? CustomLanguage.translate(keyJourneyBegins, route.getStart().getTrainDisplayName(), terminus, ModUtils.formatTime(route.getStart().getScheduledDepartureTime(), false)) : CustomLanguage.translate(keyJourneyBeginsWithPlatform, route.getStart().getTrainDisplayName(), terminus, ModUtils.formatTime(route.getStart().getScheduledDepartureTime(), false), info.platform()));
         }
 
         xPos = LerpedFloat.linear().startWithValue(width / 2 - (ModClientConfig.OVERLAY_SCALE.get() * (GUI_WIDTH / 2)));
@@ -99,10 +100,10 @@ public class RouteDetailsOverlay extends DLOverlayScreen {
         route.listen(ClientRoute.EVENT_DEPARTURE_FROM_ANY_STOP, this, x -> {
             currentPage = new RouteOverviewPage(this.route);
             String terminus = x.part().getNextStop().getTerminusText();
-            setSlidingText(ELanguage.translate(keyTrainDetails, x.part().getNextStop().getTrainDisplayName(), terminus == null || terminus.isEmpty() ? x.part().getNextStop().getScheduleTitle() : terminus));
+            setSlidingText(CustomLanguage.translate(keyTrainDetails, x.part().getNextStop().getTrainDisplayName(), terminus == null || terminus.isEmpty() ? x.part().getNextStop().getScheduleTitle() : terminus));
         });
         route.listen(ClientRoute.EVENT_FIRST_STOP_STATION_CHANGED, this, x -> {
-            setSlidingText(x.trainStop().getRealTimeStationTag().info().platform().isEmpty() ? ELanguage.translate(keyJourneyBegins) : ELanguage.translate(keyJourneyBeginsWithPlatform, x.trainStop().getRealTimeStationTag().info().platform()));
+            setSlidingText(x.trainStop().getRealTimeStationTag().info().platform().isEmpty() ? CustomLanguage.translate(keyJourneyBegins) : CustomLanguage.translate(keyJourneyBeginsWithPlatform, x.trainStop().getRealTimeStationTag().info().platform()));
         });
         route.listen(ClientRoute.EVENT_ARRIVAL_AT_ANY_STOP, this, x -> {
             setSlidingText(TextUtils.text(x.trainStop().getClientTag().tagName()));
@@ -114,17 +115,17 @@ public class RouteDetailsOverlay extends DLOverlayScreen {
             }
         });
         route.listen(ClientRoute.EVENT_ANNOUNCE_STOPOVER, this, x -> {
-            setSlidingText(ELanguage.translate(keyNextStop, x.trainStop().getClientTag().tagName()));
+            setSlidingText(CustomLanguage.translate(keyNextStop, x.trainStop().getClientTag().tagName()));
         });
         route.listen(ClientRoute.EVENT_ANNOUNCE_LAST_STOP, this, x -> {
-            setSlidingText(ELanguage.translate(keyNextStop, x.trainStop().getClientTag().tagName()));
+            setSlidingText(CustomLanguage.translate(keyNextStop, x.trainStop().getClientTag().tagName()));
         });
         route.listen(ClientRoute.EVENT_ANNOUNCE_TRANSFER_ARRIVAL_STATION, this, x -> {
             if (x.connection().isConnectionMissed()) {
                 connectionMissed();
                 return;
             }
-            setSlidingText(ELanguage.translate(keyNextStop, x.trainStop().getClientTag().tagName()).append("   ***   ").append(getTransferSlidingText(x.connection())));
+            setSlidingText(CustomLanguage.translate(keyNextStop, x.trainStop().getClientTag().tagName()).append("   ***   ").append(getTransferSlidingText(x.connection())));
             currentPage = new TransferPage(this.route, x.connection());
         });        
         route.listen(ClientRoute.EVENT_PART_CHANGED, this, x -> {
@@ -137,7 +138,7 @@ public class RouteDetailsOverlay extends DLOverlayScreen {
             currentPage = new TransferPage(this.route, x.connection());
         });
         route.listen(ClientRoute.EVENT_ARRIVAL_AT_LAST_STOP, this, x -> {
-            setSlidingText(ELanguage.translate(keyAfterJourney, x.trainStop().getClientTag().tagName()));
+            setSlidingText(CustomLanguage.translate(keyAfterJourney, x.trainStop().getClientTag().tagName()));
             currentPage = new JourneyCompletedPage(this.route, () -> currentPage = new NextConnectionsPage(route, () -> {} /*InstanceManager::removeRouteOverlay*/));
             route.close();
         });
@@ -145,7 +146,7 @@ public class RouteDetailsOverlay extends DLOverlayScreen {
             if (journeyCompleted) {
                 return;
             }
-            setSlidingText(ELanguage.translate(keyAfterJourney, x.trainStop().getClientTag().tagName()));
+            setSlidingText(CustomLanguage.translate(keyAfterJourney, x.trainStop().getClientTag().tagName()));
             currentPage = new JourneyCompletedPage(this.route, () -> currentPage = new NextConnectionsPage(route, () -> {} /*InstanceManager::removeRouteOverlay*/));
             route.close();
         });
@@ -160,17 +161,17 @@ public class RouteDetailsOverlay extends DLOverlayScreen {
     private Component getTransferSlidingText(TransferConnection connection) {        
         StationInfo info = connection.getDepartureStation().getRealTimeStationTag().info();
         String terminus = connection.getDepartureStation().getDisplayTitle();
-        return (info == null || info.platform().isBlank() ? ELanguage.translate(keyTransfer, connection.getDepartureStation().getTrainDisplayName(), terminus) : ELanguage.translate(keyTransferWithPlatform, connection.getDepartureStation().getTrainDisplayName(), terminus, info.platform()));
+        return (info == null || info.platform().isBlank() ? CustomLanguage.translate(keyTransfer, connection.getDepartureStation().getTrainDisplayName(), terminus) : CustomLanguage.translate(keyTransferWithPlatform, connection.getDepartureStation().getTrainDisplayName(), terminus, info.platform()));
     }
 
     private void connectionMissed() {
-        setSlidingText(ELanguage.translate(keyConnectionMissedInfo));
+        setSlidingText(CustomLanguage.translate(keyConnectionMissedInfo));
         currentPage = new ConnectionMissedPage(this.route);
         route.close();
     }
 
     private void trainCancelled(String trainName) {
-        setSlidingText(ELanguage.translate(keyTrainCancelledInfo, trainName));
+        setSlidingText(CustomLanguage.translate(keyTrainCancelledInfo, trainName));
         currentPage = new TrainCancelledInfo(this.route, trainName);
         route.close();
     }
@@ -272,7 +273,7 @@ public class RouteDetailsOverlay extends DLOverlayScreen {
         GuiUtils.drawString(graphics, font, x + 6, y + 4, title, 0x4F4F4F, EAlignment.LEFT, false);
         GuiUtils.drawString(graphics, font, x + 6, y + GUI_HEIGHT - 2 - font.lineHeight, TextUtils.translate(keyOptionsText, TextUtils.translate(InputConstants.getKey(Minecraft.ON_OSX ? InputConstants.KEY_LWIN : InputConstants.KEY_LCONTROL, 0).getName()).append(" + ").append(new KeybindComponent(keyKeybindOptions)).withStyle(ChatFormatting.BOLD)), 0x4F4F4F, EAlignment.LEFT, false);
         
-        String timeString = TimeUtils.parseTime((int)((level.getDayTime() + DragonLib.DAYTIME_SHIFT) % DragonLib.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get());
+        String timeString = TimeUtils.parseTime((int)((level.getDayTime() + DragonLib.daytimeShift()) % DragonLib.ticksPerDay()), ModClientConfig.TIME_FORMAT.get());
         GuiUtils.drawString(graphics, font, x + GUI_WIDTH - 4 - font.width(timeString), y + 4, timeString, 0x4F4F4F, EAlignment.LEFT, false);
         
         renderSlidingText(graphics, x, y + 2, transX, transY);

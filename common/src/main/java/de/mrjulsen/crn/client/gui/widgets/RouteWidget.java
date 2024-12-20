@@ -8,9 +8,8 @@ import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.ModGuiUtils;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.ColorShade;
-import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.screen.RouteDetailsScreen;
-import de.mrjulsen.crn.client.lang.ELanguage;
+import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.SavedRoutesManager;
 import de.mrjulsen.crn.data.navigation.ClientRoute;
@@ -42,9 +41,9 @@ public class RouteWidget extends DLButton {
     
     private final ClientRoute route;
 
-    private final MutableComponent transferText = ELanguage.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.route_entry.transfer");
-    private final MutableComponent connectionInPast = ELanguage.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.route_entry.connection_in_past");
-    private final MutableComponent trainCanceled = ELanguage.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".route_overview.stop_cancelled");
+    private final MutableComponent transferText = CustomLanguage.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.route_entry.transfer");
+    private final MutableComponent connectionInPast = CustomLanguage.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.route_entry.connection_in_past");
+    private final MutableComponent trainCanceled = CustomLanguage.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".route_overview.stop_cancelled");
     private final MutableComponent textShowDetails = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".route_widget.show_details");
     private final MutableComponent textSave = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".route_widget.save");
     private final MutableComponent textShare = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".route_widget.share");
@@ -85,8 +84,8 @@ public class RouteWidget extends DLButton {
         ImmutableList<RoutePart> parts = route.getParts();
         Font shadowlessFont = new NoShadowFontWrapper(minecraft.font);
 
-        String timeStart = TimeUtils.parseTime((int)((route.getStart().getScheduledDepartureTime() + DragonLib.DAYTIME_SHIFT) % DragonLib.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get());
-        String timeEnd = TimeUtils.parseTime((int)((route.getEnd().getScheduledArrivalTime() + DragonLib.DAYTIME_SHIFT) % DragonLib.TICKS_PER_DAY), ModClientConfig.TIME_FORMAT.get());
+        String timeStart = TimeUtils.parseTime((int)((route.getStart().getScheduledDepartureTime() + DragonLib.daytimeShift()) % DragonLib.ticksPerDay()), ModClientConfig.TIME_FORMAT.get());
+        String timeEnd = TimeUtils.parseTime((int)((route.getEnd().getScheduledArrivalTime() + DragonLib.daytimeShift()) % DragonLib.ticksPerDay()), ModClientConfig.TIME_FORMAT.get());
         String dash = " - ";
         MutableComponent summary = TextUtils.text(String.format("%s%s%s | %s %s | %s",
             timeStart,
@@ -129,10 +128,10 @@ public class RouteWidget extends DLButton {
         GuiUtils.drawString(graphics, font, (int)((x + 6) / scale), (int)((y + 43) / scale), TextUtils.text(route.getStart().getClientTag().tagName()), 0xDBDBDB, EAlignment.LEFT, false);
         GuiUtils.drawString(graphics, font, (int)((x + WIDTH - 6) / scale) - textW, (int)((y + 43) / scale), TextUtils.text(endStationName), 0xDBDBDB, EAlignment.LEFT, false);
         if (route.getStart().shouldRenderRealTime()) {
-            GuiUtils.drawString(graphics, font, (int)((x + 6 + font.width(timeStart) * localScale / 2.0f) / scale) - font.width(timeStart) / 2, (int)((y + 15) / scale), TextUtils.text(TimeUtils.parseTime((int)((route.getStart().getScheduledDepartureTime() + (route.getStart().getDepartureTimeDeviation() / precision * precision)) % 24000 + DragonLib.DAYTIME_SHIFT), ModClientConfig.TIME_FORMAT.get())), route.getStart().isDepartureDelayed() ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME, EAlignment.LEFT, false);
+            GuiUtils.drawString(graphics, font, (int)((x + 6 + font.width(timeStart) * localScale / 2.0f) / scale) - font.width(timeStart) / 2, (int)((y + 15) / scale), TextUtils.text(TimeUtils.parseTime((int)((route.getStart().getScheduledDepartureTime() + (route.getStart().getDepartureTimeDeviation() / precision * precision)) % 24000 + DragonLib.daytimeShift()), ModClientConfig.TIME_FORMAT.get())), route.getStart().isDepartureDelayed() ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME, EAlignment.LEFT, false);
         }
         if (route.getEnd().shouldRenderRealTime()) {
-            GuiUtils.drawString(graphics, font, (int)((x + 6 + font.width(timeEnd) * localScale * 1.5f + (font.width(dash)) * localScale) / scale) - font.width(timeEnd) / 2, (int)((y + 15) / scale), TextUtils.text(TimeUtils.parseTime((int)((route.getEnd().getScheduledArrivalTime() + (route.getEnd().getArrivalTimeDeviation() / precision * precision)) % 24000 + DragonLib.DAYTIME_SHIFT), ModClientConfig.TIME_FORMAT.get())), route.getEnd().isArrivalDelayed() ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME, EAlignment.LEFT, false);
+            GuiUtils.drawString(graphics, font, (int)((x + 6 + font.width(timeEnd) * localScale * 1.5f + (font.width(dash)) * localScale) / scale) - font.width(timeEnd) / 2, (int)((y + 15) / scale), TextUtils.text(TimeUtils.parseTime((int)((route.getEnd().getScheduledArrivalTime() + (route.getEnd().getArrivalTimeDeviation() / precision * precision)) % 24000 + DragonLib.daytimeShift()), ModClientConfig.TIME_FORMAT.get())), route.getEnd().isArrivalDelayed() ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME, EAlignment.LEFT, false);
         }
 
         if (route.isAnyCancelled()) {

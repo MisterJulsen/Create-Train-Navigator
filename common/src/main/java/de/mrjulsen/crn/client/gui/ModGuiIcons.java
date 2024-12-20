@@ -63,7 +63,17 @@ public enum ModGuiIcons {
     COLOR_PALETTE("color_palette", 8, 3),
     TRAIN("train", 9, 3),
     X("x", 10, 3),
-    CHECKMARK("checkmark", 11, 3);
+    CHECKMARK("checkmark", 11, 3),
+    SHARE("share", 12, 3),
+    TEXT("text", 13, 3),
+    WIDTH("width", 14, 3),
+    CARRIAGE_NUMBER("carriage_number", 15, 3),
+
+    COPY("copy", 0, 4),
+    PASTE("paste", 1, 4),
+    TRAIN_INFO("train_info", 2, 4),
+    EXIT("exit", 3, 4),
+    CONNECTIONS("connections", 4, 4);
 
     private String id;
     private int u;

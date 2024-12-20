@@ -7,7 +7,7 @@ import net.fabricmc.api.EnvType;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.StringRepresentable;
 
-public enum ELanguage implements StringRepresentable {
+public enum CustomLanguage implements StringRepresentable {
     DEFAULT("defaut", "def"),
     ENGLISH("english", "en_us"),
     GERMAN("german", "de_de"),
@@ -21,13 +21,18 @@ public enum ELanguage implements StringRepresentable {
     FRENCH("french", "fr_fr"),
     KOREAN("korean", "ko_kr"),
     SWEDISH("swedish", "sv_se"),
-    PORTUGUESE("portuguese", "pt_pt");
+    PORTUGUESE("portuguese", "pt_pt"),
+    BASQUE("basque", "eu_es"),
+    ITALIAN("italian", "it_it"),
+    JAPANESE("japanese", "ja_jp"),
+    PORTUGUESE_brazilian("portuguese_brazilian", "pt_br"),
+    UKRAINIAN("ukrainian", "uk_ua");
 
     private String name;
     private String code;
 
 
-    private ELanguage(String name, String code) {
+    private CustomLanguage(String name, String code) {
         this.name = name;
         this.code = code;
     }
@@ -40,7 +45,7 @@ public enum ELanguage implements StringRepresentable {
         return code;
     }
 
-    public static ELanguage getByCode(String code) {
+    public static CustomLanguage getByCode(String code) {
         return Arrays.stream(values()).filter(x -> x.getCode().equals(code)).findFirst().orElse(DEFAULT);
     }
 

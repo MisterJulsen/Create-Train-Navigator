@@ -6,7 +6,7 @@ import de.mrjulsen.crn.registry.ModAccessorTypes;
 import de.mrjulsen.crn.registry.ModAccessorTypes.DepartureRoutesData;
 import de.mrjulsen.crn.data.navigation.ClientRoute;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLAbstractScrollBar;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.ScrollableWidgetContainer;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.DLScrollableWidgetContainer;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import de.mrjulsen.mcdragonlib.core.EAlignment;
@@ -17,7 +17,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 
-public class StationDeparturesViewer extends ScrollableWidgetContainer {
+public class StationDeparturesViewer extends DLScrollableWidgetContainer {
 
     private final Screen parent;
     private final DLAbstractScrollBar<?> scrollBar;
@@ -30,7 +30,7 @@ public class StationDeparturesViewer extends ScrollableWidgetContainer {
         
         scrollBar.setAutoScrollerSize(true);
         scrollBar.setScreenSize(height());
-        scrollBar.updateMaxScroll(0);
+        scrollBar.setMaxScroll(0);
         scrollBar.withOnValueChanged((sb) -> setYScrollOffset(sb.getScrollValue()));
         scrollBar.setStepSize(10);
     }
@@ -55,7 +55,7 @@ public class StationDeparturesViewer extends ScrollableWidgetContainer {
                 contentHeight += (widget.height() + 3);
             }
             contentHeight += 7;
-            scrollBar.updateMaxScroll(contentHeight);
+            scrollBar.setMaxScroll(contentHeight);
         });
     }
 

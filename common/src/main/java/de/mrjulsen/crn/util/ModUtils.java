@@ -1,5 +1,6 @@
 package de.mrjulsen.crn.util;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -12,14 +13,19 @@ import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.exceptions.RuntimeSideException;
 import de.mrjulsen.crn.web.WebsitePreparableReloadListener;
 import de.mrjulsen.mcdragonlib.DragonLib;
+import de.mrjulsen.mcdragonlib.config.ECachingPriority;
+import de.mrjulsen.mcdragonlib.data.Cache;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.TimeUtils;
 import dev.architectury.platform.Platform;
 import dev.architectury.utils.Env;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.Mth;
+import net.minecraft.world.item.DyeColor;
 
 public class ModUtils {
+
+    private static final Cache<int[]> dyeColorsCache = new Cache<>(() -> Arrays.stream(DyeColor.values()).mapToInt(x -> x == DyeColor.ORANGE ? 0xFFFF9900 : (0xFF << 24) | (x.getTextColor() & 0x00FFFFFF)).toArray(), ECachingPriority.LOW);
 
     private static WebsitePreparableReloadListener websitemanager;
     
@@ -28,7 +34,7 @@ public class ModUtils {
     }
 
     public static double calcSpeed(double metersPerTick, ESpeedUnit unit) {
-        return metersPerTick * DragonLib.TPS * unit.getFactor();
+        return metersPerTick * 20 * unit.getFactor(); // TODO: DragonLib minecraftTps() for the game tick rate
     }
 
     public static MutableComponent calcSpeedString(double metersPerTick, ESpeedUnit unit) {
@@ -110,6 +116,10 @@ public class ModUtils {
         if (asETA) {
             return timeRemainingString(time - DragonLib.getCurrentWorldTime());
         }
-        return TimeUtils.parseTime((time + DragonLib.DAYTIME_SHIFT) % DragonLib.TICKS_PER_DAY, ModClientConfig.TIME_FORMAT.get());
+        return TimeUtils.parseTime((time + DragonLib.daytimeShift()) % DragonLib.ticksPerDay(), ModClientConfig.TIME_FORMAT.get());
+    }
+    
+    public static int[] getDyeColors() {
+        return dyeColorsCache.get();
     }
 }

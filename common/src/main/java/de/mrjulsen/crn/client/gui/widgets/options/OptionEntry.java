@@ -18,7 +18,7 @@ import de.mrjulsen.mcdragonlib.client.gui.widgets.DLButton;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLEditBox;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLIconButton;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLTooltip;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.WidgetContainer;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.DLWidgetContainer;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLAbstractImageButton.ButtonType;
 import de.mrjulsen.mcdragonlib.client.render.Sprite;
 import de.mrjulsen.mcdragonlib.client.render.DynamicGuiRenderer.AreaStyle;
@@ -33,7 +33,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
 
-public class OptionEntry<T extends WidgetContainer> extends WidgetContainer {
+public class OptionEntry<T extends DLWidgetContainer> extends DLWidgetContainer {
 
     public static void expandOrCollapse(OptionEntry<?> entry) {
         if (entry.isExpanded())

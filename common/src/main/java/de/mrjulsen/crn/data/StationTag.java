@@ -191,7 +191,12 @@ public class StationTag {
      */
     public boolean contains(String stationName) {
         String regex = stationName.isBlank() ? stationName : "\\Q" + stationName.replace("*", "\\E.*\\Q");
-        return stations.keySet().stream().anyMatch(x -> x.matches(regex));
+        for (String name : stations.keySet()) {
+            if (name.matches(regex)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public Set<String> getAllStationNames() {
@@ -226,7 +231,17 @@ public class StationTag {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof StationTag alias) {
-            return getTagName().equals(alias.getTagName()) && getAllStationNames().size() == alias.getAllStationNames().size() && getAllStationNames().stream().allMatch(x -> alias.contains(x));
+            if (!getTagName().equals(alias.getTagName())) return false;
+            Set<String> stationNames = getAllStationNames();
+            Set<String> otherStationNames = alias.getAllStationNames();
+            if (stationNames.size() != otherStationNames.size()) return false;
+
+            for (String name : stationNames) {
+                if (!otherStationNames.contains(name)) {
+                    return false;
+                }
+            }
+            return true;
         }
         return false;
     }

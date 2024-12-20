@@ -10,6 +10,7 @@ import com.simibubi.create.content.trains.entity.Train;
 import de.mrjulsen.crn.data.StationTag;
 import de.mrjulsen.crn.data.train.TrainListener;
 import de.mrjulsen.crn.data.train.TrainStop;
+import de.mrjulsen.mcdragonlib.config.ECachingPriority;
 import de.mrjulsen.mcdragonlib.data.Cache;
 
 public class TrainSchedule {
@@ -17,6 +18,7 @@ public class TrainSchedule {
     private final Train train;
     private final List<TrainStop> stops;
     private final Cache<List<TrainStop>> stopsChronologically = new Cache<>(() -> getAllStops().stream().sorted((a, b) -> Long.compare(a.getScheduledArrivalTime(), b.getScheduledArrivalTime())).toList());
+    private final Cache<List<TrainStop>> stopsChronologicallyDeparture = new Cache<>(() -> getAllStops().stream().sorted((a, b) -> Long.compare(a.getScheduledDepartureTime(), b.getScheduledDepartureTime())).toList(), ECachingPriority.LOW);
 
     private boolean simulated;
     private long simulationTime;
@@ -46,6 +48,10 @@ public class TrainSchedule {
     public List<TrainStop> getAllStopsChronologically() {
         return stopsChronologically.get();
     }
+    
+    public List<TrainStop> getAllStopsChronologicallyDeparture() {
+        return stopsChronologicallyDeparture.get();
+    }
 
     public UUID getSessionId() {
         return sessionId;
@@ -56,7 +62,12 @@ public class TrainSchedule {
     }
 
     public boolean stopsAt(StationTag tag) {
-        return stops.stream().anyMatch(x -> x.getTag().equals(tag));
+        for (TrainStop stop : stops) {
+            if (stop.getTag().equals(tag)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public TrainSchedule simulate(long ticks) {
@@ -77,13 +88,24 @@ public class TrainSchedule {
         if (other == null) {
             return false;
         }
-        if (getAllStops().size() != other.getAllStops().size()) {
-            return false;
+
+        List<TrainStop> allStops = getAllStops();
+        List<TrainStop> otherAllStops = other.getAllStops();
+        synchronized (allStops) {
+            synchronized (otherAllStops) {
+                if (allStops.size() != otherAllStops.size()) {
+                    return false;
+                }
+        
+                Set<String> otherTags = new HashSet<>(otherAllStops.size());
+                otherAllStops.forEach(x -> otherTags.add(x.getTag().getTagName().get())); 
+                for (TrainStop stop : allStops) {
+                    if (!otherTags.contains(stop.getTag().getTagName().get())) {
+                        return false;
+                    }
+                }       
+                return true;
+            }
         }
-        Set<String> tagsA = new HashSet<>();
-        Set<String> tagsB = new HashSet<>();
-        getAllStops().stream().forEach(x -> tagsA.add(x.getTag().getTagName().get()));
-        other.getAllStops().stream().forEach(x -> tagsB.add(x.getTag().getTagName().get()));        
-        return tagsA.size() == tagsB.size() && tagsA.stream().allMatch(x -> tagsB.contains(x));
     }
 }

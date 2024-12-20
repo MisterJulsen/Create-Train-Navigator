@@ -3,12 +3,12 @@ package de.mrjulsen.crn.registry;
 import java.util.UUID;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.stream.Collectors;
-
 import com.simibubi.create.content.trains.entity.Train;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -38,6 +38,7 @@ import de.mrjulsen.crn.data.train.TrainStop;
 import de.mrjulsen.crn.data.train.TrainTravelSection;
 import de.mrjulsen.crn.data.train.TrainUtils;
 import de.mrjulsen.crn.data.train.ClientTrainStop.TrainStopRealTimeData;
+import de.mrjulsen.crn.data.train.StationDepartureHistory.StationStats;
 import de.mrjulsen.crn.data.train.portable.NextConnectionsDisplayData;
 import de.mrjulsen.crn.data.train.portable.TrainDisplayData;
 import de.mrjulsen.crn.debug.TrainDebugData;
@@ -498,19 +499,24 @@ public final class ModAccessorTypes {
             }
 
             TrainData data = TrainListener.data.get(in);
-            Map<Integer, TrainStopRealTimeData> values = data.getPredictions().stream().map(a -> new TrainStopRealTimeData(
-                a.getStationTag().getClientTag(a.getStationName()),
-                a.getEntryIndex(),
-                a.getScheduledArrivalTime(),
-                a.getScheduledDepartureTime(),
-                a.getRealTimeArrivalTime(),
-                a.getRealTimeDepartureTime(),
-                a.getArrivalTimeDeviation(),
-                a.getDepartureTimeDeviation(),
-                a.getRealTimeArrivalTicks(),
-                a.getCurrentCycle()
-            )).collect(Collectors.toMap(a -> a.entryIndex(), a -> a));
-            nbt.put(DataAccessorType.DEFAULT_NBT_DATA, new TrainRealTimeData(data.getSessionId(), values, data.getStatus(), data.isCancelled()).toNbt());
+            List<TrainPrediction> predictions = data.getPredictions();
+            Map<Integer, TrainStopRealTimeData> values = new HashMap<>();
+            for (TrainPrediction prediction : predictions) {
+                TrainStopRealTimeData realTimeData = new TrainStopRealTimeData(
+                    prediction.getStationTag().getClientTag(prediction.getStationName()),
+                    prediction.getEntryIndex(),
+                    prediction.getScheduledArrivalTime(),
+                    prediction.getScheduledDepartureTime(),
+                    prediction.getRealTimeArrivalTime(),
+                    prediction.getRealTimeDepartureTime(),
+                    prediction.getArrivalTimeDeviation(),
+                    prediction.getDepartureTimeDeviation(),
+                    prediction.getRealTimeArrivalTicks(),
+                    prediction.getCurrentCycle()
+                );
+                values.put(realTimeData.entryIndex(), realTimeData);
+            }
+            nbt.put(DataAccessorType.DEFAULT_NBT_DATA, TrainRealTimeData.createServer(data.getSessionId(), values, data.getStatus(), data.isCancelled()).toNbt());
             return false;
         }, (hasMore, previousData, iteration, nbt) -> {
             return nbt.contains(DataAccessorType.DEFAULT_NBT_DATA) ? TrainRealTimeData.fromNbt(nbt.getCompound(DataAccessorType.DEFAULT_NBT_DATA)) : null;
@@ -567,7 +573,7 @@ public final class ModAccessorTypes {
         }
     ));
 
-    public static final DataAccessorType<UUID, TrainDisplayData, TrainDisplayData> GET_TRAIN_DISPLAY_DATA = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "get_train_display_data"), DataAccessorType.Builder.create(
+    public static final DataAccessorType<UUID, TrainDisplayData, TrainDisplayData> GET_TRAIN_DISPLAY_DATA_FROM_SERVER = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "get_train_display_data"), DataAccessorType.Builder.create(
         (in, nbt) -> {
             nbt.putUUID(DataAccessorType.DEFAULT_NBT_DATA, in);
         }, (nbt) -> {
@@ -732,7 +738,7 @@ public final class ModAccessorTypes {
                         settings.getTagByName(TagName.of(in.end())).orElse(settings.getOrCreateStationTagFor(in.end())),
                         in.player(),
                         true
-                    );                
+                    );
                     temp.setFirst(new ConcurrentLinkedQueue<>(routes));
                 }
                 @SuppressWarnings("unchecked")
@@ -773,26 +779,31 @@ public final class ModAccessorTypes {
                 if (temp.getFirst() == null) {
                     UserSettings settings = UserSettings.getSettingsFor(in.player(), true);
                     StationTag station = GlobalSettings.getInstance().getOrCreateStationTagFor(TagName.of(in.stationTagName()));
-                    Set<Train> trains = TrainUtils.getDepartingTrainsAt(station).stream().filter(x ->
+                    Set<Train> trains = TrainUtils.getDepartingTrainsAt(station);
+                    trains.removeIf(x -> !(
                         TrainUtils.isTrainUsable(x) &&
                         !GlobalSettings.getInstance().isTrainBlacklisted(x) &&
                         TrainListener.data.containsKey(x.id)
-                    ).collect(Collectors.toSet());
+                    ));
 
-                    List<Pair<Boolean, Route>> routesL = new ArrayList<>();
+                    List<Pair<Boolean, Route>> routesL = new LinkedList<>();
                     for (Train train : trains) {
                         TrainData data = TrainListener.data.get(train.id);
-                        List<TrainPrediction> matchingPredictions = data.getPredictionsChronologically().stream().filter(x -> x.getStationTag().equals(station)).toList();
+                        List<TrainPrediction> matchingPredictions = data.getPredictionsChronologically();
                         
                         for (TrainPrediction prediction : matchingPredictions) {
+                            if (!prediction.getStationTag().equals(station)) {
+                                continue;
+                            }
+
                             TrainTravelSection section = prediction.getSection();
-                            if ((!section.isUsable() && !(section.isFirstStop(prediction) && section.previousSection().isUsable() && section.previousSection().shouldIncludeNextStationOfNextSection())) || (section.getTrainGroup() != null && settings.searchExcludedTrainGroups.getValue().contains(section.getTrainGroup().getGroupName()))) {
+                            if ((!section.isUsable() && !(section.isFirstStop(prediction) && section.previousSection().isUsable() && section.previousSection().shouldIncludeNextStationOfNextSection())) || (section.getTrainGroup().map(x -> settings.searchExcludedTrainGroups.getValue().contains(x.getGroupName())).orElse(false))) {
                                 continue;
                             }
 
                             TrainTravelSection previousSection = section.previousSection();
                             boolean isStart = section.isFirstStop(prediction); 
-                            boolean isStartAndFinal = isStart && previousSection.isUsable() && previousSection.shouldIncludeNextStationOfNextSection() && (previousSection.getTrainGroup() == null || !settings.searchExcludedTrainGroups.getValue().contains(previousSection.getTrainGroup().getGroupName())); 
+                            boolean isStartAndFinal = isStart && previousSection.isUsable() && previousSection.shouldIncludeNextStationOfNextSection() && (previousSection.getTrainGroup().map(x -> !settings.searchExcludedTrainGroups.getValue().contains(x.getGroupName())).orElse(true)); 
                             
                             TrainStop stop = new TrainStop(prediction);
                             stop.simulateTicks(settings.searchDepartureInTicks.getValue());
@@ -801,7 +812,7 @@ public final class ModAccessorTypes {
 
                             Route route = new Route(List.of(new RoutePart(data.getSessionId(), train.id, List.of(stop /* current/target */, from /* from */), section.getAllStops(settings.searchDepartureInTicks.getValue(), prediction.getEntryIndex()))), false);
                             
-                            if ((!isStart || isStartAndFinal) && (section.getTrainGroup() == null || !settings.searchExcludedTrainGroups.getValue().contains(section.getTrainGroup().getGroupName()))) {
+                            if ((!isStart || isStartAndFinal) && (section.getTrainGroup().map(x -> !settings.searchExcludedTrainGroups.getValue().contains(x.getGroupName())).orElse(true))) {
                                 
                                 Route selectedRoute = route;
                                 if (isStartAndFinal) {                                    
@@ -811,7 +822,7 @@ public final class ModAccessorTypes {
                                 }
                                 routesL.add(Pair.of(true, selectedRoute)); // Arrival
                             }
-                            if ((section.isUsable()) && (section.getTrainGroup() == null || !settings.searchExcludedTrainGroups.getValue().contains(section.getTrainGroup().getGroupName()))) {
+                            if ((section.isUsable()) && (section.getTrainGroup().map(x -> !settings.searchExcludedTrainGroups.getValue().contains(x.getGroupName())).orElse(true))) {
                                 routesL.add(Pair.of(false, route)); // Departure
                             }
                         }
@@ -866,8 +877,10 @@ public final class ModAccessorTypes {
                     return false;
                 }
                 StationTag tag = GlobalSettings.getInstance().getStationTag(in.stationTagId()).get();
-                ListTag list = new ListTag();            
-                list.addAll(TrainUtils.getDeparturesAt(tag, in.trainId()).stream().map(x -> x.toNbt(true)).toList());
+                ListTag list = new ListTag();
+                for (TrainStop stop : TrainUtils.getDeparturesAt(tag, in.trainId())) {
+                    list.add(stop.toNbt(true));
+                }
                 nbt.put(DataAccessorType.DEFAULT_NBT_DATA, list);
             } catch (Exception e) {
                 CreateRailwaysNavigator.LOGGER.error("Next connections error.", e);
@@ -890,7 +903,9 @@ public final class ModAccessorTypes {
     public static final DataAccessorType<Void, List<TrainDebugData>, List<TrainDebugData>> GET_ALL_TRAINS_DEBUG_DATA = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "get_all_trains_debug_data"), DataAccessorType.Builder.createNoInput(
         (player, in, temp, nbt, iteration) -> {
             ListTag list = new ListTag();
-            list.addAll(TrainListener.data.values().stream().map(x -> TrainDebugData.fromTrain(x).toNbt()).toList());
+            for (TrainData x : TrainListener.data.values()) {
+                list.add(TrainDebugData.fromTrain(x).toNbt());
+            }
             nbt.put(DataAccessorType.DEFAULT_NBT_DATA, list);
             return false;
         }, (hasMore, data, iteration, nbt) -> {
@@ -928,6 +943,19 @@ public final class ModAccessorTypes {
                 TrainListener.data.get(in).hardResetPredictions();
             }
             return false;
+        }
+    ));
+    
+    public static final DataAccessorType<String, StationStats, StationStats> GET_STATION_DEPARTURE_HISTORY = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "get_station_departure_history"), DataAccessorType.Builder.create(
+        (in, nbt) -> {
+            nbt.putString(DataAccessorType.DEFAULT_NBT_DATA, in);
+        }, (nbt) -> {
+            return nbt.getString(DataAccessorType.DEFAULT_NBT_DATA);
+        }, (player, in, temp, nbt, iteration) -> {
+            nbt.put(DataAccessorType.DEFAULT_NBT_DATA, new StationStats(in).toNbt());
+            return false;
+        }, (hasMore, data, iteration, nbt) -> {
+            return StationStats.fromNbt(nbt.getCompound(DataAccessorType.DEFAULT_NBT_DATA));
         }
     ));
 

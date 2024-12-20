@@ -1,6 +1,7 @@
 {
   "pack": {
-    "description": "Example Mod",
-    "pack_format": 8
+    "description": "${display_name}",
+    "forge:data_pack_format": 9,
+    "pack_format": 9
   }
 }

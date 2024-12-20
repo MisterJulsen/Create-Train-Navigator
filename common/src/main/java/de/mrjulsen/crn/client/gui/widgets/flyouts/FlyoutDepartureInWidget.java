@@ -42,7 +42,7 @@ public class FlyoutDepartureInWidget<T extends GuiEventListener & Widget & Narra
         this.settings = settings;
         this.getUserSetting = getUserSetting;
 
-        this.timeSelection = addRenderableWidget(new CreateTimeSelectionWidget(getContentArea().getX() + 8, getContentArea().getY() + 24, DragonLib.TICKS_PER_DAY * 10));
+        this.timeSelection = addRenderableWidget(new CreateTimeSelectionWidget(getContentArea().getX() + 8, getContentArea().getY() + 24, (int)Math.min(DragonLib.ticksPerDay() * 10, Integer.MAX_VALUE)));
         DLIconButton resetBtn = addRenderableWidget(new DLIconButton(ButtonType.DEFAULT, AreaStyle.FLAT, ModGuiIcons.REFRESH.getAsSprite(16, 16), getContentArea().getX() + getContentArea().getWidth() - DLIconButton.DEFAULT_BUTTON_WIDTH - 2, getContentArea().getY() + 2, TextUtils.empty(), (b) -> {
             getUserSetting.get().setToDefault();
             timeSelection.setValue(getUserSetting.get().getValue());

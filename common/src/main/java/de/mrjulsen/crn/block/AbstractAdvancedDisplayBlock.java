@@ -11,10 +11,14 @@ import com.simibubi.create.foundation.utility.Iterate;
 
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity.EUpdateReason;
+import de.mrjulsen.crn.block.display.properties.BasicDisplaySettings;
 import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.registry.ModBlockEntities;
 import de.mrjulsen.mcdragonlib.data.Pair;
 import de.mrjulsen.mcdragonlib.data.Tripple;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.Direction;
@@ -52,6 +56,8 @@ import net.minecraft.world.ticks.LevelTickAccess;
 
 public abstract class AbstractAdvancedDisplayBlock extends Block implements IWrenchable, IBE<AdvancedDisplayBlockEntity> {
 
+	public static final int DEFAULT_DISPLAY_COLOR = 0xFF404040;
+
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
     
 	public static final BooleanProperty UP = BooleanProperty.create("up");
@@ -66,6 +72,19 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
             .setValue(FACING, Direction.NORTH)
         );
     }
+	
+	@Environment(EnvType.CLIENT)
+	public static BlockColor getDisplayColor() {
+		return (state, world, pos, layer) -> {
+			if (world.getBlockEntity(pos) instanceof AdvancedDisplayBlockEntity be) {
+				return be.getSettingsAs(BasicDisplaySettings.class).map(x -> {
+					int color = x.getBackColor();
+					return color == 0 ? null : color;
+				}).orElse(DEFAULT_DISPLAY_COLOR);
+			}
+			return DEFAULT_DISPLAY_COLOR;
+		};
+	}
 
     @Override
     public BlockState rotate(BlockState pState, Rotation pRotation) {
@@ -299,7 +318,6 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 
     @Override
     public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHit) {
-        
         ItemStack heldItem = pPlayer.getItemInHand(pHand);
         AdvancedDisplayBlockEntity blockEntity = ((AdvancedDisplayBlockEntity)pLevel.getBlockEntity(pPos)).getController();
 
@@ -307,9 +325,17 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 			DyeColor dye = dyeItem.getDyeColor();        
 			if (dye != null) {
 				pLevel.playSound(null, pPos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
+				int dyeColor = dye == DyeColor.ORANGE ? 0xFFFF9900 : dye.getTextColor();
+				
 				blockEntity.applyToAll(be -> {
-					be.setColor(dye == DyeColor.ORANGE ? 0xFF9900 : dye.getMaterialColor().col);				
-					be.notifyUpdate();
+					be.getSettingsAs(BasicDisplaySettings.class).ifPresent(x -> {
+						if (pPlayer.isShiftKeyDown()) {
+							x.setBackColor(dyeColor);
+						} else {
+							x.setFontColor(dyeColor);
+						}
+						be.notifyUpdate();
+					});
 				});
 
 				if (pLevel.isClientSide) {

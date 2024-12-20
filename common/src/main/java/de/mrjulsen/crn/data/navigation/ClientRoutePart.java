@@ -14,6 +14,7 @@ import java.util.HashMap;
 import com.google.common.collect.ImmutableList;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.data.train.ClientTrainStop;
 import de.mrjulsen.crn.data.train.RoutePartProgressState;
 import de.mrjulsen.crn.data.train.TrainStop;
@@ -24,14 +25,16 @@ import de.mrjulsen.mcdragonlib.data.Cache;
 import de.mrjulsen.mcdragonlib.data.Single.MutableSingle;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceLocation;
 
 public class ClientRoutePart extends RoutePart implements ITrainListenerClient<ClientRoutePart.TrainRealTimeData>, IListenable<ClientRoutePart.ListenerNotificationData> {
 
     public static record ListenerNotificationData(ClientRoutePart part, ClientTrainStop trainStop) {}
     public static record QueuedAnnouncementEvent(Runnable callback, ClientTrainStop trainStop) {}
 
-    public static final String EVENT_UPDATE = "update";
+    public static final String EVENT_UPDATE = "update2";
     public static final String EVENT_ANNOUNCE_START = "announce_start";
     public static final String EVENT_ARRIVAL_AT_START = "arrival_at_start";
     public static final String EVENT_DEPARTURE_FROM_START = "departure_at_start";
@@ -155,7 +158,9 @@ public class ClientRoutePart extends RoutePart implements ITrainListenerClient<C
             notifyListeners(EVENT_LAST_STOP_STATION_CHANGED, new ListenerNotificationData(this, x));
         });
 
-        getAllClientStops().stream().forEach(x -> {
+        
+
+        getAllClientStops().forEach(x -> {
             x.listen(ClientTrainStop.EVENT_SCHEDULE_CHANGED, this, a -> {
                 notifyListeners(EVENT_SCHEDULE_CHANGED, new ListenerNotificationData(this, a));
             });
@@ -223,19 +228,25 @@ public class ClientRoutePart extends RoutePart implements ITrainListenerClient<C
 
         MutableSingle<Boolean> shouldRenderStatus = new MutableSingle<>(false);
 
-        getAllClientStops().stream().forEach(x -> {
-            if (data.stationData().containsKey(x.getScheduleIndex())) {
-                x.update(data.stationData().get(x.getScheduleIndex()));
-                if (x.shouldRenderRealTime())  {
-                    shouldRenderStatus.setFirst(true);
+        List<ClientTrainStop> allStops = getAllClientStops();
+        synchronized (allStops) {
+            for (ClientTrainStop stop : allStops) {
+                if (data.stationData().containsKey(stop.getScheduleIndex())) {
+                    stop.update(data.stationData().get(stop.getScheduleIndex()));
+                    if (stop.shouldRenderRealTime())  {
+                        shouldRenderStatus.setFirst(true);
+                    }
                 }
             }
-        });
-        getAllJourneyClientStops().stream().forEach(x -> {
-            if (data.stationData().containsKey(x.getScheduleIndex())) {
-                x.update(data.stationData().get(x.getScheduleIndex()));
+        }
+        List<ClientTrainStop> allJourneyStops = getAllJourneyClientStops();
+        synchronized (allJourneyStops) {
+            for (ClientTrainStop stop : allJourneyStops) {
+                if (data.stationData().containsKey(stop.getScheduleIndex())) {
+                    stop.update(data.stationData().get(stop.getScheduleIndex()));
+                }
             }
-        });
+        }
 
         if (shouldRenderStatus.getFirst() || data.cancelled()) {
             status.addAll(data.statusInfo());
@@ -262,7 +273,7 @@ public class ClientRoutePart extends RoutePart implements ITrainListenerClient<C
         }
 
         if (isCancelled()) {
-            CreateRailwaysNavigator.LOGGER.info("Train got cancelled. Closing route...");
+            if (ModCommonConfig.ADVANCED_LOGGING.get()) CreateRailwaysNavigator.LOGGER.info("Train got cancelled. Closing route...");
             notifyListeners(EVENT_TRAIN_CANCELLED, new ListenerNotificationData(this, nextStop));
             close();
         }
@@ -279,30 +290,61 @@ public class ClientRoutePart extends RoutePart implements ITrainListenerClient<C
 
     @Override
     public void close() {
-        getAllClientStops().stream().forEach(x -> {
-            x.stopListeningAll(this);
-            x.close();
-        });
-        getAllJourneyClientStops().stream().forEach(x -> {
-            x.stopListeningAll(this);
-            x.close();
-        });
+        List<ClientTrainStop> allStops = getAllClientStops();
+        synchronized (allStops) {
+            for (ClientTrainStop stop : allStops) {
+                stop.stopListeningAll(this);
+                stop.close();
+            }
+        }
+        List<ClientTrainStop> allJourneyStops = getAllJourneyClientStops();
+        synchronized (allJourneyStops) {
+            for (ClientTrainStop stop : allJourneyStops) {
+                stop.stopListeningAll(this);
+                stop.close();
+            }
+        }
         stopListeningAll(this);
+
     }
 
 
-    public static record TrainRealTimeData(UUID sessionId, Map<Integer, TrainStopRealTimeData> stationData, Set<CompiledTrainStatus> statusInfo, boolean cancelled) {
-
+    public static class TrainRealTimeData {
+        
         private static final String NBT_SESSION_ID = "SessionId";
         private static final String NBT_STATUS_INFOS = "Status";
         private static final String NBT_CANCELLED = "Cancelled";
 
+        private final UUID sessionId;
+        private final Map<Integer, TrainStopRealTimeData> stationData;
+        private final Set<ResourceLocation> statusLocations;
+        private final Set<CompiledTrainStatus> status;
+        private final boolean cancelled;
+
+        private TrainRealTimeData(UUID sessionId, Map<Integer, TrainStopRealTimeData> stationData, Set<ResourceLocation> statusLocations, Set<CompiledTrainStatus> status, boolean cancelled) {
+            this.sessionId = sessionId;
+            this.stationData = stationData;
+            this.statusLocations = statusLocations;
+            this.status = status;
+            this.cancelled = cancelled;
+        }
+
+        public static TrainRealTimeData createServer(UUID sessionId, Map<Integer, TrainStopRealTimeData> stationData, Set<ResourceLocation> statusLocations, boolean cancelled) {
+            return new TrainRealTimeData(sessionId, stationData, statusLocations, null, cancelled);
+        }
+
+        private static TrainRealTimeData createClient(UUID sessionId, Map<Integer, TrainStopRealTimeData> stationData, Set<CompiledTrainStatus> status, boolean cancelled) {
+            return new TrainRealTimeData(sessionId, stationData, null, status, cancelled);
+        }
+
         public CompoundTag toNbt() {
             CompoundTag nbt = new CompoundTag();
             nbt.putUUID(NBT_SESSION_ID, sessionId);
-            ListTag status = new ListTag();
-            status.addAll(statusInfo().stream().map(x -> x.toNbt()).toList());
-            nbt.put(NBT_STATUS_INFOS, status);
+            ListTag statusList = new ListTag();
+            for (ResourceLocation s : statusLocations) {
+                statusList.add(StringTag.valueOf(s.toString()));
+            }
+            nbt.put(NBT_STATUS_INFOS, statusList);
             nbt.putBoolean(NBT_CANCELLED, cancelled);
 
             for (Map.Entry<Integer, TrainStopRealTimeData> e : stationData.entrySet()) {
@@ -312,12 +354,28 @@ public class ClientRoutePart extends RoutePart implements ITrainListenerClient<C
         }
 
         public static TrainRealTimeData fromNbt(CompoundTag nbt) {
-            return new TrainRealTimeData(
+            return createClient(
                 nbt.getUUID(NBT_SESSION_ID),
                 nbt.getAllKeys().stream().filter(x -> { try { Integer.parseInt(x); return true; } catch (Exception e) { return false; } }).collect(Collectors.toMap(x -> Integer.parseInt(x), x -> TrainStopRealTimeData.fromNbt(nbt.getCompound(x)))),
-                nbt.getList(NBT_STATUS_INFOS, Tag.TAG_COMPOUND).stream().map(x -> CompiledTrainStatus.fromNbt((CompoundTag)x)).collect(Collectors.toSet()),
+                nbt.getList(NBT_STATUS_INFOS, Tag.TAG_STRING).stream().map(x -> CompiledTrainStatus.load(new ResourceLocation(((StringTag)x).getAsString()))).collect(Collectors.toSet()),
                 nbt.getBoolean(NBT_CANCELLED)
             );
+        }
+
+        public UUID sessionId() {
+            return sessionId;
+        }
+
+        public Map<Integer, TrainStopRealTimeData> stationData() {
+            return stationData;
+        }
+
+        public Set<CompiledTrainStatus> statusInfo() {
+            return status;
+        }
+
+        public boolean cancelled() {
+            return cancelled;
         }
     }
 }

@@ -10,7 +10,7 @@ architectury {
 
 allprojects {
     group = rootProject.maven_group
-    version = "$rootProject.minecraft_version-$rootProject.mod_version"
+    version = "$rootProject.minecraft_version${rootProject.release_channel != "release" ? "-$rootProject.release_channel" : ""}-$rootProject.mod_version"
 }
 
 subprojects {
@@ -50,6 +50,36 @@ subprojects {
             officialMojangMappings()
             parchment("org.parchmentmc.data:parchment-${rootProject.minecraft_version}:${rootProject.parchment_version}@zip")
         }
+    }
+
+    processResources {
+        def expandProps = [
+            "version": version,
+            "minecraft_version": rootProject.minecraft_version,
+            "issues": rootProject.issues,
+            "source": rootProject.source,
+            "license": rootProject.license,
+            "modid": rootProject.archives_name,
+            "display_name": rootProject.display_name,
+            "homepage": rootProject.homepage,
+            "authors": rootProject.authors,
+            "description": rootProject.description,
+            "icon": rootProject.icon,
+            "discord": rootProject.discord,
+            "next_unsupported_minecraft_version": rootProject.next_unsupported_minecraft_version,
+            "dragonlib_version": "$rootProject.minecraft_version-$rootProject.dragonlib_version",
+            "forge_version_int": rootProject.forge_version_int,
+            "fabric_loader_version": rootProject.fabric_loader_version,
+            "java_version": rootProject.java_version,
+            "maven_group": rootProject.maven_group,
+            "create_forge_version": rootProject.create_forge_version,
+            "main_class_name": rootProject.main_class_name,
+        ]
+        filesMatching(['pack.mcmeta', 'fabric.mod.json', 'META-INF/mods.toml', 'createrailwaysnavigator.mixins.json']) {
+            expand expandProps
+        }
+        inputs.properties(expandProps)
+        exclude ".cache" // Remove cache from generated data
     }
 
     java {

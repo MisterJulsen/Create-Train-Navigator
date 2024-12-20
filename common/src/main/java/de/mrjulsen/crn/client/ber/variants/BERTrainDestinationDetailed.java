@@ -3,9 +3,9 @@ package de.mrjulsen.crn.client.ber.variants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity.EUpdateReason;
+import de.mrjulsen.crn.block.display.properties.TrainDestinationExtendedSettings;
 import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
-import de.mrjulsen.crn.client.ber.IBERRenderSubtype;
-import de.mrjulsen.crn.client.lang.ELanguage;
+import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.mcdragonlib.client.ber.BERGraphics;
 import de.mrjulsen.mcdragonlib.client.ber.BERLabel;
 import de.mrjulsen.mcdragonlib.client.ber.BERLabel.BoundsHitReaction;
@@ -16,9 +16,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class BERTrainDestinationDetailed implements IBERRenderSubtype<AdvancedDisplayBlockEntity, AdvancedDisplayRenderInstance, Boolean> {
+public class BERTrainDestinationDetailed implements AbstractAdvancedDisplayRenderer<TrainDestinationExtendedSettings> {
 
-    private final BERLabel outOfServiceLabel = new BERLabel(ELanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.not_in_service"))
+    private final BERLabel outOfServiceLabel = new BERLabel(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.not_in_service"))
         .setPos(3, 6)
         .setScale(0.5f, 0.25f)
         .setYScale(0.5f)
@@ -37,7 +37,7 @@ public class BERTrainDestinationDetailed implements IBERRenderSubtype<AdvancedDi
         .setCentered(true)
         .setScrollingSpeed(2)
     ;
-    private final BERLabel viaLabel = new BERLabel(ELanguage.translate("gui.createrailwaysnavigator.via").withStyle(ChatFormatting.ITALIC))
+    private final BERLabel viaLabel = new BERLabel(CustomLanguage.translate("gui.createrailwaysnavigator.via").withStyle(ChatFormatting.ITALIC))
         .setScale(0.35f, 0.35f)
         .setYScale(0.35f)
     ;
@@ -74,7 +74,7 @@ public class BERTrainDestinationDetailed implements IBERRenderSubtype<AdvancedDi
         if (blockEntity.getTrainData() == null || blockEntity.getTrainData().isEmpty()) {
             outOfServiceLabel
                 .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 6, BoundsHitReaction.SCALE_SCROLL)
-                .setColor((0xFF << 24) | (blockEntity.getColor() & 0x00FFFFFF))
+                .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
             ;
             return;
         }
@@ -82,26 +82,39 @@ public class BERTrainDestinationDetailed implements IBERRenderSubtype<AdvancedDi
     }
 
     private void updateContent(AdvancedDisplayBlockEntity blockEntity) {
+        TrainDestinationExtendedSettings settings = getDisplaySettings(blockEntity);
+        int width = settings.getTrainNameWidth();
+
         trainLineLabel
             .setPos(3, 4)
-            .setText(TextUtils.text(blockEntity.getTrainData().getTrainData().getName()).withStyle(ChatFormatting.BOLD))
-            .setColor((0xFF << 24) | (blockEntity.getColor() & 0x00FFFFFF))
+            .setText(width == 0 ? TextUtils.empty() : TextUtils.text(blockEntity.getTrainData().getTrainData().getName()).withStyle(ChatFormatting.BOLD))
+            .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
+            .setMaxWidth(
+                settings.isFullTrainNameWidth() ?
+                    blockEntity.getXSizeScaled() * 16 - 6 :
+                    (settings.isAutoTrainNameWidth() ?
+                        12 :
+                        Math.min(
+                            getDisplaySettings(blockEntity).getTrainNameWidth(),
+                            blockEntity.getXSizeScaled() * 16 - 6)                
+                ), settings.isAutoTrainNameWidth() ? BoundsHitReaction.IGNORE : BoundsHitReaction.SCALE_SCROLL)
+            .setCentered(settings.isFullTrainNameWidth())
         ;
         destinationLabel
-            .setPos(trainLineLabel.getTextWidth() + 5, 4)
+            .setPos((settings.isAutoTrainNameWidth() ? trainLineLabel.getTextWidth() : width) + 5, 4)
             .setMaxWidth(blockEntity.getXSizeScaled() * 16 - destinationLabel.getX() - 3, BoundsHitReaction.SCALE_SCROLL)
-            .setText(TextUtils.text(blockEntity.getTrainData().getNextStop().isPresent() ? blockEntity.getTrainData().getNextStop().get().getDestination() : ""))
-            .setColor((0xFF << 24) | (blockEntity.getColor() & 0x00FFFFFF))
+            .setText(settings.isFullTrainNameWidth() ? TextUtils.empty() : TextUtils.text(blockEntity.getTrainData().getNextStop().isPresent() ? blockEntity.getTrainData().getNextStop().get().getDestination() : ""))
+            .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
         ;
         viaLabel
             .setPos(3, 10)
-            .setColor((0xFF << 24) | (blockEntity.getColor() & 0x00FFFFFF))
+            .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
         ;
         stopoversLabel
             .setPos(Math.max(trainLineLabel.getTextWidth(), viaLabel.getTextWidth()) + 5, 10)
             .setMaxWidth(blockEntity.getXSizeScaled() * 16 - stopoversLabel.getX() - 3, BoundsHitReaction.SCALE_SCROLL)
             .setText(TextUtils.concat(TextUtils.text(" \u25CF "), blockEntity.getTrainData().getStopovers().stream().map(x -> (Component)TextUtils.text(x.getName())).toList()))
-            .setColor((0xFF << 24) | (blockEntity.getColor() & 0x00FFFFFF))
+            .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
         ;
     }
 }

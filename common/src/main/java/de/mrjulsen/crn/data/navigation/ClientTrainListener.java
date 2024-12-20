@@ -1,11 +1,12 @@
 package de.mrjulsen.crn.data.navigation;
 
-import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
+import de.mrjulsen.crn.data.navigation.ClientRoutePart.TrainRealTimeData;
 import de.mrjulsen.crn.registry.ModAccessorTypes;
 import de.mrjulsen.mcdragonlib.data.Pair;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
@@ -45,20 +46,24 @@ public final class ClientTrainListener {
     }
 
     public static void tick(Runnable andThen) {
-        callbacks.entrySet().stream().forEach(x -> {
-            if (x.getValue().isEmpty()) {
-                callbacks.remove(x.getKey());
-                return;
-            }
-
-            final Map<UUID, Pair<UUID, Consumer<ClientRoutePart.TrainRealTimeData>>> listeners = x.getValue();
-            DataAccessor.getFromServer(x.getKey(), ModAccessorTypes.UPDATE_REALTIME, res -> {
-                if (res != null) {
-                    new ArrayList<>(listeners.values()).stream().forEach(a -> a.getSecond().accept(res));
+        synchronized (callbacks) {
+            Iterator<Map.Entry<UUID, ConcurrentHashMap<UUID, Pair<UUID, Consumer<TrainRealTimeData>>>>> iterator = callbacks.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Map.Entry<UUID, ConcurrentHashMap<UUID, Pair<UUID, Consumer<TrainRealTimeData>>>> entry = iterator.next();
+                if (entry.getValue().isEmpty()) {
+                    iterator.remove();
+                    continue;
                 }
-                DLUtils.doIfNotNull(andThen, a -> a.run());
-            });
-        });
+                
+                final Map<UUID, Pair<UUID, Consumer<ClientRoutePart.TrainRealTimeData>>> listeners = entry.getValue();
+                DataAccessor.getFromServer(entry.getKey(), ModAccessorTypes.UPDATE_REALTIME, res -> {
+                    if (res != null) {
+                        listeners.values().forEach(a -> a.getSecond().accept(res));
+                    }
+                    DLUtils.doIfNotNull(andThen, a -> a.run());
+                });
+            }
+        }
     }
 
     public static void clear() {

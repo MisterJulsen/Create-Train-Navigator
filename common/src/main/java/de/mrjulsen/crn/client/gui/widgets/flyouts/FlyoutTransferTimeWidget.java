@@ -42,7 +42,7 @@ public class FlyoutTransferTimeWidget<T extends GuiEventListener & Widget & Narr
         this.settings = settings;
         this.getUserSetting = getUserSetting;
 
-        this.timeSelection = addRenderableWidget(new CreateTimeSelectionWidget(getContentArea().getX() + 8, getContentArea().getY() + 24, DragonLib.TICKS_PER_DAY));
+        this.timeSelection = addRenderableWidget(new CreateTimeSelectionWidget(getContentArea().getX() + 8, getContentArea().getY() + 24, (int)DragonLib.ticksPerDay()));
         DLIconButton resetBtn = addRenderableWidget(new DLIconButton(ButtonType.DEFAULT, AreaStyle.FLAT, ModGuiIcons.REFRESH.getAsSprite(16, 16), getContentArea().getX() + getContentArea().getWidth() - DLIconButton.DEFAULT_BUTTON_WIDTH - 2, getContentArea().getY() + 2, TextUtils.empty(), (b) -> {
             getUserSetting.get().setToDefault();
             timeSelection.setValue(getUserSetting.get().getValue());

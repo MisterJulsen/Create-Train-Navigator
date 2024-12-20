@@ -257,7 +257,7 @@ public class NavigatorScreen extends AbstractNavigatorScreen {
                 DataAccessor.getFromServer(new NavigationData(stationFrom, stationTo, Minecraft.getInstance().player.getUUID()), ModAccessorTypes.NAVIGATE, (routeList) -> {                    
                     routes.addAll(routeList);
                     routeViewer.displayRoutes(ImmutableList.copyOf(routes));
-                    routeViewer.displayRoutes(routeList);
+                    //routeViewer.displayRoutes(routeList);
                     isLoadingRoutes = false;
                     
                     DataAccessor.getFromServer(null, ModAccessorTypes.ALL_TRAINS_INITIALIZED, (result) -> {

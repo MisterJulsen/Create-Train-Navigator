@@ -17,7 +17,7 @@ public interface ISaveableNavigatorData {
     /** The value (usually the time at which the corresponding entry is relevant) by which the items are sorted and grouped. */
     long timeOrderValue();
     default long dayOrderValue() {
-        return (timeOrderValue() + DragonLib.DAYTIME_SHIFT) / DragonLib.TICKS_PER_DAY;
+        return (timeOrderValue() + DragonLib.daytimeShift()) / DragonLib.ticksPerDay();
     }
     /** Custom value used for grouping with custom label. Default: {@code null} (grouped by time) */
     default Pair<String, MutableComponent> customGroup() {

@@ -17,7 +17,7 @@ import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.ColorShade;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLEditBox;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLTooltip;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.WidgetContainer;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.DLWidgetContainer;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import de.mrjulsen.mcdragonlib.data.Single.MutableSingle;
@@ -26,7 +26,7 @@ import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 
-public class DataListContainer<T, S> extends WidgetContainer {
+public class DataListContainer<T, S> extends DLWidgetContainer {
 
     private static final int BORDER_WIDTH = 2;
 

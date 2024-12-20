@@ -15,6 +15,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
 import de.mrjulsen.crn.event.ModCommonEvents;
 import de.mrjulsen.crn.exceptions.RuntimeSideException;
@@ -136,7 +137,7 @@ public class UserSettings {
         CompoundTag nbt = this.toNbt();    
         try {
             NbtIo.writeCompressed(nbt, new File(ModCommonEvents.getCurrentServer().get().getWorldPath(new LevelResource("data/" + FILENAME + getOwnerId() + ".nbt")).toString()));
-            CreateRailwaysNavigator.LOGGER.info("Saved user settings.");
+            if (ModCommonConfig.ADVANCED_LOGGING.get()) CreateRailwaysNavigator.LOGGER.info("Saved user settings.");
         } catch (IOException e) {
             CreateRailwaysNavigator.LOGGER.error("Unable to save user settings.", e);
         }

@@ -75,6 +75,7 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
         TrainTravelSection section = getSection();
         return section.isFinalStop(this);
     });
+    private final Cache<StationTag> tagCache = new Cache<>(() -> GlobalSettings.getInstance().getOrCreateStationTagFor(stationName));
     private final Cache<TrainTravelSection> section;
 
     private TrainPrediction(TrainData data, int entryIndex, String stationName, String title, int ticks, int stayDuration, int minStayDuration) {
@@ -251,19 +252,19 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
     }
 
     public long getScheduledArrivalDay() {
-        return getScheduledArrivalTime() / DragonLib.TICKS_PER_DAY;
+        return getScheduledArrivalTime() / DragonLib.ticksPerDay();
     }
     
     public long getScheduledDepartureDay() {
-        return getScheduledDepartureDay() / DragonLib.TICKS_PER_DAY;
+        return getScheduledDepartureDay() / DragonLib.ticksPerDay();
     }
     
     public long getRealTimeArrivalDay() {
-        return getRealTimeArrivalTime() / DragonLib.TICKS_PER_DAY;
+        return getRealTimeArrivalTime() / DragonLib.ticksPerDay();
     }
     
     public long getRealTimeDepartureDay() {
-        return getRealTimeDepartureTime() / DragonLib.TICKS_PER_DAY;
+        return getRealTimeDepartureTime() / DragonLib.ticksPerDay();
     }
 
     public void setStopovers(List<String> stopovers) {
@@ -341,7 +342,7 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
         if (!ModCommonEvents.hasServer()) {
             throw new RuntimeSideException(false);
         }
-        return GlobalSettings.getInstance().getOrCreateStationTagFor(stationName);
+        return tagCache.get();
     }
 
     public TrainTravelSection getSection() {
@@ -392,6 +393,11 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
         }
         this.arrivalTicksCorrection += Math.min(tempArrivalCorrection, getArrivalTimeDeviation());
         this.departureTicksCorrection += Math.min(tempDepartureCorrection, getArrivalTimeDeviation());
+        resetAllTimedCaches();
+    }
+
+    private void resetAllTimedCaches() {
+        tagCache.clear();
     }
 
     @Override
@@ -427,7 +433,10 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
         CompoundTag nbt = new CompoundTag();
 
         ListTag stopovers = new ListTag();
-        stopovers.addAll(this.stopovers.stream().map(x -> StringTag.valueOf(x)).toList());
+        List<String> stops = this.stopovers;
+        for (String s : stops) {
+            stopovers.add(StringTag.valueOf(s));
+        }
 
         nbt.putInt(NBT_ENTRY_INDEX, entryIndex);
         nbt.putString(NBT_STATION_NAME, stationName == null ? "" : stationName);

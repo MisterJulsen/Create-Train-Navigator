@@ -2,11 +2,10 @@ package de.mrjulsen.crn.client.ber.variants;
 
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity.EUpdateReason;
-import de.mrjulsen.crn.block.display.AdvancedDisplaySource.ETimeDisplay;
+import de.mrjulsen.crn.block.display.properties.PassengerInformationScrollingTextSettings;
 import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
-import de.mrjulsen.crn.client.ber.IBERRenderSubtype;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
-import de.mrjulsen.crn.client.lang.ELanguage;
+import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.TrainExitSide;
 import de.mrjulsen.crn.util.ModUtils;
@@ -21,7 +20,9 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class BERPassengerInfoSimple implements IBERRenderSubtype<AdvancedDisplayBlockEntity, AdvancedDisplayRenderInstance, Boolean> {
+public class BERPassengerInfoSimple implements AbstractAdvancedDisplayRenderer<PassengerInformationScrollingTextSettings> {
+
+    public BERPassengerInfoSimple() {}
 
     private static final String keyNextStop = "gui.createrailwaysnavigator.route_overview.next_stop";
     private static final String keyDate = "gui.createrailwaysnavigator.route_overview.date";
@@ -70,7 +71,7 @@ public class BERPassengerInfoSimple implements IBERRenderSubtype<AdvancedDisplay
                     uv * (ModGuiIcons.ARROW_RIGHT.getU() + ModGuiIcons.ICON_SIZE),
                     uv * (ModGuiIcons.ARROW_RIGHT.getV() + ModGuiIcons.ICON_SIZE),
                     graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING),
-                    (0xFF << 24) | (graphics.blockEntity().getColor()),
+                    (0xFF << 24) | (getDisplaySettings(graphics.blockEntity()).getFontColor()),
                     light
                 );
                 break;
@@ -89,7 +90,7 @@ public class BERPassengerInfoSimple implements IBERRenderSubtype<AdvancedDisplay
                     uv * (ModGuiIcons.ARROW_LEFT.getU() + ModGuiIcons.ICON_SIZE),
                     uv * (ModGuiIcons.ARROW_LEFT.getV() + ModGuiIcons.ICON_SIZE),
                     graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING),
-                    (0xFF << 24) | (graphics.blockEntity().getColor()),
+                    (0xFF << 24) | (getDisplaySettings(graphics.blockEntity()).getFontColor()),
                     light
                 );
                 break;
@@ -115,27 +116,43 @@ public class BERPassengerInfoSimple implements IBERRenderSubtype<AdvancedDisplay
             return;
         }
 
-        this.exitSide = blockEntity.getTrainData().isWaitingAtStation() ? exitSide : blockEntity.relativeExitDirection.get();
+        PassengerInformationScrollingTextSettings settings = getDisplaySettings(blockEntity);
+
+        this.exitSide = settings.showExit() ? (blockEntity.getTrainData().isWaitingAtStation() ? exitSide : blockEntity.relativeExitDirection.get()) : TrainExitSide.UNKNOWN;
         if (!blockEntity.getTrainData().getNextStop().isPresent()) {
-            label.setText(TextUtils.text(blockEntity.getTrainData().getTrainData().getName()));
+            label.setText(settings.getTrainTextComponents().showTrainName() ? TextUtils.text(blockEntity.getTrainData().getTrainData().getName()) : TextUtils.empty());
         } else if (blockEntity.getTrainData().isWaitingAtStation()) {
             label.setText(TextUtils.text(blockEntity.getTrainData().getNextStop().get().getName()));
         } else if (blockEntity.getTrainData().getNextStop().get().getRealTimeArrivalTime() - DragonLib.getCurrentWorldTime() < ModClientConfig.NEXT_STOP_ANNOUNCEMENT.get()) {
-            label.setText(ELanguage.translate(keyNextStop, blockEntity.getTrainData().getNextStop().get().getName()));
+            label.setText(CustomLanguage.translate(keyNextStop, blockEntity.getTrainData().getNextStop().get().getName()));
         } else {
             final int slides = 3;
             int slide = (int)(DragonLib.getCurrentWorldTime() % (TICKS_PER_SLIDE * slides)) / TICKS_PER_SLIDE;
-            switch (slide) {                
-                case 0 -> label.setText(TextUtils.text(blockEntity.getTrainData().getTrainData().getName() + " " + blockEntity.getTrainData().getNextStop().get().getDestination()));
-                case 1 -> label.setText(ELanguage.translate(keyDate, blockEntity.getLevel().getDayTime() / Level.TICKS_PER_DAY, ModUtils.formatTime(DragonLib.getCurrentWorldTime(), blockEntity.getTimeDisplay() == ETimeDisplay.ETA)));
-                case 2 -> label.setText(ModUtils.calcSpeedString(blockEntity.getTrainData().getSpeed(), ModClientConfig.SPEED_UNIT.get()));
+            if ((slide == 1 && !settings.showTimeAndDate()) ||
+                (slide == 2 && !settings.showStats())
+            ) {
+                slide++;
+            }
+            slide %= slides;
+            switch (slide) {
+                case 0 -> label.setText(TextUtils.text((settings.getTrainTextComponents().showTrainName()
+                        ? blockEntity.getTrainData().getTrainData().getName() + " "
+                        : "")
+                        + (settings.getTrainTextComponents().showDestination()
+                            ? blockEntity.getTrainData().getNextStop().get().getDestination()
+                            : "")));
+                case 1 -> label
+                        .setText(CustomLanguage.translate(keyDate, blockEntity.getLevel().getDayTime() / Level.TICKS_PER_DAY,
+                                ModUtils.formatTime(DragonLib.getCurrentWorldTime(), false)));
+                case 2 -> label.setText(ModUtils.calcSpeedString(blockEntity.getTrainData().getSpeed(),
+                        ModClientConfig.SPEED_UNIT.get()));
             }            
             this.exitSide = TrainExitSide.UNKNOWN;
         }
 
         label
             .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 6 - (exitSide == TrainExitSide.UNKNOWN ? 0 : 10), BoundsHitReaction.SCROLL)
-            .setColor((0xFF << 24) | (blockEntity.getColor() & 0x00FFFFFF))
+            .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
         ;
     }
 }

@@ -312,19 +312,19 @@ public class TrainStop implements Comparable<TrainStop> {
     }    
 
     public long getScheduledArrivalDay() {
-        return getScheduledArrivalTime() / DragonLib.TICKS_PER_DAY;
+        return getScheduledArrivalTime() / DragonLib.ticksPerDay();
     }
     
     public long getScheduledDepartureDay() {
-        return getScheduledDepartureDay() / DragonLib.TICKS_PER_DAY;
+        return getScheduledDepartureDay() / DragonLib.ticksPerDay();
     }
     
     public long getRealTimeArrivalDay() {
-        return getRealTimeArrivalTime() / DragonLib.TICKS_PER_DAY;
+        return getRealTimeArrivalTime() / DragonLib.ticksPerDay();
     }
     
     public long getRealTimeDepartureDay() {
-        return getRealTimeDepartureTime() / DragonLib.TICKS_PER_DAY;
+        return getRealTimeDepartureTime() / DragonLib.ticksPerDay();
     }
 
     /**

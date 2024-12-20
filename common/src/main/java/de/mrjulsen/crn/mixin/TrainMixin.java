@@ -1,5 +1,7 @@
 package de.mrjulsen.crn.mixin;
 
+import java.util.Optional;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -22,14 +24,14 @@ public class TrainMixin {
     @Inject(method = "arriveAt", remap = false, at = @At(value = "TAIL"))
     public void onArriveAt(GlobalStation station, CallbackInfo ci) {
         if (CRNEventsManager.isRegistered(TrainArrivalAndDepartureEvent.class)) {
-            CRNEventsManager.getEvent(TrainArrivalAndDepartureEvent.class).run(self(), station, true);
+            CRNEventsManager.getEvent(TrainArrivalAndDepartureEvent.class).run(self(), Optional.ofNullable(station), true);
         }
     }
 
     @Inject(method = "leaveStation", remap = false, at = @At(value = "TAIL"), locals = LocalCapture.CAPTURE_FAILHARD)
     public void onLeaveStation(CallbackInfo ci, GlobalStation currentStation) {
         if (CRNEventsManager.isRegistered(TrainArrivalAndDepartureEvent.class)) {
-            CRNEventsManager.getEvent(TrainArrivalAndDepartureEvent.class).run(self(), currentStation, false);
+            CRNEventsManager.getEvent(TrainArrivalAndDepartureEvent.class).run(self(), Optional.ofNullable(currentStation), false);
         }
     }
 }

@@ -140,7 +140,7 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
             GuiAreaDefinition workspace = option.getContentSpace();
             DataListContainer<Collection<String>, String> cont = new DataListContainer<>(option, workspace.getX(), workspace.getY(), workspace.getWidth(), datalist,
                 (list) -> {
-                    return list.iterator();
+                    return list.stream().sorted((a, b) -> a.compareToIgnoreCase(b)).iterator();
                 }, (data, entryWidget) -> {
                     entryWidget.addDeleteButton((btn, tg, entry, refreshAction) -> {
                         GlobalSettingsClient.removeStationFromBlacklist(entry, (res) -> {
@@ -187,7 +187,7 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
             GuiAreaDefinition workspace = option.getContentSpace();
             DataListContainer<Collection<String>, String> cont = new DataListContainer<>(option, workspace.getX(), workspace.getY(), workspace.getWidth(), datalist,
                 (list) -> {
-                    return list.iterator();
+                    return list.stream().sorted((a, b) -> a.compareToIgnoreCase(b)).iterator();
                 }, (data, entryWidget) -> {
                     entryWidget.addDeleteButton((btn, tg, entry, refreshAction) -> {
                         GlobalSettingsClient.removeTrainFromBlacklist(entry, (res) -> {
@@ -234,7 +234,7 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
             GuiAreaDefinition workspace = option.getContentSpace();
             DataListContainer<Collection<TrainGroup>, TrainGroup> cont = new DataListContainer<>(option, workspace.getX(), workspace.getY(), workspace.getWidth(), datalist,
                 (list) -> {
-                    return list.iterator();
+                    return list.stream().sorted((a, b) -> a.getGroupName().compareToIgnoreCase(b.getGroupName())).iterator();
                 }, (data, entryWidget) -> {
                     entryWidget.addDeleteButton((btn, tg, entry, refreshAction) -> {
                         GlobalSettingsClient.deleteTrainGroup(entry.getGroupName(), () -> {
@@ -246,7 +246,7 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
                     DLIconButton colorBtn = entryWidget.addButton(ModGuiIcons.COLOR_PALETTE.getAsSprite(16, 16), textColor,
                     (btn, tg, entry, refreshAction) -> {
                         final TrainGroup e = entry;
-                        FlyoutColorPicker<?> flyout = new FlyoutColorPicker<>(this, e.getColor(), this::addRenderableWidget, (w) -> {
+                        FlyoutColorPicker<?> flyout = new FlyoutColorPicker<>(this, e.getColor(), Constants.DEFAULT_TRAIN_TYPE_COLORS, 5, true, true, this::addRenderableWidget, (w) -> {
                             GlobalSettingsClient.updateTrainGroupColor(e.getGroupName(), ((FlyoutColorPicker<?>)w).getColorPicker().getSelectedColor(), () -> {
                                 GlobalSettingsClient.getTrainGroups((res) -> {
                                     refreshAction.accept(Optional.ofNullable(res));
@@ -299,7 +299,7 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
             GuiAreaDefinition workspace = option.getContentSpace();
             DataListContainer<Collection<TrainLine>, TrainLine> cont = new DataListContainer<>(option, workspace.getX(), workspace.getY(), workspace.getWidth(), datalist,
                 (list) -> {
-                    return list.iterator();
+                    return list.stream().sorted((a, b) -> a.getLineName().compareToIgnoreCase(b.getLineName())).iterator();
                 }, (data, entryWidget) -> {
                     entryWidget.addDeleteButton((btn, tg, entry, refreshAction) -> {
                         GlobalSettingsClient.deleteTrainLine(entry.getLineName(), () -> {
@@ -311,7 +311,7 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
                     DLIconButton colorBtn = entryWidget.addButton(ModGuiIcons.COLOR_PALETTE.getAsSprite(16, 16), textColor,
                     (btn, tg, entry, refreshAction) -> {
                         final TrainLine e = entry;
-                        FlyoutColorPicker<?> flyout = new FlyoutColorPicker<>(this, e.getColor(), this::addRenderableWidget, (w) -> {
+                        FlyoutColorPicker<?> flyout = new FlyoutColorPicker<>(this, e.getColor(), Constants.DEFAULT_TRAIN_TYPE_COLORS, 5, true, true, this::addRenderableWidget, (w) -> {
                             GlobalSettingsClient.updateTrainLineColor(e.getLineName(), ((FlyoutColorPicker<?>)w).getColorPicker().getSelectedColor(), () -> {
                                 GlobalSettingsClient.getTrainLines((res) -> {
                                     refreshAction.accept(Optional.ofNullable(res));

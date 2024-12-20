@@ -49,7 +49,7 @@ public class DebugOverlay extends DLOverlayScreen {
             trainIndex %= TrainListener.data.size();
             TrainData data = TrainListener.data.values().stream().skip(trainIndex).findFirst().get();  
             drawLine(graphics, data.getTrain().name.getString() + " (" + (data.isPreparing() ? "PREPARING" : (data.isInitialized() ? "READY" : "INITIALIZING")) + ") SessionId: " + data.getSessionId());    
-            drawLine(graphics, "Display: " + data.getCurrentTravelSection().getDisplayText() + ", Title: " + data.getCurrentTitle() + ", IsDynamic: " + data.isDynamic());
+            drawLine(graphics, "Display: " + data.getCurrentSection().getDisplayText() + ", Title: " + data.getCurrentTitle() + ", IsDynamic: " + data.isDynamic());
             drawLine(graphics, "Track: " + !((TrainStatusAccessor)data.getTrain().status).crn$track() + ", Conductor: " + !((TrainStatusAccessor)data.getTrain().status).crn$conductor() + ", Navigation: " + !((TrainStatusAccessor)data.getTrain().status).crn$navigation() + ", Paused: " + data.getTrain().runtime.paused + ", Auto: " + data.getTrain().runtime.isAutoSchedule + ", Manual: " + data.isManualControlled + ", Cancelled: " + data.isCancelled());
             drawLine(graphics, "Duration: " + data.getTotalDuration() + ", Ticks: " + data.getTransitTicks() + "/" + data.waitingAtStationTicks() + "/" + data.waitingForSignalTicks + ", Dest: " + (data.getTrain().navigation.destination == null ? "(at station)" : (data.getTrain().navigation.destination.name + ", DestID: " + data.getTrain().navigation.destination.id)) + ", Delay: " + data.getHighestDeviation() + " (-" + data.getDeviationDelayOffset() + "), Status: " + data.debug_statusInfoCount());
             data.getPredictions().forEach(a -> {                
@@ -87,7 +87,7 @@ public class DebugOverlay extends DLOverlayScreen {
             
             drawLine(graphics, "Sections:");
             for (TrainTravelSection section : data.getSections()) {                
-                drawLine(graphics, " - [ " + section.getScheduleIndex() + " ]: " + section.getDisplayText() + " (" + section.getStartStationName() + " -> " + section.getDestinationStationName() + "), Group: " + (section.getTrainGroup() == null ? "none" : section.getTrainGroup().getGroupName()) + ", Line: " + (section.getTrainLine() == null ? "none" : section.getTrainLine().getLineName()) + ", Include: " + section.shouldIncludeNextStationOfNextSection() + ", Navigable: " + section.isUsable() + ", Next: " + section.nextSection().getScheduleIndex());
+                drawLine(graphics, " - [ " + section.getScheduleIndex() + " ]: " + section.getDisplayText() + " (" + section.getStartStationName() + " -> " + section.getDestinationStationName() + "), Group: " + section.getTrainGroup().map(x -> x.getGroupName()).orElse("none") + ", Line: " + section.getTrainLine().map(x -> x.getLineName()).orElse("none") + ", Include: " + section.shouldIncludeNextStationOfNextSection() + ", Navigable: " + section.isUsable() + ", Next: " + section.nextSection().getScheduleIndex());
             }
         }
         drawLine(graphics, TextUtils.text("Press K to switch train.").withStyle(ChatFormatting.AQUA));  

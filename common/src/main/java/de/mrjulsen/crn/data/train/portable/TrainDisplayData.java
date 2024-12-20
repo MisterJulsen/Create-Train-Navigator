@@ -11,6 +11,7 @@ import de.mrjulsen.crn.data.TrainExitSide;
 import de.mrjulsen.crn.exceptions.RuntimeSideException;
 import de.mrjulsen.crn.data.train.TrainData;
 import de.mrjulsen.crn.data.train.TrainListener;
+import de.mrjulsen.crn.data.train.TrainPrediction;
 import de.mrjulsen.crn.data.train.TrainStop;
 import de.mrjulsen.crn.data.train.TrainTravelSection;
 import de.mrjulsen.crn.data.train.TrainUtils;
@@ -112,9 +113,18 @@ public class TrainDisplayData {
 
         TrainData data = TrainListener.data.get(train.id);
         TrainTravelSection section = data.getCurrentSection();
+
+        List<TrainStopDisplayData> displayData = new ArrayList<>();
+        if (section.isUsable()) {            
+            List<TrainPrediction> predictions = data.getCurrentSection().getPredictions(-1, false);
+            for (TrainPrediction prediction : predictions) {
+                displayData.add(TrainStopDisplayData.of(new TrainStop(prediction)));
+            }
+        }
+
         return new TrainDisplayData(
             BasicTrainDisplayData.of(train.id),
-            section.isUsable() ? data.getCurrentSection().getPredictions(-1, false).stream().map(x -> TrainStopDisplayData.of(new TrainStop(x))).toList() : List.of(),
+            displayData,
             data.getCurrentScheduleIndex(),
             side,
             train.speed,
@@ -177,7 +187,10 @@ public class TrainDisplayData {
         CompoundTag nbt = new CompoundTag();
 
         ListTag stopsList = new ListTag();
-        stopsList.addAll(getAllStops().stream().map(x -> x.toNbt()).toList());
+        List<TrainStopDisplayData> allStops = getAllStops();
+        for (TrainStopDisplayData stop : allStops) {
+            stopsList.add(stop.toNbt());
+        }
 
         nbt.put(NBT_TRAIN, trainData.toNbt());
         nbt.put(NBT_STOPS, stopsList);

@@ -1,34 +1,43 @@
 {
   "schemaVersion": 1,
-  "id": "createrailwaysnavigator",
+  "id": "${modid}",
   "version": "${version}",
-  "name": "Create Railways Navigator",
-  "description": "Get possible train connections in your world from one station to another using the Create Railways Navigator. An addon for the Create Mod.",
+  "name": "${display_name}",
+  "description": "${description}",
   "authors": [
-    "MrJulsen"
+    "${authors}"
   ],
   "contact": {
-    "homepage": "https://www.curseforge.com/minecraft/mc-mods/create-railways-navigator",
-    "issues": "https://github.com/MisterJulsen/Create-Train-Navigator/issues",
-    "sources": "https://github.com/MisterJulsen/Create-Train-Navigator"
+    "homepage": "${homepage}",
+    "issues": "${issues}",
+    "sources": "${source}"
   },
-  "license": "GNU General Public License v3.0",
-  "icon": "icon.png",
+  "license": "${license}",
+  "icon": "${icon}",
   "environment": "*",
   "entrypoints": {
     "main": [
-      "de.mrjulsen.crn.fabric.CreateRailwaysNavigatorFabric"
+      "${maven_group}.fabric.${main_class_name}Fabric"
     ]
   },
   "mixins": [
-    "createrailwaysnavigator.mixins.json"
+    "${modid}.mixins.json"
   ],
   "depends": {
-    "fabric": "*",
-    "minecraft": ">=1.18.2",
-    "architectury": ">=4.11.93",
-    "dragonlib": ">=1.18.2-2.2.16",
-    "create": "*"
+    "fabricloader": ">=${fabric_loader_version}",
+    "minecraft": "~${minecraft_version}",
+    "java": ">=${java_version}",
+    "dragonlib": ">=${dragonlib_version}",
+    "create": "*",
+    "fabric-api": "*"
   },
-  "accessWidener": "createrailwaysnavigator.accesswidener"
+  "custom": {
+    "modmenu": {
+      "links": {
+        "Discord": "${discord}"
+      },
+      "update_checker": true
+    }
+  },
+  "accessWidener": "${modid}.accesswidener"
 }

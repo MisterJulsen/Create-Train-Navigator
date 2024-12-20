@@ -1,8 +1,10 @@
 package de.mrjulsen.crn.data;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.nbt.CompoundTag;
 
-public record TrainInfo(TrainLine line, TrainGroup group) {
+public record TrainInfo(@Nullable TrainLine line, @Nullable TrainGroup group) {
 
     private static final String NBT_TRAIN_GROUP = "Group";
     private static final String NBT_TRAIN_LINE = "Line";

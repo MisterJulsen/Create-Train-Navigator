@@ -9,6 +9,7 @@ import com.simibubi.create.foundation.utility.Pair;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.data.schedule.condition.DynamicDelayCondition;
+import de.mrjulsen.crn.data.schedule.condition.TrainSeparationCondition;
 import de.mrjulsen.crn.data.schedule.instruction.ResetTimingsInstruction;
 import de.mrjulsen.crn.data.schedule.instruction.TravelSectionInstruction;
 import net.minecraft.resources.ResourceLocation;
@@ -20,6 +21,7 @@ public class ModSchedule {
         registerInstruction("reset_timings", ResetTimingsInstruction::new);
         
         registerCondition("dynamic_delay", DynamicDelayCondition::new);
+        registerCondition("train_separation", TrainSeparationCondition::new);
     }
 
     private static void registerInstruction(String name, Supplier<? extends ScheduleInstruction> factory) {

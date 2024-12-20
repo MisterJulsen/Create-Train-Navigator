@@ -3,8 +3,8 @@ package de.mrjulsen.crn.client.ber.variants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity.EUpdateReason;
+import de.mrjulsen.crn.block.display.properties.TrainDestinationDetailedSettings;
 import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
-import de.mrjulsen.crn.client.ber.IBERRenderSubtype;
 import de.mrjulsen.mcdragonlib.client.ber.BERGraphics;
 import de.mrjulsen.mcdragonlib.client.ber.BERLabel;
 import de.mrjulsen.mcdragonlib.client.ber.BERLabel.BoundsHitReaction;
@@ -18,7 +18,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class BERTrainDestinationInformative implements IBERRenderSubtype<AdvancedDisplayBlockEntity, AdvancedDisplayRenderInstance, Boolean> {
+public class BERTrainDestinationInformative implements AbstractAdvancedDisplayRenderer<TrainDestinationDetailedSettings> {
 
     private static final ResourceLocation CARRIAGE_ICON = new ResourceLocation("create:textures/gui/assemble.png");
     private static final ResourceLocation ICONS = new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/icons.png");  
@@ -61,8 +61,8 @@ public class BERTrainDestinationInformative implements IBERRenderSubtype<Advance
     @Override
     public void render(BERGraphics<AdvancedDisplayBlockEntity> graphics, float partialTick, AdvancedDisplayRenderInstance parent, int light, boolean backSide) {        
         float uv = 1.0f / 256.0f;
-        BERUtils.fillColor(graphics, 2.5f, 5.0f, 0.0f, graphics.blockEntity().getXSizeScaled() * 16 - 5, 0.25f, (0xFF << 24) | (graphics.blockEntity().getColor() & 0x00FFFFFF), graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING), light);
-        BERUtils.renderTexture(CARRIAGE_ICON, graphics, false, graphics.blockEntity().getXSizeScaled() * 16 - 7 - carriageIndexLabel.getTextWidth(), 2.5f, 0, 3, 2, uv * 22, uv * 231, uv * 22 + uv * 13, uv * 231 + uv * 5, graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING).getOpposite(), (0xFF << 24) | (graphics.blockEntity().getColor() & 0x00FFFFFF), light);
+        BERUtils.fillColor(graphics, 2.5f, 5.0f, 0.0f, graphics.blockEntity().getXSizeScaled() * 16 - 5, 0.25f, (0xFF << 24) | (getDisplaySettings(graphics.blockEntity()).getFontColor() & 0x00FFFFFF), graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING), light);
+        BERUtils.renderTexture(CARRIAGE_ICON, graphics, false, graphics.blockEntity().getXSizeScaled() * 16 - 7 - carriageIndexLabel.getTextWidth(), 2.5f, 0, 3, 2, uv * 22, uv * 231, uv * 22 + uv * 13, uv * 231 + uv * 5, graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING).getOpposite(), (0xFF << 24) | (getDisplaySettings(graphics.blockEntity()).getFontColor() & 0x00FFFFFF), light);
         carriageIndexLabel.render(graphics, light);
 
         if (graphics.blockEntity().getTrainData() == null || graphics.blockEntity().getTrainData().isEmpty()) {
@@ -88,7 +88,7 @@ public class BERTrainDestinationInformative implements IBERRenderSubtype<Advance
             uv * (195 + 10),
             uv * (19 + 10),
             graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING),
-            (0xFF << 24) | (graphics.blockEntity().getColor() & 0x00FFFFFF),
+            (0xFF << 24) | (getDisplaySettings(graphics.blockEntity()).getFontColor() & 0x00FFFFFF),
             light
         );
         
@@ -106,7 +106,7 @@ public class BERTrainDestinationInformative implements IBERRenderSubtype<Advance
             uv * (211 + 10),
             uv * (19 + 10),
             graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING),
-            (0xFF << 24) | (graphics.blockEntity().getColor() & 0x00FFFFFF),
+            (0xFF << 24) | (getDisplaySettings(graphics.blockEntity()).getFontColor() & 0x00FFFFFF),
             light
         );
     }
@@ -120,34 +120,36 @@ public class BERTrainDestinationInformative implements IBERRenderSubtype<Advance
     }
 
     private void updateContent(AdvancedDisplayBlockEntity blockEntity) {
+        TrainDestinationDetailedSettings settings = getDisplaySettings(blockEntity);
+        int index = (settings.shouldOverwriteCarriageIndex() ? 0 : blockEntity.getCarriageData().index() + 1) + settings.getCarriageIndex();
         carriageIndexLabel
-            .setText(TextUtils.text(String.format("%02d", blockEntity.getCarriageData().index() + 1)).withStyle(ChatFormatting.BOLD))
+            .setText(TextUtils.text(String.format("%02d", index)).withStyle(ChatFormatting.BOLD))
             .setPos(blockEntity.getXSizeScaled() * 16 - 3 - carriageIndexLabel.getTextWidth(), 2.5f)
-            .setColor((0xFF << 24) | (blockEntity.getColor() & 0x00FFFFFF))
+            .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
         ;
         trainLineLabel
             .setPos(3, 2.5f)
             .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 6 - carriageIndexLabel.getTextWidth() - 5, BoundsHitReaction.SCALE_SCROLL)
             .setText(TextUtils.text(blockEntity.getTrainData().getTrainData().getName()).withStyle(ChatFormatting.BOLD))
-            .setColor((0xFF << 24) | (blockEntity.getColor() & 0x00FFFFFF))
+            .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
         ;
         fromLabel
             .setPos(6, 6)
             .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 9, BoundsHitReaction.SCALE_SCROLL)
             .setText(TextUtils.text(!blockEntity.getTrainData().getAllStops().isEmpty() ? blockEntity.getTrainData().getAllStops().get(0).getName() : ""))
-            .setColor((0xFF << 24) | (blockEntity.getColor() & 0x00FFFFFF))
+            .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
         ;
         stopoversLabel
             .setPos(6, 8.75f)
             .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 9, BoundsHitReaction.SCALE_SCROLL)
             .setText(TextUtils.concat(TextUtils.text(" \u25CF "), blockEntity.getTrainData().getStopovers().stream().map(x -> (Component)TextUtils.text(x.getName())).toList()))
-            .setColor((0xFF << 24) | (blockEntity.getColor() & 0x00FFFFFF))
+            .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
         ;
         destinationLabel
             .setPos(6, 11)
             .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 9, BoundsHitReaction.SCALE_SCROLL)
             .setText(TextUtils.text(blockEntity.getTrainData().getNextStop().isPresent() ? blockEntity.getTrainData().getNextStop().get().getDestination() : "").withStyle(ChatFormatting.BOLD))
-            .setColor((0xFF << 24) | (blockEntity.getColor() & 0x00FFFFFF))
+            .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
         ;
     }
 }

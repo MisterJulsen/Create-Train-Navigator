@@ -5,7 +5,7 @@ import com.simibubi.create.foundation.gui.widget.ScrollInput;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
 import de.mrjulsen.mcdragonlib.DragonLib;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.WidgetContainer;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.DLWidgetContainer;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import de.mrjulsen.mcdragonlib.core.EAlignment;
@@ -16,7 +16,7 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
-public class CreateTimeSelectionWidget extends WidgetContainer {
+public class CreateTimeSelectionWidget extends DLWidgetContainer {
 
     public static final int WIDHT = 66;
     public static final int HEIGHT = 18;
@@ -33,7 +33,7 @@ public class CreateTimeSelectionWidget extends WidgetContainer {
 
         transferTimeInput = addRenderableWidget(new ScrollInput(x() + 3, y(), width() - 6, height())
             .withRange(0, max)
-            .withStepFunction(a -> a.shift ? 1000 : 500)
+            .withStepFunction(a -> a.shift ? (int)DragonLib.ticksPerIngameHour() : (int)(DragonLib.ticksPerIngameHour() / 2))
             .titled(transferTimeBoxText.copy())
             .calling((i) -> {
                 if (transferTimeInput == null) return;

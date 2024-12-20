@@ -9,7 +9,7 @@ import de.mrjulsen.crn.data.ISaveableNavigatorData;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLAbstractScrollBar;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLRenderable;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.ScrollableWidgetContainer;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.DLScrollableWidgetContainer;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import de.mrjulsen.mcdragonlib.core.EAlignment;
@@ -20,7 +20,7 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
-public class SavedRoutesViewer extends ScrollableWidgetContainer {
+public class SavedRoutesViewer extends DLScrollableWidgetContainer {
 
     private final Screen parent;
     private final DLAbstractScrollBar<?> scrollBar;
@@ -35,7 +35,7 @@ public class SavedRoutesViewer extends ScrollableWidgetContainer {
         
         scrollBar.setAutoScrollerSize(true);
         scrollBar.setScreenSize(height());
-        scrollBar.updateMaxScroll(0);
+        scrollBar.setMaxScroll(0);
         scrollBar.withOnValueChanged((sb) -> setYScrollOffset(sb.getScrollValue()));
         scrollBar.setStepSize(10);
     }
@@ -67,7 +67,7 @@ public class SavedRoutesViewer extends ScrollableWidgetContainer {
             if (lastData == null || lastData.dayOrderValue() != d.dayOrderValue()) {
                 Component text;
                 long worldTime = DragonLib.getCurrentWorldTime();
-                long dayDiff = d.dayOrderValue() - (worldTime + DragonLib.DAYTIME_SHIFT) / DragonLib.TICKS_PER_DAY;
+                long dayDiff = d.dayOrderValue() - (worldTime + DragonLib.daytimeShift()) / DragonLib.ticksPerDay();
                 if (d.timeOrderValue() < worldTime) text = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".saved_routes.in_the_past");
                 else if (dayDiff == 0) text = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".saved_routes.today");
                 else if (dayDiff == 1) text = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".saved_routes.tomorrow");
@@ -83,7 +83,7 @@ public class SavedRoutesViewer extends ScrollableWidgetContainer {
 
         }
         contentHeight += 10;
-        scrollBar.updateMaxScroll(contentHeight);
+        scrollBar.setMaxScroll(contentHeight);
     }
 
     @Override

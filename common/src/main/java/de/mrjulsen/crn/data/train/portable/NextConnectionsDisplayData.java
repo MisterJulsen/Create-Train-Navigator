@@ -1,11 +1,13 @@
 package de.mrjulsen.crn.data.train.portable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import de.mrjulsen.crn.data.TagName;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
 import de.mrjulsen.crn.exceptions.RuntimeSideException;
+import de.mrjulsen.crn.data.train.TrainStop;
 import de.mrjulsen.crn.data.train.TrainUtils;
 import de.mrjulsen.crn.event.ModCommonEvents;
 import net.minecraft.nbt.CompoundTag;
@@ -33,9 +35,15 @@ public class NextConnectionsDisplayData {
         if (!ModCommonEvents.hasServer()) {
             throw new RuntimeSideException(false);
         }
+
+        List<TrainStop> departures = TrainUtils.getDeparturesAt(GlobalSettings.getInstance().getOrCreateStationTagFor(TagName.of(stationName)), selfTrainId);
+        List<TrainStopDisplayData> displayData = new ArrayList<>(departures.size());
+        for (TrainStop stop : departures) {
+            displayData.add(TrainStopDisplayData.of(stop));
+        }
         
         return new NextConnectionsDisplayData(
-            TrainUtils.getDeparturesAt(GlobalSettings.getInstance().getOrCreateStationTagFor(TagName.of(stationName)), selfTrainId).stream().map(x -> TrainStopDisplayData.of(x)).toList()
+            displayData
         );
     }
     public List<TrainStopDisplayData> getConnections() {
@@ -46,7 +54,10 @@ public class NextConnectionsDisplayData {
         CompoundTag nbt = new CompoundTag();
 
         ListTag list = new ListTag();
-        list.addAll(stops.stream().map(x -> x.toNbt()).toList());        
+        List<TrainStopDisplayData> displayData = stops;
+        for (TrainStopDisplayData d : displayData) {
+            list.add(d.toNbt());
+        }
 
         nbt.put(NBT_STOPS, list);
         return nbt;

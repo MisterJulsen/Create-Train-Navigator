@@ -149,8 +149,12 @@ public class CreateDynamicWidgets {
 
     
     public static void renderWindow(Graphics graphics, int x, int y, int w, int h, ContainerColor color, BarColor bar, int headerSize, int footerSize, boolean renderContent) {
-        renderTitleBar(graphics, x, y, w, headerSize, bar);
-        renderTitleBar(graphics, x, y + h - footerSize, w, footerSize, bar);
+        renderWindow(graphics, x, y, w, h, color, bar, bar, headerSize, footerSize, renderContent);
+    }
+    
+    public static void renderWindow(Graphics graphics, int x, int y, int w, int h, ContainerColor color, BarColor header, BarColor footer, int headerSize, int footerSize, boolean renderContent) {
+        renderTitleBar(graphics, x, y, w, headerSize, header);
+        renderTitleBar(graphics, x, y + h - footerSize, w, footerSize, footer);
         
         if (renderContent) {
             renderContainer(graphics, x + 1, y + headerSize - 1, w - 2, h - headerSize - footerSize + 2, color);
@@ -169,6 +173,20 @@ public class CreateDynamicWidgets {
         GuiUtils.fill(graphics, x + 1, y + height - 2, width - 2, 1, color);
         GuiUtils.drawString(graphics, font, x + 3, y + 3, text, ModGuiUtils.useWhiteOrBlackForeColor(color) ? 0xFFFFFFFF : 0xFF000000, EAlignment.LEFT, false);
     }
+
+    public static void renderIconSlot(Graphics graphics, int x, int y, int w, int h) {
+        renderNineSliced(graphics, x, y, w, h, 21, 0, CRNGui.GUI_WIDTH, CRNGui.GUI_HEIGHT, 1, CRNGui.GUI, true);
+    }
+
+    public static void renderTextBoxArrow(Graphics graphics, int x, int y) {
+        GuiUtils.drawTexture(CRNGui.GUI, graphics, x - 3, y + 5, 4, 8, 60, 54, 4, 8, CRNGui.GUI_WIDTH, CRNGui.GUI_HEIGHT);
+    }
+
+    public static void renderVerticalSeparator(Graphics graphics, int x, int y, int h, BarColor color) {
+        GuiUtils.drawTexture(CRNGui.GUI, graphics, x, y, 1, h, color.u + 5, color.v + 3, 1, 1, CRNGui.GUI_WIDTH, CRNGui.GUI_HEIGHT);
+        GuiUtils.drawTexture(CRNGui.GUI, graphics, x + 1, y, 1, h, color.u + 1, color.v + 3, 1, 1, CRNGui.GUI_WIDTH, CRNGui.GUI_HEIGHT);
+    }
+
 
     public static enum ColorShade {
         LIGHT(0xFF6f6f6f),
@@ -192,7 +210,7 @@ public class CreateDynamicWidgets {
         BLUE(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/container_blue.png")),
         GOLD(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/container_gold.png"));
 
-        private ResourceLocation res;
+        private final ResourceLocation res;
 
         ContainerColor(ResourceLocation res) {
             this.res = res;
@@ -230,5 +248,4 @@ public class CreateDynamicWidgets {
             return size;
         }
     }
-
 }

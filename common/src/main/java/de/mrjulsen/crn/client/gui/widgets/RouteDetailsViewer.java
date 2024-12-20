@@ -15,13 +15,13 @@ import de.mrjulsen.crn.data.navigation.ClientRoutePart;
 import de.mrjulsen.crn.data.navigation.RoutePart;
 import de.mrjulsen.crn.data.navigation.TransferConnection;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLAbstractScrollBar;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.ScrollableWidgetContainer;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.DLScrollableWidgetContainer;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 
-public class RouteDetailsViewer extends ScrollableWidgetContainer {
+public class RouteDetailsViewer extends DLScrollableWidgetContainer {
 
     private final DLAbstractScrollBar<?> scrollBar;
     private int contentHeight = 0;
@@ -40,7 +40,7 @@ public class RouteDetailsViewer extends ScrollableWidgetContainer {
         
         scrollBar.setAutoScrollerSize(true);
         scrollBar.setScreenSize(height());
-        scrollBar.updateMaxScroll(0);
+        scrollBar.setMaxScroll(0);
         scrollBar.withOnValueChanged((sb) -> setYScrollOffset(sb.getScrollValue()));
         scrollBar.setStepSize(10);
     }
@@ -59,6 +59,7 @@ public class RouteDetailsViewer extends ScrollableWidgetContainer {
         Queue<TransferConnection> connections = new ConcurrentLinkedQueue<>(route.getConnections());
         for (int i = 0; i < parts.size(); i++) {
             ClientRoutePart part = parts.get(i);
+            
             RoutePartWidget widget = new RoutePartWidget(parent, x(), y() + contentHeight, width(), route, part);
             widget.setShowTrainDetails(showTrainDetails);
             widget.setCanExpandCollapse(canExpandCollapse);
@@ -78,7 +79,7 @@ public class RouteDetailsViewer extends ScrollableWidgetContainer {
         }
 
         contentHeight += 10;
-        scrollBar.updateMaxScroll(contentHeight);
+        scrollBar.setMaxScroll(contentHeight);
     }
 
     @Override

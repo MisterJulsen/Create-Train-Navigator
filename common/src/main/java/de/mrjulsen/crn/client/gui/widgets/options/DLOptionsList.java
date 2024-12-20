@@ -6,9 +6,9 @@ import java.util.function.Function;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLAbstractScrollBar;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.DLScrollableWidgetContainer;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.DLWidgetContainer;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.IDragonLibWidget;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.ScrollableWidgetContainer;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.WidgetContainer;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import de.mrjulsen.mcdragonlib.core.EAlignment;
@@ -20,7 +20,7 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
-public class DLOptionsList extends ScrollableWidgetContainer {
+public class DLOptionsList extends DLScrollableWidgetContainer {
 
     private final DLAbstractScrollBar<?> scrollBar;
     private int contentHeight = 0;
@@ -34,7 +34,7 @@ public class DLOptionsList extends ScrollableWidgetContainer {
         
         scrollBar.setAutoScrollerSize(true);
         scrollBar.setScreenSize(height());
-        scrollBar.updateMaxScroll(0);
+        scrollBar.setMaxScroll(0);
         scrollBar.withOnValueChanged((sb) -> setYScrollOffset(sb.getScrollValue()));
         scrollBar.setStepSize(10);
     }
@@ -48,7 +48,7 @@ public class DLOptionsList extends ScrollableWidgetContainer {
         return width() - 20;
     }
 
-    public <T extends WidgetContainer> OptionEntry<T> addOption(Function<OptionEntry<T>, T> contentContainer, Component text, Component description, BiConsumer<OptionEntry<T>, OptionEntryHeader> onHeaderClick, Function<String, Boolean> onTitleEdited) {
+    public <T extends DLWidgetContainer> OptionEntry<T> addOption(Function<OptionEntry<T>, T> contentContainer, Component text, Component description, BiConsumer<OptionEntry<T>, OptionEntryHeader> onHeaderClick, Function<String, Boolean> onTitleEdited) {
         OptionEntry<T> entry = new OptionEntry<T>(parent, this, 0, y(), width() - 20, contentContainer, text, description, x -> rearrangeContent(), onHeaderClick, onTitleEdited);
         addRenderableWidget(entry);
         return entry;
@@ -83,7 +83,7 @@ public class DLOptionsList extends ScrollableWidgetContainer {
             }
         }        
         contentHeight += 10;
-        scrollBar.updateMaxScroll(contentHeight);
+        scrollBar.setMaxScroll(contentHeight);
         if (!scrollBar.canScroll()) {
             scrollBar.scrollTo(0);
         }

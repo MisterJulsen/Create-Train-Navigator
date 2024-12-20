@@ -79,9 +79,12 @@ public class Node implements Comparable<Node> {
 
     public void setNextNode(Node nextNode) {
         this.nextNode = nextNode;
-        nextNode.getConnections().stream().filter(x -> x.target() == this).forEach(x -> {            
-            nextConnections.add(new EdgeConnection(nextNode, x.edge().invert()));
-        });
+        for (EdgeConnection connection : nextNode.getConnections()) {
+            if (connection.target() != this) {
+                continue;
+            }
+            nextConnections.add(new EdgeConnection(nextNode, connection.edge().invert()));
+        }
     }
 
     public Node getNextNode() {

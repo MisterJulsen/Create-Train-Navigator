@@ -4,7 +4,8 @@
 	"textures": {
 		"2": "createrailwaysnavigator:block/advanced_display_back",
 		"3": "createrailwaysnavigator:block/advanced_display_small",
-		"particle": "createrailwaysnavigator:block/advanced_display"
+		"4": "createrailwaysnavigator:block/advanced_display_small_border",
+		"particle": "createrailwaysnavigator:block/advanced_display_small_border"
 	},
 	"elements": [
 		{
@@ -12,12 +13,22 @@
 			"to": [16, 8, 16],
 			"rotation": {"angle": 0, "axis": "y", "origin": [0, -4, -8]},
 			"faces": {
-				"north": {"uv": [0, 0, 16, 8], "texture": "#3", "cullface": "north"},
+				"north": {"uv": [0, 0, 16, 8], "texture": "#3", "cullface": "north", "tintindex": 0},
 				"east": {"uv": [0, 8, 8, 12], "texture": "#2", "cullface": "east"},
-				"south": {"uv": [0, 0, 16, 8], "texture": "#3", "cullface": "south"},
+				"south": {"uv": [0, 0, 16, 8], "texture": "#3", "cullface": "south", "tintindex": 0},
 				"west": {"uv": [8, 8, 0, 12], "texture": "#2", "cullface": "west"},
 				"up": {"uv": [0, 0, 8, 8], "texture": "#2"},
 				"down": {"uv": [0, 0, 8, 8], "texture": "#2", "cullface": "down"}
+			}
+		},
+		{
+			"name": "overlay",
+			"from": [0, 0, 0],
+			"to": [16, 8, 16],
+			"rotation": {"angle": 0, "axis": "y", "origin": [0, -4, -8]},
+			"faces": {
+				"north": {"uv": [0, 0, 16, 8], "texture": "#4", "cullface": "north"},
+				"south": {"uv": [0, 0, 16, 8], "texture": "#4"}
 			}
 		}
 	],

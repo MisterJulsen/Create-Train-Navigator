@@ -1,6 +1,5 @@
 package de.mrjulsen.crn.block.display;
 
-import java.util.Arrays;
 import java.util.List;
 
 import com.google.common.collect.ImmutableList;
@@ -12,13 +11,10 @@ import com.simibubi.create.content.trains.station.StationBlockEntity;
 import com.simibubi.create.foundation.gui.ModularGuiLineBuilder;
 import com.simibubi.create.foundation.utility.Lang;
 
-import de.mrjulsen.crn.CreateRailwaysNavigator;
-import de.mrjulsen.mcdragonlib.core.ITranslatableEnum;
-import de.mrjulsen.mcdragonlib.util.TextUtils;
+import de.mrjulsen.crn.block.properties.ETimeDisplay;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.util.StringRepresentable;
 
 public class AdvancedDisplaySource extends DisplaySource {
 
@@ -79,82 +75,5 @@ public class AdvancedDisplaySource extends DisplaySource {
 			}, NBT_FILTER);
 			return;
 		}
-
-		builder.addScrollInput(0, 43, (si, l) -> {
-			si.titled(TextUtils.translate("gui.createrailwaysnavigator.display_source.advanced_display.train_name_width"))
-				.addHint(TextUtils.translate("gui.createrailwaysnavigator.display_source.advanced_display.train_name_width.description"))
-				.withRange(0, 65)
-				.withShiftStep(4);
-			si.setState(16);
-			l.withSuffix("px");
-		}, NBT_TRAIN_NAME_WIDTH);
-
-		builder.addScrollInput(47, 43, (si, l) -> {
-			si.titled(TextUtils.translate("gui.createrailwaysnavigator.display_source.advanced_display.platform_width"))
-				.addHint(TextUtils.translate("gui.createrailwaysnavigator.display_source.advanced_display.platform_width.description"))
-				.withRange(-1, 65)
-				.withShiftStep(4);				
-			si.setState(16);
-			si.format((val) -> {
-				if (val >= 0) {
-					return TextUtils.text(String.valueOf(val) + "px");
-				}
-				return TextUtils.translate("gui.createrailwaysnavigator.common.auto");
-			});
-		}, NBT_PLATFORM_WIDTH);
-
-		builder.addSelectionScrollInput(47 * 2, 43, (si, l) -> {
-			si
-			.forOptions(Arrays.stream(ETimeDisplay.values()).map(x -> TextUtils.translate(x.getValueInfoTranslationKey(CreateRailwaysNavigator.MOD_ID))).toList())
-			.titled(TextUtils.translate("enum.createrailwaysnavigator.time_display"))
-			.addHint(TextUtils.translate("enum.createrailwaysnavigator.time_display.description"))
-			.format((val) -> {
-				return TextUtils.translate(ETimeDisplay.getById(val).getValueTranslationKey(CreateRailwaysNavigator.MOD_ID));
-			})
-			.setState(ETimeDisplay.ABS.getId());
-		}, NBT_TIME_DISPLAY_TYPE);
-
 	}
-
-	public static enum ETimeDisplay implements StringRepresentable, ITranslatableEnum {
-		ABS((byte)0, "abs"),
-		ETA((byte)1, "eta");
-
-		private byte id;
-		private String name;
-
-		private ETimeDisplay(byte id, String name) {
-			this.id = id;
-			this.name = name;
-		}
-
-		public byte getId() {
-			return id;
-		}
-
-		public String getName() {
-			return name;
-		}
-
-		public static ETimeDisplay getById(int id) {
-			return Arrays.stream(values()).filter(x -> x.getId() == id).findFirst().orElse(ABS);
-		}
-
-		@Override
-		public String getEnumName() {
-			return "time_display";
-		}
-
-		@Override
-		public String getEnumValueName() {
-			return getName();
-		}
-
-		@Override
-		public String getSerializedName() {
-			return getName();
-		}
-
-	}
-
 }

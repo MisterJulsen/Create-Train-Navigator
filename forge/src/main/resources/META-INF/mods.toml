@@ -1,51 +1,42 @@
 modLoader = "javafml"
-loaderVersion = "[40,)"
-license = "GNU General Public License v3.0"
+loaderVersion = "[${forge_version_int},)"
+issueTrackerURL = "${issues}"
+license = "${license}"
 
 [[mods]]
-modId = "createrailwaysnavigator"
+modId = "${modid}"
 version = "${version}"
-displayName = "Create Railways Navigator"
-authors = "MrJulsen"
-updateJSONURL="https://raw.githubusercontent.com/MisterJulsen/Create-Train-Navigator/1.18.2/update.json"
-displayURL="https://www.curseforge.com/minecraft/mc-mods/create-railways-navigator"
-issueTrackerURL="https://github.com/MisterJulsen/Create-Train-Navigator/issues"
-description = '''
-Get possible train connections in your world from one station to another using the Create Railways Navigator. An addon for the Create Mod.
-'''
-logoFile="icon.png"
+displayName = "${display_name}"
+displayUrl="${homepage}"
+authors = "${authors}"
+description = '''${description}'''
+logoFile = "${icon}"
 
-[[dependencies.createrailwaysnavigator]]
+[[dependencies.${modid}]]
 modId = "forge"
 mandatory = true
-versionRange = "[40,)"
+versionRange = "[${forge_version_int},)"
 ordering = "NONE"
 side = "BOTH"
 
-[[dependencies.createrailwaysnavigator]]
+[[dependencies.${modid}]]
 modId = "minecraft"
 mandatory = true
-versionRange = "[1.18.2,)"
+versionRange = "[${minecraft_version},${next_unsupported_minecraft_version})"
 ordering = "NONE"
 side = "BOTH"
 
-[[dependencies.createrailwaysnavigator]]
-modId = "architectury"
-mandatory = true
-versionRange = "[4.11.93,)"
-ordering = "AFTER"
-side = "BOTH"
-
-[[dependencies.createrailwaysnavigator]]
+[[dependencies.${modid}]]
 modId = "dragonlib"
 mandatory = true
-versionRange = "[1.18.2-2.2.16,)"
-ordering = "AFTER"
+versionRange = "[${dragonlib_version},)"
+ordering = "BEFORE"
 side = "BOTH"
 
-[[dependencies.createrailwaysnavigator]]
+
+[[dependencies.${modid}]]
 modId = "create"
 mandatory = true
-versionRange = "[0.5.1.e-318,)"
-ordering = "AFTER"
+versionRange = "[${create_forge_version},)"
+ordering = "BEFORE"
 side = "BOTH"

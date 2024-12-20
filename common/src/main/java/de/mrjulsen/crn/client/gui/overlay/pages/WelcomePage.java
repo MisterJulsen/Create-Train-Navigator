@@ -3,7 +3,7 @@ package de.mrjulsen.crn.client.gui.overlay.pages;
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.overlay.pages.RouteOverviewPage.RoutePathIcons;
-import de.mrjulsen.crn.client.lang.ELanguage;
+import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.data.train.ClientTrainStop;
 import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.crn.data.navigation.ClientRoute;
@@ -40,7 +40,7 @@ public class WelcomePage extends AbstractRouteDetailsPage {
         // Title
         ModGuiIcons.TIME.render(graphics, 5, y + 3);
         long time = route.getCurrentPart().departureIn();
-        GuiUtils.drawString(graphics, font, 10 + ModGuiIcons.ICON_SIZE, y + 3 + ModGuiIcons.ICON_SIZE / 2 - font.lineHeight / 2, ELanguage.translate(keyDepartureIn).append(" ").append(time > 0 ? TextUtils.text(TimeUtils.parseDurationShort((int)time)) : ELanguage.translate(keyTimeNow)).withStyle(ChatFormatting.BOLD), 0xFFFFFFFF, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, 10 + ModGuiIcons.ICON_SIZE, y + 3 + ModGuiIcons.ICON_SIZE / 2 - font.lineHeight / 2, CustomLanguage.translate(keyDepartureIn).append(" ").append(time > 0 ? TextUtils.text(TimeUtils.parseDurationShort((int)time)) : CustomLanguage.translate(keyTimeNow)).withStyle(ChatFormatting.BOLD), 0xFFFFFFFF, EAlignment.LEFT, false);
         y += 5 + ModGuiIcons.ICON_SIZE;
         
         // Details
@@ -62,7 +62,7 @@ public class WelcomePage extends AbstractRouteDetailsPage {
         ModGuiIcons.INFO.render(graphics, 5, y + detailsLineHeight + font.lineHeight / 2 - ModGuiIcons.ICON_SIZE / 2);
         GuiUtils.drawString(graphics, font, 10 + ModGuiIcons.ICON_SIZE, y + detailsLineHeight, TextUtils.text(String.format("%s %s | %s",
             route.getTransferCount(),
-            ELanguage.translate(keyTransferCount).getString(),
+            CustomLanguage.translate(keyTransferCount).getString(),
             TimeUtils.parseDurationShort((int)route.travelTime())
         )), 0xFFDBDBDB, EAlignment.LEFT, false);
     }

@@ -2,6 +2,9 @@ package de.mrjulsen.crn.block.blockentity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
+import javax.annotation.Nullable;
 
 import com.simibubi.create.content.trains.display.FlapDisplayBlock;
 import com.simibubi.create.content.trains.entity.CarriageContraption;
@@ -11,12 +14,17 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.block.AbstractAdvancedDisplayBlock;
-import de.mrjulsen.crn.block.display.AdvancedDisplaySource.ETimeDisplay;
+import de.mrjulsen.crn.block.properties.ETimeDisplay;
+import de.mrjulsen.crn.block.display.properties.BasicDisplaySettings;
+import de.mrjulsen.crn.block.display.properties.IDisplaySettings;
+import de.mrjulsen.crn.block.display.properties.components.IPlatformWidthSetting;
+import de.mrjulsen.crn.block.display.properties.components.ITimeDisplaySetting;
+import de.mrjulsen.crn.block.display.properties.components.ITrainNameWidthSetting;
 import de.mrjulsen.crn.block.properties.EDisplayInfo;
 import de.mrjulsen.crn.block.properties.EDisplayType;
 import de.mrjulsen.crn.block.properties.EDisplayType.EDisplayTypeDataSource;
 import de.mrjulsen.crn.client.AdvancedDisplaysRegistry;
-import de.mrjulsen.crn.client.AdvancedDisplaysRegistry.DisplayTypeInfo;
+import de.mrjulsen.crn.client.AdvancedDisplaysRegistry.DisplayProperties;
 import de.mrjulsen.crn.client.AdvancedDisplaysRegistry.DisplayTypeResourceKey;
 import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
 import de.mrjulsen.crn.data.CarriageData;
@@ -29,6 +37,7 @@ import de.mrjulsen.crn.registry.ModAccessorTypes;
 import de.mrjulsen.crn.registry.ModDisplayTypes;
 import de.mrjulsen.mcdragonlib.block.IBERInstance;
 import de.mrjulsen.mcdragonlib.client.ber.IBlockEntityRendererInstance;
+import de.mrjulsen.mcdragonlib.config.ECachingPriority;
 import de.mrjulsen.mcdragonlib.data.Cache;
 import de.mrjulsen.mcdragonlib.data.Pair;
 import de.mrjulsen.mcdragonlib.data.Tripple;
@@ -43,7 +52,6 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
@@ -55,21 +63,25 @@ import net.minecraft.world.phys.AABB;
 public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     IMultiblockBlockEntity<AdvancedDisplayBlockEntity, AbstractAdvancedDisplayBlock>,
     IContraptionBlockEntity<AdvancedDisplayBlockEntity>,
-    IBERInstance<AdvancedDisplayBlockEntity>,
-    IColorableBlockEntity
+    IBERInstance<AdvancedDisplayBlockEntity>
 {
+    private static final String NBT_DISPLAY_TYPE_SETTINGS = "DisplaySettings";
+
+    private static final String NBT_FILTER = "Filter";
+
     private static final String NBT_XSIZE = "XSize";
     private static final String NBT_YSIZE = "YSize";
     private static final String NBT_CONTROLLER = "IsController";
-    private static final String NBT_COLOR = "Color";
     private static final String NBT_GLOWING = "Glowing";
-    private static final String NBT_DISPLAY_TYPE_KEY = "DisplayTypeKey";
-    private static final String NBT_FILTER = "Filter";
+    
     private static final String NBT_LAST_REFRESH_TIME = "LastRefreshed";
-    private static final String NBT_PLATFORM_WIDTH = "PlatformWidth";
-    private static final String NBT_TRAIN_NAME_WIDTH = "TrainNameWidth";
-    private static final String NBT_TIME_DISPLAY = "TimeDisplay";
     private static final String NBT_TRAIN_STOPS = "TrainStops";
+
+    @Deprecated private static final String LEGACY_NBT_PLATFORM_WIDTH = "PlatformWidth";
+    @Deprecated private static final String LEGACY_NBT_TRAIN_NAME_WIDTH = "TrainNameWidth";
+    @Deprecated private static final String LEGACY_NBT_COLOR = "Color";
+    @Deprecated private static final String LEGACY_NBT_TIME_DISPLAY = "TimeDisplay";
+    @Deprecated private static final String LEGACY_NBT_DISPLAY_TYPE_KEY = "DisplayTypeKey";
     @Deprecated private static final String LEGACY_NBT_INFO_TYPE = "InfoType";
     @Deprecated private static final String LEGACY_NBT_DISPLAY_TYPE = "DisplayType";
 
@@ -79,6 +91,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     private static final int REFRESH_FREQUENCY = 100;
 
     // DATA
+    private DisplayTypeResourceKey displayTypeId = ModDisplayTypes.TRAIN_DESTINATION_SIMPLE;
     private byte xSize = 1;
 	private byte ySize = 1;
     private boolean isController;
@@ -86,16 +99,9 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     private boolean dataOrderChanged = false;
     private String stationNameFilter;
     private StationInfo stationInfo;
-    private byte trainNameWidth;
-    private byte platformWidth;
-    private ETimeDisplay timeDisplay = ETimeDisplay.ABS; 
-
-    // USER SETTINGS
-    private int color = DyeColor.WHITE.getTextColor();
     private boolean glowing = false;
-    private DisplayTypeResourceKey displayTypeKey = ModDisplayTypes.TRAIN_DESTINATION_SIMPLE;
+    private IDisplaySettings displayTypeSettings = AdvancedDisplaysRegistry.createSettings(ModDisplayTypes.TRAIN_DESTINATION_SIMPLE);
     
-
     // CLIENT DISPLAY ONLY - this data is not saved!
     private long lastRefreshedTime;
     private TrainDisplayData trainData = TrainDisplayData.empty();
@@ -103,7 +109,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     
     // OTHER
     private int syncTicks = REFRESH_FREQUENCY - 1;
-    private final Cache<IBlockEntityRendererInstance<AdvancedDisplayBlockEntity>> renderer = new Cache<>(() -> new AdvancedDisplayRenderInstance(this));
+    private final Cache<IBlockEntityRendererInstance<AdvancedDisplayBlockEntity>> renderer = new Cache<>(() -> new AdvancedDisplayRenderInstance(this), ECachingPriority.ALWAYS);
 
     public final Cache<TrainExitSide> relativeExitDirection = new Cache<>(() -> {        
         if (getCarriageData() == null || !getTrainData().getNextStop().isPresent() || !(getBlockState().getBlock() instanceof AbstractAdvancedDisplayBlock)) {
@@ -177,18 +183,6 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         return lastRefreshedTime;
     }
 
-    public byte getTrainNameWidth() {
-        return trainNameWidth;
-    }
-
-    public ETimeDisplay getTimeDisplay() {
-        return timeDisplay;
-    }
-
-    public byte getPlatformWidth() {
-        return platformWidth;
-    }
-
     public byte getXSize() {
         return xSize;
     }
@@ -209,18 +203,12 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         return isController;
     }
 
-    @Override
-    public int getColor() {
-        return color;
-    }    
-
-    @Override
     public boolean isGlowing() {
         return glowing;
     }
 
-    public DisplayTypeResourceKey getDisplayTypeKey() {
-        return displayTypeKey;
+    public DisplayTypeResourceKey getDisplayType() {
+        return displayTypeId;
     }
     
     @Override
@@ -261,7 +249,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         return !stationNameFilter.contains("*");
     }
 
-    public StationInfo getStationInfo2() {
+    public StationInfo getStationInfo() {
         return stationInfo;
     }
 
@@ -271,21 +259,13 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 
 	public boolean isSingleLine() {
 		if (getBlockState().getBlock() instanceof AbstractAdvancedDisplayBlock block) {
-			return block.isSingleLined() || AdvancedDisplaysRegistry.getInfo(displayTypeKey).singleLined();
+			return block.isSingleLined() || AdvancedDisplaysRegistry.getProperties(displayTypeId).singleLined();
 		}
         return false;		
 	}
 
-    public DisplayTypeInfo getDisplayTypeInfo() {
-        return AdvancedDisplaysRegistry.getInfo(displayTypeKey);
-    }
-
-    public void setColor(int color) {
-		this.color = color;
-        if (level.isClientSide) {
-            getRenderer().update(level, worldPosition, getBlockState(), this, EUpdateReason.LAYOUT_CHANGED);
-        }
-
+    public DisplayProperties getDisplayProperties() {
+        return AdvancedDisplaysRegistry.getProperties(displayTypeId);
     }
 
     public void setGlowing(boolean glowing) {
@@ -295,24 +275,30 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         }
 
     }
-
-    public void setDisplayTypeKey(DisplayTypeResourceKey key) {
-        this.displayTypeKey = key;        
+    
+    /**
+     * Updates the display type.
+     * @param key The new display type key.
+     * @param settings Custom display settings or {@code null} for default settings.
+     */
+    public void setDisplayType(DisplayTypeResourceKey key, @Nullable IDisplaySettings settings) {
+        this.displayTypeId = key;
+        this.displayTypeSettings = settings;
         if (level.isClientSide) {
             getRenderer().update(level, worldPosition, getBlockState(), this, EUpdateReason.LAYOUT_CHANGED);
         }
     }
 
-    public void setDepartureData(List<StationDisplayData> predictions, String stationNameFilter, StationInfo staionInfo, long lastRefreshedTime, byte platformWidth, byte trainNameWidth, byte timeDisplayId) {
+    public void setDepartureData(List<StationDisplayData> predictions, String stationNameFilter, StationInfo staionInfo, long lastRefreshedTime) {
         this.dataOrderChanged = dataOrderChanged || !ListUtils.compareCollections(this.predictions, predictions, StationDisplayData::equals);
         
         this.predictions = predictions;
         this.stationNameFilter = stationNameFilter;
         this.stationInfo = staionInfo;
         this.lastRefreshedTime = lastRefreshedTime;
-        this.platformWidth = platformWidth;
-        this.trainNameWidth = trainNameWidth;
-        this.timeDisplay = ETimeDisplay.getById(timeDisplayId);
+        //this.platformWidth = platformWidth;
+        //this.trainNameWidth = trainNameWidth;
+        //this.timeDisplay = ETimeDisplay.getById(timeDisplayId);
         
     }
     
@@ -324,7 +310,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 
         if (getter.getBlockEntity(a) instanceof AdvancedDisplayBlockEntity be1 && getter.getBlockEntity(b) instanceof AdvancedDisplayBlockEntity be2 && be1.getBlockState().getBlock() instanceof AbstractAdvancedDisplayBlock block1 && be2.getBlockState().getBlock() instanceof AbstractAdvancedDisplayBlock block2) {
             return block1 == block2 &&
-                be1.getDisplayTypeKey().equals(be2.getDisplayTypeKey()) &&
+                be1.getDisplayType().equals(be2.getDisplayType()) &&
                 block1.canConnectWithBlock(getter, getter.getBlockState(a), getter.getBlockState(b)) && block2.canConnectWithBlock(getter, getter.getBlockState(b), getter.getBlockState(a)) && 
                 (!a.above().equals(b) || (be1.getBlockState().getValue(AbstractAdvancedDisplayBlock.UP) && !be1.isSingleLine())) &&
                 (!a.below().equals(b) || (be1.getBlockState().getValue(AbstractAdvancedDisplayBlock.DOWN) && !be1.isSingleLine()))
@@ -351,7 +337,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 			}
 
 			BlockEntity found = level.getBlockEntity(pos);
-			if (found instanceof AdvancedDisplayBlockEntity flap && flap.isController)
+			if (found instanceof AdvancedDisplayBlockEntity flap && flap.isController())
 				return flap;
 
 			break;
@@ -364,7 +350,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 			}
 
 			BlockEntity found = level.getBlockEntity(pos);
-			if (found instanceof AdvancedDisplayBlockEntity flap && flap.isController)
+			if (found instanceof AdvancedDisplayBlockEntity flap && flap.isController())
 				return flap;
 
 			break;
@@ -374,16 +360,16 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 	}
 
     public void copyFrom(AdvancedDisplayBlockEntity other) {
-        if (getColor() == other.getColor() &&
-            getDisplayTypeKey().equals(other.getDisplayTypeKey()) &&
+        if (
+            getDisplayType().equals(other.getDisplayType()) &&
             isGlowing() == other.isGlowing()
         ) {
             return;
         }
 
-        color = other.getColor();
         glowing = other.isGlowing();
-        displayTypeKey = other.getDisplayTypeKey();
+        displayTypeId = other.getDisplayType();
+        displayTypeSettings = other.getSettings();
         notifyUpdate();
     }
 
@@ -392,8 +378,6 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 
         predictions = List.of();
         stationNameFilter = "";
-        platformWidth = -1;
-        trainNameWidth = 14;
         xSize = 1;
         ySize = 1;
         isController = false;
@@ -467,7 +451,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 
         super.tick();
 
-        if (getDisplayTypeKey().category().getSource() != EDisplayTypeDataSource.PLATFORM) {
+        if (getDisplayType().category().getSource() != EDisplayTypeDataSource.PLATFORM) {
             return;
         }
 
@@ -497,13 +481,13 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
             return;
         }
 
-        if (getDisplayTypeKey().category().getSource() != EDisplayTypeDataSource.TRAIN_INFORMATION) {
+        if (getDisplayType().category().getSource() != EDisplayTypeDataSource.TRAIN_INFORMATION) {
             return;
         }
 
         syncTicks++;       
         if ((syncTicks %= 100) == 0 && level.isClientSide) {
-            DataAccessor.getFromServer(((CarriageContraptionEntity)carriage.entity).trainId, ModAccessorTypes.GET_TRAIN_DISPLAY_DATA, (data) -> { 
+            DataAccessor.getFromServer(((CarriageContraptionEntity)carriage.entity).trainId, ModAccessorTypes.GET_TRAIN_DISPLAY_DATA_FROM_SERVER, (data) -> { 
                 if (data.isEmpty() && this.trainData.isEmpty()) {
                     return;
                 }
@@ -517,20 +501,16 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
                         prediction.getStationEntryIndex() != data.getNextStop().get().getStationEntryIndex() ||
                         this.trainData.getNextStopExitSide() != data.getNextStopExitSide() ||
                         this.trainData.isWaitingAtStation() != data.isWaitingAtStation()
-                        //(getInfoType() == EDisplayInfo.INFORMATIVE && getDisplayType() == EDisplayType.PASSENGER_INFORMATION && trainData.getNextStop().get().departureTicks() + lastRefreshedTime != data.getNextStop().get().departureTicks() + refreshTime) // It's not clean but it works ... for now
                     ;
                 }
                 boolean outOfService = this.trainData != null && !this.trainData.getTrainData().getId().equals(Constants.ZERO_UUID) && !data.getNextStop().isPresent();
                 if (outOfService) {
                     shouldUpdate = true;
                 }
-                //this.lastRefreshedTime = refreshTime;
                 this.trainData = outOfService ? TrainDisplayData.empty() : data;
                 this.carriageData = new CarriageData(((CarriageContraptionEntity)carriage.entity).carriageIndex, carriage.getAssemblyDirection(), data.isOppositeDirection());
                 this.relativeExitDirection.clear();
                 
-                if (shouldUpdate) {
-                }
                 getRenderer().update(level, pos, state, this, shouldUpdate ? EUpdateReason.LAYOUT_CHANGED : EUpdateReason.DATA_CHANGED);
             });
         }
@@ -541,21 +521,26 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         super.write(pTag, clientPacket);
         pTag.putByte(NBT_XSIZE, getXSize());
         pTag.putByte(NBT_YSIZE, getYSize());
-        pTag.putInt(NBT_COLOR, getColor());
         pTag.putBoolean(NBT_CONTROLLER, isController());
-        pTag.put(NBT_DISPLAY_TYPE_KEY, getDisplayTypeKey().toNbt());
         pTag.putString(NBT_FILTER, getStationNameFilter());
         pTag.putBoolean(NBT_GLOWING, isGlowing());
         pTag.putLong(NBT_LAST_REFRESH_TIME, getLastRefreshedTime());
-        pTag.putByte(NBT_PLATFORM_WIDTH, getPlatformWidth());
-        pTag.putByte(NBT_TRAIN_NAME_WIDTH, getTrainNameWidth());
-        pTag.putByte(NBT_TIME_DISPLAY, getTimeDisplay().getId());
 
-        getStationInfo2().writeNbt(pTag);
+        //pTag.putByte(NBT_TIME_DISPLAY, getTimeDisplay().getId());
+        //pTag.putInt(NBT_COLOR, getColor());
+        //pTag.putByte(NBT_PLATFORM_WIDTH, getPlatformWidth());
+        //pTag.putByte(NBT_TRAIN_NAME_WIDTH, getTrainNameWidth());
+
+        displayTypeId.toNbt(pTag);
+        pTag.put(NBT_DISPLAY_TYPE_SETTINGS, displayTypeSettings.serializeNbt());
+
+        getStationInfo().writeNbt(pTag);
 
         if (getStops() != null && !getStops().isEmpty()) {            
             ListTag list = new ListTag();
-            list.addAll(getStops().stream().map(x -> x.toNbt()).toList());
+            for (StationDisplayData data : getStops()) {
+                list.add(data.toNbt());
+            }
             pTag.put(NBT_TRAIN_STOPS, list);
         }
     }
@@ -569,8 +554,6 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
                 isController() != pTag.getBoolean(NBT_CONTROLLER) ||
                 getXSize() != pTag.getByte(NBT_XSIZE) ||
                 getYSize() != pTag.getByte(NBT_YSIZE) ||
-                getPlatformWidth() != pTag.getByte(NBT_PLATFORM_WIDTH) ||
-                getTrainNameWidth() != pTag.getByte(NBT_TRAIN_NAME_WIDTH) ||
                 (getStops().isEmpty() ^ !pTag.contains(NBT_TRAIN_STOPS))
             ) {
                 updateClient = true;
@@ -583,25 +566,51 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 
         xSize = pTag.getByte(NBT_XSIZE);
         ySize = pTag.getByte(NBT_YSIZE);
-        if (pTag.contains(NBT_COLOR)) {
-            color = pTag.getInt(NBT_COLOR);
-        }
         glowing = pTag.getBoolean(NBT_GLOWING);
         isController = pTag.getBoolean(NBT_CONTROLLER);
+
+        Class<? extends IDisplaySettings> oldDisplaySettings = displayTypeSettings.getClass();
+        DisplayTypeResourceKey oldDisplayType = displayTypeId;
+        
+        // ### Convert deprecated data
         if (pTag.contains(LEGACY_NBT_INFO_TYPE) && pTag.contains(LEGACY_NBT_DISPLAY_TYPE)) {
-            displayTypeKey = ModDisplayTypes.legacy_getKeyForType(EDisplayType.getTypeById(pTag.getInt(LEGACY_NBT_DISPLAY_TYPE)), EDisplayInfo.getTypeById(pTag.getInt(LEGACY_NBT_INFO_TYPE)));
+            displayTypeId = ModDisplayTypes.legacy_getKeyForType(EDisplayType.getTypeById(pTag.getInt(LEGACY_NBT_DISPLAY_TYPE)), EDisplayInfo.getTypeById(pTag.getInt(LEGACY_NBT_INFO_TYPE)));
+            displayTypeSettings = AdvancedDisplaysRegistry.createSettings(displayTypeId);
+        } else if (pTag.contains(LEGACY_NBT_DISPLAY_TYPE_KEY)) {
+            displayTypeId = DisplayTypeResourceKey.legacy_fromNbt(pTag.getCompound(LEGACY_NBT_DISPLAY_TYPE_KEY));
+            displayTypeSettings = AdvancedDisplaysRegistry.createSettings(displayTypeId);
         } else {
-            displayTypeKey = DisplayTypeResourceKey.fromNbt(pTag.getCompound(NBT_DISPLAY_TYPE_KEY));
+            displayTypeId = DisplayTypeResourceKey.fromNbt(pTag);
+            displayTypeSettings = AdvancedDisplaysRegistry.createSettings(displayTypeId);
+            displayTypeSettings.deserializeNbt(pTag.getCompound(NBT_DISPLAY_TYPE_SETTINGS));
         }
+        
+        if (pTag.contains(LEGACY_NBT_COLOR)) {
+            getSettingsAs(BasicDisplaySettings.class).ifPresent(x -> x.setFontColor(pTag.getInt(LEGACY_NBT_COLOR)));
+        }
+        if (displayTypeId.category().getSource() == EDisplayTypeDataSource.PLATFORM) {            
+            if (pTag.contains(LEGACY_NBT_PLATFORM_WIDTH)) {
+                getSettingsAs(IPlatformWidthSetting.class).ifPresent(x -> x.setPlatformWidth(pTag.getByte(LEGACY_NBT_PLATFORM_WIDTH)));
+            }
+            if (pTag.contains(LEGACY_NBT_TRAIN_NAME_WIDTH)) {
+                getSettingsAs(ITrainNameWidthSetting.class).ifPresent(x -> x.setTrainNameWidth(pTag.getByte(LEGACY_NBT_TRAIN_NAME_WIDTH)));
+            }
+            if (pTag.contains(LEGACY_NBT_TIME_DISPLAY)) {
+                getSettingsAs(ITimeDisplaySetting.class).ifPresent(x -> x.setTimeDisplay(ETimeDisplay.getById(pTag.getByte(LEGACY_NBT_TIME_DISPLAY))));
+            }
+        }
+        // ###
+
         setDepartureData(
             pTag.contains(NBT_TRAIN_STOPS) ? new ArrayList<>(pTag.getList(NBT_TRAIN_STOPS, Tag.TAG_COMPOUND).stream().map(x -> StationDisplayData.fromNbt((CompoundTag)x)).toList()) : new ArrayList<>(),
             pTag.getString(NBT_FILTER),
             info,
-            pTag.getLong(NBT_LAST_REFRESH_TIME),
-            pTag.getByte(NBT_PLATFORM_WIDTH),
-            pTag.getByte(NBT_TRAIN_NAME_WIDTH),
-            pTag.getByte(NBT_TIME_DISPLAY)
+            pTag.getLong(NBT_LAST_REFRESH_TIME)
         );
+
+        if (level != null && getBlockState() != null && level.isClientSide && (!oldDisplaySettings.isInstance(displayTypeSettings) || !oldDisplayType.equals(displayTypeId))) {
+            updateClient = true;
+        }
 
         if (updateClient) {
             getRenderer().update(level, worldPosition, getBlockState(), this, EUpdateReason.LAYOUT_CHANGED);
@@ -626,6 +635,14 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     @Override
     public IBlockEntityRendererInstance<AdvancedDisplayBlockEntity> getRenderer() {
         return renderer.get();
+    }
+
+    public IDisplaySettings getSettings() {
+        return displayTypeSettings;
+    }
+
+    public <S> Optional<S> getSettingsAs(Class<S> clazz) {
+        return Optional.ofNullable(clazz.isInstance(getSettings()) ? clazz.cast(getSettings()) : null);
     }
 
 	@Override

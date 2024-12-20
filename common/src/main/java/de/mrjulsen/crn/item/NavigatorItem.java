@@ -22,4 +22,27 @@ public class NavigatorItem extends Item {
         }        
         return super.use(pLevel, pPlayer, pUsedHand);
     }
+
+    /*
+    @Environment(EnvType.CLIENT)
+    @SuppressWarnings("resource")
+    @Override
+    public void renderAdditional(RenderGraphics graphics, ItemStack itemStack, TransformType transformType, boolean leftHand, PoseStack poseStack, MultiBufferSource buffer, int combinedLight, int combinedOverlay, BakedModel model) {
+        Font font = Minecraft.getInstance().font;
+        poseStack.mulPose(Vector3f.XP.rotationDegrees(90F));
+        poseStack.translate(4, 2, -0.76);
+        
+        poseStack.pushPose();
+        poseStack.translate(4, 0.8f, 0);
+        poseStack.scale(0.075f, 0.075f, 0.075f);
+        BERUtils.drawString(graphics, font, 0, 0, "Day " + (DragonLib.getCurrentWorldTime() / DragonLib.ticksPerDay()), 0xFFFFFFFF, EAlignment.CENTER, false, LightTexture.FULL_BRIGHT);
+        poseStack.popPose();
+        
+        poseStack.pushPose();
+        poseStack.translate(4, 2, 0);
+        poseStack.scale(0.2f, 0.2f, 0.2f);
+        BERUtils.drawString(graphics, font, 0, 0, TimeUtils.formatTime(DragonLib.getCurrentWorldTime(), ModClientConfig.TIME_FORMAT.get()), 0xFFFFFFFF, EAlignment.CENTER, false, LightTexture.FULL_BRIGHT);
+        poseStack.popPose();
+    }
+    */
 }

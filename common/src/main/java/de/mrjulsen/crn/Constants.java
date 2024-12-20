@@ -20,6 +20,9 @@ public class Constants {
     public static final Component TEXT_SERVER_ERROR = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.server_error");
     public static final Component TEXT_SEARCH = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.search");
     public static final Component TEXT_HELP = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.help");
+    public static final Component TEXT_COPY = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.copy");
+    public static final Component TEXT_PASTE = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.paste");
+    public static final Component TEXT_RESET = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.reset_defaults");
     public static final UUID ZERO_UUID = new UUID(0, 0);
     public static final int[] DEFAULT_TRAIN_TYPE_COLORS = new int[] { 0xFF393939, 0xFFf0f3f5, 0xFFafb4bb, 0xFF878c96, 0xFF2a7230, 0xFF814997, 0xFF1455c0, 0xFFa9455d, 0xFF55b9e6, 0xFFffd800 };
      
@@ -30,6 +33,7 @@ public class Constants {
     public static final String GITHUB_WIKI = "https://github.com/MisterJulsen/Create-Train-Navigator/wiki/";
     public static final String HELP_PAGE_ADVANCED_DISPLAYS = GITHUB_WIKI + "Advanced-Displays";
     public static final String HELP_PAGE_DYNAMIC_DELAYS = GITHUB_WIKI + "Dynamic-Delays";
+    public static final String HELP_PAGE_TRAIN_SEPARATION = GITHUB_WIKI + "Train-Separation";
     public static final String HELP_PAGE_GLOBAL_SETTINGS = GITHUB_WIKI + "Global-Settings";
     public static final String HELP_PAGE_NAVIGATION_WARNING = GITHUB_WIKI + "Navigation-Warning";
     public static final String HELP_PAGE_SCHEDULE_SECTIONS = GITHUB_WIKI + "Train-Schedule-Sections";

@@ -5,17 +5,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLAbstractScrollBar;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLButton;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.ScrollableWidgetContainer;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.DLScrollableWidgetContainer;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 
-public class CRNListBox<T, W extends DLButton> extends ScrollableWidgetContainer {
+public class CRNListBox<T, W extends DLButton> extends DLScrollableWidgetContainer {
 
     private final Screen parent;
     private final DLAbstractScrollBar<?> scrollBar;
@@ -29,7 +29,7 @@ public class CRNListBox<T, W extends DLButton> extends ScrollableWidgetContainer
         
         scrollBar.setAutoScrollerSize(true);
         scrollBar.setScreenSize(height());
-        scrollBar.updateMaxScroll(0);
+        scrollBar.setMaxScroll(0);
         scrollBar.withOnValueChanged((sb) -> setYScrollOffset(sb.getScrollValue()));
         scrollBar.setStepSize(10);
     }
@@ -38,13 +38,14 @@ public class CRNListBox<T, W extends DLButton> extends ScrollableWidgetContainer
         return parent;
     }
 
-    public void displayData(List<T> data, Function<T, W> createItem) {
+    public void displayData(List<T> data, BiFunction<T, Integer, W> createItem) {
         clearWidgets();
         values.clear();
         contentHeight = 0;
         for (int i = 0; i < data.size(); i++) {
             T entry = data.get(i);
-            W widget = createItem.apply(entry);
+            W widget = createItem.apply(entry, i);
+            if (widget == null) continue;
             widget.set_x(x());
             widget.set_width(width());
             widget.set_y(y() + contentHeight);        
@@ -52,7 +53,7 @@ public class CRNListBox<T, W extends DLButton> extends ScrollableWidgetContainer
             values.put(widget, entry);
             contentHeight += widget.height();
         }
-        scrollBar.updateMaxScroll(contentHeight);
+        scrollBar.setMaxScroll(contentHeight);
     }
 
     public Set<Entry<W, T>> getEntries() {

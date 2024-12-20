@@ -31,12 +31,12 @@ public class TrainStationClockRenderer extends AbstractBlockEntityRenderInstance
         BERUtils.renderTexture(DIAL_TEXTURE, graphics, !graphics.blockEntity().isGlowing(), -7, -7, -0.2f, 14, 14, 0, 0, 1, 1, graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING), (0xFF << 24) | (graphics.blockEntity().getColor()), graphics.blockEntity().isGlowing() ? LightTexture.FULL_BRIGHT : graphics.packedLight());
 
         graphics.poseStack().pushPose();
-        graphics.poseStack().mulPose(Vector3f.ZP.rotationDegrees(-90 + ModUtils.clockHandDegrees(graphics.blockEntity().getLevel().getDayTime() + DragonLib.DAYTIME_SHIFT, 12000)));
+        graphics.poseStack().mulPose(Vector3f.ZP.rotationDegrees(-90 + ModUtils.clockHandDegrees(graphics.blockEntity().getLevel().getDayTime() + DragonLib.daytimeShift(), 12000)));
         BERUtils.fillColor(graphics, -0.5f, -0.5f, 0, 6, 1, 0xFF191919, graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING));
         graphics.poseStack().popPose();
 
         graphics.poseStack().pushPose();
-        graphics.poseStack().mulPose(Vector3f.ZP.rotationDegrees(-90 + ModUtils.clockHandDegrees(graphics.blockEntity().getLevel().getDayTime() + DragonLib.DAYTIME_SHIFT, 1000)));
+        graphics.poseStack().mulPose(Vector3f.ZP.rotationDegrees(-90 + ModUtils.clockHandDegrees(graphics.blockEntity().getLevel().getDayTime() + DragonLib.daytimeShift(), 1000)));
         BERUtils.fillColor(graphics, -0.5f, -0.5f, 0.1f, 7, 1, 0xFF222222, graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING));
         graphics.poseStack().popPose();
 
@@ -47,13 +47,13 @@ public class TrainStationClockRenderer extends AbstractBlockEntityRenderInstance
         graphics.poseStack().popPose();
 
         graphics.poseStack().pushPose();
-        graphics.poseStack().mulPose(Vector3f.ZN.rotationDegrees(-90 + ModUtils.clockHandDegrees(graphics.blockEntity().getLevel().getDayTime() + DragonLib.DAYTIME_SHIFT, 12000)));
+        graphics.poseStack().mulPose(Vector3f.ZN.rotationDegrees(-90 + ModUtils.clockHandDegrees(graphics.blockEntity().getLevel().getDayTime() + DragonLib.daytimeShift(), 12000)));
         graphics.poseStack().mulPose(Vector3f.YP.rotationDegrees(180));
         BERUtils.fillColor(graphics, -0.5f, -0.5f, 0, 6, 1, 0xFF191919, graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING));
         graphics.poseStack().popPose();
 
         graphics.poseStack().pushPose();
-        graphics.poseStack().mulPose(Vector3f.ZN.rotationDegrees(-90 + ModUtils.clockHandDegrees(graphics.blockEntity().getLevel().getDayTime() + DragonLib.DAYTIME_SHIFT, 1000)));
+        graphics.poseStack().mulPose(Vector3f.ZN.rotationDegrees(-90 + ModUtils.clockHandDegrees(graphics.blockEntity().getLevel().getDayTime() + DragonLib.daytimeShift(), 1000)));
         graphics.poseStack().mulPose(Vector3f.YP.rotationDegrees(180));
         BERUtils.fillColor(graphics, -0.5f, -0.5f, 0.1f, 7, 1, 0xFF222222, graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING));
         graphics.poseStack().popPose();

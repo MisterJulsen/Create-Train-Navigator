@@ -139,7 +139,7 @@ public class RoutePart implements Comparable<RoutePart> {
     }
 
     private static Set<List<TrainStop>> getBetween(TrainSchedule schedule, StationTag start, StationTag end, UserSettings settings) {
-        List<TrainStop> stops = schedule.getAllStops().stream().sorted((a, b) -> Long.compare(a.getScheduledDepartureTime(), b.getScheduledDepartureTime())).toList();
+        List<TrainStop> stops = schedule.getAllStopsChronologicallyDeparture();
         
         if (stops.stream().noneMatch(x -> x.getTag().equals(start)) || stops.stream().noneMatch(x -> x.getTag().equals(end))) {
             return Set.of();
@@ -193,10 +193,14 @@ public class RoutePart implements Comparable<RoutePart> {
         nbt.putUUID(NBT_SESSION_ID, sessionId);
         nbt.putUUID(NBT_TRAIN_ID, trainId);
         ListTag stopsList = new ListTag();
-        stopsList.addAll(routeStops.stream().map(x -> x.toNbt(true)).toList());
+        for (TrainStop stop : routeStops) {
+            stopsList.add(stop.toNbt(true));
+        }
         nbt.put(NBT_STOPS, stopsList);
         ListTag journeyList = new ListTag();
-        journeyList.addAll(allStops.stream().map(x -> x.toNbt(true)).toList());
+        for (TrainStop stop : allStops) {
+            journeyList.add(stop.toNbt(true));
+        }
         nbt.put(NBT_JOURNEY, journeyList);
         return nbt;
     }

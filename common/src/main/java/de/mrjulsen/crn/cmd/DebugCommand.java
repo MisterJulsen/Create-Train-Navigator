@@ -9,6 +9,8 @@ import de.mrjulsen.crn.debug.DebugOverlay;
 import de.mrjulsen.crn.registry.ModAccessorTypes;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.accessor.DataAccessor;
+import dev.architectury.platform.Platform;
+import dev.architectury.utils.Env;
 import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -87,9 +89,14 @@ public class DebugCommand {
     }
 
     private static int showTrainObservationOverlay(CommandSourceStack cmd) throws CommandSyntaxException {
-        cmd.sendSuccess(TextUtils.text("Visibility of the train debug overlay has been toggled."), false);
-        DebugOverlay.toggle();
-        return 1;
+        if (Platform.getEnvironment() == Env.CLIENT) {            
+            cmd.sendSuccess(TextUtils.text("Visibility of the train debug overlay has been toggled."), false);
+            DebugOverlay.toggle();
+            return 1;
+        } else {            
+            cmd.sendFailure(TextUtils.text("Cannot open the train debug overlay in multiplayer."));  
+        }
+        return 0;
     }
 
     private static int showTrainDebugScreen(CommandSourceStack cmd) throws CommandSyntaxException {

@@ -9,8 +9,8 @@ import de.mrjulsen.crn.client.gui.Animator;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.ColorShade;
 import de.mrjulsen.mcdragonlib.client.gui.DLScreen;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.DLWidgetContainer;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.IDragonLibWidget;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.WidgetContainer;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiAreaDefinition;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
@@ -22,7 +22,7 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 
-public abstract class AbstractFlyoutWidget<T extends GuiEventListener & Widget & NarratableEntry> extends WidgetContainer {
+public abstract class AbstractFlyoutWidget<T extends GuiEventListener & Widget & NarratableEntry> extends DLWidgetContainer {
 
     protected final DLScreen screen;
     protected final FlyoutPointer pointer;
@@ -97,6 +97,7 @@ public abstract class AbstractFlyoutWidget<T extends GuiEventListener & Widget &
     @Override
     public void renderMainLayer(Graphics graphics, int mouseX, int mouseY, float partialTicks) {
         graphics.poseStack().pushPose();
+        graphics.poseStack().translate(0, 0, 100);
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         RenderSystem.enableDepthTest();

@@ -1,13 +1,13 @@
 package de.mrjulsen.crn.data.train;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
-import de.mrjulsen.crn.client.lang.ELanguage;
+import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.data.StationTag;
 import de.mrjulsen.crn.data.TrainGroup;
 import de.mrjulsen.crn.data.TrainLine;
@@ -28,6 +28,14 @@ public class TrainTravelSection {
     private final TrainLine trainLine;
 
     private final Cache<List<TrainPrediction>> predictions = new Cache<>(() -> getPredictions(INVALID, false));
+    private final Cache<List<String>> stopoversCache = new Cache<>(() -> {
+        List<TrainPrediction> predictions = this.predictions.get();
+        List<String> result = new ArrayList<>(predictions.size() - 2);
+        for (int i = 1; i < predictions.size() - 1; i++) {
+            result.add(predictions.get(i).getStationTag().getTagName().get());
+        }
+        return result;
+    });
     private final Cache<TrainTravelSection> nextSection;
     private final Cache<TrainTravelSection> previousSection;
 
@@ -103,12 +111,12 @@ public class TrainTravelSection {
         return usable;
     }
 
-    public TrainGroup getTrainGroup() {
-        return trainGroup;
+    public Optional<TrainGroup> getTrainGroup() {
+        return Optional.ofNullable(trainGroup);
     }
 
-    public TrainLine getTrainLine() {
-        return trainLine;
+    public Optional<TrainLine> getTrainLine() {
+        return Optional.ofNullable(trainLine);
     }
 
     public TrainTravelSection nextSection() {
@@ -130,7 +138,16 @@ public class TrainTravelSection {
         }
         List<TrainPrediction> result = new ArrayList<>();
         TrainTravelSection nextSection = nextSection();
-        Map<Integer, TrainPrediction> predictions = data.getPredictionsRaw().entrySet().stream().filter(x -> !GlobalSettings.getInstance().isStationBlacklisted(x.getValue().getStationName())).collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue()));
+        
+        Map<Integer, TrainPrediction> predictionsSrc = data.getPredictionsRaw();
+        Map<Integer, TrainPrediction> predictions = new HashMap<>(predictionsSrc.size());
+        for (Map.Entry<Integer, TrainPrediction> prediction : predictionsSrc.entrySet()) {
+            if (GlobalSettings.getInstance().isStationBlacklisted(prediction.getValue().getStationName())) {
+                continue;
+            }
+            predictions.put(prediction.getKey(), prediction.getValue());
+        }
+
         final int startIndex = getScheduleIndex();
         final int stopIndex = nextSection.getScheduleIndex();
         final int count = data.getTrain().runtime.getSchedule().entries.size();
@@ -155,7 +172,13 @@ public class TrainTravelSection {
     }
 
     public int getFirstIndexFor(StationTag tag) {
-        return getPredictions(INVALID, false).stream().filter(x -> x.getStationTag().equals(tag)).map(x -> x.getEntryIndex()).findFirst().orElse(0);
+        List<TrainPrediction> predictions = getPredictions(INVALID, false);
+        for (TrainPrediction p : predictions) {
+            if (p.getStationTag().equals(tag)) {
+                return p.getEntryIndex();
+            }
+        }
+        return 0;
     }
 
     /**
@@ -186,8 +209,7 @@ public class TrainTravelSection {
     }
 
     public List<String> getStopovers() {
-        List<TrainPrediction> predictions = this.predictions.get();
-        return predictions.stream().limit(predictions.size() - 1).skip(1).map(x -> x.getStationTag().getTagName().get()).toList(); /* TODO */
+        return stopoversCache.get();
     }
 
     public List<String> getStopoversFrom(int startIndex) {
@@ -240,13 +262,13 @@ public class TrainTravelSection {
 
     public String getDisplayText() {
         if (!isUsable()) {
-            return ELanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.not_in_service").getString();
+            return CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.not_in_service").getString();
         }        
         return getFinalStop().map(x -> GlobalSettings.getInstance().getOrCreateStationTagFor(x.getStationName()).getTagName().get()).orElse("?");
     }
 
     public String getDisplayTextStart() {
-        return !isUsable() ? ELanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.not_in_service").getString() : getFirstStop().map(x -> GlobalSettings.getInstance().getOrCreateStationTagFor(x.getStationName()).getTagName().get()).orElse("?");
+        return !isUsable() ? CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.not_in_service").getString() : getFirstStop().map(x -> GlobalSettings.getInstance().getOrCreateStationTagFor(x.getStationName()).getTagName().get()).orElse("?");
     }
 
     public String getStartStationName() {

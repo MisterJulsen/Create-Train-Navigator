@@ -3,7 +3,7 @@ package de.mrjulsen.crn.client.gui.overlay.pages;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.mrjulsen.crn.client.lang.ELanguage;
+import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.train.TrainStop;
 import de.mrjulsen.crn.registry.ModAccessorTypes;
@@ -75,7 +75,7 @@ public class NextConnectionsPage extends AbstractRouteDetailsPage {
     
     @Override
     public void renderMainLayer(Graphics graphics, int mouseX, int mouseY, float partialTicks) {
-        GuiUtils.drawString(graphics, font, 5, 4, ELanguage.translate(keyNextConnections).withStyle(ChatFormatting.BOLD), 0xFFFFFFFF, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, 5, 4, CustomLanguage.translate(keyNextConnections).withStyle(ChatFormatting.BOLD), 0xFFFFFFFF, EAlignment.LEFT, false);
 
         int y = 16;
         final int spacing = 5;
@@ -85,7 +85,7 @@ public class NextConnectionsPage extends AbstractRouteDetailsPage {
             TrainStop stop = nextConnections.get(i);
             String terminus = stop.getDisplayTitle();
             GuiUtils.drawString(graphics, font, 5, y, TimeUtils.parseTime(stop.getScheduledDepartureTime(), ModClientConfig.TIME_FORMAT.get()), 0xFFDBDBDB, EAlignment.LEFT, false);
-            GuiUtils.drawString(graphics, font, 5 + timeWidth + spacing, y, GuiUtils.ellipsisString(font, TextUtils.text(stop.getTrainName()), trainNameWidth), 0xFFDBDBDB, EAlignment.LEFT, false);
+            GuiUtils.drawString(graphics, font, 5 + timeWidth + spacing, y, GuiUtils.ellipsisString(font, TextUtils.text(stop.getTrainDisplayName()), trainNameWidth), 0xFFDBDBDB, EAlignment.LEFT, false);
             GuiUtils.drawString(graphics, font, width() - 5, y, stop.getRealTimeStationTag().info().platform(), 0xFFDBDBDB, EAlignment.RIGHT, false);
             int terminusWidth = width() - 10 + timeWidth + trainNameWidth + spacing * 3 - font.width(stop.getRealTimeStationTag().info().platform());
             GuiUtils.drawString(graphics, font, 5 + timeWidth + trainNameWidth + spacing * 2, y, GuiUtils.ellipsisString(font, TextUtils.text(terminus), terminusWidth), 0xFFDBDBDB, EAlignment.LEFT, false);

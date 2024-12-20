@@ -4,7 +4,7 @@ import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.registry.ModAccessorTypes;
 import de.mrjulsen.crn.debug.TrainDebugData;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLAbstractScrollBar;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.ScrollableWidgetContainer;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.DLScrollableWidgetContainer;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import de.mrjulsen.mcdragonlib.core.EAlignment;
@@ -13,7 +13,7 @@ import de.mrjulsen.mcdragonlib.util.accessor.DataAccessor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 
-public class TrainDebugViewer extends ScrollableWidgetContainer {
+public class TrainDebugViewer extends DLScrollableWidgetContainer {
 
     private final Screen parent;
     private final DLAbstractScrollBar<?> scrollBar;
@@ -26,18 +26,13 @@ public class TrainDebugViewer extends ScrollableWidgetContainer {
         
         scrollBar.setAutoScrollerSize(true);
         scrollBar.setScreenSize(height());
-        scrollBar.updateMaxScroll(0);
+        scrollBar.setMaxScroll(0);
         scrollBar.withOnValueChanged((sb) -> setYScrollOffset(sb.getScrollValue()));
         scrollBar.setStepSize(10);
     }
 
     public Screen getParent() {
         return parent;
-    }
-
-    @Override
-    protected void clearWidgets() {
-        super.clearWidgets();
     }
 
     public void reload() {
@@ -52,7 +47,7 @@ public class TrainDebugViewer extends ScrollableWidgetContainer {
                 contentHeight += (widget.height() + 3);
             }
             contentHeight += 7;
-            scrollBar.updateMaxScroll(contentHeight);
+            scrollBar.setMaxScroll(contentHeight);
         });
     }
 

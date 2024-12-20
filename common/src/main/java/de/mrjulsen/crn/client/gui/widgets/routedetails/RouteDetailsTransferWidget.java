@@ -2,7 +2,7 @@ package de.mrjulsen.crn.client.gui.widgets.routedetails;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
-import de.mrjulsen.crn.client.lang.ELanguage;
+import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.data.navigation.TransferConnection;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLRenderable;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
@@ -17,15 +17,15 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RouteDetailsTransferWidget extends DLRenderable {
 
-    private final MutableComponent transferText = ELanguage.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".route_details.transfer");
+    private final MutableComponent transferText = CustomLanguage.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".route_details.transfer");
 
     protected static final ResourceLocation GUI = new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/widgets.png");
     protected static final int GUI_TEXTURE_WIDTH = 256;
     protected static final int GUI_TEXTURE_HEIGHT = 256;
     protected static final int ENTRY_WIDTH = 225;
 
-    private final MutableComponent textConnectionEndangered = ELanguage.translate("gui.createrailwaysnavigator.route_overview.connection_endangered").withStyle(ChatFormatting.GOLD).withStyle(ChatFormatting.BOLD);
-    private final MutableComponent textConnectionMissed = ELanguage.translate("gui.createrailwaysnavigator.route_overview.connection_missed").withStyle(ChatFormatting.RED).withStyle(ChatFormatting.BOLD);
+    private final MutableComponent textConnectionEndangered = CustomLanguage.translate("gui.createrailwaysnavigator.route_overview.connection_endangered").withStyle(ChatFormatting.GOLD).withStyle(ChatFormatting.BOLD);
+    private final MutableComponent textConnectionMissed = CustomLanguage.translate("gui.createrailwaysnavigator.route_overview.connection_missed").withStyle(ChatFormatting.RED).withStyle(ChatFormatting.BOLD);
 
     private final TransferConnection connection;
 

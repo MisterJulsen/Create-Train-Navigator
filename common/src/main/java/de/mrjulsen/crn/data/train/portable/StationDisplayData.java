@@ -19,6 +19,7 @@ public class StationDisplayData {
     private final TrainStopDisplayData stationData;
     private final String firstStopName;
     private final boolean isLastStop;
+    private final boolean isNextSectionExcluded;
     private final List<String> stopovers;
 
     private static final String NBT_TRAIN = "Train";
@@ -26,6 +27,7 @@ public class StationDisplayData {
     private static final String NBT_STOPOVERS = "Stopovers";
     private static final String NBT_FIRST_STOP = "FirstStop";
     private static final String NBT_IS_LAST = "IsLast";
+    private static final String NBT_IS_NEXT_EXCLUDED = "IsNextSectionExcluded";
 
     
 
@@ -34,6 +36,7 @@ public class StationDisplayData {
         TrainStopDisplayData stationData,
         String firstStopName,
         boolean isLastStop,
+        boolean isNextSectionExcluded,
         List<String> stopovers
     ) {
         this.trainData = trainData;
@@ -41,10 +44,11 @@ public class StationDisplayData {
         this.stopovers = stopovers;
         this.firstStopName = firstStopName;
         this.isLastStop = isLastStop;
+        this.isNextSectionExcluded = isNextSectionExcluded;
     }
 
     public static StationDisplayData empty() {
-        return new StationDisplayData(BasicTrainDisplayData.empty(), TrainStopDisplayData.empty(), "", false, List.of());
+        return new StationDisplayData(BasicTrainDisplayData.empty(), TrainStopDisplayData.empty(), "", false, false, List.of());
     }
 
     /** Server-side only! */
@@ -76,6 +80,7 @@ public class StationDisplayData {
             TrainStopDisplayData.of(stop),
             firstStop,
             isLastStopOfSection,
+            isLastStopOfSection && !section.nextSection().isUsable(),
             section.getStopoversFrom(stop.getScheduleIndex())
         );
     }
@@ -100,6 +105,10 @@ public class StationDisplayData {
         return isLastStop;
     }
 
+    public boolean isNextSectionExcluded() {
+        return isNextSectionExcluded;
+    }
+
     public boolean isDelayed() {
         return isLastStop() ? getStationData().isArrivalDelayed() : getStationData().isDepartureDelayed();
     }
@@ -117,12 +126,16 @@ public class StationDisplayData {
         CompoundTag nbt = new CompoundTag();
 
         ListTag stopoversList = new ListTag();
-        stopoversList.addAll(getStopovers().stream().map(x -> StringTag.valueOf(x)).toList());
+        List<String> stations = getStopovers();
+        for (String name : stations) {
+            stopoversList.add(StringTag.valueOf(name));
+        }
 
         nbt.put(NBT_TRAIN, trainData.toNbt());
         nbt.put(NBT_STATION, stationData.toNbt());
         nbt.putString(NBT_FIRST_STOP, firstStopName);
         nbt.putBoolean(NBT_IS_LAST, isLastStop);
+        nbt.putBoolean(NBT_IS_NEXT_EXCLUDED, isNextSectionExcluded);
         nbt.put(NBT_STOPOVERS, stopoversList);
         return nbt;
     }
@@ -133,6 +146,7 @@ public class StationDisplayData {
             TrainStopDisplayData.fromNbt(nbt.getCompound(NBT_STATION)),
             nbt.getString(NBT_FIRST_STOP),
             nbt.getBoolean(NBT_IS_LAST),
+            nbt.getBoolean(NBT_IS_NEXT_EXCLUDED),
             nbt.getList(NBT_STOPOVERS, Tag.TAG_STRING).stream().map(x -> ((StringTag)x).getAsString()).toList()
         );
     }

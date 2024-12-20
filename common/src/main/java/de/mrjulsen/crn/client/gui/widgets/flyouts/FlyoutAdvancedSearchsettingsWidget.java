@@ -55,9 +55,4 @@ public class FlyoutAdvancedSearchsettingsWidget<T extends GuiEventListener & Wid
         super.renderFlyoutContent(graphics, mouseX, mouseY, partialTicks, contentArea);
         GuiUtils.drawString(graphics, font, contentArea.getX() + 8, contentArea.getY() + 8, textTrainGroups, DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, EAlignment.LEFT, false);
     }
-
-    @Override
-    public void close() {
-        super.close();
-    }
 }

@@ -9,6 +9,7 @@ import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity.EUpdateReaso
 import de.mrjulsen.crn.block.properties.ESide;
 import de.mrjulsen.crn.client.AdvancedDisplaysRegistry;
 import de.mrjulsen.crn.client.AdvancedDisplaysRegistry.DisplayTypeResourceKey;
+import de.mrjulsen.crn.client.ber.variants.AbstractAdvancedDisplayRenderer;
 import de.mrjulsen.mcdragonlib.client.ber.AbstractBlockEntityRenderInstance;
 import de.mrjulsen.mcdragonlib.client.ber.BERGraphics;
 import de.mrjulsen.mcdragonlib.data.Pair;
@@ -21,7 +22,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class AdvancedDisplayRenderInstance extends AbstractBlockEntityRenderInstance<AdvancedDisplayBlockEntity> {
 
-    public IBERRenderSubtype<AdvancedDisplayBlockEntity, AdvancedDisplayRenderInstance, Boolean> renderSubtype;
+    public AbstractAdvancedDisplayRenderer<?> renderSubtype;
     private DisplayTypeResourceKey lastType;
     private int lastXSize = 0;
 
@@ -32,7 +33,7 @@ public class AdvancedDisplayRenderInstance extends AbstractBlockEntityRenderInst
     @Override
     public void render(BERGraphics<AdvancedDisplayBlockEntity> graphics, float partialTick) {
         
-        if (!graphics.blockEntity().isController()) {
+        if (!graphics.blockEntity().isController() || renderSubtype == null) {
             return;
         }
         
@@ -84,9 +85,9 @@ public class AdvancedDisplayRenderInstance extends AbstractBlockEntityRenderInst
     @Override
     public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, Object data) {
         EUpdateReason reason = (EUpdateReason)data;
-        DisplayTypeResourceKey type = blockEntity.getDisplayTypeKey();
+        DisplayTypeResourceKey type = blockEntity.getDisplayType();
         if (lastType == null || !lastType.equals(type)) {
-            renderSubtype = AdvancedDisplaysRegistry.getRenderer(type);
+            renderSubtype = AdvancedDisplaysRegistry.createRenderer(type);
         }
 
         lastType = type;

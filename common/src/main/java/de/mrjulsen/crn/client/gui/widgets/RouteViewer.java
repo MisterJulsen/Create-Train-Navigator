@@ -4,13 +4,13 @@ import java.util.List;
 
 import de.mrjulsen.crn.data.navigation.ClientRoute;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLAbstractScrollBar;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.ScrollableWidgetContainer;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.DLScrollableWidgetContainer;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 
-public class RouteViewer extends ScrollableWidgetContainer {
+public class RouteViewer extends DLScrollableWidgetContainer {
 
     private final Screen parent;
     private final DLAbstractScrollBar<?> scrollBar;
@@ -23,7 +23,7 @@ public class RouteViewer extends ScrollableWidgetContainer {
         
         scrollBar.setAutoScrollerSize(true);
         scrollBar.setScreenSize(height());
-        scrollBar.updateMaxScroll(0);
+        scrollBar.setMaxScroll(0);
         scrollBar.withOnValueChanged((sb) -> setYScrollOffset(sb.getScrollValue()));
         scrollBar.setStepSize(10);
     }
@@ -41,7 +41,7 @@ public class RouteViewer extends ScrollableWidgetContainer {
             contentHeight += (RouteWidget.HEIGHT + 3);
         }
         contentHeight += 2;
-        scrollBar.updateMaxScroll(contentHeight);
+        scrollBar.setMaxScroll(contentHeight);
     }
 
     @Override

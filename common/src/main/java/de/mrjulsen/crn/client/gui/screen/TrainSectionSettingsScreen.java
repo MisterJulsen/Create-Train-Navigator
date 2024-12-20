@@ -148,7 +148,7 @@ public class TrainSectionSettingsScreen extends DLScreen {
                 List<MutableComponent> groupsList = new ArrayList<>(trainGroups.stream().map(x -> TextUtils.text(x.getGroupName())).toList());
                 groupsList.add(0, textNone);
                 displayTypeLabel = addRenderableWidget(new DLCreateLabel(guiLeft + 45 + 5, guiTop + 23 + 5, Components.immutableEmpty()).withShadow());
-                displayTypeInput = addRenderableWidget(new DLCreateSelectionScrollInput(guiLeft + 45, guiTop + 23, 138, 18)
+                displayTypeInput = addRenderableWidget(new DLCreateSelectionScrollInput(this, guiLeft + 45, guiTop + 23, 138, 18)
                     .forOptions(groupsList)
                     .titled(tooltipTrainGroup)
                     .writingTo(displayTypeLabel)
@@ -162,7 +162,7 @@ public class TrainSectionSettingsScreen extends DLScreen {
                 List<MutableComponent> linesList = new ArrayList<>(trainLines.stream().map(x -> TextUtils.text(x.getLineName())).toList());
                 linesList.add(0, textNone);
                 infoTypeLabel = addRenderableWidget(new DLCreateLabel(guiLeft + 45 + 5, guiTop + 45 + 5, Components.immutableEmpty()).withShadow());
-                infoTypeInput = addRenderableWidget(new DLCreateSelectionScrollInput(guiLeft + 45, guiTop + 45, 138, 18)
+                infoTypeInput = addRenderableWidget(new DLCreateSelectionScrollInput(this, guiLeft + 45, guiTop + 45, 138, 18)
                     .forOptions(linesList)
                     .titled(tooltipTrainLine)
                     .writingTo(infoTypeLabel)

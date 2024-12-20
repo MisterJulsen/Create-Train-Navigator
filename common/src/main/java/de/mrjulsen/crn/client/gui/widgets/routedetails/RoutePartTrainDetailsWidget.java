@@ -9,7 +9,7 @@ import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
-import de.mrjulsen.crn.client.gui.screen.TrainJourneySreen;
+import de.mrjulsen.crn.client.gui.screen.TrainJourneyScreen;
 import de.mrjulsen.crn.client.gui.widgets.routedetails.RoutePartWidget.RoutePartDetailsActionBuilder;
 import de.mrjulsen.crn.data.train.ClientTrainStop;
 import de.mrjulsen.crn.data.train.TrainStatus.CompiledTrainStatus;
@@ -20,7 +20,7 @@ import de.mrjulsen.crn.event.events.RouteDetailsActionsEvent;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLAbstractImageButton.ButtonType;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLIconButton;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.WidgetContainer;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.DLWidgetContainer;
 import de.mrjulsen.mcdragonlib.client.render.DynamicGuiRenderer.AreaStyle;
 import de.mrjulsen.mcdragonlib.client.render.GuiIcons;
 import de.mrjulsen.mcdragonlib.client.render.Sprite;
@@ -37,7 +37,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
-public class RoutePartTrainDetailsWidget extends WidgetContainer implements Closeable {
+public class RoutePartTrainDetailsWidget extends DLWidgetContainer implements Closeable {
 
     protected static final ResourceLocation GUI = new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/widgets.png");
     protected static final int GUI_TEXTURE_WIDTH = 256;
@@ -77,7 +77,7 @@ public class RoutePartTrainDetailsWidget extends WidgetContainer implements Clos
         currentHeight = DEFAULT_HEIGHT;
         updateStatus();
 
-        addAction(new RoutePartDetailsActionBuilder(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".journey_info.title"), Sprite.empty(), (b) -> Minecraft.getInstance().setScreen(new TrainJourneySreen(parent, route, part.getTrainId()))));
+        addAction(new RoutePartDetailsActionBuilder(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".journey_info.title"), Sprite.empty(), (b) -> Minecraft.getInstance().setScreen(new TrainJourneyScreen(parent, route, part.getTrainId()))));
         CRNEventsManager.getEventOptional(RouteDetailsActionsEvent.class).ifPresent(x -> x.run(route, part, container.isExpanded()).forEach(this::addAction));
         if (!part.getStopovers().isEmpty()) {
             addAction(new RoutePartDetailsActionBuilder(container.isExpanded() ? Constants.TOOLTIP_COLLAPSE : Constants.TOOLTIP_EXPAND, (container.isExpanded() ? GuiIcons.ARROW_UP : GuiIcons.ARROW_DOWN).getAsSprite(16, 16), (b) -> container.setExpanded(!container.isExpanded())));
@@ -126,7 +126,7 @@ public class RoutePartTrainDetailsWidget extends WidgetContainer implements Clos
         graphics.poseStack().scale(scale, scale, scale);
         Component trainName = TextUtils.text(part.getLastStop().getTrainDisplayName()).withStyle(ChatFormatting.BOLD);
         CreateDynamicWidgets.renderTextHighlighted(graphics, (int)((x() + 80 + 24) / scale), (int)((y + 4) / scale), font, trainName, part.getLastStop().getTrainDisplayColor());
-        GuiUtils.drawString(graphics, font, (int)((x() + 80 + 24) / scale) + font.width(trainName) + 10, (int)((y + 6) / scale), GuiUtils.ellipsisString(font, TextUtils.text(String.format("%s (%s)", stop.getTrainName(), stop.getTrainId().toString().split("-")[0])), (int)((maxWidth - font.width(trainName) - 15) / scale)), 0xFFDBDBDB, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, (int)((x() + 80 + 24) / scale) + font.width(trainName) + 10, (int)((y + 6) / scale), GuiUtils.ellipsisString(font, TextUtils.text(String.format("%s (%s)", stop.getTrainDisplayName(), stop.getTrainId().toString().split("-")[0])), (int)((maxWidth - font.width(trainName) - 15) / scale)), 0xFFDBDBDB, EAlignment.LEFT, false);
         GuiUtils.drawString(graphics, font, (int)((x() + 80 + 24) / scale), (int)((y + 18) / scale), GuiUtils.ellipsisString(font, TextUtils.text(stop.getDisplayTitle()), (int)((maxWidth - 24) / scale)), 0xFFDBDBDB, EAlignment.LEFT, false);        
         graphics.poseStack().scale(mul, mul, mul);
         graphics.poseStack().popPose();
@@ -174,7 +174,6 @@ public class RoutePartTrainDetailsWidget extends WidgetContainer implements Clos
 
     @Override
     public void close() {
-        part.stopListeningAll(this);
     }
 
     @Override

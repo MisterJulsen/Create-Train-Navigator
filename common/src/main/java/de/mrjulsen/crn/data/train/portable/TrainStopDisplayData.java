@@ -68,8 +68,8 @@ public class TrainStopDisplayData {
             stop.getScheduledArrivalTime(), 
             stop.getRealTimeDepartureTime(), 
             stop.getRealTimeArrivalTime(), 
-            stop.getDisplayTitle(),//stop.getRealTimeStationTag().stationName(),
-            stop.getTrainName(),
+            stop.getDisplayTitle(),
+            stop.getTrainDisplayName(),
             stop.getRealTimeStationTag().info()
         );
     }

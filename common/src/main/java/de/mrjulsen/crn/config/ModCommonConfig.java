@@ -14,7 +14,9 @@ public class ModCommonConfig {
     public static final ForgeConfigSpec.ConfigValue<Integer> TRANSFER_COST;
     public static final ForgeConfigSpec.ConfigValue<Integer> TOTAL_DURATION_DEVIATION_THRESHOLD;
     public static final ForgeConfigSpec.ConfigValue<Boolean> CUSTOM_TRANSIT_TIME_CALCULATION;
+    public static final ForgeConfigSpec.ConfigValue<Boolean> USE_CREATE_TRANSIT_TIMES_ON_INIT;
     public static final ForgeConfigSpec.ConfigValue<Boolean> EXCLUDE_TRAINS;
+    public static final ForgeConfigSpec.ConfigValue<Boolean> ADVANCED_LOGGING;
 
     static {
         BUILDER.push(CreateRailwaysNavigator.MOD_ID + "_common_config");
@@ -32,6 +34,8 @@ public class ModCommonConfig {
 
         CUSTOM_TRANSIT_TIME_CALCULATION = BUILDER.comment("When activated, CRN calculates the transit times of the trains and does not use the calculations from Create. CRN is much more accurate, while Create calculates an average. (Default: ON)")
             .define("train_data_calculation.custom_transit_time_calculation", true);
+        USE_CREATE_TRANSIT_TIMES_ON_INIT = BUILDER.comment("When activated, CRN uses the transit times provided by Create (if available) when initializing. When turned off, the initialization may take longer. (Default: ON)")
+            .define("train_data_calculation.use_create_transit_times_on_init", true);
         TOTAL_DURATION_BUFFER_SIZE = BUILDER.comment(new String[] {"[in Cycles]", "How often the calculated time for a route section between two stations must deviate from the current reference value before the reference value is updated. (Default: 3)"})
             .defineInRange("train_data_calculation.total_duration_deviation_buffer_size", 3, 1, 16);            
         TOTAL_DURATION_DEVIATION_THRESHOLD = BUILDER.comment(new String[] {"[in Ticks]", "Deviations of the calculated time for a route section between two stations from the reference value that are smaller than the threshold value are not taken into account. (Default: 50)"})
@@ -40,6 +44,9 @@ public class ModCommonConfig {
             .defineInRange("train_data_calculation.schedule_deviation_threshold", 500, 100, 24000);
         AUTO_RESET_TIMINGS = BUILDER.comment(new String[] {"[In Cycles]", "(ONLY WORKS FOR TRAINS WITH DYNAMIC DELAYS! Trains without dynamic delays do this every new schedule section by default.)", " ", "Every X cycles the scheduled times are updated to the current real-time data. (Default: 2; Disabled: 0)"})
             .defineInRange("train_data_calculation.auto_reset_timings", 2, 0, Integer.MAX_VALUE);
+
+        ADVANCED_LOGGING = BUILDER.comment(new String[] {"Prints more details to the console to better observe the behavior of CRN. Only relevant for debugging."})
+            .define("debug.advanced_logging", false);
 
         BUILDER.pop();
         SPEC = BUILDER.build();

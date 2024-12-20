@@ -1,6 +1,5 @@
 package de.mrjulsen.crn.data.navigation;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -14,7 +13,8 @@ import java.lang.StringBuilder;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.ClientWrapper;
-import de.mrjulsen.crn.client.lang.ELanguage;
+import de.mrjulsen.crn.client.lang.CustomLanguage;
+import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.data.SavedRoutesManager;
 import de.mrjulsen.crn.data.train.ClientTrainStop;
 import de.mrjulsen.crn.data.train.RoutePartProgressState;
@@ -143,7 +143,6 @@ public class ClientRoute extends Route implements AutoCloseable, IListenable<Cli
     private static final String keyNotificationConnectionCanceled = "gui.createrailwaysnavigator.route_overview.journey_interrupted";
 
     private final Map<String, IdentityHashMap<Object, Consumer<ListenerNotificationData>>> listeners = new HashMap<>();
-    private final Map<NotificationType, Collection<Runnable>> queuedNotifications = new HashMap<>();
 
     private final long id = System.nanoTime();
     private final Map<UUID, ClientRoutePart> listenerIds = new HashMap<>();
@@ -181,8 +180,10 @@ public class ClientRoute extends Route implements AutoCloseable, IListenable<Cli
         super(parts, realTimeTracker);
         this.currentPart = getFirstClientPart();
 
+        if (ModCommonConfig.ADVANCED_LOGGING.get()) CreateRailwaysNavigator.LOGGER.info("Created new " + this);
+
         if (!realTimeTracker) return;
-        getClientParts().stream().forEach(x -> listenerIds.put(ClientTrainListener.register(x.getSessionId(), x.getTrainId(), x::update), x));
+        getClientParts().forEach(x -> listenerIds.put(ClientTrainListener.register(x.getSessionId(), x.getTrainId(), x::update), x));
         CRNEventsManager.getEvent(DefaultTrainDataRefreshEvent.class).register(CreateRailwaysNavigator.MOD_ID + "_" + id, this::update);
         addListener();
         
@@ -231,10 +232,10 @@ public class ClientRoute extends Route implements AutoCloseable, IListenable<Cli
             if (currentPartIndex > 0) return;
             
             sendNotification(
-                ELanguage.translate(keyNotificationJourneyBeginsTitle, getEnd().getClientTag().tagName()),
+                CustomLanguage.translate(keyNotificationJourneyBeginsTitle, getEnd().getClientTag().tagName()),
                 getStart().getRealTimeStationTag().info().isPlatformKnown() ?
-                    ELanguage.translate(keyNotificationJourneyBeginsWithPlatform, getStart().getTrainDisplayName(), getStart().getDisplayTitle(), ModUtils.formatTime(getStart().getScheduledDepartureTime(), false), getStart().getRealTimeStationTag().info().platform()) :
-                    ELanguage.translate(keyNotificationJourneyBegins, getStart().getTrainDisplayName(), getStart().getDisplayTitle(), ModUtils.formatTime(getStart().getScheduledDepartureTime(), false))
+                    CustomLanguage.translate(keyNotificationJourneyBeginsWithPlatform, getStart().getTrainDisplayName(), getStart().getDisplayTitle(), ModUtils.formatTime(getStart().getScheduledDepartureTime(), false), getStart().getRealTimeStationTag().info().platform()) :
+                    CustomLanguage.translate(keyNotificationJourneyBegins, getStart().getTrainDisplayName(), getStart().getDisplayTitle(), ModUtils.formatTime(getStart().getScheduledDepartureTime(), false))
             );
 
             queuedAnnouncements.add(new QueuedAnnouncementEvent(() -> {
@@ -331,14 +332,14 @@ public class ClientRoute extends Route implements AutoCloseable, IListenable<Cli
 
             part.listen(ClientRoutePart.EVENT_SCHEDULE_CHANGED, this, x -> {
                 if (scheduleChangedSent) return;
-                sendNotification(ELanguage.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".route_overview.notification.schedule_changed.title"), ELanguage.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".route_overview.notification.schedule_changed"));
+                sendNotification(CustomLanguage.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".route_overview.notification.schedule_changed.title"), CustomLanguage.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".route_overview.notification.schedule_changed"));
                 notifyListeners(EVENT_SCHEDULE_CHANGED, new ListenerNotificationData(this, x.part(), x.trainStop(), null));
                 scheduleChangedSent = true;
             });
 
             part.listen(ClientRoutePart.EVENT_TRAIN_CANCELLED, this, x -> {
                 if (cancelledSent) return;
-                sendNotification(ELanguage.translate(keyNotificationConnectionCanceledTitle), ELanguage.translate(keyNotificationConnectionCanceled, x.part().getFirstStop().getTrainDisplayName()));
+                sendNotification(CustomLanguage.translate(keyNotificationConnectionCanceledTitle), CustomLanguage.translate(keyNotificationConnectionCanceled, x.part().getFirstStop().getTrainDisplayName()));
                 notifyListeners(EVENT_ANY_TRAIN_CANCELLED, new ListenerNotificationData(this, x.part(), x.trainStop(), null));
                 cancelledSent = true;
             });
@@ -400,7 +401,7 @@ public class ClientRoute extends Route implements AutoCloseable, IListenable<Cli
         getLastClientPart().listen(ClientRoutePart.EVENT_DEPARTURE_FROM_LAST_STOP, this, x -> {
             if (currentPartIndex < parts.size() - 1) return;
             this.progressState = RouteProgressState.AFTER;
-            sendNotification(ELanguage.translate(keyNotificationJourneyCompletedTitle), ELanguage.translate(keyNotificationJourneyCompleted));
+            sendNotification(CustomLanguage.translate(keyNotificationJourneyCompletedTitle), CustomLanguage.translate(keyNotificationJourneyCompleted));
             if (!savedRouteRemoved) {
                 savedRouteRemoved = true;
                 SavedRoutesManager.removeRoute(this);
@@ -461,7 +462,7 @@ public class ClientRoute extends Route implements AutoCloseable, IListenable<Cli
 
         listen(EVENT_ANY_STATION_CHANGED, this, (p) -> {
             if (stationChangedSent) return;
-            sendNotification(ELanguage.translate(keyNotificationPlatformChangedTitle), ELanguage.translate(keyNotificationPlatformChanged,
+            sendNotification(CustomLanguage.translate(keyNotificationPlatformChangedTitle), CustomLanguage.translate(keyNotificationPlatformChanged,
                 p.trainStop().getTrainDisplayName(),
                 p.trainStop().getRealTimeStationTag().info().platform()
             ));
@@ -475,11 +476,11 @@ public class ClientRoute extends Route implements AutoCloseable, IListenable<Cli
         });
 
         listen(EVENT_ANNOUNCE_TRANSFER_ARRIVAL_STATION, this, (p) -> {
-            sendNotification(ELanguage.translate(keyNotificationTransferTitle), getStart().getRealTimeStationTag().info().isPlatformKnown() ? ELanguage.translate(keyNotificationTransferWithPlatform,
+            sendNotification(CustomLanguage.translate(keyNotificationTransferTitle), getStart().getRealTimeStationTag().info().isPlatformKnown() ? CustomLanguage.translate(keyNotificationTransferWithPlatform,
                     p.connection().getDepartureStation().getTrainDisplayName(),
                     p.connection().getDepartureStation().getDisplayTitle(),
                     p.connection().getDepartureStation().getRealTimeStationTag().info().platform()
-                ) : ELanguage.translate(keyNotificationTransfer,
+                ) : CustomLanguage.translate(keyNotificationTransfer,
                     p.connection().getDepartureStation().getTrainDisplayName(),
                     p.connection().getDepartureStation().getDisplayTitle()
                 )
@@ -496,8 +497,8 @@ public class ClientRoute extends Route implements AutoCloseable, IListenable<Cli
     private void queueDelayNotification(ClientTrainStop stop, boolean start) {
         if (shouldShowNotifications()) {
             ClientWrapper.sendCRNNotification(
-                ELanguage.translate(keyNotificationTrainDelayedTitle, stop.getTrainDisplayName(), TimeUtils.parseDurationShort((int)(start ? stop.getDepartureTimeDeviation() : stop.getArrivalTimeDeviation()))),
-                ELanguage.translate(keyNotificationTrainDelayed,
+                CustomLanguage.translate(keyNotificationTrainDelayedTitle, stop.getTrainDisplayName(), TimeUtils.parseDurationShort((int)(start ? stop.getDepartureTimeDeviation() : stop.getArrivalTimeDeviation()))),
+                CustomLanguage.translate(keyNotificationTrainDelayed,
                 ModUtils.formatTime(start ? stop.getRoundedRealTimeDepartureTime() : stop.getRoundedRealTimeArrivalTime(), false),
                 ModUtils.formatTime(start ? stop.getScheduledDepartureTime() : stop.getScheduledArrivalTime(), false),
                 stop.getClientTag().tagName()
@@ -507,13 +508,13 @@ public class ClientRoute extends Route implements AutoCloseable, IListenable<Cli
 
     private void queueConnectionEndangeredNotification(TransferConnection connection) {
         if (shouldShowNotifications()) {
-            ClientWrapper.sendCRNNotification(ELanguage.translate(keyNotificationConnectionEndangeredTitle), ELanguage.translate(keyNotificationConnectionEndangered, connection.getDepartureStation().getTrainDisplayName(), connection.getDepartureStation().getDisplayTitle()));
+            ClientWrapper.sendCRNNotification(CustomLanguage.translate(keyNotificationConnectionEndangeredTitle), CustomLanguage.translate(keyNotificationConnectionEndangered, connection.getDepartureStation().getTrainDisplayName(), connection.getDepartureStation().getDisplayTitle()));
         }
     }
 
     private void queueConnectionMissedNotification(TransferConnection connection) {
         if (shouldShowNotifications()) {
-            ClientWrapper.sendCRNNotification(ELanguage.translate(keyNotificationConnectionMissedTitle), ELanguage.translate(keyNotificationConnectionMissed, connection.getDepartureStation().getTrainDisplayName(), connection.getDepartureStation().getDisplayTitle()));
+            ClientWrapper.sendCRNNotification(CustomLanguage.translate(keyNotificationConnectionMissedTitle), CustomLanguage.translate(keyNotificationConnectionMissed, connection.getDepartureStation().getTrainDisplayName(), connection.getDepartureStation().getDisplayTitle()));
         }
     }
 
@@ -599,15 +600,10 @@ public class ClientRoute extends Route implements AutoCloseable, IListenable<Cli
             }
         }
 
-        getConnections().stream().forEach(x -> x.update());
+        for (TransferConnection connection : getConnections()) {
+            connection.update();
+        }
 
-        // process notifications
-        queuedNotifications.entrySet().forEach(x -> {
-            if (x.getValue().isEmpty()) {
-                return;
-            }
-        });
-        queuedNotifications.clear();
         isCancelled.clear();
         resetSpamBlockers();
     }
@@ -633,20 +629,32 @@ public class ClientRoute extends Route implements AutoCloseable, IListenable<Cli
     
     public void closeAll() {
         listenersCount = 0;
-        listenerIds.entrySet().stream().forEach(x -> ClientTrainListener.unregister(x.getValue().getTrainId(), x.getKey()));
-        getClientParts().stream().forEach(x -> {
-            x.stopListeningAll(this);
-            x.close();
-        });
-        getConnections().stream().forEach(x -> {
-            x.stopListeningAll(this);
-            x.close();
-        });
+        synchronized (listenerIds) {
+            for (Map.Entry<UUID, ClientRoutePart> e : listenerIds.entrySet()) {
+                ClientTrainListener.unregister(e.getValue().getTrainId(), e.getKey());
+            }
+        }
+        List<ClientRoutePart> clientParts = getClientParts();
+        synchronized (clientParts) {
+            for (ClientRoutePart part : clientParts) {
+                part.stopListeningAll(this);
+                part.close();
+            }
+        }
+        List<TransferConnection> connections = getConnections();
+        synchronized (connections) {
+            for (TransferConnection connection : connections) {
+                connection.stopListeningAll(this);
+                connection.close();
+            }
+        }
         stopListeningAll(this);
         CRNEventsManager.getEvent(DefaultTrainDataRefreshEvent.class).unregister(CreateRailwaysNavigator.MOD_ID + "_" + id);
         clearEvents();
         isClosed = true;
-        CreateRailwaysNavigator.LOGGER.info("Route listener closed.");
+        
+        if (ModCommonConfig.ADVANCED_LOGGING.get()) CreateRailwaysNavigator.LOGGER.info("Route listener closed.");
+
     }
 
     public static ClientRoute fromNbt(CompoundTag nbt, boolean realTimeTracker) {
@@ -659,12 +667,6 @@ public class ClientRoute extends Route implements AutoCloseable, IListenable<Cli
     @Override
     public long timeOrderValue() {
         return getStart().getScheduledDepartureTime();
-    }
-
-    private static enum NotificationType {
-        DELAY,
-        CONNECTION_ENDANGERED,
-        CONNECTION_MISSED
     }
 
     public boolean isClosed() {

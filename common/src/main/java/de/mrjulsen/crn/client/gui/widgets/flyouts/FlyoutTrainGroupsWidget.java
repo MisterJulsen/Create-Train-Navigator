@@ -78,7 +78,7 @@ public class FlyoutTrainGroupsWidget<T extends GuiEventListener & Widget & Narra
 
     private void reload(Runnable andThen)  {
         DataAccessor.getFromServer(null, ModAccessorTypes.GET_ALL_TRAIN_GROUPS, (groups) -> {
-            trainGroups.displayData(new ArrayList<>(groups.stream().sorted((a, b) -> a.getGroupName().compareToIgnoreCase(b.getGroupName())).toList()), (group) -> {
+            trainGroups.displayData(new ArrayList<>(groups.stream().sorted((a, b) -> a.getGroupName().compareToIgnoreCase(b.getGroupName())).toList()), (group, i) -> {
                 FlatCheckBox cb = new FlatCheckBox(0, 0, 0, group.getGroupName(), getUserSetting.get().getValue().stream().noneMatch(x -> x.equals(group.getGroupName())), (b) -> {});
                 return cb;
             });

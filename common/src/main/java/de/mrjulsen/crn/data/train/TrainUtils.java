@@ -2,17 +2,17 @@ package de.mrjulsen.crn.data.train;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
-import com.google.common.collect.ImmutableMap;
 import com.simibubi.create.Create;
 import com.simibubi.create.content.decoration.slidingDoor.DoorControlBehaviour;
 import com.simibubi.create.content.trains.GlobalRailwayManager;
@@ -21,6 +21,7 @@ import com.simibubi.create.content.trains.display.GlobalTrainDisplayData.TrainDe
 import com.simibubi.create.content.trains.entity.Train;
 import com.simibubi.create.content.trains.graph.EdgePointType;
 import com.simibubi.create.content.trains.graph.TrackEdge;
+import com.simibubi.create.content.trains.graph.TrackGraph;
 import com.simibubi.create.content.trains.signal.SignalBoundary;
 import com.simibubi.create.content.trains.signal.TrackEdgePoint;
 import com.simibubi.create.content.trains.station.GlobalStation;
@@ -33,6 +34,9 @@ import de.mrjulsen.crn.data.TrainExitSide;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
 import de.mrjulsen.crn.event.ModCommonEvents;
 import de.mrjulsen.crn.data.navigation.TrainSchedule;
+import de.mrjulsen.mcdragonlib.config.ECachingPriority;
+import de.mrjulsen.mcdragonlib.data.Cache;
+import de.mrjulsen.mcdragonlib.data.MapCache;
 import de.mrjulsen.mcdragonlib.data.Single.MutableSingle;
 import de.mrjulsen.mcdragonlib.util.MathUtils;
 import net.minecraft.core.BlockPos;
@@ -42,6 +46,82 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 public final class TrainUtils {
+
+    private static final Cache<Collection<GlobalStation>> allStationsCache = new Cache<>(() -> {
+        final Collection<GlobalStation> stations = new ArrayList<>();
+        getRailwayManager().trackNetworks.forEach((uuid, graph) -> {
+            Collection<GlobalStation> foundStations = graph.getPoints(EdgePointType.STATION);
+            stations.addAll(foundStations);
+        });
+        return stations;
+    }, ECachingPriority.LOWEST);
+
+    private static final Cache<Set<SignalBoundary>> allSignalsCache = new Cache<>(() -> {
+        Set<SignalBoundary> signals = new HashSet<>();
+        for (TrackGraph graph : getRailwayManager().trackNetworks.values()) {
+            signals.addAll(graph.getPoints(EdgePointType.SIGNAL));
+        }
+        return signals;
+    }, ECachingPriority.LOWEST);
+
+    private static final MapCache<Set<Train>, StationTag, StationTag> departingTrainsAtTagCache = new MapCache<>((station) -> {
+        Set<Train> trains = new HashSet<>();
+        for (Map.Entry<String, Collection<TrainDeparturePrediction>> e : GlobalTrainDisplayData.statusByDestination.entrySet()) {
+            if (!station.contains(e.getKey())) {
+                continue;
+            }
+
+            for (TrainDeparturePrediction pred : e.getValue()) {
+                trains.add(pred.train);
+            }
+        }
+        return trains;
+    }, StationTag::hashCode, ECachingPriority.LOWEST);
+
+    private static final MapCache<Set<Train>, String, String> departingTrainsAtStationCache = new MapCache<>((station) -> {
+        Set<Train> trains = new HashSet<>();
+        for (Map.Entry<String, Collection<TrainDeparturePrediction>> e : GlobalTrainDisplayData.statusByDestination.entrySet()) {
+            if (!station.equals(e.getKey())) {
+                continue;
+            }
+
+            for (TrainDeparturePrediction pred : e.getValue()) {
+                trains.add(pred.train);
+            }
+        }
+        return trains;
+    }, String::hashCode, ECachingPriority.LOWEST);
+    
+    private static record DeparturesFromTagContext(StationTag station, UUID selfTrain) {
+        @Override
+        public final int hashCode() {
+            return Objects.hash(station, selfTrain);
+        }
+    }    
+    private static final MapCache<List<TrainStop>, DeparturesFromTagContext, DeparturesFromTagContext> departuresAtTagCache = new MapCache<>((context) -> {
+        return getDeparturesAt(x -> x.getStationTag().equals(context.station()), context.selfTrain());
+    }, DeparturesFromTagContext::hashCode, ECachingPriority.LOWEST);
+    
+    private static record DeparturesFromStationContext(String station, UUID selfTrain) {
+        @Override
+        public final int hashCode() {
+            return Objects.hash(station, selfTrain);
+        }
+    }    
+    private static final MapCache<List<TrainStop>, DeparturesFromStationContext, DeparturesFromStationContext> departuresAtStationCache = new MapCache<>((context) -> {
+        return getDeparturesAt(x -> TrainUtils.stationMatches(x.getStationName(), context.station()), context.selfTrain());
+    }, DeparturesFromStationContext::hashCode, ECachingPriority.LOWEST);
+
+    public static void refreshCache() {
+        allStationsCache.clear();
+        allSignalsCache.clear();
+        departingTrainsAtTagCache.clearAll();
+        departingTrainsAtStationCache.clearAll();
+        departuresAtTagCache.clearAll();
+        departuresAtStationCache.clearAll();
+    }
+
+    private TrainUtils() {}
     
     public static GlobalRailwayManager getRailwayManager() {
         return Create.RAILWAYS;
@@ -56,7 +136,12 @@ public final class TrainUtils {
     }    
 
     public static boolean isStationKnown(String station) {
-        return allPredictionsRaw().keySet().stream().anyMatch(x -> TrainUtils.stationMatches(station, x));
+        for (String stationKey : allPredictionsRaw().keySet()) {
+            if (TrainUtils.stationMatches(station, stationKey)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -64,12 +149,7 @@ public final class TrainUtils {
      * @return a list containing all track stations.
      */
     public static Collection<GlobalStation> getAllStations() {        
-        final Collection<GlobalStation> stations = new ArrayList<>();
-        getRailwayManager().trackNetworks.forEach((uuid, graph) -> {
-            Collection<GlobalStation> foundStations = graph.getPoints(EdgePointType.STATION);
-            stations.addAll(foundStations);
-        });
-        return stations;
+        return allStationsCache.get();
     }
 
     public static Optional<Train> getTrain(UUID trainId) { 
@@ -81,27 +161,37 @@ public final class TrainUtils {
     }
 
     public static Set<Train> getTrains(boolean onlyValid) {
-        return new HashSet<>(getRailwayManager().trains.values().stream().filter(x -> !onlyValid || isTrainValid(x)).toList());
+        Set<Train> trains = new HashSet<>();
+        for (Train train : getRailwayManager().trains.values()) {
+            if (onlyValid && !isTrainValid(train)) {
+                continue;
+            }
+            trains.add(train);
+        }
+        return trains;
     }
 
-    public static Set<SignalBoundary> getAllSignals() {
-        return new HashSet<>(getRailwayManager().trackNetworks.values().stream().flatMap(x -> x.getPoints(EdgePointType.SIGNAL).stream()).toList());
+    public static Set<SignalBoundary> getAllSignals() {        
+        return allSignalsCache.get();
     }
 
     public static Set<Train> getDepartingTrainsAt(StationTag station) {
-        return ImmutableMap.copyOf(GlobalTrainDisplayData.statusByDestination).entrySet().stream().filter(x -> station.contains(x.getKey())).flatMap(x -> x.getValue().stream()).map(x -> x.train).collect(Collectors.toSet());
+        return departingTrainsAtTagCache.get(station, station);
     }
 
     public static Set<Train> getDepartingTrainsAt(String station) {
-        return ImmutableMap.copyOf(GlobalTrainDisplayData.statusByDestination).entrySet().stream().filter(x -> station.equals(x.getKey())).flatMap(x -> x.getValue().stream()).map(x -> x.train).collect(Collectors.toSet());
+        return departingTrainsAtStationCache.get(station, station);
     }
 
+
     public static List<TrainStop> getDeparturesAt(StationTag station, UUID selfTrain) {
-        return getDeparturesAt(x -> x.getStationTag().equals(station), selfTrain);
+        DeparturesFromTagContext context = new DeparturesFromTagContext(station, selfTrain);
+        return departuresAtTagCache.get(context, context);
     }
 
     public static List<TrainStop> getDeparturesAtStationName(String stationName, UUID selfTrain) {
-        return getDeparturesAt(x -> TrainUtils.stationMatches(x.getStationName(), stationName), selfTrain);
+        DeparturesFromStationContext context = new DeparturesFromStationContext(stationName, selfTrain);
+        return departuresAtStationCache.get(context, context);
     }
 
     public static List<TrainStop> getDeparturesAt(Predicate<TrainPrediction> stationFilter, UUID selfTrain) {
@@ -111,28 +201,39 @@ public final class TrainUtils {
             selfSchedule.setFirst(new TrainSchedule(TrainListener.data.containsKey(x.id) ? TrainListener.data.get(x.id).getSessionId() : new UUID(0, 0), x));
         });
         
-        List<TrainStop> list = TrainListener.data.values().stream()
-            .filter(x -> !x.getTrainId().equals(selfTrain) && TrainUtils.isTrainUsable(x.getTrain()))
-            .flatMap(x -> x.getPredictions().stream().filter(stationFilter))
-            .map(TrainStop::new)
-            .filter(x -> {
-                if (selfSchedule.getFirst() != null) {
-                    return true;
+        List<TrainStop> stops = new ArrayList<>();
+        for (TrainData data : TrainListener.data.values()) {
+
+            if (data.getTrainId().equals(selfTrain) || !TrainUtils.isTrainUsable(data.getTrain())) {
+                continue;
+            }            
+
+            for (TrainPrediction pred : data.getPredictions()) {
+                if (!stationFilter.test(pred)) {
+                    continue;
                 }
-                Optional<Train> train = TrainUtils.getTrain(x.getTrainId());
-                if (!train.isPresent()) {
-                    return false;
-                }              
-                TrainSchedule sched = new TrainSchedule(TrainListener.data.containsKey(train.get().id) ? TrainListener.data.get(train.get().id).getSessionId() : new UUID(0, 0), train.get());
-                return !sched.isEqual(selfSchedule.getFirst());
-            })
-            .sorted((a, b) -> Long.compare(a.getScheduledDepartureTime(), b.getScheduledDepartureTime()))
-            .toList();
+
+                TrainStop stop = new TrainStop(pred);
+                if (selfSchedule.getFirst() == null) {
+                    Optional<Train> train = TrainUtils.getTrain(stop.getTrainId());
+                    if (!train.isPresent()) {
+                        continue;
+                    }
+                    TrainSchedule sched = new TrainSchedule(TrainListener.data.containsKey(train.get().id) ? TrainListener.data.get(train.get().id).getSessionId() : new UUID(0, 0), train.get());
+                    if (sched.isEqual(selfSchedule.getFirst())) {
+                        continue;
+                    }
+                }
+                stops.add(stop);
+            }
+
+            Collections.sort(stops, (a, b) -> Long.compare(a.getScheduledDepartureTime(), b.getScheduledDepartureTime()));
+        }
 
         List<TrainStop> results = new ArrayList<>();
         Set<UUID> usedTrains = new HashSet<>();
         usedTrains.add(selfTrain);
-        for (TrainStop stop : list) {
+        for (TrainStop stop : stops) {
             if (!TrainListener.data.containsKey(stop.getTrainId())) continue;
             TrainData data = TrainListener.data.get(stop.getTrainId());
             TrainTravelSection section = data.getSectionByIndex(stop.getSectionIndex());
@@ -150,12 +251,38 @@ public final class TrainUtils {
     }
 
     public static Set<Train> isSignalOccupied(UUID signalId, Set<UUID> excludedTrains) {
-        Optional<SignalBoundary> signal = getAllSignals().stream().filter(x -> x.getId().equals(signalId)).findFirst();
+        Optional<SignalBoundary> signal = Optional.empty();
+        for (SignalBoundary s : getAllSignals()) {
+            if (s.getId().equals(signalId)) {
+                signal = Optional.of(s);
+                break;
+            }
+        }
         if (!signal.isPresent()) {
             return Set.of();
         }
 
-        Set<Train> occupyingTrains = getTrains(false).stream().filter(x -> !excludedTrains.contains(x.id) && x.occupiedSignalBlocks.keySet().stream().anyMatch(y -> y.equals(signal.get().groups.getFirst()) || y.equals(signal.get().groups.getSecond()))).collect(Collectors.toSet());
+        Set<Train> occupyingTrains = new HashSet<>();
+        for (Train train : getTrains(false)) {
+            if (excludedTrains.contains(train.id)) {
+                continue;
+            }
+
+            boolean isOccupyingSignal = false;
+            for (UUID occupiedSignal : train.occupiedSignalBlocks.keySet()) {
+                if (occupiedSignal.equals(signal.get().groups.getFirst()) || occupiedSignal.equals(signal.get().groups.getSecond())) {
+                    isOccupyingSignal = true;
+                    break;
+                }
+            }
+
+            if (!isOccupyingSignal) {
+                continue;
+            }
+
+            occupyingTrains.add(train);
+        }
+
         return occupyingTrains;
     }
 

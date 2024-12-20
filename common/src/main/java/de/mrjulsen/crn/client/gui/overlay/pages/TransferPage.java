@@ -2,7 +2,7 @@ package de.mrjulsen.crn.client.gui.overlay.pages;
 
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.overlay.pages.RouteOverviewPage.RoutePathIcons;
-import de.mrjulsen.crn.client.lang.ELanguage;
+import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.data.StationTag.StationInfo;
 import de.mrjulsen.crn.data.navigation.ClientRoute;
 import de.mrjulsen.crn.data.navigation.TransferConnection;
@@ -33,12 +33,12 @@ public class TransferPage extends AbstractRouteDetailsPage {
         StationInfo info = connection.getDepartureStation().getRealTimeStationTag().info();
         this.messageLabel = MultiLineLabel.create(font,
         info.platform() == null || info.platform().isBlank() ?
-        ELanguage.translate(keyTransfer,
-            connection.getDepartureStation().getTrainName(),
+        CustomLanguage.translate(keyTransfer,
+            connection.getDepartureStation().getTrainDisplayName(),
             terminus
         ) : 
-        ELanguage.translate(keyTransferWithPlatform,
-        connection.getDepartureStation().getTrainName(),
+        CustomLanguage.translate(keyTransferWithPlatform,
+        connection.getDepartureStation().getTrainDisplayName(),
             terminus,
             info.platform()
         ), width - (15 + ModGuiIcons.ICON_SIZE));
@@ -59,7 +59,7 @@ public class TransferPage extends AbstractRouteDetailsPage {
         // Title
         ModGuiIcons.WALK.render(graphics, 5, y + 3);        
         long transferTime = connection.getDepartureStation().getRealTimeDepartureTime() - DragonLib.getCurrentWorldTime();
-        GuiUtils.drawString(graphics, font, 10 + ModGuiIcons.ICON_SIZE, y + 3 + ModGuiIcons.ICON_SIZE / 2 - font.lineHeight / 2, ELanguage.translate(keyScheduleTransfer).append(" ").append(transferTime > 0 ? TextUtils.text(TimeUtils.parseDurationShort((int)transferTime)) : ELanguage.translate(keyTimeNow)).withStyle(ChatFormatting.BOLD), 0xFFFFFFFF, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, 10 + ModGuiIcons.ICON_SIZE, y + 3 + ModGuiIcons.ICON_SIZE / 2 - font.lineHeight / 2, CustomLanguage.translate(keyScheduleTransfer).append(" ").append(transferTime > 0 ? TextUtils.text(TimeUtils.parseDurationShort((int)transferTime)) : CustomLanguage.translate(keyTimeNow)).withStyle(ChatFormatting.BOLD), 0xFFFFFFFF, EAlignment.LEFT, false);
         y += 5 + ModGuiIcons.ICON_SIZE;
         
         // Details

@@ -83,7 +83,7 @@ public class TrainStationClockBlock extends Block implements IWrenchable, IBE<Tr
 		}
 
 		if (pLevel.isClientSide) {
-            pPlayer.displayClientMessage(TextUtils.translate("gui.createrailwaysnavigator.time", TimeUtils.parseTime((int)(pLevel.getDayTime() % DragonLib.TICKS_PER_DAY + DragonLib.DAYTIME_SHIFT), ModClientConfig.TIME_FORMAT.get())), true);
+            pPlayer.displayClientMessage(TextUtils.translate("gui.createrailwaysnavigator.time", TimeUtils.parseTime((int)(pLevel.getDayTime() % DragonLib.ticksPerDay() + DragonLib.daytimeShift()), ModClientConfig.TIME_FORMAT.get())), true);
         }
         return InteractionResult.SUCCESS;
     }
