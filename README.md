@@ -17,7 +17,7 @@ This mod adds a new item, the Create Railways Navigator, which is inspired by th
 - English
 - German
 - Dutch (by TheSatanicFlame)
-- Polish (by Slasherss)
+- Polish (by Stacode, Slasherss)
 - Chinese (simplified) (by Mingshuai Zhu, iaddda)
 - Saxon (DE) (by PULZ418)
 - Bavarian (DE)
