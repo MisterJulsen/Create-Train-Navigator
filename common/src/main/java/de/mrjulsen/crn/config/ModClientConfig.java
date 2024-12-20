@@ -28,12 +28,12 @@ public class ModClientConfig {
         BUILDER.push("Create Railways Navigator Config");
 
         /* CONFIGS */
-        NEXT_STOP_ANNOUNCEMENT = BUILDER.comment(new String[] {"[in Ticks]", "The next stop or information about the start of the journey is announced in the specified number of ticks before the scheduled arrival at the next station. (Default: 500, 30 real life seconds)"})
-            .defineInRange("general.next_stop_announcement", 500, 100, 1000);
+        NEXT_STOP_ANNOUNCEMENT = BUILDER.comment(new String[] {"[in Ticks]", "The next stop or information about the start of the journey is announced in the specified number of ticks before the scheduled arrival at the next station. (Default: 600, 30 real life seconds)"})
+            .defineInRange("general.next_stop_announcement", 600, 100, 1000);
         REALTIME_PRECISION_THRESHOLD = BUILDER.comment(new String[] {"[in Ticks]", "This value indicates how accurately the real-time data should be displayed. By default, only deviations above 10 in-game minutes (167 ticks, approx. 8 real life seconds) are displayed. The lower the value, the more accurate the real-time data but also the more often deviations from the schedule occur. (Default: 167, 10 in-game minutes)"})
             .defineInRange("general.realtime_precision_threshold", 167, 1, 1000); 
-        DISPLAY_LEAD_TIME = BUILDER.comment(new String[] {"[in Ticks]", "How early a train should be shown on the display. (Default: 1000, 1 in-game hour)"})
-            .defineInRange("general.display_lead_time", 1000, 100, 24000);
+        DISPLAY_LEAD_TIME = BUILDER.comment(new String[] {"[in Ticks]", "How early a train should be shown on the display. (Default: 1200, 1 real life minute)"})
+            .defineInRange("general.display_lead_time", 1200, 100, 24000);
         OVERLAY_SCALE = BUILDER.comment("Scale of the route overlay UI. (Default: 0.75)")
             .defineInRange("route_overlay.scale", 0.75f, MIN_SCALE, MAX_SCALE);
         ROUTE_NOTIFICATIONS = BUILDER.comment("If active, you will receive short toasts about important events on your trip, e.g. delays, changes, ... (Default: ON)")

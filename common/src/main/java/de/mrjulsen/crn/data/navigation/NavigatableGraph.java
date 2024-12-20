@@ -65,12 +65,14 @@ public class NavigatableGraph {
             addTrain(train, TrainListener.data.get(train.id));
         }
 
-        CreateRailwaysNavigator.LOGGER.info(String.format("Graph generated. Took %sms. Contains %s nodes and %s edges. %s train processed.",
-            System.currentTimeMillis() - startTime,
-            nodesByTag.size(),
-            edgesByTag.values().stream().flatMap(x -> x.values().stream().flatMap(y -> y.stream())).count(),
-            trains.size()
-        ));
+        if (ModCommonConfig.ADVANCED_LOGGING.get()) {
+            CreateRailwaysNavigator.LOGGER.info(String.format("Graph generated. Took %sms. Contains %s nodes and %s edges. %s train processed.",
+                System.currentTimeMillis() - startTime,
+                nodesByTag.size(),
+                edgesByTag.values().stream().flatMap(x -> x.values().stream().flatMap(y -> y.stream())).count(),
+                trains.size()
+            ));
+        }
     }
 
     protected GlobalSettings globalSettings() {
@@ -419,10 +421,12 @@ public class NavigatableGraph {
         int minNumber = routes.stream().mapToInt(x -> x.getTransferCount()).min().orElse(0);
         routes = routes.stream().filter(x -> x.getTransferCount() == minNumber).toList();
         
-        CreateRailwaysNavigator.LOGGER.info(String.format("%s route(s) calculated. Took %sms.",
-            routes.size(),
-            System.currentTimeMillis() - startTime
-        ));
+        if (ModCommonConfig.ADVANCED_LOGGING.get()) {
+            CreateRailwaysNavigator.LOGGER.info(String.format("%s route(s) calculated. Took %sms.",
+                routes.size(),
+                System.currentTimeMillis() - startTime
+            ));
+        }
         return routes.stream().sorted((a, b) -> Long.compare(a.getStart().getScheduledDepartureTime(), b.getStart().getScheduledDepartureTime())).toList();
     }
 

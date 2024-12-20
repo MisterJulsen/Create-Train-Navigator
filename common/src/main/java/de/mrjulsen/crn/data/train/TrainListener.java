@@ -14,6 +14,7 @@ import java.util.Set;
 
 import com.simibubi.create.content.trains.entity.Train;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.data.schedule.INavigationExtension;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
 import de.mrjulsen.crn.event.CRNEventsManager;
@@ -48,49 +49,67 @@ public final class TrainListener {
         // Register Event Listeners
         CRNEventsManager.getEvent(GlobalTrainDisplayDataRefreshEventPre.class).register(CreateRailwaysNavigator.MOD_ID, () -> {
             queueTrainListenerTask(() -> {
-                StationDepartureHistory.cleanUpDepartureHistory();
-                TrainListener.refreshPre();
+                try {
+                    StationDepartureHistory.cleanUpDepartureHistory();
+                    TrainListener.refreshPre();
+                } catch (Exception e) {
+                    DragonLib.LOGGER.error("Cannot run train listener task 'TrainListener#GlobalTrainDisplayDataRefreshEventPre': " + e.getMessage(), e);
+                }
             });
         });
 
         CRNEventsManager.getEvent(GlobalTrainDisplayDataRefreshEventPost.class).register(CreateRailwaysNavigator.MOD_ID, () -> {
-            TrainUtils.refreshCache();
-            queueTrainListenerTask(TrainListener::refreshPost);
+            queueTrainListenerTask(() -> {
+                try {
+                    TrainUtils.refreshCache();
+                    TrainListener.refreshPost();
+                } catch (Exception e) {
+                    DragonLib.LOGGER.error("Cannot run train listener task 'TrainListener#GlobalTrainDisplayDataRefreshEventPost': " + e.getMessage(), e);
+                }
+            });
         });        
         
         CRNEventsManager.getEvent(TrainDestinationChangedEvent.class).register(CreateRailwaysNavigator.MOD_ID, (train, current, next, nextIndex) -> {
         });
         
         CRNEventsManager.getEvent(TotalDurationTimeChangedEvent.class).register(CreateRailwaysNavigator.MOD_ID, (train, old, newDuration) -> {
-            CreateRailwaysNavigator.LOGGER.warn("The total duration of the train " + train.name.getString() + " (" + train.id + ") has changed from " + old + " Ticks to " + newDuration + " Ticks. This will result in changes to the scheduled departure times!");
+            if (ModCommonConfig.ADVANCED_LOGGING.get()) CreateRailwaysNavigator.LOGGER.info("The total duration of the train " + train.name.getString() + " (" + train.id + ") has changed from " + old + " Ticks to " + newDuration + " Ticks. This will result in changes to the scheduled departure times!");
         });
 
         CRNEventsManager.getEvent(TrainArrivalAndDepartureEvent.class).register(CreateRailwaysNavigator.MOD_ID, (train, station, isArrival) -> {
             queueTrainListenerTask(() -> {
-                if (data.containsKey(train.id)) {
-                    if (isArrival) {
-                        data.get(train.id).reachDestination(DragonLib.getCurrentWorldTime(), ((ScheduleRuntimeAccessor)train.runtime).crn$getTicksInTransit());
-                    } else {
-                        data.get(train.id).leaveDestination();
+                try {
+                    if (data.containsKey(train.id) && train.runtime != null) {
+                        if (isArrival) {
+                            data.get(train.id).reachDestination(DragonLib.getCurrentWorldTime(), ((ScheduleRuntimeAccessor)train.runtime).crn$getTicksInTransit());
+                        } else {
+                            data.get(train.id).leaveDestination();
+                        }
                     }
-                }
-
-                if (!isArrival && !((INavigationExtension)(Object)train.navigation).isDelayedWaitConditionPending()) {
-                    // If not checking whether a delayed condition is pending, the train would block itself.
-                    StationDepartureHistory.updateDepartureHistory(train, station.name);
-                }
+    
+                    if (!isArrival && train.navigation != null && station.isPresent() && !((INavigationExtension)(Object)train.navigation).isDelayedWaitConditionPending()) {
+                        // If not checking whether a delayed condition is pending, the train would block itself.
+                        StationDepartureHistory.updateDepartureHistory(train, station.get().name);
+                    }
+                } catch (Exception e) {
+                    DragonLib.LOGGER.error("Cannot run train listener task 'TrainListener#TrainArrivalAndDepartureEvent': " + e.getMessage(), e);
+                }                
             });
         });
         
         CRNEventsManager.getEvent(ScheduleResetEvent.class).register(CreateRailwaysNavigator.MOD_ID, (train, soft) -> {
             queueTrainListenerTask(() -> {
-                if (data.containsKey(train.id)) {
-                    TrainData trainData = data.get(train.id);
-                    if (soft) {
-                        trainData.resetPredictions();
-                    } else {
-                        trainData.hardResetPredictions();
+                try {
+                    if (data.containsKey(train.id)) {
+                        TrainData trainData = data.get(train.id);
+                        if (soft) {
+                            trainData.resetPredictions();
+                        } else {
+                            trainData.hardResetPredictions();
+                        }
                     }
+                } catch (Exception e) {
+                    DragonLib.LOGGER.error("Cannot run train listener task 'TrainListener#ScheduleResetEvent': " + e.getMessage(), e);
                 }
             });
         });
@@ -100,13 +119,17 @@ public final class TrainListener {
         });
         
         CRNEventsManager.getEvent(CreateTrainPredictionEvent.class).register(CreateRailwaysNavigator.MOD_ID, (train, schedule, predictables, index, stayDuration, minStayDuration, prediction) -> {
-            queueTrainListenerTask(() -> {                
-                ScheduleRuntimeAccessor accessor = (ScheduleRuntimeAccessor)(Object)schedule;
-                UUID trainId = accessor.crn$getTrain().id;
-                if (data.containsKey(trainId) && prediction != null) {
-                    TrainData trainData = data.get(trainId);
-                    TrainPrediction pred = trainData.setPredictionData(index, schedule.currentEntry, schedule.getSchedule().entries.size(), stayDuration, minStayDuration, accessor.crn$predictionTicks().get(index), prediction);
-                    predictables.values().forEach(x -> x.predictForStation(trainData, pred, schedule, index, accessor.crn$getTrain()));
+            queueTrainListenerTask(() -> {         
+                try {
+                    ScheduleRuntimeAccessor accessor = (ScheduleRuntimeAccessor)(Object)schedule;
+                    UUID trainId = accessor.crn$getTrain().id;
+                    if (data.containsKey(trainId) && prediction != null) {
+                        TrainData trainData = data.get(trainId);
+                        TrainPrediction pred = trainData.setPredictionData(index, schedule.currentEntry, schedule.getSchedule().entries.size(), stayDuration, minStayDuration, accessor.crn$predictionTicks().get(index), prediction);
+                        predictables.values().forEach(x -> x.predictForStation(trainData, pred, schedule, index, accessor.crn$getTrain()));
+                    }
+                } catch (Exception e) {
+                    DragonLib.LOGGER.error("Cannot run train listener task 'TrainListener#CreateTrainPredictionEvent': " + e.getMessage(), e);
                 }
             });
         });

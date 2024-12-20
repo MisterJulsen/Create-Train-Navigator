@@ -14,6 +14,7 @@ import java.util.HashMap;
 import com.google.common.collect.ImmutableList;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.data.train.ClientTrainStop;
 import de.mrjulsen.crn.data.train.RoutePartProgressState;
 import de.mrjulsen.crn.data.train.TrainStop;
@@ -272,7 +273,7 @@ public class ClientRoutePart extends RoutePart implements ITrainListenerClient<C
         }
 
         if (isCancelled()) {
-            CreateRailwaysNavigator.LOGGER.info("Train got cancelled. Closing route...");
+            if (ModCommonConfig.ADVANCED_LOGGING.get()) CreateRailwaysNavigator.LOGGER.info("Train got cancelled. Closing route...");
             notifyListeners(EVENT_TRAIN_CANCELLED, new ListenerNotificationData(this, nextStop));
             close();
         }
@@ -304,7 +305,6 @@ public class ClientRoutePart extends RoutePart implements ITrainListenerClient<C
             }
         }
         stopListeningAll(this);
-        CreateRailwaysNavigator.LOGGER.info("CLOSED " + this);
 
     }
 
