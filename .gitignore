@@ -9,12 +9,13 @@ out/
 output/
 bin/
 libs/
+doc/
 
 .classpath
 .project
 .idea/
 classes/
 .metadata
-.vscode
 .settings
 *.launch
+.vscode/settings.json

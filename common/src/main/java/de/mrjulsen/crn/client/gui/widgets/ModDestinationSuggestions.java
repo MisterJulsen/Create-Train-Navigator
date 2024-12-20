@@ -6,7 +6,7 @@ import java.util.List;
 import com.mojang.brigadier.context.StringRange;
 import com.mojang.brigadier.suggestion.Suggestion;
 
-import de.mrjulsen.crn.data.TrainStationAlias;
+import de.mrjulsen.crn.data.StationTag;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.EditBox;
@@ -15,7 +15,7 @@ import net.minecraft.util.Mth;
 
 public class ModDestinationSuggestions extends ModCommandSuggestions {
 
-	private List<TrainStationAlias> viableStations;
+	private List<StationTag> viableStations;
 	private String previous = "<>";
 	private Font font;
 	private boolean active;
@@ -23,7 +23,7 @@ public class ModDestinationSuggestions extends ModCommandSuggestions {
 	private List<Suggestion> currentSuggestions;
 	private int yOffset;
 
-	public ModDestinationSuggestions(Minecraft pMinecraft, Screen pScreen, EditBox pInput, Font pFont, List<TrainStationAlias> viableStations, int yOffset) {
+	public ModDestinationSuggestions(Minecraft pMinecraft, Screen pScreen, EditBox pInput, Font pFont, List<StationTag> viableStations, int yOffset) {
 		super(pMinecraft, pScreen, pInput, pFont, true, true, 0, 7, false, 0xee_303030);
 		this.font = pFont;
 		this.viableStations = viableStations;
@@ -53,8 +53,8 @@ public class ModDestinationSuggestions extends ModCommandSuggestions {
 
 		previous = value;
 		currentSuggestions = viableStations.stream()
-			.filter(ia -> !ia.getAliasName().get().equals(value) && ia.getAliasName().get().toLowerCase().startsWith(value.toLowerCase()))
-			.map(s -> new Suggestion(new StringRange(0, s.getAliasName().get().length()), s.getAliasName().get()))
+			.filter(ia -> !ia.getTagName().get().equals(value) && ia.getTagName().get().toLowerCase().startsWith(value.toLowerCase()))
+			.map(s -> new Suggestion(new StringRange(0, s.getTagName().get().length()), s.getTagName().get()))
 			.toList();
 
 		showSuggestions(false);

@@ -28,29 +28,31 @@ import org.jetbrains.annotations.Nullable;
 
 @SuppressWarnings("all")
 public class ModTranslatableComponent implements ComponentContents {
-   public static final Object[] NO_ARGS = new Object[0];
+   private static final Object[] NO_ARGS = new Object[0];
    private static final FormattedText TEXT_PERCENT = FormattedText.of("%");
    private static final FormattedText TEXT_NULL = FormattedText.of("null");
    private final String key;
-   @Nullable
-   private final String fallback;
    private final Object[] args;
    @Nullable
    private Language decomposedWith;
    private List<FormattedText> decomposedParts = ImmutableList.of();
    private static final Pattern FORMAT_PATTERN = Pattern.compile("%(?:(\\d+)\\$)?([A-Za-z%]|$)");
 
-   public ModTranslatableComponent(String key, @Nullable String fallback, Object[] args) {
-      this.key = key;
-      this.fallback = fallback;
-      this.args = args;
+   public ModTranslatableComponent(String string) {
+      this.key = string;
+      this.args = NO_ARGS;
    }
 
-   private void decompose() {
-      Language language = ClientWrapper.getCurrentClientLanguage();
-      if (language != this.decomposedWith) {
-         this.decomposedWith = language;
-         String string = this.fallback != null ? language.getOrDefault(this.key, this.fallback) : language.getOrDefault(this.key);
+   public ModTranslatableComponent(String string, Object... objects) {
+      this.key = string;
+      this.args = objects;
+   }
+
+    private void decompose() {
+        Language language = ClientWrapper.getCurrentClientLanguage();
+        if (language != this.decomposedWith) {
+            this.decomposedWith = language;
+            String string = language.getOrDefault(this.key);
 
          try {
             ImmutableList.Builder<FormattedText> builder = ImmutableList.builder();
@@ -64,61 +66,63 @@ public class ModTranslatableComponent implements ComponentContents {
       }
    }
 
-   private void decomposeTemplate(String formatTemplate, Consumer<FormattedText> consumer) {
-      Matcher matcher = FORMAT_PATTERN.matcher(formatTemplate);
+   private void decomposeTemplate(String string, Consumer<FormattedText> consumer) {
+      Matcher matcher = FORMAT_PATTERN.matcher(string);
 
       int i = 0;
 
-      int j;
+        int j;
       int l;
-      for(j = 0; matcher.find(j); j = l) {
-         int k = matcher.start();
-         l = matcher.end();
-         String string;
-         if (k > j) {
-            string = formatTemplate.substring(j, k);
-            if (string.indexOf(37) != -1) {
-               throw new IllegalArgumentException();
-            }
+      for (j = 0; matcher.find(j); j = l) {
+          int k = matcher.start();
+          l = matcher.end();
+          String string2;
+          if (k > j) {
+              string2 = string.substring(j, k);
+              if (string2.indexOf(37) != -1) {
+                  throw new IllegalArgumentException();
+              }
 
-            consumer.accept(FormattedText.of(string));
-         }
+              consumer.accept(FormattedText.of(string2));
+          }
 
-         string = matcher.group(2);
-         String string2 = formatTemplate.substring(k, l);
-         if ("%".equals(string) && "%%".equals(string2)) {
-            consumer.accept(TEXT_PERCENT);
-         } else {
-            if (!"s".equals(string)) {
-               throw new IllegalArgumentException("Unsupported format: '" + string2 + "'");
-            }
+          string2 = matcher.group(2);
+          String string3 = string.substring(k, l);
+          if ("%".equals(string2) && "%%".equals(string3)) {
+              consumer.accept(TEXT_PERCENT);
+          } else {
+              if (!"s".equals(string2)) {
+                  throw new IllegalArgumentException("Unsupported format: '" + string3 + "'");
+              }
 
-            String string3 = matcher.group(1);
-            int m = string3 != null ? Integer.parseInt(string3) - 1 : i++;
-            consumer.accept(this.getArgument(m));
-         }
+              String string4 = matcher.group(1);
+              int m = string4 != null ? Integer.parseInt(string4) - 1 : i++;
+              if (m < this.args.length) {
+                  consumer.accept(this.getArgument(m));
+              }
+          }
       }
 
-      if (j < formatTemplate.length()) {
-         String string4 = formatTemplate.substring(j);
-         if (string4.indexOf(37) != -1) {
-            throw new IllegalArgumentException();
-         }
+      if (j < string.length()) {
+          String string5 = string.substring(j);
+          if (string5.indexOf(37) != -1) {
+              throw new IllegalArgumentException();
+          }
 
-         consumer.accept(FormattedText.of(string4));
+          consumer.accept(FormattedText.of(string5));
       }
    }
 
-   public final FormattedText getArgument(int index) {
-      if (index >= 0 && index < this.args.length) {
-         Object object = this.args[index];
+   public final FormattedText getArgument(int i) {
+      if (i >= this.args.length) {
+         throw new IllegalArgumentException();
+      } else {
+         Object object = this.args[i];
          if (object instanceof Component) {
             return (Component)object;
          } else {
             return object == null ? TEXT_NULL : FormattedText.of(object.toString());
          }
-      } else {
-         throw new IllegalArgumentException(this.toString());
       }
    }
 
@@ -156,19 +160,19 @@ public class ModTranslatableComponent implements ComponentContents {
       return optional;
    }
 
-   public MutableComponent resolve(@Nullable CommandSourceStack nbtPathPattern, @Nullable Entity entity, int recursionDepth) throws CommandSyntaxException {
+   public MutableComponent resolve(@Nullable CommandSourceStack commandSourceStack, @Nullable Entity entity, int i) throws CommandSyntaxException {
       Object[] objects = new Object[this.args.length];
 
-      for(int i = 0; i < objects.length; ++i) {
-         Object object = this.args[i];
+      for(int j = 0; j < objects.length; ++j) {
+         Object object = this.args[j];
          if (object instanceof Component) {
-            objects[i] = ComponentUtils.updateForEntity(nbtPathPattern, (Component)object, entity, recursionDepth);
+            objects[j] = ComponentUtils.updateForEntity(commandSourceStack, (Component)object, entity, i);
          } else {
-            objects[i] = object;
+            objects[j] = object;
          }
       }
 
-      return MutableComponent.create(new ModTranslatableComponent(this.key, this.fallback, objects));
+      return MutableComponent.create(new ModTranslatableComponent(this.key, objects));
    }
 
    public boolean equals(Object object) {
@@ -177,8 +181,8 @@ public class ModTranslatableComponent implements ComponentContents {
       } else {
          boolean var10000;
          if (object instanceof ModTranslatableComponent) {
-            ModTranslatableComponent translatableContents = (ModTranslatableComponent)object;
-            if (Objects.equals(this.key, translatableContents.key) && Objects.equals(this.fallback, translatableContents.fallback) && Arrays.equals(this.args, translatableContents.args)) {
+            ModTranslatableComponent ModTranslatableComponent = (ModTranslatableComponent)object;
+            if (this.key.equals(ModTranslatableComponent.getKey()) && Arrays.equals(this.args, ModTranslatableComponent.getArgs())) {
                var10000 = true;
                return var10000;
             }
@@ -190,24 +194,18 @@ public class ModTranslatableComponent implements ComponentContents {
    }
 
    public int hashCode() {
-      int i = Objects.hashCode(this.key);
-      i = 31 * i + Objects.hashCode(this.fallback);
+      int i = this.key.hashCode();
       i = 31 * i + Arrays.hashCode(this.args);
       return i;
    }
 
    public String toString() {
       String var10000 = this.key;
-      return "translation{key='" + var10000 + "'" + (this.fallback != null ? ", fallback='" + this.fallback + "'" : "") + ", args=" + Arrays.toString(this.args) + "}";
+      return "translation{key='" + var10000 + "', args=" + Arrays.toString(this.args) + "}";
    }
 
    public String getKey() {
       return this.key;
-   }
-
-   @Nullable
-   public String getFallback() {
-      return this.fallback;
    }
 
    public Object[] getArgs() {

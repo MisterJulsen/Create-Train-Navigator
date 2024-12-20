@@ -38,8 +38,7 @@ dependencies {
 
     modCompileOnly("dev.architectury:architectury-forge:${rootProject.architectury_api_version}")
     modImplementation(include("de.mrjulsen.mcdragonlib:dragonlib-forge:${rootProject.minecraft_version}-${rootProject.dragonlib_version}"))
-    modImplementation("com.electronwill.night-config:toml:3.6.0")
-    
+        
     modImplementation("com.simibubi.create:create-${rootProject.minecraft_version}:${rootProject.create_forge_version}:slim") { transitive = false }
     modImplementation("com.tterrag.registrate:Registrate:${rootProject.registrate_forge_version}")
     modImplementation("com.jozufozu.flywheel:flywheel-forge-${rootProject.minecraft_version}:${rootProject.flywheel_forge_version}")

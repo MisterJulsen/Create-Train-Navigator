@@ -43,4 +43,5 @@ public class CRNPlatformSpecific {
     public static GlobalStation getStationFromBlockEntity(BlockEntity be) {
         throw new AssertionError();
     }
+    
 }

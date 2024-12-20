@@ -8,7 +8,7 @@ import de.mrjulsen.crn.item.NavigatorItem;
 public class ModItems {
 
     static {
-		//CreateRailwaysNavigator.REGISTRATE.setCreativeTab(ModCreativeModeTab.MAIN_TAB.getKey());
+		//CreateRailwaysNavigator.REGISTRATE.creativeModeTab(() -> ModCreativeModeTab.MAIN);
 	}
 
     public static final ItemEntry<NavigatorItem> NAVIGATOR = CreateRailwaysNavigator.REGISTRATE.item("navigator", NavigatorItem::new)
@@ -16,6 +16,6 @@ public class ModItems {
             .tab(ModCreativeModeTab.MAIN_TAB.getKey())
 			.register();
     
-    public static void register() {
+    public static void init() {
     }
 }

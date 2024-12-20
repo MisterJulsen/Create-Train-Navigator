@@ -8,12 +8,16 @@ import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.foundation.block.IBE;
 import com.simibubi.create.foundation.utility.Iterate;
 
-import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
+import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
+import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity.EUpdateReason;
+import de.mrjulsen.crn.block.display.properties.BasicDisplaySettings;
 import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.registry.ModBlockEntities;
-import de.mrjulsen.mcdragonlib.client.ber.IBlockEntityRendererInstance.EUpdateReason;
 import de.mrjulsen.mcdragonlib.data.Pair;
 import de.mrjulsen.mcdragonlib.data.Tripple;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.Direction;
@@ -46,10 +50,13 @@ import net.minecraft.world.level.block.state.StateDefinition.Builder;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.Property;
+import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.ticks.LevelTickAccess;
 
 public abstract class AbstractAdvancedDisplayBlock extends Block implements IWrenchable, IBE<AdvancedDisplayBlockEntity> {
+
+	public static final int DEFAULT_DISPLAY_COLOR = 0xFF404040;
 
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
     
@@ -57,7 +64,7 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 	public static final BooleanProperty DOWN = BooleanProperty.create("down");
 
     public AbstractAdvancedDisplayBlock(Properties properties) {
-        super(properties);
+        super(properties.mapColor(MapColor.METAL));
 
         this.registerDefaultState(this.stateDefinition.any()
             .setValue(UP, false)
@@ -65,6 +72,19 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
             .setValue(FACING, Direction.NORTH)
         );
     }
+	
+	@Environment(EnvType.CLIENT)
+	public static BlockColor getDisplayColor() {
+		return (state, world, pos, layer) -> {
+			if (world.getBlockEntity(pos) instanceof AdvancedDisplayBlockEntity be) {
+				return be.getSettingsAs(BasicDisplaySettings.class).map(x -> {
+					int color = x.getBackColor();
+					return color == 0 ? null : color;
+				}).orElse(DEFAULT_DISPLAY_COLOR);
+			}
+			return DEFAULT_DISPLAY_COLOR;
+		};
+	}
 
     @Override
     public BlockState rotate(BlockState pState, Rotation pRotation) {
@@ -157,7 +177,7 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 		updateNeighbours(pState, pLevel, pPos);
 
 		if (pLevel.isClientSide) {
-			withBlockEntityDo(pLevel, pPos, be -> be.getController().getRenderer().update(pLevel, pPos, pState, be, EUpdateReason.BLOCK_CHANGED));			
+			withBlockEntityDo(pLevel, pPos, be -> be.getController().getRenderer().update(pLevel, pPos, pState, be, EUpdateReason.LAYOUT_CHANGED));			
 		}
 	}
 
@@ -298,7 +318,6 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 
     @Override
     public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHit) {
-        
         ItemStack heldItem = pPlayer.getItemInHand(pHand);
         AdvancedDisplayBlockEntity blockEntity = ((AdvancedDisplayBlockEntity)pLevel.getBlockEntity(pPos)).getController();
 
@@ -306,13 +325,21 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 			DyeColor dye = dyeItem.getDyeColor();        
 			if (dye != null) {
 				pLevel.playSound(null, pPos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
+				int dyeColor = dye == DyeColor.ORANGE ? 0xFFFF9900 : dye.getTextColor();
+				
 				blockEntity.applyToAll(be -> {
-					be.setColor(dye == DyeColor.ORANGE ? 0xFF9900 : dye.getMapColor().col);				
-					be.notifyUpdate();
+					be.getSettingsAs(BasicDisplaySettings.class).ifPresent(x -> {
+						if (pPlayer.isShiftKeyDown()) {
+							x.setBackColor(dyeColor);
+						} else {
+							x.setFontColor(dyeColor);
+						}
+						be.notifyUpdate();
+					});
 				});
 
 				if (pLevel.isClientSide) {
-					blockEntity.getRenderer().update(pLevel, pPos, pState, blockEntity, EUpdateReason.BLOCK_CHANGED);
+					blockEntity.getRenderer().update(pLevel, pPos, pState, blockEntity, EUpdateReason.LAYOUT_CHANGED);
 				}
 
 				return InteractionResult.SUCCESS;
@@ -327,7 +354,7 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
             });
 			
 			if (pLevel.isClientSide) {
-				blockEntity.getRenderer().update(pLevel, pPos, pState, blockEntity, EUpdateReason.BLOCK_CHANGED);
+				blockEntity.getRenderer().update(pLevel, pPos, pState, blockEntity, EUpdateReason.LAYOUT_CHANGED);
 			}
 
             return InteractionResult.SUCCESS;

@@ -10,7 +10,7 @@ architectury {
 
 allprojects {
     group = rootProject.maven_group
-    version = "$rootProject.minecraft_version-$rootProject.mod_version"
+    version = "$rootProject.minecraft_version${rootProject.release_channel != "release" ? "-$rootProject.release_channel" : ""}-$rootProject.mod_version"
 }
 
 subprojects {
@@ -23,33 +23,25 @@ subprojects {
     }
 
     repositories {
+        maven { url = "file://${System.getProperty('user.home')}/.m2/github/modsrepo/maven" } // Local
         maven { url = "https://raw.githubusercontent.com/MisterJulsen/modsrepo/main/maven" } // DragonLib
         maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" } // Forge Config API
         maven { url = "https://maven.parchmentmc.org" } // ParchmentMC
         maven { url = "https://maven.terraformersmc.com/" } // ModMenu
+        maven { url = "https://maven.tterrag.com/" } // Flywheel        
         maven { url = "https://maven.shedaniel.me/" } // Cloth Config, REI
         maven { url = "https://maven.blamejared.com/" } // JEI
         maven { url = "https://maven.quiltmc.org/repository/release" } // Quilt Mappings
         maven { url = "https://api.modrinth.com/maven" } // LazyDFU
-        maven { url = "https://maven.terraformersmc.com/releases/" } // Mod Menu
         maven { url = "https://mvn.devos.one/snapshots/" } // Create, Porting Lib, Forge Tags, Milk Lib, Registrate
         maven { url = "https://maven.jamieswhiteshirt.com/libs-release" } // Reach Entity Attributes
         maven { url = "https://jitpack.io/" } // Mixin Extras, Fabric ASM
-        
+        maven { url = "https://maven.tterrag.com/" } // Flywheel
         maven { url = "https://cursemaven.com"
             content {
                 includeGroup "curse.maven"
             }
         }
-          
-        maven { url = "https://maven.tterrag.com/" // Create Forge, Registrate Forge, Flywheel
-            content {
-                includeGroup("com.jozufozu.flywheel")
-                includeGroup("com.tterrag.registrate")
-                includeGroup("com.simibubi.create")
-            }
-        }
-
     }
 
     dependencies {
@@ -58,6 +50,37 @@ subprojects {
             officialMojangMappings()
             parchment("org.parchmentmc.data:parchment-${rootProject.minecraft_version}:${rootProject.parchment_version}@zip")
         }
+    }
+
+    processResources {
+        def expandProps = [
+            "version": version,
+            "minecraft_version": rootProject.minecraft_version,
+            "issues": rootProject.issues,
+            "source": rootProject.source,
+            "license": rootProject.license,
+            "modid": rootProject.archives_name,
+            "display_name": rootProject.display_name,
+            "homepage": rootProject.homepage,
+            "authors": rootProject.authors,
+            "description": rootProject.description,
+            "icon": rootProject.icon,
+            "discord": rootProject.discord,
+            "next_unsupported_minecraft_version": rootProject.next_unsupported_minecraft_version,
+            "dragonlib_version": "$rootProject.minecraft_version-$rootProject.dragonlib_version",
+            "forge_version_int": rootProject.forge_version_int,
+            "fabric_loader_version": rootProject.fabric_loader_version,
+            "java_version": rootProject.java_version,
+            "maven_group": rootProject.maven_group,
+            "create_forge_version": rootProject.create_forge_version,
+            "main_class_name": rootProject.main_class_name,
+            "create_forge_version_dependency": rootProject.create_forge_version_dependency,
+        ]
+        filesMatching(['pack.mcmeta', 'fabric.mod.json', 'META-INF/mods.toml', 'createrailwaysnavigator.mixins.json']) {
+            expand expandProps
+        }
+        inputs.properties(expandProps)
+        exclude ".cache" // Remove cache from generated data
     }
 
     java {
