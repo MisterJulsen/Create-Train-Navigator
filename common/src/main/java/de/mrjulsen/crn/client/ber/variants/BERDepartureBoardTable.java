@@ -360,9 +360,7 @@ public class BERDepartureBoardTable implements AbstractAdvancedDisplayRenderer<D
             ;
         }
         BERLabel platformLabel = components[LineComponent.PLATFORM.i()]
-            .setText(blockEntity.isPlatformFixed() ?
-                TextUtils.empty() :
-                TextUtils.text(stop.getStationData().getStationInfo().platform()))
+            .setText(TextUtils.text(stop.getStationData().getStationInfo().platform()))                
         ;
 
 
