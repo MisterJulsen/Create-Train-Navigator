@@ -1,5 +1,10 @@
 package de.mrjulsen.crn.client.gui.widgets;
 
+import javax.annotation.Nonnull;
+
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.simibubi.create.foundation.gui.AllGuiTextures;
 import com.simibubi.create.foundation.gui.element.ScreenElement;
 import com.simibubi.create.foundation.gui.widget.IconButton;
 
@@ -17,6 +22,20 @@ public class DLCreateIconButton extends IconButton implements IDragonLibWidget {
     public DLCreateIconButton(int x, int y, ScreenElement icon) {
         super(x, y, icon);
     }
+
+    @Override
+	public void renderButton(@Nonnull PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+		if (visible) {
+			isHovered = mouseX >= x && mouseY >= y && mouseX < x + width && mouseY < y + height;
+
+			AllGuiTextures button = !isActive() ? AllGuiTextures.BUTTON_DOWN
+				: isMouseSelected() ? AllGuiTextures.BUTTON_HOVER : AllGuiTextures.BUTTON;
+
+			RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+			drawBg(matrixStack, button);
+			icon.render(matrixStack, x + 1, y + 1);
+		}
+	}
 
     @Override
     public void onFocusChangeEvent(boolean focus) {}

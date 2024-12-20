@@ -12,14 +12,14 @@ import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
 import com.simibubi.create.content.contraptions.MountedStorageManager;
 import com.simibubi.create.content.trains.entity.CarriageContraption;
 
-import de.mrjulsen.crn.block.be.IContraptionBlockEntity;
+import de.mrjulsen.crn.block.blockentity.IContraptionBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 @Mixin(MountedStorageManager.class)
 public class MountedStorageManagerMixin {
 
     @Inject(method = "entityTick", remap = false, at = @At(value = "HEAD"))
-    public void tick$inject(AbstractContraptionEntity entity, CallbackInfo ci) {
+    public void onEntityTick(AbstractContraptionEntity entity, CallbackInfo ci) {
         if (entity.getContraption() instanceof CarriageContraption carriage) {
             Set<BlockEntity> beList = new LinkedHashSet<>();
             beList.addAll(entity.getContraption().maybeInstancedBlockEntities);

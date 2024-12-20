@@ -17,9 +17,9 @@ public class CreateRailwaysNavigatorFabric implements ModInitializer {
         CreateRailwaysNavigator.REGISTRATE.register();
         
         if (Platform.getEnvironment() == Env.CLIENT) {
-            ClientWorldEvents.LOAD.register((mc, level) -> ModExtras.register());
+            ClientWorldEvents.LOAD.register((mc, level) -> ModExtras.init());
         }
-		ServerWorldEvents.LOAD.register((server, level) -> ModExtras.register());
-        ModExtras.register();
+		ServerWorldEvents.LOAD.register((server, level) -> ModExtras.init());
+        ModExtras.init();
     }
 }

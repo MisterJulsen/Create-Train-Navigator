@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import de.mrjulsen.crn.data.EBlockAlignment;
+import de.mrjulsen.crn.block.properties.EBlockAlignment;
 import de.mrjulsen.mcdragonlib.data.Pair;
 import de.mrjulsen.mcdragonlib.data.Tripple;
 import net.minecraft.core.BlockPos;

@@ -32,6 +32,7 @@ public class AdvancedDisplayBlock extends AbstractAdvancedSidedDisplayBlock {
         return Tripple.of(0.0F, 0.0F, 0.0F);
     }
 
+
     @Override
     public boolean isSingleLined() {
         return false;

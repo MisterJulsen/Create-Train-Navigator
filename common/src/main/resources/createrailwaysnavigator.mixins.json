@@ -1,13 +1,25 @@
 {
   "required": true,
-  "package": "de.mrjulsen.crn.mixin",
+  "package": "${maven_group}.mixin",
   "compatibilityLevel": "JAVA_17",
   "minVersion": "0.8",
   "client": [
+    "ScheduleScreenAccessor",
+    "ModularGuiLineBuilderAccessor",
+    "ScheduleScreenMixin",
+    "StationBlockEntityMixin"
   ],
   "mixins": [
-    "ScheduleDataAccessor",
-    "MountedStorageManagerMixin"
+    "ScheduleRuntimeAccessor",
+    "TrainStatusAccessor",
+    "ControlsHandlerMixin",
+    "MountedStorageManagerMixin",
+    "ScheduleRuntimeMixin",
+    "GlobalTrainDisplayDataMixin",
+    "TrainMixin",
+    "ItemMixin",
+    "NavigationMixin",
+    "ScheduleEntryMixin"
   ],
   "injectors": {
     "defaultRequire": 1

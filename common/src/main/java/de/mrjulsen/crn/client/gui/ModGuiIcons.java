@@ -6,6 +6,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.simibubi.create.foundation.gui.AllIcons;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.mcdragonlib.client.render.Sprite;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import net.minecraft.resources.ResourceLocation;
@@ -15,6 +16,7 @@ public enum ModGuiIcons {
     CHECK("check", 1, 0),
     CROSS("cross", 2, 0),
     WARN("warn", 3, 0),
+    IMPORTANT("important", 4, 0),
     
     SETTINGS("settings", 0, 1),
     FILTER("filter", 1, 1),
@@ -46,14 +48,39 @@ public enum ModGuiIcons {
     DETAILED("detailed", 10, 2),
     VERY_DETAILED("very_detailed", 11, 2),
     ARROW_RIGHT("arrow_right", 12, 2),
-    ARROW_LEFT("arrow_left", 13, 2);
+    ARROW_LEFT("arrow_left", 13, 2),
+    REFRESH("refresh", 14, 2),
+    POPUP("refresh", 15, 2),
+
+    USER("user", 0, 3),
+    MAP_PATH("map_path", 1, 3),
+    BOOKMARK_FILLED("bookmark_filled", 2, 3),
+    HELP("help", 3, 3),
+    ROUTE_START("route_start", 4, 3),
+    ROUTE_END("route_end", 5, 3),
+    CALENDAR("calendar", 6, 3),
+    BELL("bell", 7, 3),
+    COLOR_PALETTE("color_palette", 8, 3),
+    TRAIN("train", 9, 3),
+    X("x", 10, 3),
+    CHECKMARK("checkmark", 11, 3),
+    SHARE("share", 12, 3),
+    TEXT("text", 13, 3),
+    WIDTH("width", 14, 3),
+    CARRIAGE_NUMBER("carriage_number", 15, 3),
+
+    COPY("copy", 0, 4),
+    PASTE("paste", 1, 4),
+    TRAIN_INFO("train_info", 2, 4),
+    EXIT("exit", 3, 4),
+    CONNECTIONS("connections", 4, 4);
 
     private String id;
     private int u;
     private int v;
 
     public static final int ICON_SIZE = 16;
-    public static final ResourceLocation ICON_LOCATION = new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/icons.png");;
+    public static final ResourceLocation ICON_LOCATION = new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/icons.png");
 
     ModGuiIcons(String id, int u, int v) {
         this.id = id;
@@ -91,6 +118,10 @@ public enum ModGuiIcons {
 
     public void render(Graphics graphics, int x, int y) {
         GuiUtils.drawTexture(ModGuiIcons.ICON_LOCATION, graphics, x, y, getU(), getV(), ICON_SIZE, ICON_SIZE);
+    }
+    
+    public Sprite getAsSprite(int renderWidth, int renderHeight) {
+        return new Sprite(ICON_LOCATION, 256, 256, getU(), getV(), ICON_SIZE, ICON_SIZE, renderWidth, renderHeight);
     }
 
     public static class ModAllIcons extends AllIcons {

@@ -10,10 +10,12 @@ import com.tterrag.registrate.util.entry.BlockEntry;
 import com.tterrag.registrate.util.nullness.NonNullConsumer;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.block.AbstractAdvancedDisplayBlock;
 import de.mrjulsen.crn.block.AdvancedDisplayBlock;
 import de.mrjulsen.crn.block.AdvancedDisplayBoardBlock;
 import de.mrjulsen.crn.block.AdvancedDisplayHalfPanelBlock;
 import de.mrjulsen.crn.block.AdvancedDisplayPanelBlock;
+import de.mrjulsen.crn.block.AdvancedDisplaySlabBlock;
 import de.mrjulsen.crn.block.AdvancedDisplaySlopedBlock;
 import de.mrjulsen.crn.block.AdvancedDisplaySmallBlock;
 import de.mrjulsen.crn.block.TrainStationClockBlock;
@@ -21,7 +23,7 @@ import de.mrjulsen.crn.block.connected.AdvancedDisplayCTBehaviour;
 import de.mrjulsen.crn.block.connected.AdvancedDisplaySmallCTBehaviour;
 import de.mrjulsen.crn.block.display.AdvancedDisplayTarget;
 import dev.architectury.utils.EnvExecutor;
-import dev.architectury.utils.Env;
+import net.fabricmc.api.EnvType;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.level.block.Block;
 
@@ -33,7 +35,21 @@ public class ModBlocks {
 
 	public static final BlockEntry<AdvancedDisplayBlock> ADVANCED_DISPLAY_BLOCK = CreateRailwaysNavigator.REGISTRATE.block("advanced_display_block", AdvancedDisplayBlock::new)
 		.onRegister(connectedTextures(() -> new AdvancedDisplayCTBehaviour(ClientWrapper.CT_ADVANCED_DISPLAY_ALL)))
+		.onRegister(connectedTextures(() -> new AdvancedDisplayCTBehaviour(ClientWrapper.CT_ADVANCED_DISPLAY_ALL_BORDER)))
 		.addLayer(() -> RenderType::cutout)
+		.color(() -> AbstractAdvancedDisplayBlock::getDisplayColor)
+		.initialProperties(SharedProperties::softMetal)
+		.transform(TagGen.pickaxeOnly())
+		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
+		.item()
+		.tab(() -> ModCreativeModeTab.MAIN)
+		.build()
+		.register();
+	public static final BlockEntry<AdvancedDisplaySlabBlock> ADVANCED_DISPLAY_SLAB = CreateRailwaysNavigator.REGISTRATE.block("advanced_display_slab", AdvancedDisplaySlabBlock::new)
+		.onRegister(connectedTextures(() -> new AdvancedDisplaySmallCTBehaviour(ClientWrapper.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL, ClientWrapper.CT_ADVANCED_DISPLAY_SMALL)))
+		.onRegister(connectedTextures(() -> new AdvancedDisplaySmallCTBehaviour(ClientWrapper.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL_BORDER, ClientWrapper.CT_ADVANCED_DISPLAY_SMALL_BORDER)))
+		.addLayer(() -> RenderType::cutout)
+		.color(() -> AbstractAdvancedDisplayBlock::getDisplayColor)
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
 		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
@@ -43,7 +59,9 @@ public class ModBlocks {
 
     public static final BlockEntry<AdvancedDisplayBoardBlock> ADVANCED_DISPLAY = CreateRailwaysNavigator.REGISTRATE.block("advanced_display", AdvancedDisplayBoardBlock::new)
 		.onRegister(connectedTextures(() -> new AdvancedDisplayCTBehaviour(ClientWrapper.CT_ADVANCED_DISPLAY)))
+		.onRegister(connectedTextures(() -> new AdvancedDisplayCTBehaviour(ClientWrapper.CT_ADVANCED_DISPLAY_BORDER)))
 		.addLayer(() -> RenderType::cutout)
+		.color(() -> AbstractAdvancedDisplayBlock::getDisplayColor)
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
 		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
@@ -53,7 +71,9 @@ public class ModBlocks {
 
 	public static final BlockEntry<AdvancedDisplaySmallBlock> ADVANCED_DISPLAY_SMALL = CreateRailwaysNavigator.REGISTRATE.block("advanced_display_small", AdvancedDisplaySmallBlock::new)
 		.onRegister(connectedTextures(() -> new AdvancedDisplaySmallCTBehaviour(ClientWrapper.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL, ClientWrapper.CT_ADVANCED_DISPLAY_SMALL)))
+		.onRegister(connectedTextures(() -> new AdvancedDisplaySmallCTBehaviour(ClientWrapper.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL_BORDER, ClientWrapper.CT_ADVANCED_DISPLAY_SMALL_BORDER)))
 		.addLayer(() -> RenderType::cutout)
+		.color(() -> AbstractAdvancedDisplayBlock::getDisplayColor)
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
 		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
@@ -62,8 +82,10 @@ public class ModBlocks {
 		.register();
 
 	public static final BlockEntry<AdvancedDisplayPanelBlock> ADVANCED_DISPLAY_PANEL = CreateRailwaysNavigator.REGISTRATE.block("advanced_display_panel", AdvancedDisplayPanelBlock::new)
-		.onRegister(connectedTextures(() -> new AdvancedDisplayCTBehaviour(ClientWrapper.CT_ADVANCED_DISPLAY)))
+	.onRegister(connectedTextures(() -> new AdvancedDisplayCTBehaviour(ClientWrapper.CT_ADVANCED_DISPLAY)))
+	.onRegister(connectedTextures(() -> new AdvancedDisplayCTBehaviour(ClientWrapper.CT_ADVANCED_DISPLAY_BORDER)))
 		.addLayer(() -> RenderType::cutout)
+		.color(() -> AbstractAdvancedDisplayBlock::getDisplayColor)
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
 		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
@@ -72,8 +94,10 @@ public class ModBlocks {
 		.register();
 
 	public static final BlockEntry<AdvancedDisplayHalfPanelBlock> ADVANCED_DISPLAY_HALF_PANEL = CreateRailwaysNavigator.REGISTRATE.block("advanced_display_half_panel", AdvancedDisplayHalfPanelBlock::new)
-		.onRegister(connectedTextures(() -> new AdvancedDisplaySmallCTBehaviour(ClientWrapper.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL, ClientWrapper.CT_ADVANCED_DISPLAY_SMALL)))
+	.onRegister(connectedTextures(() -> new AdvancedDisplaySmallCTBehaviour(ClientWrapper.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL, ClientWrapper.CT_ADVANCED_DISPLAY_SMALL)))
+	.onRegister(connectedTextures(() -> new AdvancedDisplaySmallCTBehaviour(ClientWrapper.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL_BORDER, ClientWrapper.CT_ADVANCED_DISPLAY_SMALL_BORDER)))
 		.addLayer(() -> RenderType::cutout)
+		.color(() -> AbstractAdvancedDisplayBlock::getDisplayColor)
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
 		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
@@ -82,8 +106,10 @@ public class ModBlocks {
 		.register();
 
 	public static final BlockEntry<AdvancedDisplaySlopedBlock> ADVANCED_DISPLAY_SLOPED = CreateRailwaysNavigator.REGISTRATE.block("advanced_display_sloped", AdvancedDisplaySlopedBlock::new)
-		.onRegister(connectedTextures(() -> new AdvancedDisplaySmallCTBehaviour(ClientWrapper.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL, ClientWrapper.CT_ADVANCED_DISPLAY_SMALL)))
+	.onRegister(connectedTextures(() -> new AdvancedDisplaySmallCTBehaviour(ClientWrapper.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL, ClientWrapper.CT_ADVANCED_DISPLAY_SMALL)))
+	.onRegister(connectedTextures(() -> new AdvancedDisplaySmallCTBehaviour(ClientWrapper.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL_BORDER, ClientWrapper.CT_ADVANCED_DISPLAY_SMALL_BORDER)))
 		.addLayer(() -> RenderType::cutout)
+		.color(() -> AbstractAdvancedDisplayBlock::getDisplayColor)
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
 		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
@@ -105,9 +131,9 @@ public class ModBlocks {
 	}
 
 	protected static void onClient(Supplier<Runnable> toRun) {
-		EnvExecutor.runInEnv(Env.CLIENT, toRun);
+		EnvExecutor.runInEnv(EnvType.CLIENT, toRun);
 	}
 
-    public static void register() {
+    public static void init() {
     }
 }

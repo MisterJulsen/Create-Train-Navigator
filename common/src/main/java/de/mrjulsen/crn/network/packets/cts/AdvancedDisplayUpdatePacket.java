@@ -3,13 +3,15 @@ package de.mrjulsen.crn.network.packets.cts;
 import java.util.function.Supplier;
 
 import de.mrjulsen.crn.block.AbstractAdvancedSidedDisplayBlock;
-import de.mrjulsen.crn.block.be.AdvancedDisplayBlockEntity;
-import de.mrjulsen.crn.data.EDisplayInfo;
-import de.mrjulsen.crn.data.EDisplayType;
-import de.mrjulsen.crn.data.ESide;
+import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
+import de.mrjulsen.crn.block.display.properties.IDisplaySettings;
+import de.mrjulsen.crn.block.properties.ESide;
+import de.mrjulsen.crn.client.AdvancedDisplaysRegistry;
+import de.mrjulsen.crn.client.AdvancedDisplaysRegistry.DisplayTypeResourceKey;
 import de.mrjulsen.mcdragonlib.net.IPacketBase;
 import dev.architectury.networking.NetworkManager.PacketContext;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -17,51 +19,54 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class AdvancedDisplayUpdatePacket implements IPacketBase<AdvancedDisplayUpdatePacket> {
     private BlockPos pos;
-    private EDisplayType type;
-    private EDisplayInfo info;
+    private DisplayTypeResourceKey key;
     private boolean doubleSided;
+    private IDisplaySettings settings;
 
     public AdvancedDisplayUpdatePacket() {}
 
-    public AdvancedDisplayUpdatePacket(Level level, BlockPos pos, EDisplayType type, EDisplayInfo info, boolean doubleSided) {
+    public AdvancedDisplayUpdatePacket(Level level, BlockPos pos, DisplayTypeResourceKey key, boolean doubleSided, IDisplaySettings settings) {
         this.pos = pos;
-        this.info = info;
-        this.type = type;
+        this.key = key;
         this.doubleSided = doubleSided;
+        this.settings = settings;
         apply(level, this);
     }
 
-    protected AdvancedDisplayUpdatePacket(BlockPos pos, EDisplayType type, EDisplayInfo info, boolean doubleSided) {
+    protected AdvancedDisplayUpdatePacket(BlockPos pos, DisplayTypeResourceKey key, boolean doubleSided, IDisplaySettings settings) {
         this.pos = pos;
-        this.info = info;
-        this.type = type;
+        this.key = key;
         this.doubleSided = doubleSided;
+        this.settings = settings;
     }
 
     @Override
     public void encode(AdvancedDisplayUpdatePacket packet, FriendlyByteBuf buffer) {
+        CompoundTag k = new CompoundTag();
+        packet.key.toNbt(k);
+        
         buffer.writeBlockPos(packet.pos);
-        buffer.writeInt(packet.info.getId());
-        buffer.writeInt(packet.type.getId());
+        buffer.writeNbt(k);
         buffer.writeBoolean(packet.doubleSided);
+        buffer.writeNbt(packet.settings.serializeNbt());
     }
 
     @Override
     public AdvancedDisplayUpdatePacket decode(FriendlyByteBuf buffer) {
         BlockPos pos = buffer.readBlockPos();
-        EDisplayInfo info = EDisplayInfo.getTypeById(buffer.readInt());
-        EDisplayType type = EDisplayType.getTypeById(buffer.readInt());
+        DisplayTypeResourceKey key = DisplayTypeResourceKey.fromNbt(buffer.readNbt());
         boolean doubleSided = buffer.readBoolean();
+        IDisplaySettings settings = AdvancedDisplaysRegistry.createSettings(key);
+        settings.deserializeNbt(buffer.readNbt());
 
-        return new AdvancedDisplayUpdatePacket(pos, type, info, doubleSided);
+        return new AdvancedDisplayUpdatePacket(pos, key, doubleSided, settings);
     }
 
     private void apply(Level level, AdvancedDisplayUpdatePacket packet) {
         if (level.isLoaded(packet.pos)) {
             if (level.getBlockEntity(packet.pos) instanceof AdvancedDisplayBlockEntity blockEntity) {
                 blockEntity.applyToAll(be -> {
-                    be.setDisplayType(packet.type);
-                    be.setInfoType(packet.info);
+                    be.setDisplayType(packet.key, packet.settings);
                     if (level.getBlockState(be.getBlockPos()).getBlock() instanceof AbstractAdvancedSidedDisplayBlock) {
                         BlockState state = level.getBlockState(be.getBlockPos());
                         state = state.setValue(AbstractAdvancedSidedDisplayBlock.SIDE, packet.doubleSided ? ESide.BOTH : ESide.FRONT);

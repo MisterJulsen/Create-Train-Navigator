@@ -15,6 +15,6 @@ public class ModItems {
 			.properties(p -> p.stacksTo(1))
 			.register();
     
-    public static void register() {
+    public static void init() {
     }
 }
