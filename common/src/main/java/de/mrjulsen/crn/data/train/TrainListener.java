@@ -79,8 +79,8 @@ public final class TrainListener {
         CRNEventsManager.getEvent(TrainArrivalAndDepartureEvent.class).register(CreateRailwaysNavigator.MOD_ID, (train, station, isArrival) -> {
             queueTrainListenerTask(() -> {
                 try {                    
-                    if (!TrainUtils.canReadTrainSchedule(train)) {
-                        if (data.containsKey(train.id)) {
+                    if (TrainUtils.canReadTrainSchedule(train)) {
+                        if (data.containsKey(train.id) && train.runtime != null) {
                             if (isArrival) {
                                 data.get(train.id).reachDestination(DragonLib.getCurrentWorldTime(), ((ScheduleRuntimeAccessor)train.runtime).crn$getTicksInTransit());
                             } else {
@@ -88,16 +88,16 @@ public final class TrainListener {
                             }
                         }
                     } else {
-                        if (ModCommonConfig.ADVANCED_LOGGING.get()) DragonLib.LOGGER.warn("Cannot run train listener task 'TrainListener#TrainArrivalAndDepartureEvent'. Unable to read the train schedule.");
+                        if (ModCommonConfig.ADVANCED_LOGGING.get()) DragonLib.LOGGER.warn("Cannot run train listener task 'TrainListener#TrainArrivalAndDepartureEvent:1'. Unable to read the train schedule of train " + (train == null ? "null" : train.id) + ".");
                     }
                     
-                    if (!TrainUtils.canReadTrainNavigation(train)) {
+                    if (TrainUtils.canReadTrainNavigation(train)) {
                         if (!isArrival && station.isPresent() && !((INavigationExtension)(Object)train.navigation).isDelayedWaitConditionPending()) {
                             // If not checking whether a delayed condition is pending, the train would block itself.
                             StationDepartureHistory.updateDepartureHistory(train, station.get().name);
                         }
                     } else {
-                        if (ModCommonConfig.ADVANCED_LOGGING.get()) DragonLib.LOGGER.warn("Cannot run train listener task 'TrainListener#TrainArrivalAndDepartureEvent'. Unable to read the train navigation.");
+                        if (ModCommonConfig.ADVANCED_LOGGING.get()) DragonLib.LOGGER.warn("Cannot run train listener task 'TrainListener#TrainArrivalAndDepartureEvent:2'. Unable to read the train navigation of train " + (train == null ? "null" : train.id) + ".");
                     }                    
                 } catch (Exception e) {
                     DragonLib.LOGGER.error("Cannot run train listener task 'TrainListener#TrainArrivalAndDepartureEvent': " + e.getMessage(), e);
@@ -129,7 +129,7 @@ public final class TrainListener {
         CRNEventsManager.getEvent(CreateTrainPredictionEvent.class).register(CreateRailwaysNavigator.MOD_ID, (train, schedule, predictables, index, stayDuration, minStayDuration, prediction) -> {
             queueTrainListenerTask(() -> {
                 if (!TrainUtils.canReadTrainSchedule(train)) {
-                    if (ModCommonConfig.ADVANCED_LOGGING.get())  DragonLib.LOGGER.warn("Cannot run train listener task 'TrainListener#CreateTrainPredictionEvent'. Unable to read the train schedule.");
+                    if (ModCommonConfig.ADVANCED_LOGGING.get())  DragonLib.LOGGER.warn("Cannot run train listener task 'TrainListener#CreateTrainPredictionEvent'. Unable to read the train schedule of train " + (train == null ? "null" : train.id) + ".");
                     return;
                 }
                 try {
