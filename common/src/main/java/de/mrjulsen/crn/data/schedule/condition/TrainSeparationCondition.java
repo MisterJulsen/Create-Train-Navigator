@@ -54,15 +54,19 @@ public class TrainSeparationCondition extends ScheduledDelay implements IDelayed
 
 	@Override
 	public int totalWaitTicks() {
+		return 0;
+	}
+
+	private int getDeparationTime() {
 		if (data.contains(NBT_TICKS)) {
 			return data.getInt(NBT_TICKS);
 		}
-		return super.totalWaitTicks();
+		return 0;
 	}
 
 	@Override
 	protected Component formatTime(boolean compact) {
-        int remainingTicks = totalWaitTicks();
+        int remainingTicks = getDeparationTime();
         int minutes = remainingTicks / 1200;
         remainingTicks %= 1200;
         int seconds = remainingTicks / 20;
@@ -95,7 +99,7 @@ public class TrainSeparationCondition extends ScheduledDelay implements IDelayed
 
 	@Override
 	public boolean runDelayed(DelayedWaitConditionContext context) {
-		int delayValue = totalWaitTicks();
+		int delayValue = getDeparationTime();
 		long lastDepartureTimestamp = Long.MIN_VALUE;
 		String stationName = "";
 		ScheduleEntry entry = context.scheduleEntry();
