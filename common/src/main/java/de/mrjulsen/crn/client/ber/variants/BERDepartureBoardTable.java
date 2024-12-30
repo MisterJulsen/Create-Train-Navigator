@@ -318,7 +318,10 @@ public class BERDepartureBoardTable implements AbstractAdvancedDisplayRenderer<D
                     (stop.getStationData().isDepartureDelayed() ?
                         (ModUtils.formatTime(stop.getRealTime(), settings.getTimeDisplay() == ETimeDisplay.ETA)) : 
                         ""))) // Nothing (not delayed)
-            .setColor(ColorUtils.brightnessDependingFontColor(settings.getFontColor(), LIGHT_FONT_COLOR, DARK_FONT_COLOR))
+            .setColor(isSmall(blockEntity) ? 
+                (0xFF << 24) | (settings.getFontColor() & 0x00FFFFFF) :            
+                ColorUtils.brightnessDependingFontColor(settings.getFontColor(), LIGHT_FONT_COLOR, DARK_FONT_COLOR)
+            )
         ;
         BERLabel trainLabel = components[LineComponent.TRAIN_NAME.i()]
             .setText(TextUtils.text(stop.getTrainData().getName()))
