@@ -377,4 +377,12 @@ public final class TrainUtils {
                !TrainListener.data.get(train.id).isPreparing()
         ;
     }
+
+    public static boolean canReadTrainSchedule(Train train) {
+        return train != null && train.runtime != null && train.runtime.getSchedule() != null;
+    }
+
+    public static boolean canReadTrainNavigation(Train train) {
+        return train != null && train.navigation != null;
+    }
 }

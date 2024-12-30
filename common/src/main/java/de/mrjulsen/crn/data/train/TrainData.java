@@ -707,12 +707,18 @@ public class TrainData implements IListenable<TrainData> {
         return nbt;
     }
     
-    public static TrainData fromNbt(CompoundTag nbt) {
+    public static Optional<TrainData> fromNbt(CompoundTag nbt) {
         UUID trainId = nbt.getUUID(NBT_TRAIN_ID);
         UUID sessionId = nbt.getUUID(NBT_ID);
-        TrainData data = new TrainData(TrainUtils.getTrain(trainId).get(), sessionId); // TODO
-        data.deserializeNbt(nbt);
-        return data;
+        Optional<Train> train = TrainUtils.getTrain(trainId);
+
+        if (train.isPresent()) {
+            TrainData data = new TrainData(train.get(), sessionId);
+            data.deserializeNbt(nbt);
+            return Optional.ofNullable(data);
+        }
+        CreateRailwaysNavigator.LOGGER.warn("Cannot load data for train with id " + trainId + ", because that train does not exist.");
+        return Optional.empty();
     }
 
     protected void deserializeNbt(CompoundTag nbt) {
