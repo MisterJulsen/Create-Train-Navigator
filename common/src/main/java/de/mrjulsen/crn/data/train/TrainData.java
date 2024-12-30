@@ -450,7 +450,15 @@ public class TrainData implements IListenable<TrainData> {
 
         // Update CRN predictions with data from Create
         TrainPrediction pred = predictionsByIndex.computeIfAbsent(entryIndex, i -> new TrainPrediction(this, entryIndex, predictionData, stayDuration, minStayDuration));
-        currentTransitTime.computeIfAbsent(entryIndex, x -> ModCommonConfig.USE_CREATE_TRANSIT_TIMES_ON_INIT.get() ? ((ScheduleRuntimeAccessor)train.runtime).crn$predictionTicks().get(entryIndex) : INVALID);
+        boolean useCreateTimesOnInit = ModCommonConfig.USE_CREATE_TRANSIT_TIMES_ON_INIT.get();
+        if (useCreateTimesOnInit) {
+            int ticks = ((ScheduleRuntimeAccessor)train.runtime).crn$predictionTicks().get(entryIndex);
+            currentTransitTime.computeIfAbsent(entryIndex, x -> ticks);
+            fillHistory(transitTimeHistory.computeIfAbsent(entryIndex, x -> new PriorityQueue<>()), transitTime);
+        } else {
+            currentTransitTime.computeIfAbsent(entryIndex, x -> INVALID);
+        }
+
         validPredictionEntries.add(entryIndex);
 
         pred.updateRealTime(
@@ -480,6 +488,7 @@ public class TrainData implements IListenable<TrainData> {
         transitTimeHistory.clear();
         currentTransitTime.clear();
         lastScheduleIndex = INVALID;
+        totalDuration = INVALID;
         hasStarted = false;
 
         sectionsCache.clear();
