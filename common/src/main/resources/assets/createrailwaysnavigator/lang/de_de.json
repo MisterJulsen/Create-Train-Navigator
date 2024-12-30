@@ -306,6 +306,7 @@
     "gui.createrailwaysnavigator.section_settings.usable": "Navigierbar",
     "gui.createrailwaysnavigator.section_settings.none": "(Keine)",
 
+    "create.schedule.condition.dynamic_delay.status": "Abfahrt in %s",
     "createrailwaysnavigator.schedule.condition.dynamic_delay": "Dynamische Wartezeit",
     "createrailwaysnavigator.schedule.condition.dynamic_delay.min_duration": "Mindestwartezeit",
     "createrailwaysnavigator.schedule.condition.dynamic_delay.title": "Warte: %s..%s",
