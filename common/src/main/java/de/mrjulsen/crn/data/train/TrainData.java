@@ -616,10 +616,13 @@ public class TrainData implements IListenable<TrainData> {
      */
     public void reachDestination(long destinationReachTime, int createTicksInTransit) {
         this.destinationReachTime = destinationReachTime;
+        if (!ModCommonConfig.CUSTOM_TRANSIT_TIME_CALCULATION.get()) {
+            this.transitTime = createTicksInTransit;
+        }
 
         if (hasStarted) {
             processTransitHistory(transitTimeHistory.computeIfAbsent(currentScheduleIndex, x -> new ConcurrentLinkedQueue<>()));
-            this.measuredTransitTimes.put(currentScheduleIndex, ModCommonConfig.CUSTOM_TRANSIT_TIME_CALCULATION.get() ? createTicksInTransit : transitTime);
+            this.measuredTransitTimes.put(currentScheduleIndex, transitTime);
         }
         this.transitTime = 0;
         this.waitingForSignalTicks = 0;

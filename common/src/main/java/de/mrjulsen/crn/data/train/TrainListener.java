@@ -77,12 +77,14 @@ public final class TrainListener {
         });
 
         CRNEventsManager.getEvent(TrainArrivalAndDepartureEvent.class).register(CreateRailwaysNavigator.MOD_ID, (train, station, isArrival) -> {
+            final long reachTime = DragonLib.getCurrentWorldTime();
+            final int ticksInTransit = ((ScheduleRuntimeAccessor)train.runtime).crn$getTicksInTransit();
             queueTrainListenerTask(() -> {
                 try {                    
                     if (TrainUtils.canReadTrainSchedule(train)) {
                         if (data.containsKey(train.id) && train.runtime != null) {
                             if (isArrival) {
-                                data.get(train.id).reachDestination(DragonLib.getCurrentWorldTime(), ((ScheduleRuntimeAccessor)train.runtime).crn$getTicksInTransit());
+                                data.get(train.id).reachDestination(reachTime, ticksInTransit);
                             } else {
                                 data.get(train.id).leaveDestination();
                             }
