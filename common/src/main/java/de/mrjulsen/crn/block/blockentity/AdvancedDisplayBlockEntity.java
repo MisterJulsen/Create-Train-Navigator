@@ -43,6 +43,8 @@ import de.mrjulsen.mcdragonlib.data.Pair;
 import de.mrjulsen.mcdragonlib.data.Tripple;
 import de.mrjulsen.mcdragonlib.util.ListUtils;
 import de.mrjulsen.mcdragonlib.util.accessor.DataAccessor;
+import dev.architectury.platform.Platform;
+import net.fabricmc.api.EnvType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.Direction;
@@ -291,15 +293,17 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 
     public void setDepartureData(List<StationDisplayData> predictions, String stationNameFilter, StationInfo staionInfo, long lastRefreshedTime) {
         this.dataOrderChanged = dataOrderChanged || !ListUtils.compareCollections(this.predictions, predictions, StationDisplayData::equals);
+
+        boolean clientUpdate = Platform.getEnv() == EnvType.CLIENT && !getStationInfo().equals(staionInfo);
         
         this.predictions = predictions;
         this.stationNameFilter = stationNameFilter;
         this.stationInfo = staionInfo;
         this.lastRefreshedTime = lastRefreshedTime;
-        //this.platformWidth = platformWidth;
-        //this.trainNameWidth = trainNameWidth;
-        //this.timeDisplay = ETimeDisplay.getById(timeDisplayId);
-        
+
+        if (clientUpdate) {
+            getRenderer().update(level, worldPosition, getBlockState(), this, EUpdateReason.DATA_CHANGED);
+        }
     }
     
     @Override
@@ -526,11 +530,6 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         pTag.putBoolean(NBT_GLOWING, isGlowing());
         pTag.putLong(NBT_LAST_REFRESH_TIME, getLastRefreshedTime());
 
-        //pTag.putByte(NBT_TIME_DISPLAY, getTimeDisplay().getId());
-        //pTag.putInt(NBT_COLOR, getColor());
-        //pTag.putByte(NBT_PLATFORM_WIDTH, getPlatformWidth());
-        //pTag.putByte(NBT_TRAIN_NAME_WIDTH, getTrainNameWidth());
-
         displayTypeId.toNbt(pTag);
         pTag.put(NBT_DISPLAY_TYPE_SETTINGS, displayTypeSettings.serializeNbt());
 
@@ -549,11 +548,14 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     @Override
     public void read(CompoundTag pTag, boolean clientPacket) {
         boolean updateClient = false;
+        IDisplaySettings oldDisplayTypeSettings = displayTypeSettings;
+        StationInfo info = StationInfo.fromNbt(pTag);
         if (level != null && getBlockState() != null && level.isClientSide) {
             if (
                 isController() != pTag.getBoolean(NBT_CONTROLLER) ||
                 getXSize() != pTag.getByte(NBT_XSIZE) ||
                 getYSize() != pTag.getByte(NBT_YSIZE) ||
+                !getStationInfo().equals(info) ||
                 (getStops().isEmpty() ^ !pTag.contains(NBT_TRAIN_STOPS))
             ) {
                 updateClient = true;
@@ -562,7 +564,6 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 
         super.read(pTag, clientPacket);
 
-        StationInfo info = StationInfo.fromNbt(pTag);
 
         xSize = pTag.getByte(NBT_XSIZE);
         ySize = pTag.getByte(NBT_YSIZE);
@@ -573,11 +574,10 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         DisplayTypeResourceKey oldDisplayType = displayTypeId;
         
         // ### Convert deprecated data
-        IDisplaySettings oldDisplayTypeSettings = displayTypeSettings;
         if (pTag.contains(LEGACY_NBT_INFO_TYPE) && pTag.contains(LEGACY_NBT_DISPLAY_TYPE)) {
             displayTypeId = ModDisplayTypes.legacy_getKeyForType(EDisplayType.getTypeById(pTag.getInt(LEGACY_NBT_DISPLAY_TYPE)), EDisplayInfo.getTypeById(pTag.getInt(LEGACY_NBT_INFO_TYPE)));
             displayTypeSettings = AdvancedDisplaysRegistry.createSettings(displayTypeId);
-            updateClient = updateClient || !oldDisplayTypeSettings.getClass().equals(displayTypeSettings.getClass());
+            updateClient |= updateClient || !oldDisplayTypeSettings.getClass().equals(displayTypeSettings.getClass());
         } else if (pTag.contains(LEGACY_NBT_DISPLAY_TYPE_KEY)) {
             displayTypeId = DisplayTypeResourceKey.legacy_fromNbt(pTag.getCompound(LEGACY_NBT_DISPLAY_TYPE_KEY));
             displayTypeSettings = AdvancedDisplaysRegistry.createSettings(displayTypeId);

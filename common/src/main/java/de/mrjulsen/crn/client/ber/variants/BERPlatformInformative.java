@@ -33,7 +33,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<PlatformDisplayFocusSettings> { //TODO PlatformWidth verwenden
+public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<PlatformDisplayFocusSettings> {
    
     private static final String keyFollowingTrains = "gui.createrailwaysnavigator.following_trains";
 
@@ -43,7 +43,10 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
     private boolean showInfoLine = false;
     private Component infoLineText = TextUtils.empty();
     private BERLabel statusLabel;
-    private final BERLabel platformLabel = new BERLabel();
+    private final BERLabel platformLabel = new BERLabel()    
+        .setYScale(0.8f)
+        .setScale(0.6f, 0.5f)
+    ;
     private BERLabel[] focusArea;
     private BERLabel[][] lines;
     private final BERLabel followingTrainsLabel = new BERLabel(CustomLanguage.translate(keyFollowingTrains)).setPos(3, 16).setScale(0.2f, 0.2f).setYScale(0.2f);
@@ -146,14 +149,13 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
             focusArea = null;
             statusLabel = null;
 
-            if (blockEntity.isPlatformFixed() && blockEntity.getStationInfo() != null) {
-                this.platformLabel
-                    .setText(TextUtils.text(blockEntity.getStationInfo().platform()).withStyle(ChatFormatting.BOLD))
-                    .setPos(blockEntity.getXSizeScaled() * 16 - 3 - platformLabel.getTextWidth(), 3);
-                ;
-            } else {
-                this.platformLabel.setText(TextUtils.empty());
-            }
+            float platformWidth = Math.min(blockEntity.getXSizeScaled() * 16 - 8, getDisplaySettings(blockEntity).isAutoPlatformWidthNextStop() ? platformLabel.getTextWidth() : getDisplaySettings(blockEntity).getPlatformWidthNextStop());
+            this.platformLabel
+                .setText(TextUtils.text(blockEntity.isPlatformFixed() && blockEntity.getStationInfo() != null ? blockEntity.getStationInfo().platform() : "").withStyle(ChatFormatting.BOLD))
+                .setPos(blockEntity.getXSizeScaled() * 16 - 3 - Math.min(platformWidth, platformLabel.getTextWidth()), 3)
+                .setMaxWidth(platformWidth, BoundsHitReaction.SCALE_SCROLL)
+                .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
+            ;
             return;
         }
             
@@ -230,7 +232,6 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
             .setScale(0.6f, 0.5f)
             .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
         ;
-        //focusArea[LineComponent.PLATFORM.i()] = platformLabel;
 
         BERLabel destinationLabel = new BERLabel()
             .setYScale(0.6f)
