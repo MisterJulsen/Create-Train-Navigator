@@ -444,7 +444,7 @@ public class TrainData implements IListenable<TrainData> {
         return !hasStarted;
     }
 
-    public synchronized TrainPrediction setPredictionData(int entryIndex, int currentIndex, int maxEntries, int stayDuration, int minStayDuration, int transitTime, TrainDeparturePrediction predictionData) {
+    public synchronized TrainPrediction setPredictionData(int entryIndex, int currentIndex, int maxEntries, int stayDuration, int minStayDuration, int createTransitTime, TrainDeparturePrediction predictionData) {
         // keep track of current schedule index
         this.destinationChanged = destinationChanged || this.currentScheduleIndex != currentIndex;
         this.currentScheduleIndex = currentIndex;
@@ -454,7 +454,10 @@ public class TrainData implements IListenable<TrainData> {
         boolean useCreateTimesOnInit = ModCommonConfig.USE_CREATE_TRANSIT_TIMES_ON_INIT.get();
         if (useCreateTimesOnInit) {
             int ticks = ((ScheduleRuntimeAccessor)train.runtime).crn$predictionTicks().get(entryIndex);
-                fillHistory(transitTimeHistory.computeIfAbsent(entryIndex, y -> new ConcurrentLinkedQueue<>()), transitTime);
+            currentTransitTime.computeIfAbsent(entryIndex, x -> {
+                fillHistory(transitTimeHistory.computeIfAbsent(entryIndex, y -> new ConcurrentLinkedQueue<>()), createTransitTime);
+                return ticks;
+            });
         } else {
             currentTransitTime.computeIfAbsent(entryIndex, x -> INVALID);
         }
