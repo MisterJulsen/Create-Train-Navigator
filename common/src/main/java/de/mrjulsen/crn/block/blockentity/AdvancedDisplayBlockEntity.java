@@ -560,7 +560,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
             }
         }
 
-		super.read(pTag, clientPacket);
+        super.read(pTag, clientPacket);
 
         StationInfo info = StationInfo.fromNbt(pTag);
 
@@ -573,16 +573,20 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         DisplayTypeResourceKey oldDisplayType = displayTypeId;
         
         // ### Convert deprecated data
+        IDisplaySettings oldDisplayTypeSettings = displayTypeSettings;
         if (pTag.contains(LEGACY_NBT_INFO_TYPE) && pTag.contains(LEGACY_NBT_DISPLAY_TYPE)) {
             displayTypeId = ModDisplayTypes.legacy_getKeyForType(EDisplayType.getTypeById(pTag.getInt(LEGACY_NBT_DISPLAY_TYPE)), EDisplayInfo.getTypeById(pTag.getInt(LEGACY_NBT_INFO_TYPE)));
             displayTypeSettings = AdvancedDisplaysRegistry.createSettings(displayTypeId);
+            updateClient = updateClient || !oldDisplayTypeSettings.getClass().equals(displayTypeSettings.getClass());
         } else if (pTag.contains(LEGACY_NBT_DISPLAY_TYPE_KEY)) {
             displayTypeId = DisplayTypeResourceKey.legacy_fromNbt(pTag.getCompound(LEGACY_NBT_DISPLAY_TYPE_KEY));
             displayTypeSettings = AdvancedDisplaysRegistry.createSettings(displayTypeId);
+            updateClient = updateClient || !oldDisplayTypeSettings.getClass().equals(displayTypeSettings.getClass());
         } else {
             displayTypeId = DisplayTypeResourceKey.fromNbt(pTag);
             displayTypeSettings = AdvancedDisplaysRegistry.createSettings(displayTypeId);
             displayTypeSettings.deserializeNbt(pTag.getCompound(NBT_DISPLAY_TYPE_SETTINGS));
+            updateClient = updateClient || !oldDisplayTypeSettings.getClass().equals(displayTypeSettings.getClass());
         }
         
         if (pTag.contains(LEGACY_NBT_COLOR)) {

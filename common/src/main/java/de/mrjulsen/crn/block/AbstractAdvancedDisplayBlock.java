@@ -241,7 +241,7 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 		BlockState belowState = pLevel.getBlockState(belowPos);
 		if (!canConnect(pLevel, pPos, pState, belowState))
 			KineticBlockEntity.switchToBlockState(pLevel, pPos, updateColumn(pLevel, pPos, pState, true));
-		withBlockEntityDo(pLevel, pPos, AdvancedDisplayBlockEntity::updateControllerStatus);
+		//withBlockEntityDo(pLevel, pPos, AdvancedDisplayBlockEntity::updateControllerStatus);
 	}
 
     @Override
