@@ -124,8 +124,8 @@ public class RoutePartTrainDetailsWidget extends DLWidgetContainer implements Cl
 
         graphics.poseStack().pushPose();
         graphics.poseStack().scale(scale, scale, scale);
-        Component trainName = TextUtils.text(part.getLastStop().getTrainDisplayName()).withStyle(ChatFormatting.BOLD);
-        CreateDynamicWidgets.renderTextHighlighted(graphics, (int)((x() + 80 + 24) / scale), (int)((y + 4) / scale), font, trainName, part.getLastStop().getTrainDisplayColor());
+        Component trainName = TextUtils.text(part.getFirstStop().getTrainDisplayName()).withStyle(ChatFormatting.BOLD);
+        CreateDynamicWidgets.renderTextHighlighted(graphics, (int)((x() + 80 + 24) / scale), (int)((y + 4) / scale), font, trainName, part.getFirstStop().getTrainDisplayColor());
         GuiUtils.drawString(graphics, font, (int)((x() + 80 + 24) / scale) + font.width(trainName) + 10, (int)((y + 6) / scale), GuiUtils.ellipsisString(font, TextUtils.text(String.format("%s (%s)", stop.getTrainDisplayName(), stop.getTrainId().toString().split("-")[0])), (int)((maxWidth - font.width(trainName) - 15) / scale)), 0xFFDBDBDB, EAlignment.LEFT, false);
         GuiUtils.drawString(graphics, font, (int)((x() + 80 + 24) / scale), (int)((y + 18) / scale), GuiUtils.ellipsisString(font, TextUtils.text(stop.getDisplayTitle()), (int)((maxWidth - 24) / scale)), 0xFFDBDBDB, EAlignment.LEFT, false);        
         graphics.poseStack().scale(mul, mul, mul);
