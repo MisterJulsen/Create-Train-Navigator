@@ -2,11 +2,11 @@ package de.mrjulsen.crn.data.train;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
 import java.util.Map.Entry;
 import java.util.Map;
@@ -94,7 +94,7 @@ public class TrainData implements IListenable<TrainData> {
     /** Contains the last (single!) measured transit time that can be used for the calculation. */
     private transient final Map<Integer /* station index */, Integer /* transit time */> measuredTransitTimes = new HashMap<>();    
     /** Contains the x last measured transit times that can be used for the calculation. */
-    public final Map<Integer /* schedule index */, PriorityQueue<Integer> /* last x transit times */> transitTimeHistory = new HashMap<>();
+    public final Map<Integer /* schedule index */, Queue<Integer> /* last x transit times */> transitTimeHistory = new HashMap<>();
     /** The current valid and used transit time. */
     public final Map<Integer /* schedule index */, Integer /* current default transit */> currentTransitTime = new HashMap<>();
 
@@ -454,8 +454,7 @@ public class TrainData implements IListenable<TrainData> {
         boolean useCreateTimesOnInit = ModCommonConfig.USE_CREATE_TRANSIT_TIMES_ON_INIT.get();
         if (useCreateTimesOnInit) {
             int ticks = ((ScheduleRuntimeAccessor)train.runtime).crn$predictionTicks().get(entryIndex);
-            currentTransitTime.computeIfAbsent(entryIndex, x -> ticks);
-            fillHistory(transitTimeHistory.computeIfAbsent(entryIndex, x -> new PriorityQueue<>()), transitTime);
+                fillHistory(transitTimeHistory.computeIfAbsent(entryIndex, y -> new ConcurrentLinkedQueue<>()), transitTime);
         } else {
             currentTransitTime.computeIfAbsent(entryIndex, x -> INVALID);
         }
@@ -616,7 +615,7 @@ public class TrainData implements IListenable<TrainData> {
         this.destinationReachTime = destinationReachTime;
 
         if (hasStarted) {
-            processTransitHistory(transitTimeHistory.computeIfAbsent(currentScheduleIndex, x -> new PriorityQueue<>()));
+            processTransitHistory(transitTimeHistory.computeIfAbsent(currentScheduleIndex, x -> new ConcurrentLinkedQueue<>()));
             this.measuredTransitTimes.put(currentScheduleIndex, ModCommonConfig.CUSTOM_TRANSIT_TIME_CALCULATION.get() ? createTicksInTransit : transitTime);
         }
         this.transitTime = 0;
@@ -666,7 +665,7 @@ public class TrainData implements IListenable<TrainData> {
         while (history.size() >= getHistoryBufferSize()) {
             history.poll();
         }
-        history.offer(transitTime); // add current transit time to the history
+        history.add(transitTime); // add current transit time to the history
 
         int refCurrentTransitTime = currentTransitTime.get(currentScheduleIndex);
         double median = ModUtils.calculateMedian(history, ModCommonConfig.TOTAL_DURATION_DEVIATION_THRESHOLD.get(), x -> true);
@@ -749,7 +748,7 @@ public class TrainData implements IListenable<TrainData> {
                 int idx = Integer.parseInt(key);
                 int time = transitTimes.getInt(key);
                 if (time > 0) {
-                    fillHistory(transitTimeHistory.computeIfAbsent(idx, x -> new PriorityQueue<>()), time);
+                    fillHistory(transitTimeHistory.computeIfAbsent(idx, x -> new ConcurrentLinkedQueue<>()), time);
                     this.measuredTransitTimes.put(idx, time);
                     this.currentTransitTime.put(idx, time);
                 }
