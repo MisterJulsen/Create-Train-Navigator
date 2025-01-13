@@ -1,4 +1,5 @@
 {
     "java.compile.nullAnalysis.mode": "disabled",
-    "commentTranslate.hover.enabled": false
+    "commentTranslate.hover.enabled": false,
+    "java.configuration.updateBuildConfiguration": "automatic"
 }

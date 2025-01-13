@@ -16,7 +16,6 @@ import de.mrjulsen.crn.data.schedule.IConditionsRequiresInstruction;
 import de.mrjulsen.crn.data.schedule.INavigationExtension;
 import de.mrjulsen.crn.data.train.StationDepartureHistory;
 import de.mrjulsen.crn.data.train.StationDepartureHistory.ETrainFilter;
-import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import dev.architectury.utils.GameInstance;
 import net.fabricmc.api.EnvType;
