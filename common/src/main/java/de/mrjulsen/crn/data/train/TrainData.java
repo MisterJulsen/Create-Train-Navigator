@@ -258,6 +258,7 @@ public class TrainData implements IListenable<TrainData> {
     public void addTravelSection(TrainTravelSection section) {
         this.sectionsByIndex.put(section.getScheduleIndex(), section);
         sectionsCache.clear();
+        currentSectionCache.clear();
     }
 
     public String getCurrentTitle() {
@@ -487,11 +488,12 @@ public class TrainData implements IListenable<TrainData> {
         measuredTransitTimes.clear();
         transitTimeHistory.clear();
         currentTransitTime.clear();
+        currentSectionCache.clear();
+        sectionsCache.clear();
         lastScheduleIndex = INVALID;
         totalDuration = INVALID;
         hasStarted = false;
 
-        sectionsCache.clear();
         resetCaches();
     }
 
