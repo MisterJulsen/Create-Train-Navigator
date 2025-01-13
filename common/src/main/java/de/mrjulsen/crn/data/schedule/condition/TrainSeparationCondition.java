@@ -18,6 +18,7 @@ import de.mrjulsen.crn.data.train.StationDepartureHistory;
 import de.mrjulsen.crn.data.train.StationDepartureHistory.ETrainFilter;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
+import dev.architectury.utils.GameInstance;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
@@ -99,6 +100,7 @@ public class TrainSeparationCondition extends ScheduledDelay implements IDelayed
 
 	@Override
 	public boolean runDelayed(DelayedWaitConditionContext context) {
+
 		int delayValue = getDeparationTime();
 		long lastDepartureTimestamp = Long.MIN_VALUE;
 		String stationName = "";
@@ -108,7 +110,7 @@ public class TrainSeparationCondition extends ScheduledDelay implements IDelayed
 			lastDepartureTimestamp = StationDepartureHistory.getLastMatchingDepartureTime(getTrainFilter(), context.train(), stationName);
 		}
 
-		if (lastDepartureTimestamp + delayValue < DragonLib.getCurrentServer().get().overworld().getGameTime()) {
+		if (lastDepartureTimestamp + delayValue < GameInstance.getServer().overworld().getGameTime()) {
 			StationDepartureHistory.updateDepartureHistory(context.train(), context.station().name);
 			return true;
 		}

@@ -102,6 +102,6 @@ public class StationBlockEntityMixin implements IHaveGoggleInformation {
     }
 
     private MutableComponent formatTime(long ticks) {
-        return TextUtils.text(TimeUtils.formatDurationMs(TimeUnit.SECONDS.toMillis((long)(ticks / DragonLib.tps())))).withStyle(ChatFormatting.AQUA);
+        return TextUtils.text(TimeUtils.formatDurationMs(TimeUnit.SECONDS.toMillis((long)(ticks / DragonLib.mcTps())))).withStyle(ChatFormatting.AQUA);
     }
 }
