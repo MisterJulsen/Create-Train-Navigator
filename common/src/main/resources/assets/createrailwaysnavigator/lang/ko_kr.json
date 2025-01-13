@@ -192,11 +192,9 @@
     "enum.createrailwaysnavigator.display_type": "전광판 종류",
     "enum.createrailwaysnavigator.display_type.description": "각각의 목적에 맞는 전광판을 선택합니다.",
     "enum.createrailwaysnavigator.display_type.train_destination": "열차 행선지",
-    "enum.createrailwaysnavigator.display_type.info.train_destination": "기차 외부에 설치되는 전광판으로, 열차 이름, 도착지, 경유지(선택한 경우) 등을 표시합니다.",
     "enum.createrailwaysnavigator.display_type.passenger_information": "승객 안내용",
     "enum.createrailwaysnavigator.display_type.info.passenger_information": "기차 내부에 설치되는 전광판으로, 다음 역, 내릴 문, 기차 속도(선택한 경우), 기차 경로 정보 등을 표시합니다.",
     "enum.createrailwaysnavigator.display_type.platform": "승강장 전광판",
-    "enum.createrailwaysnavigator.display_type.info.platform": "승강장에 설치되는 전광판으로, 다음에 도착할 열차와 그 열차의 정보 등을 표시합니다. 열차에는 사용할 수 없습니다!",
     "enum.createrailwaysnavigator.side": "전광판 위치",
     "enum.createrailwaysnavigator.side.description": "전광판이 어느 쪽에 표시될지 결정합니다.",
     "enum.createrailwaysnavigator.side.front": "앞쪽",
@@ -210,9 +208,5 @@
     "enum.createrailwaysnavigator.time_display.eta": "상대",
     "enum.createrailwaysnavigator.time_display.info.eta": "남은 시간을 띄웁니다.",
     "create.display_source.advanced_display": "고급 전광판",
-    "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width": "기차 이름 폭",
-    "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width.description": "픽셀 단위. (기본: 16)",
-    "gui.createrailwaysnavigator.display_source.advanced_display.platform_width": "타는 곳 이름 폭",
-    "gui.createrailwaysnavigator.display_source.advanced_display.platform_width.description": "픽셀 단위. (기본: 자동)",
     "gui.createrailwaysnavigator.station_tags.title": "기차역 태그 설정"
 }

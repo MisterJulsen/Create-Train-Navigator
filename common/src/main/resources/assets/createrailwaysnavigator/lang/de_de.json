@@ -281,7 +281,7 @@
     "enum.createrailwaysnavigator.train_filter.any": "Beliebiger Zug",
     "enum.createrailwaysnavigator.train_filter.info.any": "Jeder Zug wird hier berücksichtigt.",
     "enum.createrailwaysnavigator.train_filter.same_line": "Gleiche Linie",
-    "enum.createrailwaysnavigator.train_filter.info.same_line": "Nut Züge mit der gleichen Zuglinie werden berücksichtigt.",
+    "enum.createrailwaysnavigator.train_filter.info.same_line": "Nur Züge mit der gleichen Zuglinie werden berücksichtigt.",
     "enum.createrailwaysnavigator.train_filter.same_group": "Gleiche Kategorie",
     "enum.createrailwaysnavigator.train_filter.info.same_group": "Nur Züge mit der gleichen Zugkategorie werden berücksichtigt.",
 

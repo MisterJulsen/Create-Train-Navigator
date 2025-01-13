@@ -188,11 +188,9 @@
     "enum.createrailwaysnavigator.display_type": "Ozeigtyp",
     "enum.createrailwaysnavigator.display_type.description": "De Art da Ozeig, wos vo ihrem Zweck obhängt.",
     "enum.createrailwaysnavigator.display_type.train_destination": "Zuagzielanzeig",
-    "enum.createrailwaysnavigator.display_type.info.train_destination": "Fia de Vawendung außn an Zügn vorgseng, do Informadiona wia Zuagnama oda Endhoid dargstäit wern, de fia Fahrgäste außerhoib des Fahrzeigs interessant san.",
     "enum.createrailwaysnavigator.display_type.passenger_information": "Fahrgastinformadionsanzeig",
     "enum.createrailwaysnavigator.display_type.info.passenger_information": "Repräsentiern de Ozeign, de in Zügn vorkomma. Dargstäit wern da naxte Hoid, de Ausstiegsseitn und (je noch Einstäiung) no weidere Informadiona.",
     "enum.createrailwaysnavigator.display_type.platform": "Bohsteiganzeig",
-    "enum.createrailwaysnavigator.display_type.info.platform": "De Ozeign wern an Bohsteign vawendt und zeign de naxtn obfahrendn Züg mid zuasätzlichn Informadiona an. Funktioniad ned auf Zügn!",
     "enum.createrailwaysnavigator.side": "Seitn",
     "enum.createrailwaysnavigator.side.description": "De Seitn des Bloggs, auf am de Informadiona ozoagd wern soin.",
     "enum.createrailwaysnavigator.side.front": "Voadaseitn",
@@ -204,9 +202,5 @@
     "enum.createrailwaysnavigator.time_display.info.abs": "ABS (Obsolut)",
     "enum.createrailwaysnavigator.time_display.info.eta": "ETA (Gschätzte Okunftszeid)",
     "create.display_source.advanced_display": "Vabesserte Ozeig",
-    "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width": "Zuagnama Spoidenbreadn",
-    "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width.description": "De Breadn da Spoide fia den Zuagnama in Pixl. (Standard: 16)",
-    "gui.createrailwaysnavigator.display_source.advanced_display.platform_width": "Gleis Spoidenbreadn",
-    "gui.createrailwaysnavigator.display_source.advanced_display.platform_width.description": "De Breadn da Spoide fia des Gleis in Pixl. (-1 = Autom., Standard: -1)",
     "gui.createrailwaysnavigator.station_tags.title": "Bohhof Dogs Einstäiunga"
 }
