@@ -23,6 +23,7 @@ import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -75,10 +76,13 @@ public class DynamicDelayCondition extends ScheduledDelay {
 			} 
 		}
 
+		long totalTicks = initialized ? Math.max(totalWaitTicks() - currentDelay, minWaitTicks()) : totalWaitTicks();
+
 		if (time >= (initialized ? Math.max(totalWaitTicks() - currentDelay, minWaitTicks()) : totalWaitTicks()) && (!initialized || DragonLib.getCurrentWorldTime() >= scheduledDepartureTime))
 			return true;
 		
 		context.putInt("Time", time + 1);
+		context.putLong("TotalTicks", Math.max(totalTicks, scheduledDepartureTime - DragonLib.getCurrentWorldTime() + time));
 		requestDisplayIfNecessary(context, time);
 		return false;
 	}
@@ -100,5 +104,18 @@ public class DynamicDelayCondition extends ScheduledDelay {
 	@Environment(EnvType.CLIENT)
 	public void initConfigurationWidgets(ModularGuiLineBuilder builder) {
 		ClientWrapper.initDynamicDelayCondition(this, builder);
+	}
+
+	@Override
+	public MutableComponent getWaitingStatus(Level level, Train train, CompoundTag tag) {
+		int time = tag.getInt("Time");
+		long totalTime = tag.getInt("TotalTicks");
+		long ticksUntilDeparture = Math.max(totalTime - time, 0);
+		boolean showInMinutes = ticksUntilDeparture >= 20 * 60;
+		int num = (int) (showInMinutes ? Math.floor(ticksUntilDeparture / (20 * 60f)) : Math.ceil(ticksUntilDeparture / 100f) * 5);
+		String key = "generic." + (showInMinutes ? num == 1 ? "daytime.minute" : "unit.minutes"
+			: num == 1 ? "daytime.second" : "unit.seconds");
+			
+		return Lang.translateDirect("schedule.condition." + getId().getPath() + ".status", Components.literal(num + " ").append(Lang.translateDirect(key)));
 	}
 }

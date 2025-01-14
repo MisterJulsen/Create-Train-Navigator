@@ -22,6 +22,7 @@ import de.mrjulsen.crn.registry.ModExtras;
 import de.mrjulsen.crn.registry.ModItems;
 import de.mrjulsen.crn.registry.ModSchedule;
 import de.mrjulsen.crn.registry.ModTrainStatusInfos;
+import de.mrjulsen.mcdragonlib.compat.CompatManager;
 import de.mrjulsen.mcdragonlib.net.NetworkManagerBase;
 import dev.architectury.platform.Platform;
 import net.fabricmc.api.EnvType;
@@ -93,6 +94,7 @@ public final class CreateRailwaysNavigator {
         ModCommonEvents.init();
         if (Platform.getEnv() == EnvType.CLIENT) {
             ModClientEvents.init();
+            CompatManager.requiresFixForSodium();
         }
 
         CRNEventsManager.getEvent(CRNClientEventsRegistryEvent.class).register(MOD_ID, () -> {
