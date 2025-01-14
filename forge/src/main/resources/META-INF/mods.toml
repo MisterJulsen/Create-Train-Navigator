@@ -1,5 +1,5 @@
 modLoader = "javafml"
-loaderVersion = "[${forge_version_int},)"
+loaderVersion = "[${forge_loader_version},)"
 issueTrackerURL = "${issues}"
 license = "${license}"
 
@@ -15,7 +15,7 @@ logoFile = "${icon}"
 [[dependencies.${modid}]]
 modId = "forge"
 mandatory = true
-versionRange = "[${forge_version_int},)"
+versionRange = "[${forge_dependency_version},)"
 ordering = "NONE"
 side = "BOTH"
 
