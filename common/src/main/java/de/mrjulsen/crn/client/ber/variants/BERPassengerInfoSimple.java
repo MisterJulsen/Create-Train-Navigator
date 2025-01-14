@@ -128,9 +128,14 @@ public class BERPassengerInfoSimple implements AbstractAdvancedDisplayRenderer<P
         } else {
             final int slides = 3;
             int slide = (int)(DragonLib.getCurrentWorldTime() % (TICKS_PER_SLIDE * slides)) / TICKS_PER_SLIDE;
-            if ((slide == 1 && !settings.showTimeAndDate()) ||
-                (slide == 2 && !settings.showStats())
-            ) {
+            while (true) {
+
+                break;
+            }
+            if ((slide == 1 && !settings.showTimeAndDate())) {
+                slide++;
+            }
+            if ((slide == 2 && !settings.showStats())) {
                 slide++;
             }
             slide %= slides;

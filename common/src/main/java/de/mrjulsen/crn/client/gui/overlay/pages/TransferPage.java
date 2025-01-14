@@ -34,11 +34,11 @@ public class TransferPage extends AbstractRouteDetailsPage {
         this.messageLabel = MultiLineLabel.create(font,
         info.platform() == null || info.platform().isBlank() ?
         CustomLanguage.translate(keyTransfer,
-            connection.getDepartureStation().getTrainName(),
+            connection.getDepartureStation().getTrainDisplayName(),
             terminus
         ) : 
         CustomLanguage.translate(keyTransferWithPlatform,
-        connection.getDepartureStation().getTrainName(),
+        connection.getDepartureStation().getTrainDisplayName(),
             terminus,
             info.platform()
         ), width - (15 + ModGuiIcons.ICON_SIZE));

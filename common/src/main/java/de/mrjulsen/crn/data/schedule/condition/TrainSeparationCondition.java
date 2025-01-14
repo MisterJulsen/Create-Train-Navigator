@@ -16,8 +16,8 @@ import de.mrjulsen.crn.data.schedule.IConditionsRequiresInstruction;
 import de.mrjulsen.crn.data.schedule.INavigationExtension;
 import de.mrjulsen.crn.data.train.StationDepartureHistory;
 import de.mrjulsen.crn.data.train.StationDepartureHistory.ETrainFilter;
-import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
+import dev.architectury.utils.GameInstance;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
@@ -54,15 +54,19 @@ public class TrainSeparationCondition extends ScheduledDelay implements IDelayed
 
 	@Override
 	public int totalWaitTicks() {
+		return 0;
+	}
+
+	private int getDeparationTime() {
 		if (data.contains(NBT_TICKS)) {
 			return data.getInt(NBT_TICKS);
 		}
-		return super.totalWaitTicks();
+		return 0;
 	}
 
 	@Override
 	protected Component formatTime(boolean compact) {
-        int remainingTicks = totalWaitTicks();
+        int remainingTicks = getDeparationTime();
         int minutes = remainingTicks / 1200;
         remainingTicks %= 1200;
         int seconds = remainingTicks / 20;
@@ -95,7 +99,8 @@ public class TrainSeparationCondition extends ScheduledDelay implements IDelayed
 
 	@Override
 	public boolean runDelayed(DelayedWaitConditionContext context) {
-		int delayValue = totalWaitTicks();
+
+		int delayValue = getDeparationTime();
 		long lastDepartureTimestamp = Long.MIN_VALUE;
 		String stationName = "";
 		ScheduleEntry entry = context.scheduleEntry();
@@ -104,7 +109,7 @@ public class TrainSeparationCondition extends ScheduledDelay implements IDelayed
 			lastDepartureTimestamp = StationDepartureHistory.getLastMatchingDepartureTime(getTrainFilter(), context.train(), stationName);
 		}
 
-		if (lastDepartureTimestamp + delayValue < DragonLib.getCurrentServer().get().overworld().getGameTime()) {
+		if (lastDepartureTimestamp + delayValue < GameInstance.getServer().overworld().getGameTime()) {
 			StationDepartureHistory.updateDepartureHistory(context.train(), context.station().name);
 			return true;
 		}

@@ -2,11 +2,11 @@ package de.mrjulsen.crn.data.train;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
 import java.util.Map.Entry;
 import java.util.Map;
@@ -94,7 +94,7 @@ public class TrainData implements IListenable<TrainData> {
     /** Contains the last (single!) measured transit time that can be used for the calculation. */
     private transient final Map<Integer /* station index */, Integer /* transit time */> measuredTransitTimes = new HashMap<>();    
     /** Contains the x last measured transit times that can be used for the calculation. */
-    public final Map<Integer /* schedule index */, PriorityQueue<Integer> /* last x transit times */> transitTimeHistory = new HashMap<>();
+    public final Map<Integer /* schedule index */, Queue<Integer> /* last x transit times */> transitTimeHistory = new HashMap<>();
     /** The current valid and used transit time. */
     public final Map<Integer /* schedule index */, Integer /* current default transit */> currentTransitTime = new HashMap<>();
 
@@ -258,6 +258,7 @@ public class TrainData implements IListenable<TrainData> {
     public void addTravelSection(TrainTravelSection section) {
         this.sectionsByIndex.put(section.getScheduleIndex(), section);
         sectionsCache.clear();
+        currentSectionCache.clear();
     }
 
     public String getCurrentTitle() {
@@ -443,14 +444,24 @@ public class TrainData implements IListenable<TrainData> {
         return !hasStarted;
     }
 
-    public synchronized TrainPrediction setPredictionData(int entryIndex, int currentIndex, int maxEntries, int stayDuration, int minStayDuration, int transitTime, TrainDeparturePrediction predictionData) {
+    public synchronized TrainPrediction setPredictionData(int entryIndex, int currentIndex, int maxEntries, int stayDuration, int minStayDuration, int createTransitTime, TrainDeparturePrediction predictionData) {
         // keep track of current schedule index
         this.destinationChanged = destinationChanged || this.currentScheduleIndex != currentIndex;
         this.currentScheduleIndex = currentIndex;
 
         // Update CRN predictions with data from Create
         TrainPrediction pred = predictionsByIndex.computeIfAbsent(entryIndex, i -> new TrainPrediction(this, entryIndex, predictionData, stayDuration, minStayDuration));
-        currentTransitTime.computeIfAbsent(entryIndex, x -> ModCommonConfig.USE_CREATE_TRANSIT_TIMES_ON_INIT.get() ? ((ScheduleRuntimeAccessor)train.runtime).crn$predictionTicks().get(entryIndex) : INVALID);
+        boolean useCreateTimesOnInit = ModCommonConfig.USE_CREATE_TRANSIT_TIMES_ON_INIT.get();
+        if (useCreateTimesOnInit) {
+            int ticks = ((ScheduleRuntimeAccessor)train.runtime).crn$predictionTicks().get(entryIndex);
+            currentTransitTime.computeIfAbsent(entryIndex, x -> {
+                fillHistory(transitTimeHistory.computeIfAbsent(entryIndex, y -> new ConcurrentLinkedQueue<>()), createTransitTime);
+                return ticks;
+            });
+        } else {
+            currentTransitTime.computeIfAbsent(entryIndex, x -> INVALID);
+        }
+
         validPredictionEntries.add(entryIndex);
 
         pred.updateRealTime(
@@ -479,10 +490,12 @@ public class TrainData implements IListenable<TrainData> {
         measuredTransitTimes.clear();
         transitTimeHistory.clear();
         currentTransitTime.clear();
+        currentSectionCache.clear();
+        sectionsCache.clear();
         lastScheduleIndex = INVALID;
+        totalDuration = INVALID;
         hasStarted = false;
 
-        sectionsCache.clear();
         resetCaches();
     }
 
@@ -603,10 +616,13 @@ public class TrainData implements IListenable<TrainData> {
      */
     public void reachDestination(long destinationReachTime, int createTicksInTransit) {
         this.destinationReachTime = destinationReachTime;
+        if (!ModCommonConfig.CUSTOM_TRANSIT_TIME_CALCULATION.get()) {
+            this.transitTime = createTicksInTransit;
+        }
 
         if (hasStarted) {
-            processTransitHistory(transitTimeHistory.computeIfAbsent(currentScheduleIndex, x -> new PriorityQueue<>()));
-            this.measuredTransitTimes.put(currentScheduleIndex, ModCommonConfig.CUSTOM_TRANSIT_TIME_CALCULATION.get() ? createTicksInTransit : transitTime);
+            processTransitHistory(transitTimeHistory.computeIfAbsent(currentScheduleIndex, x -> new ConcurrentLinkedQueue<>()));
+            this.measuredTransitTimes.put(currentScheduleIndex, transitTime);
         }
         this.transitTime = 0;
         this.waitingForSignalTicks = 0;
@@ -655,7 +671,7 @@ public class TrainData implements IListenable<TrainData> {
         while (history.size() >= getHistoryBufferSize()) {
             history.poll();
         }
-        history.offer(transitTime); // add current transit time to the history
+        history.add(transitTime); // add current transit time to the history
 
         int refCurrentTransitTime = currentTransitTime.get(currentScheduleIndex);
         double median = ModUtils.calculateMedian(history, ModCommonConfig.TOTAL_DURATION_DEVIATION_THRESHOLD.get(), x -> true);
@@ -707,12 +723,18 @@ public class TrainData implements IListenable<TrainData> {
         return nbt;
     }
     
-    public static TrainData fromNbt(CompoundTag nbt) {
+    public static Optional<TrainData> fromNbt(CompoundTag nbt) {
         UUID trainId = nbt.getUUID(NBT_TRAIN_ID);
         UUID sessionId = nbt.getUUID(NBT_ID);
-        TrainData data = new TrainData(TrainUtils.getTrain(trainId).get(), sessionId); // TODO
-        data.deserializeNbt(nbt);
-        return data;
+        Optional<Train> train = TrainUtils.getTrain(trainId);
+
+        if (train.isPresent()) {
+            TrainData data = new TrainData(train.get(), sessionId);
+            data.deserializeNbt(nbt);
+            return Optional.ofNullable(data);
+        }
+        CreateRailwaysNavigator.LOGGER.warn("Cannot load data for train with id " + trainId + ", because that train does not exist.");
+        return Optional.empty();
     }
 
     protected void deserializeNbt(CompoundTag nbt) {
@@ -732,7 +754,7 @@ public class TrainData implements IListenable<TrainData> {
                 int idx = Integer.parseInt(key);
                 int time = transitTimes.getInt(key);
                 if (time > 0) {
-                    fillHistory(transitTimeHistory.computeIfAbsent(idx, x -> new PriorityQueue<>()), time);
+                    fillHistory(transitTimeHistory.computeIfAbsent(idx, x -> new ConcurrentLinkedQueue<>()), time);
                     this.measuredTransitTimes.put(idx, time);
                     this.currentTransitTime.put(idx, time);
                 }

@@ -281,7 +281,7 @@
     "enum.createrailwaysnavigator.train_filter.any": "Beliebiger Zug",
     "enum.createrailwaysnavigator.train_filter.info.any": "Jeder Zug wird hier berücksichtigt.",
     "enum.createrailwaysnavigator.train_filter.same_line": "Gleiche Linie",
-    "enum.createrailwaysnavigator.train_filter.info.same_line": "Nut Züge mit der gleichen Zuglinie werden berücksichtigt.",
+    "enum.createrailwaysnavigator.train_filter.info.same_line": "Nur Züge mit der gleichen Zuglinie werden berücksichtigt.",
     "enum.createrailwaysnavigator.train_filter.same_group": "Gleiche Kategorie",
     "enum.createrailwaysnavigator.train_filter.info.same_group": "Nur Züge mit der gleichen Zugkategorie werden berücksichtigt.",
 
@@ -306,6 +306,7 @@
     "gui.createrailwaysnavigator.section_settings.usable": "Navigierbar",
     "gui.createrailwaysnavigator.section_settings.none": "(Keine)",
 
+    "create.schedule.condition.dynamic_delay.status": "Abfahrt in %s",
     "createrailwaysnavigator.schedule.condition.dynamic_delay": "Dynamische Wartezeit",
     "createrailwaysnavigator.schedule.condition.dynamic_delay.min_duration": "Mindestwartezeit",
     "createrailwaysnavigator.schedule.condition.dynamic_delay.title": "Warte: %s..%s",

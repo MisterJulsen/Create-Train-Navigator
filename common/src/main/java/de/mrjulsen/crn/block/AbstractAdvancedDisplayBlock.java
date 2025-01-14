@@ -76,6 +76,9 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 	@Environment(EnvType.CLIENT)
 	public static BlockColor getDisplayColor() {
 		return (state, world, pos, layer) -> {
+			if (world == null || state == null || pos == null) {
+				return DEFAULT_DISPLAY_COLOR;
+			}			
 			if (world.getBlockEntity(pos) instanceof AdvancedDisplayBlockEntity be) {
 				return be.getSettingsAs(BasicDisplaySettings.class).map(x -> {
 					int color = x.getBackColor();
@@ -238,7 +241,7 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 		BlockState belowState = pLevel.getBlockState(belowPos);
 		if (!canConnect(pLevel, pPos, pState, belowState))
 			KineticBlockEntity.switchToBlockState(pLevel, pPos, updateColumn(pLevel, pPos, pState, true));
-		withBlockEntityDo(pLevel, pPos, AdvancedDisplayBlockEntity::updateControllerStatus);
+		//withBlockEntityDo(pLevel, pPos, AdvancedDisplayBlockEntity::updateControllerStatus);
 	}
 
     @Override
