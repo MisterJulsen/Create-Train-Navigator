@@ -54,7 +54,7 @@ public class RoutePart implements Comparable<RoutePart> {
         int endSectionIndex = part.getLastStop().getSectionIndex();
         TrainTravelSection startSection = trainData.getSectionByIndex(startSectionIndex);
         TrainTravelSection endSection = trainData.getSectionByIndex(endSectionIndex);
-        if (startSectionIndex != endSectionIndex && !(endSection.isFirstStop(part.getLastStop().getScheduleIndex()) && endSection.previousSection() == startSection && startSection.shouldIncludeNextStationOfNextSection() && startSection.isUsable())) {
+        if (startSectionIndex != endSectionIndex && !(endSection.isFirstStop(part.getLastStop().getScheduleIndex()) && endSection.previousSection().getScheduleIndex() == startSection.getScheduleIndex() && startSection.shouldIncludeNextStationOfNextSection() && startSection.isUsable())) {
             return false;
         }
         return true;
