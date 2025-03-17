@@ -129,7 +129,7 @@ public class TrainDisplayData {
             side,
             train.speed,
             train.currentlyBackwards,
-            data.isWaitingAtStation(),
+            data.isAtStation(),
             !section.isUsable()
         );
     }

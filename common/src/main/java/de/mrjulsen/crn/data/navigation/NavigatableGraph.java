@@ -301,6 +301,7 @@ public class NavigatableGraph {
             schedules.get(train.id).stopsAt(start.getStationTag()) &&
             schedules.get(train.id).stopsAt(end.getStationTag())
         ).toList();
+        if (CreateRailwaysNavigator.isDebug()) CreateRailwaysNavigator.LOGGER.info(String.format("Found %s trains at station %s! Stations are: %s, %s", departingTrains.size(), start.getStationTag(), start.getStationTag(), end.getStationTag()));
         
         List<Route> routes = new ArrayList<>();
 
@@ -312,20 +313,23 @@ public class NavigatableGraph {
 
             RoutePart part = RoutePart.get(schedules.get(train.id).getSessionId(), schedules.get(train.id).simulate(simulationTime), start.getStationTag(), end.getStationTag(), userSettings);  
             if (!RoutePart.validate(part, trainData)) {
+                if (CreateRailwaysNavigator.isDebug()) CreateRailwaysNavigator.LOGGER.info(String.format("Cannot use train %s at station %s: %s", train.id, start.getStationTag(), part));
                 continue;
             }
             
             while (!tempTransferNodes.isEmpty()) {
                 RoutePart tempPart = RoutePart.get(schedules.get(train.id).getSessionId(), schedules.get(train.id).simulate(simulationTime), start.getStationTag(), tempTransferNodes.peek().getStationTag(), userSettings);  
+                                
                 if (!RoutePart.validate(tempPart, trainData)) {
                     break;
                 }
-                part = tempPart;
                 tempEnd = tempTransferNodes.poll();
+                part = tempPart;
             }
 
 
             if (ModCommonConfig.EXCLUDE_TRAINS.get()) excludedTrainIds.add(train.id);
+            
 
             // Step 2
             List<RoutePart> parts = new ArrayList<>();
@@ -334,7 +338,9 @@ public class NavigatableGraph {
                 Set<UUID> exclTrns = new HashSet<>(excludedTrainIds);
                 if (ModCommonConfig.EXCLUDE_TRAINS.get()) exclTrns.add(part.getTrainId());
                 List<RoutePart> res = searchForTrainsInternal(tempEnd, schedules, new ConcurrentLinkedQueue<>(tempTransferNodes), exclTrns, part);
-                if (res == null) continue;                
+                if (res == null) {
+                    continue;
+                }
                 parts.addAll(res);
             }
             routes.add(new Route(parts, false));
@@ -387,7 +393,7 @@ public class NavigatableGraph {
             }
         }
         
-        if (bestPart == null || bestPart.isEmpty()) {
+        if (bestPart == null || bestPart.isEmpty()) {            
             return null;
         }
 

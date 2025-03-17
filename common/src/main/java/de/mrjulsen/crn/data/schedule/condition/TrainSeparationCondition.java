@@ -10,6 +10,7 @@ import com.simibubi.create.foundation.gui.ModularGuiLineBuilder;
 import com.simibubi.create.foundation.utility.Pair;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.api.IPredictableWaitCondition;
 import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.data.ETimeSource;
 import de.mrjulsen.crn.data.schedule.IConditionsRequiresInstruction;
@@ -28,7 +29,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 
-public class TrainSeparationCondition extends ScheduledDelay implements IDelayedWaitCondition, IConditionsRequiresInstruction {
+public class TrainSeparationCondition extends ScheduledDelay implements IDelayedWaitCondition, IConditionsRequiresInstruction, IPredictableWaitCondition {
 
     @Deprecated public static final String NBT_TIME = "Value";
     @Deprecated public static final String NBT_TIME_UNIT = "TimeUnit";
@@ -133,6 +134,11 @@ public class TrainSeparationCondition extends ScheduledDelay implements IDelayed
 	@Environment(EnvType.CLIENT)
 	public void initConfigurationWidgets(ModularGuiLineBuilder builder) {
 		ClientWrapper.initTimingAdjustmentGui(this, builder);
+	}
+
+	@Override
+	public long waitUntil(long worldTime) {
+		return worldTime + totalWaitTicks();
 	}
 
 }

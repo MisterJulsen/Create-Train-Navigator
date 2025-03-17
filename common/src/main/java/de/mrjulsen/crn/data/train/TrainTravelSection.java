@@ -139,7 +139,7 @@ public class TrainTravelSection {
         List<TrainPrediction> result = new ArrayList<>();
         TrainTravelSection nextSection = nextSection();
         
-        Map<Integer, TrainPrediction> predictionsSrc = data.getPredictionsRaw();
+        Map<Integer, TrainPrediction> predictionsSrc = data.getPredictionsMap();
         Map<Integer, TrainPrediction> predictions = new HashMap<>(predictionsSrc.size());
         for (Map.Entry<Integer, TrainPrediction> prediction : predictionsSrc.entrySet()) {
             if (GlobalSettings.getInstance().isStationBlacklisted(prediction.getValue().getStationName())) {

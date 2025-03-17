@@ -927,7 +927,7 @@ public final class ModAccessorTypes {
             return nbt.getUUID(DataAccessorType.DEFAULT_NBT_DATA);
         }, (player, in, temp, nbt, iteration) -> {
             if (TrainListener.data.containsKey(in)) {
-                TrainListener.data.get(in).resetPredictions();
+                TrainListener.data.get(in).softResetPredictions();
             }
             return false;
         }

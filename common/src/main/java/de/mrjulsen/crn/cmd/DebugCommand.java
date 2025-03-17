@@ -84,7 +84,7 @@ public class DebugCommand {
 
     private static int reset(CommandSourceStack cmd) throws CommandSyntaxException {
         cmd.sendSuccess(TextUtils.text("All train predictions have been reset."), false);
-        TrainListener.data.values().forEach(x -> x.resetPredictions());
+        TrainListener.data.values().forEach(x -> x.softResetPredictions());
         return 1;
     }
 

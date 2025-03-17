@@ -1,43 +1,147 @@
 package de.mrjulsen.crn.data.train;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
 import com.google.common.base.Objects;
-import com.simibubi.create.content.trains.display.GlobalTrainDisplayData.TrainDeparturePrediction;
+import com.simibubi.create.content.trains.entity.Train;
+import com.simibubi.create.content.trains.schedule.ScheduleEntry;
+import com.simibubi.create.content.trains.schedule.condition.ScheduleWaitCondition;
+import com.simibubi.create.content.trains.schedule.destination.DestinationInstruction;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.api.IPredictableWaitCondition;
 import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.data.StationTag;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
 import de.mrjulsen.crn.event.ModCommonEvents;
 import de.mrjulsen.crn.exceptions.RuntimeSideException;
+import de.mrjulsen.crn.mixin.ScheduleRuntimeAccessor;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.data.Cache;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 
 /** Data about one single station of a train. */
 public class TrainPrediction implements Comparable<TrainPrediction> {
 
+    private static record DepartureTime(long defaultDepartureTime, long minDepartureTime) {}
+
+    public static class PredictionTimes {
+        private static final String NBT_REFRESHED = "Refreshed";
+        private static final String NBT_ARRIVAL = "Arrival";
+        private static final String NBT_DEPARTURE = "Departure";
+        private static final String NBT_MIN_DEPARTURE = "MinDeparture";
+
+        private long refreshTime;
+        private long arrivalTime;
+        private long departureTime;
+        private long minDepartureTime;
+
+        public PredictionTimes(long refreshTime, long arrivalTime, long departureTime, long minDepartureTime) {
+            this.set(refreshTime, arrivalTime, departureTime, minDepartureTime);
+        }
+
+        void set(long refreshTime, long arrivalTime, long departureTime, long minDepartureTime) {
+            this.refreshTime = refreshTime;
+            this.arrivalTime = Math.max(this.refreshTime, arrivalTime);
+            this.departureTime = Math.max(this.arrivalTime, departureTime);
+            this.minDepartureTime = Math.max(this.arrivalTime, minDepartureTime);
+        }
+
+        void shift(long amount, boolean updateRefreshTime) {            
+            if (updateRefreshTime) {
+                this.refreshTime += amount;
+            }
+            this.arrivalTime += amount;
+            this.departureTime += amount;
+            this.minDepartureTime += amount;
+        }
+
+        public long refreshTime() {
+            return refreshTime;
+        }
+
+        public long arrivalTime() {
+            return arrivalTime;
+        }
+
+        public long departureTime() {
+            return departureTime;
+        }
+
+        public long minDepartureTime() {
+            return minDepartureTime;
+        }
+
+        public long arrivalIn() {
+            return arrivalTime() - refreshTime();
+        }
+
+        public long departureIn() {
+            return departureTime() - refreshTime();
+        }
+
+        public long minDepartureIn() {
+            return minDepartureTime() - refreshTime();
+        }
+
+        public long stayDuration() {
+            return Math.max(0, departureTime() - arrivalTime());
+        }
+
+        public long minStayDuration() {
+            return Math.max(0, minDepartureIn() - arrivalTime());
+        }
+
+        public CompoundTag toNbt() {
+            CompoundTag nbt = new CompoundTag();
+            nbt.putLong(NBT_REFRESHED, refreshTime);
+            nbt.putLong(NBT_ARRIVAL, arrivalTime);
+            nbt.putLong(NBT_DEPARTURE, departureTime);
+            nbt.putLong(NBT_MIN_DEPARTURE, minDepartureTime);
+            return nbt;
+        }
+
+        public static PredictionTimes fromNbt(CompoundTag nbt) {
+            long refreshTime = nbt.getLong(NBT_REFRESHED);
+            long arrivalTime = nbt.getLong(NBT_ARRIVAL);
+            long departureTime = nbt.getLong(NBT_DEPARTURE);
+            long minDepartureTime = nbt.getLong(NBT_MIN_DEPARTURE);
+            PredictionTimes t = new PredictionTimes(refreshTime, arrivalTime, departureTime, minDepartureTime);
+            return t;
+        }
+
+        @Override
+        public final boolean equals(Object other) {
+            if (other instanceof PredictionTimes o) {
+                return refreshTime() == o.refreshTime() && arrivalTime() == o.arrivalTime();
+            }
+            return false;
+        }
+
+        @Override
+        public final int hashCode() {
+            return 31 * Objects.hashCode(refreshTime(), arrivalTime());
+        }
+
+        @Override
+        public final String toString() {
+            return String.format("PredictionTimes[R: %s, A: %s, D: %s, At: %s, Dt: %s, d: %s]", refreshTime(), arrivalTime(), departureTime(), arrivalIn(), departureIn(), stayDuration());
+        }
+    }
+
     private static final String NBT_ENTRY_INDEX = "EntryIndex";
     private static final String NBT_STATION_NAME = "StationName";
     private static final String NBT_TITLE = "Title";
-    private static final String NBT_SCHEDULED_TICKS = "ScheduledTicks";
-    private static final String NBT_SCHEDULED_REFRESH_TIME = "ScheduledRefreshTime";
-    private static final String NBT_REAL_TIME_TICKS = "RealTimeTicks";
-    private static final String NBT_REAL_TIME_REFRESH_TIME = "RealTimeRefreshTime";
     private static final String NBT_CURRENT_TICKS_CORRECTION = "CurrentTicksCorrection";
-    private static final String NBT_STOPOVERS = "Stopovers";
     private static final String NBT_CYCLE = "Cycle";
-    private static final String NBT_CYCLE_TIME = "CycleTime";
-    private static final String NBT_STAY_DURATION = "StayDuration";
-    private static final String NBT_MIN_STAY_DURATION = "MinStayDuration";
+    private static final String NBT_TRANSIT_TIME = "TransitTime";
+    private static final String NBT_SCHEDULED_TIMES = "ScheduledTimes";
+    private static final String NBT_REAL_TIMES = "RealTimes";
+    private static final String NBT_AVERAGE_STAY_DURATION = "AverageStayDuration";
 
     private transient final TrainData data;
     
@@ -45,18 +149,19 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
     private final String title;
     private String stationName;
 
-    private int scheduledTicks;
-    private long scheduleRefreshTime;
-    private int realTimeTicks;
-    private long realTimeRefreshTime;
 
-    private long arrivalTicksCorrection;
-    private long departureTicksCorrection;
-    private List<String> stopovers = new ArrayList<>();
+    // TIMES
+    private PredictionTimes scheduledTimes;
+    private PredictionTimes realTimes;
+    private int averageStayDuration = -1;
+
+    private long waitAtStationBufferTicks;
+    private long availableDepartureBufferTime;
     private int cycle;
-    private long cycleTime;
-    private final int stayDuration;
-    private final int minStayDuration;
+
+    // Transit times
+    private final ValueWatcher transitTime = new ValueWatcher(ModCommonConfig.TOTAL_DURATION_DEVIATION_THRESHOLD.get(), ModCommonConfig.TOTAL_DURATION_BUFFER_SIZE.get() * 2 + 1, () -> getData().updateTotalDuration());
+
 
     // History
     private long previousScheduledArrivalTime;
@@ -78,36 +183,56 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
     private final Cache<StationTag> tagCache = new Cache<>(() -> GlobalSettings.getInstance().getOrCreateStationTagFor(stationName));
     private final Cache<TrainTravelSection> section;
 
-    private TrainPrediction(TrainData data, int entryIndex, String stationName, String title, int ticks, int stayDuration, int minStayDuration) {
+    public TrainPrediction(TrainData data, int entryIndex, String stationName, String title) {
         this.entryIndex = entryIndex;
         this.data = data;
-        this.title = title;
-        this.stayDuration = stayDuration;
-        this.minStayDuration = minStayDuration;
+
+		int size = data.getTrain().runtime.getSchedule().entries.size();
+        String text = title;
+		if (text.isBlank()) {
+			for (int i = 1; i < size; i++) {
+				int j = (entryIndex + i) % size;
+				ScheduleEntry scheduleEntry = data.getTrain().runtime.getSchedule().entries.get(j);
+				if (!(scheduleEntry.instruction instanceof DestinationInstruction instruction))
+					continue;
+				text = instruction.getFilter()
+					.replaceAll("\\*", "")
+					.trim();
+				break;
+			}
+		}
+        this.title = text;
+
         this.stationName = stationName;
-        this.realTimeTicks = ticks;
-        this.realTimeRefreshTime = DragonLib.getCurrentWorldTime();
         this.section = new Cache<>(() -> data.getSectionForIndex(entryIndex));
-        
-        reset();   
     }
 
-    public TrainPrediction(TrainData data, int entryIndex, TrainDeparturePrediction prediction, int stayDuration, int minStayDuration) {
-        this(data, entryIndex, prediction.destination, prediction.scheduleTitle.getString(), prediction.ticks, stayDuration, minStayDuration);
+    private boolean preInitialized = false;
+    public void preInit() {
+        if (preInitialized || isInitialized()) {
+            return;
+        }
+
+        List<Integer> createTransitTimes = ((ScheduleRuntimeAccessor)data.getTrain().runtime).crn$getTransitTicks();
+        int createTransitTime = entryIndex < createTransitTimes.size() ? createTransitTimes.get(entryIndex) : -1;
+        if (createTransitTime >= 0 && !data.isPreInitializationPhase()) {
+            this.transitTime().add(createTransitTime, false);
+        }
+        preInitialized = true;
     }
 
     public static TrainPrediction unpredictable(TrainData data) {
         CreateRailwaysNavigator.LOGGER.warn("Train " + data.getTrain().name.getString() + " (" + data.getTrain().id + ") is unpredictable!");
-        return new TrainPrediction(data, -1, "", "", 0, 0, 0);
+        return new TrainPrediction(data, -1, "", "");
     }
 
-    /** Resets the scheduled time to the current real time. Called when the total duration changes to prevent deviations. */
+    /**
+     * Resets the scheduled times to the current real time. Always called when the total duration changes to prevent deviations.
+     */
     public void reset() {
-        this.cycleTime = 0;
-        this.departureTicksCorrection = 0;
-        this.arrivalTicksCorrection = 0;
-        this.scheduledTicks = realTimeTicks;
-        this.scheduleRefreshTime = realTimeRefreshTime;        
+        this.availableDepartureBufferTime = 0;
+        this.waitAtStationBufferTicks = 0;
+        this.scheduledTimes = this.realTimes;
     }
 
     /** General data about the train. */
@@ -134,113 +259,132 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
         return isCustomTitle.get();
     }
 
+    public int getAverageStayDuration() {
+        return averageStayDuration < 0 ? (int)scheduled().stayDuration() : averageStayDuration;
+    }
+
     /** The scheduled time the train will stay at this station. */
+    @Deprecated
     public int getStayDuration() {
-        return stayDuration;
+        return (int)scheduled().stayDuration();
     }
 
+    /** The minimum time the train will stay at this station. */
+    @Deprecated
     public int getMinStayDuration() {
-        return minStayDuration;
+        return (int)scheduled().minStayDuration();
     }
 
-    public List<String> getStopovers() {
-        return stopovers;
+    /** The current transit time, which the train needed to get here from the last station. */
+    public int getTransitTime() {
+        return this.transitTime.value();
     }
+
+    public int getLastMeasuredTransitTime() {
+        return this.transitTime.measuredValue();
+    }
+
+    public Integer[] getTransitTimesHistory() {
+        return this.transitTime.history();
+    }
+
+    public ValueWatcher transitTime() {
+        return this.transitTime;
+    }
+    
+
+    public PredictionTimes scheduled() {
+        return scheduledTimes;
+    }
+
+    public PredictionTimes realTime() {
+        return realTimes;
+    }
+
+
+    // ##### ARRIVAL #####
+    // SCHEDULED TIMES
 
     /** The world time when the scheduled time was calculated. */
-    public long getScheduleRefreshTime() {
-        return scheduleRefreshTime;
-    }    
-
-
-
-
-    /** The time in ticks of all cycles that have elapsed since the last update. */
-    public long getCycleTime() {
-        return cycleTime;
+    @Deprecated
+    public long getScheduledWorldTime() {
+        return scheduled().refreshTime();
     }
 
     /** The scheduled time until the train stops here. */
+    @Deprecated
     public int getScheduledArrivalTicks() {
-        return scheduledTicks;
+        return (int)scheduled().arrivalIn();
     }
 
     /** The scheduled world time when the train arrives at this station. */
+    @Deprecated
     public long getScheduledArrivalTime() {
-        return getScheduleRefreshTime() + (long)getScheduledArrivalTicks() + getCycleTime();
+        return scheduled().arrivalTime();// + getCycleTime();
     }
 
 
-
+    // REAL TIME
 
     /** The world time when the real time data was last refreshed. */
-    public long getRealTimeRefreshTime() {
-        return realTimeRefreshTime;
+    @Deprecated
+    public long getRealTimeWorldTime() {
+        return realTime().refreshTime();
     }
 
     /** The current time until the train stops here. */
+    @Deprecated
     public int getRealTimeArrivalTicks() {
-        return realTimeTicks;
+        return (int)realTime().arrivalIn();
     }
-
-    private long getRealTimeArrivalTimeRaw() {
-        return getRealTimeRefreshTime() + getRealTimeArrivalTicks();
-    }
-
-    /** The actual deviation from real time and schedule time. Cycles are not taken into account! */
-    private long getArrivalTimeRawDeviation() {
-        return getRealTimeArrivalTimeRaw() - getScheduledArrivalTime();
-    }
-
 
     /** The current world time the train will arrive at this station. */
     public long getRealTimeArrivalTime() {
-        return getRealTimeArrivalTimeRaw() - arrivalTicksCorrection;
+        return realTime().arrivalTime() - waitAtStationBufferTicks;
+    }
+
+
+    // TIME DEVIATION
+
+    /** The actual deviation from real time and schedule time. Cycles are not taken into account! */
+    private long getArrivalTimeDeviationRaw() {
+        return realTime().arrivalTime() - scheduled().arrivalTime();
     }
 
     /** The actual deviation from real time and schedule time. */
     public long getArrivalTimeDeviation() {
-        return getArrivalTimeRawDeviation() - arrivalTicksCorrection;
+        return getArrivalTimeDeviationRaw() - waitAtStationBufferTicks;
     }
 
 
 
 
 
-
-
-
-
-
-
+    // ##### DEPARTURE #####
 
     /** The departure time from this stop when the schedule was updated. */
+    @Deprecated
     public int getScheduledDepartureTicks() {
-        return getScheduledArrivalTicks() + getStayDuration();
+        return (int)scheduled().departureIn();
     }
 
     /** The scheduled world time when the train departs from this station. */
+    @Deprecated
     public long getScheduledDepartureTime() {
-        return getScheduledArrivalTime() + getStayDuration();
+        return scheduled().departureTime();
     }
 
     /** The current world time at which the train will depart. */
     public long getRealTimeDepartureTime() {
-        return getRealTimeArrivalTime() + getStayDuration() - departureTicksCorrection;// - Math.min(getBufferTime(), getDeviationArrivalTime());
+        return realTime().departureTime() - availableDepartureBufferTime;
     }
 
     /** The deviation of the departure time from the schedule. */
     public long getDepartureTimeDeviation() {
-        return getArrivalTimeDeviation() - departureTicksCorrection;
+        return getArrivalTimeDeviation() - availableDepartureBufferTime;
     }
 
 
-
-
-    /** The time it took the train to get here from the last station. */
-    public int getLastTransitTime() {
-        return data.getTransitTicks();
-    }
 
     public long getBufferTime() {
         return Math.max(getStayDuration() - getMinStayDuration(), 0);
@@ -252,7 +396,7 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
     }
 
     public long getScheduledArrivalDay() {
-        return getScheduledArrivalTime() / DragonLib.ticksPerDay();
+        return scheduled().arrivalTime() / DragonLib.ticksPerDay();
     }
     
     public long getScheduledDepartureDay() {
@@ -260,15 +404,11 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
     }
     
     public long getRealTimeArrivalDay() {
-        return getRealTimeArrivalTime() / DragonLib.ticksPerDay();
+        return realTime().arrivalTime() / DragonLib.ticksPerDay();
     }
     
     public long getRealTimeDepartureDay() {
         return getRealTimeDepartureTime() / DragonLib.ticksPerDay();
-    }
-
-    public void setStopovers(List<String> stopovers) {
-        this.stopovers = stopovers;
     }
 
 
@@ -279,8 +419,8 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
         this.previousRealTimeArrivalTime = getRealTimeArrivalTime();
         this.previousRealTimeDepartureTime = getRealTimeDepartureTime();
 
-        cycle++;
-        this.cycleTime += data.getTotalDuration();
+        this.cycle++;
+        this.scheduled().shift(data.getTotalDuration(), false);
     }
 
     /** The cycle the train is currently in. */
@@ -307,6 +447,14 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
 
     
 
+    void updateAverageStayDuration(int value) {
+        if (this.averageStayDuration < 0) {
+            this.averageStayDuration = value; 
+        } else {
+            this.averageStayDuration = (this.averageStayDuration + value) / 2;
+        }
+    }
+
     /** Calculates in which cycle the train will be when it arrives back here in the specified time.*/    
     public int estimateCycleIn(int ticks) {
         return getCurrentCycle() + ticks / data.getTotalDuration();
@@ -314,7 +462,7 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
 
     /** Time since start of recording. */
     public long getRuntime() {
-        return DragonLib.getCurrentWorldTime() - getScheduleRefreshTime();
+        return DragonLib.getCurrentWorldTime() - getScheduledWorldTime();
     }
 
     public boolean hasDepartedOnce() {
@@ -331,6 +479,10 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
 
     public boolean isAnyDelayed() {
         return isArrivalDelayed() || isDepartureDelayed();
+    }
+
+    public boolean isInitialized() {
+        return scheduled() != null && transitTime().isInitialized();
     }
 
     /**
@@ -363,36 +515,38 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
 
     
 
-    public void updateRealTime(String stationName, int realTimeTicks) {
+    public void updateRealTime(String stationName, long refreshTime, long triggerTime) {
         isCustomTitle.clear();
         this.stationName = stationName == null ? this.stationName : stationName;
-        this.realTimeRefreshTime = DragonLib.getCurrentWorldTime();
-        this.realTimeTicks = realTimeTicks;
+        
+        DepartureTime departures = estimateDepartures(triggerTime);
+        this.realTimes = new PredictionTimes(refreshTime, triggerTime, departures.defaultDepartureTime(), departures.minDepartureTime());
+        if (scheduled() == null) {
+            reset();
+        }
 
         List<TrainPrediction> prevPreds = data.getPredictionsChronologically();
         Optional<TrainPrediction> currentPrediction = data.getNextStopPrediction();
-        this.arrivalTicksCorrection = 0;
-        this.departureTicksCorrection = 0;
+        this.waitAtStationBufferTicks = 0;
+        this.availableDepartureBufferTime = 0;
 
-        if (data.isWaitingAtStation() && data.getCurrentScheduleIndex() == getEntryIndex()) {
-            this.arrivalTicksCorrection = Math.min(data.waitingAtStationTicks(), getStayDuration());
-            //this.arrivalTicksCorrection = data.waitingAtStationTicks();
+        if (data.isAtStation() && data.getCurrentScheduleIndex() == getEntryIndex()) {
+            this.waitAtStationBufferTicks = Math.min(data.waitingAtStationTicks(), getStayDuration());
         }
 
         if (currentPrediction.isPresent()) {
-            this.arrivalTicksCorrection = currentPrediction.get().arrivalTicksCorrection;
+            this.waitAtStationBufferTicks = currentPrediction.get().waitAtStationBufferTicks;
         }
         
-        long tempDepartureCorrection = getBufferTime();
-        long tempArrivalCorrection = 0;//getBufferTime();
+        long tempDepartureBufferTime = getBufferTime();
+        long tempWaitAtStationBufferTicks = 0;
         for (int i = 0; i < prevPreds.size(); i++) {
             final TrainPrediction pred = prevPreds.get(i);
-            //tempArrivalCorrection += getBufferTime();
-            tempArrivalCorrection += pred.getBufferTime();
+            tempWaitAtStationBufferTicks += pred.getBufferTime();
             if (pred == this) break;
         }
-        this.arrivalTicksCorrection += Math.min(tempArrivalCorrection, getArrivalTimeDeviation());
-        this.departureTicksCorrection += Math.min(tempDepartureCorrection, getArrivalTimeDeviation());
+        this.waitAtStationBufferTicks += Math.min(tempWaitAtStationBufferTicks, getArrivalTimeDeviation() /* delay */);
+        this.availableDepartureBufferTime += Math.min(tempDepartureBufferTime, getArrivalTimeDeviation() /* delay */);
         resetAllTimedCaches();
     }
 
@@ -400,12 +554,35 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
         tagCache.clear();
     }
 
+    private DepartureTime estimateDepartures(long triggerTime) {
+        Train train = getData().getTrain();
+		ScheduleEntry scheduleEntry = train.runtime.getSchedule().entries.get(entryIndex);
+
+        long[] currentTime = new long[] { triggerTime, triggerTime };
+		for (List<ScheduleWaitCondition> list : scheduleEntry.conditions) {
+			for (ScheduleWaitCondition condition : list) {
+                if (condition instanceof IPredictableWaitCondition c) {
+                    currentTime[0] = c.waitUntil(currentTime[0]);
+                    currentTime[1] = c.waitMinUntil(currentTime[1]);
+                }
+			}
+		}
+
+        return new DepartureTime(currentTime[0], currentTime[1]);
+	}
+
+
+
+
+
+
+
+
     @Override
     public boolean equals(Object obj) {
         return 
             obj instanceof TrainPrediction o &&
-            scheduledTicks == o.scheduledTicks &&
-            scheduleRefreshTime == o.scheduleRefreshTime &&
+            scheduled().equals(o.scheduled()) &&
             entryIndex == o.entryIndex &&
             stationName.equals(o.stationName)
         ;
@@ -413,7 +590,7 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(scheduledTicks, scheduleRefreshTime, entryIndex, stationName);
+        return Objects.hashCode(scheduled(), realTime(), entryIndex, stationName);
     }
 
     public boolean similarTo(Object obj) {
@@ -432,25 +609,15 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
     public CompoundTag toNbt() {
         CompoundTag nbt = new CompoundTag();
 
-        ListTag stopovers = new ListTag();
-        List<String> stops = this.stopovers;
-        for (String s : stops) {
-            stopovers.add(StringTag.valueOf(s));
-        }
-
         nbt.putInt(NBT_ENTRY_INDEX, entryIndex);
         nbt.putString(NBT_STATION_NAME, stationName == null ? "" : stationName);
         nbt.putString(NBT_TITLE, title == null ? "" : title);
-        nbt.putInt(NBT_SCHEDULED_TICKS, scheduledTicks);
-        nbt.putLong(NBT_SCHEDULED_REFRESH_TIME, scheduleRefreshTime);
-        nbt.putInt(NBT_REAL_TIME_TICKS, realTimeTicks);
-        nbt.putLong(NBT_REAL_TIME_REFRESH_TIME, realTimeRefreshTime);
-        nbt.putLong(NBT_CURRENT_TICKS_CORRECTION, departureTicksCorrection);
-        nbt.put(NBT_STOPOVERS, stopovers);
+        nbt.put(NBT_SCHEDULED_TIMES, scheduled().toNbt());
+        nbt.put(NBT_REAL_TIMES, realTime().toNbt());
+        nbt.putLong(NBT_CURRENT_TICKS_CORRECTION, availableDepartureBufferTime);
         nbt.putInt(NBT_CYCLE, cycle);
-        nbt.putLong(NBT_CYCLE_TIME, cycleTime);
-        nbt.putInt(NBT_STAY_DURATION, stayDuration);
-        nbt.putInt(NBT_MIN_STAY_DURATION, minStayDuration);
+        nbt.putInt(NBT_TRANSIT_TIME, getTransitTime());
+        nbt.putInt(NBT_AVERAGE_STAY_DURATION, getAverageStayDuration());
         return nbt;
     }
 
@@ -459,24 +626,19 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
             data,
             nbt.getInt(NBT_ENTRY_INDEX),
             nbt.getString(NBT_STATION_NAME),
-            nbt.getString(NBT_TITLE),
-            nbt.getInt(NBT_SCHEDULED_TICKS),
-            nbt.getInt(NBT_STAY_DURATION),
-            nbt.getInt(NBT_MIN_STAY_DURATION)
+            nbt.getString(NBT_TITLE)
         );
         pred.deserializeNbt(nbt);
         return pred;
     }
 
     protected void deserializeNbt(CompoundTag nbt) {
-        this.scheduledTicks = nbt.getInt(NBT_SCHEDULED_TICKS);
-        this.scheduleRefreshTime = nbt.getLong(NBT_SCHEDULED_REFRESH_TIME);
-        this.realTimeTicks = nbt.getInt(NBT_REAL_TIME_TICKS);
-        this.realTimeRefreshTime = nbt.getLong(NBT_REAL_TIME_REFRESH_TIME);
-        this.departureTicksCorrection = nbt.getLong(NBT_CURRENT_TICKS_CORRECTION);
-        this.stopovers = new ArrayList<>(nbt.getList(NBT_STOPOVERS, Tag.TAG_STRING).stream().map(x -> x.getAsString()).toList());
+        this.scheduledTimes = PredictionTimes.fromNbt(nbt.getCompound(NBT_SCHEDULED_TIMES));
+        this.realTimes = PredictionTimes.fromNbt(nbt.getCompound(NBT_REAL_TIMES));
+        this.availableDepartureBufferTime = nbt.getLong(NBT_CURRENT_TICKS_CORRECTION);
         this.cycle = nbt.getInt(NBT_CYCLE);
-        this.cycleTime = nbt.getLong(NBT_CYCLE_TIME);
+        this.transitTime.forceValue(nbt.getInt(NBT_TRANSIT_TIME));
+        this.averageStayDuration = nbt.getInt(NBT_AVERAGE_STAY_DURATION);
     }
 
     /**
@@ -484,31 +646,29 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
      */
     public Component formattedText() {
         return TextUtils.text("[ " + entryIndex + " ]: ").withStyle(ChatFormatting.WHITE)
-            .append(TextUtils.text(stationName).withStyle(ChatFormatting.WHITE))
+            .append(TextUtils.text(getStationName()).withStyle(ChatFormatting.WHITE))
             .append(TextUtils.text(", ").withStyle(ChatFormatting.WHITE))
             .append(TextUtils.text("*" + getCurrentCycle()).withStyle(ChatFormatting.YELLOW))
             .append(TextUtils.text(", ").withStyle(ChatFormatting.WHITE))
-            .append(TextUtils.text("CT: " + getRealTimeArrivalTime()).withStyle(ChatFormatting.GREEN))
+            .append(TextUtils.text("sA: " + (getScheduledArrivalTime())).withStyle(ChatFormatting.BLUE))
             .append(TextUtils.text(", ").withStyle(ChatFormatting.WHITE))
-            .append(TextUtils.text("D: " + (getArrivalTimeDeviation() + " / " + getDepartureTimeDeviation())).withStyle(ChatFormatting.GOLD))
+            .append(TextUtils.text("rA: " + getRealTimeArrivalTime()).withStyle(ChatFormatting.GREEN))
             .append(TextUtils.text(", ").withStyle(ChatFormatting.WHITE))
-            .append(TextUtils.text("B: " + (departureTicksCorrection)).withStyle(ChatFormatting.DARK_GREEN))
+            .append(TextUtils.text("d: " + (getArrivalTimeDeviation() + " / " + getDepartureTimeDeviation())).withStyle(ChatFormatting.GOLD))
             .append(TextUtils.text(", ").withStyle(ChatFormatting.WHITE))
-            .append(TextUtils.text("P: " + (getScheduledArrivalTime())).withStyle(ChatFormatting.BLUE))
+            .append(TextUtils.text("B: " + (availableDepartureBufferTime)).withStyle(ChatFormatting.DARK_GREEN))
             .append(TextUtils.text(", ").withStyle(ChatFormatting.WHITE))
-            .append(TextUtils.text("S: " + getStayDuration()).withStyle(ChatFormatting.AQUA))
+            .append(TextUtils.text("W: " + getStayDuration()).withStyle(ChatFormatting.AQUA))
             .append(TextUtils.text(", ").withStyle(ChatFormatting.WHITE))
-            .append(TextUtils.text("Tr: " + getLastTransitTime()).withStyle(ChatFormatting.DARK_RED))
+            .append(TextUtils.text("S: " + getSection()).withStyle(ChatFormatting.RED))
             .append(TextUtils.text(", ").withStyle(ChatFormatting.WHITE))
-            .append(TextUtils.text("T: " + getSection()).withStyle(ChatFormatting.RED))
-            .append(TextUtils.text(", ").withStyle(ChatFormatting.WHITE))
-            .append(TextUtils.text("Ti: " + title).withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(TextUtils.text("T: " + title).withStyle(ChatFormatting.LIGHT_PURPLE))
         ;
     }
 
     public void shiftTime(long l) {
-        this.scheduleRefreshTime += l;
-        this.realTimeRefreshTime += l;
+        this.scheduled().shift(l, true);
+        this.realTime().shift(l, true);
     }
 
     @Override

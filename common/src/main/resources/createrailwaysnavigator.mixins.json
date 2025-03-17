@@ -10,6 +10,8 @@
     "StationBlockEntityMixin"
   ],
   "mixins": [
+    "extensions.ScheduledDelayMixin",
+    "extensions.TimeOfDayConditionMixin",
     "ScheduleRuntimeAccessor",
     "TrainStatusAccessor",
     "ControlsHandlerMixin",

@@ -2,11 +2,10 @@ package de.mrjulsen.crn.data.train;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.Map.Entry;
 import java.util.Map;
@@ -15,12 +14,15 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 
-import com.simibubi.create.content.trains.display.GlobalTrainDisplayData.TrainDeparturePrediction;
 import com.simibubi.create.content.trains.entity.Train;
+import com.simibubi.create.content.trains.schedule.Schedule;
+import com.simibubi.create.content.trains.schedule.ScheduleEntry;
+import com.simibubi.create.content.trains.schedule.destination.ChangeTitleInstruction;
+import com.simibubi.create.content.trains.schedule.destination.DestinationInstruction;
+import com.simibubi.create.content.trains.station.GlobalStation;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.config.ModCommonConfig;
-import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.crn.event.CRNEventsManager;
 import de.mrjulsen.crn.event.events.TotalDurationTimeChangedEvent;
 import de.mrjulsen.crn.mixin.ScheduleRuntimeAccessor;
@@ -32,6 +34,7 @@ import de.mrjulsen.crn.util.LockedList;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.config.ECachingPriority;
 import de.mrjulsen.mcdragonlib.data.Cache;
+import de.mrjulsen.mcdragonlib.util.MathUtils;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 
@@ -53,7 +56,6 @@ public class TrainData implements IListenable<TrainData> {
     private transient static final String NBT_LINE_ID = "LineId";
     private transient static final String NBT_LAST_DELAY_OFFSET = "LastDelay";
     private transient static final String NBT_CANCELLED = "Cancelled";
-    private transient static final String NBT_TRANSIT_TIMES = "TransitTimes";
 
     private transient static final int INVALID = -1;
 
@@ -62,41 +64,26 @@ public class TrainData implements IListenable<TrainData> {
 
     private transient final Train train;
     private UUID sessionId;
-    private final ConcurrentHashMap<Integer, TrainPrediction> predictionsByIndex = new ConcurrentHashMap<>();
-    private transient final ConcurrentHashMap<Integer, TrainTravelSection> sectionsByIndex = new ConcurrentHashMap<>();
-    private transient final Cache<TrainTravelSection> defaultSection = new Cache<>(() -> TrainTravelSection.def(this), ECachingPriority.LOW);
-    private transient final List<TrainPrediction> predictionsChronologically = new LockedList<>();
-    private transient final Set<Integer> validPredictionEntries = new HashSet<>();
-    private transient final Cache<Boolean> isDynamic = new Cache<>(() -> 
-        getTrain() != null &&
-        getTrain().runtime != null &&
-        getTrain().runtime.getSchedule() != null &&
-        getTrain().runtime.getSchedule().entries.stream().anyMatch(x -> x.conditions.stream().flatMap(y -> y.stream()).anyMatch(y -> y instanceof DynamicDelayCondition c && c.minWaitTicks() < c.totalWaitTicks()))
-    );
     
-    private int currentScheduleIndex = INVALID;
+
+    private final Map<Integer, TrainPrediction> predictionsByIndex = new ConcurrentHashMap<>();
+    private transient final List<TrainPrediction> predictionsChronologically = new LockedList<>();
+    private transient final Map<Integer, TrainTravelSection> sectionsByIndex = new ConcurrentHashMap<>();
+    
     private transient int currentTravelSectionIndex = INVALID;
     private transient int lastScheduleIndex = INVALID;
     private String lineId;
 
     private transient int totalDuration = INVALID;
-    private transient long destinationReachTime;
-    private transient boolean isAtStation = false;
     
+    public transient int transitTime = 0;
+    public transient int waitingAtStationTime = 0;
+    private transient boolean wasAtStation = false;
     private transient boolean wasWaitingForSignal = false;
     public transient UUID waitingForSignalId;
     public transient final Set<Train> occupyingTrains = new HashSet<>();
     public transient int waitingForSignalTicks;
     public transient boolean isManualControlled;
-
-    /** Last measured ransit time (mem) */
-    public transient int transitTime = 0;
-    /** Contains the last (single!) measured transit time that can be used for the calculation. */
-    private transient final Map<Integer /* station index */, Integer /* transit time */> measuredTransitTimes = new HashMap<>();    
-    /** Contains the x last measured transit times that can be used for the calculation. */
-    public final Map<Integer /* schedule index */, Queue<Integer> /* last x transit times */> transitTimeHistory = new HashMap<>();
-    /** The current valid and used transit time. */
-    public final Map<Integer /* schedule index */, Integer /* current default transit */> currentTransitTime = new HashMap<>();
 
     // Delays
     private long lastSectionDelayOffset;
@@ -106,29 +93,28 @@ public class TrainData implements IListenable<TrainData> {
 
     private int refreshTimingsCounter = 0;
 
-    // Queued Tasks
+    // Tasks
     /** whether all predictions should be deleted */
     private transient boolean hardResetPredictions = false;
-    /** whether the initialization should now be completed */
-    private transient boolean initializationFinishTask = false;
     /** whether the initialization has already been completed */
     private transient boolean initializationCompleted = false;
-    private boolean hasStarted = false;
+    private transient boolean preInitialization = true;
 
-    // temp mem
+    // memory
     private boolean sectionChanged;
     private boolean destinationChanged;
+    private boolean scheduleIndexChanged;
 
-    // Cache
-    /*
-    private transient final Cache<Set<CompiledTrainStatus>> statusCache = new Cache<>(() -> {
-        Set<CompiledTrainStatus> status = new HashSet<>(currentStatusInfos.size());
-        for (ResourceLocation loc : currentStatusInfos) {
-            status.add(TrainStatus.Registry.getRegisteredStatus().get(loc).compile());
-        }
-        return status;
-    }, ECachingPriority.LOW); 
-    */   
+    // Caches   
+    private transient final Cache<TrainTravelSection> defaultSection = new Cache<>(() -> TrainTravelSection.def(this), ECachingPriority.LOW);
+
+    private transient final Cache<Boolean> isDynamic = new Cache<>(() -> 
+        getTrain() != null &&
+        getTrain().runtime != null &&
+        getTrain().runtime.getSchedule() != null &&
+        getTrain().runtime.getSchedule().entries.stream().anyMatch(x -> x.conditions.stream().flatMap(y -> y.stream()).anyMatch(y -> y instanceof DynamicDelayCondition c && c.minWaitTicks() < c.totalWaitTicks()))
+    );
+     
     private final Cache<Boolean> isDelayedCache = new Cache<>(() -> {
         for (TrainPrediction pred : predictionsChronologically) {
             if (pred.isAnyDelayed()) {
@@ -152,16 +138,24 @@ public class TrainData implements IListenable<TrainData> {
             defaultSection.get() :
             sectionsByIndex.get(currentTravelSectionIndex)
         ;
-    });    
+    });
     private final Cache<List<TrainTravelSection>> sectionsCache = new Cache<>(() -> {
         return sectionsByIndex.isEmpty() ?
             List.of(defaultSection.get()) :
             sectionsByIndex.values().stream().sorted((a, b) -> Integer.compare(a.getScheduleIndex(), b.getScheduleIndex())).toList()
         ;
     });
+    private final Cache<Boolean> isInitializedCache = new Cache<>(() -> {
+        for (TrainPrediction pred : getPredictions()) {
+            if (!pred.isInitialized()) {
+                return false;
+            }
+        }
+        return true;
+    });
     
-    /* PLEASE NOTE!
-     * Chronologically update order (once every ~5 seconds):
+    /* 
+     * Chronological update order (once every ~5 seconds):
      *  refreshPre()           (once)
      *  setPredictionData()    (x times)
      *  refreshPost()          (once)
@@ -173,6 +167,8 @@ public class TrainData implements IListenable<TrainData> {
         this.train = train;
         this.sessionId = sessionId;
         this.totalDuration = INVALID;
+
+        this.transitTime = ((ScheduleRuntimeAccessor)train.runtime).crn$getTicksInPreviousTransit();
 
         createEvent(EVENT_TOTAL_DURATION_CHANGED);
         createEvent(EVENT_DESTINATION_CHANGED);
@@ -217,10 +213,6 @@ public class TrainData implements IListenable<TrainData> {
         return isDynamic.get();
     }
 
-    private int getHistoryBufferSize() {
-        return ModCommonConfig.TOTAL_DURATION_BUFFER_SIZE.get() * 2 + 1;
-    }
-
     /** {@code true} when the train is currently waiting at a station. */
     public boolean isAtStation() {
         return train.navigation.destination == null;
@@ -228,7 +220,7 @@ public class TrainData implements IListenable<TrainData> {
 
     /** The time in ticks the train is waiting at the current station. */
     public long waitingAtStationTicks() {
-        return isAtStation() ? DragonLib.getCurrentWorldTime() - destinationReachTime : 0;
+        return waitingAtStationTime;//isAtStation() ? DragonLib.getCurrentWorldTime() - destinationReachTime : 0;
     }
 
     public boolean isCancelled() {
@@ -239,18 +231,30 @@ public class TrainData implements IListenable<TrainData> {
         return totalDuration;
     }
 
+    @Deprecated(forRemoval = true)
     public int getTransitTicks() {
         return transitTime;
     }
 
+    @Deprecated(forRemoval = true)
     public int getTransitTimeOf(int scheduleIndex) {
-        return currentTransitTime.containsKey(scheduleIndex) ? currentTransitTime.get(scheduleIndex) : INVALID;
+        return predictionsByIndex.containsKey(scheduleIndex) ? predictionsByIndex.get(scheduleIndex).getTransitTime() : INVALID;
     }
 
-    public boolean isWaitingAtStation() {
-        return isAtStation;
+    /**
+     * The train prediction with all information about a specific stop at the index in the train schedule.
+     * @param scheduleIndex The index of the desired entry in the train schedule.
+     * @return
+     */
+    public Optional<TrainPrediction> getPredictionByIndex(int scheduleIndex) {
+        return Optional.ofNullable(this.predictionsByIndex.get(scheduleIndex));
     }
 
+    /**
+     * The schedule section at the index in the train schedule.
+     * @param scheduleIndex The index of the desired entry in the train schedule.
+     * @return The {@code TrainTravelSection} or the default section if nothing is defined for this index.
+     */
     public TrainTravelSection getSectionByIndex(int scheduleIndex) {
         return sectionsByIndex.isEmpty() ? defaultSection.get() : sectionsByIndex.get(scheduleIndex);
     }
@@ -262,7 +266,7 @@ public class TrainData implements IListenable<TrainData> {
     }
 
     public String getCurrentTitle() {
-        return this.predictionsByIndex.containsKey(currentScheduleIndex) ? this.predictionsByIndex.get(currentScheduleIndex).getTitle() : "";
+        return getPredictionByIndex(getCurrentScheduleIndex()).map(TrainPrediction::getTitle).orElse("");
     }
 
     public String getTrainName() {
@@ -274,7 +278,7 @@ public class TrainData implements IListenable<TrainData> {
     }
 
     public int getCurrentScheduleIndex() {
-        return currentScheduleIndex;
+        return getTrain().runtime.currentEntry;
     }
 
     public boolean hasCustomTravelSections() {
@@ -305,9 +309,13 @@ public class TrainData implements IListenable<TrainData> {
     
     public synchronized List<TrainPrediction> getPredictions() {
         return new ArrayList<>(predictionsByIndex.values());
-    }    
+    }
     
-    public synchronized Map<Integer, TrainPrediction> getPredictionsRaw() {
+    public synchronized boolean hasPredictions() {
+        return !predictionsByIndex.isEmpty();
+    }
+    
+    public synchronized Map<Integer, TrainPrediction> getPredictionsMap() {
         return new HashMap<>(predictionsByIndex);
     }
 
@@ -317,21 +325,6 @@ public class TrainData implements IListenable<TrainData> {
 
     public synchronized Optional<TrainPrediction> getNextStopPrediction() {
         return predictionsChronologically.isEmpty() ? Optional.empty() : Optional.ofNullable(predictionsChronologically.get(0));
-    }
-
-    public void resetPredictions() {
-        for (TrainPrediction pred : predictionsByIndex.values()) {
-            pred.reset();
-        }
-        lastSectionDelayOffset = 0;
-        refreshTimingsCounter = 0;
-        resetStatus(true);
-        isDynamic.clear();
-        if (CreateRailwaysNavigator.isDebug() || ModCommonConfig.ADVANCED_LOGGING.get()) CreateRailwaysNavigator.LOGGER.info(getTrainName() + " has reset their scheduled times.");
-    }
-
-    public void hardResetPredictions() {
-        hardResetPredictions = true;
     }
 
     public synchronized boolean isDelayed() {
@@ -362,15 +355,27 @@ public class TrainData implements IListenable<TrainData> {
         return currentStatusInfos;
     }
 
-    /*
-     
-    public Set<CompiledTrainStatus> getStatus() {
-        return statusCache.get();
-    }
-     */
-
     public int debug_statusInfoCount() {
         return currentStatusInfos.size();
+    }
+    
+
+
+
+    public void softResetPredictions() {
+        for (TrainPrediction pred : predictionsByIndex.values()) {
+            pred.reset();
+        }
+        lastSectionDelayOffset = 0;
+        refreshTimingsCounter = 0;
+        resetStatus(true);
+        isDynamic.clear();
+        if (CreateRailwaysNavigator.isDebug() || ModCommonConfig.ADVANCED_LOGGING.get()) CreateRailwaysNavigator.LOGGER.info(getTrainName() + " has reset their scheduled times.");
+    }
+
+    public void hardResetPredictions() {
+        preInitialization = true;
+        hardResetPredictions = true;
     }
 
     private void resetStatus(boolean keepPreviousDelays) {
@@ -421,55 +426,29 @@ public class TrainData implements IListenable<TrainData> {
      * Trains that have not yet been initialized do not yet contain any reliable data to make any predictions.
      */
     public boolean isInitialized() {
-        if (currentTransitTime.isEmpty()) {
-            return false;
-        }
-        for (int i : currentTransitTime.values()) {
-            if (i < 0) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public int debug_initializedStationsCount() {
-        return (int)currentTransitTime.values().stream().filter(x -> x > 0).count();
+        return isInitializedCache.get();
     }
 
     /**
      * Indicates whether any preparations need to be made before the initialization phase can begin.
      * This is especially the case after starting the world, when the train was still in the middle of its journey.
      */
+
+    @Deprecated
     public boolean isPreparing() {
-        return !hasStarted;
+        return isPreInitializationPhase();//!isPrepared;
     }
 
-    public synchronized TrainPrediction setPredictionData(int entryIndex, int currentIndex, int maxEntries, int stayDuration, int minStayDuration, int createTransitTime, TrainDeparturePrediction predictionData) {
-        // keep track of current schedule index
-        this.destinationChanged = destinationChanged || this.currentScheduleIndex != currentIndex;
-        this.currentScheduleIndex = currentIndex;
+    public boolean isPreInitializationPhase() {
+        return preInitialization;
+    }
 
-        // Update CRN predictions with data from Create
-        TrainPrediction pred = predictionsByIndex.computeIfAbsent(entryIndex, i -> new TrainPrediction(this, entryIndex, predictionData, stayDuration, minStayDuration));
-        boolean useCreateTimesOnInit = ModCommonConfig.USE_CREATE_TRANSIT_TIMES_ON_INIT.get();
-        if (useCreateTimesOnInit) {
-            int ticks = ((ScheduleRuntimeAccessor)train.runtime).crn$predictionTicks().get(entryIndex);
-            currentTransitTime.computeIfAbsent(entryIndex, x -> {
-                fillHistory(transitTimeHistory.computeIfAbsent(entryIndex, y -> new ConcurrentLinkedQueue<>()), createTransitTime);
-                return ticks;
-            });
-        } else {
-            currentTransitTime.computeIfAbsent(entryIndex, x -> INVALID);
-        }
+    public int debug_initializedStationsCount() {
+        return (int)getPredictions().stream().mapToInt(TrainPrediction::getTransitTime).filter(x -> x > 0).count();
+    }
 
-        validPredictionEntries.add(entryIndex);
-
-        pred.updateRealTime(
-            predictionData.destination,
-            predictionData.ticks
-        );
-        predictionsChronologically.add(pred);
-        return pred;
+    public synchronized void shiftTime(long l) {
+        predictionsByIndex.values().forEach(x -> x.shiftTime(l));
     }
 
     public void changeCurrentSection(int sectionEntryIndex) {
@@ -480,68 +459,141 @@ public class TrainData implements IListenable<TrainData> {
         currentSectionCache.clear();
     }
 
-    private void clearAll() {      
+    private int getTransitTimeAtStation(int index) {
+        if (predictionsByIndex.containsKey(index)) {
+            return predictionsByIndex.get(index).transitTime().value();
+        }
+        List<Integer> transitTimesFromCreate = ((ScheduleRuntimeAccessor)(Object)train.runtime).crn$getTransitTicks();
+        int transitTime = transitTimesFromCreate.size() > index ? transitTimesFromCreate.get(index) : INVALID;
+        return transitTime;
+	}
+
+    /**
+     * Calculates how long the train will probably need to reach the next stop.
+     * @return The time in ticks
+     */
+    public int predictTimeToNextStop() {
+        GlobalStation destination = train.navigation.destination;
+        int accumulatedTime = 0;
+        if (destination != null) {
+            List<Integer> transitTimesFromCreate = ((ScheduleRuntimeAccessor)(Object)train.runtime).crn$getTransitTicks();
+            double speed = Math.min(train.throttle * train.maxSpeed(), (train.maxSpeed() + train.maxTurnSpeed()) / 2);
+            int timeRemaining = (int)(train.navigation.distanceToDestination / speed) * 2;
+
+            if (transitTimesFromCreate.size() > train.runtime.currentEntry && train.navigation.distanceStartedAt != 0) {
+                float predictedTime = transitTimesFromCreate.get(train.runtime.currentEntry);
+                if (predictedTime > 0) {
+                    predictedTime *= MathUtils.clamp(train.navigation.distanceToDestination / train.navigation.distanceStartedAt, 0, 1);
+                    timeRemaining = (timeRemaining + (int)predictedTime) / 2;
+                }
+            }
+
+            accumulatedTime += timeRemaining;
+        }
+        return accumulatedTime;
+    }
+
+    private void clearAll() {
+        preInitialization = true;
         predictionsByIndex.clear();
         sectionsByIndex.clear();
         defaultSection.clear();
         predictionsChronologically.clear();
-        validPredictionEntries.clear();
         currentStatusInfos.clear();
-        measuredTransitTimes.clear();
-        transitTimeHistory.clear();
-        currentTransitTime.clear();
         currentSectionCache.clear();
         sectionsCache.clear();
         lastScheduleIndex = INVALID;
         totalDuration = INVALID;
-        hasStarted = false;
 
         resetCaches();
-    }
+    } 
+
+    public int ticksToNextStop = 0;
 
     /** Called every ~5 seconds */
-    public synchronized void refreshPre() {        
-        if (train.runtime.paused) {
-            return;
-        }
-
+    public synchronized void refreshPre() {
         if (hardResetPredictions) {
             hardResetPredictions = false;
             clearAll();
         }
 
-        validPredictionEntries.clear();
+        if (train.runtime.paused) {
+            return;
+        }
+        
+        // Check index
+        this.scheduleIndexChanged = lastScheduleIndex != getCurrentScheduleIndex();
+
+        if (this.scheduleIndexChanged && lastScheduleIndex >= 0 && predictionsByIndex.containsKey(lastScheduleIndex)) {
+            predictionsByIndex.get(lastScheduleIndex).nextCycle();
+        }
+        if (!hasCustomTravelSections() && lastScheduleIndex > getCurrentScheduleIndex()) { // Manually call section change event atthe end of the schedule if there are no sections defined.
+            changeCurrentSection(currentTravelSectionIndex);
+        }
+        lastScheduleIndex = getCurrentScheduleIndex();
+
+        // Calc predictions
+        calcPredictions();
+    }
+
+    private void calcPredictions() {
         predictionsChronologically.clear();
+        Schedule schedule = train.runtime.getSchedule();
+        int entryCount = train.runtime.getSchedule().entries.size();
+        AtomicReference<String> currentTitle = new AtomicReference<>("");
+        
+        Set<Integer> validPredictionEntries = new HashSet<>();
+        boolean hasCycled = false;
+
+        final long now = DragonLib.getCurrentWorldTime();
+        long time = now - waitingAtStationTicks();
+
+        for (int i = 0; i < entryCount; i++) {
+            final int cyclicIndex = (i + getCurrentScheduleIndex()) % entryCount;
+            final ScheduleEntry entry = schedule.entries.get(cyclicIndex);
+
+            if (entry.instruction instanceof ChangeTitleInstruction instruction) {
+                currentTitle.set(instruction.getScheduleTitle());
+                continue;
+            } else if (!(entry.instruction instanceof DestinationInstruction)) {
+                continue;
+            }
+
+            validPredictionEntries.add(cyclicIndex);
+            final DestinationInstruction destination = (DestinationInstruction)entry.instruction;
+            
+            if (i <= 0) {
+                time += this.ticksToNextStop = predictTimeToNextStop();
+            } else {
+                if (hasCycled || (cyclicIndex == 0 && !train.runtime.getSchedule().cyclic)) {
+                    hasCycled = true;
+                    continue;
+                }
+                time += getTransitTimeAtStation(cyclicIndex);
+            }
+
+            final String name = destination.getFilter();
+            TrainPrediction pred = predictionsByIndex.computeIfAbsent(cyclicIndex, idx -> new TrainPrediction(this, idx, name, currentTitle.get()));
+            if (!isPreInitializationPhase()) {
+                pred.preInit();
+            }
+            predictionsChronologically.add(pred);
+            pred.updateRealTime(pred.getStationName(), now, time);
+            time = pred.realTime().departureTime();
+        }
+
+        predictionsByIndex.keySet().retainAll(validPredictionEntries); // Remove all predictions that are no longer in the schedule (for whatever reason)
     }
 
     /** Called every ~5 seconds */
     public synchronized void refreshPost() {
-
-        // [] Remove invalid prediction data
-        if (/*TODO hasStarted && */!train.runtime.paused) {
-            predictionsByIndex.keySet().retainAll(validPredictionEntries);
-            measuredTransitTimes.keySet().retainAll(validPredictionEntries);
-            transitTimeHistory.keySet().retainAll(validPredictionEntries);
-            currentTransitTime.keySet().retainAll(validPredictionEntries);
-        }
-
-        // [] Called after the schedule index has been changed.
-        if (lastScheduleIndex >= 0 && lastScheduleIndex != currentScheduleIndex && predictionsByIndex.containsKey(lastScheduleIndex)) {
-            predictionsByIndex.get(lastScheduleIndex).nextCycle();
-        }
-        if (!hasCustomTravelSections() && lastScheduleIndex > currentScheduleIndex) { // Manually call section change event if there are no sections defined.
-            changeCurrentSection(currentTravelSectionIndex);
-        }
-        lastScheduleIndex = currentScheduleIndex;
-
         // [] train cancelled manager
         boolean isNowCancelled = !(TrainUtils.isTrainValid(train) && isInitialized()) || train.runtime.paused;
         if (this.cancelled && !isNowCancelled) { // Train should no longer be cancelled -> restart
-            hasStarted = false;
+            //preInitialization = true;
             initializationCompleted = false;
-            initializationFinishTask = false;
             sessionId = UUID.randomUUID();
-            resetPredictions();
+            softResetPredictions();
         }
         this.cancelled = isNowCancelled;
 
@@ -552,17 +604,16 @@ public class TrainData implements IListenable<TrainData> {
             notifyListeners(EVENT_DESTINATION_CHANGED, this);
         }
 
-        if (initializationFinishTask) {
-            initializationFinishTask = false;
-            onInitialize();
-        }
-
         resetCaches();
+
+        // Finish
+        this.scheduleIndexChanged = false;
     }
 
     private void resetCaches() {
         isDelayedCache.clear();
         highestDeviationCache.clear();
+        isInitializedCache.clear();
     }
 
     /** Called every tick */
@@ -571,11 +622,25 @@ public class TrainData implements IListenable<TrainData> {
             return;
         }
 
-        if (!isAtStation()) {
-            transitTime++; // CRN transit time measurement
+        boolean isAtStation = isAtStation();
+        if (wasAtStation != isAtStation) {
+            if (isAtStation) {
+                onReachDestination();
+            } else {
+                onLeaveDestination();
+            }
+            this.wasAtStation = isAtStation;
         }
 
-        // Waiting for signal processor
+        if (isAtStation) {
+            waitingAtStationTime++;
+        } else {
+            transitTime++;
+        }
+
+
+
+        // Waiting for signal
         boolean isWaitingForSignal = train.navigation.waitingForSignal != null;
         if (wasWaitingForSignal != isWaitingForSignal) { // The moment in which the state has been changed
             if (isWaitingForSignal) { // currently waiting
@@ -587,18 +652,16 @@ public class TrainData implements IListenable<TrainData> {
                 waitingForSignalTicks = 0;
                 occupyingTrains.clear();
             }
+            this.wasWaitingForSignal = isWaitingForSignal;
         }
 
         if (isWaitingForSignal) {
             waitingForSignalTicks++;
         }
-
-        this.wasWaitingForSignal = isWaitingForSignal;
     }
 
     public void updateTotalDuration() {
-        // measuredTransitTimes
-        int newDuration = currentTransitTime.values().stream().mapToInt(x -> x).sum() + getPredictions().stream().mapToInt(x -> x.getStayDuration()).sum();
+        int newDuration = getPredictions().stream().mapToInt(x -> x.getTransitTime() + (int)x.getAverageStayDuration()).sum();
         int oldTotalDuration = this.totalDuration;
         if (CRNEventsManager.isRegistered(TotalDurationTimeChangedEvent.class) && this.totalDuration > 0 && this.totalDuration != newDuration) {
             CRNEventsManager.getEvent(TotalDurationTimeChangedEvent.class).run(train, this.totalDuration, newDuration);
@@ -607,39 +670,37 @@ public class TrainData implements IListenable<TrainData> {
         if (oldTotalDuration != INVALID) {
             notifyListeners(EVENT_TOTAL_DURATION_CHANGED, this);
         }
-        resetPredictions();
+        softResetPredictions();
     }
 
     /**
      * Called when the train reaches a station.
+     * @param destinationReachTime The time when the train reached this station.
      * @param createTicksInTransit Ticks measured by Create.
      */
-    public void reachDestination(long destinationReachTime, int createTicksInTransit) {
-        this.destinationReachTime = destinationReachTime;
-        if (!ModCommonConfig.CUSTOM_TRANSIT_TIME_CALCULATION.get()) {
-            this.transitTime = createTicksInTransit;
+    public void onReachDestination() {        
+        if (!isPreInitializationPhase()) {
+            this.getPredictionByIndex(getCurrentScheduleIndex()).ifPresent(x -> {
+                x.transitTime().add(transitTime, false);
+            });
         }
 
-        if (hasStarted) {
-            processTransitHistory(transitTimeHistory.computeIfAbsent(currentScheduleIndex, x -> new ConcurrentLinkedQueue<>()));
-            this.measuredTransitTimes.put(currentScheduleIndex, transitTime);
-        }
         this.transitTime = 0;
+        this.waitingAtStationTime = 0;
         this.waitingForSignalTicks = 0;
         this.waitingForSignalId = null;
         this.delaysBySignal.clear();
-        this.hasStarted = true;
-        this.isAtStation = true;
+        preInitialization = false;
 
         if (!initializationCompleted && isInitialized()) {
+            completeInitialization();
             initializationCompleted = true;
-            initializationFinishTask = true;
         }        
 
         if (sectionChanged) {            
             sectionChanged = false;
             if (!isDynamic() || (ModCommonConfig.AUTO_RESET_TIMINGS.get() > 0 && refreshTimingsCounter >= ModCommonConfig.AUTO_RESET_TIMINGS.get())) {
-                resetPredictions();
+                softResetPredictions();
             } else {
                 resetStatus(true);
             }
@@ -649,49 +710,33 @@ public class TrainData implements IListenable<TrainData> {
         notifyListeners(EVENT_STATION_REACHED, this);
     }
 
-    public void leaveDestination() {
-        this.currentScheduleIndex = getTrain().runtime.currentEntry;
-        this.isAtStation = false;
+    /**
+     * Called when the train leaves a station.
+     */
+    public void onLeaveDestination() {
+        if (!isPreInitializationPhase()) {
+            this.getPredictionByIndex(getCurrentScheduleIndex()).ifPresent(x -> {
+                x.updateAverageStayDuration(waitingAtStationTime);
+            });
+        }
+
+        this.transitTime = 0;
+        this.waitingAtStationTime = 0;
+        this.waitingForSignalTicks = 0;
+        this.waitingForSignalId = null;
+        this.delaysBySignal.clear();
     }
 
-    public void onInitialize() {
+    public void completeInitialization() {
         updateTotalDuration();
         isDynamic.clear();
     }
-    
-    /** Checks and calculates a new total duration time if necessary. */
-    private void processTransitHistory(Queue<Integer> history) {
-        // First initialization
-        if (!currentTransitTime.containsKey(currentScheduleIndex) || currentTransitTime.get(currentScheduleIndex) < 0) {
-            fillHistory(history, transitTime);
-            currentTransitTime.put(currentScheduleIndex, transitTime); // Set initial reference transit time
-        }
 
-        // remove excess elements 
-        while (history.size() >= getHistoryBufferSize()) {
-            history.poll();
-        }
-        history.add(transitTime); // add current transit time to the history
 
-        int refCurrentTransitTime = currentTransitTime.get(currentScheduleIndex);
-        double median = ModUtils.calculateMedian(history, ModCommonConfig.TOTAL_DURATION_DEVIATION_THRESHOLD.get(), x -> true);
 
-        if (Math.abs(refCurrentTransitTime - median) > ModCommonConfig.TOTAL_DURATION_DEVIATION_THRESHOLD.get()) { // Deviation is too large -> change transit time for this section
-            int newValue = ModUtils.calculateMedian(history, ModCommonConfig.TOTAL_DURATION_DEVIATION_THRESHOLD.get(), x -> Math.abs(refCurrentTransitTime - x) > ModCommonConfig.TOTAL_DURATION_DEVIATION_THRESHOLD.get());
-            currentTransitTime.put(currentScheduleIndex, newValue); // save transit time for this section
-            fillHistory(history, newValue); // Reset the history
-            updateTotalDuration();
-        } else if (Math.abs(refCurrentTransitTime - transitTime) < ModCommonConfig.TOTAL_DURATION_DEVIATION_THRESHOLD.get()) { // new value is smaller than current -> reset history (no changes needed)
-            fillHistory(history, refCurrentTransitTime);
-        }
-    }
 
-    private void fillHistory(Queue<Integer> history, int value) {
-        history.clear();
-        for (int i = 0; i < getHistoryBufferSize(); i++) {
-            history.add(value);
-        }
-    }
+
+
 
     @Override
     public Map<String, IdentityHashMap<Object, Consumer<TrainData>>> getListeners() {
@@ -707,16 +752,10 @@ public class TrainData implements IListenable<TrainData> {
             predictions.put(String.valueOf(entry.getKey()), entry.getValue().toNbt());
         }
 
-        CompoundTag transitTimes = new CompoundTag();
-        for (Entry<Integer, Integer> entry : this.currentTransitTime.entrySet()) {
-            transitTimes.putInt(String.valueOf(entry.getKey()), entry.getValue());
-        }
-
         nbt.putUUID(NBT_ID, getSessionId());
         nbt.putUUID(NBT_TRAIN_ID, getTrainId());
         nbt.put(NBT_PREDICTIONS, predictions);
-        nbt.put(NBT_TRANSIT_TIMES, transitTimes);
-        nbt.putInt(NBT_CURRENT_SCHEDULE_INDEX, currentScheduleIndex);
+        nbt.putInt(NBT_CURRENT_SCHEDULE_INDEX, getCurrentScheduleIndex());
         nbt.putLong(NBT_LAST_DELAY_OFFSET, lastSectionDelayOffset);
         nbt.putBoolean(NBT_CANCELLED, cancelled);
         nbt.putString(NBT_LINE_ID, lineId == null ? "" : lineId);
@@ -748,32 +787,12 @@ public class TrainData implements IListenable<TrainData> {
             }
         }
 
-        CompoundTag transitTimes = nbt.getCompound(NBT_TRANSIT_TIMES);
-        for (String key : transitTimes.getAllKeys()) {
-            try {
-                int idx = Integer.parseInt(key);
-                int time = transitTimes.getInt(key);
-                if (time > 0) {
-                    fillHistory(transitTimeHistory.computeIfAbsent(idx, x -> new ConcurrentLinkedQueue<>()), time);
-                    this.measuredTransitTimes.put(idx, time);
-                    this.currentTransitTime.put(idx, time);
-                }
-            } catch (Exception e) {
-                CreateRailwaysNavigator.LOGGER.warn("Unable to load transit time with index '" + key + "': The value is not an integer.", e);
-            }
-        }
-
-        this.currentScheduleIndex = nbt.getInt(NBT_CURRENT_SCHEDULE_INDEX);
+        int currentScheduleIndex = nbt.getInt(NBT_CURRENT_SCHEDULE_INDEX);
         this.lastScheduleIndex = currentScheduleIndex;
         this.currentTravelSectionIndex = getSectionForIndex(currentScheduleIndex).getScheduleIndex();
         this.lineId = nbt.getString(NBT_LINE_ID);
         this.lastSectionDelayOffset = nbt.getLong(NBT_LAST_DELAY_OFFSET);
         this.cancelled = nbt.getBoolean(NBT_CANCELLED);
-    }
-
-    public synchronized void shiftTime(long l) {
-        this.destinationReachTime += l;
-        predictionsByIndex.values().forEach(x -> x.shiftTime(l));
     }
 
 }

@@ -122,4 +122,8 @@ public class ModUtils {
     public static int[] getDyeColors() {
         return dyeColorsCache.get();
     }
+
+    public static long convertToTimeTicks(int hours, int minutes) {
+        return (long)((double)hours * 1000D + (1000D / 60D * (double)minutes));
+    }
 }

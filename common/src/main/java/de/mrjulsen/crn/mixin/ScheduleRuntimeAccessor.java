@@ -17,7 +17,10 @@ public interface ScheduleRuntimeAccessor {
     Train crn$getTrain();
 
     @Accessor("ticksInTransit")
-    int crn$getTicksInTransit();
+    int crn$getTicksInPreviousTransit();
+
+    @Accessor("predictionTicks")
+    List<Integer> crn$getTransitTicks();
 
     @Invoker("estimateStayDuration")
     int crn$runEstimateStayDuration(int index);

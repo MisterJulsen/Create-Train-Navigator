@@ -67,7 +67,7 @@ public class StationDisplayData {
         if (isLastStopOfSection) {
             if (previousSection.shouldIncludeNextStationOfNextSection() && previousSection.getFinalStop().isPresent() && previousSection.getFinalStop().get().getEntryIndex() == stop.getScheduleIndex()) {
                 firstStop = previousSection.getFirstStop().isPresent() ? previousSection.getFirstStop().get().getStationTag().getTagName().get() : "";
-                if ((data.isWaitingAtStation() && data.getCurrentScheduleIndex() == stop.getScheduleIndex()) || !previousSection.isUsable()) {
+                if ((data.isAtStation() && data.getCurrentScheduleIndex() == stop.getScheduleIndex()) || !previousSection.isUsable()) {
                     isLastStopOfSection = false; 
                 }
                 if (!section.isUsable()) {

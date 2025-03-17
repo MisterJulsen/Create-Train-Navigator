@@ -12,6 +12,7 @@ import com.simibubi.create.foundation.utility.Lang;
 import com.simibubi.create.foundation.utility.Pair;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.api.IPredictableWaitCondition;
 import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.data.train.TrainData;
 import de.mrjulsen.crn.data.train.TrainListener;
@@ -29,7 +30,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 
-public class DynamicDelayCondition extends ScheduledDelay {
+public class DynamicDelayCondition extends ScheduledDelay implements IPredictableWaitCondition {
 
     public static final String NBT_MIN = "Min";
     
@@ -117,5 +118,15 @@ public class DynamicDelayCondition extends ScheduledDelay {
 			: num == 1 ? "daytime.second" : "unit.seconds");
 			
 		return Lang.translateDirect("schedule.condition." + getId().getPath() + ".status", Components.literal(num + " ").append(Lang.translateDirect(key)));
+	}
+
+	@Override
+	public long waitUntil(long worldTime) {
+		return worldTime + totalWaitTicks();
+	}
+
+	@Override
+	public long waitMinUntil(long worldTime) {
+		return worldTime + minWaitTicks();
 	}
 }

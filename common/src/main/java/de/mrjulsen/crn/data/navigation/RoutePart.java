@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.ArrayList;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.data.StationTag;
 import de.mrjulsen.crn.data.UserSettings;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
@@ -217,5 +219,10 @@ public class RoutePart implements Comparable<RoutePart> {
     @Override
     public int compareTo(RoutePart o) {
         return Long.compare(departureIn(), o.departureIn());
+    }
+
+    @Override
+    public String toString() {
+        return String.format("RoutePart[%s (%s) -> %s (%s)]", getFirstStop().getTag(), getFirstStop().getSectionIndex(), getLastStop().getTag(), getLastStop().getSectionIndex());
     }
 }

@@ -16,8 +16,6 @@ import java.util.function.Predicate;
 import com.simibubi.create.Create;
 import com.simibubi.create.content.decoration.slidingDoor.DoorControlBehaviour;
 import com.simibubi.create.content.trains.GlobalRailwayManager;
-import com.simibubi.create.content.trains.display.GlobalTrainDisplayData;
-import com.simibubi.create.content.trains.display.GlobalTrainDisplayData.TrainDeparturePrediction;
 import com.simibubi.create.content.trains.entity.Train;
 import com.simibubi.create.content.trains.graph.EdgePointType;
 import com.simibubi.create.content.trains.graph.TrackEdge;
@@ -66,13 +64,13 @@ public final class TrainUtils {
 
     private static final MapCache<Set<Train>, StationTag, StationTag> departingTrainsAtTagCache = new MapCache<>((station) -> {
         Set<Train> trains = new HashSet<>();
-        for (Map.Entry<String, Collection<TrainDeparturePrediction>> e : GlobalTrainDisplayData.statusByDestination.entrySet()) {
+        for (Map.Entry<String, Collection<TrainPrediction>> e : TrainListener.statusByDestination.entrySet()) {
             if (!station.contains(e.getKey())) {
                 continue;
             }
 
-            for (TrainDeparturePrediction pred : e.getValue()) {
-                trains.add(pred.train);
+            for (TrainPrediction pred : e.getValue()) {
+                trains.add(pred.getData().getTrain());
             }
         }
         return trains;
@@ -80,13 +78,14 @@ public final class TrainUtils {
 
     private static final MapCache<Set<Train>, String, String> departingTrainsAtStationCache = new MapCache<>((station) -> {
         Set<Train> trains = new HashSet<>();
-        for (Map.Entry<String, Collection<TrainDeparturePrediction>> e : GlobalTrainDisplayData.statusByDestination.entrySet()) {
+        
+        for (Map.Entry<String, Collection<TrainPrediction>> e : TrainListener.statusByDestination.entrySet()) {
             if (!station.equals(e.getKey())) {
                 continue;
             }
 
-            for (TrainDeparturePrediction pred : e.getValue()) {
-                trains.add(pred.train);
+            for (TrainPrediction pred : e.getValue()) {
+                trains.add(pred.getData().getTrain());
             }
         }
         return trains;
@@ -131,8 +130,8 @@ public final class TrainUtils {
      * Get data about all trains and when they arrive where.
      * @return a Map where the key is the station name and the value is a list of data from all trains that will arrive at this stations.
      */
-    public static Map<String, Collection<TrainDeparturePrediction>> allPredictionsRaw() {
-        return new HashMap<>(GlobalTrainDisplayData.statusByDestination);
+    public static Map<String, Collection<TrainPrediction>> allPredictionsRaw() {
+        return new HashMap<>(TrainListener.statusByDestination);
     }    
 
     public static boolean isStationKnown(String station) {
