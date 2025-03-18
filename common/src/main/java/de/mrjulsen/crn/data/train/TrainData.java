@@ -584,6 +584,52 @@ public class TrainData implements IListenable<TrainData> {
         predictionsByIndex.keySet().retainAll(validPredictionEntries); // Remove all predictions that are no longer in the schedule (for whatever reason)
     }
 
+
+    public static record SimulationResult(int entryIndex, int cycles, long arrivalTime, long departureTime) {}
+    public SimulationResult simulate(int entryIndex, long duration) {
+        Schedule schedule = train.runtime.getSchedule();
+        int entryCount = train.runtime.getSchedule().entries.size();
+        
+        final long now = predictionsByIndex.get(entryIndex).scheduled().departureTime();
+        long time = now;
+        long lastTime = time;
+        SimulationResult result = new SimulationResult(entryIndex, 0, now, now);
+
+        int iteration = 0;
+        while (duration - (now - DragonLib.getCurrentWorldTime()) > 0) {
+            long arrival = 0;
+            long departure = 0;
+            for (int i = 0; i < entryCount; i++) {
+                final int cyclicIndex = (i + (entryIndex + 1)) % entryCount;
+                final ScheduleEntry entry = schedule.entries.get(cyclicIndex);
+                
+                if (!(entry.instruction instanceof DestinationInstruction)) {
+                    continue;
+                }
+                
+                if (cyclicIndex == 0 && !train.runtime.getSchedule().cyclic) {
+                    return result;
+                }
+                time += getTransitTimeAtStation(cyclicIndex);
+    
+                final long newArrivalTime = time;
+                time = TrainPrediction.estimateDepartures(getTrain(), cyclicIndex, time).defaultDepartureTime();
+
+                if (cyclicIndex == entryIndex) {
+                    arrival = newArrivalTime;
+                    departure = time;
+                }
+            }
+            iteration++;
+            result = new SimulationResult(entryIndex, iteration, arrival, departure);
+            duration -= (time - lastTime);
+            lastTime = time;
+        }
+        return result;
+    }
+
+
+
     /** Called every ~5 seconds */
     public synchronized void refreshPost() {
         // [] train cancelled manager

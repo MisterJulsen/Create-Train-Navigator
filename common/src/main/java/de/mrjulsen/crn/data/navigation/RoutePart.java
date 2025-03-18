@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.data.StationTag;
 import de.mrjulsen.crn.data.UserSettings;
 import de.mrjulsen.crn.data.storage.GlobalSettings;

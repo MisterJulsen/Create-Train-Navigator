@@ -9,6 +9,7 @@ import de.mrjulsen.crn.data.StationTag;
 import de.mrjulsen.crn.data.TagName;
 import de.mrjulsen.crn.data.StationTag.ClientStationTag;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
+import de.mrjulsen.crn.data.train.TrainData.SimulationResult;
 import de.mrjulsen.crn.data.TrainInfo;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import net.minecraft.nbt.CompoundTag;
@@ -167,6 +168,14 @@ public class TrainStop implements Comparable<TrainStop> {
     }
 
     public void simulateTicks(long ticks) {
+        if (ModCommonConfig.EXPERIMENT_SIMULATION_ALGORITHM.get()) {
+            simulateTicksNew(ticks);
+        } else {
+            simulateTicksLegacy(ticks);
+        }
+    }
+
+    private void simulateTicksLegacy(long ticks) {
         this.simulated = true;
         int totalDuration = TrainListener.data.get(getTrainId()).getTotalDuration();
         long scheduledTimeUntilArrival = getScheduledArrivalTime() - DragonLib.getCurrentWorldTime();
@@ -182,6 +191,20 @@ public class TrainStop implements Comparable<TrainStop> {
         
         this.realTimeArrivalTime += simulationCycles * totalDuration;
         this.realTimeDepartureTime += simulationCycles * totalDuration;
+        this.realTimeTicksUntilArrival = -1;
+        this.simulationTime += ticks;
+    }
+
+    private void simulateTicksNew(long ticks) {
+        this.simulated = true;
+        SimulationResult res = TrainListener.data.get(getTrainId()).simulate(scheduleIndex, ticks);
+        
+        this.cycle += res.cycles();
+        this.scheduledArrivalTime = res.arrivalTime();
+        this.scheduledDepartureTime = res.departureTime();
+        
+        this.realTimeArrivalTime = res.arrivalTime();
+        this.realTimeDepartureTime = res.departureTime();
         this.realTimeTicksUntilArrival = -1;
         this.simulationTime += ticks;
     }
@@ -344,6 +367,10 @@ public class TrainStop implements Comparable<TrainStop> {
 
     public boolean isAnyDelayed() {
         return isArrivalDelayed() || isDepartureDelayed();
+    }
+
+    public boolean hasTrackChanged() {
+        return !realTimeTag.info().equals(tag.info());
     }
 
     public boolean shouldRenderRealTime() {

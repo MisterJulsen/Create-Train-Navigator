@@ -18,6 +18,8 @@ public class ModCommonConfig {
     public static final ForgeConfigSpec.ConfigValue<Boolean> EXCLUDE_TRAINS;
     public static final ForgeConfigSpec.ConfigValue<Boolean> ADVANCED_LOGGING;
 
+    public static final ForgeConfigSpec.ConfigValue<Boolean> EXPERIMENT_SIMULATION_ALGORITHM;
+
     static {
         BUILDER.push(CreateRailwaysNavigator.MOD_ID + "_common_config");
 
@@ -47,6 +49,9 @@ public class ModCommonConfig {
 
         ADVANCED_LOGGING = BUILDER.comment(new String[] {"Prints more details to the console to better observe the behavior of CRN. Only relevant for debugging."})
             .define("debug.advanced_logging", false);
+
+        EXPERIMENT_SIMULATION_ALGORITHM = BUILDER.comment("The new simulation algorithm calculates the times step by step for the respective stations and pays attention to the schedule conditions instead of adding up the total journey time until the desired time is reached. This should lead to more precise results, especially when using time based departure times. If there are problems with the predictions, please report this error and deactivate this option to use the old algorithm. (Default: ON)")
+            .define("experimental.use_new_simulation_algorithm", true);
 
         BUILDER.pop();
         SPEC = BUILDER.build();
