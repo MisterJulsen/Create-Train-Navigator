@@ -546,7 +546,7 @@ public class TrainData implements IListenable<TrainData> {
         boolean hasCycled = false;
 
         final long now = DragonLib.getCurrentWorldTime();
-        long time = now - waitingAtStationTicks();
+        long time = now;// - waitingAtStationTicks();
 
         for (int i = 0; i < entryCount; i++) {
             final int cyclicIndex = (i + getCurrentScheduleIndex()) % entryCount;
@@ -561,7 +561,6 @@ public class TrainData implements IListenable<TrainData> {
 
             validPredictionEntries.add(cyclicIndex);
             final DestinationInstruction destination = (DestinationInstruction)entry.instruction;
-            
             if (i <= 0) {
                 time += this.ticksToNextStop = predictTimeToNextStop();
             } else {
@@ -578,7 +577,7 @@ public class TrainData implements IListenable<TrainData> {
                 pred.preInit();
             }
             predictionsChronologically.add(pred);
-            pred.updateRealTime(pred.getStationName(), now, time);
+            pred.updateRealTime(pred.getStationName(), now, time - (getCurrentScheduleIndex() == cyclicIndex ? waitingAtStationTicks() : 0));
             time = pred.realTime().departureTime();
         }
 
