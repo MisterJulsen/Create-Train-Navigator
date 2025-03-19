@@ -1,0 +1,17 @@
+package de.mrjulsen.crn.api.client;
+
+import de.mrjulsen.crn.client.gui.screen.NavigatorScreen;
+import de.mrjulsen.mcdragonlib.client.gui.DLScreen;
+
+public final class Screens {    
+    private Screens() {}
+
+    /**
+     * Opens the navigator UI to search for routes.
+     * @param station The station name that should be entered as the fixed departure station. Pass {@code null} to let the user select any departure station.
+     * @param isPublic In public mode, no personal settings and data can be changed or viewed (e.g. saved routes).
+     */
+    public static void showNavigatorScreen(String stationName, boolean isPublic) {
+        DLScreen.setScreen(new NavigatorScreen(null, stationName, isPublic));
+    }
+}

@@ -13,11 +13,11 @@ import com.simibubi.create.foundation.utility.Pair;
 
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.api.client.Screens;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.NavigatorToast;
 import de.mrjulsen.crn.client.gui.screen.AdvancedDisplaySettingsScreen;
-import de.mrjulsen.crn.client.gui.screen.NavigatorScreen;
 import de.mrjulsen.crn.client.gui.screen.TrainSeparationSettingsScreen;
 import de.mrjulsen.crn.client.gui.screen.TrainDebugScreen;
 import de.mrjulsen.crn.client.gui.screen.TrainSectionSettingsScreen;
@@ -31,6 +31,7 @@ import de.mrjulsen.crn.data.schedule.instruction.TravelSectionInstruction;
 import de.mrjulsen.crn.mixin.ModularGuiLineBuilderAccessor;
 import de.mrjulsen.crn.mixin.ScheduleScreenAccessor;
 import de.mrjulsen.crn.network.packets.stc.ServerErrorPacket;
+import de.mrjulsen.crn.registry.ModAccessorTypes;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.gui.DLScreen;
 import de.mrjulsen.mcdragonlib.client.render.DynamicGuiRenderer;
@@ -40,6 +41,7 @@ import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import de.mrjulsen.mcdragonlib.core.EAlignment;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
+import de.mrjulsen.mcdragonlib.util.accessor.DataAccessor;
 import dev.architectury.networking.NetworkManager.PacketContext;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
@@ -59,10 +61,9 @@ public class ClientWrapper {
     private static Language currentClientLanguage;
     
     public static void showNavigatorGui() {
-        DLScreen.setScreen(new NavigatorScreen(null));
+        Screens.showNavigatorScreen(null, false);
     }
 
-    @SuppressWarnings("resource")
     public static Level getClientLevel() {
         return Minecraft.getInstance().level;
     }
@@ -119,7 +120,6 @@ public class ClientWrapper {
         });
     }
 
-    @SuppressWarnings("resource")
     public static void initScheduleSectionInstruction(TravelSectionInstruction instruction, ModularGuiLineBuilder builder) {
         
         ModularGuiLineBuilderAccessor accessor = (ModularGuiLineBuilderAccessor)builder;
