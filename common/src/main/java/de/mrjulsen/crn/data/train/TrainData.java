@@ -438,7 +438,9 @@ public class TrainData implements IListenable<TrainData> {
     }
 
     public synchronized void shiftTime(long l) {
-        predictionsByIndex.values().forEach(x -> x.shiftTime(l));
+        if (!isPreInitializationPhase()) {
+            predictionsByIndex.values().forEach(x -> x.shiftTime(l));
+        }
     }
 
     public void changeCurrentSection(int sectionEntryIndex) {
