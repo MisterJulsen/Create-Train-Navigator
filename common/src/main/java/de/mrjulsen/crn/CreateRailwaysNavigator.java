@@ -71,7 +71,7 @@ public final class CreateRailwaysNavigator {
     public static void load() {}
 
     public static void init() {
-           
+        
         ModBlocks.init();
         ModItems.init();
         ModBlockEntities.init();        

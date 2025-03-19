@@ -90,7 +90,7 @@ public class ModCommonEvents {
                 long currentTicks = ModCommonEvents.getPhysicalLevel().dayTime();
                 long diff = currentTicks - lastTicks;
                 if (Math.abs(diff) > 1) {
-                    for (TrainData data : TrainListener.data.values()) {
+                    for (TrainData data : TrainListener.getAllTrainData()) {
                         data.shiftTime(diff);
                     }
                     if (ModCommonConfig.ADVANCED_LOGGING.get()) CreateRailwaysNavigator.LOGGER.info("All times have been corrected: " + (diff) + " Ticks");

@@ -27,17 +27,13 @@ public class ControlsHandlerMixin {
     @Inject(method = "startControlling", remap = false, at = @At(value = "HEAD"))
 	private static void onStartControlling(AbstractContraptionEntity entity, BlockPos controllerLocalPos, CallbackInfo ci) {
         if (entity.getContraption() instanceof CarriageContraption carriage && carriage.entity instanceof CarriageContraptionEntity trainEntity) {
-            if (TrainListener.data.containsKey(trainEntity.trainId)) {
-                TrainListener.data.get(trainEntity.trainId).isManualControlled = true;
-            }
+            TrainListener.getTrainData(trainEntity.trainId).ifPresent(data -> data.isManualControlled = true);
         }
     }
     @Inject(method = "stopControlling", remap = false, at = @At(value = "HEAD"))
 	private static void onStopControlling(CallbackInfo ci) {
         if (crn$entityRef().get() != null && crn$entityRef().get().getContraption() instanceof CarriageContraption carriage && carriage.entity instanceof CarriageContraptionEntity trainEntity) {
-            if (TrainListener.data.containsKey(trainEntity.trainId)) {
-                TrainListener.data.get(trainEntity.trainId).isManualControlled = false;
-            }
+            TrainListener.getTrainData(trainEntity.trainId).ifPresent(data -> data.isManualControlled = false);
         }
     }
 }

@@ -197,11 +197,11 @@ public final class TrainUtils {
 
         MutableSingle<TrainSchedule> selfSchedule = new MutableSingle<TrainSchedule>(null);
         TrainUtils.getTrain(selfTrain).ifPresent(x -> {
-            selfSchedule.setFirst(new TrainSchedule(TrainListener.data.containsKey(x.id) ? TrainListener.data.get(x.id).getSessionId() : new UUID(0, 0), x));
+            selfSchedule.setFirst(new TrainSchedule(TrainListener.getTrainData(x.id).map(TrainData::getSessionId).orElse(new UUID(0, 0)), x));
         });
         
         List<TrainStop> stops = new ArrayList<>();
-        for (TrainData data : TrainListener.data.values()) {
+        for (TrainData data : TrainListener.getAllTrainData()) {
 
             if (data.getTrainId().equals(selfTrain) || !TrainUtils.isTrainUsable(data.getTrain())) {
                 continue;
@@ -218,7 +218,7 @@ public final class TrainUtils {
                     if (!train.isPresent()) {
                         continue;
                     }
-                    TrainSchedule sched = new TrainSchedule(TrainListener.data.containsKey(train.get().id) ? TrainListener.data.get(train.get().id).getSessionId() : new UUID(0, 0), train.get());
+                    TrainSchedule sched = new TrainSchedule(TrainListener.getTrainData(train.get().id).map(TrainData::getSessionId).orElse(new UUID(0, 0)), train.get());
                     if (sched.isEqual(selfSchedule.getFirst())) {
                         continue;
                     }
@@ -233,8 +233,8 @@ public final class TrainUtils {
         Set<UUID> usedTrains = new HashSet<>();
         usedTrains.add(selfTrain);
         for (TrainStop stop : stops) {
-            if (!TrainListener.data.containsKey(stop.getTrainId())) continue;
-            TrainData data = TrainListener.data.get(stop.getTrainId());
+            if (!TrainListener.hasTrainData(stop.getTrainId())) continue;
+            TrainData data = TrainListener.getTrainData(stop.getTrainId()).get();
             TrainTravelSection section = data.getSectionByIndex(stop.getSectionIndex());
             if (!section.isUsable() && !(section.isFirstStop(stop.getScheduleIndex()) && section.previousSection().isUsable() && section.previousSection().shouldIncludeNextStationOfNextSection())) {
                 continue;
@@ -371,9 +371,9 @@ public final class TrainUtils {
 
     public static boolean isTrainUsable(Train train) {
         return isTrainValid(train) &&
-               TrainListener.data.containsKey(train.id) &&
-               TrainListener.data.get(train.id).isInitialized() && 
-               !TrainListener.data.get(train.id).isPreInitializationPhase()
+               TrainListener.hasTrainData(train.id) &&
+               TrainListener.getTrainData(train.id).get().isInitialized() && 
+               !TrainListener.getTrainData(train.id).get().isPreInitializationPhase()
         ;
     }
 

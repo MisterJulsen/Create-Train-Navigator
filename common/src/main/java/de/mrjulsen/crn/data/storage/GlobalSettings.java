@@ -388,16 +388,18 @@ public class GlobalSettings implements INBTSerializable {
     }
 
     public boolean isTrainExcludedByUser(Train train, UserSettings settings) {
-        if (TrainListener.data.get(train.id).getSections().isEmpty()) {
-            return false;
-        }
-
-        for (TrainTravelSection section : TrainListener.data.get(train.id).getSections()) {
-            if (section.isUsable() && !(section.getTrainGroup().map(x -> settings.navigationExcludedTrainGroups.getValue().contains(x.getGroupName())).orElse(false))) {
+        return TrainListener.getTrainData(train.id).map(data -> {
+            if (data.getSections().isEmpty()) {
                 return false;
             }
-        }
-        return true;
+    
+            for (TrainTravelSection section : data.getSections()) {
+                if (section.isUsable() && !(section.getTrainGroup().map(x -> settings.navigationExcludedTrainGroups.getValue().contains(x.getGroupName())).orElse(false))) {
+                    return false;
+                }
+            }
+            return true;
+        }).orElse(false);        
     }
 
     public boolean isTrainStationExcludedByUser(Train train, TrainPrediction at, UserSettings settings) {
@@ -405,8 +407,10 @@ public class GlobalSettings implements INBTSerializable {
     }
 
     public boolean isTrainStationExcludedByUser(Train train, TrainStop at, UserSettings settings) {
-        TrainTravelSection section = TrainListener.data.get(train.id).getSectionByIndex(at.getSectionIndex());
-        return section.getTrainGroup().map(x -> !section.isUsable() || (settings.navigationExcludedTrainGroups.getValue().contains(x.getGroupName()))).orElse(false);
+        return TrainListener.getTrainData(train.id).map(data -> {
+            TrainTravelSection section = data.getSectionByIndex(at.getSectionIndex());
+            return section.getTrainGroup().map(x -> !section.isUsable() || (settings.navigationExcludedTrainGroups.getValue().contains(x.getGroupName()))).orElse(false);
+        }).orElse(false);        
     }
 
 //#endregion

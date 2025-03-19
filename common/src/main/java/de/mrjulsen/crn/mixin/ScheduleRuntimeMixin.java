@@ -90,9 +90,7 @@ public class ScheduleRuntimeMixin {
     @Inject(method = "startCurrentInstruction", remap = false, at = @At(value = "TAIL"), cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD)
     public void onStartCurrentInstructionPost(CallbackInfoReturnable<GlobalStation> cir, ScheduleEntry entry, ScheduleInstruction instruction) {
         if (instruction instanceof ICustomSuggestionsInstruction custom) {
-            if (TrainListener.data.containsKey(accessor().crn$getTrain().id)) {
-                custom.run(self(), TrainListener.data.get(accessor().crn$getTrain().id), accessor().crn$getTrain(), self().currentEntry);
-            }
+            TrainListener.getTrainData(accessor().crn$getTrain().id).ifPresent(x -> custom.run(self(), x, accessor().crn$getTrain(), self().currentEntry));
 
             if (instruction instanceof IStationPredictableInstruction predictable) {
                 customData.put(predictable.getClass(), predictable::predictForStation);
@@ -111,7 +109,7 @@ public class ScheduleRuntimeMixin {
             customData.put(predictable.getClass(), predictable::predictForStation);
         }
         if (instruction instanceof IPredictableInstruction predictable) {
-            predictable.predict(TrainListener.data.get(accessor().crn$getTrain().id), accessor().crn$getTrain().runtime, index, accessor().crn$getTrain());
+            TrainListener.getTrainData(accessor().crn$getTrain().id).ifPresent(x -> predictable.predict(x, accessor().crn$getTrain().runtime, index, accessor().crn$getTrain()));
         }
     }
 

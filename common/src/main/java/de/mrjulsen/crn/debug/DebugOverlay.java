@@ -47,9 +47,9 @@ public class DebugOverlay extends DLOverlayScreen {
         graphics.poseStack().pushPose();
         graphics.poseStack().scale(0.75f, 0.75f, 0.75f);
         line = 0;
-        if (!TrainListener.data.isEmpty()) {
-            trainIndex %= TrainListener.data.size();
-            TrainData data = TrainListener.data.values().stream().skip(trainIndex).findFirst().get();  
+        if (!TrainListener.getAllTrainData().isEmpty()) {
+            trainIndex %= TrainListener.getAllTrainData().size();
+            TrainData data = TrainListener.getAllTrainData().stream().skip(trainIndex).findFirst().get();  
             drawLine(graphics, data.getTrain().name.getString() + " (" + (data.isPreInitializationPhase() ? "PREPARING" : (data.isInitialized() ? "READY" : "INITIALIZING")) + ") Train Id: " + data.getTrainId() + ", SessionId: " + data.getSessionId());    
             drawLine(graphics, "Display: " + data.getCurrentSection().getDisplayText() + ", Title: " + data.getCurrentTitle() + ", IsDynamic: " + data.isDynamic());
             drawLine(graphics, "Track: " + !((TrainStatusAccessor)data.getTrain().status).crn$track() + ", Conductor: " + !((TrainStatusAccessor)data.getTrain().status).crn$conductor() + ", Navigation: " + !((TrainStatusAccessor)data.getTrain().status).crn$navigation() + ", Paused: " + data.getTrain().runtime.paused + ", Auto: " + data.getTrain().runtime.isAutoSchedule + ", Manual: " + data.isManualControlled + ", Cancelled: " + data.isCancelled());

@@ -77,14 +77,13 @@ public class DebugCommand {
 
     private static int hardReset(CommandSourceStack cmd) throws CommandSyntaxException {
         cmd.sendSuccess(TextUtils.text("All train predictions have been deleted."), false);
-        TrainListener.data.clear();
-        TrainListener.data.values().forEach(x -> x.hardResetPredictions());
+        TrainListener.resetTrainData();
         return 1;
     }
 
     private static int reset(CommandSourceStack cmd) throws CommandSyntaxException {
         cmd.sendSuccess(TextUtils.text("All train predictions have been reset."), false);
-        TrainListener.data.values().forEach(x -> x.softResetPredictions());
+        TrainListener.getAllTrainData().forEach(x -> x.softResetPredictions());
         return 1;
     }
 

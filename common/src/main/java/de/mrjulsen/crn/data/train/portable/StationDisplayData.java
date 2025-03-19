@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Objects;
 
 import de.mrjulsen.crn.exceptions.RuntimeSideException;
-import de.mrjulsen.crn.data.train.TrainData;
 import de.mrjulsen.crn.data.train.TrainListener;
 import de.mrjulsen.crn.data.train.TrainStop;
 import de.mrjulsen.crn.data.train.TrainTravelSection;
@@ -56,33 +55,32 @@ public class StationDisplayData {
         if (!ModCommonEvents.hasServer()) {
             throw new RuntimeSideException(false);
         }
-        if (!TrainListener.data.containsKey(stop.getTrainId())) {
-            return empty();
-        }
-        TrainData data = TrainListener.data.get(stop.getTrainId());
-        TrainTravelSection section = data.getSectionByIndex(stop.getSectionIndex());
-        TrainTravelSection previousSection = section.previousSection();
-        String firstStop = section.getFirstStop().isPresent() ? section.getFirstStop().get().getStationTag().getTagName().get() : "";
-        boolean isLastStopOfSection = section.getFinalStop().isPresent() && (previousSection.shouldIncludeNextStationOfNextSection() && previousSection.getFinalStop().isPresent() ? previousSection.getFinalStop().get() : section.getFinalStop().get()).getEntryIndex() == stop.getScheduleIndex();
-        if (isLastStopOfSection) {
-            if (previousSection.shouldIncludeNextStationOfNextSection() && previousSection.getFinalStop().isPresent() && previousSection.getFinalStop().get().getEntryIndex() == stop.getScheduleIndex()) {
-                firstStop = previousSection.getFirstStop().isPresent() ? previousSection.getFirstStop().get().getStationTag().getTagName().get() : "";
-                if ((data.isAtStation() && data.getCurrentScheduleIndex() == stop.getScheduleIndex()) || !previousSection.isUsable()) {
-                    isLastStopOfSection = false; 
-                }
-                if (!section.isUsable()) {
-                    isLastStopOfSection = true;
+
+        return TrainListener.getTrainData(stop.getTrainId()).map(data -> {
+            TrainTravelSection section = data.getSectionByIndex(stop.getSectionIndex());
+            TrainTravelSection previousSection = section.previousSection();
+            String firstStop = section.getFirstStop().isPresent() ? section.getFirstStop().get().getStationTag().getTagName().get() : "";
+            boolean isLastStopOfSection = section.getFinalStop().isPresent() && (previousSection.shouldIncludeNextStationOfNextSection() && previousSection.getFinalStop().isPresent() ? previousSection.getFinalStop().get() : section.getFinalStop().get()).getEntryIndex() == stop.getScheduleIndex();
+            if (isLastStopOfSection) {
+                if (previousSection.shouldIncludeNextStationOfNextSection() && previousSection.getFinalStop().isPresent() && previousSection.getFinalStop().get().getEntryIndex() == stop.getScheduleIndex()) {
+                    firstStop = previousSection.getFirstStop().isPresent() ? previousSection.getFirstStop().get().getStationTag().getTagName().get() : "";
+                    if ((data.isAtStation() && data.getCurrentScheduleIndex() == stop.getScheduleIndex()) || !previousSection.isUsable()) {
+                        isLastStopOfSection = false; 
+                    }
+                    if (!section.isUsable()) {
+                        isLastStopOfSection = true;
+                    }
                 }
             }
-        }
-        return new StationDisplayData(
-            BasicTrainDisplayData.of(stop),
-            TrainStopDisplayData.of(stop),
-            firstStop,
-            isLastStopOfSection,
-            isLastStopOfSection && !section.nextSection().isUsable(),
-            section.getStopoversFrom(stop.getScheduleIndex())
-        );
+            return new StationDisplayData(
+                BasicTrainDisplayData.of(stop),
+                TrainStopDisplayData.of(stop),
+                firstStop,
+                isLastStopOfSection,
+                isLastStopOfSection && !section.nextSection().isUsable(),
+                section.getStopoversFrom(stop.getScheduleIndex())
+            );
+        }).orElse(empty());        
     }
 
     public BasicTrainDisplayData getTrainData() {

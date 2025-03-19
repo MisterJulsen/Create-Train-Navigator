@@ -62,7 +62,7 @@ public class NavigatableGraph {
             TrainUtils.isTrainUsable(x)
         ).collect(Collectors.toSet());
         for (Train train : trains) {
-            addTrain(train, TrainListener.data.get(train.id));
+            TrainListener.getTrainData(train).ifPresent(x -> addTrain(train, x));
         }
 
         if (ModCommonConfig.ADVANCED_LOGGING.get()) {
@@ -265,13 +265,13 @@ public class NavigatableGraph {
     public ImmutableMap<UUID, TrainSchedule> createTrainSchedules() {
         return ImmutableMap.copyOf(TrainUtils.getTrains(true).stream()
             .filter(x -> {
-                return  TrainListener.data.containsKey(x.id) &&
+                return  TrainListener.hasTrainData(x.id) &&
                         TrainUtils.isTrainUsable(x) &&
                         !globalSettings().isTrainBlacklisted(x) && 
                         !globalSettings().isTrainExcludedByUser(x, userSettings)
                     ;
             })
-            .map(x -> new TrainSchedule(TrainListener.data.get(x.id).getSessionId(), x))
+            .map(x -> new TrainSchedule(TrainListener.getTrainData(x.id).map(TrainData::getSessionId).orElse(new UUID(0, 0)), x))
             .collect(Collectors.toMap(x -> x.getTrain().id, x -> x)));
     }
 
@@ -293,7 +293,7 @@ public class NavigatableGraph {
 
         Set<UUID> excludedTrainIds = new HashSet<>();
         List<Train> departingTrains = TrainUtils.getDepartingTrainsAt(start.getStationTag()).stream().filter(train -> 
-            TrainListener.data.containsKey(train.id) &&
+            TrainListener.hasTrainData(train.id) &&
             TrainUtils.isTrainUsable(train) &&
             !excludedTrainIds.contains(train.id) &&
             !globalSettings().isTrainBlacklisted(train) &&
@@ -306,7 +306,7 @@ public class NavigatableGraph {
         List<Route> routes = new ArrayList<>();
 
         for (Train train : departingTrains) {
-            TrainData trainData = TrainListener.data.get(train.id);
+            TrainData trainData = TrainListener.getTrainData(train.id).get();
             int simulationTime = userSettings.navigationDepartureInTicks.getValue();
             Queue<Node> tempTransferNodes = new ConcurrentLinkedQueue<>(transferNodes);
             Node tempEnd = end;
@@ -353,7 +353,7 @@ public class NavigatableGraph {
         Node end = transferNodes.poll();
 
         List<Train> departingTrains = TrainUtils.getDepartingTrainsAt(start.getStationTag()).stream().filter(train ->
-            TrainListener.data.containsKey(train.id) && 
+            TrainListener.hasTrainData(train.id) && 
             TrainUtils.isTrainUsable(train) &&
             !excludedTrainIds.contains(train.id) &&
             !globalSettings().isTrainBlacklisted(train) &&
@@ -367,7 +367,7 @@ public class NavigatableGraph {
         Queue<Node> bestPartRemainingTransfers = null;
 
         for (Train train : departingTrains) {
-            TrainData trainData = TrainListener.data.get(train.id);
+            TrainData trainData = TrainListener.getTrainData(train.id).get();
             long simulationTime = previousPart.timeUntilEnd() - 1 + userSettings.navigationTransferTime.getValue();  
             Queue<Node> tempTransferNodes = new ConcurrentLinkedQueue<>(transferNodes);
             Node tempEnd = end;

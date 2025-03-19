@@ -494,29 +494,26 @@ public final class ModAccessorTypes {
         }, (nbt) -> {
             return nbt.getUUID(DataAccessorType.DEFAULT_NBT_DATA);
         }, (player, in, temp, nbt, iteration) -> {
-            if (!TrainListener.data.containsKey(in)) {
-                return false;
-            }
-
-            TrainData data = TrainListener.data.get(in);
-            List<TrainPrediction> predictions = data.getPredictions();
-            Map<Integer, TrainStopRealTimeData> values = new HashMap<>();
-            for (TrainPrediction prediction : predictions) {
-                TrainStopRealTimeData realTimeData = new TrainStopRealTimeData(
-                    prediction.getStationTag().getClientTag(prediction.getStationName()),
-                    prediction.getEntryIndex(),
-                    prediction.scheduled().arrivalTime(),
-                    prediction.scheduled().departureTime(),
-                    prediction.realTime().arrivalTime(),
-                    prediction.realTime().departureTime(),
-                    prediction.getArrivalTimeDeviation(),
-                    prediction.getDepartureTimeDeviation(),
-                    (int)prediction.realTime().arrivalIn(),
-                    prediction.getCurrentCycle()
-                );
-                values.put(realTimeData.entryIndex(), realTimeData);
-            }
-            nbt.put(DataAccessorType.DEFAULT_NBT_DATA, TrainRealTimeData.createServer(data.getSessionId(), values, data.getStatus(), data.isCancelled()).toNbt());
+            TrainListener.getTrainData(in).ifPresent(data -> {
+                List<TrainPrediction> predictions = data.getPredictions();
+                Map<Integer, TrainStopRealTimeData> values = new HashMap<>();
+                for (TrainPrediction prediction : predictions) {
+                    TrainStopRealTimeData realTimeData = new TrainStopRealTimeData(
+                        prediction.getStationTag().getClientTag(prediction.getStationName()),
+                        prediction.getEntryIndex(),
+                        prediction.scheduled().arrivalTime(),
+                        prediction.scheduled().departureTime(),
+                        prediction.realTime().arrivalTime(),
+                        prediction.realTime().departureTime(),
+                        prediction.getArrivalTimeDeviation(),
+                        prediction.getDepartureTimeDeviation(),
+                        (int)prediction.realTime().arrivalIn(),
+                        prediction.getCurrentCycle()
+                    );
+                    values.put(realTimeData.entryIndex(), realTimeData);
+                }
+                nbt.put(DataAccessorType.DEFAULT_NBT_DATA, TrainRealTimeData.createServer(data.getSessionId(), values, data.getStatus(), data.isCancelled()).toNbt());
+            });
             return false;
         }, (hasMore, previousData, iteration, nbt) -> {
             return nbt.contains(DataAccessorType.DEFAULT_NBT_DATA) ? TrainRealTimeData.fromNbt(nbt.getCompound(DataAccessorType.DEFAULT_NBT_DATA)) : null;
@@ -783,12 +780,12 @@ public final class ModAccessorTypes {
                     trains.removeIf(x -> !(
                         TrainUtils.isTrainUsable(x) &&
                         !GlobalSettings.getInstance().isTrainBlacklisted(x) &&
-                        TrainListener.data.containsKey(x.id)
+                        TrainListener.hasTrainData(x.id)
                     ));
 
                     List<Pair<Boolean, Route>> routesL = new LinkedList<>();
                     for (Train train : trains) {
-                        TrainData data = TrainListener.data.get(train.id);
+                        TrainData data = TrainListener.getTrainData(train.id).get();
                         List<TrainPrediction> matchingPredictions = data.getPredictionsChronologically();
                         
                         for (TrainPrediction prediction : matchingPredictions) {
@@ -903,7 +900,7 @@ public final class ModAccessorTypes {
     public static final DataAccessorType<Void, List<TrainDebugData>, List<TrainDebugData>> GET_ALL_TRAINS_DEBUG_DATA = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "get_all_trains_debug_data"), DataAccessorType.Builder.createNoInput(
         (player, in, temp, nbt, iteration) -> {
             ListTag list = new ListTag();
-            for (TrainData x : TrainListener.data.values()) {
+            for (TrainData x : TrainListener.getAllTrainData()) {
                 list.add(TrainDebugData.fromTrain(x).toNbt());
             }
             nbt.put(DataAccessorType.DEFAULT_NBT_DATA, list);
@@ -926,9 +923,7 @@ public final class ModAccessorTypes {
         }, (nbt) -> {
             return nbt.getUUID(DataAccessorType.DEFAULT_NBT_DATA);
         }, (player, in, temp, nbt, iteration) -> {
-            if (TrainListener.data.containsKey(in)) {
-                TrainListener.data.get(in).softResetPredictions();
-            }
+            TrainListener.getTrainData(in).ifPresent(TrainData::softResetPredictions);
             return false;
         }
     ));
@@ -939,9 +934,7 @@ public final class ModAccessorTypes {
         }, (nbt) -> {
             return nbt.getUUID(DataAccessorType.DEFAULT_NBT_DATA);
         }, (player, in, temp, nbt, iteration) -> {
-            if (TrainListener.data.containsKey(in)) {
-                TrainListener.data.get(in).hardResetPredictions();
-            }
+            TrainListener.getTrainData(in).ifPresent(TrainData::hardResetPredictions);
             return false;
         }
     ));

@@ -177,7 +177,11 @@ public class TrainStop implements Comparable<TrainStop> {
 
     private void simulateTicksLegacy(long ticks) {
         this.simulated = true;
-        int totalDuration = TrainListener.data.get(getTrainId()).getTotalDuration();
+        int totalDuration = TrainListener.getTrainData(getTrainId()).map(TrainData::getTotalDuration).orElse(-1);
+        if (totalDuration <= 0) {
+            return;
+        }
+
         long scheduledTimeUntilArrival = getScheduledArrivalTime() - DragonLib.getCurrentWorldTime();
         int simulationCycles = (int)(ticks / totalDuration);
         long simulationRemaining = ticks % totalDuration;
@@ -197,7 +201,7 @@ public class TrainStop implements Comparable<TrainStop> {
 
     private void simulateTicksNew(long ticks) {
         this.simulated = true;
-        SimulationResult res = TrainListener.data.get(getTrainId()).simulate(scheduleIndex, ticks);
+        SimulationResult res = TrainListener.getTrainData(getTrainId()).get().simulate(scheduleIndex, ticks);
         
         this.cycle += res.cycles();
         this.scheduledArrivalTime = res.arrivalTime();
@@ -213,7 +217,7 @@ public class TrainStop implements Comparable<TrainStop> {
         if (cycles == 0) {
             return;
         }
-        simulateTicks(cycles * TrainListener.data.get(getTrainId()).getTotalDuration());
+        TrainListener.getTrainData(getTrainId()).ifPresent(x -> simulateTicks(cycles * x.getTotalDuration()));
     }
 
     

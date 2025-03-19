@@ -11,6 +11,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
+
 import javax.annotation.Nullable;
 
 import com.simibubi.create.content.trains.entity.Train;
@@ -75,15 +77,19 @@ public final class StationDepartureHistory {
 
     private static final MapCache<Long, DepartureTimeInputDataKey, DepartureTimeInputDataKey> lastDepartureTimeDataCache = new MapCache<>((key) -> {
         long time = Long.MIN_VALUE;
-        TrainTravelSection section = null;
+        AtomicReference<TrainTravelSection> section = new AtomicReference<>(null);
         
-        if (TrainListener.data.containsKey(key.train())) {
-            section = TrainListener.data.get(key.train()).getCurrentSection();
+        TrainListener.getTrainData(key.train()).ifPresent(data -> {
+            section.set(data.getCurrentSection());
+        });
+        
+        if (section.get() == null) {
+            return 0L;
         }
 
         List<Data> data = departureDataCache.get(key.stationName(), key.stationName());
         for (Data d : data) {
-            long newTime = d.getLastDepartureTime(key.filter(), section);
+            long newTime = d.getLastDepartureTime(key.filter(), section.get());
             time = Math.max(newTime, time);
         }
         
@@ -145,12 +151,11 @@ public final class StationDepartureHistory {
 
         public void setDeparture(Train train) {
             this.lastDepartureTime = DragonLib.getCurrentServer().get().overworld().getGameTime();
-            if (TrainListener.data.containsKey(train.id)) {
-                TrainData trainData = TrainListener.data.get(train.id);
-                TrainTravelSection section = trainData.getCurrentSection();
+            TrainListener.getTrainData(train.id).ifPresent(data -> {
+                TrainTravelSection section = data.getCurrentSection();
                 section.getTrainLine().ifPresent(x -> this.lastDepartureByLine.put(x, this.lastDepartureTime));
-                section.getTrainGroup().ifPresent(x -> this.lastDepartureByGroup.put(x, this.lastDepartureTime));                
-            }
+                section.getTrainGroup().ifPresent(x -> this.lastDepartureByGroup.put(x, this.lastDepartureTime)); 
+            });
         }
 
         public long getLastDepartureTime(ETrainFilter filter, @Nullable TrainTravelSection section) {

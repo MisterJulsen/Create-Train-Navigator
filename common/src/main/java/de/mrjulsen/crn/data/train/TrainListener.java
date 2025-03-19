@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -40,12 +41,37 @@ public final class TrainListener {
 
     private transient static final String FILENAME = CreateRailwaysNavigator.MOD_ID + "_train_data.nbt";
 
-    public static final ConcurrentHashMap<UUID /* train id */, TrainData> data = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<UUID /* train id */, TrainData> data = new ConcurrentHashMap<>();
 	public transient static final Map<String, Collection<TrainPrediction>> statusByDestination = new HashMap<>();
 
     private transient static boolean trainDataListenerActive = false;
     private transient static long currentTrainDataListenerId = 0L;
     private transient static final Queue<Runnable> trainDataHookTasks = new ConcurrentLinkedQueue<>();
+
+
+    public static Optional<TrainData> getTrainData(Train train) {
+        return getTrainData(train.id);
+    }
+    
+    public static Optional<TrainData> getTrainData(UUID trainId) {
+        return hasTrainData(trainId) ? Optional.ofNullable(data.get(trainId)) : Optional.empty();
+    }
+
+    public static boolean hasTrainData(Train train) {
+        return hasTrainData(train.id);
+    }
+
+    public static boolean hasTrainData(UUID trainId) {
+        return data.containsKey(trainId);
+    }
+
+    public static Collection<TrainData> getAllTrainData() {
+        return data.values();
+    }
+
+    public static void resetTrainData() {
+        data.clear();
+    }
 
 
     public static void init() {

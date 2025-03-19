@@ -9,7 +9,6 @@ import com.simibubi.create.content.trains.entity.Train;
 
 import de.mrjulsen.crn.data.TrainExitSide;
 import de.mrjulsen.crn.exceptions.RuntimeSideException;
-import de.mrjulsen.crn.data.train.TrainData;
 import de.mrjulsen.crn.data.train.TrainListener;
 import de.mrjulsen.crn.data.train.TrainPrediction;
 import de.mrjulsen.crn.data.train.TrainStop;
@@ -98,40 +97,40 @@ public class TrainDisplayData {
         if (!ModCommonEvents.hasServer()) {
             throw new RuntimeSideException(false);
         }
-        if (!TrainListener.data.containsKey(train.id) || train.runtime.getSchedule() == null) {
+        if (train.runtime.getSchedule() == null) {
             return empty();
         }
 
-        MutableSingle<TrainExitSide> sideHolder = new MutableSingle<>(null); 
-        ModCommonEvents.getCurrentServer().ifPresent(x -> {
-            x.execute(() -> sideHolder.setFirst(TrainUtils.getExitSide(train.navigation.destination)));
-            while (sideHolder.getFirst() == null) {
-                try { TimeUnit.MILLISECONDS.sleep(10); } catch (InterruptedException e) {}
+        return TrainListener.getTrainData(train.id).map(data -> {
+            MutableSingle<TrainExitSide> sideHolder = new MutableSingle<>(null); 
+            ModCommonEvents.getCurrentServer().ifPresent(x -> {
+                x.execute(() -> sideHolder.setFirst(TrainUtils.getExitSide(train.navigation.destination)));
+                while (sideHolder.getFirst() == null) {
+                    try { TimeUnit.MILLISECONDS.sleep(10); } catch (InterruptedException e) {}
+                }
+            });
+            TrainExitSide side = sideHolder.getFirst() == null ? TrainExitSide.UNKNOWN : sideHolder.getFirst();
+            TrainTravelSection section = data.getCurrentSection();
+
+            List<TrainStopDisplayData> displayData = new ArrayList<>();
+            if (section.isUsable()) {            
+                List<TrainPrediction> predictions = data.getCurrentSection().getPredictions(-1, false);
+                for (TrainPrediction prediction : predictions) {
+                    displayData.add(TrainStopDisplayData.of(new TrainStop(prediction)));
+                }
             }
-        });
-        TrainExitSide side = sideHolder.getFirst() == null ? TrainExitSide.UNKNOWN : sideHolder.getFirst();
 
-        TrainData data = TrainListener.data.get(train.id);
-        TrainTravelSection section = data.getCurrentSection();
-
-        List<TrainStopDisplayData> displayData = new ArrayList<>();
-        if (section.isUsable()) {            
-            List<TrainPrediction> predictions = data.getCurrentSection().getPredictions(-1, false);
-            for (TrainPrediction prediction : predictions) {
-                displayData.add(TrainStopDisplayData.of(new TrainStop(prediction)));
-            }
-        }
-
-        return new TrainDisplayData(
-            BasicTrainDisplayData.of(train.id),
-            displayData,
-            data.getCurrentScheduleIndex(),
-            side,
-            train.speed,
-            train.currentlyBackwards,
-            data.isAtStation(),
-            !section.isUsable()
-        );
+            return new TrainDisplayData(
+                BasicTrainDisplayData.of(train.id),
+                displayData,
+                data.getCurrentScheduleIndex(),
+                side,
+                train.speed,
+                train.currentlyBackwards,
+                data.isAtStation(),
+                !section.isUsable()
+            );
+        }).orElse(empty());        
     }
 
     public BasicTrainDisplayData getTrainData() {
