@@ -505,13 +505,13 @@ public final class ModAccessorTypes {
                 TrainStopRealTimeData realTimeData = new TrainStopRealTimeData(
                     prediction.getStationTag().getClientTag(prediction.getStationName()),
                     prediction.getEntryIndex(),
-                    prediction.getScheduledArrivalTime(),
-                    prediction.getScheduledDepartureTime(),
-                    prediction.getRealTimeArrivalTime(),
-                    prediction.getRealTimeDepartureTime(),
+                    prediction.scheduled().arrivalTime(),
+                    prediction.scheduled().departureTime(),
+                    prediction.realTime().arrivalTime(),
+                    prediction.realTime().departureTime(),
                     prediction.getArrivalTimeDeviation(),
                     prediction.getDepartureTimeDeviation(),
-                    prediction.getRealTimeArrivalTicks(),
+                    (int)prediction.realTime().arrivalIn(),
                     prediction.getCurrentCycle()
                 );
                 values.put(realTimeData.entryIndex(), realTimeData);

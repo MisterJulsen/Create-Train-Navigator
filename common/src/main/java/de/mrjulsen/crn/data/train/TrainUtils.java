@@ -373,7 +373,7 @@ public final class TrainUtils {
         return isTrainValid(train) &&
                TrainListener.data.containsKey(train.id) &&
                TrainListener.data.get(train.id).isInitialized() && 
-               !TrainListener.data.get(train.id).isPreparing()
+               !TrainListener.data.get(train.id).isPreInitializationPhase()
         ;
     }
 

@@ -72,8 +72,8 @@ public class DynamicDelayCondition extends ScheduledDelay implements IPredictabl
 			Optional<TrainPrediction> pred = data.getNextStopPrediction();
 			if (pred.isPresent()) {
 				currentDelay = pred.get().getArrivalTimeDeviation();
-				initialized = data.isInitialized() && !data.isPreparing();
-				scheduledDepartureTime = pred.get().getScheduledDepartureTime();
+				initialized = data.isInitialized() && !data.isPreInitializationPhase();
+				scheduledDepartureTime = pred.get().scheduled().departureTime();
 			} 
 		}
 

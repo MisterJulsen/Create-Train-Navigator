@@ -55,7 +55,7 @@ public record TrainDebugData(
             train.getTotalDuration(),
             train.getPredictionsMap().size(),
             train.debug_initializedStationsCount(),
-            train.isPreparing() ? TrainDebugState.PREPARING : (train.isInitialized() ? TrainDebugState.READY : TrainDebugState.INITIALIZING)
+            train.isPreInitializationPhase() ? TrainDebugState.PREPARING : (train.isInitialized() ? TrainDebugState.READY : TrainDebugState.INITIALIZING)
         );
     }
 }

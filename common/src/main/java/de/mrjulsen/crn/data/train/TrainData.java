@@ -238,7 +238,7 @@ public class TrainData implements IListenable<TrainData> {
 
     @Deprecated(forRemoval = true)
     public int getTransitTimeOf(int scheduleIndex) {
-        return predictionsByIndex.containsKey(scheduleIndex) ? predictionsByIndex.get(scheduleIndex).getTransitTime() : INVALID;
+        return predictionsByIndex.containsKey(scheduleIndex) ? predictionsByIndex.get(scheduleIndex).transitTime().value() : INVALID;
     }
 
     /**
@@ -427,24 +427,14 @@ public class TrainData implements IListenable<TrainData> {
      */
     public boolean isInitialized() {
         return isInitializedCache.get();
-    }
-
-    /**
-     * Indicates whether any preparations need to be made before the initialization phase can begin.
-     * This is especially the case after starting the world, when the train was still in the middle of its journey.
-     */
-
-    @Deprecated
-    public boolean isPreparing() {
-        return isPreInitializationPhase();//!isPrepared;
-    }
+    }    
 
     public boolean isPreInitializationPhase() {
         return preInitialization;
     }
 
     public int debug_initializedStationsCount() {
-        return (int)getPredictions().stream().mapToInt(TrainPrediction::getTransitTime).filter(x -> x > 0).count();
+        return (int)getPredictions().stream().mapToInt(x -> x.transitTime().value()).filter(x -> x > 0).count();
     }
 
     public synchronized void shiftTime(long l) {
@@ -706,7 +696,7 @@ public class TrainData implements IListenable<TrainData> {
     }
 
     public void updateTotalDuration() {
-        int newDuration = getPredictions().stream().mapToInt(x -> x.getTransitTime() + (int)x.getAverageStayDuration()).sum();
+        int newDuration = getPredictions().stream().mapToInt(x -> x.transitTime().value() + (int)x.getAverageStayDuration()).sum();
         int oldTotalDuration = this.totalDuration;
         if (CRNEventsManager.isRegistered(TotalDurationTimeChangedEvent.class) && this.totalDuration > 0 && this.totalDuration != newDuration) {
             CRNEventsManager.getEvent(TotalDurationTimeChangedEvent.class).run(train, this.totalDuration, newDuration);

@@ -50,7 +50,7 @@ public class DebugOverlay extends DLOverlayScreen {
         if (!TrainListener.data.isEmpty()) {
             trainIndex %= TrainListener.data.size();
             TrainData data = TrainListener.data.values().stream().skip(trainIndex).findFirst().get();  
-            drawLine(graphics, data.getTrain().name.getString() + " (" + (data.isPreparing() ? "PREPARING" : (data.isInitialized() ? "READY" : "INITIALIZING")) + ") Train Id: " + data.getTrainId() + ", SessionId: " + data.getSessionId());    
+            drawLine(graphics, data.getTrain().name.getString() + " (" + (data.isPreInitializationPhase() ? "PREPARING" : (data.isInitialized() ? "READY" : "INITIALIZING")) + ") Train Id: " + data.getTrainId() + ", SessionId: " + data.getSessionId());    
             drawLine(graphics, "Display: " + data.getCurrentSection().getDisplayText() + ", Title: " + data.getCurrentTitle() + ", IsDynamic: " + data.isDynamic());
             drawLine(graphics, "Track: " + !((TrainStatusAccessor)data.getTrain().status).crn$track() + ", Conductor: " + !((TrainStatusAccessor)data.getTrain().status).crn$conductor() + ", Navigation: " + !((TrainStatusAccessor)data.getTrain().status).crn$navigation() + ", Paused: " + data.getTrain().runtime.paused + ", Auto: " + data.getTrain().runtime.isAutoSchedule + ", Manual: " + data.isManualControlled + ", Cancelled: " + data.isCancelled());
             drawLine(graphics, "Duration: " + data.getTotalDuration() + ", Ticks: " + data.getTransitTicks() + "/" + data.waitingAtStationTicks() + "/" + data.waitingForSignalTicks + "/" + data.ticksToNextStop + ", Dest: " + (data.getTrain().navigation.destination == null ? "(at station)" : (data.getTrain().navigation.destination.name + ", DestID: " + data.getTrain().navigation.destination.id)) + ", Delay: " + data.getHighestDeviation() + " (-" + data.getDeviationDelayOffset() + "), Status: " + data.debug_statusInfoCount());
@@ -76,14 +76,14 @@ public class DebugOverlay extends DLOverlayScreen {
                 if (a == null) {
                     return;
                 }
-                builder.append(" > " + a.getStationName() + " (" + a.getRealTimeArrivalTicks() + ")");
+                builder.append(" > " + a.getStationName() + " (" + a.realTime().arrivalIn() + ")");
             });
             drawLine(graphics, builder.toString());
 
             drawLine(graphics, TextUtils.text("Transit Times:").withStyle(ChatFormatting.UNDERLINE));
             for (TrainPrediction prediction : data.getPredictions()) {
-                String suffix = String.join(" | ", Arrays.stream(prediction.getTransitTimesHistory()).map(x -> String.valueOf(x)).toList());
-                drawLine(graphics, " - [ " + prediction.getEntryIndex() + " ]: C: " + prediction.getTransitTime() + ", L: " + prediction.getLastMeasuredTransitTime() + ", H: [" + suffix + "]");
+                String suffix = String.join(" | ", Arrays.stream(prediction.transitTime().history()).map(x -> String.valueOf(x)).toList());
+                drawLine(graphics, " - [ " + prediction.getEntryIndex() + " ]: C: " + prediction.transitTime().value() + ", L: " + prediction.transitTime().measuredValue() + ", H: [" + suffix + "]");
             }
             drawLine(graphics, "C: " + String.join(" | ", ((ScheduleRuntimeAccessor)data.getTrain().runtime).crn$getTransitTicks().stream().map(x -> String.valueOf(x)).toList()));
             
