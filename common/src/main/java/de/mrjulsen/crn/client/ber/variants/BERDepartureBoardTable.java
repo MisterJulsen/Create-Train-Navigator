@@ -363,7 +363,7 @@ public class BERDepartureBoardTable implements AbstractAdvancedDisplayRenderer<D
             ;
         }
         BERLabel platformLabel = components[LineComponent.PLATFORM.i()]
-            .setText(TextUtils.text(stop.getStationData().getStationInfo().platform()))                
+            .setText(TextUtils.text(stop.getStationData().getRealTimeStation().info().platform()))     // TODO Gleiswechsel kennzeichnen            
         ;
 
 

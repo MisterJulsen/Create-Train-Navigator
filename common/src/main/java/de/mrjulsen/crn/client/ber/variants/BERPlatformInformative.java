@@ -163,20 +163,33 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
             updateLayout(blockEntity, preds);
         }
 
-        showInfoLine = preds.get(0).getStationData().isDepartureDelayed() && preds.get(0).getTrainData().hasStatusInfo();
+        // STATUS
+        showInfoLine = (preds.get(0).getStationData().isDepartureDelayed() && preds.get(0).getTrainData().hasStatusInfo()) || preds.get(0).getStationData().isStationChanged();
         if (showInfoLine) {
             // Update status label
             Collection<Component> content = new ArrayList<>();
             if (preds.get(0).getTrainData().isCancelled()) {
                 content.add(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.cancelled"));
             } else {
-                TrainStopDisplayData  displayData = preds.get(0).getStationData();
+                TrainStopDisplayData displayData = preds.get(0).getStationData();
                 String delay = getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA ? ModUtils.timeRemainingString(displayData.getDepartureTimeDeviation()) : String.valueOf(TimeUtils.formatToMinutes(displayData.getDepartureTimeDeviation()));
-                MutableComponent delayComponent = CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.delayed", delay);
-                if (getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ABS) {
-                    delayComponent.append(" ").append(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.delay_abs_suffix"));
+                // DELAYED
+                if (displayData.isDepartureDelayed()) {
+                    MutableComponent delayComponent = CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.delayed", delay);
+                    if (getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ABS) {
+                        delayComponent.append(" ").append(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.delay_abs_suffix"));
+                    }
+                    content.add(delayComponent);
                 }
-                content.add(delayComponent);
+                // PLATFORM CHANGED
+                if (displayData.isStationChanged() && !blockEntity.isAllowedOnDisplay(displayData.getRealTimeStation())) {
+                    if (!displayData.getScheduledStation().tagId().equals(displayData.getRealTimeStation().tagId())) {
+                        content.add(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.platform_and_station_changed", displayData.getRealTimeStation().tagName(), displayData.getRealTimeStation().info().platform()));
+                    } else {
+                        content.add(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.platform_changed", displayData.getRealTimeStation().info().platform()));
+                    }
+                }
+                // STATUS
                 for (CompiledTrainStatus status : preds.get(0).getTrainData().getStatus()) {
                     content.add(status.text());
                 }
@@ -347,13 +360,16 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
         }
 
         this.platformLabel
-            .setText(TextUtils.text(stop.getStationData().getStationInfo().platform()).withStyle(ChatFormatting.BOLD))
+            .setText(TextUtils.text(blockEntity.isPlatformFixed() ?
+                blockEntity.getStationInfo().platform() :
+                stop.getStationData().getScheduledStation().info().platform()).withStyle(ChatFormatting.BOLD)
+            )
         ;
+        
 
         float x = 5 + Math.max(trainNameLabel.getMaxWidth(), Math.max(timeLabel.getTextWidth(), realTimeLabel.getTextWidth()));
         float platformWidth = Math.min(blockEntity.getXSizeScaled() * 16 - 3 - x, settings.isAutoPlatformWidthNextStop() ? platformLabel.getTextWidth() : settings.getPlatformWidthNextStop());
         this.platformLabel
-            .setText(TextUtils.text(stop.getStationData().getStationInfo().platform()).withStyle(ChatFormatting.BOLD))
             .setPos(blockEntity.getXSizeScaled() * 16 - 3 - Math.min(platformWidth, platformLabel.getTextWidth()), 3)
             .setMaxWidth(platformWidth, BoundsHitReaction.SCALE_SCROLL)
         ;
@@ -417,7 +433,7 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
         components[LineComponent.PLATFORM.i()]
             .setText(blockEntity.isPlatformFixed() ?
                 TextUtils.empty() :
-                TextUtils.text(stop.getStationData().getStationInfo().platform()))
+                TextUtils.text(stop.getStationData().getScheduledStation().info().platform()))
         ;
         components[LineComponent.DESTINATION.i()]
             .setText(isLast ?
@@ -441,10 +457,24 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
         
         BERLabel platformLabel = components[LineComponent.PLATFORM.i()];
         float platformWidth = settings.isAutoPlatformWidth() ? platformLabel.getTextWidth() : settings.getPlatformWidth();
+
         platformLabel
             .setPos(blockEntity.getXSizeScaled() * 16 - 3 - platformLabel.getTextWidth(), 11 + 3 + index * LINE_HEIGHT)
             .setMaxWidth(platformWidth, BoundsHitReaction.SCALE_SCROLL)
         ;
+        
+        if (stop.getStationData().isStationChanged()) {
+            platformLabel                
+                .setBackground((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF), false)
+                .setColor(0xFF111111)
+            ;
+        } else {
+            platformLabel
+                .setBackground(0, false)
+                .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
+            ;
+        }
+
         components[LineComponent.DESTINATION.i()]
             .setPos(x, 11 + 3 + index * LINE_HEIGHT)
             .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 3 - x - platformWidth - 3, BoundsHitReaction.SCALE_SCROLL)

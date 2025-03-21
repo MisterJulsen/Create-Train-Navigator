@@ -122,9 +122,9 @@ public class BERPassengerInfoSimple implements AbstractAdvancedDisplayRenderer<P
         if (!blockEntity.getTrainData().getNextStop().isPresent()) {
             label.setText(settings.getTrainTextComponents().showTrainName() ? TextUtils.text(blockEntity.getTrainData().getTrainData().getName()) : TextUtils.empty());
         } else if (blockEntity.getTrainData().isWaitingAtStation()) {
-            label.setText(TextUtils.text(blockEntity.getTrainData().getNextStop().get().getName()));
+            label.setText(TextUtils.text(blockEntity.getTrainData().getNextStop().get().getRealTimeStation().tagName()));
         } else if (blockEntity.getTrainData().getNextStop().get().getRealTimeArrivalTime() - DragonLib.getCurrentWorldTime() < ModClientConfig.NEXT_STOP_ANNOUNCEMENT.get()) {
-            label.setText(CustomLanguage.translate(keyNextStop, blockEntity.getTrainData().getNextStop().get().getName()));
+            label.setText(CustomLanguage.translate(keyNextStop, blockEntity.getTrainData().getNextStop().get().getRealTimeStation().tagName()));
         } else {
             final int slides = 3;
             int slide = (int)(DragonLib.getCurrentWorldTime() % (TICKS_PER_SLIDE * slides)) / TICKS_PER_SLIDE;

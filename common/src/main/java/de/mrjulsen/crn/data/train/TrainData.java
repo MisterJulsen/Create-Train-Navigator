@@ -553,8 +553,11 @@ public class TrainData implements IListenable<TrainData> {
 
             validPredictionEntries.add(cyclicIndex);
             final DestinationInstruction destination = (DestinationInstruction)entry.instruction;
+            AtomicReference<String> name = new AtomicReference<>(destination.getFilter());
             if (i <= 0) {
                 time += this.ticksToNextStop = predictTimeToNextStop();
+                GlobalStation destStation = train.navigation.destination != null ? train.navigation.destination : train.getCurrentStation();
+                name.set(destStation != null ? destStation.name : name.get());
             } else {
                 if (hasCycled || (cyclicIndex == 0 && !train.runtime.getSchedule().cyclic)) {
                     hasCycled = true;
@@ -563,13 +566,12 @@ public class TrainData implements IListenable<TrainData> {
                 time += getTransitTimeAtStation(cyclicIndex);
             }
 
-            final String name = destination.getFilter();
-            TrainPrediction pred = predictionsByIndex.computeIfAbsent(cyclicIndex, idx -> new TrainPrediction(this, idx, name, currentTitle.get()));
+            TrainPrediction pred = predictionsByIndex.computeIfAbsent(cyclicIndex, idx -> new TrainPrediction(this, idx, name.get(), currentTitle.get()));
             if (!isPreInitializationPhase()) {
                 pred.preInit();
             }
             predictionsChronologically.add(pred);
-            pred.updateRealTime(pred.getStationName(), now, time - (getCurrentScheduleIndex() == cyclicIndex ? waitingAtStationTicks() : 0));
+            pred.updateRealTime(name.get(), now, time - (getCurrentScheduleIndex() == cyclicIndex ? waitingAtStationTicks() : 0));
             time = pred.realTime().departureTime();
         }
 
@@ -719,6 +721,7 @@ public class TrainData implements IListenable<TrainData> {
         if (!isPreInitializationPhase()) {
             this.getPredictionByIndex(getCurrentScheduleIndex()).ifPresent(x -> {
                 x.transitTime().add(transitTime, false);
+                x.onReachStation();
             });
         }
 

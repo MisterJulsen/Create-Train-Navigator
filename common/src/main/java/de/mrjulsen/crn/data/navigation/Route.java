@@ -107,7 +107,7 @@ public class Route implements ISaveableNavigatorData {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("ROUTE[" + getStart().getClientTag().tagName() + " -> " + getEnd().getClientTag().tagName() + "]");
+        builder.append("ROUTE[" + getStart().getRealTimeStationTag().tagName() + " -> " + getEnd().getRealTimeStationTag().tagName() + "]");
         return builder.toString();
     }
 
@@ -131,8 +131,8 @@ public class Route implements ISaveableNavigatorData {
     @Override
     public List<SaveableNavigatorDataLine> getOverviewData() {
         List<SaveableNavigatorDataLine> lines = new ArrayList<>();
-        lines.add(new SaveableNavigatorDataLine(TextUtils.text(ModUtils.formatTime(getStart().getScheduledDepartureTime(), false) + "   " + getStart().getClientTag().tagName()), ModGuiIcons.ROUTE_START.getAsSprite(ModGuiIcons.ICON_SIZE, ModGuiIcons.ICON_SIZE)));
-        lines.add(new SaveableNavigatorDataLine(TextUtils.text(ModUtils.formatTime(getEnd().getScheduledArrivalTime(), false) + "   " + getEnd().getClientTag().tagName()), ModGuiIcons.ROUTE_END.getAsSprite(ModGuiIcons.ICON_SIZE, ModGuiIcons.ICON_SIZE)));
+        lines.add(new SaveableNavigatorDataLine(TextUtils.text(ModUtils.formatTime(getStart().getScheduledDepartureTime(), false) + "   " + getStart().getRealTimeStationTag().tagName()), ModGuiIcons.ROUTE_START.getAsSprite(ModGuiIcons.ICON_SIZE, ModGuiIcons.ICON_SIZE)));
+        lines.add(new SaveableNavigatorDataLine(TextUtils.text(ModUtils.formatTime(getEnd().getScheduledArrivalTime(), false) + "   " + getEnd().getRealTimeStationTag().tagName()), ModGuiIcons.ROUTE_END.getAsSprite(ModGuiIcons.ICON_SIZE, ModGuiIcons.ICON_SIZE)));
         lines.add(new SaveableNavigatorDataLine(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".route_overview.date", (getStart().getScheduledDepartureTime() + DragonLib.daytimeShift()) / DragonLib.ticksPerDay(), ModUtils.formatTime(getStart().getScheduledDepartureTime(), false)).append(" | ").append(TimeUtils.parseDurationShort(departureIn())), ModGuiIcons.CALENDAR.getAsSprite(ModGuiIcons.ICON_SIZE, ModGuiIcons.ICON_SIZE)));
         lines.add(new SaveableNavigatorDataLine(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".route_overview.transfers", getTransferCount()).append(TextUtils.text(" | " + TimeUtils.parseDurationShort(travelTime()))), ModGuiIcons.INFO.getAsSprite(ModGuiIcons.ICON_SIZE, ModGuiIcons.ICON_SIZE)));
         if (isAnyCancelled()) {

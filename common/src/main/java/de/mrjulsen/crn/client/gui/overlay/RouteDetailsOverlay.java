@@ -106,7 +106,7 @@ public class RouteDetailsOverlay extends DLOverlayScreen {
             setSlidingText(x.trainStop().getRealTimeStationTag().info().platform().isEmpty() ? CustomLanguage.translate(keyJourneyBegins) : CustomLanguage.translate(keyJourneyBeginsWithPlatform, x.trainStop().getRealTimeStationTag().info().platform()));
         });
         route.listen(ClientRoute.EVENT_ARRIVAL_AT_ANY_STOP, this, x -> {
-            setSlidingText(TextUtils.text(x.trainStop().getClientTag().tagName()));
+            setSlidingText(TextUtils.text(x.trainStop().getRealTimeStationTag().tagName()));
         });
         route.listen(ClientRoute.EVENT_ANY_STOP_ANNOUNCED, this, x -> {
             NextConnectionsPage page = new NextConnectionsPage(this.route, null);
@@ -115,17 +115,17 @@ public class RouteDetailsOverlay extends DLOverlayScreen {
             }
         });
         route.listen(ClientRoute.EVENT_ANNOUNCE_STOPOVER, this, x -> {
-            setSlidingText(CustomLanguage.translate(keyNextStop, x.trainStop().getClientTag().tagName()));
+            setSlidingText(CustomLanguage.translate(keyNextStop, x.trainStop().getRealTimeStationTag().tagName()));
         });
         route.listen(ClientRoute.EVENT_ANNOUNCE_LAST_STOP, this, x -> {
-            setSlidingText(CustomLanguage.translate(keyNextStop, x.trainStop().getClientTag().tagName()));
+            setSlidingText(CustomLanguage.translate(keyNextStop, x.trainStop().getRealTimeStationTag().tagName()));
         });
         route.listen(ClientRoute.EVENT_ANNOUNCE_TRANSFER_ARRIVAL_STATION, this, x -> {
             if (x.connection().isConnectionMissed()) {
                 connectionMissed();
                 return;
             }
-            setSlidingText(CustomLanguage.translate(keyNextStop, x.trainStop().getClientTag().tagName()).append("   ***   ").append(getTransferSlidingText(x.connection())));
+            setSlidingText(CustomLanguage.translate(keyNextStop, x.trainStop().getRealTimeStationTag().tagName()).append("   ***   ").append(getTransferSlidingText(x.connection())));
             currentPage = new TransferPage(this.route, x.connection());
         });        
         route.listen(ClientRoute.EVENT_PART_CHANGED, this, x -> {
@@ -134,11 +134,11 @@ public class RouteDetailsOverlay extends DLOverlayScreen {
             }
         });
         route.listen(ClientRoute.EVENT_DEPARTURE_FROM_TRANSFER_ARRIVAL_STATION, this, x -> {
-            setSlidingText(TextUtils.text(x.connection().getArrivalStation().getClientTag().tagName()).append("   ***   ").append(getTransferSlidingText(x.connection())));
+            setSlidingText(TextUtils.text(x.connection().getArrivalStation().getRealTimeStationTag().tagName()).append("   ***   ").append(getTransferSlidingText(x.connection())));
             currentPage = new TransferPage(this.route, x.connection());
         });
         route.listen(ClientRoute.EVENT_ARRIVAL_AT_LAST_STOP, this, x -> {
-            setSlidingText(CustomLanguage.translate(keyAfterJourney, x.trainStop().getClientTag().tagName()));
+            setSlidingText(CustomLanguage.translate(keyAfterJourney, x.trainStop().getRealTimeStationTag().tagName()));
             currentPage = new JourneyCompletedPage(this.route, () -> currentPage = new NextConnectionsPage(route, () -> {} /*InstanceManager::removeRouteOverlay*/));
             route.close();
         });
@@ -146,7 +146,7 @@ public class RouteDetailsOverlay extends DLOverlayScreen {
             if (journeyCompleted) {
                 return;
             }
-            setSlidingText(CustomLanguage.translate(keyAfterJourney, x.trainStop().getClientTag().tagName()));
+            setSlidingText(CustomLanguage.translate(keyAfterJourney, x.trainStop().getRealTimeStationTag().tagName()));
             currentPage = new JourneyCompletedPage(this.route, () -> currentPage = new NextConnectionsPage(route, () -> {} /*InstanceManager::removeRouteOverlay*/));
             route.close();
         });
@@ -288,7 +288,7 @@ public class RouteDetailsOverlay extends DLOverlayScreen {
         graphics.poseStack().popPose();
         endStencil();
         DLUtils.doIfNotNull(currentPage, a -> a.renderFrontLayer(graphics, 0, 0, partialTicks));
-        if (CreateRailwaysNavigator.isDebug()) GuiUtils.drawString(graphics, font, 5, GUI_HEIGHT + 10, "State: " + route.getState() + ", " + route.getCurrentPartIndex() + ", " + route.getCurrentPart().getNextStop().getClientTag().tagName(), 0xFFFF0000, EAlignment.LEFT, false);
+        if (CreateRailwaysNavigator.isDebug()) GuiUtils.drawString(graphics, font, 5, GUI_HEIGHT + 10, "State: " + route.getState() + ", " + route.getCurrentPartIndex() + ", " + route.getCurrentPart().getNextStop().getRealTimeStationTag().tagName(), 0xFFFF0000, EAlignment.LEFT, false);
         graphics.poseStack().popPose();
     }
 

@@ -24,6 +24,10 @@ public class StationTag {
         public static final String NBT_STATION_INFO = "StationInfo";
         public static final String NBT_TAG_ID = "Id";
 
+        public static ClientStationTag empty() {
+            return new ClientStationTag("", "", StationInfo.empty(), new UUID(0, 0));
+        }
+
         public CompoundTag toNbt() {
             CompoundTag nbt = new CompoundTag();
             nbt.putString(NBT_TAG_NAME, tagName());
@@ -40,6 +44,19 @@ public class StationTag {
                 StationInfo.fromNbt(nbt.getCompound(NBT_STATION_INFO)),
                 nbt.getUUID(NBT_TAG_ID)
             );
+        }
+
+        @Override
+        public final boolean equals(Object other) {
+            if (other instanceof ClientStationTag o) {
+                return o.tagName().equals(tagName()) && o.stationName().equals(stationName()) && o.info().equals(info());
+            }
+            return false;
+        }
+
+        @Override
+        public final int hashCode() {
+            return 31 * Objects.hash(tagName, stationName, info);
         }
     }
     
@@ -197,6 +214,10 @@ public class StationTag {
             }
         }
         return false;
+    }
+
+    public boolean containsLiteral(String stationName) {
+        return stations.containsKey(stationName);
     }
 
     public Set<String> getAllStationNames() {

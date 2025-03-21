@@ -385,7 +385,7 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
         this.exitSide = (!nextStopAnnounced && !data.isWaitingAtStation()) || !getDisplaySettings(blockEntity).showExit() ? TrainExitSide.UNKNOWN : (data.isWaitingAtStation() ? exitSide : blockEntity.relativeExitDirection.get());
 
         if (getDisplaySettings(blockEntity).showConnections() && blockEntity.getXSizeScaled() > 1 && nextStopAnnounced && !wasNextStopAnnounced && data.getNextStop().isPresent()) {
-            DataAccessor.getFromServer(new NextConnectionsRequestData(data.getNextStop().get().getName(), data.getTrainData().getId()), ModAccessorTypes.GET_NEXT_CONNECTIONS_DISPLAY_DATA, (res) -> {
+            DataAccessor.getFromServer(new NextConnectionsRequestData(data.getNextStop().get().getRealTimeStation().stationName(), data.getTrainData().getId()), ModAccessorTypes.GET_NEXT_CONNECTIONS_DISPLAY_DATA, (res) -> {
                 nextConnections = res;
                 updateLayout(blockEntity, data);
                 updateContent(blockEntity, data);
@@ -418,7 +418,7 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
             .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
         ;
         trainLineLabel
-            .setText(nextStopAnnounced ? CustomLanguage.translate(keyNextStop, data.getNextStop().get().getName()) : TextUtils.text((settings.getTrainTextComponents().showTrainName() ? data.getTrainData().getName() + " " : "") + (settings.getTrainTextComponents().showDestination() ? data.getNextStop().get().getDestination() : "")).withStyle(ChatFormatting.BOLD))
+            .setText(nextStopAnnounced ? CustomLanguage.translate(keyNextStop, data.getNextStop().get().getRealTimeStation().stationName()) : TextUtils.text((settings.getTrainTextComponents().showTrainName() ? data.getTrainData().getName() + " " : "") + (settings.getTrainTextComponents().showDestination() ? data.getNextStop().get().getDestination() : "")).withStyle(ChatFormatting.BOLD))
             .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 6 - (blockEntity.getXSizeScaled() > 1 && !nextStopAnnounced ? timeLabel.getTextWidth() - 4 : 0) - (blockEntity.getXSizeScaled() > 1 && !nextStopAnnounced ? carriageLabel.getTextWidth() - 5 : 0) - (this.exitSide != TrainExitSide.UNKNOWN ? 4 : 0), BoundsHitReaction.SCALE_SCROLL)
             .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
         ;
@@ -468,7 +468,7 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
 
                         TrainStopDisplayData stop = nextConnections.getConnections().get(connectionIdx);
                         a[LineComponent.PLATFORM.i()]
-                            .setText(TextUtils.text(stop.getStationInfo().platform()))
+                            .setText(TextUtils.text(stop.getRealTimeStation().info().platform()))
                             .setPos(blockEntity.getXSizeScaled() * 16 - 3 - a[LineComponent.PLATFORM.i()].getTextWidth(), 7.5f + k * 1.7f)
                             .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
                         ;
@@ -534,7 +534,7 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
                         float pX = a[LineComponent.SCHEDULED_TIME.i()].getX() + a[LineComponent.SCHEDULED_TIME.i()].getTextWidth() + 3 + (a[LineComponent.REAL_TIME.i()] == null ? 0 : a[LineComponent.REAL_TIME.i()].getTextWidth() + 1);
                         a[LineComponent.DESTINATION.i()]
                             .setPos(pX, 6 + j * 2)
-                            .setText(TextUtils.text(stop.getName()).withStyle(j >= linesCount - 1 ? ChatFormatting.BOLD : ChatFormatting.RESET))
+                            .setText(TextUtils.text(stop.getRealTimeStation().tagName()).withStyle(j >= linesCount - 1 ? ChatFormatting.BOLD : ChatFormatting.RESET))
                             .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 3 - pX, BoundsHitReaction.SCALE_SCROLL)
                             .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
                         ;

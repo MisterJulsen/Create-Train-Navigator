@@ -105,7 +105,7 @@ public class RouteWidget extends DLButton {
         graphics.poseStack().popPose();
 
         int routePartWidth = DISPLAY_WIDTH / parts.size();
-        String endStationName = route.getEnd().getClientTag().tagName();
+        String endStationName = route.getEnd().getRealTimeStationTag().tagName();
         int textW = shadowlessFont.width(endStationName);
         
         for (int i = 0; i < parts.size(); i++) {
@@ -125,7 +125,7 @@ public class RouteWidget extends DLButton {
             GuiUtils.drawString(graphics, font, (int)((x + 5 + (i * routePartWidth) + (routePartWidth / 2)) / 0.75f), (int)((y + 30) / 0.75f), trainName, fontColor, EAlignment.CENTER, false);
         }
 
-        GuiUtils.drawString(graphics, font, (int)((x + 6) / scale), (int)((y + 43) / scale), TextUtils.text(route.getStart().getClientTag().tagName()), 0xDBDBDB, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, (int)((x + 6) / scale), (int)((y + 43) / scale), TextUtils.text(route.getStart().getRealTimeStationTag().tagName()), 0xDBDBDB, EAlignment.LEFT, false);
         GuiUtils.drawString(graphics, font, (int)((x + WIDTH - 6) / scale) - textW, (int)((y + 43) / scale), TextUtils.text(endStationName), 0xDBDBDB, EAlignment.LEFT, false);
         if (route.getStart().shouldRenderRealTime()) {
             GuiUtils.drawString(graphics, font, (int)((x + 6 + font.width(timeStart) * localScale / 2.0f) / scale) - font.width(timeStart) / 2, (int)((y + 15) / scale), TextUtils.text(TimeUtils.parseTime((int)((route.getStart().getScheduledDepartureTime() + (route.getStart().getDepartureTimeDeviation() / precision * precision)) % 24000 + DragonLib.daytimeShift()), ModClientConfig.TIME_FORMAT.get())), route.getStart().isDepartureDelayed() ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME, EAlignment.LEFT, false);

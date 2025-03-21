@@ -10,6 +10,7 @@ import de.mrjulsen.crn.data.TagName;
 import de.mrjulsen.crn.data.StationTag.ClientStationTag;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
 import de.mrjulsen.crn.data.train.TrainData.SimulationResult;
+import de.mrjulsen.crn.exceptions.RuntimeSideException;
 import de.mrjulsen.crn.data.TrainInfo;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import net.minecraft.nbt.CompoundTag;
@@ -126,11 +127,11 @@ public class TrainStop implements Comparable<TrainStop> {
             lastCycle ? prediction.getPreviousScheduledDepartureTime() : prediction.scheduled().departureTime(), 
             lastCycle ? prediction.getPreviousScheduledArrivalTime() : prediction.scheduled().arrivalTime(), 
             prediction.getCurrentCycle() - (lastCycle ? 1 : 0), 
-            prediction.getStationTag().getClientTag(prediction.getStationName()), 
+            GlobalSettings.getInstance().getOrCreateStationTagFor(prediction.getScheduledStationName()).getClientTag(prediction.getScheduledStationName()),
             lastCycle ? prediction.getPreviousRealTimeArrivalTime() : prediction.realTime().arrivalTime(), 
             lastCycle ? prediction.getPreviousRealTimeDepartureTime() : prediction.realTime().departureTime(),
             prediction.getCurrentCycle() - (lastCycle ? 1 : 0), 
-            prediction.getStationTag().getClientTag(prediction.getStationName()),
+            GlobalSettings.getInstance().getOrCreateStationTagFor(prediction.getRealTimeStationName()).getClientTag(prediction.getRealTimeStationName()),
             prediction.getArrivalTimeDeviation(), 
             prediction.getDepartureTimeDeviation(), 
             (int)prediction.realTime().arrivalIn(), 
@@ -290,11 +291,14 @@ public class TrainStop implements Comparable<TrainStop> {
         return stayDuration;
     }
 
-    public StationTag getTag() {
-        return GlobalSettings.getInstance().getStationTag(getClientTag().tagId()).orElse(GlobalSettings.getInstance().getOrCreateStationTagFor(TagName.of(getClientTag().tagName())));
+    public StationTag getTag() throws RuntimeSideException {
+        if (!DragonLib.hasServer()) {
+            throw new RuntimeSideException(false);
+        }
+        return GlobalSettings.getInstance().getStationTag(getRealTimeStationTag().tagId()).orElse(GlobalSettings.getInstance().getOrCreateStationTagFor(TagName.of(getRealTimeStationTag().tagName())));
     }
 
-    public ClientStationTag getClientTag() {
+    public ClientStationTag getScheduledStationTag() {
         return tag;
     }
 
@@ -382,7 +386,7 @@ public class TrainStop implements Comparable<TrainStop> {
     }
 
     public boolean isStationInfoChanged() {
-        return !getClientTag().info().equals(getRealTimeStationTag().info());
+        return !getScheduledStationTag().info().equals(getRealTimeStationTag().info());
     }
 
     public boolean isDeparted() {

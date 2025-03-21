@@ -29,7 +29,9 @@ import de.mrjulsen.crn.client.AdvancedDisplaysRegistry.DisplayTypeResourceKey;
 import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
 import de.mrjulsen.crn.data.CarriageData;
 import de.mrjulsen.crn.data.TrainExitSide;
+import de.mrjulsen.crn.data.StationTag.ClientStationTag;
 import de.mrjulsen.crn.data.StationTag.StationInfo;
+import de.mrjulsen.crn.data.train.TrainUtils;
 import de.mrjulsen.crn.data.train.portable.StationDisplayData;
 import de.mrjulsen.crn.data.train.portable.TrainDisplayData;
 import de.mrjulsen.crn.data.train.portable.TrainStopDisplayData;
@@ -251,12 +253,31 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         return !stationNameFilter.contains("*");
     }
 
+    /**
+     * The station info for this display.
+     */
     public StationInfo getStationInfo() {
         return stationInfo;
     }
 
+    /**
+     * The station filter string of this display.
+     */
     public String getStationNameFilter() {
         return stationNameFilter;
+    }
+
+    public boolean isAllowedOnDisplay(ClientStationTag tag) {
+        return TrainUtils.stationMatches(tag.stationName(), getStationNameFilter());
+    }
+
+    public ClientStationTag getAllowedDisplayData(TrainStopDisplayData data) {
+        if (isAllowedOnDisplay(data.getRealTimeStation())) {
+            return data.getRealTimeStation();
+        } else if (isAllowedOnDisplay(data.getScheduledStation())) {
+            return data.getScheduledStation();
+        }
+        return ClientStationTag.empty();
     }
 
 	public boolean isSingleLine() {
@@ -291,7 +312,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         }
     }
 
-    public void setDepartureData(List<StationDisplayData> predictions, String stationNameFilter, StationInfo staionInfo, long lastRefreshedTime) {
+    public void setData(List<StationDisplayData> predictions, String stationNameFilter, StationInfo staionInfo, long lastRefreshedTime) {
         this.dataOrderChanged = dataOrderChanged || !ListUtils.compareCollections(this.predictions, predictions, StationDisplayData::equals);
 
         boolean clientUpdate = Platform.getEnv() == EnvType.CLIENT && !getStationInfo().equals(staionInfo);
@@ -606,7 +627,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         }
         // ###
 
-        setDepartureData(
+        setData(
             pTag.contains(NBT_TRAIN_STOPS) ? new ArrayList<>(pTag.getList(NBT_TRAIN_STOPS, Tag.TAG_COMPOUND).stream().map(x -> StationDisplayData.fromNbt((CompoundTag)x)).toList()) : new ArrayList<>(),
             pTag.getString(NBT_FILTER),
             info,

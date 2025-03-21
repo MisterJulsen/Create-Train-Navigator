@@ -861,13 +861,14 @@ public final class ModAccessorTypes {
     ));
 
     
-    public static record DeparturesData(UUID stationTagId, UUID trainId) {}
+    public static record DeparturesData(UUID stationTagId, UUID trainId, boolean realTimeOnly) {}
     public static final DataAccessorType<DeparturesData, List<ClientTrainStop>, List<ClientTrainStop>> GET_DEPARTURES_AT = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "get_departures_at"), DataAccessorType.Builder.create(
         (in, nbt) -> {
             nbt.putUUID("Tag", in.stationTagId());
             nbt.putUUID("Train", in.trainId());
+            nbt.putBoolean("RealTimeOnly", in.realTimeOnly());
         }, (nbt) -> {
-            return new DeparturesData(nbt.getUUID("Tag"), nbt.getUUID("Train"));
+            return new DeparturesData(nbt.getUUID("Tag"), nbt.getUUID("Train"), nbt.getBoolean("RealTimeOnly"));
         }, (player, in, temp, nbt, iteration) -> {
             try {
                 if (!GlobalSettings.getInstance().stationTagExists(in.stationTagId())) {
@@ -875,7 +876,7 @@ public final class ModAccessorTypes {
                 }
                 StationTag tag = GlobalSettings.getInstance().getStationTag(in.stationTagId()).get();
                 ListTag list = new ListTag();
-                for (TrainStop stop : TrainUtils.getDeparturesAt(tag, in.trainId())) {
+                for (TrainStop stop : TrainUtils.getDeparturesAt(tag, in.trainId(), in.realTimeOnly())) {
                     list.add(stop.toNbt(true));
                 }
                 nbt.put(DataAccessorType.DEFAULT_NBT_DATA, list);

@@ -91,24 +91,24 @@ public final class TrainUtils {
         return trains;
     }, String::hashCode, ECachingPriority.LOWEST);
     
-    private static record DeparturesFromTagContext(StationTag station, UUID selfTrain) {
+    private static record DeparturesFromTagContext(StationTag station, UUID selfTrain, boolean realTimeOnly) {
         @Override
         public final int hashCode() {
             return Objects.hash(station, selfTrain);
         }
     }    
     private static final MapCache<List<TrainStop>, DeparturesFromTagContext, DeparturesFromTagContext> departuresAtTagCache = new MapCache<>((context) -> {
-        return getDeparturesAt(x -> x.getStationTag().equals(context.station()), context.selfTrain());
+        return getDeparturesAt(x -> x.getStationTag().equals(context.station()) || (!context.realTimeOnly() && x.getEstimatedStationName() != null && x.getEstimatedStationTag().equals(context.station())), context.selfTrain());
     }, DeparturesFromTagContext::hashCode, ECachingPriority.LOWEST);
     
-    private static record DeparturesFromStationContext(String station, UUID selfTrain) {
+    private static record DeparturesFromStationContext(String station, UUID selfTrain, boolean realTimeOnly) {
         @Override
         public final int hashCode() {
             return Objects.hash(station, selfTrain);
         }
     }    
     private static final MapCache<List<TrainStop>, DeparturesFromStationContext, DeparturesFromStationContext> departuresAtStationCache = new MapCache<>((context) -> {
-        return getDeparturesAt(x -> TrainUtils.stationMatches(x.getStationName(), context.station()), context.selfTrain());
+        return getDeparturesAt(x -> TrainUtils.stationMatches(x.getStationName(), context.station()) || (!context.realTimeOnly() && x.getEstimatedStationName() != null && TrainUtils.stationMatches(x.getEstimatedStationName(), context.station())), context.selfTrain());
     }, DeparturesFromStationContext::hashCode, ECachingPriority.LOWEST);
 
     public static void refreshCache() {
@@ -137,6 +137,15 @@ public final class TrainUtils {
     public static boolean isStationKnown(String station) {
         for (String stationKey : allPredictionsRaw().keySet()) {
             if (TrainUtils.stationMatches(station, stationKey)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean stationExists(String stationName) {
+        for (GlobalStation station : getAllStations()) {
+            if (station.name.equals(stationName)) {
                 return true;
             }
         }
@@ -182,19 +191,30 @@ public final class TrainUtils {
         return departingTrainsAtStationCache.get(station, station);
     }
 
-
-    public static List<TrainStop> getDeparturesAt(StationTag station, UUID selfTrain) {
-        DeparturesFromTagContext context = new DeparturesFromTagContext(station, selfTrain);
+    /**
+     * A list of all trains that will stop at the specified station.
+     * @param station The station tag of the station
+     * @param selfTrain The train that is asking for this information (to exclude it) or {@code null} for all departures.
+     * @param realTimeOnly Whether only currently valid departures at this station should be returned or also trains that were intended to stop here but the track has changed.
+     * @return A list of stops at this stations.
+     */
+    public static List<TrainStop> getDeparturesAt(StationTag station, UUID selfTrain, boolean realTimeOnly) {
+        DeparturesFromTagContext context = new DeparturesFromTagContext(station, selfTrain, realTimeOnly);
         return departuresAtTagCache.get(context, context);
     }
-
-    public static List<TrainStop> getDeparturesAtStationName(String stationName, UUID selfTrain) {
-        DeparturesFromStationContext context = new DeparturesFromStationContext(stationName, selfTrain);
+    /**
+     * A list of all trains that will stop at the specified station.
+     * @param stationName The station name of the station
+     * @param selfTrain The train that is asking for this information (to exclude it) or {@code null} for all departures.
+     * @param realTimeOnly Whether only currently valid departures at this station should be returned or also trains that were intended to stop here but the track has changed.
+     * @return A list of stops at this stations.
+     */
+    public static List<TrainStop> getDeparturesAtStationName(String stationName, UUID selfTrain, boolean realTimeOnly) {
+        DeparturesFromStationContext context = new DeparturesFromStationContext(stationName, selfTrain, realTimeOnly);
         return departuresAtStationCache.get(context, context);
     }
 
     public static List<TrainStop> getDeparturesAt(Predicate<TrainPrediction> stationFilter, UUID selfTrain) {
-
         MutableSingle<TrainSchedule> selfSchedule = new MutableSingle<TrainSchedule>(null);
         TrainUtils.getTrain(selfTrain).ifPresent(x -> {
             selfSchedule.setFirst(new TrainSchedule(TrainListener.getTrainData(x.id).map(TrainData::getSessionId).orElse(new UUID(0, 0)), x));

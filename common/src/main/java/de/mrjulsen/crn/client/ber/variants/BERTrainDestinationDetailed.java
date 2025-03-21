@@ -113,7 +113,7 @@ public class BERTrainDestinationDetailed implements AbstractAdvancedDisplayRende
         stopoversLabel
             .setPos(viaLabel.getTextWidth() + 5, 10)
             .setMaxWidth(blockEntity.getXSizeScaled() * 16 - stopoversLabel.getX() - 3, BoundsHitReaction.SCALE_SCROLL)
-            .setText(TextUtils.concat(TextUtils.text(" \u25CF "), blockEntity.getTrainData().getStopovers().stream().map(x -> (Component)TextUtils.text(x.getName())).toList()))
+            .setText(TextUtils.concat(TextUtils.text(" \u25CF "), blockEntity.getTrainData().getStopovers().stream().map(x -> (Component)TextUtils.text(x.getRealTimeStation().tagName())).toList()))
             .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
         ;
     }

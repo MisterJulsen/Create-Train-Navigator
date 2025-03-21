@@ -232,7 +232,7 @@ public class ClientRoute extends Route implements AutoCloseable, IListenable<Cli
             if (currentPartIndex > 0) return;
             
             sendNotification(
-                CustomLanguage.translate(keyNotificationJourneyBeginsTitle, getEnd().getClientTag().tagName()),
+                CustomLanguage.translate(keyNotificationJourneyBeginsTitle, getEnd().getRealTimeStationTag().tagName()),
                 getStart().getRealTimeStationTag().info().isPlatformKnown() ?
                     CustomLanguage.translate(keyNotificationJourneyBeginsWithPlatform, getStart().getTrainDisplayName(), getStart().getDisplayTitle(), ModUtils.formatTime(getStart().getScheduledDepartureTime(), false), getStart().getRealTimeStationTag().info().platform()) :
                     CustomLanguage.translate(keyNotificationJourneyBegins, getStart().getTrainDisplayName(), getStart().getDisplayTitle(), ModUtils.formatTime(getStart().getScheduledDepartureTime(), false))
@@ -501,7 +501,7 @@ public class ClientRoute extends Route implements AutoCloseable, IListenable<Cli
                 CustomLanguage.translate(keyNotificationTrainDelayed,
                 ModUtils.formatTime(start ? stop.getRoundedRealTimeDepartureTime() : stop.getRoundedRealTimeArrivalTime(), false),
                 ModUtils.formatTime(start ? stop.getScheduledDepartureTime() : stop.getScheduledArrivalTime(), false),
-                stop.getClientTag().tagName()
+                stop.getRealTimeStationTag().tagName()
             ));
         }
     }
@@ -611,7 +611,7 @@ public class ClientRoute extends Route implements AutoCloseable, IListenable<Cli
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("ROUTE[" + getStart().getClientTag().tagName() + " -> " + getEnd().getClientTag().tagName() + "]");
+        builder.append("ROUTE[" + getStart().getRealTimeStationTag().tagName() + " -> " + getEnd().getRealTimeStationTag().tagName() + "]");
         return builder.toString();
     }
 
