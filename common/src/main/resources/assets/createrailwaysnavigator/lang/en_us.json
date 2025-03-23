@@ -284,6 +284,15 @@
     "enum.createrailwaysnavigator.train_filter.info.same_line": "Only trains with the same train line are taken into account.",
     "enum.createrailwaysnavigator.train_filter.same_group": "Same Group",
     "enum.createrailwaysnavigator.train_filter.info.same_group": "Only trains with the same train group are taken into account.",
+    "enum.createrailwaysnavigator.train_filter.same_name": "Same Name",
+    "enum.createrailwaysnavigator.train_filter.info.same_name": "Only trains with the same name are taken into account.",
+    
+    "enum.createrailwaysnavigator.time_source": "Time Source",
+    "enum.createrailwaysnavigator.time_source.description": "The source from which the time should be calculated.",
+    "enum.createrailwaysnavigator.time_source.real_life": "Real Life",
+    "enum.createrailwaysnavigator.time_source.info.real_life": "The real time system",
+    "enum.createrailwaysnavigator.time_source.in_game": "In-Game",
+    "enum.createrailwaysnavigator.time_source.info.in_game": "The in-game time system",
 
     "create.display_source.advanced_display": "Advanced Displays",
     "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width": "Train Name Width",
@@ -310,12 +319,12 @@
     "createrailwaysnavigator.schedule.condition.dynamic_delay": "Dynamic Delay",
     "createrailwaysnavigator.schedule.condition.dynamic_delay.min_duration": "Minimum Duration",
     "createrailwaysnavigator.schedule.condition.dynamic_delay.title": "Wait: %s..%s",
-    "createrailwaysnavigator.schedule.condition.dynamic_delay.at_least": "or at least %s",
+    "createrailwaysnavigator.schedule.condition.dynamic_delay.at_least": "but at least %s",
 
     "createrailwaysnavigator.schedule.condition.train_separation.settings": "Train Separation Settings",
     "createrailwaysnavigator.schedule.condition.train_separation": "Train Separation",
     "createrailwaysnavigator.schedule.condition.train_separation.title": "Separation: %s",
-    "createrailwaysnavigator.schedule.condition.train_separation.description": "Departure %s after:",
+    "createrailwaysnavigator.schedule.condition.train_separation.description": "Departure %s (%s) after:",
     
     "createrailwaysnavigator.schedule.instruction.configure": "Configure...",
     "createrailwaysnavigator.schedule.instruction.travel_section": "New Schedule Section",
@@ -331,8 +340,10 @@
     "goggles.createrailwaysnavigator.train_listener.departures.any": "Last departure:",
     "goggles.createrailwaysnavigator.train_listener.departures.line": "Departures by Train Line:",
     "goggles.createrailwaysnavigator.train_listener.departures.group": "Departures by Train Group:",
+    "goggles.createrailwaysnavigator.train_listener.departures.name": "Departures by Train Name:",
     "goggles.createrailwaysnavigator.train_listener.departures.nothing": "(No recent departures)",
     "goggles.createrailwaysnavigator.train_listener.departures.has_more": "+ %s more...",
+    "goggles.createrailwaysnavigator.train_listener.departures.press_shift_for_in_game_time": "Press SHIFT to show as In-Game time",
 
     "display.createrailwaysnavigator.train_destination.simple": "Compact",
     "display.createrailwaysnavigator.train_destination.extended": "Extended",
@@ -410,5 +421,8 @@
     "gui.createrailwaysnavigator.global_settings.train_line.color": "Select Color",
     "gui.createrailwaysnavigator.global_settings.train_line.description": "Create train lines to group different trains together, overwrite their display name and adjust other settings for each line. (Can only be assigned to the trains in the schedule)",
 
+    "create.generic.unit.days": "Days",
+    "create.generic.unit.hours": "Hours",
+    
     "createrailwaysnavigator.moin": "moin"
 }

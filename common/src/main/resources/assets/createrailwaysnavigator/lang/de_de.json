@@ -281,9 +281,18 @@
     "enum.createrailwaysnavigator.train_filter.any": "Beliebiger Zug",
     "enum.createrailwaysnavigator.train_filter.info.any": "Jeder Zug wird hier berücksichtigt.",
     "enum.createrailwaysnavigator.train_filter.same_line": "Gleiche Linie",
-    "enum.createrailwaysnavigator.train_filter.info.same_line": "Nur Züge mit der gleichen Zuglinie werden berücksichtigt.",
+    "enum.createrailwaysnavigator.train_filter.info.same_line": "Nur Züge der gleichen Zuglinie werden berücksichtigt.",
     "enum.createrailwaysnavigator.train_filter.same_group": "Gleiche Kategorie",
-    "enum.createrailwaysnavigator.train_filter.info.same_group": "Nur Züge mit der gleichen Zugkategorie werden berücksichtigt.",
+    "enum.createrailwaysnavigator.train_filter.info.same_group": "Nur Züge der gleichen Zugkategorie werden berücksichtigt.",
+    "enum.createrailwaysnavigator.train_filter.same_name": "Gleicher Name",
+    "enum.createrailwaysnavigator.train_filter.info.same_name": "Nur Züge des gleichen Namens werden berücksichtigt.",
+    
+    "enum.createrailwaysnavigator.time_source": "Zeitquelle",
+    "enum.createrailwaysnavigator.time_source.description": "Die Quelle, aus der die Zeit bezogen werden soll.",
+    "enum.createrailwaysnavigator.time_source.real_life": "Realität",
+    "enum.createrailwaysnavigator.time_source.info.real_life": "Das echte Zeitsystem",
+    "enum.createrailwaysnavigator.time_source.in_game": "Spiel",
+    "enum.createrailwaysnavigator.time_source.info.in_game": "Das Zeitsystem des Spiels",
 
     "create.display_source.advanced_display": "Verbesserte Anzeige",
     "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width": "Zugname Spaltenbreite",
@@ -310,12 +319,12 @@
     "createrailwaysnavigator.schedule.condition.dynamic_delay": "Dynamische Wartezeit",
     "createrailwaysnavigator.schedule.condition.dynamic_delay.min_duration": "Mindestwartezeit",
     "createrailwaysnavigator.schedule.condition.dynamic_delay.title": "Warte: %s..%s",
-    "createrailwaysnavigator.schedule.condition.dynamic_delay.at_least": "oder mindestens %s",
+    "createrailwaysnavigator.schedule.condition.dynamic_delay.at_least": "aber mindestens %s",
 
     "createrailwaysnavigator.schedule.condition.train_separation.settings": "Zugverteilung Einstellungen",
     "createrailwaysnavigator.schedule.condition.train_separation": "Zugverteilung",
-    "createrailwaysnavigator.schedule.condition.train_separation.title": "Trennung: %s",
-    "createrailwaysnavigator.schedule.condition.train_separation.description": "Abfahrt %s nach:",
+    "createrailwaysnavigator.schedule.condition.train_separation.title": "Abstand: %s",
+    "createrailwaysnavigator.schedule.condition.train_separation.description": "Abfahrt %s (%s) nach:",
 
     "createrailwaysnavigator.schedule.instruction.configure": "Konfigurieren...",
     "createrailwaysnavigator.schedule.instruction.travel_section": "Neuer Fahrplanabschnitt",
@@ -329,10 +338,12 @@
 
     "goggles.createrailwaysnavigator.train_listener.departures.title": "Abfahrtverlauf",
     "goggles.createrailwaysnavigator.train_listener.departures.any": "Letzte Abfahrt:",
-    "goggles.createrailwaysnavigator.train_listener.departures.line": "Abfahrt Zuglinie:",
-    "goggles.createrailwaysnavigator.train_listener.departures.group": "Abfahrt Zugkategorie:",
+    "goggles.createrailwaysnavigator.train_listener.departures.line": "Abfahrten nach Zuglinie:",
+    "goggles.createrailwaysnavigator.train_listener.departures.group": "Abfahrten nach Zugkategorie:",
+    "goggles.createrailwaysnavigator.train_listener.departures.name": "Abfahrten nach Zugname:",
     "goggles.createrailwaysnavigator.train_listener.departures.nothing": "(Kürzlich keine Abfahrten)",
     "goggles.createrailwaysnavigator.train_listener.departures.has_more": "+ %s weitere...",
+    "goggles.createrailwaysnavigator.train_listener.departures.press_shift_for_in_game_time": "Drücke UMSCHALTTASTE, um als Spielzeit anzuzeigen",
 
     "display.createrailwaysnavigator.train_destination.simple": "Kompakt",
     "display.createrailwaysnavigator.train_destination.extended": "Erweitert",
@@ -409,6 +420,9 @@
     "gui.createrailwaysnavigator.global_settings.train_line.title": "Zuglinien",
     "gui.createrailwaysnavigator.global_settings.train_line.color": "Farbe auswählen",
     "gui.createrailwaysnavigator.global_settings.train_line.description": "Erstelle Linien, um mehrere Züge zu Linienzügen zusammenzufassen, deren Anzeigename zu überschreiben oder um weitere Einstellungen anzupassen. (Kann nur im Fahrplan zugewiesen werden)",
+
+    "create.generic.unit.days": "Tage",
+    "create.generic.unit.hours": "Stunden",
 
     "createrailwaysnavigator.moin": "moin"
 }

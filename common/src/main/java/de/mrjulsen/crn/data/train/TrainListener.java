@@ -20,6 +20,7 @@ import java.util.Set;
 import com.simibubi.create.content.trains.entity.Train;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.config.ModCommonConfig;
+import de.mrjulsen.crn.data.schedule.INavigationExtension;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
 import de.mrjulsen.crn.event.CRNEventsManager;
 import de.mrjulsen.crn.event.ModCommonEvents;
@@ -40,6 +41,8 @@ import net.minecraft.world.level.storage.LevelResource;
 public final class TrainListener {
 
     private transient static final String FILENAME = CreateRailwaysNavigator.MOD_ID + "_train_data.nbt";
+    private transient static final String NBT_TRAIN_DATA = "TrainData";
+    private transient static final String NBT_DEPARTURE_HISTORY = "DepartureHistory";
 
     private static final ConcurrentHashMap<UUID /* train id */, TrainData> data = new ConcurrentHashMap<>();
 	public transient static final Map<String, Collection<TrainPrediction>> statusByDestination = new HashMap<>();
@@ -79,7 +82,7 @@ public final class TrainListener {
         CRNEventsManager.getEvent(GlobalTrainDisplayDataRefreshEventPre.class).register(CreateRailwaysNavigator.MOD_ID, () -> {
             queueTrainListenerTask(() -> {
                 try {
-                    StationDepartureHistory.cleanUpDepartureHistory();
+                    DepartureHistory.validate();
                     TrainListener.refreshPre();
                 } catch (Exception e) {
                     DragonLib.LOGGER.error("Cannot run train listener task 'TrainListener#GlobalTrainDisplayDataRefreshEventPre': " + e.getMessage(), e);
@@ -106,6 +109,20 @@ public final class TrainListener {
         });
 
         CRNEventsManager.getEvent(TrainArrivalAndDepartureEvent.class).register(CreateRailwaysNavigator.MOD_ID, (train, station, isArrival) -> {
+            queueTrainListenerTask(() -> {
+                try {                    
+                    if (TrainUtils.canReadTrainNavigation(train)) {
+                        if (!isArrival && station.isPresent() && !((INavigationExtension)(Object)train.navigation).isDelayedWaitConditionPending()) {
+                            // If not checking whether a delayed condition is pending, the train would block itself.
+                            DepartureHistory.updateDepartures(station.get().name, train);
+                        }
+                    } else {
+                        if (ModCommonConfig.ADVANCED_LOGGING.get()) DragonLib.LOGGER.warn("Cannot run train listener task 'TrainListener#TrainArrivalAndDepartureEvent:2'. Unable to read the train navigation of train " + (train == null ? "null" : train.id) + ".");
+                    }                    
+                } catch (Exception e) {
+                    DragonLib.LOGGER.error("Cannot run train listener task 'TrainListener#TrainArrivalAndDepartureEvent': " + e.getMessage(), e);
+                }
+            });
         });
         
         CRNEventsManager.getEvent(ScheduleResetEvent.class).register(CreateRailwaysNavigator.MOD_ID, (train, soft) -> {
@@ -126,7 +143,6 @@ public final class TrainListener {
         });
         
         CRNEventsManager.getEvent(SubmitTrainPredictionsEvent.class).register(CreateRailwaysNavigator.MOD_ID, (train, predictions, entryCount, accumulatedTime, current) -> {
-            
         });
         
         CRNEventsManager.getEvent(CreateTrainPredictionEvent.class).register(CreateRailwaysNavigator.MOD_ID, (train, schedule, predictables, index, stayDuration, minStayDuration, prediction) -> {
@@ -218,8 +234,12 @@ public final class TrainListener {
             return;
         }
 
+        CompoundTag dataNbt = new CompoundTag();
+        data.entrySet().forEach(x -> dataNbt.put(x.getKey().toString(), x.getValue().toNbt()));
+
         CompoundTag nbt = new CompoundTag();
-        data.entrySet().forEach(x -> nbt.put(x.getKey().toString(), x.getValue().toNbt()));
+        nbt.put(NBT_TRAIN_DATA, dataNbt);
+        nbt.put(NBT_DEPARTURE_HISTORY, DepartureHistory.toNbt());
     
         try {
             NbtIo.writeCompressed(nbt, new File(ModCommonEvents.getCurrentServer().get().getWorldPath(new LevelResource("data/" + FILENAME)).toString()));
@@ -235,14 +255,18 @@ public final class TrainListener {
             return;
         }  
         CompoundTag nbt = NbtIo.readCompressed(settingsFile);
-        for (String key : nbt.getAllKeys()) {
+
+        CompoundTag dataNbt = nbt.getCompound(NBT_TRAIN_DATA);
+        for (String key : dataNbt.getAllKeys()) {
             try {
                 UUID id = UUID.fromString(key);
-                TrainData.fromNbt(nbt.getCompound(key)).ifPresent(x -> data.put(id, x));                
+                TrainData.fromNbt(dataNbt.getCompound(key)).ifPresent(x -> data.put(id, x));                
             } catch (Exception e) {
                 CreateRailwaysNavigator.LOGGER.warn("Unable to read train listener train data with ID '" + key + "'. " + e.getMessage(), e);
             }
         }
+
+        DepartureHistory.fromNbt(nbt.getCompound(NBT_DEPARTURE_HISTORY));
     }
 
     private static void queueTrainListenerTask(Runnable task) {
