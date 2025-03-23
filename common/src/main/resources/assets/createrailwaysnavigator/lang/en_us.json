@@ -6,7 +6,7 @@
 
     "itemGroup.createrailwaysnavigator.tab": "Create Railways Navigator",
 
-    "item.createrailwaysnavigator.navigator": "Create Railways Navigator",
+    "item.createrailwaysnavigator.navigator": "Navigator",
 	"item.createrailwaysnavigator.navigator.tooltip.summary": "The _navigator_ shows possible _train connections_ with additional information such as _stopovers_, _real-time data_ and more.",
 
     "block.createrailwaysnavigator.train_station_clock": "Train Station Clock",
