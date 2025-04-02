@@ -2,12 +2,15 @@ package de.mrjulsen.crn.client.gui.screen;
 
 import java.util.Arrays;
 
+import com.simibubi.create.AllItems;
 import com.simibubi.create.content.trains.schedule.condition.TimedWaitCondition.TimeUnit;
 import com.simibubi.create.foundation.gui.AllIcons;
+import com.simibubi.create.foundation.gui.element.GuiGameElement;
 import com.simibubi.create.foundation.utility.Lang;
 
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.client.CRNGui;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.BarColor;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.ContainerColor;
@@ -35,10 +38,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.world.item.ItemStack;
 
 public class TrainSeparationSettingsScreen extends DLScreen {
 
     private static final MutableComponent title = TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule.condition.train_separation.settings");
+	private static final ItemStack DISPLAY_ITEM = new ItemStack(AllItems.SCHEDULE.get());
     private static final int GUI_WIDTH = 212;
     private static final int DEFAULT_ICON_BUTTON_WIDTH = 18;
     private static final int DEFAULT_ICON_BUTTON_HEIGHT = 18;
@@ -266,6 +271,13 @@ public class TrainSeparationSettingsScreen extends DLScreen {
         int commonHeight = commonSettingsContainer.getHeight() + 4;
         CreateDynamicWidgets.renderContainer(graphics, workingArea.getX(), workingArea.getY() - 1, workingArea.getWidth(), commonHeight, ContainerColor.PURPLE);
         GuiUtils.drawString(graphics, font, guiLeft + 6, guiTop + 4, title, DragonLib.NATIVE_UI_FONT_COLOR, EAlignment.LEFT, false);
+        
+        
+        GuiUtils.drawTexture(CRNGui.GUI, graphics, guiLeft + GUI_WIDTH - 3, guiTop + GUI_HEIGHT - 24, 11, 18, 0, 12, CRNGui.GUI_WIDTH, CRNGui.GUI_HEIGHT);
+        GuiGameElement.of(DISPLAY_ITEM).<GuiGameElement
+			.GuiRenderBuilder>at(guiLeft + GUI_WIDTH + 11, guiTop + GUI_HEIGHT - 48, -200)
+			.scale(4f)
+			.render(graphics.poseStack());
 
         super.renderMainLayer(graphics, pMouseX, pMouseY, pPartialTick);
     }
