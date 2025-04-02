@@ -31,6 +31,7 @@ import de.mrjulsen.crn.event.events.ScheduleResetEvent;
 import de.mrjulsen.crn.event.events.SubmitTrainPredictionsEvent;
 import de.mrjulsen.crn.event.events.TrainDestinationChangedEvent;
 import dev.architectury.injectables.annotations.PlatformOnly;
+import de.mrjulsen.crn.CRNPlatformSpecific;
 import de.mrjulsen.crn.data.schedule.condition.DynamicDelayCondition;
 import de.mrjulsen.crn.data.schedule.instruction.ICustomSuggestionsInstruction;
 import de.mrjulsen.crn.data.schedule.instruction.IPredictableInstruction;
@@ -76,7 +77,8 @@ public class ScheduleRuntimeMixin {
     public void onStartCurrentInstructionRetForge(CallbackInfoReturnable<GlobalStation> cir, ScheduleEntry entry, ScheduleInstruction instruction) {        
 		if (CRNEventsManager.isRegistered(TrainDestinationChangedEvent.class) && cir.getReturnValue() != null && instruction instanceof DestinationInstruction) {
             CRNEventsManager.getEvent(TrainDestinationChangedEvent.class).run(accessor().crn$getTrain(), accessor().crn$getTrain().getCurrentStation(), cir.getReturnValue(), self().currentEntry);
-        }        
+        }
+        System.out.println("JKSGFKSDFJKDSHJKSFGHFGIUFHGDFJGNDFKJNLJIGDFJKNJDKNGJFDGHDFILGHFDUOERHTEOTREDHTOERN");
     }
     
     @PlatformOnly(value = "FABRIC")
@@ -100,6 +102,17 @@ public class ScheduleRuntimeMixin {
             self().currentEntry++;
 		}
         cir.setReturnValue((GlobalStation)null);
+        System.out.println("JKSGFKSDFJKDSHJKSFGHFGIUFHGDFJGNDFKJNLJIGDFJKNJDKNGJFDGHDFILGHFDUOERHTEOTREDHTOERN 435");
+    }
+
+    @Inject(method = "startCurrentInstruction", remap = false, at = @At(value = "HEAD"), cancellable = true)
+    public void startCurrentInstructionHeadForge(CallbackInfoReturnable<GlobalStation> cir) {        
+		ScheduleEntry entry = self().getSchedule().entries.get(self().currentEntry);
+		ScheduleInstruction instruction = entry.instruction;
+        GlobalStation res = CRNPlatformSpecific.customDestinationInstructions(self(), entry, instruction);
+        if (res != null) {
+            cir.setReturnValue(res);
+        }
     }
 
     @Inject(method = "predictForEntry", remap = false, at = @At(value = "HEAD"))

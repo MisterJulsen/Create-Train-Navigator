@@ -18,6 +18,7 @@ import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.NavigatorToast;
 import de.mrjulsen.crn.client.gui.screen.AdvancedDisplaySettingsScreen;
+import de.mrjulsen.crn.client.gui.screen.PrioritizedDestinationInstructionSettingsScreen;
 import de.mrjulsen.crn.client.gui.screen.TrainSeparationSettingsScreen;
 import de.mrjulsen.crn.client.gui.screen.TrainDebugScreen;
 import de.mrjulsen.crn.client.gui.screen.TrainSectionSettingsScreen;
@@ -26,12 +27,12 @@ import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.schedule.condition.DynamicDelayCondition;
 import de.mrjulsen.crn.data.schedule.condition.TrainSeparationCondition;
+import de.mrjulsen.crn.data.schedule.instruction.PrioritizedDestinationInstruction;
 import de.mrjulsen.crn.data.schedule.instruction.ResetTimingsInstruction;
 import de.mrjulsen.crn.data.schedule.instruction.TravelSectionInstruction;
 import de.mrjulsen.crn.mixin.ModularGuiLineBuilderAccessor;
 import de.mrjulsen.crn.mixin.ScheduleScreenAccessor;
 import de.mrjulsen.crn.network.packets.stc.ServerErrorPacket;
-import de.mrjulsen.crn.registry.ModAccessorTypes;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.gui.DLScreen;
 import de.mrjulsen.mcdragonlib.client.render.DynamicGuiRenderer;
@@ -41,7 +42,6 @@ import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import de.mrjulsen.mcdragonlib.core.EAlignment;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
-import de.mrjulsen.mcdragonlib.util.accessor.DataAccessor;
 import dev.architectury.networking.NetworkManager.PacketContext;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
@@ -118,6 +118,29 @@ public class ClientWrapper {
         RenderSystem.recordRenderCall(() -> {
             DLScreen.setScreen(new TrainDebugScreen(null));
         });
+    }
+
+    public static void initPrioritizedDestinationInstruction(PrioritizedDestinationInstruction instruction, ModularGuiLineBuilder builder) {
+        
+        ModularGuiLineBuilderAccessor accessor = (ModularGuiLineBuilderAccessor)builder;
+
+        ResizableButton btn = new ResizableButton(accessor.crn$getX(), accessor.crn$getY() - 4, 121, 16, TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule.instruction.configure"), 
+        (b) -> {
+            if (Minecraft.getInstance().screen instanceof ScheduleScreen scheduleScreen) {
+                ((ScheduleScreenAccessor)scheduleScreen).crn$getOnEditorClose().accept(true);
+                builder.customArea(0, 0).speechBubble();
+                Minecraft.getInstance().setScreen(new PrioritizedDestinationInstructionSettingsScreen(scheduleScreen, instruction, instruction.getData()));
+            }
+        }) {
+            @Override
+            public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
+                Graphics graphics = new Graphics(poseStack);
+				DynamicGuiRenderer.renderArea(graphics, x, y, width, height, AreaStyle.GRAY, isActive() ? (isFocused() || isMouseOver(mouseX, mouseY) ? ButtonState.SELECTED : ButtonState.BUTTON) : ButtonState.DISABLED);
+                int j = isActive() ? DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE : DragonLib.NATIVE_BUTTON_FONT_COLOR_DISABLED;
+                GuiUtils.drawString(graphics, Minecraft.getInstance().font, x + width / 2, y + (height - 8) / 2, this.getMessage(), j, EAlignment.CENTER, true);
+            }
+        };
+		accessor.crn$getTarget().add(Pair.of(btn, "config_btn"));
     }
 
     public static void initScheduleSectionInstruction(TravelSectionInstruction instruction, ModularGuiLineBuilder builder) {

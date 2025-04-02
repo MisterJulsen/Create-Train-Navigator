@@ -6,6 +6,10 @@ import net.minecraft.server.MinecraftServer;
 
 import java.nio.file.Path;
 
+import com.simibubi.create.content.trains.schedule.ScheduleEntry;
+import com.simibubi.create.content.trains.schedule.ScheduleRuntime;
+import com.simibubi.create.content.trains.schedule.destination.ScheduleInstruction;
+
 public class CRNPlatformSpecific {
     /**
      * We can use {@link Platform#getConfigFolder()} but this is just an example of {@link ExpectPlatform}.
@@ -33,6 +37,11 @@ public class CRNPlatformSpecific {
 
     @ExpectPlatform
     public static void registerConfig() {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
+    public static <T> T customDestinationInstructions(ScheduleRuntime runtime, ScheduleEntry entry, ScheduleInstruction instruction) {
         throw new AssertionError();
     }
 

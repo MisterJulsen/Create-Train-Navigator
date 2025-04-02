@@ -21,7 +21,9 @@
     "TrainMixin",
     "ItemMixin",
     "NavigationMixin",
-    "ScheduleEntryMixin"
+    "ScheduleEntryMixin",
+    "FrontierEntryMixin",
+    "TrainPenaltyAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

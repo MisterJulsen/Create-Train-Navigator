@@ -334,7 +334,22 @@
     "createrailwaysnavigator.schedule.instruction.travel_section.include_previous_station": " - Start des nächsten Bereichs einbinden: ",
     "createrailwaysnavigator.schedule.instruction.travel_section.usable": " - Navigierbar: ",
 
-    "createrailwaysnavigator.schedule.instruction.reset_timings": "Zeiten zurücksetzen",    
+    "createrailwaysnavigator.schedule.instruction.reset_timings": "Zeiten zurücksetzen",
+    
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction": "Priorisiertes Ziel",
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.summary": "Prioritätenliste für Nächste Station:",
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.empty": "(Nichts)",
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.primary": "(Primär)",
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings": "Priorisiertes Ziel - Einstellungen",
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.add": "Zur Liste hinzufügen",
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.delete": "Aus Liste entfernen",
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.drag_and_drop": "Ziehe diesen Eintrag, um die Reihenfolge zu ändern",
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.priorities": "Elemente weiter oben haben eine höhere Priorität und werden zuerst gewählt.",
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.priority_pos": "Position: %s",
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.avoid_signals": "Vermeide Rote Signale",
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.avoid_signals_description": "Wähle eine Station mit den wenigsten durch Redstone rot geschalteten Signalen.",
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.avoid_trains": "Vermeide Andere Züge",
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.avoid_trains_description": "Wählt eine Station aus der Liste mit möglichst wenig anderen Zügen auf der Strecke.",
 
     "goggles.createrailwaysnavigator.train_listener.departures.title": "Abfahrtverlauf",
     "goggles.createrailwaysnavigator.train_listener.departures.any": "Letzte Abfahrt:",

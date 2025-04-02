@@ -335,6 +335,21 @@
     "createrailwaysnavigator.schedule.instruction.travel_section.usable": " - Navigable: ",
 
     "createrailwaysnavigator.schedule.instruction.reset_timings": "Reset Timings",
+    
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction": "Prioritized Destination",
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.summary": "Next stop priority list:",
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.empty": "(None)",
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.primary": "(Primary)",
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings": "Prioritized Destination Instruction Settings",
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.add": "Add to list",
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.delete": "Remove from list",
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.drag_and_drop": "Drag this entry to change the order",
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.priorities": "Elements higher up have a higher priority and are selected first.",
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.priority_pos": "Position: %s",
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.avoid_signals": "Avoid Red Signals",
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.avoid_signals_description": "Select the station with the fewest signals turned red by Redstone.",
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.avoid_trains": "Avoid Other Trains",
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.avoid_trains_description": "Selects the station with the fewest trains on the route.",
 
     "goggles.createrailwaysnavigator.train_listener.departures.title": "Departure History",
     "goggles.createrailwaysnavigator.train_listener.departures.any": "Last departure:",
