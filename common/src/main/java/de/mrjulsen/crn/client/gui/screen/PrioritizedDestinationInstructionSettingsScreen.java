@@ -122,8 +122,8 @@ public class PrioritizedDestinationInstructionSettingsScreen extends DLScreen {
         this.nbt = nbt;
 
         this.stationFilters.addAll(nbt.getList(PrioritizedDestinationInstruction.NBT_FILTERS, Tag.TAG_STRING).stream().map(x -> x.getAsString()).toList());
-        this.shouldAvoidSignals = nbt.getBoolean(PrioritizedDestinationInstruction.NBT_AVOID_RED_SIGNAL);
-        this.shouldAvoidTrains = nbt.getBoolean(PrioritizedDestinationInstruction.NBT_AVOID_TRAINS);
+        this.shouldAvoidSignals = nbt.contains(PrioritizedDestinationInstruction.NBT_AVOID_RED_SIGNAL) ? nbt.getBoolean(PrioritizedDestinationInstruction.NBT_AVOID_RED_SIGNAL) : true;
+        this.shouldAvoidTrains = nbt.contains(PrioritizedDestinationInstruction.NBT_AVOID_TRAINS) ? nbt.getBoolean(PrioritizedDestinationInstruction.NBT_AVOID_TRAINS) : true;
     }
 
     @Override
