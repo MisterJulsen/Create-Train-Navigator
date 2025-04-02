@@ -41,7 +41,7 @@ public class CRNPlatformSpecific {
     }
 
     @ExpectPlatform
-    public static <T> T customDestinationInstructions(ScheduleRuntime runtime, ScheduleEntry entry, ScheduleInstruction instruction) {
+    public static Object customDestinationInstructions(ScheduleRuntime runtime, ScheduleEntry entry, ScheduleInstruction instruction) {
         throw new AssertionError();
     }
 

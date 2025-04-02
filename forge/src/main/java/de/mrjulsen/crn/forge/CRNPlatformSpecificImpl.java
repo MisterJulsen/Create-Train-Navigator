@@ -47,8 +47,7 @@ public class CRNPlatformSpecificImpl {
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ModCommonConfig.SPEC, CreateRailwaysNavigator.MOD_ID + "-common.toml");
     }
 
-    @SuppressWarnings("unchecked")
-    public static <T> T customDestinationInstructions(ScheduleRuntime runtime, ScheduleEntry entry, ScheduleInstruction instruction) {
+    public static Object customDestinationInstructions(ScheduleRuntime runtime, ScheduleEntry entry, ScheduleInstruction instruction) {
         if (instruction instanceof PrioritizedDestinationInstruction destination) {
             ScheduleRuntimeAccessor accessor = (ScheduleRuntimeAccessor)runtime;
             Train train = accessor.crn$getTrain();   
@@ -108,9 +107,9 @@ public class CRNPlatformSpecificImpl {
 
                 ext.getPenaltiesByDirection().ifPresent(x -> {
                     for (PenaltyResult.Type type : x.getPenalties().keySet()) {
-                        if (type == Type.REDSTONE_RED_SIGNAL) {
+                        if (destination.shouldAvoidRedSignals() && type == Type.REDSTONE_RED_SIGNAL) {
                             painCount.addAndGet(1);
-                        } else if (type.getCategory() == Category.TRAINS) {
+                        } else if (destination.shouldAvoidTrains() && type.getCategory() == Category.TRAINS) {
                             painCount.addAndGet(1);
                         }
                     }
@@ -135,7 +134,7 @@ public class CRNPlatformSpecificImpl {
 				return null;
 			}
 
-			return (T)selectedDestination;
+			return selectedDestination;
 		}
         return null;
     }

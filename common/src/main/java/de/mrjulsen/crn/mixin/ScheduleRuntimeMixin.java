@@ -78,7 +78,6 @@ public class ScheduleRuntimeMixin {
 		if (CRNEventsManager.isRegistered(TrainDestinationChangedEvent.class) && cir.getReturnValue() != null && instruction instanceof DestinationInstruction) {
             CRNEventsManager.getEvent(TrainDestinationChangedEvent.class).run(accessor().crn$getTrain(), accessor().crn$getTrain().getCurrentStation(), cir.getReturnValue(), self().currentEntry);
         }
-        System.out.println("JKSGFKSDFJKDSHJKSFGHFGIUFHGDFJGNDFKJNLJIGDFJKNJDKNGJFDGHDFILGHFDUOERHTEOTREDHTOERN");
     }
     
     @PlatformOnly(value = "FABRIC")
@@ -90,7 +89,7 @@ public class ScheduleRuntimeMixin {
     }
     
     @Inject(method = "startCurrentInstruction", remap = false, at = @At(value = "TAIL"), cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD)
-    public void onStartCurrentInstructionPost(CallbackInfoReturnable<GlobalStation> cir, ScheduleEntry entry, ScheduleInstruction instruction) {
+    public void onStartCurrentInstructionPost(CallbackInfoReturnable<Object> cir, ScheduleEntry entry, ScheduleInstruction instruction) {
         if (instruction instanceof ICustomSuggestionsInstruction custom) {
             TrainListener.getTrainData(accessor().crn$getTrain().id).ifPresent(x -> custom.run(self(), x, accessor().crn$getTrain(), self().currentEntry));
 
@@ -101,15 +100,14 @@ public class ScheduleRuntimeMixin {
             self().state = ScheduleRuntime.State.PRE_TRANSIT;
             self().currentEntry++;
 		}
-        cir.setReturnValue((GlobalStation)null);
-        System.out.println("JKSGFKSDFJKDSHJKSFGHFGIUFHGDFJGNDFKJNLJIGDFJKNJDKNGJFDGHDFILGHFDUOERHTEOTREDHTOERN 435");
+        cir.setReturnValue(null);
     }
 
     @Inject(method = "startCurrentInstruction", remap = false, at = @At(value = "HEAD"), cancellable = true)
-    public void startCurrentInstructionHeadForge(CallbackInfoReturnable<GlobalStation> cir) {        
+    public void startCurrentInstructionHeadForge(CallbackInfoReturnable<Object> cir) {        
 		ScheduleEntry entry = self().getSchedule().entries.get(self().currentEntry);
 		ScheduleInstruction instruction = entry.instruction;
-        GlobalStation res = CRNPlatformSpecific.customDestinationInstructions(self(), entry, instruction);
+        Object res = CRNPlatformSpecific.customDestinationInstructions(self(), entry, instruction);
         if (res != null) {
             cir.setReturnValue(res);
         }
