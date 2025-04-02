@@ -118,8 +118,10 @@ public class DLNewListBox<T, W extends DLNewListBox.Entry<T, W>> extends DLScrol
         if (draggedEntry != null && currentData != null) {
             int oldIndex = entryWidgets.indexOf(draggedEntry);
             int newIndex = dropIndex >= 0 ? dropIndex : oldIndex;
-            T element = currentData.remove(oldIndex);
-            currentData.add(newIndex, element);
+            if (oldIndex > 0 && newIndex > 0 && oldIndex < entryWidgets.size() || newIndex < entryWidgets.size()) {                
+                T element = currentData.remove(oldIndex);
+                currentData.add(newIndex, element);
+            }
             draggedEntry.resetDrag();
             draggedEntry = null;
             dropIndex = -1;
