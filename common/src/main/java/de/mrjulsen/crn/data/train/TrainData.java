@@ -537,7 +537,7 @@ public class TrainData implements IListenable<TrainData> {
         Set<Integer> validPredictionEntries = new HashSet<>();
         boolean hasCycled = false;
 
-        final long now = DragonLib.getCurrentWorldTime();
+        final long now = DragonLib.getCurrentWorldTime() - waitingAtStationTicks();
         long time = now;// - waitingAtStationTicks();
 
         for (int i = 0; i < entryCount; i++) {
@@ -571,7 +571,7 @@ public class TrainData implements IListenable<TrainData> {
                 pred.preInit();
             }
             predictionsChronologically.add(pred);
-            pred.updateRealTime(name.get(), now, time - (getCurrentScheduleIndex() == cyclicIndex ? waitingAtStationTicks() : 0));
+            pred.updateRealTime(name.get(), now, time);
             time = pred.realTime().departureTime();
         }
 
@@ -700,7 +700,7 @@ public class TrainData implements IListenable<TrainData> {
     }
 
     public void updateTotalDuration() {
-        int newDuration = getPredictions().stream().mapToInt(x -> x.transitTime().value() + (int)x.getAverageStayDuration()).sum();
+        int newDuration = getPredictions().stream().mapToInt(x -> x.transitTime().value() + (int)x.scheduled().stayDuration()).sum();
         int oldTotalDuration = this.totalDuration;
         if (CRNEventsManager.isRegistered(TotalDurationTimeChangedEvent.class) && this.totalDuration > 0 && this.totalDuration != newDuration) {
             CRNEventsManager.getEvent(TotalDurationTimeChangedEvent.class).run(train, this.totalDuration, newDuration);
