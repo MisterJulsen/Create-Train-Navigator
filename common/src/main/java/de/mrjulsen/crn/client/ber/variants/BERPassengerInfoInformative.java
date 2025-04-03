@@ -404,7 +404,7 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
         return (settings.shouldOverwriteCarriageIndex() ? 0 : blockEntity.getCarriageData().index() + 1) + settings.getCarriageIndex();
     }
 
-    private void updateContent(AdvancedDisplayBlockEntity blockEntity, TrainDisplayData data) {
+    private void updateContent(AdvancedDisplayBlockEntity blockEntity, TrainDisplayData displayData) {
         PassengerInformationDetailedSettings settings = getDisplaySettings(blockEntity);
         int carriageIndex = getCarriageIndex(blockEntity);
         timeLabel
@@ -418,12 +418,12 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
             .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
         ;
         trainLineLabel
-            .setText(nextStopAnnounced ? CustomLanguage.translate(keyNextStop, data.getNextStop().get().getRealTimeStation().stationName()) : TextUtils.text((settings.getTrainTextComponents().showTrainName() ? data.getTrainData().getName() + " " : "") + (settings.getTrainTextComponents().showDestination() ? data.getNextStop().get().getDestination() : "")).withStyle(ChatFormatting.BOLD))
+            .setText(nextStopAnnounced ? CustomLanguage.translate(keyNextStop, displayData.getNextStop().get().getRealTimeStation().stationName()) : TextUtils.text((settings.getTrainTextComponents().showTrainName() ? displayData.getTrainData().getName() + " " : "") + (settings.getTrainTextComponents().showDestination() ? displayData.getNextStop().get().getDestination() : "")).withStyle(ChatFormatting.BOLD))
             .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 6 - (blockEntity.getXSizeScaled() > 1 && !nextStopAnnounced ? timeLabel.getTextWidth() - 4 : 0) - (blockEntity.getXSizeScaled() > 1 && !nextStopAnnounced ? carriageLabel.getTextWidth() - 5 : 0) - (this.exitSide != TrainExitSide.UNKNOWN ? 4 : 0), BoundsHitReaction.SCALE_SCROLL)
             .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
         ;
         speedLabel
-            .setText(ModUtils.calcSpeedString(data.getSpeed(), ModClientConfig.SPEED_UNIT.get()).withStyle(ChatFormatting.BOLD))
+            .setText(ModUtils.calcSpeedString(displayData.getSpeed(), ModClientConfig.SPEED_UNIT.get()).withStyle(ChatFormatting.BOLD))
             .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 6, BoundsHitReaction.CUT_OFF)
             .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
         ;
@@ -506,23 +506,25 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
                     });
                 }
             });
-        } else {            
+        } else {
             DLUtils.doIfNotNull(scheduleLines, x -> {
-                int totalStationsCount = data.getStopsFromCurrentStation().size();
+                int totalStationsCount = displayData.getStopsFromCurrentStation().size();
                 int linesCount = Math.min(scheduleLines.length, totalStationsCount);
                 for (int i = 0; i < linesCount; i++) {
                     final int j = i;
                     int k = i >= linesCount - 1 ? totalStationsCount - 1 : i;
                     DLUtils.doIfNotNull(scheduleLines[i], a -> {
-                        TrainStopDisplayData stop = data.getStopsFromCurrentStation().get(k);
-                        if (a[LineComponent.REAL_TIME.i()] != null) {                            
+                        TrainStopDisplayData stop = displayData.getStopsFromCurrentStation().get(k);
+                        boolean showDeparture = displayData.isWaitingAtStation() && displayData.getCurrentScheduleIndex() == stop.getStationEntryIndex();
+                        
+                        if (a[LineComponent.REAL_TIME.i()] != null) {
                             a[LineComponent.SCHEDULED_TIME.i()]
-                                .setText(TextUtils.text(ModUtils.formatTime(stop.getScheduledArrivalTime(), getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA)))
+                                .setText(TextUtils.text(ModUtils.formatTime(showDeparture ? stop.getScheduledDepartureTime() : stop.getScheduledArrivalTime(), getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA)))
                                 .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
                             ;
                             a[LineComponent.REAL_TIME.i()]
                                 .setPos(a[LineComponent.SCHEDULED_TIME.i()].getX() + a[LineComponent.SCHEDULED_TIME.i()].getTextWidth() + 1, 6 + j * 2)
-                                .setText(TextUtils.text(ModUtils.formatTime(stop.getRealTimeArrivalTime(), getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA)))
+                                .setText(TextUtils.text(ModUtils.formatTime(showDeparture ? stop.getRealTimeDepartureTime() : stop.getRealTimeArrivalTime(), getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA)))
                                 .setColor(stop.isArrivalDelayed() ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME)
                             ;
                         } else {
