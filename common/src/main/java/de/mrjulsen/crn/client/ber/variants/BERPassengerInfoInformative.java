@@ -418,7 +418,7 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
             .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
         ;
         trainLineLabel
-            .setText(nextStopAnnounced ? CustomLanguage.translate(keyNextStop, displayData.getNextStop().get().getRealTimeStation().stationName()) : TextUtils.text((settings.getTrainTextComponents().showTrainName() ? displayData.getTrainData().getName() + " " : "") + (settings.getTrainTextComponents().showDestination() ? displayData.getNextStop().get().getDestination() : "")).withStyle(ChatFormatting.BOLD))
+            .setText(nextStopAnnounced ? CustomLanguage.translate(keyNextStop, displayData.getNextStop().get().getRealTimeStation().tagName()) : TextUtils.text((settings.getTrainTextComponents().showTrainName() ? displayData.getTrainData().getName() + " " : "") + (settings.getTrainTextComponents().showDestination() ? displayData.getNextStop().get().getDestination() : "")).withStyle(ChatFormatting.BOLD))
             .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 6 - (blockEntity.getXSizeScaled() > 1 && !nextStopAnnounced ? timeLabel.getTextWidth() - 4 : 0) - (blockEntity.getXSizeScaled() > 1 && !nextStopAnnounced ? carriageLabel.getTextWidth() - 5 : 0) - (this.exitSide != TrainExitSide.UNKNOWN ? 4 : 0), BoundsHitReaction.SCALE_SCROLL)
             .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
         ;
