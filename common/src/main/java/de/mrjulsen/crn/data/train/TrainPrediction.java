@@ -184,7 +184,7 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
     }
 
     public int getAverageStayDuration() {
-        return averageStayDuration < 0 ? (int)scheduled().stayDuration() : averageStayDuration;
+        return averageStayDuration <= 0 ? (int)scheduled().stayDuration() : averageStayDuration;
     }
 
     public ValueWatcher transitTime() {
@@ -230,7 +230,7 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
     }
     
     public long getScheduledDepartureDay() {
-        return getScheduledDepartureDay() / DragonLib.ticksPerDay();
+        return scheduled().departureTime() / DragonLib.ticksPerDay();
     }
     
     public long getRealTimeArrivalDay() {
