@@ -232,7 +232,7 @@ public class PrioritizedDestinationInstructionSettingsScreen extends DLScreen {
             @Override
             public void onClick(double mouseX, double mouseY) {
                 super.onClick(mouseX, mouseY);
-                Util.getPlatform().openUri(Constants.HELP_PAGE_TRAIN_SEPARATION);
+                Util.getPlatform().openUri(Constants.HELP_PAGE_PRIORITIZED_DESTINATION_INSTRUCTION);
             }
         });
         addTooltip(DLTooltip.of(Constants.TEXT_HELP).assignedTo(helpButton));
