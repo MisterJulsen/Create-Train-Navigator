@@ -121,7 +121,7 @@ public class TrainSeparationCondition extends ScheduledDelay implements IDelayed
 			lastDepartureTimestamp = DepartureHistory.getLatestDepartureFor(getTrainFilter(), context.train(), stationName);
 		}
 
-		if (lastDepartureTimestamp + delayValue < GameInstance.getServer().overworld().getGameTime()) {
+		if (GameInstance.getServer() != null && lastDepartureTimestamp + delayValue < GameInstance.getServer().overworld().getGameTime()) {
 			DepartureHistory.updateDepartures(context.station().name, context.train());
 			return true;
 		}
