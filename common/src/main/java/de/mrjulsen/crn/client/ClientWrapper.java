@@ -184,21 +184,21 @@ public class ClientWrapper {
 
     public static void initDynamicDelayCondition(DynamicDelayCondition condition, ModularGuiLineBuilder builder) {
         
-		builder.addScrollInput(0, 26, (i, l) -> {
-			i.titled(Lang.translateDirect("generic.duration"))
-				.withShiftStep(15)
-				.withRange(0, 121);
-			i.lockedTooltipX = -15;
-			i.lockedTooltipY = 35;
-		}, "Value");
-
-        builder.addScrollInput(26, 26, (i, l) -> {
+        builder.addScrollInput(0, 26, (i, l) -> {
 			i.titled(TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule.condition." + condition.getId().getPath() + ".min_duration"))
 				.withShiftStep(15)
 				.withRange(0, 121);
 			i.lockedTooltipX = -15;
 			i.lockedTooltipY = 35;
 		}, DynamicDelayCondition.NBT_MIN);
+
+		builder.addScrollInput(26, 26, (i, l) -> {
+			i.titled(Lang.translateDirect("generic.duration"))
+				.withShiftStep(15)
+				.withRange(0, 121);
+			i.lockedTooltipX = -15;
+			i.lockedTooltipY = 35;
+		}, "Value");
 
 		builder.addSelectionScrollInput(52, 58, (i, l) -> {
 			i.forOptions(TimeUnit.translatedOptions())
