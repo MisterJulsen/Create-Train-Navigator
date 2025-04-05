@@ -25,7 +25,7 @@ import de.mrjulsen.crn.data.storage.GlobalSettings;
 import de.mrjulsen.crn.data.train.TrainData;
 import de.mrjulsen.crn.data.train.TrainListener;
 import de.mrjulsen.crn.data.train.TrainPrediction;
-import de.mrjulsen.crn.data.train.TrainTravelSection;
+import de.mrjulsen.crn.data.train.ScheduleSection;
 import de.mrjulsen.crn.data.train.TrainUtils;
 import de.mrjulsen.crn.event.ModCommonEvents;
 import de.mrjulsen.crn.data.navigation.Node.EdgeConnection;
@@ -94,7 +94,7 @@ public class NavigatableGraph {
         boolean stationsRemoved = false;
         while (!predictions.isEmpty()) {
             TrainPrediction prediction = predictions.peekLast();
-            TrainTravelSection section = prediction.getSection();
+            ScheduleSection section = prediction.getSection();
             if ((globalSettings().isStationBlacklisted(prediction.getStationName())) ||
                 (!section.isUsable() && (!section.isFirstStop(prediction) || !section.previousSection().isUsable() || !section.previousSection().shouldIncludeNextStationOfNextSection()))
             ) {
@@ -138,7 +138,7 @@ public class NavigatableGraph {
     }
 
     protected boolean isPredictionAllowed(TrainPrediction prediction) {
-        TrainTravelSection section = prediction.getSection();
+        ScheduleSection section = prediction.getSection();
         boolean usable = section.isUsable() || (section.isFirstStop(prediction) && section.previousSection().isUsable() && section.previousSection().shouldIncludeNextStationOfNextSection());
         return !globalSettings().isStationBlacklisted(prediction.getStationName()) && (prediction.getSection().getTrainGroup().map(x -> !userSettings.navigationExcludedTrainGroups.getValue().contains(x.getGroupName())).orElse(true)) && usable;
     }

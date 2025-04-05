@@ -255,7 +255,7 @@ public final class TrainUtils {
         for (TrainStop stop : stops) {
             if (!TrainListener.hasTrainData(stop.getTrainId())) continue;
             TrainData data = TrainListener.getTrainData(stop.getTrainId()).get();
-            TrainTravelSection section = data.getSectionByIndex(stop.getSectionIndex());
+            ScheduleSection section = data.getSectionByIndex(stop.getSectionIndex());
             if (!section.isUsable() && !(section.isFirstStop(stop.getScheduleIndex()) && section.previousSection().isUsable() && section.previousSection().shouldIncludeNextStationOfNextSection())) {
                 continue;
             }

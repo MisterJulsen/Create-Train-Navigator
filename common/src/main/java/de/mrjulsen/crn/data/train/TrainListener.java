@@ -76,6 +76,14 @@ public final class TrainListener {
         data.clear();
     }
 
+    public static void resetTrainData(Train train) {
+        resetTrainData(train.id);
+    }
+
+    public static void resetTrainData(UUID trainId) {
+        data.remove(trainId);
+    }
+
 
     public static void init() {
         // Register Event Listeners
@@ -128,13 +136,11 @@ public final class TrainListener {
         CRNEventsManager.getEvent(ScheduleResetEvent.class).register(CreateRailwaysNavigator.MOD_ID, (train, soft) -> {
             queueTrainListenerTask(() -> {
                 try {
-                    if (data.containsKey(train.id)) {
+                    if (soft && data.containsKey(train.id)) {
                         TrainData trainData = data.get(train.id);
-                        if (soft) {
-                            trainData.softResetPredictions();
-                        } else {
-                            trainData.hardResetPredictions();
-                        }
+                        trainData.softResetPredictions();
+                    } else {
+                        resetTrainData(train);
                     }
                 } catch (Exception e) {
                     DragonLib.LOGGER.error("Cannot run train listener task 'TrainListener#ScheduleResetEvent': " + e.getMessage(), e);

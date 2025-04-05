@@ -50,10 +50,20 @@ public class PredictionTimes {
         return arrivalTime;
     }
 
-    public long departureTime() {
+    /** The default Departure Time of the train, according to the Schedule. */
+    public long defaultDepartureTime() {
         return departureTime;
     }
 
+    /** The actual Departure Time of the train, that was calculated based on all other values. This value is used for all calculations. */
+    public long departureTime() {
+        if (minStayDuration() < stayDuration() && prediction.scheduled() != null && prediction.scheduled() != this && prediction.getData().isInitialized()) {
+            return Math.max(minDepartureTime(), prediction.scheduled().defaultDepartureTime());
+        }
+        return defaultDepartureTime();
+    }
+
+    /** The earliest possible Departure Time, according to the Schedule. */
     public long minDepartureTime() {
         return minDepartureTime;
     }
@@ -71,7 +81,7 @@ public class PredictionTimes {
     }
 
     public long stayDuration() {
-        return Math.max(0, departureTime() - arrivalTime());
+        return Math.max(0, defaultDepartureTime() - arrivalTime());
     }
 
     public long minStayDuration() {

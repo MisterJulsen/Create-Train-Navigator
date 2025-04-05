@@ -6,7 +6,7 @@ import java.util.Objects;
 import de.mrjulsen.crn.exceptions.RuntimeSideException;
 import de.mrjulsen.crn.data.train.TrainListener;
 import de.mrjulsen.crn.data.train.TrainStop;
-import de.mrjulsen.crn.data.train.TrainTravelSection;
+import de.mrjulsen.crn.data.train.ScheduleSection;
 import de.mrjulsen.crn.event.ModCommonEvents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -57,8 +57,8 @@ public class StationDisplayData {
         }
 
         return TrainListener.getTrainData(stop.getTrainId()).map(data -> {
-            TrainTravelSection section = data.getSectionByIndex(stop.getSectionIndex());
-            TrainTravelSection previousSection = section.previousSection();
+            ScheduleSection section = data.getSectionByIndex(stop.getSectionIndex());
+            ScheduleSection previousSection = section.previousSection();
             String firstStop = section.getFirstStop().isPresent() ? section.getFirstStop().get().getStationTag().getTagName().get() : "";
             boolean isLastStopOfSection = section.getFinalStop().isPresent() && (previousSection.shouldIncludeNextStationOfNextSection() && previousSection.getFinalStop().isPresent() ? previousSection.getFinalStop().get() : section.getFinalStop().get()).getEntryIndex() == stop.getScheduleIndex();
             if (isLastStopOfSection) {

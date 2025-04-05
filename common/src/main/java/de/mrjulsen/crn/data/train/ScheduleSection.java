@@ -14,7 +14,7 @@ import de.mrjulsen.crn.data.TrainLine;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
 import de.mrjulsen.mcdragonlib.data.Cache;
 
-public class TrainTravelSection {
+public class ScheduleSection {
 
     private static final int INVALID = -1;
     
@@ -36,14 +36,14 @@ public class TrainTravelSection {
         }
         return result;
     });
-    private final Cache<TrainTravelSection> nextSection;
-    private final Cache<TrainTravelSection> previousSection;
+    private final Cache<ScheduleSection> nextSection;
+    private final Cache<ScheduleSection> previousSection;
 
-    public TrainTravelSection(TrainData data, int indexInSchedule, TrainGroup group, TrainLine line, boolean includePreviousStation, boolean usable) {
+    public ScheduleSection(TrainData data, int indexInSchedule, TrainGroup group, TrainLine line, boolean includePreviousStation, boolean usable) {
         this(false, data, indexInSchedule, group, line, includePreviousStation, usable);
     }
     
-    private TrainTravelSection(boolean isDefault, TrainData data, int indexInSchedule, TrainGroup group, TrainLine line, boolean includePreviousStation, boolean usable) {
+    private ScheduleSection(boolean isDefault, TrainData data, int indexInSchedule, TrainGroup group, TrainLine line, boolean includePreviousStation, boolean usable) {
         this.data = data;
         this.scheduleIndex = indexInSchedule;
         this.isDefault = isDefault;
@@ -57,7 +57,7 @@ public class TrainTravelSection {
                 return this;
             }
     
-            List<TrainTravelSection> sections = data.getSections();
+            List<ScheduleSection> sections = data.getSections();
             if (sections.isEmpty()) {
                 return this;
             }
@@ -74,7 +74,7 @@ public class TrainTravelSection {
                 return this;
             }
     
-            List<TrainTravelSection> sections = data.getSections();
+            List<ScheduleSection> sections = data.getSections();
             if (sections.isEmpty()) {
                 return this;
             }
@@ -87,8 +87,8 @@ public class TrainTravelSection {
         });
     }
 
-    public static final TrainTravelSection def(TrainData data) {
-        return new TrainTravelSection(true, data, 0, null, null, true, true);
+    public static final ScheduleSection def(TrainData data) {
+        return new ScheduleSection(true, data, 0, null, null, true, true);
     }
 
     public boolean isDefault() {
@@ -119,11 +119,11 @@ public class TrainTravelSection {
         return Optional.ofNullable(trainLine);
     }
 
-    public TrainTravelSection nextSection() {
+    public ScheduleSection nextSection() {
         return nextSection.get();
     }
 
-    public TrainTravelSection previousSection() {
+    public ScheduleSection previousSection() {
         return previousSection.get();
     }
 
@@ -137,7 +137,7 @@ public class TrainTravelSection {
             return List.of();
         }
         List<TrainPrediction> result = new ArrayList<>();
-        TrainTravelSection nextSection = nextSection();
+        ScheduleSection nextSection = nextSection();
         
         Map<Integer, TrainPrediction> predictionsSrc = data.getPredictionsMap();
         Map<Integer, TrainPrediction> predictions = new HashMap<>(predictionsSrc.size());

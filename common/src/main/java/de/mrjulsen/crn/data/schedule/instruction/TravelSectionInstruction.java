@@ -13,7 +13,7 @@ import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
 import de.mrjulsen.crn.data.train.TrainData;
-import de.mrjulsen.crn.data.train.TrainTravelSection;
+import de.mrjulsen.crn.data.train.ScheduleSection;
 import de.mrjulsen.crn.registry.ModBlocks;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
@@ -83,13 +83,13 @@ public class TravelSectionInstruction extends ScheduleInstruction implements ISt
     @Override
     public void run(ScheduleRuntime runtime, TrainData data, Train train, int index) {
         DLUtils.doIfNotNull(data, x -> {
-            x.addTravelSection(getSectionData(x, index));
+            x.addScheduleSection(getSectionData(x, index));
             x.changeCurrentSection(index);
         });
     }
 
-    private TrainTravelSection getSectionData(TrainData data, int index) {
-        return new TrainTravelSection(
+    private ScheduleSection getSectionData(TrainData data, int index) {
+        return new ScheduleSection(
             data,
             index,
             GlobalSettings.getInstance().getTrainGroup(this.data.getString(NBT_TRAIN_GROUP)).orElse(null),
@@ -102,7 +102,7 @@ public class TravelSectionInstruction extends ScheduleInstruction implements ISt
     @Override
     public void predict(TrainData data, ScheduleRuntime runtime, int indexInSchedule, Train train) {
         DLUtils.doIfNotNull(data, x -> {            
-            x.addTravelSection(getSectionData(x, indexInSchedule));
+            x.addScheduleSection(getSectionData(x, indexInSchedule));
         });
     }
 }

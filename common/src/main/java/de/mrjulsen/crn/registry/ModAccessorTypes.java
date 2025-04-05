@@ -36,7 +36,7 @@ import de.mrjulsen.crn.data.train.TrainData;
 import de.mrjulsen.crn.data.train.TrainListener;
 import de.mrjulsen.crn.data.train.TrainPrediction;
 import de.mrjulsen.crn.data.train.TrainStop;
-import de.mrjulsen.crn.data.train.TrainTravelSection;
+import de.mrjulsen.crn.data.train.ScheduleSection;
 import de.mrjulsen.crn.data.train.TrainUtils;
 import de.mrjulsen.crn.data.train.ClientTrainStop.TrainStopRealTimeData;
 import de.mrjulsen.crn.data.train.portable.NextConnectionsDisplayData;
@@ -793,12 +793,12 @@ public final class ModAccessorTypes {
                                 continue;
                             }
 
-                            TrainTravelSection section = prediction.getSection();
+                            ScheduleSection section = prediction.getSection();
                             if ((!section.isUsable() && !(section.isFirstStop(prediction) && section.previousSection().isUsable() && section.previousSection().shouldIncludeNextStationOfNextSection())) || (section.getTrainGroup().map(x -> settings.searchExcludedTrainGroups.getValue().contains(x.getGroupName())).orElse(false))) {
                                 continue;
                             }
 
-                            TrainTravelSection previousSection = section.previousSection();
+                            ScheduleSection previousSection = section.previousSection();
                             boolean isStart = section.isFirstStop(prediction); 
                             boolean isStartAndFinal = isStart && previousSection.isUsable() && previousSection.shouldIncludeNextStationOfNextSection() && (previousSection.getTrainGroup().map(x -> !settings.searchExcludedTrainGroups.getValue().contains(x.getGroupName())).orElse(true)); 
                             

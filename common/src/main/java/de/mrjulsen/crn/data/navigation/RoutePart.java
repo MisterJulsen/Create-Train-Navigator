@@ -13,7 +13,7 @@ import de.mrjulsen.crn.data.UserSettings;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
 import de.mrjulsen.crn.data.train.TrainData;
 import de.mrjulsen.crn.data.train.TrainStop;
-import de.mrjulsen.crn.data.train.TrainTravelSection;
+import de.mrjulsen.crn.data.train.ScheduleSection;
 import de.mrjulsen.crn.data.train.TrainStatus.CompiledTrainStatus;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.data.Pair;
@@ -53,8 +53,8 @@ public class RoutePart implements Comparable<RoutePart> {
         }
         int startSectionIndex = part.getFirstStop().getSectionIndex();
         int endSectionIndex = part.getLastStop().getSectionIndex();
-        TrainTravelSection startSection = trainData.getSectionByIndex(startSectionIndex);
-        TrainTravelSection endSection = trainData.getSectionByIndex(endSectionIndex);
+        ScheduleSection startSection = trainData.getSectionByIndex(startSectionIndex);
+        ScheduleSection endSection = trainData.getSectionByIndex(endSectionIndex);
         if (startSectionIndex != endSectionIndex && !(endSection.isFirstStop(part.getLastStop().getScheduleIndex()) && endSection.previousSection().getScheduleIndex() == startSection.getScheduleIndex() && startSection.shouldIncludeNextStationOfNextSection() && startSection.isUsable())) {
             return false;
         }

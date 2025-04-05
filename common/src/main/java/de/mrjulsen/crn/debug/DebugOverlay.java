@@ -10,7 +10,7 @@ import java.util.Arrays;
 import de.mrjulsen.crn.data.train.TrainData;
 import de.mrjulsen.crn.data.train.TrainListener;
 import de.mrjulsen.crn.data.train.TrainPrediction;
-import de.mrjulsen.crn.data.train.TrainTravelSection;
+import de.mrjulsen.crn.data.train.ScheduleSection;
 import de.mrjulsen.crn.mixin.ScheduleRuntimeAccessor;
 import de.mrjulsen.crn.mixin.TrainStatusAccessor;
 import de.mrjulsen.crn.util.ESpeedUnit;
@@ -88,7 +88,7 @@ public class DebugOverlay extends DLOverlayScreen {
             drawLine(graphics, "C: " + String.join(" | ", ((ScheduleRuntimeAccessor)data.getTrain().runtime).crn$getTransitTicks().stream().map(x -> String.valueOf(x)).toList()));
             
             drawLine(graphics, TextUtils.text("Sections:").withStyle(ChatFormatting.UNDERLINE));
-            for (TrainTravelSection section : data.getSections()) {                
+            for (ScheduleSection section : data.getSections()) {                
                 drawLine(graphics, " - [ " + section.getScheduleIndex() + " ]: " + section.getDisplayText() + " (" + section.getStartStationName() + " -> " + section.getDestinationStationName() + "), Group: " + section.getTrainGroup().map(x -> x.getGroupName()).orElse("none") + ", Line: " + section.getTrainLine().map(x -> x.getLineName()).orElse("none") + ", Include: " + section.shouldIncludeNextStationOfNextSection() + ", Navigable: " + section.isUsable() + ", Next: " + section.nextSection().getScheduleIndex());
             }
             drawLine(graphics, "[ " + data.getCurrentSection().getScheduleIndex() + " ]");

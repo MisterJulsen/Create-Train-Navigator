@@ -37,13 +37,13 @@ public final class DepartureHistory {
             this.lastDepartureTime = DragonLib.getCurrentServer().get().overworld().getGameTime();
             this.lastDepartureByTrainName.put(train.name.getString(), this.lastDepartureTime);
             TrainListener.getTrainData(train.id).ifPresent(data -> {
-                TrainTravelSection section = data.getCurrentSection();
+                ScheduleSection section = data.getCurrentSection();
                 section.getTrainLine().ifPresent(x -> this.lastDepartureByLine.put(x, this.lastDepartureTime));
                 section.getTrainGroup().ifPresent(x -> this.lastDepartureByGroup.put(x, this.lastDepartureTime));
             });
         }
 
-        public long getLastDepartureTime(ETrainFilter filter, String trainName, @Nullable TrainTravelSection section) {
+        public long getLastDepartureTime(ETrainFilter filter, String trainName, @Nullable ScheduleSection section) {
             return switch (filter) {
                 case SAME_GROUP -> section != null ? section.getTrainGroup().map(x -> lastDepartureByGroup.getOrDefault(x, Long.MIN_VALUE)).orElse(Long.MIN_VALUE) : Long.MIN_VALUE;
                 case SAME_LINE -> section != null ? section.getTrainLine().map(x -> lastDepartureByLine.getOrDefault(x, Long.MIN_VALUE)).orElse(Long.MIN_VALUE) : Long.MIN_VALUE;

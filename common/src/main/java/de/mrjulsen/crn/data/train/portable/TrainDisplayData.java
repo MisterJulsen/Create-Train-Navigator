@@ -12,7 +12,7 @@ import de.mrjulsen.crn.exceptions.RuntimeSideException;
 import de.mrjulsen.crn.data.train.TrainListener;
 import de.mrjulsen.crn.data.train.TrainPrediction;
 import de.mrjulsen.crn.data.train.TrainStop;
-import de.mrjulsen.crn.data.train.TrainTravelSection;
+import de.mrjulsen.crn.data.train.ScheduleSection;
 import de.mrjulsen.crn.data.train.TrainUtils;
 import de.mrjulsen.crn.event.ModCommonEvents;
 import de.mrjulsen.mcdragonlib.data.Cache;
@@ -110,7 +110,7 @@ public class TrainDisplayData {
                 }
             });
             TrainExitSide side = sideHolder.getFirst() == null ? TrainExitSide.UNKNOWN : sideHolder.getFirst();
-            TrainTravelSection section = data.getCurrentSection();
+            ScheduleSection section = data.getCurrentSection();
 
             List<TrainStopDisplayData> displayData = new ArrayList<>();
             if (section.isUsable()) {            

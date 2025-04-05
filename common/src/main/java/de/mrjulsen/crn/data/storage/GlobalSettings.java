@@ -30,7 +30,7 @@ import de.mrjulsen.crn.data.StationTag.StationInfo;
 import de.mrjulsen.crn.data.train.TrainListener;
 import de.mrjulsen.crn.data.train.TrainPrediction;
 import de.mrjulsen.crn.data.train.TrainStop;
-import de.mrjulsen.crn.data.train.TrainTravelSection;
+import de.mrjulsen.crn.data.train.ScheduleSection;
 import de.mrjulsen.crn.event.ModCommonEvents;
 import de.mrjulsen.mcdragonlib.data.INBTSerializable;
 import net.minecraft.nbt.CompoundTag;
@@ -393,7 +393,7 @@ public class GlobalSettings implements INBTSerializable {
                 return false;
             }
     
-            for (TrainTravelSection section : data.getSections()) {
+            for (ScheduleSection section : data.getSections()) {
                 if (section.isUsable() && !(section.getTrainGroup().map(x -> settings.navigationExcludedTrainGroups.getValue().contains(x.getGroupName())).orElse(false))) {
                     return false;
                 }
@@ -408,7 +408,7 @@ public class GlobalSettings implements INBTSerializable {
 
     public boolean isTrainStationExcludedByUser(Train train, TrainStop at, UserSettings settings) {
         return TrainListener.getTrainData(train.id).map(data -> {
-            TrainTravelSection section = data.getSectionByIndex(at.getSectionIndex());
+            ScheduleSection section = data.getSectionByIndex(at.getSectionIndex());
             return section.getTrainGroup().map(x -> !section.isUsable() || (settings.navigationExcludedTrainGroups.getValue().contains(x.getGroupName()))).orElse(false);
         }).orElse(false);        
     }
