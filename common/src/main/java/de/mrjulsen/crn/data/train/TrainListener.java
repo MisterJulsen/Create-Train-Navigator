@@ -294,7 +294,7 @@ public final class TrainListener {
             TrainData trainData = data.computeIfAbsent(train.id, x -> TrainData.of(train));
             trainData.refreshPre();
             for (TrainPrediction p : trainData.getPredictions()) {
-                statusByDestination.computeIfAbsent(p.getStationName(), $ -> new HashSet<>()).add(p);
+                statusByDestination.computeIfAbsent(p.getTargetedStationName(), $ -> new HashSet<>()).add(p);
             }
         }
     }

@@ -130,8 +130,11 @@ public class ScheduleSection {
     /**
      * Creates a list of all stops assigned to this section.
      * @param startingAtIndex The schedule index from which found stops should be added, or {@code < 0} to get all elements of the section.
-     * @return A list of all stops assigned to this section.
+     * @param ignoreIncludeLastStationRule Whether the first station of the next section should be included when the option Include start of next station is enabled or not.
+     * @return A list of all predictions that belong to this section.
      */
+
+    
     public List<TrainPrediction> getPredictions(int startingAtIndex, boolean ignoreIncludeLastStationRule) {
         if (data.getTrain() == null || data.getTrain().runtime == null || data.getTrain().runtime.getSchedule() == null) {
             return List.of();
@@ -142,7 +145,7 @@ public class ScheduleSection {
         Map<Integer, TrainPrediction> predictionsSrc = data.getPredictionsMap();
         Map<Integer, TrainPrediction> predictions = new HashMap<>(predictionsSrc.size());
         for (Map.Entry<Integer, TrainPrediction> prediction : predictionsSrc.entrySet()) {
-            if (GlobalSettings.getInstance().isStationBlacklisted(prediction.getValue().getStationName())) {
+            if (GlobalSettings.getInstance().isStationBlacklisted(prediction.getValue().getTargetedStationName())) {
                 continue;
             }
             predictions.put(prediction.getKey(), prediction.getValue());
@@ -154,22 +157,21 @@ public class ScheduleSection {
 
         boolean customStartFound = false;
         boolean endReached = false;
-        TrainPrediction pred = null;
-        for (int i = 0; i < count * 2; i++) {
+        for (int i = 0; i <= count; i++) {
             final int j = (startIndex + i) % count;
             if (i != 0 && j == stopIndex) {
                 if (!ignoreIncludeLastStationRule && shouldIncludeNextStationOfNextSection()) {
                     endReached = true;
-                } else return result;
+                } else break;
             }
             customStartFound = customStartFound || startingAtIndex < 0 || j == startingAtIndex;
             if (!predictions.containsKey(j) || !customStartFound) continue;
-            pred = predictions.get(j);
-            result.add(pred);
+            result.add(predictions.get(j));
             if (endReached) break;
         }
         return result;
     }
+
 
     public int getFirstIndexFor(StationTag tag) {
         List<TrainPrediction> predictions = getPredictions(INVALID, false);
@@ -191,11 +193,11 @@ public class ScheduleSection {
         List<TrainStop> result = new ArrayList<>();
         List<TrainPrediction> predictions = getPredictions(INVALID, false);
 
-        TrainStop lastStop = null;
+        TrainStop previousStop = null;
         for (TrainPrediction prediction : predictions) {
             TrainStop stop = new TrainStop(prediction);
             stop.simulateTicks(simulationTime);
-            if (lastStop != null && lastStop.getScheduledArrivalTime() > stop.getScheduledArrivalTime()) {
+            if (previousStop != null && previousStop.getScheduledArrivalTime() > stop.getScheduledArrivalTime()) {
                 if (prediction.getEntryIndex() == currentIndex) {
                     result.forEach(x -> x.simulateCycles(-1));
                 } else {
@@ -203,7 +205,7 @@ public class ScheduleSection {
                 }
             }
             result.add(stop);
-            lastStop = stop;
+            previousStop = stop;
         }
         return result;
     }
@@ -214,9 +216,10 @@ public class ScheduleSection {
 
     public List<String> getStopoversFrom(int startIndex) {
         List<String> predictions = new ArrayList<>();
+        List<TrainPrediction> predictionsSrc = this.predictions.get();
         boolean startFound = false;
-        for (int i = 0; i < this.predictions.get().size() - 1; i++) {
-            TrainPrediction prediction = this.predictions.get().get(i);
+        for (int i = 0; i < predictionsSrc.size() - 1; i++) {
+            TrainPrediction prediction = predictionsSrc.get(i);
             boolean wasStartFound = startFound;
             if (prediction.getEntryIndex() == startIndex) startFound = true;
             if (!wasStartFound) continue;
@@ -264,19 +267,19 @@ public class ScheduleSection {
         if (!isUsable()) {
             return CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.not_in_service").getString();
         }        
-        return getFinalStop().map(x -> GlobalSettings.getInstance().getOrCreateStationTagFor(x.getStationName()).getTagName().get()).orElse("?");
+        return getFinalStop().map(x -> GlobalSettings.getInstance().getOrCreateStationTagFor(x.getTargetedStationName()).getTagName().get()).orElse("?");
     }
 
     public String getDisplayTextStart() {
-        return !isUsable() ? CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.not_in_service").getString() : getFirstStop().map(x -> GlobalSettings.getInstance().getOrCreateStationTagFor(x.getStationName()).getTagName().get()).orElse("?");
+        return !isUsable() ? CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.not_in_service").getString() : getFirstStop().map(x -> GlobalSettings.getInstance().getOrCreateStationTagFor(x.getTargetedStationName()).getTagName().get()).orElse("?");
     }
 
     public String getStartStationName() {
-        return getFirstStop().map(x -> x.getStationName()).orElse("?");
+        return getFirstStop().map(x -> x.getTargetedStationName()).orElse("?");
     }
 
     public String getDestinationStationName() {
-        return getFinalStop().map(x -> x.getStationName()).orElse("?");
+        return getFinalStop().map(x -> x.getTargetedStationName()).orElse("?");
     }
 
     @Override

@@ -95,7 +95,7 @@ public class NavigatableGraph {
         while (!predictions.isEmpty()) {
             TrainPrediction prediction = predictions.peekLast();
             ScheduleSection section = prediction.getSection();
-            if ((globalSettings().isStationBlacklisted(prediction.getStationName())) ||
+            if ((globalSettings().isStationBlacklisted(prediction.getTargetedStationName())) ||
                 (!section.isUsable() && (!section.isFirstStop(prediction) || !section.previousSection().isUsable() || !section.previousSection().shouldIncludeNextStationOfNextSection()))
             ) {
                 predictions.removeLast();
@@ -140,7 +140,7 @@ public class NavigatableGraph {
     protected boolean isPredictionAllowed(TrainPrediction prediction) {
         ScheduleSection section = prediction.getSection();
         boolean usable = section.isUsable() || (section.isFirstStop(prediction) && section.previousSection().isUsable() && section.previousSection().shouldIncludeNextStationOfNextSection());
-        return !globalSettings().isStationBlacklisted(prediction.getStationName()) && (prediction.getSection().getTrainGroup().map(x -> !userSettings.navigationExcludedTrainGroups.getValue().contains(x.getGroupName())).orElse(true)) && usable;
+        return !globalSettings().isStationBlacklisted(prediction.getTargetedStationName()) && (prediction.getSection().getTrainGroup().map(x -> !userSettings.navigationExcludedTrainGroups.getValue().contains(x.getGroupName())).orElse(true)) && usable;
     }
 
     protected Node addNode(TrainPrediction prediction) {

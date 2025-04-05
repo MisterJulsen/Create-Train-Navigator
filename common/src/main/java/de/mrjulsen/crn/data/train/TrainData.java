@@ -560,12 +560,12 @@ public class TrainData implements IListenable<TrainData> {
                 time += getTransitTimeAtStation(cyclicIndex);
             }
 
-            TrainPrediction pred = predictionsByIndex.computeIfAbsent(cyclicIndex, idx -> new TrainPrediction(this, idx, name.get(), currentTitle.get()));
+            TrainPrediction pred = predictionsByIndex.computeIfAbsent(cyclicIndex, idx -> new TrainPrediction(this, idx, destination.getFilter(), name.get(), currentTitle.get()));
             if (!isPreInitializationPhase()) {
                 pred.preInit();
             }
             predictionsChronologically.add(pred);
-            pred.updateRealTime(name.get(), now, time);
+            pred.updateRealTime(destination.getFilter(), name.get(), now, time);
             time = pred.realTime().departureTime();
         }
 

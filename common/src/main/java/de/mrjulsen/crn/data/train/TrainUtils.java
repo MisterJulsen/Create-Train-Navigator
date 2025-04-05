@@ -98,7 +98,7 @@ public final class TrainUtils {
         }
     }    
     private static final MapCache<List<TrainStop>, DeparturesFromTagContext, DeparturesFromTagContext> departuresAtTagCache = new MapCache<>((context) -> {
-        return getDeparturesAt(x -> x.getStationTag().equals(context.station()) || (!context.realTimeOnly() && x.getEstimatedStationName() != null && x.getEstimatedStationTag().equals(context.station())), context.selfTrain());
+        return getDeparturesAt(x -> x.getStationTag().equals(context.station()) || (!context.realTimeOnly() && x.getEstimatedStationTag().equals(context.station())), context.selfTrain());
     }, DeparturesFromTagContext::hashCode, ECachingPriority.LOWEST);
     
     private static record DeparturesFromStationContext(String station, UUID selfTrain, boolean realTimeOnly) {
@@ -108,7 +108,7 @@ public final class TrainUtils {
         }
     }    
     private static final MapCache<List<TrainStop>, DeparturesFromStationContext, DeparturesFromStationContext> departuresAtStationCache = new MapCache<>((context) -> {
-        return getDeparturesAt(x -> TrainUtils.stationMatches(x.getStationName(), context.station()) || (!context.realTimeOnly() && x.getEstimatedStationName() != null && TrainUtils.stationMatches(x.getEstimatedStationName(), context.station())), context.selfTrain());
+        return getDeparturesAt(x -> TrainUtils.stationMatches(x.getTargetedStationName(), context.station()) || (!context.realTimeOnly() && TrainUtils.stationMatches(x.getScheduledStationName(), context.station())), context.selfTrain());
     }, DeparturesFromStationContext::hashCode, ECachingPriority.LOWEST);
 
     public static void refreshCache() {

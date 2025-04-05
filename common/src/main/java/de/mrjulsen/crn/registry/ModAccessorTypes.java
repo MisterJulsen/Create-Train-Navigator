@@ -499,7 +499,7 @@ public final class ModAccessorTypes {
                 Map<Integer, TrainStopRealTimeData> values = new HashMap<>();
                 for (TrainPrediction prediction : predictions) {
                     TrainStopRealTimeData realTimeData = new TrainStopRealTimeData(
-                        prediction.getStationTag().getClientTag(prediction.getStationName()),
+                        prediction.getStationTag().getClientTag(prediction.getTargetedStationName()),
                         prediction.getEntryIndex(),
                         prediction.scheduled().arrivalTime(),
                         prediction.scheduled().departureTime(),

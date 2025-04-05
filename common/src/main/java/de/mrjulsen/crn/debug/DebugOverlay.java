@@ -76,7 +76,7 @@ public class DebugOverlay extends DLOverlayScreen {
                 if (a == null) {
                     return;
                 }
-                builder.append(" > " + a.getStationName() + " (" + a.realTime().arrivalIn() + ")");
+                builder.append(" > " + a.getTargetedStationName() + " (" + a.realTime().arrivalIn() + ")");
             });
             drawLine(graphics, builder.toString());
 

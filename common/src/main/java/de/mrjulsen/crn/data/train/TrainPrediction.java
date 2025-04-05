@@ -30,6 +30,7 @@ import net.minecraft.network.chat.Component;
 public class TrainPrediction implements Comparable<TrainPrediction> {    
 
     private static final String NBT_ENTRY_INDEX = "EntryIndex";
+    private static final String NBT_STATION_FILTER = "StationFilter";
     private static final String NBT_STATION_NAME = "StationName";
     private static final String NBT_TITLE = "Title";
     private static final String NBT_CYCLE = "Cycle";
@@ -42,6 +43,7 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
     
     private final int entryIndex;
     private final String title;
+    private String stationFilter;
     private String stationName;
     private final PrimaryStringSelector recentStationNames = new PrimaryStringSelector(10);
 
@@ -69,19 +71,20 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
             return false;
         }
         TrainPrediction nextPrediction = this.getData().getPredictionsChronologically().get((this.getData().getPredictionsChronologically().indexOf(this) + 1) % this.getData().getPredictionsChronologically().size());
-        return !getTitle().matches(nextPrediction.getStationName());
+        return !getTitle().matches(nextPrediction.getTargetedStationName());
     });
     private final Cache<Boolean> isLastStopOfSection = new Cache<>(() -> {
         ScheduleSection section = getSection();
         return section.isFinalStop(this);
     });
-    private final Cache<StationTag> tagCache = new Cache<>(() -> GlobalSettings.getInstance().getOrCreateStationTagFor(getStationName()));
-    private final Cache<StationTag> estimatedTagCache = new Cache<>(() -> GlobalSettings.getInstance().getOrCreateStationTagFor(getEstimatedStationName()));
+    private final Cache<StationTag> tagCache = new Cache<>(() -> GlobalSettings.getInstance().getOrCreateStationTagFor(getTargetedStationName()));
+    private final Cache<StationTag> estimatedTagCache = new Cache<>(() -> GlobalSettings.getInstance().getOrCreateStationTagFor(getScheduledStationName()));
     private final Cache<ScheduleSection> section;
 
-    public TrainPrediction(TrainData data, int entryIndex, String stationName, String title) {
+    public TrainPrediction(TrainData data, int entryIndex, String stationFilter, String stationName, String title) {
         this.entryIndex = entryIndex;
         this.data = data;
+        this.stationFilter = stationFilter;
 
 		int size = data.getTrain().runtime.getSchedule().entries.size();
         String text = title;
@@ -119,7 +122,7 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
 
     public static TrainPrediction unpredictable(TrainData data) {
         CreateRailwaysNavigator.LOGGER.warn("Train " + data.getTrain().name.getString() + " (" + data.getTrain().id + ") is unpredictable!");
-        return new TrainPrediction(data, -1, "", "");
+        return new TrainPrediction(data, -1, "", "", "");
     }
 
     /**
@@ -145,28 +148,34 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
     }
 
     /** The name of the station. */
-    public String getStationName() {
+    public String getTargetedStationName() {
         return stationName;
     }
 
-    public String getEstimatedStationName() {
+    public String getStationFilter() {
+        return stationFilter;
+    }
+
+    private String getEstimatedStationName() {
         return recentStationNames.getCurrentPrimary();
     }
 
     public String getScheduledStationName() {
-        if (getEstimatedStationName() == null || !TrainUtils.stationExists(getEstimatedStationName())) {
-            return getStationName();
+        if (TrainUtils.stationExists(getStationFilter())) {
+            return getStationFilter();
+        } else if (getEstimatedStationName() != null && TrainUtils.stationExists(getEstimatedStationName())) {
+            return getEstimatedStationName();
+        }
+        return getTargetedStationName();
+    }
+
+    public String getRealTimeStationName() {
+        if (TrainUtils.stationExists(getTargetedStationName()) || getEstimatedStationName() == null) {
+            return getTargetedStationName();
         }
         return getEstimatedStationName();
     }
 
-    public String getRealTimeStationName() {
-        if (TrainUtils.stationExists(getStationName()) || getEstimatedStationName() == null) {
-            return getStationName();
-        }
-        return getEstimatedStationName();
-    }
-    
     public StationTag getEstimatedStationTag() throws RuntimeSideException {
         if (!ModCommonEvents.hasServer()) {
             throw new RuntimeSideException(false);
@@ -350,8 +359,9 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
 
     
 
-    public void updateRealTime(String stationName, long refreshTime, long arrivalTime) {
+    public void updateRealTime(String stationFilter, String stationName, long refreshTime, long arrivalTime) {
         isCustomTitle.clear();
+        this.stationFilter = stationFilter == null ? this.stationFilter : stationFilter;
         this.stationName = stationName == null ? this.stationName : stationName;
         
         DepartureTime departures = estimateDepartures(getData().getTrain(), entryIndex, arrivalTime);
@@ -426,6 +436,7 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
         CompoundTag nbt = new CompoundTag();
 
         nbt.putInt(NBT_ENTRY_INDEX, entryIndex);
+        nbt.putString(NBT_STATION_FILTER, stationFilter == null ? "" : stationFilter);
         nbt.putString(NBT_STATION_NAME, stationName == null ? "" : stationName);
         nbt.putString(NBT_TITLE, title == null ? "" : title);
         if (scheduled() != null) nbt.put(NBT_SCHEDULED_TIMES, scheduled().toNbt());
@@ -440,6 +451,7 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
         TrainPrediction pred = new TrainPrediction(
             data,
             nbt.getInt(NBT_ENTRY_INDEX),
+            nbt.getString(NBT_STATION_FILTER),
             nbt.getString(NBT_STATION_NAME),
             nbt.getString(NBT_TITLE)
         );
@@ -460,7 +472,7 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
      */
     public Component formattedText() {
         return TextUtils.text("[ " + entryIndex + " ]: ").withStyle(ChatFormatting.WHITE)
-            .append(TextUtils.text(getStationName()).withStyle(ChatFormatting.WHITE))
+            .append(TextUtils.text(getTargetedStationName()).withStyle(ChatFormatting.WHITE))
             .append(TextUtils.text(", ").withStyle(ChatFormatting.WHITE))
             .append(TextUtils.text("*" + getCurrentCycle()).withStyle(ChatFormatting.YELLOW))
             .append(TextUtils.text(", ").withStyle(ChatFormatting.WHITE))
@@ -478,7 +490,7 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
             .append(TextUtils.text(", ").withStyle(ChatFormatting.WHITE))
             .append(TextUtils.text("T: " + title).withStyle(ChatFormatting.LIGHT_PURPLE))
             .append(TextUtils.text(", ").withStyle(ChatFormatting.WHITE))
-            .append(TextUtils.text("Z: " + getStationName() + " / " + getEstimatedStationName()).withStyle(ChatFormatting.DARK_PURPLE))
+            .append(TextUtils.text("Z: " + getStationFilter() + " / " + getTargetedStationName() + " / " + getEstimatedStationName()).withStyle(ChatFormatting.DARK_PURPLE))
         ;
     }
 
