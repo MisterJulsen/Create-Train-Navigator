@@ -88,7 +88,7 @@ public class StationDeparturesWidget extends DLButton implements AutoCloseable {
         Component platformText = TextUtils.text(route.getStart().getRealTimeStationTag().info().platform());
         int platformTextWidth = font.width(platformText);
         final int maxStationNameWidth = width() - platformTextWidth - 15 - (int)((45 + font.width(trainName)) * scale);
-        MutableComponent stationText = arrival ? TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".schedule_board.train_from", .getEnd(route).getRealTimeStationTag().tagName()) : TextUtils.text(route.getStart().getDisplayTitle());
+        MutableComponent stationText = arrival ? TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".schedule_board.train_from", route.getEnd().getRealTimeStationTag().tagName()) : TextUtils.text(route.getStart().getDisplayTitle());
         if (font.width(stationText) > maxStationNameWidth) {
             stationText = TextUtils.text(font.substrByWidth(stationText, maxStationNameWidth).getString()).append(TextUtils.text("...")).withStyle(stationText.getStyle());
         }
