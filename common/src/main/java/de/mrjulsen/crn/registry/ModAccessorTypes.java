@@ -777,18 +777,19 @@ public final class ModAccessorTypes {
                     UserSettings settings = UserSettings.getSettingsFor(in.player(), true);
                     StationTag station = GlobalSettings.getInstance().getOrCreateStationTagFor(TagName.of(in.stationTagName()));
                     Set<Train> trains = TrainUtils.getDepartingTrainsAt(station);
-                    trains.removeIf(x -> !(
-                        TrainUtils.isTrainUsable(x) &&
-                        !GlobalSettings.getInstance().isTrainBlacklisted(x) &&
-                        TrainListener.hasTrainData(x.id)
-                    ));
+                    trains.removeIf(x -> 
+                        !TrainUtils.isTrainUsable(x) ||
+                        GlobalSettings.getInstance().isTrainBlacklisted(x) ||
+                        !TrainListener.hasTrainData(x)
+                    );
 
                     List<Pair<Boolean, Route>> routesL = new LinkedList<>();
                     for (Train train : trains) {
                         TrainData data = TrainListener.getTrainData(train.id).get();
                         List<TrainPrediction> matchingPredictions = data.getPredictionsChronologically();
                         
-                        for (TrainPrediction prediction : matchingPredictions) {
+                        for (int i = 0; i < matchingPredictions.size(); i++) {
+                            TrainPrediction prediction = matchingPredictions.get(i);
                             if (!prediction.getStationTag().equals(station)) {
                                 continue;
                             }
@@ -799,6 +800,7 @@ public final class ModAccessorTypes {
                             }
 
                             ScheduleSection previousSection = section.previousSection();
+
                             boolean isStart = section.isFirstStop(prediction); 
                             boolean isStartAndFinal = isStart && previousSection.isUsable() && previousSection.shouldIncludeNextStationOfNextSection() && (previousSection.getTrainGroup().map(x -> !settings.searchExcludedTrainGroups.getValue().contains(x.getGroupName())).orElse(true)); 
                             
@@ -812,7 +814,7 @@ public final class ModAccessorTypes {
                             if ((!isStart || isStartAndFinal) && (section.getTrainGroup().map(x -> !settings.searchExcludedTrainGroups.getValue().contains(x.getGroupName())).orElse(true))) {
                                 
                                 Route selectedRoute = route;
-                                if (isStartAndFinal) {                                    
+                                if (isStartAndFinal) {
                                     TrainPrediction frPred = previousSection.getFirstStop().get();
                                     TrainStop fr = new TrainStop(frPred);
                                     selectedRoute = new Route(List.of(new RoutePart(data.getSessionId(), train.id, List.of(stop /* current/target */, fr /* from */), previousSection.getAllStops(settings.searchDepartureInTicks.getValue(), prediction.getEntryIndex()))), false);
