@@ -286,4 +286,12 @@ public class ScheduleSection {
     public String toString() {
         return getDisplayText();
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof ScheduleSection o) {
+            return getScheduleIndex() == o.getScheduleIndex();
+        }
+        return false;
+    }
 }
