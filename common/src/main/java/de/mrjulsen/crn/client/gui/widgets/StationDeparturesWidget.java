@@ -10,6 +10,7 @@ import de.mrjulsen.crn.client.gui.screen.TrainJourneyScreen;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.crn.data.navigation.ClientRoute;
+import de.mrjulsen.crn.data.train.TrainStop;
 import de.mrjulsen.mcdragonlib.client.gui.DLScreen;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLButton;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLContextMenu;
@@ -62,8 +63,10 @@ public class StationDeparturesWidget extends DLButton implements AutoCloseable {
             GuiUtils.fill(graphics, x(), y(), width(), height(), 0x22FFFFFF);
         }
 
+        TrainStop currentStop = arrival ? route.getEnd() : route.getStart();
+
         final float scale = 0.75f;
-        Component trainName = TextUtils.text(route.getStart().getTrainDisplayName()).withStyle(ChatFormatting.BOLD);
+        Component trainName = TextUtils.text(currentStop.getTrainDisplayName()).withStyle(ChatFormatting.BOLD);
         graphics.poseStack().pushPose();
         graphics.poseStack().translate(x(), y(), 0);
         graphics.poseStack().scale(scale, scale, scale);        
@@ -79,13 +82,13 @@ public class StationDeparturesWidget extends DLButton implements AutoCloseable {
             GuiUtils.drawString(graphics, font, (int)((x + width() - 5) / scale), (int)((y() + 15) / scale), connectionInPast, Constants.COLOR_DELAYED, EAlignment.RIGHT, false);
         }
 
-        CreateDynamicWidgets.renderTextHighlighted(graphics, 30, 6, font, trainName, route.getStart().getTrainDisplayColor());
+        CreateDynamicWidgets.renderTextHighlighted(graphics, 30, 6, font, trainName, currentStop.getTrainDisplayColor());
         graphics.poseStack().popPose();
 
         Component platformText = TextUtils.text(route.getStart().getRealTimeStationTag().info().platform());
         int platformTextWidth = font.width(platformText);
         final int maxStationNameWidth = width() - platformTextWidth - 15 - (int)((45 + font.width(trainName)) * scale);
-        MutableComponent stationText = arrival ? TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".schedule_board.train_from", route.getEnd().getRealTimeStationTag().tagName()) : TextUtils.text(route.getStart().getDisplayTitle());
+        MutableComponent stationText = arrival ? TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".schedule_board.train_from", .getEnd(route).getRealTimeStationTag().tagName()) : TextUtils.text(route.getStart().getDisplayTitle());
         if (font.width(stationText) > maxStationNameWidth) {
             stationText = TextUtils.text(font.substrByWidth(stationText, maxStationNameWidth).getString()).append(TextUtils.text("...")).withStyle(stationText.getStyle());
         }
