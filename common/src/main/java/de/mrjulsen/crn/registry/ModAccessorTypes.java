@@ -505,8 +505,6 @@ public final class ModAccessorTypes {
                         prediction.scheduled().departureTime(),
                         prediction.realTime().arrivalTime(),
                         prediction.realTime().departureTime(),
-                        prediction.getArrivalTimeDeviation(),
-                        prediction.getDepartureTimeDeviation(),
                         (int)prediction.realTime().arrivalIn(),
                         prediction.getCurrentCycle()
                     );

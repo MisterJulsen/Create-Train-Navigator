@@ -68,8 +68,6 @@ public class TrainStop implements Comparable<TrainStop> {
     protected int realTimeCycle = -1;
     protected ClientStationTag realTimeTag;
 
-    protected long arrivalTimeDeviation;
-    protected long departureTimeDeviation;
     protected int realTimeTicksUntilArrival = -1;
 
 
@@ -80,8 +78,8 @@ public class TrainStop implements Comparable<TrainStop> {
     public TrainStop(int scheduleIndex, int sectionIndex, UUID trainId, String trainName, TrainIconType trainIcon, TrainInfo trainInfo,
             String scheduleTitle, boolean isCustomTitle, String terminusText, int stayDuration, boolean simulated,
             long scheduledDepartureTime, long scheduledArrivalTime, int cycle, ClientStationTag tag, long realTimeArrivalTime,
-            long realTimeDepartureTime, int realTimeCycle, ClientStationTag realTimeTag, long arrivalTimeDeviation,
-            long departureTimeDeviation, int realTimeTicksUntilArrival, TrainState trainPosition) {
+            long realTimeDepartureTime, int realTimeCycle, ClientStationTag realTimeTag,
+            int realTimeTicksUntilArrival, TrainState trainPosition) {
         this.scheduleIndex = scheduleIndex;
         this.sectionIndex = sectionIndex;
         this.trainId = trainId;
@@ -101,8 +99,6 @@ public class TrainStop implements Comparable<TrainStop> {
         this.realTimeDepartureTime = realTimeDepartureTime;
         this.realTimeCycle = realTimeCycle;
         this.realTimeTag = realTimeTag;
-        this.arrivalTimeDeviation = arrivalTimeDeviation;
-        this.departureTimeDeviation = departureTimeDeviation;
         this.realTimeTicksUntilArrival = realTimeTicksUntilArrival;
         this.trainState = trainPosition;
     }
@@ -132,8 +128,6 @@ public class TrainStop implements Comparable<TrainStop> {
             lastCycle ? prediction.getPreviousRealTimeDepartureTime() : prediction.realTime().departureTime(),
             prediction.getCurrentCycle() - (lastCycle ? 1 : 0), 
             GlobalSettings.getInstance().getOrCreateStationTagFor(prediction.getRealTimeStationName()).getClientTag(prediction.getRealTimeStationName()),
-            prediction.getArrivalTimeDeviation(), 
-            prediction.getDepartureTimeDeviation(), 
             (int)prediction.realTime().arrivalIn(), 
             TrainState.BEFORE
         );
@@ -161,8 +155,6 @@ public class TrainStop implements Comparable<TrainStop> {
             this.realTimeDepartureTime,
             this.realTimeCycle,
             this.realTimeTag,
-            this.arrivalTimeDeviation,
-            this.departureTimeDeviation,
             this.realTimeTicksUntilArrival,
             this.trainState
         );
@@ -331,11 +323,11 @@ public class TrainStop implements Comparable<TrainStop> {
     }
 
     public long getArrivalTimeDeviation() {
-        return arrivalTimeDeviation;
+        return getRealTimeArrivalTime() - getScheduledArrivalTime();
     }
 
     public long getDepartureTimeDeviation() {
-        return departureTimeDeviation;
+        return getRealTimeDepartureTime() - getScheduledDepartureTime();
     }
 
     public int getTicksUntilArrival() {
@@ -443,8 +435,6 @@ public class TrainStop implements Comparable<TrainStop> {
             nbt.getLong(NBT_REAL_TIME_DEPARTURE_TIME),
             nbt.getInt(NBT_REAL_CYCLE),
             ClientStationTag.fromNbt(nbt.getCompound(NBT_REAL_TIME_TAG)),
-            nbt.contains(NBT_REAL_TIME_ARRIVAL_TIME) ? nbt.getLong(NBT_REAL_TIME_ARRIVAL_TIME) - nbt.getLong(NBT_SCHEDULED_ARRIVAL_TIME) : 0,
-            nbt.contains(NBT_REAL_TIME_DEPARTURE_TIME) ? nbt.getLong(NBT_REAL_TIME_DEPARTURE_TIME) - nbt.getLong(NBT_SCHEDULED_DEPARTURE_TIME) : 0,
             0,
             TrainState.BEFORE
         );
