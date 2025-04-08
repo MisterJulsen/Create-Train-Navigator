@@ -38,6 +38,11 @@
 	"block.createrailwaysnavigator.advanced_display_slab.tooltip.summary": "Benutze den Block auf _Zügen_ als _Zugzielanzeigen_ oder _Fahrgastinformationsanzeigen_ oder an _Bahnhöfen_ als verbesserte _Bahnsteiganzeige_, die auch mehr Informationen anzeigen als normale Anzeigetafeln.",
     "block.createrailwaysnavigator.advanced_display_slab.tooltip.condition1": "R-Klick mit einem Schraubenschlüssel",
 	"block.createrailwaysnavigator.advanced_display_slab.tooltip.behaviour1": "Öffne ein _Menü_, um die Anzeige zu _konfigurieren_.",
+    "block.createrailwaysnavigator.train_station_clock.tooltip.summary": "Zeigt die _aktuelle Uhrzeit_ an.",
+    "block.createrailwaysnavigator.train_station_clock.tooltip.condition1": "R-Klick",
+	"block.createrailwaysnavigator.train_station_clock.tooltip.behaviour1": "Zeigt die _aktuelle Uhrzeit_ über der _Inventarleiste_ an.",
+    "block.createrailwaysnavigator.train_station_clock.tooltip.condition2": "R-Klick auf eine andere Bahnhofsuhr",
+	"block.createrailwaysnavigator.train_station_clock.tooltip.behaviour2": "Ändert die Uhr, sodass die Zeit auf _allen vier Seiten_ angezeigt wird.", 
     
     "block.createrailwaysnavigator.advanced_display.ber.not_in_service": "Betriebsfahrt",
 
