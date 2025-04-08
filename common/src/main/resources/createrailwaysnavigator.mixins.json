@@ -7,7 +7,9 @@
     "ScheduleScreenAccessor",
     "ModularGuiLineBuilderAccessor",
     "ScheduleScreenMixin",
-    "StationBlockEntityMixin"
+    "StationBlockEntityMixin",
+    "ItemRendererMixin",
+    "ModelBakeryMixin"
   ],
   "mixins": [
     "extensions.ScheduledDelayMixin",
