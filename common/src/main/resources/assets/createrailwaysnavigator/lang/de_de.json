@@ -89,6 +89,11 @@
     "gui.createrailwaysnavigator.common.paste": "Einfügen",
     "gui.createrailwaysnavigator.common.click_to_search": "Klicke zum Durchsuchen",
     "gui.createrailwaysnavigator.common.click_to_edit": "Klicke zum Bearbeiten",
+    "gui.createrailwaysnavigator.common.remove": "Entfernen",
+    "gui.createrailwaysnavigator.common.new": "Neu",
+    "gui.createrailwaysnavigator.common.clear_all": "Alles löschen",
+    "gui.createrailwaysnavigator.common.clear": "Leeren",
+    "gui.createrailwaysnavigator.common.loading": "Wird geladen...",
     
     "gui.createrailwaysnavigator.navigator.title": "Create Railways Navigator",
     "gui.createrailwaysnavigator.navigator.no_connections": "Keine Verbindungen gefunden.",
@@ -106,6 +111,7 @@
     "gui.createrailwaysnavigator.navigator.location.tooltip": "Nächstgelegene Station von aktueller Position",
     "gui.createrailwaysnavigator.navigator.refresh.tooltip": "Aktualisieren",
     "gui.createrailwaysnavigator.navigator.switch.tooltip": "Eingaben tauschen",
+    "gui.createrailwaysnavigator.navigator.recently_searched": "Zuletzt gesucht",
 
     "gui.createrailwaysnavigator.route_details.title": "Streckendetails",
     "gui.createrailwaysnavigator.route_details.departure": "Abfahrt in",
@@ -202,8 +208,6 @@
     "gui.createrailwaysnavigator.search_settings.train_groups.overview.all": "Alle",
     "gui.createrailwaysnavigator.search_settings.train_groups.overview.none": "Keine",
     "gui.createrailwaysnavigator.search_settings.train_groups.tooltip.reset": "Filter zurücksetzen",
-
-    "gui.createrailwaysnavigator.new_text_entry.add.tooltip": "Hinzufügen",
 
     "gui.createrailwaysnavigator.time": "Zeit: %s",
     "gui.createrailwaysnavigator.time.now": "jetzt",
@@ -346,8 +350,6 @@
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.empty": "(Nichts)",
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.primary": "(Primär)",
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings": "Priorisiertes Ziel - Einstellungen",
-    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.add": "Zur Liste hinzufügen",
-    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.delete": "Aus Liste entfernen",
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.drag_and_drop": "Ziehe diesen Eintrag, um die Reihenfolge zu ändern",
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.priorities": "Elemente weiter oben haben eine höhere Priorität und werden zuerst gewählt.",
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.priority_pos": "Position: %s",

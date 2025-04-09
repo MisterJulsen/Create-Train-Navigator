@@ -23,6 +23,13 @@ public class Constants {
     public static final Component TEXT_COPY = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.copy");
     public static final Component TEXT_PASTE = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.paste");
     public static final Component TEXT_RESET = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.reset_defaults");
+    public static final Component TEXT_REMOVE = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.remove");
+    public static final Component TEXT_DELETE = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.delete");
+    public static final Component TEXT_ADD = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.add");
+    public static final Component TEXT_NEW = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.new");
+    public static final Component TEXT_CLEAR_ALL = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.clear_all");
+    public static final Component TEXT_CLEAR = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.clear");
+    public static final Component TEXT_LOADING = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.loading");
     public static final UUID ZERO_UUID = new UUID(0, 0);
     public static final int[] DEFAULT_TRAIN_TYPE_COLORS = new int[] { 0xFF393939, 0xFFf0f3f5, 0xFFafb4bb, 0xFF878c96, 0xFF2a7230, 0xFF814997, 0xFF1455c0, 0xFFa9455d, 0xFF55b9e6, 0xFFffd800 };
      

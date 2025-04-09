@@ -109,7 +109,6 @@ public class PrioritizedDestinationInstructionSettingsScreen extends DLScreen {
 
     private final List<String> stationNames = new ArrayList<>();
 
-    private final MutableComponent txtAdd = TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule.instruction.prioritized_destination_instruction.settings.add");
     private final MutableComponent txtAvoidSignalsTitle = TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule.instruction.prioritized_destination_instruction.settings.avoid_signals");
     private final MutableComponent txtAvoidSignalsDescription = TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule.instruction.prioritized_destination_instruction.settings.avoid_signals_description").withStyle(ChatFormatting.GRAY);
     private final MutableComponent txtAvoidTrainsTitle = TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule.instruction.prioritized_destination_instruction.settings.avoid_trains");
@@ -199,7 +198,7 @@ public class PrioritizedDestinationInstructionSettingsScreen extends DLScreen {
                 reloadList();
             })
         );
-        addTooltip(DLTooltip.of(txtAdd).assignedTo(addBtn));
+        addTooltip(DLTooltip.of(Constants.TEXT_ADD).assignedTo(addBtn));
         addRenderableWidget(scrollBar);
         
         // Buttons
@@ -354,7 +353,6 @@ public class PrioritizedDestinationInstructionSettingsScreen extends DLScreen {
 
     private static class DestinationEntry extends DLNewListBox.Entry<String, DestinationEntry> {
 
-        private final MutableComponent txtDelete = TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule.instruction.prioritized_destination_instruction.settings.delete");
         private final MutableComponent txtDragNDrop = TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule.instruction.prioritized_destination_instruction.settings.drag_and_drop");
         private final MutableComponent txtPriorities = TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule.instruction.prioritized_destination_instruction.settings.priorities").withStyle(ChatFormatting.GRAY);
         private final Function<Integer, MutableComponent> txtPriority = (i) -> TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule.instruction.prioritized_destination_instruction.settings.priority_pos", i).withStyle(ChatFormatting.DARK_GRAY);
@@ -386,7 +384,7 @@ public class PrioritizedDestinationInstructionSettingsScreen extends DLScreen {
         public void renderFrontLayer(Graphics graphics, int mouseX, int mouseY, float partialTicks) {
             super.renderFrontLayer(graphics, mouseX, mouseY, partialTicks);
             if (!getList().getParent().isDragging()) {
-                GuiUtils.renderTooltip(getList().getParent(), deleteBtn, List.of(txtDelete), 200, graphics, mouseX, mouseY);
+                GuiUtils.renderTooltip(getList().getParent(), deleteBtn, List.of(Constants.TEXT_REMOVE), 200, graphics, mouseX, mouseY);
                 if (isMouseSelected() && mouseX > x() + 4 && mouseX < x() + 20) {
                     GuiUtils.renderTooltip(getList().getParent(), GuiAreaDefinition.of(getList().getParent()), List.of(txtDragNDrop, txtPriorities, txtPriority.apply(getIndex() + 1)), 200, graphics, mouseX, mouseY);
                 }

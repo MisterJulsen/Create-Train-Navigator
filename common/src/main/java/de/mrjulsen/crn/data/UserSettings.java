@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
+import de.mrjulsen.crn.data.storage.RecentSearchQueries;
 import de.mrjulsen.crn.event.ModCommonEvents;
 import de.mrjulsen.crn.exceptions.RuntimeSideException;
 import de.mrjulsen.crn.registry.ModAccessorTypes;
@@ -45,6 +46,7 @@ public class UserSettings {
     private static final String NBT_SAVED_ROUTES = "SavedRoutes";
     private static final String NBT_SEARCH_DEPARTURE_TIME = "SearchDepartureIn";
     private static final String NBT_SEARCH_TRAIN_GROUPS = "SearchExcludedTrainGroups";
+    private static final String NBT_RECENT_SEARCH_QUERIES = "RecentSearchQueries";
 
     private static final Map<UUID, UserSettings> settingsInstances = new LinkedHashMap<>();
 
@@ -81,6 +83,14 @@ public class UserSettings {
     }, (nbt, name) -> {
         return nbt.getList(name, Tag.TAG_STRING).stream().filter(x -> GlobalSettings.hasInstance() ? GlobalSettings.getInstance().trainGroupExists(x.getAsString()) : true).map(x -> x.getAsString()).collect(Collectors.toSet());
     },(val) -> val.isEmpty() ? TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.train_groups.all").getString() : TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.train_groups.excluded", val.size()).getString()));
+    
+    public final UserSetting<RecentSearchQueries> recentSearchQueries = registerSetting(new UserSetting<>(() -> new RecentSearchQueries(), NBT_RECENT_SEARCH_QUERIES,
+    (nbt, val, name) -> {;
+        nbt.put(name, val.toNbt());
+    }, (nbt, name) -> {
+        return RecentSearchQueries.fromNbt(nbt.getCompound(name));
+    },(val) -> String.valueOf(val.size())));
+
 
     public UserSettings(UUID playerId, boolean readOnly) {
         this.owner = playerId;
