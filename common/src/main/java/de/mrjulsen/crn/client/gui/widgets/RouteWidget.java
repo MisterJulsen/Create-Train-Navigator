@@ -1,11 +1,13 @@
 package de.mrjulsen.crn.client.gui.widgets;
 
 import com.google.common.collect.ImmutableList;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.ModGuiUtils;
+import de.mrjulsen.crn.client.gui.Animator;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.ColorShade;
 import de.mrjulsen.crn.client.gui.screen.RouteDetailsScreen;
@@ -15,6 +17,7 @@ import de.mrjulsen.crn.data.SavedRoutesManager;
 import de.mrjulsen.crn.data.navigation.ClientRoute;
 import de.mrjulsen.crn.data.navigation.RoutePart;
 import de.mrjulsen.mcdragonlib.DragonLib;
+import de.mrjulsen.mcdragonlib.client.ITickable;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLButton;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLContextMenu;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLContextMenuItem;
@@ -32,7 +35,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
-public class RouteWidget extends DLButton {    
+public class RouteWidget extends DLButton implements ITickable {    
 
     public static final int WIDTH = 214;
     public static final int HEIGHT = 54;
@@ -48,6 +51,8 @@ public class RouteWidget extends DLButton {
     private final MutableComponent textSave = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".route_widget.save");
     private final MutableComponent textShare = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".route_widget.share");
     private final MutableComponent textRemove = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".route_widget.remove");
+
+    private final Animator animator = new Animator();
 
     public RouteWidget(RouteViewer parent, ClientRoute route, int x, int y) {
         super(x, y, WIDTH, HEIGHT, TextUtils.empty(), (b) -> Minecraft.getInstance().setScreen(new RouteDetailsScreen(parent.getParent(), route)));
@@ -66,11 +71,27 @@ public class RouteWidget extends DLButton {
             }, null))
             //.add(new ContextMenuItemData(textShare, Sprite.empty(), true, (b) -> {}, null))
         ));
+        animator.start(10, null, null, null);
+    }
+
+    @Override
+    public void tick() {
+        animator.tick();
     }
     
 
     @Override
-    public void renderMainLayer(Graphics graphics, int pMouseX, int pMouseY, float pPartialTick) {        
+    public void renderMainLayer(Graphics graphics, int pMouseX, int pMouseY, float pPartialTick) {
+        animator.renderMainLayer(graphics, pMouseX, pMouseY, pPartialTick);
+
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.enableDepthTest();
+        graphics.poseStack().pushPose();
+        if (animator.isRunning()) {
+            graphics.poseStack().translate(-(50 * Math.pow(1D - animator.getPercentage(), 4)), 0, 0);
+        }
+
         final int precision = ModClientConfig.REALTIME_PRECISION_THRESHOLD.get();
         
         CreateDynamicWidgets.renderSingleShadeWidget(graphics, x, y, WIDTH, HEIGHT, ColorShade.DARK.getColor());
@@ -141,6 +162,6 @@ public class RouteWidget extends DLButton {
         }
 
         graphics.poseStack().popPose();
-    }
-    
+        graphics.poseStack().popPose();
+    }    
 }

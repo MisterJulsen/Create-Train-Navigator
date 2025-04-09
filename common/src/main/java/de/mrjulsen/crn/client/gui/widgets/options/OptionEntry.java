@@ -102,7 +102,7 @@ public class OptionEntry<T extends DLWidgetContainer> extends DLWidgetContainer 
 
         }
 
-        animator.start(4, null, null, null);
+        animator.start(10, null, null, null);
     }
 
     public void addAdditionalButton(Sprite icon, Component text, BiConsumer<OptionEntry<T>, DLIconButton> onClick) {
@@ -217,8 +217,7 @@ public class OptionEntry<T extends DLWidgetContainer> extends DLWidgetContainer 
         RenderSystem.enableDepthTest();
 
         if (animator.isRunning()) {
-            graphics.poseStack().translate(-animator.getTotalTicks() * 5 + animator.getCurrentTicksSmooth() * 5, 0, 0);
-            GuiUtils.setTint(1, 1, 1, animator.getPercentage());
+            graphics.poseStack().translate(-(50 * Math.pow(1D - animator.getPercentage(), 4)), 0, 0);
         }
 
         CreateDynamicWidgets.renderSingleShadeWidget(graphics, x() + 1, y(), width() - 2, height(), ColorShade.LIGHT);
