@@ -161,17 +161,14 @@ public class Lock {
     }
 
     public boolean isAllowed(Owner target) {
-        return isAdmin(target);
-        /*
-        return this.owner == null || (this.owner.equals(target) || switch (state) {
+        return this.owner == null || isAdmin(target) || (this.owner.equals(target) || switch (state) {
             case LOCKED -> isTrusted(target);
             default -> true;
         });
-        */
     }
     
     public boolean isAdmin(Owner target) {
-        return (this.owner != null) && (this.owner.equals(target) || (ModCommonConfig.GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL.get() >= 0 && GameInstance.getServer().getPlayerList().getPlayer(target.uuid()).hasPermissions(ModCommonConfig.GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL.get())));
+        return this.owner != null && (this.owner.equals(target) || (ModCommonConfig.GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL.get() >= 0 && GameInstance.getServer().getPlayerList().getPlayer(target.uuid()).hasPermissions(ModCommonConfig.GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL.get())));
     }
 
     public Set<Owner> getTrusted() {
