@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
-import org.apache.commons.compress.harmony.unpack200.bytecode.forms.ThisFieldRefForm;
-
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
@@ -19,7 +17,9 @@ import de.mrjulsen.crn.client.gui.widgets.DLCreateIconButton;
 import de.mrjulsen.crn.client.gui.widgets.ModStationSuggestions;
 import de.mrjulsen.crn.client.gui.widgets.ModernVerticalScrollBar;
 import de.mrjulsen.crn.client.gui.widgets.TransferOwnershipWidget;
+import de.mrjulsen.crn.client.gui.widgets.AbstractFlyoutWidget.FlyoutPointer;
 import de.mrjulsen.crn.client.gui.widgets.flyouts.FlyoutColorPicker;
+import de.mrjulsen.crn.client.gui.widgets.flyouts.FlyoutConfirmDialog;
 import de.mrjulsen.crn.client.gui.widgets.flyouts.FlyoutPlayerList;
 import de.mrjulsen.crn.client.gui.widgets.options.DLOptionsList;
 import de.mrjulsen.crn.client.gui.widgets.options.DataListContainer;
@@ -28,7 +28,6 @@ import de.mrjulsen.crn.client.gui.widgets.options.SimpleDataListNewEntry;
 import de.mrjulsen.crn.data.StationTag;
 import de.mrjulsen.crn.data.TrainGroup;
 import de.mrjulsen.crn.data.TrainLine;
-import de.mrjulsen.crn.data.storage.GlobalSettings;
 import de.mrjulsen.crn.data.storage.GlobalSettingsClient;
 import de.mrjulsen.crn.registry.ModAccessorTypes;
 import de.mrjulsen.crn.util.Lock;
@@ -160,9 +159,11 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
                         return data;
                     }
                     entryWidget.addDeleteButton((btn, tg, entry, refreshAction) -> {
-                        GlobalSettingsClient.removeStationFromBlacklist(entry, (res) -> {
-                            refreshAction.accept(Optional.ofNullable(res));
-                        });
+                        new FlyoutConfirmDialog<>(this, FlyoutPointer.RIGHT, () -> {
+                            GlobalSettingsClient.removeStationFromBlacklist(entry, (res) -> {
+                                refreshAction.accept(Optional.ofNullable(res));
+                            });
+                        }, this::addRenderableWidget, this::removeWidget).open(btn);
                     });
                     return data;
                 }, GlobalSettingsClient.modificationsAllowed() ? (data, entryWidget) -> {
@@ -210,9 +211,11 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
                         return data;
                     }
                     entryWidget.addDeleteButton((btn, tg, entry, refreshAction) -> {
-                        GlobalSettingsClient.removeTrainFromBlacklist(entry, (res) -> {
-                            refreshAction.accept(Optional.ofNullable(res));
-                        });
+                        new FlyoutConfirmDialog<>(this, FlyoutPointer.RIGHT, () -> {
+                            GlobalSettingsClient.removeTrainFromBlacklist(entry, (res) -> {
+                                refreshAction.accept(Optional.ofNullable(res));
+                            });
+                        }, this::addRenderableWidget, this::removeWidget).open(btn);
                     });
                     return data;
                 }, GlobalSettingsClient.modificationsAllowed() ? (data, entryWidget) -> {
@@ -270,11 +273,13 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
                             }
                         });
                         entryWidget.addDeleteButton((btn, tg, entry, refreshAction) -> {
-                            GlobalSettingsClient.deleteTrainGroup(entry.getId(), () -> {
-                                GlobalSettingsClient.getTrainGroups((res) -> {
-                                    refreshAction.accept(Optional.ofNullable(res));
+                            new FlyoutConfirmDialog<>(this, FlyoutPointer.RIGHT, () -> {
+                                GlobalSettingsClient.deleteTrainGroup(entry.getId(), () -> {
+                                    GlobalSettingsClient.getTrainGroups((res) -> {
+                                        refreshAction.accept(Optional.ofNullable(res));
+                                    });
                                 });
-                            });
+                            }, this::addRenderableWidget, this::removeWidget).open(btn);
                         });
                         DLIconButton colorBtn = entryWidget.addButton(ModGuiIcons.COLOR_PALETTE.getAsSprite(16, 16), List.of(textColor),
                         (btn, tg, entry, refreshAction) -> {
@@ -391,11 +396,13 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
                             }
                         });
                         entryWidget.addDeleteButton((btn, tg, entry, refreshAction) -> {
-                            GlobalSettingsClient.deleteTrainLine(entry.getId(), () -> {
-                                GlobalSettingsClient.getTrainLines((res) -> {
-                                    refreshAction.accept(Optional.ofNullable(res));
+                            new FlyoutConfirmDialog<>(this, FlyoutPointer.RIGHT, () -> {
+                                GlobalSettingsClient.deleteTrainLine(entry.getId(), () -> {
+                                    GlobalSettingsClient.getTrainLines((res) -> {
+                                        refreshAction.accept(Optional.ofNullable(res));
+                                    });
                                 });
-                            });
+                            }, this::addRenderableWidget, this::removeWidget).open(btn);
                         });
                         DLIconButton colorBtn = entryWidget.addButton(ModGuiIcons.COLOR_PALETTE.getAsSprite(16, 16), List.of(textColor),
                         (btn, tg, entry, refreshAction) -> {

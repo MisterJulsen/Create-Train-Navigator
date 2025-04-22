@@ -26,8 +26,8 @@ public class FlyoutConfirmDialog<T extends GuiEventListener & Widget & Narratabl
 
     private final MutableComponent txtAreYouSure = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.are_you_sure").withStyle(ChatFormatting.BOLD);
 
-    public FlyoutConfirmDialog(DLScreen screen, FlyoutPointer pointer, ColorShade pointerShade, Runnable okAction, Consumer<T> addRenderableWidgetFunc, Consumer<GuiEventListener> removeWidgetFunc) {
-        super(screen, 1, FlyoutPointer.HEIGHT * 2 + DLIconButton.DEFAULT_BUTTON_HEIGHT, pointer, pointerShade, addRenderableWidgetFunc, removeWidgetFunc);
+    public FlyoutConfirmDialog(DLScreen screen, FlyoutPointer pointer, Runnable okAction, Consumer<T> addRenderableWidgetFunc, Consumer<GuiEventListener> removeWidgetFunc) {
+        super(screen, 1, FlyoutPointer.HEIGHT * 2 + DLIconButton.DEFAULT_BUTTON_HEIGHT, pointer, ColorShade.DARK, addRenderableWidgetFunc, removeWidgetFunc);
         set_width(Math.max(150, font.width(txtAreYouSure) + DLIconButton.DEFAULT_BUTTON_WIDTH + 16 + 10 + FlyoutPointer.WIDTH * 2));
 
         DLIconButton resetBtn = addRenderableWidget(new DLIconButton(ButtonType.DEFAULT, AreaStyle.FLAT, ModGuiIcons.CHECK.getAsSprite(16, 16), getContentArea().getX() + getContentArea().getWidth() - DLIconButton.DEFAULT_BUTTON_WIDTH - 2, getContentArea().getY() + 2, TextUtils.empty(), (b) -> {

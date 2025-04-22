@@ -83,7 +83,7 @@ public class TransferOwnershipWidget<T extends GuiEventListener & Widget & Narra
         
             DLCreateIconButton okBtn = this.addRenderableWidget(new DLCreateIconButton(x() + width() - 17 - DLIconButton.DEFAULT_BUTTON_WIDTH * 2, y() + height() - 6 - DLIconButton.DEFAULT_BUTTON_HEIGHT, DLIconButton.DEFAULT_BUTTON_WIDTH, DLIconButton.DEFAULT_BUTTON_HEIGHT, AllIcons.I_CONFIRM));
             okBtn.withCallback(() -> {
-                FlyoutConfirmDialog<?> dlg = new FlyoutConfirmDialog<>(parent, FlyoutPointer.RIGHT, ColorShade.DARK, () -> {
+                FlyoutConfirmDialog<?> dlg = new FlyoutConfirmDialog<>(parent, FlyoutPointer.RIGHT, () -> {
                     DLUtils.doIfNotNull(okAction, x -> x.accept(playerList.get(selectedPlayerIndex)));
                     close();
                 }, addRenderableWidgetFunc, (w) -> {

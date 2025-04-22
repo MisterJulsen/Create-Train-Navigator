@@ -12,10 +12,12 @@ import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
+import de.mrjulsen.crn.client.gui.widgets.AbstractFlyoutWidget.FlyoutPointer;
 import de.mrjulsen.crn.client.gui.widgets.DLCreateIconButton;
 import de.mrjulsen.crn.client.gui.widgets.ModStationSuggestions;
 import de.mrjulsen.crn.client.gui.widgets.ModernVerticalScrollBar;
 import de.mrjulsen.crn.client.gui.widgets.TransferOwnershipWidget;
+import de.mrjulsen.crn.client.gui.widgets.flyouts.FlyoutConfirmDialog;
 import de.mrjulsen.crn.client.gui.widgets.flyouts.FlyoutPlayerList;
 import de.mrjulsen.crn.client.gui.widgets.options.DLOptionsList;
 import de.mrjulsen.crn.client.gui.widgets.options.DataListContainer;
@@ -157,10 +159,12 @@ public class StationTagSettingsScreen extends AbstractNavigatorScreen {
                         }, /* onCreateEntry */ (data, entryWidget) -> {                            
                             if (stationTag.getOwner().isAllowed(me) && GlobalSettingsClient.modificationsAllowed()) {
                                 entryWidget.addDeleteButton((btn, tg, entry, refreshAction) -> {
-                                    GlobalSettingsClient.removeStationTagEntry(tag.getId(), entry.getKey(),
-                                    (newTag) -> {
-                                        newTag.ifPresent(a -> refreshAction.accept(newTag));
-                                    });
+                                    new FlyoutConfirmDialog<>(this, FlyoutPointer.RIGHT, () -> {
+                                        GlobalSettingsClient.removeStationTagEntry(tag.getId(), entry.getKey(),
+                                        (newTag) -> {
+                                            newTag.ifPresent(a -> refreshAction.accept(newTag));
+                                        });
+                                    }, this::addRenderableWidget, this::removeWidget).open(btn);
                                 });
                             }
                             entryWidget.addDataSection(40, (entry) -> entry.getValue().platform(), EAlignment.RIGHT,
@@ -219,10 +223,12 @@ public class StationTagSettingsScreen extends AbstractNavigatorScreen {
                 if (GlobalSettingsClient.modificationsAllowed()) {
                     if (stationTag.getOwner().isAllowed(me)) {
                         opt.addAdditionalButton(ModGuiIcons.DELETE.getAsSprite(16, 16), List.of(tooltipDeleteTag),
-                        (entry, btn) -> {
-                            GlobalSettingsClient.deleteStationTag(entry.getContentContainer().getData().getId(), () -> {
-                                reload();
-                            });
+                        (entry, btn) -> {                            
+                            new FlyoutConfirmDialog<>(this, FlyoutPointer.UP, () -> {
+                                GlobalSettingsClient.deleteStationTag(entry.getContentContainer().getData().getId(), () -> {
+                                    reload();
+                                });
+                            }, this::addRenderableWidget, this::removeWidget).open(btn);
                         });
                     }
                     DLIconButton btnPermissions = opt.addAdditionalButton(stationTag.getOwner().get().getIcon(), stationTag.getOwner().asText(new Owner(Minecraft.getInstance().player)),
