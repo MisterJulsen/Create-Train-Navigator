@@ -1,6 +1,7 @@
 package de.mrjulsen.crn.forge;
 
 import net.minecraft.server.MinecraftServer;
+import net.minecraftforge.common.UsernameCache;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.loading.FMLPaths;
@@ -8,6 +9,9 @@ import net.minecraftforge.server.ServerLifecycleHooks;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -45,6 +49,14 @@ public class CRNPlatformSpecificImpl {
             ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ModClientConfig.SPEC, CreateRailwaysNavigator.MOD_ID + "-client.toml");
         }
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ModCommonConfig.SPEC, CreateRailwaysNavigator.MOD_ID + "-common.toml");
+    }    
+
+    public static Optional<String> getLastKnownPlayerName(UUID uuid) {
+        return Optional.ofNullable(UsernameCache.getLastKnownUsername(uuid));
+    }
+    
+    public static Map<UUID, String> getAllKnownPlayers() {
+        return UsernameCache.getMap();
     }
 
     public static Object customDestinationInstructions(ScheduleRuntime runtime, ScheduleEntry entry, ScheduleInstruction instruction) {

@@ -7,6 +7,9 @@ import net.minecraftforge.fml.config.ModConfig;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -32,6 +35,7 @@ import de.mrjulsen.mcdragonlib.data.MapCache;
 import dev.architectury.platform.Platform;
 import dev.architectury.utils.Env;
 import io.github.fabricators_of_create.porting_lib.util.ServerLifecycleHooks;
+import io.github.fabricators_of_create.porting_lib.util.UsernameCache;
 
 public class CRNPlatformSpecificImpl {
     public static Path getConfigDirectory() {
@@ -49,6 +53,13 @@ public class CRNPlatformSpecificImpl {
         ModLoadingContext.registerConfig(CreateRailwaysNavigator.MOD_ID, ModConfig.Type.COMMON, ModCommonConfig.SPEC, CreateRailwaysNavigator.MOD_ID + "-common.toml");
     }
 
+    public static Optional<String> getLastKnownPlayerName(UUID uuid) {
+        return Optional.ofNullable(UsernameCache.getLastKnownUsername(uuid));
+    }
+    
+    public static Map<UUID, String> getAllKnownPlayers() {
+        return UsernameCache.getMap();
+    }
     
 
     public static Object customDestinationInstructions(ScheduleRuntime runtime, ScheduleEntry entry, ScheduleInstruction instruction) {

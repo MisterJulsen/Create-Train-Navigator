@@ -73,7 +73,10 @@ public enum ModGuiIcons {
     PASTE("paste", 1, 4),
     TRAIN_INFO("train_info", 2, 4),
     EXIT("exit", 3, 4),
-    CONNECTIONS("connections", 4, 4);
+    CONNECTIONS("connections", 4, 4),
+    LOCKED("locked", 5, 4),
+    UNLOCKED("unlocked", 6, 4),
+    TRUSTED("trusted", 7, 4);
 
     private String id;
     private int u;

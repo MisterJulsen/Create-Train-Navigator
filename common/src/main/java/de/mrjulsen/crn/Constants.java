@@ -30,6 +30,8 @@ public class Constants {
     public static final Component TEXT_CLEAR_ALL = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.clear_all");
     public static final Component TEXT_CLEAR = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.clear");
     public static final Component TEXT_LOADING = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.loading");
+    public static final Component TEXT_READ_ONLY = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.read_only");
+    public static final Component TEXT_SERVER = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.server");
     public static final UUID ZERO_UUID = new UUID(0, 0);
     public static final int[] DEFAULT_TRAIN_TYPE_COLORS = new int[] { 0xFF393939, 0xFFf0f3f5, 0xFFafb4bb, 0xFF878c96, 0xFF2a7230, 0xFF814997, 0xFF1455c0, 0xFFa9455d, 0xFF55b9e6, 0xFFffd800 };
      

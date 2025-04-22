@@ -3,6 +3,7 @@ package de.mrjulsen.crn.client.gui.widgets.flyouts;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -43,9 +44,9 @@ public class FlyoutTrainGroupsWidget<T extends GuiEventListener & Widget & Narra
     private final UserSettings settings;
 
     private final CRNListBox<TrainGroup, FlatCheckBox> trainGroups;
-    private final Supplier<UserSetting<Set<String>>> getUserSetting;
+    private final Supplier<UserSetting<Set<UUID>>> getUserSetting;
 
-    public FlyoutTrainGroupsWidget(DLScreen screen, FlyoutPointer pointer, ColorShade pointerShade, Consumer<T> addRenderableWidgetFunc, UserSettings settings, Supplier<UserSetting<Set<String>>> getUserSetting, Consumer<GuiEventListener> removeWidgetFunc) {
+    public FlyoutTrainGroupsWidget(DLScreen screen, FlyoutPointer pointer, ColorShade pointerShade, Consumer<T> addRenderableWidgetFunc, UserSettings settings, Supplier<UserSetting<Set<UUID>>> getUserSetting, Consumer<GuiEventListener> removeWidgetFunc) {
         super(screen, 1, 120, pointer, pointerShade, addRenderableWidgetFunc, removeWidgetFunc);
         set_width(Math.max(150, font.width(textTrainGroups) + DLIconButton.DEFAULT_BUTTON_WIDTH + 16 + 10 + FlyoutPointer.WIDTH * 2));
         this.settings = settings;
@@ -79,7 +80,7 @@ public class FlyoutTrainGroupsWidget<T extends GuiEventListener & Widget & Narra
     private void reload(Runnable andThen)  {
         DataAccessor.getFromServer(null, ModAccessorTypes.GET_ALL_TRAIN_GROUPS, (groups) -> {
             trainGroups.displayData(new ArrayList<>(groups.stream().sorted((a, b) -> a.getGroupName().compareToIgnoreCase(b.getGroupName())).toList()), (group, i) -> {
-                FlatCheckBox cb = new FlatCheckBox(0, 0, 0, group.getGroupName(), getUserSetting.get().getValue().stream().noneMatch(x -> x.equals(group.getGroupName())), (b) -> {});
+                FlatCheckBox cb = new FlatCheckBox(0, 0, 0, group.getGroupName(), getUserSetting.get().getValue().stream().noneMatch(x -> x.equals(group.getId())), (b) -> {});
                 return cb;
             });
             DLUtils.doIfNotNull(andThen, x -> x.run());
@@ -89,7 +90,7 @@ public class FlyoutTrainGroupsWidget<T extends GuiEventListener & Widget & Narra
     @Override
     public void close() {
         DLUtils.doIfNotNull(settings, x -> {    
-            getUserSetting.get().setValue(new HashSet<>(trainGroups.getEntries().stream().filter(a -> !a.getKey().isChecked()).map(a -> a.getValue()).map(a -> a.getGroupName()).collect(Collectors.toSet())));
+            getUserSetting.get().setValue(new HashSet<>(trainGroups.getEntries().stream().filter(a -> !a.getKey().isChecked()).map(a -> a.getValue()).map(a -> a.getId()).collect(Collectors.toSet())));
             x.clientSave(super::close);
         });
     }

@@ -32,6 +32,7 @@ import de.mrjulsen.crn.data.train.TrainPrediction;
 import de.mrjulsen.crn.data.train.TrainStop;
 import de.mrjulsen.crn.data.train.ScheduleSection;
 import de.mrjulsen.crn.event.ModCommonEvents;
+import de.mrjulsen.crn.util.Owner;
 import de.mrjulsen.mcdragonlib.data.INBTSerializable;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -39,6 +40,7 @@ import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.storage.LevelResource;
 
 public class GlobalSettings implements INBTSerializable {
@@ -61,16 +63,20 @@ public class GlobalSettings implements INBTSerializable {
     private final MinecraftServer server;
 
     private final Map<UUID, StationTag> stationTags = new HashMap<>();
-    private final Map<String, TrainGroup> trainGroups = new HashMap<>();
+    private final Map<UUID, TrainGroup> trainGroups = new HashMap<>();
+    private final Map<UUID, TrainLine> trainLines = new HashMap<>();
     private final Set<String> stationBlacklist = new HashSet<>();
     private final Set<String> trainBlacklist = new HashSet<>();
-    private final Map<String, TrainLine> trainLines = new HashMap<>();
 
     private static GlobalSettings instance;
 
     
     private GlobalSettings(MinecraftServer server) {
         this.server = server;
+    }
+
+    public static boolean modificationsAllowed(Player player) {
+        return player.hasPermissions(ModCommonConfig.GLOBAL_SETTINGS_PERMISSION_LEVEL.get());
     }
 
     public synchronized static GlobalSettings getInstance() {
@@ -156,11 +162,11 @@ public class GlobalSettings implements INBTSerializable {
         CompoundTag stationsComp = nbt.getCompound(NBT_STATION_TAGS);
         this.stationTags.putAll(stationsComp.getAllKeys().stream().map(x -> StationTag.fromNbt(stationsComp.getCompound(x), UUID.fromString(x))).collect(Collectors.toMap(x -> x.getId(), x -> x)));
         CompoundTag trainGroupsComp = nbt.getCompound(NBT_TRAIN_GROUPS);
-        this.trainGroups.putAll(trainGroupsComp.getAllKeys().stream().map(x -> TrainGroup.fromNbt(trainGroupsComp.getCompound(x))).collect(Collectors.toMap(x -> x.getGroupName(), x -> x)));
+        this.trainGroups.putAll(trainGroupsComp.getAllKeys().stream().map(x -> TrainGroup.fromNbt(trainGroupsComp.getCompound(x))).collect(Collectors.toMap(x -> x.getId(), x -> x)));
         this.stationBlacklist.addAll(nbt.getList(NBT_STATION_BLACKLIST, Tag.TAG_STRING).stream().map(x -> ((StringTag)x).getAsString()).toList());        
         this.trainBlacklist.addAll(nbt.getList(NBT_TRAIN_BLACKLIST, Tag.TAG_STRING).stream().map(x -> ((StringTag)x).getAsString()).toList());
         CompoundTag trainLinesComp = nbt.getCompound(NBT_TRAIN_LINES);
-        this.trainLines.putAll(trainLinesComp.getAllKeys().stream().map(x -> TrainLine.fromNbt(trainLinesComp.getCompound(x))).collect(Collectors.toMap(x -> x.getLineName(), x -> x)));
+        this.trainLines.putAll(trainLinesComp.getAllKeys().stream().map(x -> TrainLine.fromNbt(trainLinesComp.getCompound(x))).collect(Collectors.toMap(x -> x.getId(), x -> x)));
         
     }
 
@@ -205,7 +211,7 @@ public class GlobalSettings implements INBTSerializable {
             return StationTag.fromNbt(x, id);
         }).collect(Collectors.toMap(x -> x.getId(), x -> x)));
         usedIds.clear();
-        trainGroups.putAll(trainGroupData.stream().map(x -> TrainGroup.fromNbt(x)).collect(Collectors.toMap(x -> x.getGroupName(), x -> x)));
+        trainGroups.putAll(trainGroupData.stream().map(x -> TrainGroup.fromNbt(x)).collect(Collectors.toMap(x -> x.getId(), x -> x)));
         stationBlacklist.addAll(blacklistData); 
         trainBlacklist.addAll(trainBlacklistData);
 
@@ -255,14 +261,19 @@ public class GlobalSettings implements INBTSerializable {
     public StationTag getOrCreateStationTagFor(TagName tagName) {
         return getTagByName(tagName).orElse(getOrCreateStationTagFor(tagName.get()));
     }
+
+    
+    public StationTag getOrCreateStationTagFor(String stationName) {
+        return getOrCreateStationTagFor(stationName, null);
+    }
     
     /**
      * @param stationName The name of the train station.
      * @return Returns the station tag for the given train station.
      */
-    public StationTag getOrCreateStationTagFor(String stationName) {
+    public StationTag getOrCreateStationTagFor(String stationName, Owner owner) {
         if (stationName.contains("*")) {
-            return getOrCreateTagForWildcard(stationName);
+            return getOrCreateTagForWildcard(stationName, owner);
         }
 
         for (StationTag tag : stationTags.values()) {
@@ -270,10 +281,10 @@ public class GlobalSettings implements INBTSerializable {
                 return tag;
             }
         }
-        return new StationTag(null, TagName.of(stationName), Map.of(stationName, StationInfo.empty()));
+        return new StationTag(null, TagName.of(stationName), owner, Map.of(stationName, StationInfo.empty()));
     }
 
-    private StationTag getOrCreateTagForWildcard(String stationName) {
+    private StationTag getOrCreateTagForWildcard(String stationName, Owner owner) {
 		String regex = stationName.isBlank() ? stationName : "\\Q" + stationName.replace("*", "\\E.*\\Q") + "\\E";
         for (StationTag tag : stationTags.values()) {
             for (String name : tag.getAllStationNames()) {
@@ -283,7 +294,7 @@ public class GlobalSettings implements INBTSerializable {
             }
         }
         
-        return new StationTag(null, TagName.of(stationName), Map.of(stationName, StationInfo.empty()));        
+        return new StationTag(null, TagName.of(stationName), owner, Map.of(stationName, StationInfo.empty()));        
     }
     
     /**
@@ -301,6 +312,16 @@ public class GlobalSettings implements INBTSerializable {
      * @return The station tag for the name.
      */
     public StationTag createOrGetStationTag(TagName name) {
+        return createOrGetStationTag(name, null);
+    }
+
+    /**
+     * Get the station tag with the given name or create and register a new one, if no tag exists.
+     * @param name The name of the station tag.
+     * @param owner The owner of the station tag, who has full control over it.
+     * @return The station tag for the name.
+     */
+    public StationTag createOrGetStationTag(TagName name, Owner owner) {
         Optional<StationTag> tag = getTagByName(name);
         if (tag.isPresent()) {
             return tag.get();
@@ -309,7 +330,7 @@ public class GlobalSettings implements INBTSerializable {
         do {
             newId = UUID.randomUUID();
         } while (stationTags.containsKey(newId));
-        StationTag newTag = new StationTag(newId, name);
+        StationTag newTag = new StationTag(newId, name, owner);
         stationTags.put(newId, newTag);
         return newTag;
     }
@@ -356,8 +377,8 @@ public class GlobalSettings implements INBTSerializable {
 //#endregion
 //#region +++ TRAIN GROUPS +++
 
-    public boolean trainGroupExists(String name) {
-        return trainGroups.containsKey(name);
+    public boolean trainGroupExists(UUID id) {
+        return trainGroups.containsKey(id);
     }
 
     /**
@@ -366,21 +387,45 @@ public class GlobalSettings implements INBTSerializable {
      * @return The train group for the name.
      */
     public TrainGroup createOrGetTrainGroup(String name) {
-        Optional<TrainGroup> tag = getTrainGroup(name);
+        return createOrGetTrainGroup(name, null);
+    }
+
+    /**
+     * Get the train group with the given name or create and register a new one, if no group exists.
+     * @param name The name of the train group.
+     * @return The train group for the name.
+     */
+    public TrainGroup createOrGetTrainGroup(String name, Owner owner) {
+        Optional<TrainGroup> tag = getTrainGroupByName(name);
         if (tag.isPresent()) {
             return tag.get();
         }
-        TrainGroup newGroup = new TrainGroup(name);
-        trainGroups.put(name, newGroup);
+
+        UUID id;
+        do {
+            id = UUID.randomUUID();
+        } while (trainGroups.containsKey(id));
+
+        TrainGroup newGroup = new TrainGroup(id, name, owner);
+        trainGroups.put(newGroup.getId(), newGroup);
         return newGroup;
     }
 
-    public Optional<TrainGroup> getTrainGroup(String name) {
-        return Optional.ofNullable(trainGroupExists(name) ? trainGroups.get(name) : null);
+    public Optional<TrainGroup> getTrainGroup(UUID id) {
+        return Optional.ofNullable(trainGroupExists(id) ? trainGroups.get(id) : null);
+    }
+    
+    public Optional<TrainGroup> getTrainGroupByName(String name) {
+        for (TrainGroup group : trainGroups.values()) {
+            if (group.getGroupName().equals(name)) {
+                return Optional.of(group);
+            }
+        }
+        return Optional.empty();
     }
 
-    public TrainGroup removeTrainGroup(String name) {
-        return trainGroups.remove(name);
+    public TrainGroup removeTrainGroup(UUID id) {
+        return trainGroups.remove(id);
     }
 
     public ImmutableList<TrainGroup> getAllTrainGroups() {
@@ -394,7 +439,7 @@ public class GlobalSettings implements INBTSerializable {
             }
     
             for (ScheduleSection section : data.getSections()) {
-                if (section.isUsable() && !(section.getTrainGroup().map(x -> settings.navigationExcludedTrainGroups.getValue().contains(x.getGroupName())).orElse(false))) {
+                if (section.isUsable() && !(section.getTrainGroup().map(x -> settings.navigationExcludedTrainGroups.getValue().contains(x.getId())).orElse(false))) {
                     return false;
                 }
             }
@@ -403,13 +448,13 @@ public class GlobalSettings implements INBTSerializable {
     }
 
     public boolean isTrainStationExcludedByUser(Train train, TrainPrediction at, UserSettings settings) {
-        return at.getSection().getTrainGroup().map(x -> !at.getSection().isUsable() || (settings.navigationExcludedTrainGroups.getValue().contains(x.getGroupName()))).orElse(false);
+        return at.getSection().getTrainGroup().map(x -> !at.getSection().isUsable() || (settings.navigationExcludedTrainGroups.getValue().contains(x.getId()))).orElse(false);
     }
 
     public boolean isTrainStationExcludedByUser(Train train, TrainStop at, UserSettings settings) {
         return TrainListener.getTrainData(train.id).map(data -> {
             ScheduleSection section = data.getSectionByIndex(at.getSectionIndex());
-            return section.getTrainGroup().map(x -> !section.isUsable() || (settings.navigationExcludedTrainGroups.getValue().contains(x.getGroupName()))).orElse(false);
+            return section.getTrainGroup().map(x -> !section.isUsable() || (settings.navigationExcludedTrainGroups.getValue().contains(x.getId()))).orElse(false);
         }).orElse(false);        
     }
 
@@ -493,26 +538,45 @@ public class GlobalSettings implements INBTSerializable {
 
 //#region +++ TRAIN LINES +++
 
-    public boolean trainLineExists(String name) {
-        return trainLines.containsKey(name);
+    public boolean trainLineExists(UUID id) {
+        return trainLines.containsKey(id);
     }
 
     public TrainLine createOrGetTrainLine(String name) {
-        Optional<TrainLine> tag = getTrainLine(name);
+        return createOrGetTrainLine(name, null);
+    }
+
+    public TrainLine createOrGetTrainLine(String name, Owner owner) {
+        Optional<TrainLine> tag = getTrainLineByName(name);
         if (tag.isPresent()) {
             return tag.get();
         }
-        TrainLine newGroup = new TrainLine(name);
-        trainLines.put(newGroup.getLineName(), newGroup);
-        return newGroup;
-    } 
 
-    public Optional<TrainLine> getTrainLine(String name) {
-        return Optional.ofNullable(trainLineExists(name) ? trainLines.get(name) : null);
+        UUID id;
+        do {
+            id = UUID.randomUUID();
+        } while (trainGroups.containsKey(id));
+
+        TrainLine newGroup = new TrainLine(id, name, owner);
+        trainLines.put(newGroup.getId(), newGroup);
+        return newGroup;
     }
 
-    public TrainLine removeTrainLine(String name) {
-        return trainLines.remove(name);
+    public Optional<TrainLine> getTrainLine(UUID id) {
+        return Optional.ofNullable(trainLineExists(id) ? trainLines.get(id) : null);
+    }
+
+    public Optional<TrainLine> getTrainLineByName(String name) {
+        for (TrainLine line : trainLines.values()) {
+            if (line.getLineName().equals(name)) {
+                return Optional.of(line);
+            }
+        }
+        return Optional.empty();
+    }
+
+    public TrainLine removeTrainLine(UUID id) {
+        return trainLines.remove(id);
     }
 
     public ImmutableList<TrainLine> getAllTrainLines() {

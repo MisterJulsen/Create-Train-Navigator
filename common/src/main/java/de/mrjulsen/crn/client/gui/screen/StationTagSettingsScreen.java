@@ -15,6 +15,8 @@ import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.widgets.DLCreateIconButton;
 import de.mrjulsen.crn.client.gui.widgets.ModStationSuggestions;
 import de.mrjulsen.crn.client.gui.widgets.ModernVerticalScrollBar;
+import de.mrjulsen.crn.client.gui.widgets.TransferOwnershipWidget;
+import de.mrjulsen.crn.client.gui.widgets.flyouts.FlyoutPlayerList;
 import de.mrjulsen.crn.client.gui.widgets.options.DLOptionsList;
 import de.mrjulsen.crn.client.gui.widgets.options.DataListContainer;
 import de.mrjulsen.crn.client.gui.widgets.options.NewEntryWidget;
@@ -27,9 +29,17 @@ import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.ContainerColor;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.FooterSize;
 import de.mrjulsen.crn.data.storage.GlobalSettingsClient;
 import de.mrjulsen.crn.registry.ModAccessorTypes;
+import de.mrjulsen.crn.util.Owner;
+import de.mrjulsen.crn.util.Lock;
+import de.mrjulsen.crn.util.Lock.PermissionsUpdateData;
 import de.mrjulsen.mcdragonlib.DragonLib;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.DLContextMenu;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.DLContextMenuItem;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.DLContextMenuItem.ContextMenuItemData;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLEditBox;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.DLIconButton;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLTooltip;
+import de.mrjulsen.mcdragonlib.client.render.Sprite;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiAreaDefinition;
 import de.mrjulsen.mcdragonlib.core.EAlignment;
@@ -38,6 +48,7 @@ import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.MathUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.accessor.DataAccessor;
+import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.EditBox;
@@ -49,11 +60,12 @@ public class StationTagSettingsScreen extends AbstractNavigatorScreen {
     private static final int DEFAULT_ICON_BUTTON_WIDTH = 18;
     private static final int DEFAULT_ICON_BUTTON_HEIGHT = 18;
 
+    private final Owner me = new Owner(Minecraft.getInstance().player);
+
     private DLOptionsList viewer;
     private DLEditBox searchBox;
 
-    private final MutableComponent tooltipDeleteTag = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".station_tags.delete_alias.tooltip");
-    private final MutableComponent textAdd = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.add");
+    private final MutableComponent tooltipDeleteTag = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".station_tags.delete_tag");
     private final MutableComponent textStationName = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".station_tags.hint.station_name");
     private final MutableComponent textPlatformName = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".station_tags.hint.platform");
     
@@ -64,7 +76,7 @@ public class StationTagSettingsScreen extends AbstractNavigatorScreen {
     private final List<String> stationNames = new ArrayList<>();
 
     public StationTagSettingsScreen(Screen lastScreen) {
-        super(lastScreen, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".station_tags.title"), BarColor.GRAY);
+        super(lastScreen, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".station_tags.title").append(GlobalSettingsClient.modificationsAllowed() ? TextUtils.empty() : TextUtils.text(" ").append(Constants.TEXT_READ_ONLY).withStyle(ChatFormatting.DARK_RED)), BarColor.GRAY);
     }
 
     @Override
@@ -140,27 +152,30 @@ public class StationTagSettingsScreen extends AbstractNavigatorScreen {
                     GuiAreaDefinition workspace = option.getContentSpace();
 
                     DataListContainer<StationTag, Map.Entry<String, StationInfo>> cont = new DataListContainer<>(option, workspace.getX(), workspace.getY(), workspace.getWidth(), stationTag,
-                        (tg) -> {
+                        /* dataIterator */ (tg) -> {
                             return tg.getAllStations().entrySet().stream().sorted((a, b) -> a.getKey().compareToIgnoreCase(b.getKey())).iterator();
-                        }, (data, entryWidget) -> {
-                            entryWidget.addDeleteButton((btn, tg, entry, refreshAction) -> {
-                                GlobalSettingsClient.removeStationTagEntry(tag.getId(), entry.getKey(),
-                                (newTag) -> {
-                                    newTag.ifPresent(a -> refreshAction.accept(newTag));
-                                });
-                            });
-                            entryWidget.addDataSection(40, (entry) -> entry.getValue().platform(), EAlignment.RIGHT,
-                            (tg, entry, newValue, refreshAction) -> {
-                                if (!newValue.isBlank() && !entry.getValue().platform().equals(newValue)) {
-                                    GlobalSettingsClient.updateStationTagEntry(tg.getId(), entry.getKey(), new StationInfo(newValue),
+                        }, /* onCreateEntry */ (data, entryWidget) -> {                            
+                            if (stationTag.getOwner().isAllowed(me) && GlobalSettingsClient.modificationsAllowed()) {
+                                entryWidget.addDeleteButton((btn, tg, entry, refreshAction) -> {
+                                    GlobalSettingsClient.removeStationTagEntry(tag.getId(), entry.getKey(),
                                     (newTag) -> {
                                         newTag.ifPresent(a -> refreshAction.accept(newTag));
                                     });
-                                }
-                            });
+                                });
+                            }
+                            entryWidget.addDataSection(40, (entry) -> entry.getValue().platform(), EAlignment.RIGHT,
+                                stationTag.getOwner().isAllowed(me) && GlobalSettingsClient.modificationsAllowed() ? (tg, entry, newValue, refreshAction) -> {
+                                    if (!newValue.isBlank() && !entry.getValue().platform().equals(newValue)) {
+                                        GlobalSettingsClient.updateStationTagEntry(tg.getId(), entry.getKey(), new StationInfo(newValue),
+                                        (newTag) -> {
+                                            newTag.ifPresent(a -> refreshAction.accept(newTag));
+                                        });
+                                    }
+                                } : null
+                            );
                             return data.getKey();
-                        }, (data, entryWidget) -> {
-                            entryWidget.addAddButton(ModGuiIcons.ADD.getAsSprite(16, 16), textAdd,
+                        }, /* createNewEntry */ stationTag.getOwner().isAllowed(me) && GlobalSettingsClient.modificationsAllowed() ? (data, entryWidget) -> {
+                            entryWidget.addAddButton(ModGuiIcons.ADD.getAsSprite(16, 16), List.of(Constants.TEXT_ADD),
                             (btn, tg, inputValues, refreshAction) -> {
                                 String name = inputValues.get(SimpleDataListNewEntry.MAIN_INPUT_KEY).get();
                                 String platform = inputValues.get("platform").get();
@@ -181,7 +196,7 @@ public class StationTagSettingsScreen extends AbstractNavigatorScreen {
                             });
                             entryWidget.setNameEditBoxTooltip((box) -> textStationName);
                             entryWidget.addDataSection(40, "platform", textPlatformName, (box) -> box.setMaxLength(StationInfo.MAX_PLATFORM_NAME_LENGTH));
-                        }, (self) -> {
+                        } : null, /* onContainerSizeChanged */ (self) -> {
                             option.notifyContentSizeChanged();
                         }
                     );
@@ -193,32 +208,87 @@ public class StationTagSettingsScreen extends AbstractNavigatorScreen {
 
                     return cont;
                 }, TextUtils.text(tag.getTagName().get()), TextUtils.empty(), (a, b) -> OptionEntry.expandOrCollapse(a),
-                (str) -> {
-                    if (!str.isBlank()) {
+                stationTag.getOwner().isAllowed(me) && GlobalSettingsClient.modificationsAllowed() ? (str) -> {
+                    if (!str.isBlank() && !str.equals(stationTag.getTagName().get())) {
                         GlobalSettingsClient.updateStationTagNameData(stationTag.getId(), str, () -> {});
                         return true;
                     }
                     return false;
-                });
-                opt.addAdditionalButton(ModGuiIcons.DELETE.getAsSprite(16, 16), tooltipDeleteTag,
-                (entry, btn) -> {
-                    GlobalSettingsClient.deleteStationTag(entry.getContentContainer().getData().getId(), () -> {
-                        reload();
-                    });
-                });
+                } : null);
+
+                if (GlobalSettingsClient.modificationsAllowed()) {
+                    if (stationTag.getOwner().isAllowed(me)) {
+                        opt.addAdditionalButton(ModGuiIcons.DELETE.getAsSprite(16, 16), List.of(tooltipDeleteTag),
+                        (entry, btn) -> {
+                            GlobalSettingsClient.deleteStationTag(entry.getContentContainer().getData().getId(), () -> {
+                                reload();
+                            });
+                        });
+                    }
+                    DLIconButton btnPermissions = opt.addAdditionalButton(stationTag.getOwner().get().getIcon(), stationTag.getOwner().asText(new Owner(Minecraft.getInstance().player)),
+                        (entry, btn) -> {
+                            if (!stationTag.getOwner().isAllowed(me)) {
+                                return;
+                            }
+                            GlobalSettingsClient.updateStationTagPermissions(new PermissionsUpdateData(entry.getContentContainer().getData().getId(), null, stationTag.getOwner().get().next(), null), (a) -> {                            
+                                a.ifPresent(x -> {
+                                    stationTag.getOwner().set(x.getOwner().get());
+                                    stationTag.getOwner().updateTrusted(x.getOwner().getTrusted());
+                                    btn.setSprite(x.getOwner().get().getIcon());
+                                    entry.updateTooltipOf(btn, x.getOwner().asText(new Owner(Minecraft.getInstance().player)));
+                                });
+                            });
+                        }
+                    );
+                    if (stationTag.getOwner().isAdmin(me)) {
+                        btnPermissions.setMenu(new DLContextMenu(() -> GuiAreaDefinition.of(btnPermissions), () -> new DLContextMenuItem.Builder()
+                            .add(new ContextMenuItemData(TextUtils.translate(Lock.TRANSLATION_KEY_TRUSTED_PLAYERS), Sprite.empty(), true, (b) -> {
+                                FlyoutPlayerList<?> flyout = new FlyoutPlayerList<>(this, this::updateEditorSubwidgetsOnlinePlayers, stationTag.getOwner().getTrusted(), this::addRenderableWidget, (w) -> {
+                                    GlobalSettingsClient.updateStationTagPermissions(new PermissionsUpdateData(stationTag.getId(), null, null, ((FlyoutPlayerList<?>)w).getPlayerList().getPlayers()), $ -> {
+                                        GlobalSettingsClient.getStationTags((res) -> {
+                                            reload();
+                                        });
+                                    });
+                                    removeWidget(w);
+                                });
+                                flyout.setYOffset((int)-scrollBar.getScrollValue());
+                                flyout.open(btnPermissions);
+                            }, null))
+                            .add(new ContextMenuItemData(TextUtils.translate(Lock.TRANSLATION_KEY_TRANSFER_OWNERSHIP), Sprite.empty(), true, (b) -> {
+                                addRenderableWidget(new TransferOwnershipWidget<>(this, stationTag.getOwner().getOwner().orElse(null), (newOwner) -> {
+                                    GlobalSettingsClient.updateStationTagPermissions(new PermissionsUpdateData(stationTag.getId(), newOwner, null, null), $ -> {
+                                        GlobalSettingsClient.getStationTags((res) -> {
+                                            reload();
+                                        });
+                                    });
+                                }, this::addRenderableWidget, this::removeWidget));
+                            }, null))
+                        ));
+                    }
+                }
 
                 opt.setTooltip(List.of(
-                    TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".station_tags.summary", stationTag.getAllStationNames().size()),
-                    TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".station_tags.editor", stationTag.getLastEditorName(), stationTag.getLastEditedTimeFormatted())
+                    TextUtils.text(stationTag.getTagName().get()),
+                    TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".station_tags.summary", TextUtils.text(String.valueOf(stationTag.getAllStationNames().size())).withStyle(ChatFormatting.GREEN)).withStyle(ChatFormatting.GRAY),
+                    TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.last_edited",
+                        stationTag.getLastEditor().map(x -> {
+                            return x.name().isBlank()
+                                ? TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.unknown").withStyle(ChatFormatting.GRAY).withStyle(ChatFormatting.ITALIC)
+                                : TextUtils.text(x.name()).withStyle(ChatFormatting.GREEN);
+                        }).orElse(TextUtils.text("Server").withStyle(ChatFormatting.GREEN)),
+                        TextUtils.text(stationTag.getLastEditedTimeFormatted()).withStyle(ChatFormatting.GREEN)
+                    ).withStyle(ChatFormatting.GRAY)
                 ));
             }
-
-            viewer.addRenderableWidget(new NewEntryWidget(this, () -> Pair.of(-viewer.getXScrollOffset(), -viewer.getYScrollOffset()), (val) -> {
-                GlobalSettingsClient.createStationTag(val, (tag) -> {
-                    reload();
-                });
-                return true;
-            }, 0, 0, viewer.getContentWidth()));
+            
+            if (GlobalSettingsClient.modificationsAllowed()) {
+                viewer.addRenderableWidget(new NewEntryWidget(this, () -> Pair.of(-viewer.getXScrollOffset(), -viewer.getYScrollOffset()), (val) -> {
+                    GlobalSettingsClient.createStationTag(val, new Owner(Minecraft.getInstance().player), (tag) -> {
+                        reload();
+                    });
+                    return true;
+                }, 0, 0, viewer.getContentWidth()));
+            }
 
         });
     }
@@ -270,6 +340,10 @@ public class StationTagSettingsScreen extends AbstractNavigatorScreen {
     }
 
 
+    public void updateEditorSubwidgetsOnlinePlayers(DLEditBox field, Collection<Owner> src, Collection<Owner> list) {
+        updateEditorSubwidgetsInternal(field, getViablePlayers(src, list));
+	}
+
     public void updateEditorSubwidgets(EditBox field, StationTag tag) {
         clearSuggestions();
         this.selectedTag = tag;
@@ -279,11 +353,26 @@ public class StationTagSettingsScreen extends AbstractNavigatorScreen {
         destinationSuggestions.updateCommandInfo();
 	}
 
+    private void updateEditorSubwidgetsInternal(DLEditBox field, List<String> data) {
+        clearSuggestions();
+		destinationSuggestions = new ModStationSuggestions(Minecraft.getInstance(), this, field, font, data, field.getHeight() + 2 + field.y);
+        destinationSuggestions.setAllowSuggestions(true);
+        destinationSuggestions.updateCommandInfo();
+    }
+
     private List<String> getViableStations(Collection<String> src, EditBox field) {
         return src.stream()
             .distinct()
             .filter(x -> !selectedTag.contains(x))
             .sorted((a, b) -> a.compareTo(b))
+            .toList();
+	}
+
+    private List<String> getViablePlayers(Collection<Owner> src, Collection<Owner> list) {
+        return src.stream()
+            .distinct()
+            .filter(x -> !list.contains(x))
+            .map(Owner::name)
             .toList();
 	}
 }

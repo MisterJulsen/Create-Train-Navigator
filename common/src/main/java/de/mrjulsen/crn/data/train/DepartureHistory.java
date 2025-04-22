@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -89,13 +90,13 @@ public final class DepartureHistory {
             
             CompoundTag linesList = new CompoundTag();
             for (Map.Entry<TrainLine, Long> e : lastDepartureByLine.entrySet()) {
-                linesList.putLong(e.getKey().getLineName(), e.getValue());
+                linesList.putLong(e.getKey().getId().toString(), e.getValue());
             }
             nbt.put(NBT_LINES, linesList);
             
             CompoundTag groupsList = new CompoundTag();
             for (Map.Entry<TrainGroup, Long> e : lastDepartureByGroup.entrySet()) {
-                groupsList.putLong(e.getKey().getGroupName(), e.getValue());
+                groupsList.putLong(e.getKey().getId().toString(), e.getValue());
             }
             nbt.put(NBT_GROUPS, groupsList);
             
@@ -112,11 +113,11 @@ public final class DepartureHistory {
             data.lastDepartureTime = nbt.getLong(NBT_LAST_DEPARTURE);
             CompoundTag linesList = nbt.getCompound(NBT_LINES);
             for (String key : linesList.getAllKeys()) {
-                GlobalSettings.getInstance().getTrainLine(key).ifPresent(x -> data.lastDepartureByLine.put(x, linesList.getLong(key)));
+                GlobalSettings.getInstance().getTrainLine(UUID.fromString(key)).ifPresent(x -> data.lastDepartureByLine.put(x, linesList.getLong(key)));
             }
             CompoundTag groupsList = nbt.getCompound(NBT_GROUPS);
             for (String key : groupsList.getAllKeys()) {
-                GlobalSettings.getInstance().getTrainGroup(key).ifPresent(x -> data.lastDepartureByGroup.put(x, groupsList.getLong(key)));
+                GlobalSettings.getInstance().getTrainGroup(UUID.fromString(key)).ifPresent(x -> data.lastDepartureByGroup.put(x, groupsList.getLong(key)));
             }
             CompoundTag namesList = nbt.getCompound(NBT_NAMES);
             for (String key : namesList.getAllKeys()) {

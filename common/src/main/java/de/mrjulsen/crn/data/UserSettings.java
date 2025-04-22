@@ -57,13 +57,13 @@ public class UserSettings {
     // Settings
     public final UserSetting<Integer> navigationDepartureInTicks = registerSetting(new UserSetting<>(() -> 0, NBT_DEPARTURE_IN, (nbt, val, name) -> nbt.putInt(name, val), (nbt, name) -> nbt.getInt(name), (val) -> TimeUtils.parseDurationShort(val)));
     public final UserSetting<Integer> navigationTransferTime = registerSetting(new UserSetting<>(() -> 1000, NBT_TRANSFER_TIME, (nbt, val, name) -> nbt.putInt(name, val), (nbt, name) -> nbt.getInt(name), (val) -> TimeUtils.parseDurationShort(val)));
-    public final UserSetting<Set<String>> navigationExcludedTrainGroups = registerSetting(new UserSetting<>(() -> new HashSet<>(), NBT_TRAIN_GROUPS,
+    public final UserSetting<Set<UUID>> navigationExcludedTrainGroups = registerSetting(new UserSetting<>(() -> new HashSet<>(), NBT_TRAIN_GROUPS,
     (nbt, val, name) -> {
         ListTag list = new ListTag();
-        list.addAll(val.stream().map(x -> StringTag.valueOf(x)).toList());
+        list.addAll(val.stream().map(x -> StringTag.valueOf(x.toString())).toList());
         nbt.put(name, list);
     }, (nbt, name) -> {
-        return nbt.getList(name, Tag.TAG_STRING).stream().filter(x -> GlobalSettings.hasInstance() ? GlobalSettings.getInstance().trainGroupExists(x.getAsString()) : true).map(x -> x.getAsString()).collect(Collectors.toSet());
+        return nbt.getList(name, Tag.TAG_STRING).stream().filter(x -> GlobalSettings.hasInstance() ? GlobalSettings.getInstance().trainGroupExists(deserializeUuidString(x.getAsString())) : true).map(x -> deserializeUuidString(x.getAsString())).collect(Collectors.toSet());
     },(val) -> val.isEmpty() ? TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.train_groups.all").getString() : TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.train_groups.excluded", val.size()).getString()));
 
     public final UserSetting<Set<CompoundTag>> savedRoutes = registerSetting(new UserSetting<>(() -> new HashSet<>(), NBT_SAVED_ROUTES, (nbt, val, name) -> {
@@ -75,13 +75,13 @@ public class UserSettings {
     },(val) -> TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".saved_routes.saved", val.size()).getString()));
     
     public final UserSetting<Integer> searchDepartureInTicks = registerSetting(new UserSetting<>(() -> 0, NBT_SEARCH_DEPARTURE_TIME, (nbt, val, name) -> nbt.putInt(name, val), (nbt, name) -> nbt.getInt(name), (val) -> TimeUtils.parseDurationShort(val)));
-    public final UserSetting<Set<String>> searchExcludedTrainGroups = registerSetting(new UserSetting<>(() -> new HashSet<>(), NBT_SEARCH_TRAIN_GROUPS,
+    public final UserSetting<Set<UUID>> searchExcludedTrainGroups = registerSetting(new UserSetting<>(() -> new HashSet<>(), NBT_SEARCH_TRAIN_GROUPS,
     (nbt, val, name) -> {
         ListTag list = new ListTag();
-        list.addAll(val.stream().map(x -> StringTag.valueOf(x)).toList());
+        list.addAll(val.stream().map(x -> StringTag.valueOf(x.toString())).toList());
         nbt.put(name, list);
     }, (nbt, name) -> {
-        return nbt.getList(name, Tag.TAG_STRING).stream().filter(x -> GlobalSettings.hasInstance() ? GlobalSettings.getInstance().trainGroupExists(x.getAsString()) : true).map(x -> x.getAsString()).collect(Collectors.toSet());
+        return nbt.getList(name, Tag.TAG_STRING).stream().filter(x -> GlobalSettings.hasInstance() ? GlobalSettings.getInstance().trainGroupExists(deserializeUuidString(x.getAsString())) : true).map(x -> deserializeUuidString(x.getAsString())).collect(Collectors.toSet());
     },(val) -> val.isEmpty() ? TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.train_groups.all").getString() : TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.train_groups.excluded", val.size()).getString()));
     
     public final UserSetting<RecentSearchQueries> recentSearchQueries = registerSetting(new UserSetting<>(() -> new RecentSearchQueries(), NBT_RECENT_SEARCH_QUERIES,
@@ -108,6 +108,14 @@ public class UserSettings {
     private void checkReadOnly() {              
         if (isReadOnly()) {
             throw new IllegalAccessError("This instance of the user settings is read-only!");
+        }
+    }
+
+    private static UUID deserializeUuidString(String str) {
+        try {
+            return UUID.fromString(str);
+        } catch (Exception e) {
+            return TrainGroup.genMD5Uuid(str);
         }
     }
 

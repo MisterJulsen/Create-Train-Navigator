@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
+import org.apache.commons.compress.harmony.unpack200.bytecode.forms.ThisFieldRefForm;
+
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
@@ -16,7 +18,9 @@ import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.widgets.DLCreateIconButton;
 import de.mrjulsen.crn.client.gui.widgets.ModStationSuggestions;
 import de.mrjulsen.crn.client.gui.widgets.ModernVerticalScrollBar;
+import de.mrjulsen.crn.client.gui.widgets.TransferOwnershipWidget;
 import de.mrjulsen.crn.client.gui.widgets.flyouts.FlyoutColorPicker;
+import de.mrjulsen.crn.client.gui.widgets.flyouts.FlyoutPlayerList;
 import de.mrjulsen.crn.client.gui.widgets.options.DLOptionsList;
 import de.mrjulsen.crn.client.gui.widgets.options.DataListContainer;
 import de.mrjulsen.crn.client.gui.widgets.options.OptionEntry;
@@ -24,18 +28,27 @@ import de.mrjulsen.crn.client.gui.widgets.options.SimpleDataListNewEntry;
 import de.mrjulsen.crn.data.StationTag;
 import de.mrjulsen.crn.data.TrainGroup;
 import de.mrjulsen.crn.data.TrainLine;
+import de.mrjulsen.crn.data.storage.GlobalSettings;
 import de.mrjulsen.crn.data.storage.GlobalSettingsClient;
 import de.mrjulsen.crn.registry.ModAccessorTypes;
+import de.mrjulsen.crn.util.Lock;
+import de.mrjulsen.crn.util.Owner;
+import de.mrjulsen.crn.util.Lock.PermissionsUpdateData;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.DLContextMenu;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.DLContextMenuItem;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.DLContextMenuItem.ContextMenuItemData;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLEditBox;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLIconButton;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLTooltip;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLVerticalScrollBar;
+import de.mrjulsen.mcdragonlib.client.render.Sprite;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiAreaDefinition;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.MathUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.accessor.DataAccessor;
+import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -50,23 +63,24 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
 	private ModStationSuggestions destinationSuggestions;
     
     private final Component optionTagTitle = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.option_alias.title");
-    private final Component optionTagDescription = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.option_alias.description");
+    private final Component optionTagDescription = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.option_alias.description").withStyle(ChatFormatting.GRAY);
     private final Component optionBlacklistTitle = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.option_blacklist.title");
-    private final Component optionBlacklistDescription = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.option_blacklist.description");    
+    private final Component optionBlacklistDescription = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.option_blacklist.description").withStyle(ChatFormatting.GRAY);   
     private final Component optionTrainGroupTitle = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.train_group.title");
-    private final Component optionTrainGroupDescription = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.train_group.description");    
+    private final Component optionTrainGroupDescription = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.train_group.description").withStyle(ChatFormatting.GRAY);   
     private final Component optionTrainBlacklistTitle = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.train_blacklist.title");
-    private final Component optionTrainBlacklistDescription = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.train_blacklist.description");
+    private final Component optionTrainBlacklistDescription = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.train_blacklist.description").withStyle(ChatFormatting.GRAY);
     private final Component optionTrainLineTitle = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.train_line.title");
-    private final Component optionTrainLineDescription = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.train_line.description");
-    private final Component textAdd = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.add");
+    private final Component optionTrainLineDescription = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.train_line.description").withStyle(ChatFormatting.GRAY);
     private final Component textColor = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.train_line.color");
 
     private final List<String> stationNames = new ArrayList<>();
     private final List<String> trainNames = new ArrayList<>();
 
+    private final Owner me = new Owner(Minecraft.getInstance().player);
+
     public GlobalSettingsScreen(Screen lastScreen) {
-        super(lastScreen, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.title"), BarColor.GRAY);
+        super(lastScreen, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.title").append(GlobalSettingsClient.modificationsAllowed() ? TextUtils.empty() : TextUtils.text(" ").append(Constants.TEXT_READ_ONLY).withStyle(ChatFormatting.DARK_RED)), BarColor.GRAY);
     }
 
     @Override
@@ -142,14 +156,17 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
                 (list) -> {
                     return list.stream().sorted((a, b) -> a.compareToIgnoreCase(b)).iterator();
                 }, (data, entryWidget) -> {
+                    if (!GlobalSettingsClient.modificationsAllowed()) {
+                        return data;
+                    }
                     entryWidget.addDeleteButton((btn, tg, entry, refreshAction) -> {
                         GlobalSettingsClient.removeStationFromBlacklist(entry, (res) -> {
                             refreshAction.accept(Optional.ofNullable(res));
                         });
                     });
                     return data;
-                }, (data, entryWidget) -> {
-                    entryWidget.addAddButton(ModGuiIcons.ADD.getAsSprite(16, 16), textAdd,
+                }, GlobalSettingsClient.modificationsAllowed() ? (data, entryWidget) -> {
+                    entryWidget.addAddButton(ModGuiIcons.ADD.getAsSprite(16, 16), List.of(Constants.TEXT_ADD),
                     (btn, tg, inputValues, refreshAction) -> {
                         String name = inputValues.get(SimpleDataListNewEntry.MAIN_INPUT_KEY).get();
                         if (name == null || name.isBlank()) {
@@ -166,7 +183,7 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
                         });
                         box.setMaxLength(StationTag.MAX_NAME_LENGTH);
                     });
-                }, (self) -> {
+                } : null, (self) -> {
                     option.notifyContentSizeChanged();
                 }
             );
@@ -178,7 +195,7 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
 
             return cont;
         }, optionBlacklistTitle, optionBlacklistDescription, (a, b) -> OptionEntry.expandOrCollapse(a), null);
-        opt.addAdditionalButton(ModGuiIcons.HELP.getAsSprite(16, 16), Constants.TEXT_HELP, (entry, btn) -> Util.getPlatform().openUri(Constants.HELP_PAGE_STATION_BLACKLIST));
+        opt.addAdditionalButton(ModGuiIcons.HELP.getAsSprite(16, 16), List.of(Constants.TEXT_HELP), (entry, btn) -> Util.getPlatform().openUri(Constants.HELP_PAGE_STATION_BLACKLIST));
 
     }
 
@@ -189,14 +206,17 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
                 (list) -> {
                     return list.stream().sorted((a, b) -> a.compareToIgnoreCase(b)).iterator();
                 }, (data, entryWidget) -> {
+                    if (!GlobalSettingsClient.modificationsAllowed()) {
+                        return data;
+                    }
                     entryWidget.addDeleteButton((btn, tg, entry, refreshAction) -> {
                         GlobalSettingsClient.removeTrainFromBlacklist(entry, (res) -> {
                             refreshAction.accept(Optional.ofNullable(res));
                         });
                     });
                     return data;
-                }, (data, entryWidget) -> {
-                    entryWidget.addAddButton(ModGuiIcons.ADD.getAsSprite(16, 16), textAdd,
+                }, GlobalSettingsClient.modificationsAllowed() ? (data, entryWidget) -> {
+                    entryWidget.addAddButton(ModGuiIcons.ADD.getAsSprite(16, 16), List.of(Constants.TEXT_ADD),
                     (btn, tg, inputValues, refreshAction) -> {
                         String name = inputValues.get(SimpleDataListNewEntry.MAIN_INPUT_KEY).get();
                         if (name == null || name.isBlank()) {
@@ -213,7 +233,7 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
                         });
                         box.setMaxLength(StationTag.MAX_NAME_LENGTH);
                     });
-                }, (self) -> {
+                } : null, (self) -> {
                     option.notifyContentSizeChanged();
                 }
             );
@@ -225,7 +245,7 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
 
             return cont;
         }, optionTrainBlacklistTitle, optionTrainBlacklistDescription, (a, b) -> OptionEntry.expandOrCollapse(a), null);
-        opt.addAdditionalButton(ModGuiIcons.HELP.getAsSprite(16, 16), Constants.TEXT_HELP, (entry, btn) -> Util.getPlatform().openUri(Constants.HELP_PAGE_TRAIN_BLACKLIST));
+        opt.addAdditionalButton(ModGuiIcons.HELP.getAsSprite(16, 16), List.of(Constants.TEXT_HELP), (entry, btn) -> Util.getPlatform().openUri(Constants.HELP_PAGE_TRAIN_BLACKLIST));
 
     }
 
@@ -236,31 +256,86 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
                 (list) -> {
                     return list.stream().sorted((a, b) -> a.getGroupName().compareToIgnoreCase(b.getGroupName())).iterator();
                 }, (data, entryWidget) -> {
-                    entryWidget.addDeleteButton((btn, tg, entry, refreshAction) -> {
-                        GlobalSettingsClient.deleteTrainGroup(entry.getGroupName(), () -> {
-                            GlobalSettingsClient.getTrainGroups((res) -> {
-                                refreshAction.accept(Optional.ofNullable(res));
-                            });
+                    if (!GlobalSettingsClient.modificationsAllowed()) {
+                        return data.getGroupName();
+                    }
+                    if (data.getOwner().isAllowed(me)) {
+                        entryWidget.setOnEditName((tg, entry, newValue, refreshAction) -> {
+                            if (!newValue.isBlank() && !entry.getGroupName().equals(newValue)) {
+                                GlobalSettingsClient.updateTrainGroupName(entry.getId(), newValue, x -> {
+                                    GlobalSettingsClient.getTrainGroups((res) -> {
+                                        refreshAction.accept(Optional.ofNullable(res));
+                                    });
+                                });
+                            }
                         });
-                    });
-                    DLIconButton colorBtn = entryWidget.addButton(ModGuiIcons.COLOR_PALETTE.getAsSprite(16, 16), textColor,
-                    (btn, tg, entry, refreshAction) -> {
-                        final TrainGroup e = entry;
-                        FlyoutColorPicker<?> flyout = new FlyoutColorPicker<>(this, e.getColor(), Constants.DEFAULT_TRAIN_TYPE_COLORS, 5, true, true, this::addRenderableWidget, (w) -> {
-                            GlobalSettingsClient.updateTrainGroupColor(e.getGroupName(), ((FlyoutColorPicker<?>)w).getColorPicker().getSelectedColor(), () -> {
+                        entryWidget.addDeleteButton((btn, tg, entry, refreshAction) -> {
+                            GlobalSettingsClient.deleteTrainGroup(entry.getId(), () -> {
                                 GlobalSettingsClient.getTrainGroups((res) -> {
                                     refreshAction.accept(Optional.ofNullable(res));
                                 });
                             });
-                            removeWidget(w);
                         });
-                        flyout.setYOffset((int)-scrollBar.getScrollValue());
-                        flyout.open(btn);
+                        DLIconButton colorBtn = entryWidget.addButton(ModGuiIcons.COLOR_PALETTE.getAsSprite(16, 16), List.of(textColor),
+                        (btn, tg, entry, refreshAction) -> {
+                            final TrainGroup e = entry;
+                            FlyoutColorPicker<?> flyout = new FlyoutColorPicker<>(this, e.getColor(), Constants.DEFAULT_TRAIN_TYPE_COLORS, 5, true, true, this::addRenderableWidget, (w) -> {
+                                GlobalSettingsClient.updateTrainGroupColor(e.getId(), ((FlyoutColorPicker<?>)w).getColorPicker().getSelectedColor(), () -> {
+                                    GlobalSettingsClient.getTrainGroups((res) -> {
+                                        refreshAction.accept(Optional.ofNullable(res));
+                                    });
+                                });
+                                removeWidget(w);
+                            });
+                            flyout.setYOffset((int)-scrollBar.getScrollValue());
+                            flyout.open(btn);
+                        });
+                        colorBtn.setBackColor(data.getColor());
+                    }
+
+                    DLIconButton btnPermissions = entryWidget.addButton(data.getOwner().get().getIcon(), data.getOwner().asText(new Owner(Minecraft.getInstance().player)),
+                    (btn, tg, entry, refreshAction) -> {
+                        if (!data.getOwner().isAllowed(me)) {
+                            return;
+                        }
+                        
+                        GlobalSettingsClient.updateTrainGroupPermissions(new PermissionsUpdateData(entry.getId(), null, entry.getOwner().get().next(), null), (a) -> {                            
+                            a.ifPresent(x -> {
+                                data.getOwner().set(x.getOwner().get());
+                                data.getOwner().updateTrusted(x.getOwner().getTrusted());
+                                btn.setSprite(x.getOwner().get().getIcon());
+                                entryWidget.updateTooltipOf(btn, x.getOwner().asText(new Owner(Minecraft.getInstance().player)));
+                            });
+                        });
                     });
-                    colorBtn.setBackColor(data.getColor());
+                    if (data.getOwner().isAdmin(me)) {
+                        btnPermissions.setMenu(new DLContextMenu(() -> GuiAreaDefinition.of(btnPermissions), () -> new DLContextMenuItem.Builder()
+                            .add(new ContextMenuItemData(TextUtils.translate(Lock.TRANSLATION_KEY_TRUSTED_PLAYERS), Sprite.empty(), true, (b) -> {
+                                FlyoutPlayerList<?> flyout = new FlyoutPlayerList<>(this, this::updateEditorSubwidgetsOnlinePlayers, data.getOwner().getTrusted(), this::addRenderableWidget, (w) -> {
+                                    GlobalSettingsClient.updateTrainGroupPermissions(new PermissionsUpdateData(data.getId(), null, null, ((FlyoutPlayerList<?>)w).getPlayerList().getPlayers()), $ -> {
+                                        GlobalSettingsClient.getTrainGroups((res) -> {
+                                            entryWidget.getParent().displayData(res);
+                                        });
+                                    });
+                                    removeWidget(w);
+                                });
+                                flyout.setYOffset((int)-scrollBar.getScrollValue());
+                                flyout.open(btnPermissions);
+                            }, null))
+                            .add(new ContextMenuItemData(TextUtils.translate(Lock.TRANSLATION_KEY_TRANSFER_OWNERSHIP), Sprite.empty(), true, (b) -> {
+                                addRenderableWidget(new TransferOwnershipWidget<>(this, data.getOwner().getOwner().orElse(null), (newOwner) -> {
+                                    GlobalSettingsClient.updateTrainGroupPermissions(new PermissionsUpdateData(data.getId(), newOwner, null, null), $ -> {
+                                        GlobalSettingsClient.getTrainGroups((res) -> {
+                                            entryWidget.getParent().displayData(res);
+                                        });
+                                    });
+                                }, this::addRenderableWidget, this::removeWidget));
+                            }, null))
+                        ));
+                    }
                     return data.getGroupName();
-                }, (data, entryWidget) -> {
-                    entryWidget.addAddButton(ModGuiIcons.ADD.getAsSprite(16, 16), textAdd,
+                }, GlobalSettingsClient.modificationsAllowed() ? (data, entryWidget) -> {                    
+                    entryWidget.addAddButton(ModGuiIcons.ADD.getAsSprite(16, 16), List.of(Constants.TEXT_ADD),
                     (btn, tg, inputValues, refreshAction) -> {
                         String name = inputValues.get(SimpleDataListNewEntry.MAIN_INPUT_KEY).get();
                         if (name == null || name.isBlank()) {
@@ -279,7 +354,7 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
                         });
                         box.setMaxLength(StationTag.MAX_NAME_LENGTH);
                     });
-                }, (self) -> {
+                } : null, (self) -> {
                     option.notifyContentSizeChanged();
                 }
             );
@@ -290,7 +365,7 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
             cont.setBordered(false);    
             return cont;
         }, optionTrainGroupTitle, optionTrainGroupDescription, (a, b) -> OptionEntry.expandOrCollapse(a), null);
-        opt.addAdditionalButton(ModGuiIcons.HELP.getAsSprite(16, 16), Constants.TEXT_HELP, (entry, btn) -> Util.getPlatform().openUri(Constants.HELP_PAGE_TRAIN_GROUPS));
+        opt.addAdditionalButton(ModGuiIcons.HELP.getAsSprite(16, 16), List.of(Constants.TEXT_HELP), (entry, btn) -> Util.getPlatform().openUri(Constants.HELP_PAGE_TRAIN_GROUPS));
 
     }
 
@@ -301,31 +376,87 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
                 (list) -> {
                     return list.stream().sorted((a, b) -> a.getLineName().compareToIgnoreCase(b.getLineName())).iterator();
                 }, (data, entryWidget) -> {
-                    entryWidget.addDeleteButton((btn, tg, entry, refreshAction) -> {
-                        GlobalSettingsClient.deleteTrainLine(entry.getLineName(), () -> {
-                            GlobalSettingsClient.getTrainLines((res) -> {
-                                refreshAction.accept(Optional.ofNullable(res));
-                            });
+                    if (!GlobalSettingsClient.modificationsAllowed()) {
+                        return data.getLineName();
+                    }
+
+                    if (data.getOwner().isAllowed(me)) {                    
+                        entryWidget.setOnEditName((tg, entry, newValue, refreshAction) -> {
+                            if (!newValue.isBlank() && !entry.getLineName().equals(newValue)) {
+                                GlobalSettingsClient.updateTrainLineName(entry.getId(), newValue, x -> {
+                                    GlobalSettingsClient.getTrainLines((res) -> {
+                                        refreshAction.accept(Optional.ofNullable(res));
+                                    });
+                                });
+                            }
                         });
-                    });
-                    DLIconButton colorBtn = entryWidget.addButton(ModGuiIcons.COLOR_PALETTE.getAsSprite(16, 16), textColor,
-                    (btn, tg, entry, refreshAction) -> {
-                        final TrainLine e = entry;
-                        FlyoutColorPicker<?> flyout = new FlyoutColorPicker<>(this, e.getColor(), Constants.DEFAULT_TRAIN_TYPE_COLORS, 5, true, true, this::addRenderableWidget, (w) -> {
-                            GlobalSettingsClient.updateTrainLineColor(e.getLineName(), ((FlyoutColorPicker<?>)w).getColorPicker().getSelectedColor(), () -> {
+                        entryWidget.addDeleteButton((btn, tg, entry, refreshAction) -> {
+                            GlobalSettingsClient.deleteTrainLine(entry.getId(), () -> {
                                 GlobalSettingsClient.getTrainLines((res) -> {
                                     refreshAction.accept(Optional.ofNullable(res));
                                 });
                             });
-                            removeWidget(w);
                         });
-                        flyout.setYOffset((int)-scrollBar.getScrollValue());
-                        flyout.open(btn);
+                        DLIconButton colorBtn = entryWidget.addButton(ModGuiIcons.COLOR_PALETTE.getAsSprite(16, 16), List.of(textColor),
+                        (btn, tg, entry, refreshAction) -> {
+                            final TrainLine e = entry;
+                            FlyoutColorPicker<?> flyout = new FlyoutColorPicker<>(this, e.getColor(), Constants.DEFAULT_TRAIN_TYPE_COLORS, 5, true, true, this::addRenderableWidget, (w) -> {
+                                GlobalSettingsClient.updateTrainLineColor(e.getId(), ((FlyoutColorPicker<?>)w).getColorPicker().getSelectedColor(), () -> {
+                                    GlobalSettingsClient.getTrainLines((res) -> {
+                                        refreshAction.accept(Optional.ofNullable(res));
+                                    });
+                                });
+                                removeWidget(w);
+                            });
+                            flyout.setYOffset((int)-scrollBar.getScrollValue());
+                            flyout.open(btn);
+                        });
+                        colorBtn.setBackColor(data.getColor());
+                    }
+                    
+                    DLIconButton btnPermissions = entryWidget.addButton(data.getOwner().get().getIcon(), data.getOwner().asText(new Owner(Minecraft.getInstance().player)),
+                    (btn, tg, entry, refreshAction) -> {
+                        if (!data.getOwner().isAllowed(me)) {
+                            return;
+                        }
+                        
+                        GlobalSettingsClient.updateTrainLinePermissions(new PermissionsUpdateData(entry.getId(), null, entry.getOwner().get().next(), null), (a) -> {                            
+                            a.ifPresent(x -> {
+                                data.getOwner().set(x.getOwner().get());
+                                data.getOwner().updateTrusted(x.getOwner().getTrusted());
+                                btn.setSprite(x.getOwner().get().getIcon());
+                                entryWidget.updateTooltipOf(btn, x.getOwner().asText(new Owner(Minecraft.getInstance().player)));
+                            });
+                        });
                     });
-                    colorBtn.setBackColor(data.getColor());
+                    if (data.getOwner().isAdmin(me)) {
+                        btnPermissions.setMenu(new DLContextMenu(() -> GuiAreaDefinition.of(btnPermissions), () -> new DLContextMenuItem.Builder()
+                            .add(new ContextMenuItemData(TextUtils.translate(Lock.TRANSLATION_KEY_TRUSTED_PLAYERS), Sprite.empty(), true, (b) -> {
+                                FlyoutPlayerList<?> flyout = new FlyoutPlayerList<>(this, this::updateEditorSubwidgetsOnlinePlayers, data.getOwner().getTrusted(), this::addRenderableWidget, (w) -> {
+                                    GlobalSettingsClient.updateTrainLinePermissions(new PermissionsUpdateData(data.getId(), null, null, ((FlyoutPlayerList<?>)w).getPlayerList().getPlayers()), $ -> {
+                                        GlobalSettingsClient.getTrainLines((res) -> {
+                                            entryWidget.getParent().displayData(res);
+                                        });
+                                    });
+                                    removeWidget(w);
+                                });
+                                flyout.setYOffset((int)-scrollBar.getScrollValue());
+                                flyout.open(btnPermissions);
+                            }, null))
+                            .add(new ContextMenuItemData(TextUtils.translate(Lock.TRANSLATION_KEY_TRANSFER_OWNERSHIP), Sprite.empty(), true, (b) -> {
+                                addRenderableWidget(new TransferOwnershipWidget<>(this, data.getOwner().getOwner().orElse(null), (newOwner) -> {
+                                    GlobalSettingsClient.updateTrainLinePermissions(new PermissionsUpdateData(data.getId(), newOwner, null, null), $ -> {
+                                        GlobalSettingsClient.getTrainLines((res) -> {
+                                            entryWidget.getParent().displayData(res);
+                                        });
+                                    });
+                                }, this::addRenderableWidget, this::removeWidget));
+                            }, null))
+                        ));
+                    }
                     return data.getLineName();
-                }, (data, entryWidget) -> {
-                    entryWidget.addAddButton(ModGuiIcons.ADD.getAsSprite(16, 16), textAdd,
+                }, GlobalSettingsClient.modificationsAllowed() ? (data, entryWidget) -> {
+                    entryWidget.addAddButton(ModGuiIcons.ADD.getAsSprite(16, 16), List.of(Constants.TEXT_ADD),
                     (btn, tg, inputValues, refreshAction) -> {
                         String name = inputValues.get(SimpleDataListNewEntry.MAIN_INPUT_KEY).get();
                         if (name == null || name.isBlank()) {
@@ -344,7 +475,7 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
                         });
                         box.setMaxLength(StationTag.MAX_NAME_LENGTH);
                     });
-                }, (self) -> {
+                } : null, (self) -> {
                     option.notifyContentSizeChanged();
                 }
             );
@@ -355,7 +486,7 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
             cont.setBordered(false);    
             return cont;
         }, optionTrainLineTitle, optionTrainLineDescription, (a, b) -> OptionEntry.expandOrCollapse(a), null);
-        opt.addAdditionalButton(ModGuiIcons.HELP.getAsSprite(16, 16), Constants.TEXT_HELP, (entry, btn) -> Util.getPlatform().openUri(Constants.HELP_PAGE_TRAIN_LINES));
+        opt.addAdditionalButton(ModGuiIcons.HELP.getAsSprite(16, 16), List.of(Constants.TEXT_HELP), (entry, btn) -> Util.getPlatform().openUri(Constants.HELP_PAGE_TRAIN_LINES));
     }
 
     @Override
@@ -412,7 +543,11 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
         updateEditorSubwidgetsInternal(field, getViableStations(stationNames, blacklisted));
 	}
 
-    private void updateEditorSubwidgetsInternal(DLEditBox field, List<String> data) {        
+    public void updateEditorSubwidgetsOnlinePlayers(DLEditBox field, Collection<Owner> src, Collection<Owner> list) {
+        updateEditorSubwidgetsInternal(field, getViablePlayers(src, list));
+	}
+
+    private void updateEditorSubwidgetsInternal(DLEditBox field, List<String> data) {
         clearSuggestions();
 		destinationSuggestions = new ModStationSuggestions(Minecraft.getInstance(), this, field, font, data, field.getHeight() + 2 + field.y);
         destinationSuggestions.setAllowSuggestions(true);
@@ -435,4 +570,17 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
             .sorted((a, b) -> a.compareTo(b))
             .toList();
 	}
+
+    private List<String> getViablePlayers(Collection<Owner> src, Collection<Owner> list) {
+        return src.stream()
+            .distinct()
+            .filter(x -> !list.contains(x))
+            .map(Owner::name)
+            .toList();
+	}
+
+    @FunctionalInterface
+    public static interface IPlayerListSuggestionData {
+        void run(DLEditBox box, Collection<Owner> src, Collection<Owner> current);
+    }
 }

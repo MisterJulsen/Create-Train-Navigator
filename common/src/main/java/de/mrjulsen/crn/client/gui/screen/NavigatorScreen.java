@@ -25,7 +25,6 @@ import de.mrjulsen.crn.client.gui.widgets.flyouts.FlyoutTrainGroupsWidget;
 import de.mrjulsen.crn.client.gui.widgets.flyouts.FlyoutTransferTimeWidget;
 import de.mrjulsen.crn.client.gui.widgets.notifications.NotificationTrainInitialization;
 import de.mrjulsen.crn.client.gui.widgets.AbstractFlyoutWidget.FlyoutPointer;
-import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.data.StationTag;
 import de.mrjulsen.crn.data.UserSettings;
 import de.mrjulsen.crn.data.navigation.ClientRoute;
@@ -182,16 +181,14 @@ public class NavigatorScreen extends AbstractNavigatorScreen {
 
 
         // Global Options Button
-        if (minecraft.player.hasPermissions(ModCommonConfig.GLOBAL_SETTINGS_PERMISSION_LEVEL.get())) {
-            globalSettingsButton = this.addRenderableWidget(new DLCreateIconButton(guiLeft + 30, guiTop + 223, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, ModGuiIcons.SETTINGS.getAsCreateIcon()) {
-                @Override
-                public void onClick(double mouseX, double mouseY) {
-                    super.onClick(mouseX, mouseY);
-                    minecraft.setScreen(new GlobalSettingsScreen(instance));
-                }
-            });
-            addTooltip(DLTooltip.of(tooltipGlobalSettings).assignedTo(globalSettingsButton));
-        }
+        globalSettingsButton = this.addRenderableWidget(new DLCreateIconButton(guiLeft + 30, guiTop + 223, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, ModGuiIcons.SETTINGS.getAsCreateIcon()) {
+            @Override
+            public void onClick(double mouseX, double mouseY) {
+                super.onClick(mouseX, mouseY);
+                minecraft.setScreen(new GlobalSettingsScreen(instance));
+            }
+        });
+        addTooltip(DLTooltip.of(tooltipGlobalSettings).assignedTo(globalSettingsButton));
 
         if (!isPublic) {
             /*

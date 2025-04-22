@@ -3,6 +3,7 @@ package de.mrjulsen.crn.client.gui.screen;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.simibubi.create.AllItems;
@@ -38,6 +39,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Widget;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -58,11 +60,11 @@ public class TrainSectionSettingsScreen extends DLScreen {
     // Settings
     private boolean includePreviousStation = false;
     private boolean usable = true;
-    private String trainGroupId;
-    private String trainLineId;
+    private UUID trainGroupId;
+    private UUID trainLineId;
 
-    private Map<String, TrainGroup> groupsById;
-    private Map<String, TrainLine> linesById;
+    private Map<UUID, TrainGroup> groupsById;
+    private Map<UUID, TrainLine> linesById;
 
     // GUI
     private int guiLeft;
@@ -89,8 +91,12 @@ public class TrainSectionSettingsScreen extends DLScreen {
 
         this.includePreviousStation = nbt.contains(TravelSectionInstruction.NBT_INCLUDE_PREVIOUS_STATION) ? nbt.getBoolean(TravelSectionInstruction.NBT_INCLUDE_PREVIOUS_STATION) : false;
         this.usable = nbt.contains(TravelSectionInstruction.NBT_USABLE) ? nbt.getBoolean(TravelSectionInstruction.NBT_USABLE) : true;
-        this.trainGroupId = nbt.contains(TravelSectionInstruction.NBT_TRAIN_GROUP) ? nbt.getString(TravelSectionInstruction.NBT_TRAIN_GROUP) : null;
-        this.trainLineId = nbt.contains(TravelSectionInstruction.NBT_TRAIN_LINE) ? nbt.getString(TravelSectionInstruction.NBT_TRAIN_LINE) : null;
+        if (nbt.contains(TravelSectionInstruction.NBT_TRAIN_GROUP)) {
+            this.trainGroupId = nbt.getTagType(TravelSectionInstruction.NBT_TRAIN_GROUP) == Tag.TAG_STRING ? TrainGroup.genMD5Uuid(nbt.getString(TravelSectionInstruction.NBT_TRAIN_GROUP)) : nbt.getUUID(TravelSectionInstruction.NBT_TRAIN_GROUP);
+        }
+        if (nbt.contains(TravelSectionInstruction.NBT_TRAIN_LINE)) {
+            this.trainLineId = nbt.getTagType(TravelSectionInstruction.NBT_TRAIN_LINE) == Tag.TAG_STRING ? TrainLine.genMD5Uuid(nbt.getString(TravelSectionInstruction.NBT_TRAIN_LINE)) : nbt.getUUID(TravelSectionInstruction.NBT_TRAIN_LINE);
+        }
     }    
 
     @Override
@@ -100,8 +106,16 @@ public class TrainSectionSettingsScreen extends DLScreen {
 
     @Override
     public void onClose() {
-        nbt.putString(TravelSectionInstruction.NBT_TRAIN_GROUP, trainGroupId == null ? "" : trainGroupId);
-        nbt.putString(TravelSectionInstruction.NBT_TRAIN_LINE, trainLineId == null ? "" : trainLineId);
+        if (trainGroupId != null) {
+            nbt.putUUID(TravelSectionInstruction.NBT_TRAIN_GROUP, trainGroupId);
+        } else {
+            nbt.remove(TravelSectionInstruction.NBT_TRAIN_GROUP);
+        }
+        if (trainLineId != null) {
+            nbt.putUUID(TravelSectionInstruction.NBT_TRAIN_LINE, trainLineId);
+        } else {
+            nbt.remove(TravelSectionInstruction.NBT_TRAIN_LINE);
+        }
         nbt.putBoolean(TravelSectionInstruction.NBT_INCLUDE_PREVIOUS_STATION, includePreviousStation);
         nbt.putBoolean(TravelSectionInstruction.NBT_USABLE, usable);
         Minecraft.getInstance().setScreen(lastScreen);
@@ -141,9 +155,9 @@ public class TrainSectionSettingsScreen extends DLScreen {
         }
 
         GlobalSettingsClient.getTrainGroups((trainGroups) -> {
-            this.groupsById = trainGroups.stream().collect(Collectors.toMap(x -> x.getGroupName(), x -> x));
+            this.groupsById = trainGroups.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
             GlobalSettingsClient.getTrainLines((trainLines) -> {
-                this.linesById = trainLines.stream().collect(Collectors.toMap(x -> x.getLineName(), x -> x));
+                this.linesById = trainLines.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
 
                 List<MutableComponent> groupsList = new ArrayList<>(trainGroups.stream().map(x -> TextUtils.text(x.getGroupName())).toList());
                 groupsList.add(0, textNone);
@@ -153,7 +167,7 @@ public class TrainSectionSettingsScreen extends DLScreen {
                     .titled(tooltipTrainGroup)
                     .writingTo(displayTypeLabel)
                     .calling((i) -> {
-                        this.trainGroupId = i <= 0 ? null : trainGroups.get(i - 1).getGroupName();
+                        this.trainGroupId = i <= 0 ? null : trainGroups.get(i - 1).getId();
                     })
                     .setState(trainGroupId != null && groupsById.containsKey(trainGroupId) ? trainGroups.indexOf(groupsById.get(trainGroupId)) + 1 : 0)
                 );
@@ -167,7 +181,7 @@ public class TrainSectionSettingsScreen extends DLScreen {
                     .titled(tooltipTrainLine)
                     .writingTo(infoTypeLabel)
                     .calling((i) -> {
-                        this.trainLineId = i <= 0 ? null : trainLines.get(i - 1).getLineName();
+                        this.trainLineId = i <= 0 ? null : trainLines.get(i - 1).getId();
                     })
                     .setState(trainLineId != null && linesById.containsKey(trainLineId) ? trainLines.indexOf(linesById.get(trainLineId)) + 1 : 0)
                 );

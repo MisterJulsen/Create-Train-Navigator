@@ -94,6 +94,11 @@
     "gui.createrailwaysnavigator.common.clear_all": "Alles löschen",
     "gui.createrailwaysnavigator.common.clear": "Leeren",
     "gui.createrailwaysnavigator.common.loading": "Wird geladen...",
+    "gui.createrailwaysnavigator.common.last_edited": "Zuletzt bearbeitet: %s, %s",
+    "gui.createrailwaysnavigator.common.unknown": "(Unbekannt)",
+    "gui.createrailwaysnavigator.common.read_only": "(Schreibgeschützt)",
+    "gui.createrailwaysnavigator.common.server": "Server",
+    "gui.createrailwaysnavigator.common.are_you_sure": "Bist du sicher?",
     
     "gui.createrailwaysnavigator.navigator.title": "Create Railways Navigator",
     "gui.createrailwaysnavigator.navigator.no_connections": "Keine Verbindungen gefunden.",
@@ -161,6 +166,15 @@
     "gui.createrailwaysnavigator.route_overview.notification.journey_completed.title": "Sie haben Ihr Ziel erreicht!",
     "gui.createrailwaysnavigator.route_overview.notification.journey_completed": "Wir bedanken uns für Ihre Reise und wünschen einen schönen Tag.",
     "gui.createrailwaysnavigator.route_overview.date": "Tag %s, %s",
+    
+    "gui.createrailwaysnavigator.lock.permissions": "Bearbeitungsberechtigungen",
+    "gui.createrailwaysnavigator.lock.state": "Zustand: %s",
+    "gui.createrailwaysnavigator.lock.owner": "Besitzer: %s",
+    "gui.createrailwaysnavigator.lock.right_click_options": "Rechtsklick für weitere Optionen",
+    "gui.createrailwaysnavigator.lock.no_owner": "Keine(r)",
+    "gui.createrailwaysnavigator.lock.trusted_players": "Mitarbeitende Spieler",
+    "gui.createrailwaysnavigator.lock.transfer_ownership": "Eigentumsrechte übertragen",
+    "gui.createrailwaysnavigator.lock.transfer_ownership.warning": "Dieser Vorgang kann nicht rückgängig gemacht werden! Du wirst bei der Übertragung als mitarbeitenden Spieler eingetragen, hast aber keine Möglichkeiten mehr die Berechtigungen selbst anzupassen.",
 
     "gui.createrailwaysnavigator.global_settings.title": "Globale Einstellungen",
     "gui.createrailwaysnavigator.global_settings.option.tooltip": "Zum Bearbeiten klicken",
@@ -174,7 +188,6 @@
     "gui.createrailwaysnavigator.global_settings.train_blacklist.description": "Schließe Züge aus, z.B. Güterzüge, Sonderzüge, etc., damit diese nicht in den Vorschlägen auftauchen.",
 
     "gui.createrailwaysnavigator.station_tags.summary": "Enthält %s Stationen",
-    "gui.createrailwaysnavigator.station_tags.editor": "Zuletzt von %s am %s bearbeitet",
     "gui.createrailwaysnavigator.station_tags.add.tooltip": "Neuen Eintrag erstellen",
     "gui.createrailwaysnavigator.station_tags.delete_alias.tooltip": "Tag löschen",
     "gui.createrailwaysnavigator.station_tags.delete_station.tooltip": "Station entfernen",
@@ -186,7 +199,6 @@
     
     "gui.createrailwaysnavigator.train_group_settings.title": "Zugkategorien Einstellungen",
     "gui.createrailwaysnavigator.train_group_settings.summary": "Enthält %s Züge",
-    "gui.createrailwaysnavigator.train_group_settings.editor": "Zuletzt von %s am %s bearbeitet",
     "gui.createrailwaysnavigator.train_group_settings.delete_alias.tooltip": "Kategorie löschen",
     "gui.createrailwaysnavigator.train_group_settings.delete_station.tooltip": "Zug entfernen",
     "gui.createrailwaysnavigator.train_group_settings.add_station.tooltip": "Zug hinzufügen",
@@ -302,6 +314,13 @@
     "enum.createrailwaysnavigator.time_source.info.real_life": "Das echte Zeitsystem",
     "enum.createrailwaysnavigator.time_source.in_game": "Spiel",
     "enum.createrailwaysnavigator.time_source.info.in_game": "Das Zeitsystem des Spiels",
+
+    "enum.createrailwaysnavigator.lock_state.unlocked": "Uneingeschränkt",
+    "enum.createrailwaysnavigator.lock_state.info.unlocked": "Jeder hat Zugriff.",
+    "enum.createrailwaysnavigator.lock_state.trusted": "Mitarbeitende",
+    "enum.createrailwaysnavigator.lock_state.info.trusted": "Nur mitarbeitende Spieler haben Zugriff.",
+    "enum.createrailwaysnavigator.lock_state.locked": "Gesperrt",
+    "enum.createrailwaysnavigator.lock_state.info.locked": "Nur du hast Zugriff.",
 
     "create.display_source.advanced_display": "Verbesserte Anzeige",
     "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width": "Zugname Spaltenbreite",
