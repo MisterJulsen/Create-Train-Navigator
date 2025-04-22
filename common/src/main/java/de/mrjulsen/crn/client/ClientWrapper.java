@@ -5,6 +5,7 @@ import java.util.function.Supplier;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Vector3f;
 import com.simibubi.create.content.trains.schedule.ScheduleScreen;
 import com.simibubi.create.content.trains.schedule.condition.TimedWaitCondition.TimeUnit;
 import com.simibubi.create.foundation.gui.ModularGuiLineBuilder;
@@ -30,18 +31,22 @@ import de.mrjulsen.crn.data.schedule.condition.TrainSeparationCondition;
 import de.mrjulsen.crn.data.schedule.instruction.PrioritizedDestinationInstruction;
 import de.mrjulsen.crn.data.schedule.instruction.ResetTimingsInstruction;
 import de.mrjulsen.crn.data.schedule.instruction.TravelSectionInstruction;
+import de.mrjulsen.crn.item.NavigatorItem;
 import de.mrjulsen.crn.mixin.ModularGuiLineBuilderAccessor;
 import de.mrjulsen.crn.mixin.ScheduleScreenAccessor;
 import de.mrjulsen.crn.network.packets.stc.ServerErrorPacket;
 import de.mrjulsen.mcdragonlib.DragonLib;
+import de.mrjulsen.mcdragonlib.client.ber.RenderGraphics;
 import de.mrjulsen.mcdragonlib.client.gui.DLScreen;
 import de.mrjulsen.mcdragonlib.client.render.DynamicGuiRenderer;
 import de.mrjulsen.mcdragonlib.client.render.DynamicGuiRenderer.AreaStyle;
 import de.mrjulsen.mcdragonlib.client.render.DynamicGuiRenderer.ButtonState;
+import de.mrjulsen.mcdragonlib.client.util.BERUtils;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import de.mrjulsen.mcdragonlib.core.EAlignment;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
+import de.mrjulsen.mcdragonlib.util.TimeUtils;
 import dev.architectury.networking.NetworkManager.PacketContext;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
@@ -49,13 +54,23 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.components.toasts.SystemToast.SystemToastIds;
+import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.block.model.ItemTransforms.TransformType;
 import net.minecraft.client.resources.language.ClientLanguage;
 import net.minecraft.client.resources.language.LanguageInfo;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.core.Direction;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 public class ClientWrapper {
+    
+    public static final ModelResourceLocation NAVIGATOR_WORLD_MODEL = new ModelResourceLocation(CreateRailwaysNavigator.MOD_ID, "navigator_world", "inventory");
     
     private static CustomLanguage currentLanguage;
     private static Language currentClientLanguage;
@@ -273,5 +288,32 @@ public class ClientWrapper {
             }
         };
 		accessor.crn$getTarget().add(Pair.of(btn, "config_btn"));
+    }
+
+    public static void renderNavigatorItem(RenderGraphics graphics, ItemStack itemStack, TransformType transformType, boolean leftHand, PoseStack poseStack, MultiBufferSource buffer, int combinedLight, int combinedOverlay, BakedModel model) {
+        if (transformType != TransformType.FIRST_PERSON_LEFT_HAND && transformType != TransformType.FIRST_PERSON_RIGHT_HAND) {
+            return;
+        }
+        
+
+        int backgroundId = itemStack.getOrCreateTag().getInt(NavigatorItem.NBT_BACKGROUND_ID);
+        
+        Font font = Minecraft.getInstance().font;
+        poseStack.mulPose(Vector3f.XP.rotationDegrees(90F));
+        poseStack.translate(4, 2, -1.26f);
+        BERUtils.renderTexture(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, String.format("textures/item/navigator_backgrounds/%s.png", backgroundId)), graphics, false, 0, 0, 0, 8, 12, 0, 0, 1F / 12F * 8, 1F, Direction.UP, 0xFFFFFFFF, LightTexture.FULL_BRIGHT);
+        
+        poseStack.translate(0, 0, -0.01f);
+        poseStack.pushPose();
+        poseStack.translate(4, 0.8f, 0);
+        poseStack.scale(0.075f, 0.075f, 0.075f);
+        BERUtils.drawString(graphics, font, 0, 0, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".journey_info.date", (DragonLib.getCurrentWorldTime() + DragonLib.daytimeShift()) / DragonLib.ticksPerDay()), 0xFFFFFFFF, EAlignment.CENTER, false, LightTexture.FULL_BRIGHT);
+        poseStack.popPose();
+        
+        poseStack.pushPose();
+        poseStack.translate(4, 2, 0);
+        poseStack.scale(0.2f, 0.2f, 0.2f);
+        BERUtils.drawString(graphics, font, 0, 0, TimeUtils.formatTime(DragonLib.getCurrentWorldTime(), ModClientConfig.TIME_FORMAT.get()), 0xFFFFFFFF, EAlignment.CENTER, false, LightTexture.FULL_BRIGHT);
+        poseStack.popPose();
     }
 }
