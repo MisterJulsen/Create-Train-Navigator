@@ -157,8 +157,8 @@ public class TravelSectionInstruction extends ScheduleInstruction implements ISt
         return new ScheduleSection(
             data,
             index,
-            GlobalSettings.getInstance().getTrainGroup(this.data.getTagType(NBT_TRAIN_GROUP) == Tag.TAG_STRING ? TrainGroup.genMD5Uuid(this.data.getString(NBT_TRAIN_GROUP)) : this.data.getUUID(NBT_TRAIN_GROUP)).orElse(null),
-            GlobalSettings.getInstance().getTrainLine(this.data.getTagType(NBT_TRAIN_LINE) == Tag.TAG_STRING ? TrainGroup.genMD5Uuid(this.data.getString(NBT_TRAIN_LINE)) : this.data.getUUID(NBT_TRAIN_LINE)).orElse(null),
+            !this.data.contains(NBT_TRAIN_GROUP) ? null : GlobalSettings.getInstance().getTrainGroup(this.data.getTagType(NBT_TRAIN_GROUP) == Tag.TAG_STRING ? TrainGroup.genMD5Uuid(this.data.getString(NBT_TRAIN_GROUP)) : this.data.getUUID(NBT_TRAIN_GROUP)).orElse(null),
+            !this.data.contains(NBT_TRAIN_LINE) ? null : GlobalSettings.getInstance().getTrainLine(this.data.getTagType(NBT_TRAIN_LINE) == Tag.TAG_STRING ? TrainGroup.genMD5Uuid(this.data.getString(NBT_TRAIN_LINE)) : this.data.getUUID(NBT_TRAIN_LINE)).orElse(null),
             this.data.getBoolean(NBT_INCLUDE_PREVIOUS_STATION),
             this.data.getBoolean(NBT_USABLE)
         );
