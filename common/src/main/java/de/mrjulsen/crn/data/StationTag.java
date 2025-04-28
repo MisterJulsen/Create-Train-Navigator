@@ -3,6 +3,7 @@ package de.mrjulsen.crn.data;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -10,7 +11,9 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import de.mrjulsen.crn.data.train.TrainUtils;
 import de.mrjulsen.crn.util.Lock;
+import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.crn.util.Owner;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
@@ -215,6 +218,21 @@ public class StationTag {
     }
 
     public void add(String station, StationInfo info) {
+        if (station.contains("*")) {
+            Set<String> stationNames = TrainUtils.getAllStations().stream().map(x -> x.name).collect(Collectors.toSet());
+            for (Map.Entry<String, List<String>> entry : ModUtils.mapWildcards(station, List.of(info.platform()), stationNames).entrySet()) {
+                if (stations.containsKey(entry.getKey())) {
+                    continue;
+                }
+                String platformString = "";
+                if (!entry.getValue().isEmpty()) {
+                    platformString = entry.getValue().get(0);
+                }
+                stations.put(entry.getKey(), new StationInfo(platformString));
+            }
+            return;
+        }
+
         if (!stations.containsKey(station)) {
             stations.put(station, info);
         }

@@ -30,8 +30,10 @@ import de.mrjulsen.crn.data.StationTag.StationInfo;
 import de.mrjulsen.crn.data.train.TrainListener;
 import de.mrjulsen.crn.data.train.TrainPrediction;
 import de.mrjulsen.crn.data.train.TrainStop;
+import de.mrjulsen.crn.data.train.TrainUtils;
 import de.mrjulsen.crn.data.train.ScheduleSection;
 import de.mrjulsen.crn.event.ModCommonEvents;
+import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.crn.util.Owner;
 import de.mrjulsen.mcdragonlib.data.INBTSerializable;
 import net.minecraft.nbt.CompoundTag;
@@ -474,6 +476,10 @@ public class GlobalSettings implements INBTSerializable {
     }
 
     public void blacklistStation(String stationName) {
+        if (ModUtils.hasWildcards(stationName)) {
+            stationBlacklist.addAll(ModUtils.wildcardMatches(stationName, TrainUtils.getAllStationNames()));
+            return;
+        }
         stationBlacklist.add(stationName);
     }
     
@@ -519,6 +525,10 @@ public class GlobalSettings implements INBTSerializable {
     }
     
     public void blacklistTrain(String trainName) {
+        if (ModUtils.hasWildcards(trainName)) {
+            trainBlacklist.addAll(ModUtils.wildcardMatches(trainName, TrainUtils.getTrainNames()));
+            return;
+        }
         trainBlacklist.add(trainName);
     }
 

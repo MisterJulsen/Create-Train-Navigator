@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import com.simibubi.create.Create;
 import com.simibubi.create.content.decoration.slidingDoor.DoorControlBehaviour;
@@ -52,6 +53,14 @@ public final class TrainUtils {
             stations.addAll(foundStations);
         });
         return stations;
+    }, ECachingPriority.LOWEST);
+
+    private static final Cache<Set<String>> allStationNamesCache = new Cache<>(() -> {
+        return getAllStations().stream().map(x -> x.name).collect(Collectors.toSet());
+    }, ECachingPriority.LOWEST);    
+
+    private static final Cache<Set<String>> allTrainNames = new Cache<>(() -> {
+        return getTrains(false).stream().map(x -> x.name.getString()).collect(Collectors.toSet());
     }, ECachingPriority.LOWEST);
 
     private static final Cache<Set<SignalBoundary>> allSignalsCache = new Cache<>(() -> {
@@ -118,6 +127,8 @@ public final class TrainUtils {
         departingTrainsAtStationCache.clearAll();
         departuresAtTagCache.clearAll();
         departuresAtStationCache.clearAll();
+        allStationNamesCache.clear();
+        allTrainNames.clear();
     }
 
     private TrainUtils() {}
@@ -159,6 +170,10 @@ public final class TrainUtils {
     public static Collection<GlobalStation> getAllStations() {        
         return allStationsCache.get();
     }
+    
+    public static Set<String> getAllStationNames() {        
+        return allStationNamesCache.get();
+    }
 
     public static Optional<Train> getTrain(UUID trainId) { 
         return Optional.ofNullable(getRailwayManager().trains.get(trainId));
@@ -166,6 +181,10 @@ public final class TrainUtils {
 
     public static Set<UUID> getTrainIds() {
         return new HashSet<>(getRailwayManager().trains.keySet());
+    }
+
+    public static Set<String> getTrainNames() {
+        return allTrainNames.get();
     }
 
     public static Set<Train> getTrains(boolean onlyValid) {
