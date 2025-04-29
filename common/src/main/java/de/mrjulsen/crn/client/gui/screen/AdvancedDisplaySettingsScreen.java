@@ -30,7 +30,6 @@ import de.mrjulsen.crn.client.gui.widgets.IconSlotWidget;
 import de.mrjulsen.crn.client.gui.widgets.ModernVerticalScrollBar;
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
 import de.mrjulsen.crn.client.gui.widgets.modular.ModularWidgetContainer;
-import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.network.packets.cts.AdvancedDisplayUpdatePacket;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.gui.DLScreen;
@@ -328,17 +327,15 @@ public class AdvancedDisplaySettingsScreen extends DLScreen {
         addTooltip(DLTooltip.of(Constants.TEXT_HELP).assignedTo(helpButton));
 
         // Global Options Button
-        if (minecraft.player.hasPermissions(ModCommonConfig.GLOBAL_SETTINGS_PERMISSION_LEVEL.get())) {
-            final Screen instance = this;
-            globalSettingsButton = this.addRenderableWidget(new DLCreateIconButton(guiLeft + 7, guiTop + guiHeight() - 6 - DEFAULT_ICON_BUTTON_HEIGHT, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, ModGuiIcons.SETTINGS.getAsCreateIcon()) {
-                @Override
-                public void onClick(double mouseX, double mouseY) {
-                    super.onClick(mouseX, mouseY);
-                    DLScreen.setScreen(new GlobalSettingsScreen(instance));
-                }
-            });
-            addTooltip(DLTooltip.of(tooltipGlobalSettings).assignedTo(globalSettingsButton));
-        }
+        final Screen instance = this;
+        globalSettingsButton = this.addRenderableWidget(new DLCreateIconButton(guiLeft + 7, guiTop + guiHeight() - 6 - DEFAULT_ICON_BUTTON_HEIGHT, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, ModGuiIcons.SETTINGS.getAsCreateIcon()) {
+            @Override
+            public void onClick(double mouseX, double mouseY) {
+                super.onClick(mouseX, mouseY);
+                DLScreen.setScreen(new GlobalSettingsScreen(instance));
+            }
+        });
+        addTooltip(DLTooltip.of(tooltipGlobalSettings).assignedTo(globalSettingsButton));
 
     }
 

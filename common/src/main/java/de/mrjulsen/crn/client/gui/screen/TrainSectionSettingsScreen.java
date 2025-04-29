@@ -20,7 +20,6 @@ import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.widgets.DLCreateIconButton;
 import de.mrjulsen.crn.client.gui.widgets.DLCreateLabel;
 import de.mrjulsen.crn.client.gui.widgets.DLCreateSelectionScrollInput;
-import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.data.TrainGroup;
 import de.mrjulsen.crn.data.TrainLine;
 import de.mrjulsen.crn.data.schedule.instruction.TravelSectionInstruction;
@@ -142,17 +141,15 @@ public class TrainSectionSettingsScreen extends DLScreen {
         addTooltip(DLTooltip.of(Constants.TEXT_HELP).assignedTo(helpButton));
 
         // Global Options Button
-        if (minecraft.player.hasPermissions(ModCommonConfig.GLOBAL_SETTINGS_PERMISSION_LEVEL.get())) {
-            final Screen instance = this;
-            globalSettingsButton = this.addRenderableWidget(new DLCreateIconButton(guiLeft + 7, guiTop + 119, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, ModGuiIcons.SETTINGS.getAsCreateIcon()) {
-                @Override
-                public void onClick(double mouseX, double mouseY) {
-                    super.onClick(mouseX, mouseY);
-                    DLScreen.setScreen(new GlobalSettingsScreen(instance));
-                }
-            });
-            addTooltip(DLTooltip.of(tooltipGlobalSettings).assignedTo(globalSettingsButton));
-        }
+        final Screen instance = this;
+        globalSettingsButton = this.addRenderableWidget(new DLCreateIconButton(guiLeft + 7, guiTop + 119, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, ModGuiIcons.SETTINGS.getAsCreateIcon()) {
+            @Override
+            public void onClick(double mouseX, double mouseY) {
+                super.onClick(mouseX, mouseY);
+                DLScreen.setScreen(new GlobalSettingsScreen(instance));
+            }
+        });
+        addTooltip(DLTooltip.of(tooltipGlobalSettings).assignedTo(globalSettingsButton));
 
         GlobalSettingsClient.getTrainGroups((trainGroups) -> {
             this.groupsById = trainGroups.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
