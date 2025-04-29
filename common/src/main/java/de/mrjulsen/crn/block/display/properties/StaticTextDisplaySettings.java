@@ -260,6 +260,15 @@ public class StaticTextDisplaySettings extends BasicDisplaySettings implements I
         return ImmutableList.copyOf(this.components);
     }
 
+    public void addComponent(TextComponent component) {
+        components.add(component);
+        verifyComponents();
+    }
+
+    public void setComponent(int index, TextComponent component) {
+        components.set(index, component);
+    }
+
     public int getComponentsCount() {
         return components.size();
     }
