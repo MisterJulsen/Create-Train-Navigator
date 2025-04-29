@@ -11,6 +11,7 @@ import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.crn.data.navigation.ClientRoute;
 import de.mrjulsen.crn.data.train.TrainStop;
+import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.gui.DLScreen;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLButton;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLContextMenu;
@@ -86,15 +87,14 @@ public class StationDeparturesWidget extends DLButton implements AutoCloseable {
         graphics.poseStack().popPose();
 
         Component platformText = TextUtils.text(route.getStart().getRealTimeStationTag().info().platform());
-        int platformTextWidth = font.width(platformText);
-        final int maxStationNameWidth = width() - platformTextWidth - 15 - (int)((45 + font.width(trainName)) * scale);
+        final int maxStationNameWidth = width() - 6 - (int)((45 + font.width(trainName)) * scale);
         MutableComponent stationText = arrival ? TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".schedule_board.train_from", route.getEnd().getRealTimeStationTag().tagName()) : TextUtils.text(route.getStart().getDisplayTitle());
         if (font.width(stationText) > maxStationNameWidth) {
             stationText = TextUtils.text(font.substrByWidth(stationText, maxStationNameWidth).getString()).append(TextUtils.text("...")).withStyle(stationText.getStyle());
         }
 
         GuiUtils.drawString(graphics, font, x() + (int)((45 + font.width(trainName)) * scale), y() + 6, stationText, 0xFFFFFF, EAlignment.LEFT, false);
-        GuiUtils.drawString(graphics, font, x() + width() - 6, y() + 6, platformText, 0xFFFFFF, EAlignment.RIGHT, false);
+        GuiUtils.drawString(graphics, font, x() + width() - 6, y() + 20, platformText, 0xFFFFFFFF, EAlignment.RIGHT, false);
         GuiUtils.drawString(graphics, font, x() + (int)(30 * scale), y() + 20, ModUtils.formatTime(arrival ? route.getStart().getScheduledArrivalTime() : route.getStart().getScheduledDepartureTime(), false), 0xFFFFFF, EAlignment.LEFT, false);
         GuiUtils.drawString(graphics, font, x() + (int)(30 * scale) + 40, y() + 20, ModUtils.formatTime(arrival ? route.getStart().getRealTimeArrivalTime() : route.getStart().getRealTimeDepartureTime(), false), (arrival ? route.getStart().isArrivalDelayed() : route.getStart().isDepartureDelayed()) ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME, EAlignment.LEFT, false);
         

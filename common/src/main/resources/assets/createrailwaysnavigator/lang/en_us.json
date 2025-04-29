@@ -360,6 +360,11 @@
     "enum.createrailwaysnavigator.text_scale_bounds.scale_scroll": "Scale/Scroll",
     "enum.createrailwaysnavigator.text_scale_bounds.scroll": "Always Scroll",
     
+    "enum.createrailwaysnavigator.departure_board_train_filter": "Filter",
+    "enum.createrailwaysnavigator.departure_board_train_filter.arrival_and_departure": "All",
+    "enum.createrailwaysnavigator.departure_board_train_filter.arrival_only": "Arrivals only",
+    "enum.createrailwaysnavigator.departure_board_train_filter.departure_only": "Departures only",
+    
     "create.display_source.advanced_display": "Advanced Displays",
 
     "gui.createrailwaysnavigator.section_settings.title": "Section Settings",

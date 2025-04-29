@@ -4,6 +4,7 @@ import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.data.UserSettings;
 import de.mrjulsen.crn.registry.ModAccessorTypes;
 import de.mrjulsen.crn.registry.ModAccessorTypes.DepartureRoutesData;
+import de.mrjulsen.crn.util.EDepartureBoardTrainFilter;
 import de.mrjulsen.crn.data.navigation.ClientRoute;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLAbstractScrollBar;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLScrollableWidgetContainer;
@@ -39,7 +40,6 @@ public class StationDeparturesViewer extends DLScrollableWidgetContainer {
         return parent;
     }
 
-    @SuppressWarnings("resource")
     public void displayRoutes(String stationTagName, UserSettings settings) {
         clearWidgets();
         contentHeight = 0;
@@ -50,6 +50,9 @@ public class StationDeparturesViewer extends DLScrollableWidgetContainer {
         DataAccessor.getFromServer(new DepartureRoutesData(stationTagName, Minecraft.getInstance().player.getUUID()), ModAccessorTypes.GET_DEPARTURE_AND_ARRIVAL_ROUTES_AT, (routesL) -> {
             for (int i = 0; i < routesL.size(); i++) {
                 Pair<Boolean, ClientRoute> route = routesL.get(i);
+                if ((settings.searchTrainFilter.getValue() == EDepartureBoardTrainFilter.ARRIVAL_ONLY && !route.getFirst()) || (settings.searchTrainFilter.getValue() == EDepartureBoardTrainFilter.DEPARTURE_ONLY && route.getFirst())) {
+                    continue;
+                }
                 StationDeparturesWidget widget = new StationDeparturesWidget(parent, this, x() + 10, y() + 5 + contentHeight, width() - 20, route.getSecond(), route.getFirst());
                 addRenderableWidget(widget);
                 contentHeight += (widget.height() + 3);

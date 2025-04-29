@@ -21,6 +21,7 @@ import de.mrjulsen.crn.data.storage.RecentSearchQueries;
 import de.mrjulsen.crn.event.ModCommonEvents;
 import de.mrjulsen.crn.exceptions.RuntimeSideException;
 import de.mrjulsen.crn.registry.ModAccessorTypes;
+import de.mrjulsen.crn.util.EDepartureBoardTrainFilter;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.TimeUtils;
@@ -47,6 +48,7 @@ public class UserSettings {
     private static final String NBT_SEARCH_DEPARTURE_TIME = "SearchDepartureIn";
     private static final String NBT_SEARCH_TRAIN_GROUPS = "SearchExcludedTrainGroups";
     private static final String NBT_RECENT_SEARCH_QUERIES = "RecentSearchQueries";
+    private static final String NBT_DEPARTURE_TRAIN_FILTER = "DepartureBoardTrainFilter";
 
     private static final Map<UUID, UserSettings> settingsInstances = new LinkedHashMap<>();
 
@@ -83,6 +85,8 @@ public class UserSettings {
     }, (nbt, name) -> {
         return nbt.getList(name, Tag.TAG_STRING).stream().filter(x -> GlobalSettings.hasInstance() ? GlobalSettings.getInstance().trainGroupExists(deserializeUuidString(x.getAsString())) : true).map(x -> deserializeUuidString(x.getAsString())).collect(Collectors.toSet());
     },(val) -> val.isEmpty() ? TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.train_groups.all").getString() : TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.train_groups.excluded", val.size()).getString()));
+    
+    public final UserSetting<EDepartureBoardTrainFilter> searchTrainFilter = registerSetting(new UserSetting<>(() -> EDepartureBoardTrainFilter.ARRIVAL_AND_DEPARTURE, NBT_DEPARTURE_TRAIN_FILTER, (nbt, val, name) -> nbt.putByte(name, val.getIndex()), (nbt, name) -> EDepartureBoardTrainFilter.getByIndex(nbt.getByte(name)), (val) -> TextUtils.translate(val.getValueTranslationKey(CreateRailwaysNavigator.MOD_ID)).getString()));
     
     public final UserSetting<RecentSearchQueries> recentSearchQueries = registerSetting(new UserSetting<>(() -> new RecentSearchQueries(), NBT_RECENT_SEARCH_QUERIES,
     (nbt, val, name) -> {;
