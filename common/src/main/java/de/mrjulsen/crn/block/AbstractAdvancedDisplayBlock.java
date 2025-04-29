@@ -18,7 +18,6 @@ import de.mrjulsen.crn.block.display.properties.BasicDisplaySettings;
 import de.mrjulsen.crn.block.display.properties.SimpleStaticTextDisplaySettings;
 import de.mrjulsen.crn.block.display.properties.StaticTextDisplaySettings;
 import de.mrjulsen.crn.block.display.properties.StaticTextDisplaySettings.TextComponent;
-import de.mrjulsen.crn.block.properties.EDisplayType;
 import de.mrjulsen.crn.block.properties.ESide;
 import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.network.packets.cts.AdvancedDisplayUpdatePacket;

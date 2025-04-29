@@ -47,6 +47,7 @@ public class PassengerInformationScrollingTextSettings extends BasicDisplaySetti
         copyShowExitSetting(oldSettings);
         copyShowStatsSetting(oldSettings);
         copyShowTimeAndDateSetting(oldSettings);
+        copyTrainTextSetting(oldSettings);
     }
 
     @Override
