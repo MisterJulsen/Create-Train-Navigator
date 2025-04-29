@@ -253,7 +253,7 @@ public class StaticTextDisplaySettings extends BasicDisplaySettings implements I
     }
 
     public TextComponent getSelectedComponent() {
-        return components.isEmpty() ? new TextComponent("ne") : components.get(MathUtils.clamp(selectedComponent, 0, components.size() - 1));
+        return components.isEmpty() ? new TextComponent() : components.get(MathUtils.clamp(selectedComponent, 0, components.size() - 1));
     }
 
     public List<TextComponent> getComponents() {

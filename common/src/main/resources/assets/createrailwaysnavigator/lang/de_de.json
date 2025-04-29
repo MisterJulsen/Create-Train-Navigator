@@ -351,7 +351,7 @@
     "enum.createrailwaysnavigator.text_scale_bounds.scroll": "Immer scrollen",
 
     "enum.createrailwaysnavigator.departure_board_train_filter": "Filter",
-    "enum.createrailwaysnavigator.departure_board_train_filter.departure_and_arrival": "Alle",
+    "enum.createrailwaysnavigator.departure_board_train_filter.arrival_and_departure": "Alle",
     "enum.createrailwaysnavigator.departure_board_train_filter.arrival_only": "Nur Ankünfte",
     "enum.createrailwaysnavigator.departure_board_train_filter.departure_only": "Nur Abfahrten",
 
