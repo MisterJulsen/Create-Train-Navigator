@@ -180,7 +180,6 @@ public class DLNewListBox<T, W extends DLNewListBox.Entry<T, W>> extends DLScrol
             graphics.poseStack().pushPose();
             graphics.poseStack().translate(0, -scrollBar.getScrollValue(), 0);
             GuiUtils.drawBox(graphics, new GuiAreaDefinition(x(), markerYPos, width(), draggedEntry.height()), getPulsatingColor((double)Minecraft.getInstance().level.getGameTime(), 0.1, 0x44FFFFFF, (byte)0x00, (byte)0x55), 0xFFFFFFFF);
-            GuiUtils.drawString(graphics, font, x(), markerYPos, String.valueOf(dropIndex), 0xFFFFFFFF, EAlignment.LEFT, false);
             graphics.poseStack().popPose();
         }
         GuiUtils.disableScissor(graphics);;
