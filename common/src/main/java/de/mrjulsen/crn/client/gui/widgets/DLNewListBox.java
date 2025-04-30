@@ -15,6 +15,7 @@ import de.mrjulsen.mcdragonlib.client.gui.widgets.DLWidgetContainer;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiAreaDefinition;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
+import de.mrjulsen.mcdragonlib.core.EAlignment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
@@ -118,7 +119,7 @@ public class DLNewListBox<T, W extends DLNewListBox.Entry<T, W>> extends DLScrol
         if (draggedEntry != null && currentData != null) {
             int oldIndex = entryWidgets.indexOf(draggedEntry);
             int newIndex = dropIndex >= 0 ? dropIndex : oldIndex;
-            if (oldIndex > 0 && newIndex > 0 && oldIndex < entryWidgets.size() && newIndex < entryWidgets.size()) {                
+            if (oldIndex >= 0 && newIndex >= 0 && oldIndex < entryWidgets.size() && newIndex < entryWidgets.size()) {                
                 T element = currentData.remove(oldIndex);
                 currentData.add(newIndex, element);
             }
@@ -179,6 +180,7 @@ public class DLNewListBox<T, W extends DLNewListBox.Entry<T, W>> extends DLScrol
             graphics.poseStack().pushPose();
             graphics.poseStack().translate(0, -scrollBar.getScrollValue(), 0);
             GuiUtils.drawBox(graphics, new GuiAreaDefinition(x(), markerYPos, width(), draggedEntry.height()), getPulsatingColor((double)Minecraft.getInstance().level.getGameTime(), 0.1, 0x44FFFFFF, (byte)0x00, (byte)0x55), 0xFFFFFFFF);
+            GuiUtils.drawString(graphics, font, x(), markerYPos, String.valueOf(dropIndex), 0xFFFFFFFF, EAlignment.LEFT, false);
             graphics.poseStack().popPose();
         }
         GuiUtils.disableScissor(graphics);;
