@@ -30,11 +30,6 @@ public abstract class CRNPlatformSpecific {
     }
 
     @ExpectPlatform
-    public static Object customDestinationInstructions(ScheduleRuntime runtime, ScheduleEntry entry, ScheduleInstruction instruction) {
-        throw new AssertionError();
-    }
-
-    @ExpectPlatform
     public static Optional<String> getLastKnownPlayerName(UUID uuid) {
         throw new AssertionError();
     }
