@@ -21,7 +21,7 @@ import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.data.NearestTrackStationResult;
 import de.mrjulsen.crn.data.StationTag;
 import de.mrjulsen.crn.data.TagName;
-import de.mrjulsen.crn.data.TrainGroup;
+import de.mrjulsen.crn.data.TrainCategory;
 import de.mrjulsen.crn.data.TrainLine;
 import de.mrjulsen.crn.data.UserSettings;
 import de.mrjulsen.crn.data.StationTag.StationInfo;
@@ -30,8 +30,8 @@ import de.mrjulsen.crn.data.storage.GlobalSettingsClient.AddStationTagEntryData;
 import de.mrjulsen.crn.data.storage.GlobalSettingsClient.CreateStationTagData;
 import de.mrjulsen.crn.data.storage.GlobalSettingsClient.RemoveStationTagEntryData;
 import de.mrjulsen.crn.data.storage.GlobalSettingsClient.UpdateStationTagNameData;
-import de.mrjulsen.crn.data.storage.GlobalSettingsClient.UpdateTrainGroupColorData;
-import de.mrjulsen.crn.data.storage.GlobalSettingsClient.UpdateTrainGroupNameData;
+import de.mrjulsen.crn.data.storage.GlobalSettingsClient.UpdateTrainCategoryColorData;
+import de.mrjulsen.crn.data.storage.GlobalSettingsClient.UpdateTrainCategoryNameData;
 import de.mrjulsen.crn.data.storage.GlobalSettingsClient.UpdateTrainLineColorData;
 import de.mrjulsen.crn.data.storage.GlobalSettingsClient.UpdateTrainLineNameData;
 import de.mrjulsen.crn.data.train.ClientTrainStop;
@@ -309,15 +309,15 @@ public final class ModAccessorTypes {
     ));
 
 //#endregion
-//#region TRAIN GROUPS
+//#region TRAIN CATEGORIES
 
-    public static final DataAccessorType<Void, List<TrainGroup>, List<TrainGroup>> GET_ALL_TRAIN_GROUPS = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "get_all_train_groups"), DataAccessorType.Builder.createNoInputChunked(
+    public static final DataAccessorType<Void, List<TrainCategory>, List<TrainCategory>> GET_ALL_TRAIN_CATEGORIES = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "get_all_train_categories"), DataAccessorType.Builder.createNoInputChunked(
         (player, in, temp, nbt, iteration) -> {
             if (temp.getFirst() == null) {
-                temp.setFirst(new ConcurrentLinkedQueue<>(GlobalSettings.getInstance().getAllTrainGroups()));
+                temp.setFirst(new ConcurrentLinkedQueue<>(GlobalSettings.getInstance().getAllTrainCategories()));
             }
             @SuppressWarnings("unchecked")
-            Queue<TrainGroup> tags = (Queue<TrainGroup>)((MutableSingle<Object>)temp).getFirst();
+            Queue<TrainCategory> tags = (Queue<TrainCategory>)((MutableSingle<Object>)temp).getFirst();
             if (tags.isEmpty()) {
                 return false;
             }
@@ -325,55 +325,55 @@ public final class ModAccessorTypes {
                 nbt.put(DataAccessorType.DEFAULT_NBT_DATA + i, tags.poll().toNbt());
             }
             return !tags.isEmpty();
-        }, (IChunkReceiver<List<TrainGroup>>)(hasMore, list, iteration, nbt) -> {
+        }, (IChunkReceiver<List<TrainCategory>>)(hasMore, list, iteration, nbt) -> {
             if (list == null) {
-                list = new ArrayList<TrainGroup>();
+                list = new ArrayList<TrainCategory>();
             }
-            final List<TrainGroup> l = list;
-            nbt.getAllKeys().forEach(x -> l.add(TrainGroup.fromNbt(nbt.getCompound(x))));
+            final List<TrainCategory> l = list;
+            nbt.getAllKeys().forEach(x -> l.add(TrainCategory.fromNbt(nbt.getCompound(x))));
             return l;
         }, (chunks) -> {
             return chunks;
         }
     ));
 
-    public static final DataAccessorType<UUID, Void, Void> DELETE_TRAIN_GROUP = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "delete_train_group"), DataAccessorType.Builder.createEmptyResponse(
+    public static final DataAccessorType<UUID, Void, Void> DELETE_TRAIN_CATEGORY = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "delete_train_category"), DataAccessorType.Builder.createEmptyResponse(
         (in, nbt) -> {
             nbt.putUUID(DataAccessorType.DEFAULT_NBT_DATA, in);
         }, (nbt) -> {
             return nbt.getUUID(DataAccessorType.DEFAULT_NBT_DATA);
         }, (player, in, temp, nbt, iteration) -> {
-            GlobalSettings.getInstance().getTrainGroup(in).ifPresent(x -> {
+            GlobalSettings.getInstance().getTrainCategory(in).ifPresent(x -> {
                 if (!x.getOwner().isAllowed(new Owner(player)) || !GlobalSettings.modificationsAllowed(player)) {
                     return;
                 }
-                GlobalSettings.getInstance().removeTrainGroup(in);
+                GlobalSettings.getInstance().removeTrainCategory(in);
             });
             return false;
         }
     ));
 
-    public static final DataAccessorType<UUID, Optional<TrainGroup>, Optional<TrainGroup>> GET_TRAIN_GROUP = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "get_train_group"), DataAccessorType.Builder.create(
+    public static final DataAccessorType<UUID, Optional<TrainCategory>, Optional<TrainCategory>> GET_TRAIN_CATEGORY = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "get_train_category"), DataAccessorType.Builder.create(
         (in, nbt) -> {
             nbt.putUUID(DataAccessorType.DEFAULT_NBT_DATA, in);
         }, (nbt) -> {
             return nbt.getUUID(DataAccessorType.DEFAULT_NBT_DATA);
         }, (player, in, temp, nbt, iteration) -> {
-            GlobalSettings.getInstance().getTrainGroup(in).ifPresent(x -> nbt.put(DataAccessorType.DEFAULT_NBT_DATA, x.toNbt()));
+            GlobalSettings.getInstance().getTrainCategory(in).ifPresent(x -> nbt.put(DataAccessorType.DEFAULT_NBT_DATA, x.toNbt()));
             return false;
         }, (hasMore, data, iteration, nbt) -> {
-            return Optional.ofNullable(nbt.contains(DataAccessorType.DEFAULT_NBT_DATA) ? TrainGroup.fromNbt(nbt.getCompound(DataAccessorType.DEFAULT_NBT_DATA)) : null);
+            return Optional.ofNullable(nbt.contains(DataAccessorType.DEFAULT_NBT_DATA) ? TrainCategory.fromNbt(nbt.getCompound(DataAccessorType.DEFAULT_NBT_DATA)) : null);
         }
     ));
 
-    public static final DataAccessorType<UpdateTrainGroupColorData, Void, Void> UPDATE_TRAIN_GROUP_COLOR = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "update_train_group_color"), DataAccessorType.Builder.createEmptyResponse(
+    public static final DataAccessorType<UpdateTrainCategoryColorData, Void, Void> UPDATE_TRAIN_CATEGORY_COLOR = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "update_train_category_color"), DataAccessorType.Builder.createEmptyResponse(
         (in, nbt) -> {
             nbt.putUUID("Id", in.id());
             nbt.putInt("Color", in.color());
         }, (nbt) -> {
-            return new UpdateTrainGroupColorData(nbt.getUUID("Id"), nbt.getInt("Color"));
+            return new UpdateTrainCategoryColorData(nbt.getUUID("Id"), nbt.getInt("Color"));
         }, (player, in, temp, nbt, iteration) -> {
-            GlobalSettings.getInstance().getTrainGroup(in.id()).ifPresent(x -> {
+            GlobalSettings.getInstance().getTrainCategory(in.id()).ifPresent(x -> {
                 if (!x.getOwner().isAllowed(new Owner(player)) || !GlobalSettings.modificationsAllowed(player)) {
                     return;
                 }
@@ -383,14 +383,14 @@ public final class ModAccessorTypes {
         }
     ));
 
-    public static final DataAccessorType<UpdateTrainGroupNameData, Optional<TrainGroup>, Optional<TrainGroup>> UPDATE_TRAIN_GROUP_NAME = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "update_train_group_name"), DataAccessorType.Builder.create(
+    public static final DataAccessorType<UpdateTrainCategoryNameData, Optional<TrainCategory>, Optional<TrainCategory>> UPDATE_TRAIN_CATEGORY_NAME = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "update_train_category_name"), DataAccessorType.Builder.create(
         (in, nbt) -> {
             nbt.putUUID("Id", in.id());
             nbt.putString("Name", in.name());
         }, (nbt) -> {
-            return new UpdateTrainGroupNameData(nbt.getUUID("Id"), nbt.getString("Name"));
+            return new UpdateTrainCategoryNameData(nbt.getUUID("Id"), nbt.getString("Name"));
         }, (player, in, temp, nbt, iteration) -> {
-            GlobalSettings.getInstance().getTrainGroup(in.id()).ifPresent((x) -> {
+            GlobalSettings.getInstance().getTrainCategory(in.id()).ifPresent((x) -> {
                 if (!x.getOwner().isAllowed(new Owner(player)) || !GlobalSettings.modificationsAllowed(player)) {
                     return;
                 }
@@ -399,11 +399,11 @@ public final class ModAccessorTypes {
             });
             return false;
         }, (hasMore, data, iteration, nbt) -> {
-            return Optional.ofNullable(nbt.contains(DataAccessorType.DEFAULT_NBT_DATA) ? TrainGroup.fromNbt(nbt.getCompound(DataAccessorType.DEFAULT_NBT_DATA)) : null);
+            return Optional.ofNullable(nbt.contains(DataAccessorType.DEFAULT_NBT_DATA) ? TrainCategory.fromNbt(nbt.getCompound(DataAccessorType.DEFAULT_NBT_DATA)) : null);
         }
     )); 
 
-    public static final DataAccessorType<String, Optional<TrainGroup>, Optional<TrainGroup>> CREATE_TRAIN_GROUP = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "create_train_group"), DataAccessorType.Builder.create(
+    public static final DataAccessorType<String, Optional<TrainCategory>, Optional<TrainCategory>> CREATE_TRAIN_CATEGORY = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "create_train_category"), DataAccessorType.Builder.create(
         (in, nbt) -> {
             nbt.putString(DataAccessorType.DEFAULT_NBT_DATA, in);
         }, (nbt) -> {
@@ -412,21 +412,21 @@ public final class ModAccessorTypes {
             if (!GlobalSettings.modificationsAllowed(player)) {
                 return false;
             }
-            TrainGroup group = GlobalSettings.getInstance().createOrGetTrainGroup(in, new Owner(player));
-            nbt.put(DataAccessorType.DEFAULT_NBT_DATA, group.toNbt());
+            TrainCategory category = GlobalSettings.getInstance().createOrGetTrainCategory(in, new Owner(player));
+            nbt.put(DataAccessorType.DEFAULT_NBT_DATA, category.toNbt());
             return false;
         }, (hasMore, data, iteration, nbt) -> {
-            return Optional.ofNullable(nbt.contains(DataAccessorType.DEFAULT_NBT_DATA) ? TrainGroup.fromNbt(nbt.getCompound(DataAccessorType.DEFAULT_NBT_DATA)) : null);
+            return Optional.ofNullable(nbt.contains(DataAccessorType.DEFAULT_NBT_DATA) ? TrainCategory.fromNbt(nbt.getCompound(DataAccessorType.DEFAULT_NBT_DATA)) : null);
         }
     ));
 
-    public static final DataAccessorType<PermissionsUpdateData, Optional<TrainGroup>, Optional<TrainGroup>> UPDATE_TRAIN_GROUP_PERMISSIONS = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "update_train_group_permissions"), DataAccessorType.Builder.create(
+    public static final DataAccessorType<PermissionsUpdateData, Optional<TrainCategory>, Optional<TrainCategory>> UPDATE_TRAIN_CATEGORY_PERMISSIONS = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "update_train_category_permissions"), DataAccessorType.Builder.create(
         (in, nbt) -> {
             nbt.put(DataAccessorType.DEFAULT_NBT_DATA, in.toNbt());
         }, (nbt) -> {
             return PermissionsUpdateData.fromNbt(nbt.getCompound(DataAccessorType.DEFAULT_NBT_DATA));
         }, (player, in, temp, nbt, iteration) -> {
-            GlobalSettings.getInstance().getTrainGroup(in.id()).ifPresent((tag) -> {
+            GlobalSettings.getInstance().getTrainCategory(in.id()).ifPresent((tag) -> {
                 if (!tag.getOwner().isAdmin(new Owner(player)) || !GlobalSettings.modificationsAllowed(player)) {
                     return;
                 }
@@ -440,7 +440,7 @@ public final class ModAccessorTypes {
             });
             return false;
         }, (hasMore, data, iteration, nbt) -> {
-            return Optional.ofNullable(nbt.contains(DataAccessorType.DEFAULT_NBT_DATA) ? TrainGroup.fromNbt(nbt.getCompound(DataAccessorType.DEFAULT_NBT_DATA)) : null);
+            return Optional.ofNullable(nbt.contains(DataAccessorType.DEFAULT_NBT_DATA) ? TrainCategory.fromNbt(nbt.getCompound(DataAccessorType.DEFAULT_NBT_DATA)) : null);
         }
     ));
     
@@ -885,8 +885,8 @@ public final class ModAccessorTypes {
             if (!GlobalSettings.modificationsAllowed(player)) {
                 return false;
             }
-            TrainLine group = GlobalSettings.getInstance().createOrGetTrainLine(in, new Owner(player));
-            nbt.put(DataAccessorType.DEFAULT_NBT_DATA, group.toNbt());
+            TrainLine line = GlobalSettings.getInstance().createOrGetTrainLine(in, new Owner(player));
+            nbt.put(DataAccessorType.DEFAULT_NBT_DATA, line.toNbt());
             return false;
         }, (hasMore, data, iteration, nbt) -> {
             return Optional.ofNullable(nbt.contains(DataAccessorType.DEFAULT_NBT_DATA)? TrainLine.fromNbt(nbt.getCompound(DataAccessorType.DEFAULT_NBT_DATA)) : null);
@@ -996,14 +996,14 @@ public final class ModAccessorTypes {
                             }
 
                             ScheduleSection section = prediction.getSection();
-                            if ((!section.isUsable() && !(section.isFirstStop(prediction) && section.previousSection().isUsable() && section.previousSection().shouldIncludeNextStationOfNextSection())) || (section.getTrainGroup().map(x -> settings.searchExcludedTrainGroups.getValue().contains(x.getId())).orElse(false))) {
+                            if ((!section.isUsable() && !(section.isFirstStop(prediction) && section.previousSection().isUsable() && section.previousSection().shouldIncludeNextStationOfNextSection())) || (section.getTrainCategory().map(x -> settings.searchExcludedTrainCaegories.getValue().contains(x.getId())).orElse(false))) {
                                 continue;
                             }
 
                             ScheduleSection previousSection = section.previousSection();
 
                             boolean isStart = section.isFirstStop(prediction); 
-                            boolean isStartAndFinal = isStart && previousSection.isUsable() && previousSection.shouldIncludeNextStationOfNextSection() && (previousSection.getTrainGroup().map(x -> !settings.searchExcludedTrainGroups.getValue().contains(x.getId())).orElse(true)); 
+                            boolean isStartAndFinal = isStart && previousSection.isUsable() && previousSection.shouldIncludeNextStationOfNextSection() && (previousSection.getTrainCategory().map(x -> !settings.searchExcludedTrainCaegories.getValue().contains(x.getId())).orElse(true)); 
                             
                             TrainStop stop = new TrainStop(prediction);
                             stop.simulateTicks(settings.searchDepartureInTicks.getValue());
@@ -1012,7 +1012,7 @@ public final class ModAccessorTypes {
 
                             Route route = new Route(List.of(new RoutePart(data.getSessionId(), train.id, List.of(stop /* current/target */, from /* from */), section.getAllStops(settings.searchDepartureInTicks.getValue(), prediction.getEntryIndex()))), false);
                             
-                            if ((!isStart || isStartAndFinal) && (section.getTrainGroup().map(x -> !settings.searchExcludedTrainGroups.getValue().contains(x.getId())).orElse(true))) {
+                            if ((!isStart || isStartAndFinal) && (section.getTrainCategory().map(x -> !settings.searchExcludedTrainCaegories.getValue().contains(x.getId())).orElse(true))) {
                                 
                                 Route selectedRoute = route;
                                 if (isStartAndFinal) {
@@ -1022,7 +1022,7 @@ public final class ModAccessorTypes {
                                 }
                                 routesL.add(Pair.of(true, selectedRoute)); // Arrival
                             }
-                            if ((section.isUsable()) && (section.getTrainGroup().map(x -> !settings.searchExcludedTrainGroups.getValue().contains(x.getId())).orElse(true))) {
+                            if ((section.isUsable()) && (section.getTrainCategory().map(x -> !settings.searchExcludedTrainCaegories.getValue().contains(x.getId())).orElse(true))) {
                                 routesL.add(Pair.of(false, route)); // Departure
                             }
                         }

@@ -15,7 +15,7 @@ import de.mrjulsen.crn.client.gui.widgets.ModernVerticalScrollBar;
 import de.mrjulsen.crn.client.gui.widgets.SearchOptionButton;
 import de.mrjulsen.crn.client.gui.widgets.StationDeparturesViewer;
 import de.mrjulsen.crn.client.gui.widgets.flyouts.FlyoutDepartureInWidget;
-import de.mrjulsen.crn.client.gui.widgets.flyouts.FlyoutTrainGroupsWidget;
+import de.mrjulsen.crn.client.gui.widgets.flyouts.FlyoutTrainCategoriesWidget;
 import de.mrjulsen.crn.data.StationTag;
 import de.mrjulsen.crn.data.TagName;
 import de.mrjulsen.crn.data.UserSettings;
@@ -156,9 +156,9 @@ public class ScheduleBoardScreen extends AbstractNavigatorScreen {
                 reloadUserSettings(() -> this.viewer.displayRoutes(stationTagName, userSettings));
             }).open(b);
         }));
-        addRenderableWidget(new SearchOptionButton(workingArea.getLeft() + btnWidth, workingArea.getTop() + 16 + FooterSize.DEFAULT.size() - 2, btnWidth, 18, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.train_groups"), () -> userSettings.searchExcludedTrainGroups.toString(), (b) -> {
-            new FlyoutTrainGroupsWidget<>(this, FlyoutPointer.UP, ColorShade.DARK, this::addRenderableWidget, userSettings, () -> {
-                return userSettings.searchExcludedTrainGroups;
+        addRenderableWidget(new SearchOptionButton(workingArea.getLeft() + btnWidth, workingArea.getTop() + 16 + FooterSize.DEFAULT.size() - 2, btnWidth, 18, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.train_categories"), () -> userSettings.searchExcludedTrainCaegories.toString(), (b) -> {
+            new FlyoutTrainCategoriesWidget<>(this, FlyoutPointer.UP, ColorShade.DARK, this::addRenderableWidget, userSettings, () -> {
+                return userSettings.searchExcludedTrainCaegories;
             }, (w) -> {
                 removeWidget(w);
                 reloadUserSettings(() -> this.viewer.displayRoutes(stationTagName, userSettings));

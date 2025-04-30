@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 
 import com.simibubi.create.content.trains.entity.Train;
 
-import de.mrjulsen.crn.data.TrainGroup;
+import de.mrjulsen.crn.data.TrainCategory;
 import de.mrjulsen.crn.data.TrainLine;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
 import de.mrjulsen.mcdragonlib.DragonLib;
@@ -26,12 +26,12 @@ public final class DepartureHistory {
 
         private static final String NBT_LAST_DEPARTURE = "LastDeparture";
         private static final String NBT_LINES = "Lines";
-        private static final String NBT_GROUPS = "Groups";
+        private static final String NBT_CATEGORIES = "Categories";
         private static final String NBT_NAMES = "Names";
 
         private long lastDepartureTime = Long.MIN_VALUE;
         private Map<TrainLine, Long> lastDepartureByLine = new ConcurrentHashMap<>();
-        private Map<TrainGroup, Long> lastDepartureByGroup = new ConcurrentHashMap<>();
+        private Map<TrainCategory, Long> lastDepartureByCategory = new ConcurrentHashMap<>();
         private Map<String, Long> lastDepartureByTrainName = new ConcurrentHashMap<>();
 
         public void setDeparture(Train train) {
@@ -40,13 +40,13 @@ public final class DepartureHistory {
             TrainListener.getTrainData(train.id).ifPresent(data -> {
                 ScheduleSection section = data.getCurrentSection();
                 section.getTrainLine().ifPresent(x -> this.lastDepartureByLine.put(x, this.lastDepartureTime));
-                section.getTrainGroup().ifPresent(x -> this.lastDepartureByGroup.put(x, this.lastDepartureTime));
+                section.getTrainCategory().ifPresent(x -> this.lastDepartureByCategory.put(x, this.lastDepartureTime));
             });
         }
 
         public long getLastDepartureTime(ETrainFilter filter, String trainName, @Nullable ScheduleSection section) {
             return switch (filter) {
-                case SAME_GROUP -> section != null ? section.getTrainGroup().map(x -> lastDepartureByGroup.getOrDefault(x, Long.MIN_VALUE)).orElse(Long.MIN_VALUE) : Long.MIN_VALUE;
+                case SAME_CATEGORY -> section != null ? section.getTrainCategory().map(x -> lastDepartureByCategory.getOrDefault(x, Long.MIN_VALUE)).orElse(Long.MIN_VALUE) : Long.MIN_VALUE;
                 case SAME_LINE -> section != null ? section.getTrainLine().map(x -> lastDepartureByLine.getOrDefault(x, Long.MIN_VALUE)).orElse(Long.MIN_VALUE) : Long.MIN_VALUE;
                 case SAME_NAME -> trainName != null ? lastDepartureByTrainName.getOrDefault(trainName, Long.MIN_VALUE) : Long.MIN_VALUE;
                 default -> lastDepartureTime;
@@ -61,16 +61,16 @@ public final class DepartureHistory {
             return lastDepartureByLine;
         }
 
-        public Map<TrainGroup, Long> getLastDeparturesByGroup() {
-            return lastDepartureByGroup;
+        public Map<TrainCategory, Long> getLastDeparturesByCategory() {
+            return lastDepartureByCategory;
         }
 
         public Map<String, Long> getLastDeparturesByTrainName() {
             return lastDepartureByTrainName;
         }
 
-        public Optional<Long> getDepartureByGroup(TrainGroup group) {
-            return Optional.ofNullable(lastDepartureByGroup.containsKey(group) ? lastDepartureByGroup.get(group) : null);
+        public Optional<Long> getDepartureByCategory(TrainCategory category) {
+            return Optional.ofNullable(lastDepartureByCategory.containsKey(category) ? lastDepartureByCategory.get(category) : null);
         }
 
         public Optional<Long> getDepartureByLine(TrainLine line) {
@@ -82,7 +82,7 @@ public final class DepartureHistory {
         }
 
         public long debug_cachedDataCount() {
-            return 1 + lastDepartureByLine.size() + lastDepartureByGroup.size();
+            return 1 + lastDepartureByLine.size() + lastDepartureByCategory.size();
         }
         public CompoundTag toNbt() {
             CompoundTag nbt = new CompoundTag();
@@ -94,11 +94,11 @@ public final class DepartureHistory {
             }
             nbt.put(NBT_LINES, linesList);
             
-            CompoundTag groupsList = new CompoundTag();
-            for (Map.Entry<TrainGroup, Long> e : lastDepartureByGroup.entrySet()) {
-                groupsList.putLong(e.getKey().getId().toString(), e.getValue());
+            CompoundTag categoriesList = new CompoundTag();
+            for (Map.Entry<TrainCategory, Long> e : lastDepartureByCategory.entrySet()) {
+                categoriesList.putLong(e.getKey().getId().toString(), e.getValue());
             }
-            nbt.put(NBT_GROUPS, groupsList);
+            nbt.put(NBT_CATEGORIES, categoriesList);
             
             CompoundTag namesList = new CompoundTag();
             for (Map.Entry<String, Long> e : lastDepartureByTrainName.entrySet()) {
@@ -115,9 +115,9 @@ public final class DepartureHistory {
             for (String key : linesList.getAllKeys()) {
                 GlobalSettings.getInstance().getTrainLine(UUID.fromString(key)).ifPresent(x -> data.lastDepartureByLine.put(x, linesList.getLong(key)));
             }
-            CompoundTag groupsList = nbt.getCompound(NBT_GROUPS);
-            for (String key : groupsList.getAllKeys()) {
-                GlobalSettings.getInstance().getTrainGroup(UUID.fromString(key)).ifPresent(x -> data.lastDepartureByGroup.put(x, groupsList.getLong(key)));
+            CompoundTag categoriesList = nbt.getCompound(NBT_CATEGORIES);
+            for (String key : categoriesList.getAllKeys()) {
+                GlobalSettings.getInstance().getTrainCategory(UUID.fromString(key)).ifPresent(x -> data.lastDepartureByCategory.put(x, categoriesList.getLong(key)));
             }
             CompoundTag namesList = nbt.getCompound(NBT_NAMES);
             for (String key : namesList.getAllKeys()) {
@@ -130,7 +130,7 @@ public final class DepartureHistory {
     public static enum ETrainFilter implements ITranslatableEnum {
         ANY((byte)0, "any"),
         SAME_LINE((byte)1, "same_line"),
-        SAME_GROUP((byte)2, "same_group"),
+        SAME_CATEGORY((byte)2, "same_category"),
         SAME_NAME((byte)3, "same_name");
 
         private final byte index;
@@ -168,34 +168,34 @@ public final class DepartureHistory {
 
         private static final String NBT_LAST_DEPARTURE = "LastDeparture";
         private static final String NBT_LINE = "Line";
-        private static final String NBT_GROUP = "Group";
+        private static final String NBT_CATEGORY = "Category";
         private static final String NBT_NAME = "Name";
 
         private final long lastDeparture;
-        private final Map<String, Long> departuresByGroup;
+        private final Map<String, Long> departuresByCategory;
         private final Map<String, Long> departuresByLine;
         private final Map<String, Long> departuresByName;
 
-        private final Optional<Pair<String, Long>> latestGroupDeparture;
+        private final Optional<Pair<String, Long>> latestCategoryDeparture;
         private final Optional<Pair<String, Long>> latestLineDeparture;
         private final Optional<Pair<String, Long>> latestNameDeparture;
 
-        public Stats(long lastDeparture, Map<String, Long> departuresByGroup, Map<String, Long> departuresByLine, Map<String, Long> departuresByName) {
+        public Stats(long lastDeparture, Map<String, Long> departuresByCategory, Map<String, Long> departuresByLine, Map<String, Long> departuresByName) {
             this.lastDeparture = lastDeparture;
-            this.departuresByGroup = departuresByGroup;
+            this.departuresByCategory = departuresByCategory;
             this.departuresByLine = departuresByLine;
             this.departuresByName = departuresByName;
 
-            this.latestGroupDeparture = departuresByGroup.entrySet().stream().max((a, b) -> Long.compare(a.getValue(), b.getValue())).map(p -> new Pair<>(p.getKey(), p.getValue()));
+            this.latestCategoryDeparture = departuresByCategory.entrySet().stream().max((a, b) -> Long.compare(a.getValue(), b.getValue())).map(p -> new Pair<>(p.getKey(), p.getValue()));
             this.latestLineDeparture = departuresByLine.entrySet().stream().max((a, b) -> Long.compare(a.getValue(), b.getValue())).map(p -> new Pair<>(p.getKey(), p.getValue()));
             this.latestNameDeparture = departuresByName.entrySet().stream().max((a, b) -> Long.compare(a.getValue(), b.getValue())).map(p -> new Pair<>(p.getKey(), p.getValue()));
         }
 
         public static Stats of(Data data) {
-            Map<String, Long> groups = data.getLastDeparturesByGroup().entrySet().stream().collect(Collectors.toMap(p -> p.getKey().getGroupName(), p -> p.getValue()));
+            Map<String, Long> categories = data.getLastDeparturesByCategory().entrySet().stream().collect(Collectors.toMap(p -> p.getKey().getCategoryName(), p -> p.getValue()));
             Map<String, Long> lines = data.getLastDeparturesByLine().entrySet().stream().collect(Collectors.toMap(p -> p.getKey().getLineName(), p -> p.getValue()));
             Map<String, Long> names = data.getLastDeparturesByTrainName().entrySet().stream().collect(Collectors.toMap(p -> p.getKey(), p -> p.getValue()));
-            return new Stats(data.getLastDepartureTime(), groups, lines, names);
+            return new Stats(data.getLastDepartureTime(), categories, lines, names);
         }
 
         public static Stats ofStation(String stationName) {
@@ -207,15 +207,15 @@ public final class DepartureHistory {
         }
 
         public boolean isEmpty() {
-            return getLastDeparture() < 0 && getDeparturesByGroup().isEmpty() && getDeparturesByLine().isEmpty() && getDeparturesByName().isEmpty();
+            return getLastDeparture() < 0 && getDeparturesByCategory().isEmpty() && getDeparturesByLine().isEmpty() && getDeparturesByName().isEmpty();
         }
 
         public long getLastDeparture() {
             return lastDeparture;
         }
 
-        public Map<String, Long> getDeparturesByGroup() {
-            return departuresByGroup;
+        public Map<String, Long> getDeparturesByCategory() {
+            return departuresByCategory;
         }
 
         public Map<String, Long> getDeparturesByLine() {
@@ -226,8 +226,8 @@ public final class DepartureHistory {
             return departuresByName;
         }
 
-        public Optional<Pair<String, Long>> getLatestGroupDeparture() {
-            return latestGroupDeparture;
+        public Optional<Pair<String, Long>> getLatestCategoryDeparture() {
+            return latestCategoryDeparture;
         }
 
         public Optional<Pair<String, Long>> getLatestLineDeparture() {
@@ -241,9 +241,9 @@ public final class DepartureHistory {
         public CompoundTag toNbt() {
             CompoundTag nbt = new CompoundTag();
             
-            CompoundTag groupsTag = new CompoundTag();
-            for (Map.Entry<String, Long> e : departuresByGroup.entrySet()) {
-                groupsTag.putLong(e.getKey(), e.getValue());
+            CompoundTag categoriesTag = new CompoundTag();
+            for (Map.Entry<String, Long> e : departuresByCategory.entrySet()) {
+                categoriesTag.putLong(e.getKey(), e.getValue());
             }
             CompoundTag linesTag = new CompoundTag();
             for (Map.Entry<String, Long> e : departuresByLine.entrySet()) {
@@ -254,17 +254,17 @@ public final class DepartureHistory {
                 namesTag.putLong(e.getKey(), e.getValue());
             }
             nbt.putLong(NBT_LAST_DEPARTURE, lastDeparture);
-            nbt.put(NBT_GROUP, groupsTag);
+            nbt.put(NBT_CATEGORY, categoriesTag);
             nbt.put(NBT_LINE, linesTag);
             nbt.put(NBT_NAME, namesTag);
             return nbt;
         }
 
         public static Stats fromNbt(CompoundTag nbt) {
-            Map<String, Long> groups = new HashMap<>();
-            CompoundTag groupsTag = nbt.getCompound(NBT_GROUP);
-            for (String key : groupsTag.getAllKeys()) {
-                groups.put(key, groupsTag.getLong(key));
+            Map<String, Long> categories = new HashMap<>();
+            CompoundTag categoriesTag = nbt.getCompound(NBT_CATEGORY);
+            for (String key : categoriesTag.getAllKeys()) {
+                categories.put(key, categoriesTag.getLong(key));
             }
 
             Map<String, Long> lines = new HashMap<>();
@@ -279,7 +279,7 @@ public final class DepartureHistory {
                 names.put(key, namesTag.getLong(key));
             }
 
-            return new Stats(nbt.getLong(NBT_LAST_DEPARTURE), groups, lines, names);
+            return new Stats(nbt.getLong(NBT_LAST_DEPARTURE), categories, lines, names);
         }
     }
 
@@ -311,12 +311,12 @@ public final class DepartureHistory {
         if (!data.isPresent()) {
             return latestDepartureTime;
         }
-        Optional<TrainGroup> group = data.get().getCurrentSection().getTrainGroup();
+        Optional<TrainCategory> category = data.get().getCurrentSection().getTrainCategory();
         Optional<TrainLine> line = data.get().getCurrentSection().getTrainLine();
 
         for (Map.Entry<String, Data> e : dataSrc.entrySet()) {
             switch (trainFilter) {
-                case SAME_GROUP -> latestDepartureTime = Math.max(latestDepartureTime, group.map(x -> e.getValue().getDepartureByGroup(x).orElse(Long.MIN_VALUE)).orElse(Long.MIN_VALUE));
+                case SAME_CATEGORY -> latestDepartureTime = Math.max(latestDepartureTime, category.map(x -> e.getValue().getDepartureByCategory(x).orElse(Long.MIN_VALUE)).orElse(Long.MIN_VALUE));
                 case SAME_LINE -> latestDepartureTime = Math.max(latestDepartureTime, line.map(x -> e.getValue().getDepartureByLine(x).orElse(Long.MIN_VALUE)).orElse(Long.MIN_VALUE));
                 case SAME_NAME -> latestDepartureTime = Math.max(latestDepartureTime, Optional.ofNullable(train.name).map(x -> e.getValue().getDepartureByName(x.getString()).orElse(Long.MIN_VALUE)).orElse(Long.MIN_VALUE));
                 default -> latestDepartureTime = Math.max(latestDepartureTime, e.getValue().getLastDepartureTime());

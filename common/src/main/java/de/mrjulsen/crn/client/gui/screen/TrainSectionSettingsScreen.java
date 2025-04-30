@@ -20,7 +20,7 @@ import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.widgets.DLCreateIconButton;
 import de.mrjulsen.crn.client.gui.widgets.DLCreateLabel;
 import de.mrjulsen.crn.client.gui.widgets.DLCreateSelectionScrollInput;
-import de.mrjulsen.crn.data.TrainGroup;
+import de.mrjulsen.crn.data.TrainCategory;
 import de.mrjulsen.crn.data.TrainLine;
 import de.mrjulsen.crn.data.schedule.instruction.TravelSectionInstruction;
 import de.mrjulsen.crn.data.storage.GlobalSettingsClient;
@@ -59,10 +59,10 @@ public class TrainSectionSettingsScreen extends DLScreen {
     // Settings
     private boolean includePreviousStation = false;
     private boolean usable = true;
-    private UUID trainGroupId;
+    private UUID trainCategoryId;
     private UUID trainLineId;
 
-    private Map<UUID, TrainGroup> groupsById;
+    private Map<UUID, TrainCategory> categoriesById;
     private Map<UUID, TrainLine> linesById;
 
     // GUI
@@ -77,12 +77,13 @@ public class TrainSectionSettingsScreen extends DLScreen {
     private DLCreateIconButton globalSettingsButton;
 
     private final MutableComponent tooltipGlobalSettings = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.global_settings.tooltip");
-    private final MutableComponent tooltipTrainGroup = TextUtils.translate("gui.createrailwaysnavigator.section_settings.train_groups");
+    private final MutableComponent tooltipTrainCatrgory = TextUtils.translate("gui.createrailwaysnavigator.section_settings.train_categories");
     private final MutableComponent tooltipTrainLine = TextUtils.translate("gui.createrailwaysnavigator.section_settings.train_lines");
     private final MutableComponent textIncludePreviousStation = TextUtils.translate("gui.createrailwaysnavigator.section_settings.include_previous_station");
     private final MutableComponent textUsable = TextUtils.translate("gui.createrailwaysnavigator.section_settings.usable");
     private final MutableComponent textNone = TextUtils.translate("gui.createrailwaysnavigator.section_settings.none");
 
+    @SuppressWarnings("deprecation")
     public TrainSectionSettingsScreen(Screen lastScreen, CompoundTag nbt) {
         super(TextUtils.translate("gui.createrailwaysnavigator.section_settings.title"));
         this.lastScreen = lastScreen;
@@ -90,9 +91,13 @@ public class TrainSectionSettingsScreen extends DLScreen {
 
         this.includePreviousStation = nbt.contains(TravelSectionInstruction.NBT_INCLUDE_PREVIOUS_STATION) ? nbt.getBoolean(TravelSectionInstruction.NBT_INCLUDE_PREVIOUS_STATION) : false;
         this.usable = nbt.contains(TravelSectionInstruction.NBT_USABLE) ? nbt.getBoolean(TravelSectionInstruction.NBT_USABLE) : true;
-        if (nbt.contains(TravelSectionInstruction.NBT_TRAIN_GROUP)) {
-            this.trainGroupId = nbt.getTagType(TravelSectionInstruction.NBT_TRAIN_GROUP) == Tag.TAG_STRING ? TrainGroup.genMD5Uuid(nbt.getString(TravelSectionInstruction.NBT_TRAIN_GROUP)) : nbt.getUUID(TravelSectionInstruction.NBT_TRAIN_GROUP);
+        
+        if (nbt.contains(TravelSectionInstruction.LEGACY_NBT_TRAIN_CATEGORY)) {
+            this.trainCategoryId = nbt.getTagType(TravelSectionInstruction.LEGACY_NBT_TRAIN_CATEGORY) == Tag.TAG_STRING ? TrainCategory.genMD5Uuid(nbt.getString(TravelSectionInstruction.LEGACY_NBT_TRAIN_CATEGORY)) : nbt.getUUID(TravelSectionInstruction.LEGACY_NBT_TRAIN_CATEGORY);
+        } else if (nbt.contains(TravelSectionInstruction.NBT_TRAIN_CATEGORY)) {
+            this.trainCategoryId = nbt.getTagType(TravelSectionInstruction.NBT_TRAIN_CATEGORY) == Tag.TAG_STRING ? TrainCategory.genMD5Uuid(nbt.getString(TravelSectionInstruction.NBT_TRAIN_CATEGORY)) : nbt.getUUID(TravelSectionInstruction.NBT_TRAIN_CATEGORY);
         }
+        
         if (nbt.contains(TravelSectionInstruction.NBT_TRAIN_LINE)) {
             this.trainLineId = nbt.getTagType(TravelSectionInstruction.NBT_TRAIN_LINE) == Tag.TAG_STRING ? TrainLine.genMD5Uuid(nbt.getString(TravelSectionInstruction.NBT_TRAIN_LINE)) : nbt.getUUID(TravelSectionInstruction.NBT_TRAIN_LINE);
         }
@@ -105,10 +110,10 @@ public class TrainSectionSettingsScreen extends DLScreen {
 
     @Override
     public void onClose() {
-        if (trainGroupId != null) {
-            nbt.putUUID(TravelSectionInstruction.NBT_TRAIN_GROUP, trainGroupId);
+        if (trainCategoryId != null) {
+            nbt.putUUID(TravelSectionInstruction.NBT_TRAIN_CATEGORY, trainCategoryId);
         } else {
-            nbt.remove(TravelSectionInstruction.NBT_TRAIN_GROUP);
+            nbt.remove(TravelSectionInstruction.NBT_TRAIN_CATEGORY);
         }
         if (trainLineId != null) {
             nbt.putUUID(TravelSectionInstruction.NBT_TRAIN_LINE, trainLineId);
@@ -151,22 +156,22 @@ public class TrainSectionSettingsScreen extends DLScreen {
         });
         addTooltip(DLTooltip.of(tooltipGlobalSettings).assignedTo(globalSettingsButton));
 
-        GlobalSettingsClient.getTrainGroups((trainGroups) -> {
-            this.groupsById = trainGroups.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
+        GlobalSettingsClient.getTrainCategories((trainCategories) -> {
+            this.categoriesById = trainCategories.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
             GlobalSettingsClient.getTrainLines((trainLines) -> {
                 this.linesById = trainLines.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
 
-                List<MutableComponent> groupsList = new ArrayList<>(trainGroups.stream().map(x -> TextUtils.text(x.getGroupName())).toList());
-                groupsList.add(0, textNone);
+                List<MutableComponent> categoriesList = new ArrayList<>(trainCategories.stream().map(x -> TextUtils.text(x.getCategoryName())).toList());
+                categoriesList.add(0, textNone);
                 displayTypeLabel = addRenderableWidget(new DLCreateLabel(guiLeft + 45 + 5, guiTop + 23 + 5, Components.immutableEmpty()).withShadow());
                 displayTypeInput = addRenderableWidget(new DLCreateSelectionScrollInput(this, guiLeft + 45, guiTop + 23, 138, 18)
-                    .forOptions(groupsList)
-                    .titled(tooltipTrainGroup)
+                    .forOptions(categoriesList)
+                    .titled(tooltipTrainCatrgory)
                     .writingTo(displayTypeLabel)
                     .calling((i) -> {
-                        this.trainGroupId = i <= 0 ? null : trainGroups.get(i - 1).getId();
+                        this.trainCategoryId = i <= 0 ? null : trainCategories.get(i - 1).getId();
                     })
-                    .setState(trainGroupId != null && groupsById.containsKey(trainGroupId) ? trainGroups.indexOf(groupsById.get(trainGroupId)) + 1 : 0)
+                    .setState(trainCategoryId != null && categoriesById.containsKey(trainCategoryId) ? trainCategories.indexOf(categoriesById.get(trainCategoryId)) + 1 : 0)
                 );
                 displayTypeInput.onChanged();
 

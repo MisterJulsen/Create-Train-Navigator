@@ -8,7 +8,7 @@ import java.util.Optional;
 
 import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.data.StationTag;
-import de.mrjulsen.crn.data.TrainGroup;
+import de.mrjulsen.crn.data.TrainCategory;
 import de.mrjulsen.crn.data.TrainLine;
 import de.mrjulsen.crn.data.StationTag.StationInfo;
 import de.mrjulsen.crn.registry.ModAccessorTypes;
@@ -72,34 +72,34 @@ public class GlobalSettingsClient {
 
 
     
-    public static void getTrainGroups(Consumer<List<TrainGroup>> result) {
-        DataAccessor.getFromServer(null, ModAccessorTypes.GET_ALL_TRAIN_GROUPS, result);
+    public static void getTrainCategories(Consumer<List<TrainCategory>> result) {
+        DataAccessor.getFromServer(null, ModAccessorTypes.GET_ALL_TRAIN_CATEGORIES, result);
     }
 
-    public static void deleteTrainGroup(UUID id, Runnable callback) {
-        DataAccessor.getFromServer(id, ModAccessorTypes.DELETE_TRAIN_GROUP, x -> callback.run());
+    public static void deleteTrainCategory(UUID id, Runnable callback) {
+        DataAccessor.getFromServer(id, ModAccessorTypes.DELETE_TRAIN_CATEGORY, x -> callback.run());
     }
 
-    public static void getTrainGroup(UUID id, Runnable callback) {
-        DataAccessor.getFromServer(id, ModAccessorTypes.DELETE_TRAIN_GROUP, x -> callback.run());
+    public static void getTrainCategory(UUID id, Runnable callback) {
+        DataAccessor.getFromServer(id, ModAccessorTypes.GET_TRAIN_CATEGORY, x -> callback.run());
     }
     
-    public static record UpdateTrainGroupColorData(UUID id, int color) {}
-    public static void updateTrainGroupColor(UUID id, int color, Runnable callback) {
-        DataAccessor.getFromServer(new UpdateTrainGroupColorData(id, color), ModAccessorTypes.UPDATE_TRAIN_GROUP_COLOR, x -> callback.run());
+    public static record UpdateTrainCategoryColorData(UUID id, int color) {}
+    public static void updateTrainCategoryColor(UUID id, int color, Runnable callback) {
+        DataAccessor.getFromServer(new UpdateTrainCategoryColorData(id, color), ModAccessorTypes.UPDATE_TRAIN_CATEGORY_COLOR, x -> callback.run());
     }
 
-    public static void createTrainGroup(String name, Consumer<Optional<TrainGroup>> result) {
-        DataAccessor.getFromServer(name, ModAccessorTypes.CREATE_TRAIN_GROUP, result);
+    public static void createTrainCategory(String name, Consumer<Optional<TrainCategory>> result) {
+        DataAccessor.getFromServer(name, ModAccessorTypes.CREATE_TRAIN_CATEGORY, result);
     }
 
-    public static record UpdateTrainGroupNameData(UUID id, String name) {}
-    public static void updateTrainGroupName(UUID id, String name, Consumer<Optional<TrainGroup>> callback) {
-        DataAccessor.getFromServer(new UpdateTrainGroupNameData(id, name), ModAccessorTypes.UPDATE_TRAIN_GROUP_NAME, x -> callback.accept(x));
+    public static record UpdateTrainCategoryNameData(UUID id, String name) {}
+    public static void updateTrainCategoryName(UUID id, String name, Consumer<Optional<TrainCategory>> callback) {
+        DataAccessor.getFromServer(new UpdateTrainCategoryNameData(id, name), ModAccessorTypes.UPDATE_TRAIN_CATEGORY_NAME, x -> callback.accept(x));
     }
 
-    public static void updateTrainGroupPermissions(PermissionsUpdateData data, Consumer<Optional<TrainGroup>> callback) {
-        DataAccessor.getFromServer(data, ModAccessorTypes.UPDATE_TRAIN_GROUP_PERMISSIONS, x -> callback.accept(x));
+    public static void updateTrainCategoryPermissions(PermissionsUpdateData data, Consumer<Optional<TrainCategory>> callback) {
+        DataAccessor.getFromServer(data, ModAccessorTypes.UPDATE_TRAIN_CATEGORY_PERMISSIONS, x -> callback.accept(x));
     }
 
     

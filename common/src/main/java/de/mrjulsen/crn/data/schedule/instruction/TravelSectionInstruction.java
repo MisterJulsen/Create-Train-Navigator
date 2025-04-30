@@ -13,7 +13,7 @@ import com.simibubi.create.foundation.utility.Pair;
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.ClientWrapper;
-import de.mrjulsen.crn.data.TrainGroup;
+import de.mrjulsen.crn.data.TrainCategory;
 import de.mrjulsen.crn.data.TrainLine;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
 import de.mrjulsen.crn.data.train.TrainData;
@@ -36,7 +36,10 @@ import net.minecraft.world.item.ItemStack;
 
 public class TravelSectionInstruction extends ScheduleInstruction implements IStationTagInstruction, IPredictableInstruction {
     
-    public static final String NBT_TRAIN_GROUP = "TrainGroup";
+    @Deprecated
+    public static final String LEGACY_NBT_TRAIN_CATEGORY = "TrainGroup";
+
+    public static final String NBT_TRAIN_CATEGORY = "TrainCategory";
     public static final String NBT_TRAIN_LINE = "TrainLine";
     public static final String NBT_INCLUDE_PREVIOUS_STATION = "IncludePreviousStation";
     public static final String NBT_USABLE = "Usable";
@@ -44,9 +47,9 @@ public class TravelSectionInstruction extends ScheduleInstruction implements ISt
     private final MutableComponent txtNone = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".section_settings.none").withStyle(ChatFormatting.GRAY);
     private final MutableComponent txtLoading = TextUtils.empty().append(Constants.TEXT_LOADING).withStyle(ChatFormatting.GRAY).withStyle(ChatFormatting.ITALIC);
 
-    private UUID lastGroupId = null;
+    private UUID lastCategoryId = null;
     private UUID lastLineId = null;
-    private TrainGroup group;
+    private TrainCategory category;
     private TrainLine line;
 
     public TravelSectionInstruction() {
@@ -55,8 +58,6 @@ public class TravelSectionInstruction extends ScheduleInstruction implements ISt
     @Override
     protected void readAdditional(CompoundTag tag) {
         super.readAdditional(tag);        
-        //if (!tag.contains(NBT_TRAIN_GROUP)) tag.putUUID(NBT_TRAIN_GROUP, "");
-        //if (!tag.contains(NBT_TRAIN_LINE)) tag.putString(NBT_TRAIN_LINE, "");
         if (!tag.contains(NBT_INCLUDE_PREVIOUS_STATION)) tag.putBoolean(NBT_INCLUDE_PREVIOUS_STATION, false);
         if (!tag.contains(NBT_USABLE)) tag.putBoolean(NBT_USABLE, true);
     }
@@ -76,13 +77,13 @@ public class TravelSectionInstruction extends ScheduleInstruction implements ISt
         return false;
     }
 
-    private void requestGroup(UUID groupId) {
-        this.lastGroupId = null;
-        this.group = null;
-        if (groupId == null) return;
-        DataAccessor.getFromServer(groupId, ModAccessorTypes.GET_TRAIN_GROUP, group -> {
-            this.lastGroupId = groupId;
-            this.group = group.orElse(null);
+    private void requestCategory(UUID categoryId) {
+        this.lastCategoryId = null;
+        this.category = null;
+        if (categoryId == null) return;
+        DataAccessor.getFromServer(categoryId, ModAccessorTypes.GET_TRAIN_CATEGORY, category -> {
+            this.lastCategoryId = categoryId;
+            this.category = category.orElse(null);
         });
     }
 
@@ -99,15 +100,17 @@ public class TravelSectionInstruction extends ScheduleInstruction implements ISt
     @Override
 	public List<Component> getTitleAs(String type) {
 
-        UUID groupId = null;
+        UUID categoryId = null;
         UUID lineId = null;
 
-        if (data.contains(NBT_TRAIN_GROUP)) {
-            if (data.getTagType(NBT_TRAIN_GROUP) == Tag.TAG_STRING) {
-                groupId = TrainGroup.genMD5Uuid(data.getString(NBT_TRAIN_GROUP));
+        if (data.contains(LEGACY_NBT_TRAIN_CATEGORY)) {
+            if (data.getTagType(LEGACY_NBT_TRAIN_CATEGORY) == Tag.TAG_STRING) {
+                categoryId = TrainCategory.genMD5Uuid(data.getString(LEGACY_NBT_TRAIN_CATEGORY));
             } else {
-                groupId = data.getUUID(NBT_TRAIN_GROUP);
+                categoryId = data.getUUID(LEGACY_NBT_TRAIN_CATEGORY);
             }
+        } else if (data.contains(NBT_TRAIN_CATEGORY)) {
+            categoryId = data.getUUID(NBT_TRAIN_CATEGORY);
         }
         if (data.contains(NBT_TRAIN_LINE)) {
             if (data.getTagType(NBT_TRAIN_LINE) == Tag.TAG_STRING) {
@@ -116,8 +119,8 @@ public class TravelSectionInstruction extends ScheduleInstruction implements ISt
                 lineId = data.getUUID(NBT_TRAIN_LINE);
             }
         }
-        if (lastGroupId == null || groupId == null || !lastGroupId.equals(groupId)) {
-            requestGroup(groupId);
+        if (lastCategoryId == null || categoryId == null || !lastCategoryId.equals(categoryId)) {
+            requestCategory(categoryId);
         }
         if (lastLineId == null || lineId == null || !lastLineId.equals(lineId)) {
             requestLine(lineId);
@@ -128,8 +131,8 @@ public class TravelSectionInstruction extends ScheduleInstruction implements ISt
         lines.add(TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule." + type + "." + getId().getPath() + ".description").withStyle(ChatFormatting.GRAY));
 
         lines.add(
-            TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule." + type + "." + getId().getPath() + ".train_group").withStyle(ChatFormatting.DARK_AQUA)
-                .append(lastGroupId == null && group != null ? txtLoading : (group == null ? txtNone : TextUtils.text(group.getGroupName()).withStyle(ChatFormatting.WHITE))));
+            TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule." + type + "." + getId().getPath() + ".train_category").withStyle(ChatFormatting.DARK_AQUA)
+                .append(lastCategoryId == null && category != null ? txtLoading : (category == null ? txtNone : TextUtils.text(category.getCategoryName()).withStyle(ChatFormatting.WHITE))));
         lines.add(
             TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule." + type + "." + getId().getPath() + ".train_line").withStyle(ChatFormatting.DARK_AQUA)
                 .append(lastLineId == null && line != null ? txtLoading : (line == null ? txtNone : TextUtils.text(line.getLineName()).withStyle(ChatFormatting.WHITE))));
@@ -154,11 +157,18 @@ public class TravelSectionInstruction extends ScheduleInstruction implements ISt
     }
 
     private ScheduleSection getSectionData(TrainData data, int index) {
+        String categoryNbtKey = null;
+        if (this.data.contains(LEGACY_NBT_TRAIN_CATEGORY))
+            categoryNbtKey = LEGACY_NBT_TRAIN_CATEGORY;
+        else 
+            categoryNbtKey = NBT_TRAIN_CATEGORY;
+
+
         return new ScheduleSection(
             data,
             index,
-            !this.data.contains(NBT_TRAIN_GROUP) ? null : GlobalSettings.getInstance().getTrainGroup(this.data.getTagType(NBT_TRAIN_GROUP) == Tag.TAG_STRING ? TrainGroup.genMD5Uuid(this.data.getString(NBT_TRAIN_GROUP)) : this.data.getUUID(NBT_TRAIN_GROUP)).orElse(null),
-            !this.data.contains(NBT_TRAIN_LINE) ? null : GlobalSettings.getInstance().getTrainLine(this.data.getTagType(NBT_TRAIN_LINE) == Tag.TAG_STRING ? TrainGroup.genMD5Uuid(this.data.getString(NBT_TRAIN_LINE)) : this.data.getUUID(NBT_TRAIN_LINE)).orElse(null),
+            !this.data.contains(categoryNbtKey) ? null : GlobalSettings.getInstance().getTrainCategory(this.data.getTagType(categoryNbtKey) == Tag.TAG_STRING ? TrainCategory.genMD5Uuid(this.data.getString(categoryNbtKey)) : this.data.getUUID(categoryNbtKey)).orElse(null),
+            !this.data.contains(NBT_TRAIN_LINE) ? null : GlobalSettings.getInstance().getTrainLine(this.data.getTagType(NBT_TRAIN_LINE) == Tag.TAG_STRING ? TrainCategory.genMD5Uuid(this.data.getString(NBT_TRAIN_LINE)) : this.data.getUUID(NBT_TRAIN_LINE)).orElse(null),
             this.data.getBoolean(NBT_INCLUDE_PREVIOUS_STATION),
             this.data.getBoolean(NBT_USABLE)
         );

@@ -9,7 +9,7 @@ import java.util.Optional;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.data.StationTag;
-import de.mrjulsen.crn.data.TrainGroup;
+import de.mrjulsen.crn.data.TrainCategory;
 import de.mrjulsen.crn.data.TrainLine;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
 import de.mrjulsen.mcdragonlib.data.Cache;
@@ -24,7 +24,7 @@ public class ScheduleSection {
 
     private final boolean includeLastStationOfLastSection;
     private final boolean usable;
-    private final TrainGroup trainGroup;
+    private final TrainCategory trainCategory;
     private final TrainLine trainLine;
 
     private final Cache<List<TrainPrediction>> predictions = new Cache<>(() -> getPredictions(INVALID, false));
@@ -39,15 +39,15 @@ public class ScheduleSection {
     private final Cache<ScheduleSection> nextSection;
     private final Cache<ScheduleSection> previousSection;
 
-    public ScheduleSection(TrainData data, int indexInSchedule, TrainGroup group, TrainLine line, boolean includePreviousStation, boolean usable) {
-        this(false, data, indexInSchedule, group, line, includePreviousStation, usable);
+    public ScheduleSection(TrainData data, int indexInSchedule, TrainCategory category, TrainLine line, boolean includePreviousStation, boolean usable) {
+        this(false, data, indexInSchedule, category, line, includePreviousStation, usable);
     }
     
-    private ScheduleSection(boolean isDefault, TrainData data, int indexInSchedule, TrainGroup group, TrainLine line, boolean includePreviousStation, boolean usable) {
+    private ScheduleSection(boolean isDefault, TrainData data, int indexInSchedule, TrainCategory category, TrainLine line, boolean includePreviousStation, boolean usable) {
         this.data = data;
         this.scheduleIndex = indexInSchedule;
         this.isDefault = isDefault;
-        this.trainGroup = group;
+        this.trainCategory = category;
         this.trainLine = line;
         this.includeLastStationOfLastSection = includePreviousStation;
         this.usable = usable;
@@ -111,8 +111,8 @@ public class ScheduleSection {
         return usable;
     }
 
-    public Optional<TrainGroup> getTrainGroup() {
-        return Optional.ofNullable(trainGroup);
+    public Optional<TrainCategory> getTrainCategory() {
+        return Optional.ofNullable(trainCategory);
     }
 
     public Optional<TrainLine> getTrainLine() {

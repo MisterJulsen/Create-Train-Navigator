@@ -273,8 +273,8 @@ public class TrainStop implements Comparable<TrainStop> {
     public int getTrainDisplayColor() {
         if (getTrainInfo() != null && getTrainInfo().line() != null && getTrainInfo().line().getColor() != 0) {
             return getTrainInfo().line().getColor();
-        } else if (getTrainInfo() != null && getTrainInfo().group() != null && getTrainInfo().group().getColor() != 0) {
-            return getTrainInfo().group().getColor();
+        } else if (getTrainInfo() != null && getTrainInfo().category() != null && getTrainInfo().category().getColor() != 0) {
+            return getTrainInfo().category().getColor();
         }
         return Constants.COLOR_TRAIN_BACKGROUND;
     }

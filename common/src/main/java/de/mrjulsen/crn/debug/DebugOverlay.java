@@ -89,7 +89,7 @@ public class DebugOverlay extends DLOverlayScreen {
             
             drawLine(graphics, TextUtils.text("Sections:").withStyle(ChatFormatting.UNDERLINE));
             for (ScheduleSection section : data.getSections()) {                
-                drawLine(graphics, " - [ " + section.getScheduleIndex() + " ]: " + section.getDisplayText() + " (" + section.getStartStationName() + " -> " + section.getDestinationStationName() + "), Group: " + section.getTrainGroup().map(x -> x.getGroupName()).orElse("none") + ", Line: " + section.getTrainLine().map(x -> x.getLineName()).orElse("none") + ", Include: " + section.shouldIncludeNextStationOfNextSection() + ", Navigable: " + section.isUsable() + ", Next: " + section.nextSection().getScheduleIndex());
+                drawLine(graphics, " - [ " + section.getScheduleIndex() + " ]: " + section.getDisplayText() + " (" + section.getStartStationName() + " -> " + section.getDestinationStationName() + "), Category: " + section.getTrainCategory().map(x -> x.getCategoryName()).orElse("none") + ", Line: " + section.getTrainLine().map(x -> x.getLineName()).orElse("none") + ", Include: " + section.shouldIncludeNextStationOfNextSection() + ", Navigable: " + section.isUsable() + ", Next: " + section.nextSection().getScheduleIndex());
             }
             drawLine(graphics, "[ " + data.getCurrentSection().getScheduleIndex() + " ]");
         }

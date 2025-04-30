@@ -195,7 +195,7 @@ public class TrainData implements IListenable<TrainData> {
     }
 
     public TrainInfo getTrainInfo(int scheduleIndex) {
-        return new TrainInfo(getSectionForIndex(scheduleIndex).getTrainLine().orElse(null), getSectionForIndex(scheduleIndex).getTrainGroup().orElse(null));
+        return new TrainInfo(getSectionForIndex(scheduleIndex).getTrainLine().orElse(null), getSectionForIndex(scheduleIndex).getTrainCategory().orElse(null));
     }
 
     /**

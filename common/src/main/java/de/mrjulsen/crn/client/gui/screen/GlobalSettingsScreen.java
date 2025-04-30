@@ -26,7 +26,7 @@ import de.mrjulsen.crn.client.gui.widgets.options.DataListContainer;
 import de.mrjulsen.crn.client.gui.widgets.options.OptionEntry;
 import de.mrjulsen.crn.client.gui.widgets.options.SimpleDataListNewEntry;
 import de.mrjulsen.crn.data.StationTag;
-import de.mrjulsen.crn.data.TrainGroup;
+import de.mrjulsen.crn.data.TrainCategory;
 import de.mrjulsen.crn.data.TrainLine;
 import de.mrjulsen.crn.data.storage.GlobalSettingsClient;
 import de.mrjulsen.crn.registry.ModAccessorTypes;
@@ -65,8 +65,8 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
     private final Component optionTagDescription = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.option_alias.description").withStyle(ChatFormatting.GRAY);
     private final Component optionBlacklistTitle = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.option_blacklist.title");
     private final Component optionBlacklistDescription = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.option_blacklist.description").withStyle(ChatFormatting.GRAY);   
-    private final Component optionTrainGroupTitle = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.train_group.title");
-    private final Component optionTrainGroupDescription = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.train_group.description").withStyle(ChatFormatting.GRAY);   
+    private final Component optionTrainCategoryTitle = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.train_category.title");
+    private final Component optionTrainCategoryDescription = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.train_category.description").withStyle(ChatFormatting.GRAY);   
     private final Component optionTrainBlacklistTitle = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.train_blacklist.title");
     private final Component optionTrainBlacklistDescription = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.train_blacklist.description").withStyle(ChatFormatting.GRAY);
     private final Component optionTrainLineTitle = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.train_line.title");
@@ -126,8 +126,8 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
             addBlacklistedStationsWidget(datalist.stream().sorted((a, b) -> a.compareToIgnoreCase(b)).toList(), scrollBar);
             GlobalSettingsClient.getBlacklistedTrains((datalist2) -> {
                 addBlacklistedTrainsWidget(datalist2.stream().sorted((a, b) -> a.compareToIgnoreCase(b)).toList(), scrollBar);
-                GlobalSettingsClient.getTrainGroups((datalist3) -> {
-                    addTrainGroupsWidget(datalist3.stream().sorted((a, b) -> a.getGroupName().compareToIgnoreCase(b.getGroupName())).toList(), scrollBar);
+                GlobalSettingsClient.getTrainCategories((datalist3) -> {
+                    addTrainCategoriesWidget(datalist3.stream().sorted((a, b) -> a.getCategoryName().compareToIgnoreCase(b.getCategoryName())).toList(), scrollBar);
                     GlobalSettingsClient.getTrainLines((datalist4) -> {
                         addTrainLinesWidget(datalist4.stream().sorted((a, b) -> a.getLineName().compareToIgnoreCase(b.getLineName())).toList(), scrollBar);
                     }); 
@@ -256,21 +256,21 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
 
     }
 
-    private void addTrainGroupsWidget(List<TrainGroup> datalist, DLVerticalScrollBar scrollBar) {
+    private void addTrainCategoriesWidget(List<TrainCategory> datalist, DLVerticalScrollBar scrollBar) {
         OptionEntry<?> opt = viewer.addOption((option) -> {
             GuiAreaDefinition workspace = option.getContentSpace();
-            DataListContainer<Collection<TrainGroup>, TrainGroup> cont = new DataListContainer<>(option, workspace.getX(), workspace.getY(), workspace.getWidth(), datalist,
+            DataListContainer<Collection<TrainCategory>, TrainCategory> cont = new DataListContainer<>(option, workspace.getX(), workspace.getY(), workspace.getWidth(), datalist,
                 (list) -> {
-                    return list.stream().sorted((a, b) -> a.getGroupName().compareToIgnoreCase(b.getGroupName())).iterator();
+                    return list.stream().sorted((a, b) -> a.getCategoryName().compareToIgnoreCase(b.getCategoryName())).iterator();
                 }, (data, entryWidget) -> {
                     if (!GlobalSettingsClient.modificationsAllowed()) {
-                        return data.getGroupName();
+                        return data.getCategoryName();
                     }
                     if (data.getOwner().isAllowed(me)) {
                         entryWidget.setOnEditName((tg, entry, newValue, refreshAction) -> {
-                            if (!newValue.isBlank() && !entry.getGroupName().equals(newValue)) {
-                                GlobalSettingsClient.updateTrainGroupName(entry.getId(), newValue, x -> {
-                                    GlobalSettingsClient.getTrainGroups((res) -> {
+                            if (!newValue.isBlank() && !entry.getCategoryName().equals(newValue)) {
+                                GlobalSettingsClient.updateTrainCategoryName(entry.getId(), newValue, x -> {
+                                    GlobalSettingsClient.getTrainCategories((res) -> {
                                         refreshAction.accept(Optional.ofNullable(res));
                                     });
                                 });
@@ -278,8 +278,8 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
                         });
                         entryWidget.addDeleteButton((btn, tg, entry, refreshAction) -> {
                             FlyoutConfirmDialog<?> dlg = new FlyoutConfirmDialog<>(this, FlyoutPointer.RIGHT, () -> {
-                                GlobalSettingsClient.deleteTrainGroup(entry.getId(), () -> {
-                                    GlobalSettingsClient.getTrainGroups((res) -> {
+                                GlobalSettingsClient.deleteTrainCategory(entry.getId(), () -> {
+                                    GlobalSettingsClient.getTrainCategories((res) -> {
                                         refreshAction.accept(Optional.ofNullable(res));
                                     });
                                 });
@@ -289,10 +289,10 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
                         });
                         DLIconButton colorBtn = entryWidget.addButton(ModGuiIcons.COLOR_PALETTE.getAsSprite(16, 16), List.of(textColor),
                         (btn, tg, entry, refreshAction) -> {
-                            final TrainGroup e = entry;
+                            final TrainCategory e = entry;
                             FlyoutColorPicker<?> flyout = new FlyoutColorPicker<>(this, e.getColor(), Constants.DEFAULT_TRAIN_TYPE_COLORS, 5, true, true, this::addRenderableWidget, (w) -> {
-                                GlobalSettingsClient.updateTrainGroupColor(e.getId(), ((FlyoutColorPicker<?>)w).getColorPicker().getSelectedColor(), () -> {
-                                    GlobalSettingsClient.getTrainGroups((res) -> {
+                                GlobalSettingsClient.updateTrainCategoryColor(e.getId(), ((FlyoutColorPicker<?>)w).getColorPicker().getSelectedColor(), () -> {
+                                    GlobalSettingsClient.getTrainCategories((res) -> {
                                         refreshAction.accept(Optional.ofNullable(res));
                                     });
                                 });
@@ -310,7 +310,7 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
                             return;
                         }
                         
-                        GlobalSettingsClient.updateTrainGroupPermissions(new PermissionsUpdateData(entry.getId(), null, entry.getOwner().get().next(), null), (a) -> {                            
+                        GlobalSettingsClient.updateTrainCategoryPermissions(new PermissionsUpdateData(entry.getId(), null, entry.getOwner().get().next(), null), (a) -> {                            
                             a.ifPresent(x -> {
                                 data.getOwner().set(x.getOwner().get());
                                 data.getOwner().updateTrusted(x.getOwner().getTrusted());
@@ -323,8 +323,8 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
                         btnPermissions.setMenu(new DLContextMenu(() -> GuiAreaDefinition.of(btnPermissions), () -> new DLContextMenuItem.Builder()
                             .add(new ContextMenuItemData(TextUtils.translate(Lock.TRANSLATION_KEY_TRUSTED_PLAYERS), Sprite.empty(), true, (b) -> {
                                 FlyoutPlayerList<?> flyout = new FlyoutPlayerList<>(this, this::updateEditorSubwidgetsOnlinePlayers, data.getOwner().getTrusted(), this::addRenderableWidget, (w) -> {
-                                    GlobalSettingsClient.updateTrainGroupPermissions(new PermissionsUpdateData(data.getId(), null, null, ((FlyoutPlayerList<?>)w).getPlayerList().getPlayers()), $ -> {
-                                        GlobalSettingsClient.getTrainGroups((res) -> {
+                                    GlobalSettingsClient.updateTrainCategoryPermissions(new PermissionsUpdateData(data.getId(), null, null, ((FlyoutPlayerList<?>)w).getPlayerList().getPlayers()), $ -> {
+                                        GlobalSettingsClient.getTrainCategories((res) -> {
                                             entryWidget.getParent().displayData(res);
                                         });
                                     });
@@ -335,8 +335,8 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
                             }, null))
                             .add(new ContextMenuItemData(TextUtils.translate(Lock.TRANSLATION_KEY_TRANSFER_OWNERSHIP), Sprite.empty(), true, (b) -> {
                                 addRenderableWidget(new TransferOwnershipWidget<>(this, data.getOwner().getOwner().orElse(null), (newOwner) -> {
-                                    GlobalSettingsClient.updateTrainGroupPermissions(new PermissionsUpdateData(data.getId(), newOwner, null, null), $ -> {
-                                        GlobalSettingsClient.getTrainGroups((res) -> {
+                                    GlobalSettingsClient.updateTrainCategoryPermissions(new PermissionsUpdateData(data.getId(), newOwner, null, null), $ -> {
+                                        GlobalSettingsClient.getTrainCategories((res) -> {
                                             entryWidget.getParent().displayData(res);
                                         });
                                     });
@@ -344,7 +344,7 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
                             }, null))
                         ));
                     }
-                    return data.getGroupName();
+                    return data.getCategoryName();
                 }, GlobalSettingsClient.modificationsAllowed() ? (data, entryWidget) -> {                    
                     entryWidget.addAddButton(ModGuiIcons.ADD.getAsSprite(16, 16), List.of(Constants.TEXT_ADD),
                     (btn, tg, inputValues, refreshAction) -> {
@@ -352,8 +352,8 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
                         if (name == null || name.isBlank()) {
                             return false;
                         }
-                        GlobalSettingsClient.createTrainGroup(name, (res) -> {
-                            GlobalSettingsClient.getTrainGroups((r) -> {
+                        GlobalSettingsClient.createTrainCategory(name, (res) -> {
+                            GlobalSettingsClient.getTrainCategories((r) -> {
                                 refreshAction.accept(Optional.ofNullable(r));
                             });
                         });
@@ -371,12 +371,12 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
             );
             cont.setPadding(3, 0, 3, 18);
             cont.setFilter((entry, searchText) -> {
-                return entry.getGroupName().toLowerCase(Locale.ROOT).contains(searchText.get().toLowerCase(Locale.ROOT));
+                return entry.getCategoryName().toLowerCase(Locale.ROOT).contains(searchText.get().toLowerCase(Locale.ROOT));
             });
             cont.setBordered(false);    
             return cont;
-        }, optionTrainGroupTitle, optionTrainGroupDescription, (a, b) -> OptionEntry.expandOrCollapse(a), null);
-        opt.addAdditionalButton(ModGuiIcons.HELP.getAsSprite(16, 16), List.of(Constants.TEXT_HELP), (entry, btn) -> Util.getPlatform().openUri(Constants.HELP_PAGE_TRAIN_GROUPS));
+        }, optionTrainCategoryTitle, optionTrainCategoryDescription, (a, b) -> OptionEntry.expandOrCollapse(a), null);
+        opt.addAdditionalButton(ModGuiIcons.HELP.getAsSprite(16, 16), List.of(Constants.TEXT_HELP), (entry, btn) -> Util.getPlatform().openUri(Constants.HELP_PAGE_TRAIN_CATEGORIES));
 
     }
 

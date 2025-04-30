@@ -19,9 +19,9 @@ import de.mrjulsen.crn.client.gui.widgets.ModDestinationSuggestions;
 import de.mrjulsen.crn.client.gui.widgets.ModernVerticalScrollBar;
 import de.mrjulsen.crn.client.gui.widgets.RouteViewer;
 import de.mrjulsen.crn.client.gui.widgets.SearchOptionButton;
-import de.mrjulsen.crn.client.gui.widgets.flyouts.FlyoutAdvancedSearchsettingsWidget;
+import de.mrjulsen.crn.client.gui.widgets.flyouts.FlyoutAdvancedSearchSettingsWidget;
 import de.mrjulsen.crn.client.gui.widgets.flyouts.FlyoutDepartureInWidget;
-import de.mrjulsen.crn.client.gui.widgets.flyouts.FlyoutTrainGroupsWidget;
+import de.mrjulsen.crn.client.gui.widgets.flyouts.FlyoutTrainCategoriesWidget;
 import de.mrjulsen.crn.client.gui.widgets.flyouts.FlyoutTransferTimeWidget;
 import de.mrjulsen.crn.client.gui.widgets.notifications.NotificationTrainInitialization;
 import de.mrjulsen.crn.client.gui.widgets.AbstractFlyoutWidget.FlyoutPointer;
@@ -278,9 +278,9 @@ public class NavigatorScreen extends AbstractNavigatorScreen {
                 reloadUserSettings();
             }).open(b);
         }));
-        addRenderableWidget(new SearchOptionButton(guiLeft + 3 + btnWidth * 2, guiTop + 54 + FooterSize.DEFAULT.size() - 2, btnWidth, 18, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.train_groups"), () -> userSettings.navigationExcludedTrainGroups.toString(), (b) -> {
-            new FlyoutTrainGroupsWidget<>(this, FlyoutPointer.UP, ColorShade.DARK, this::addRenderableWidget, userSettings, () -> {
-                return userSettings.navigationExcludedTrainGroups;
+        addRenderableWidget(new SearchOptionButton(guiLeft + 3 + btnWidth * 2, guiTop + 54 + FooterSize.DEFAULT.size() - 2, btnWidth, 18, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.train_categories"), () -> userSettings.navigationExcludedTrainCategories.toString(), (b) -> {
+            new FlyoutTrainCategoriesWidget<>(this, FlyoutPointer.UP, ColorShade.DARK, this::addRenderableWidget, userSettings, () -> {
+                return userSettings.navigationExcludedTrainCategories;
             }, (w) -> {
                 removeWidget(w);
                 reloadUserSettings();
@@ -288,7 +288,7 @@ public class NavigatorScreen extends AbstractNavigatorScreen {
         }));
         DLIconButton moreSearchOptionsBtn = addRenderableWidget(new DLIconButton(ButtonType.DEFAULT, AreaStyle.FLAT, GuiIcons.ARROW_RIGHT.getAsSprite(16, 16), guiLeft + GUI_WIDTH - 3 - (GUI_WIDTH - btnWidth * 3 - 6), guiTop + 54 + FooterSize.DEFAULT.size() - 2, (GUI_WIDTH - btnWidth * 3 - 6), 18, TextUtils.empty(),
         (b) -> {            
-            new FlyoutAdvancedSearchsettingsWidget<>(this, FlyoutPointer.UP, ColorShade.DARK, this::addRenderableWidget, (w) -> {
+            new FlyoutAdvancedSearchSettingsWidget<>(this, FlyoutPointer.UP, ColorShade.DARK, this::addRenderableWidget, (w) -> {
                 removeWidget(w);
             }).open(b);
         }));

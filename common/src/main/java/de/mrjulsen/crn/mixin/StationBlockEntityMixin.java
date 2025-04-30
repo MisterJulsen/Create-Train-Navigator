@@ -65,12 +65,12 @@ public class StationBlockEntityMixin implements IHaveGoggleInformation {
             .add(formatTime(Minecraft.getInstance().level.getGameTime() - stats.getLastDeparture()))
             .forGoggles(tooltip, 1);
           
-        if (!stats.getDeparturesByGroup().isEmpty()) {
+        if (!stats.getDeparturesByCategory().isEmpty()) {
             Lang.builder(CreateRailwaysNavigator.MOD_ID)
-                .add(TextUtils.translate("goggles." + CreateRailwaysNavigator.MOD_ID + ".train_listener.departures.group").withStyle(ChatFormatting.GRAY))
+                .add(TextUtils.translate("goggles." + CreateRailwaysNavigator.MOD_ID + ".train_listener.departures.category").withStyle(ChatFormatting.GRAY))
                 .forGoggles(tooltip);
                              
-            Map<String, Long> data = stats.getDeparturesByGroup();
+            Map<String, Long> data = stats.getDeparturesByCategory();
             int i = 0;
             for (Map.Entry<String, Long> d : data.entrySet()) {            
                 Lang.builder(CreateRailwaysNavigator.MOD_ID)

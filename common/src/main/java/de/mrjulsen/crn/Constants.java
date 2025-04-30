@@ -51,7 +51,7 @@ public class Constants {
     public static final String HELP_PAGE_STATION_BLACKLIST = GITHUB_WIKI + "Station-Blacklist";
     public static final String HELP_PAGE_STATION_TAGS = GITHUB_WIKI + "Station-Tags";
     public static final String HELP_PAGE_TRAIN_BLACKLIST = GITHUB_WIKI + "Train-Blacklist";
-    public static final String HELP_PAGE_TRAIN_GROUPS = GITHUB_WIKI + "Train-Groups";
+    public static final String HELP_PAGE_TRAIN_CATEGORIES = GITHUB_WIKI + "Train-Categories";
     public static final String HELP_PAGE_TRAIN_INITIALIZATION = GITHUB_WIKI + "Train-Imnitialization";
     public static final String HELP_PAGE_TRAIN_LINES = GITHUB_WIKI + "Train-Lines";
 }

@@ -13,7 +13,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.entity.player.Player;
 
-public class TrainGroup {
+public class TrainCategory {
 
     public static final int MAX_NAME_LENGTH = 32;
 
@@ -33,15 +33,15 @@ public class TrainGroup {
     protected long lastEditedTime = 0;
 
     
-    public TrainGroup(UUID id, String name, Player player) {
+    public TrainCategory(UUID id, String name, Player player) {
         this(id, name, new Owner(player));
     }
 
-    public TrainGroup(UUID id, String name, Owner owner) {
+    public TrainCategory(UUID id, String name, Owner owner) {
         this(id, name, new Lock(owner));
     }
 
-    protected TrainGroup(UUID id, String name, Lock owner) {
+    protected TrainCategory(UUID id, String name, Lock owner) {
         this.id = id;
         this.name = name;
         this.owner = owner;
@@ -57,7 +57,7 @@ public class TrainGroup {
         return id;
     }
 
-    public String getGroupName() {
+    public String getCategoryName() {
         return name;
     }
 
@@ -105,7 +105,7 @@ public class TrainGroup {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof TrainGroup o) {
+        if (obj instanceof TrainCategory o) {
             return name.equals(o.name);
         }
         return false;
@@ -118,13 +118,13 @@ public class TrainGroup {
         getLastEditor().ifPresent(x -> nbt.put(NBT_LAST_EDITOR, x.toNbt()));
         nbt.putLong(NBT_LAST_EDITED_TIME, lastEditedTime);
         nbt.put(NBT_OWNER, owner.toNbt());
-        nbt.putString(NBT_NAME, getGroupName());
+        nbt.putString(NBT_NAME, getCategoryName());
         nbt.putInt(NBT_COLOR, getColor());
 
         return nbt;
     }
 
-    public static TrainGroup fromNbt(CompoundTag nbt) {
+    public static TrainCategory fromNbt(CompoundTag nbt) {
         String name = nbt.getString(NBT_NAME);
         UUID id = nbt.contains(NBT_ID) ? nbt.getUUID(NBT_ID) : genMD5Uuid(name);
         
@@ -132,10 +132,10 @@ public class TrainGroup {
         long lastEditedTime = nbt.getLong(NBT_LAST_EDITED_TIME);
         Lock owner = nbt.contains(NBT_OWNER) && nbt.getTagType(NBT_OWNER) == Tag.TAG_COMPOUND ? Lock.fromNbt(nbt.getCompound(NBT_OWNER)) : new Lock(new Owner((UUID)null));
 
-        TrainGroup group = new TrainGroup(id, name, owner);
-        group.setColor(nbt.getInt(NBT_COLOR));
-        group.lastEditor = lastEditor;
-        group.lastEditedTime = lastEditedTime;
-        return group;
+        TrainCategory category = new TrainCategory(id, name, owner);
+        category.setColor(nbt.getInt(NBT_COLOR));
+        category.lastEditor = lastEditor;
+        category.lastEditedTime = lastEditedTime;
+        return category;
     }
 }
