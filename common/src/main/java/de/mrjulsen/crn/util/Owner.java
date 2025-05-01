@@ -4,12 +4,14 @@ import java.util.UUID;
 
 import de.mrjulsen.crn.CRNPlatformSpecific;
 import de.mrjulsen.crn.Constants;
+import de.mrjulsen.mcdragonlib.DragonLib;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 
 public class Owner {
 
     private static final String NBT_ID = "OwnerId";
+    private static final String NBT_NAME = "Name";
 
     private final UUID id;
     private final String name;
@@ -19,7 +21,11 @@ public class Owner {
     }
 
     public Owner(UUID id) {
-        this.name = id == null ? "Server" : CRNPlatformSpecific.getLastKnownPlayerName(id).orElse("");
+        this(id, id == null ? "Server" : CRNPlatformSpecific.getLastKnownPlayerName(id).orElse("?"));
+    }
+
+    public Owner(UUID id, String name) {
+        this.name = name;
         this.id = id;
     }
 
@@ -55,6 +61,7 @@ public class Owner {
     
     public void toNbt(CompoundTag nbt) {
         if (id != null) nbt.putUUID(NBT_ID, id);
+        if (name != null) nbt.putString(NBT_NAME, name);
     }
 
     public CompoundTag toNbt() {
@@ -64,6 +71,12 @@ public class Owner {
     }
 
     public static Owner fromNbt(CompoundTag nbt) {
-        return nbt.contains(NBT_ID) ? new Owner(nbt.getUUID(NBT_ID)) : new Owner((UUID)null);
+        if (nbt.contains(NBT_ID)) {
+            if (!DragonLib.hasServer() && nbt.contains(NBT_NAME)) {
+                return new Owner(nbt.getUUID(NBT_ID), nbt.getString(NBT_NAME));
+            }
+            return new Owner(nbt.getUUID(NBT_ID));
+        }
+        return new Owner((UUID)null);
     }
 }
