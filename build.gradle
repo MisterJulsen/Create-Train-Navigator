@@ -74,6 +74,7 @@ subprojects {
             "java_version": rootProject.java_version,
             "maven_group": rootProject.maven_group,
             "create_forge_version": rootProject.create_forge_version,
+            "create_forge_dependency_version": rootProject.create_forge_dependency_version,
             "create_fabric_version": rootProject.create_fabric_version,
             "main_class_name": rootProject.main_class_name,
         ]
