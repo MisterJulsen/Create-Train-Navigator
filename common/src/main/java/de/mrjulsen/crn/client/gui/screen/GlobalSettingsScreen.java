@@ -76,8 +76,6 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
     private final List<String> stationNames = new ArrayList<>();
     private final List<String> trainNames = new ArrayList<>();
 
-    private final Owner me = new Owner(Minecraft.getInstance().player);
-
     public GlobalSettingsScreen(Screen lastScreen) {
         super(lastScreen, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".global_settings.title").append(GlobalSettingsClient.modificationsAllowed() ? TextUtils.empty() : TextUtils.text(" ").append(Constants.TEXT_READ_ONLY).withStyle(ChatFormatting.DARK_RED)), BarColor.GRAY);
     }
@@ -266,7 +264,7 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
                     if (!GlobalSettingsClient.modificationsAllowed()) {
                         return data.getCategoryName();
                     }
-                    if (data.getOwner().isAllowed(me)) {
+                    if (data.getOwner().isAllowed()) {
                         entryWidget.setOnEditName((tg, entry, newValue, refreshAction) -> {
                             if (!newValue.isBlank() && !entry.getCategoryName().equals(newValue)) {
                                 GlobalSettingsClient.updateTrainCategoryName(entry.getId(), newValue, x -> {
@@ -306,7 +304,7 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
 
                     DLIconButton btnPermissions = entryWidget.addButton(data.getOwner().get().getIcon(), data.getOwner().asText(new Owner(Minecraft.getInstance().player)),
                     (btn, tg, entry, refreshAction) -> {
-                        if (!data.getOwner().isAllowed(me)) {
+                        if (!data.getOwner().isAllowed()) {
                             return;
                         }
                         
@@ -319,7 +317,7 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
                             });
                         });
                     });
-                    if (data.getOwner().isAdmin(me)) {
+                    if (data.getOwner().isAdmin()) {
                         btnPermissions.setMenu(new DLContextMenu(() -> GuiAreaDefinition.of(btnPermissions), () -> new DLContextMenuItem.Builder()
                             .add(new ContextMenuItemData(TextUtils.translate(Lock.TRANSLATION_KEY_TRUSTED_PLAYERS), Sprite.empty(), true, (b) -> {
                                 FlyoutPlayerList<?> flyout = new FlyoutPlayerList<>(this, this::updateEditorSubwidgetsOnlinePlayers, data.getOwner().getTrusted(), this::addRenderableWidget, (w) -> {
@@ -391,7 +389,7 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
                         return data.getLineName();
                     }
 
-                    if (data.getOwner().isAllowed(me)) {                    
+                    if (data.getOwner().isAllowed()) {                    
                         entryWidget.setOnEditName((tg, entry, newValue, refreshAction) -> {
                             if (!newValue.isBlank() && !entry.getLineName().equals(newValue)) {
                                 GlobalSettingsClient.updateTrainLineName(entry.getId(), newValue, x -> {
@@ -431,7 +429,7 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
                     
                     DLIconButton btnPermissions = entryWidget.addButton(data.getOwner().get().getIcon(), data.getOwner().asText(new Owner(Minecraft.getInstance().player)),
                     (btn, tg, entry, refreshAction) -> {
-                        if (!data.getOwner().isAllowed(me)) {
+                        if (!data.getOwner().isAllowed()) {
                             return;
                         }
                         
@@ -444,7 +442,7 @@ public class GlobalSettingsScreen extends AbstractNavigatorScreen {
                             });
                         });
                     });
-                    if (data.getOwner().isAdmin(me)) {
+                    if (data.getOwner().isAdmin()) {
                         btnPermissions.setMenu(new DLContextMenu(() -> GuiAreaDefinition.of(btnPermissions), () -> new DLContextMenuItem.Builder()
                             .add(new ContextMenuItemData(TextUtils.translate(Lock.TRANSLATION_KEY_TRUSTED_PLAYERS), Sprite.empty(), true, (b) -> {
                                 FlyoutPlayerList<?> flyout = new FlyoutPlayerList<>(this, this::updateEditorSubwidgetsOnlinePlayers, data.getOwner().getTrusted(), this::addRenderableWidget, (w) -> {

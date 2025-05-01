@@ -62,8 +62,6 @@ public class StationTagSettingsScreen extends AbstractNavigatorScreen {
     private static final int DEFAULT_ICON_BUTTON_WIDTH = 18;
     private static final int DEFAULT_ICON_BUTTON_HEIGHT = 18;
 
-    private final Owner me = new Owner(Minecraft.getInstance().player);
-
     private DLOptionsList viewer;
     private DLEditBox searchBox;
 
@@ -157,7 +155,7 @@ public class StationTagSettingsScreen extends AbstractNavigatorScreen {
                         /* dataIterator */ (tg) -> {
                             return tg.getAllStations().entrySet().stream().sorted((a, b) -> a.getKey().compareToIgnoreCase(b.getKey())).iterator();
                         }, /* onCreateEntry */ (data, entryWidget) -> {                            
-                            if (stationTag.getOwner().isAllowed(me) && GlobalSettingsClient.modificationsAllowed()) {
+                            if (stationTag.getOwner().isAllowed() && GlobalSettingsClient.modificationsAllowed()) {
                                 entryWidget.addDeleteButton((btn, tg, entry, refreshAction) -> {
                                     FlyoutConfirmDialog<?> dlg = new FlyoutConfirmDialog<>(this, FlyoutPointer.RIGHT, () -> {
                                         GlobalSettingsClient.removeStationTagEntry(tag.getId(), entry.getKey(),
@@ -170,7 +168,7 @@ public class StationTagSettingsScreen extends AbstractNavigatorScreen {
                                 });
                             }
                             entryWidget.addDataSection(40, (entry) -> entry.getValue().platform(), EAlignment.RIGHT,
-                                stationTag.getOwner().isAllowed(me) && GlobalSettingsClient.modificationsAllowed() ? (tg, entry, newValue, refreshAction) -> {
+                                stationTag.getOwner().isAllowed() && GlobalSettingsClient.modificationsAllowed() ? (tg, entry, newValue, refreshAction) -> {
                                     if (!newValue.isBlank() && !entry.getValue().platform().equals(newValue)) {
                                         GlobalSettingsClient.updateStationTagEntry(tg.getId(), entry.getKey(), new StationInfo(newValue),
                                         (newTag) -> {
@@ -180,7 +178,7 @@ public class StationTagSettingsScreen extends AbstractNavigatorScreen {
                                 } : null
                             );
                             return data.getKey();
-                        }, /* createNewEntry */ stationTag.getOwner().isAllowed(me) && GlobalSettingsClient.modificationsAllowed() ? (data, entryWidget) -> {
+                        }, /* createNewEntry */ stationTag.getOwner().isAllowed() && GlobalSettingsClient.modificationsAllowed() ? (data, entryWidget) -> {
                             entryWidget.addAddButton(ModGuiIcons.ADD.getAsSprite(16, 16), List.of(Constants.TEXT_ADD),
                             (btn, tg, inputValues, refreshAction) -> {
                                 String name = inputValues.get(SimpleDataListNewEntry.MAIN_INPUT_KEY).get();
@@ -214,7 +212,7 @@ public class StationTagSettingsScreen extends AbstractNavigatorScreen {
 
                     return cont;
                 }, TextUtils.text(tag.getTagName().get()), TextUtils.empty(), (a, b) -> OptionEntry.expandOrCollapse(a),
-                stationTag.getOwner().isAllowed(me) && GlobalSettingsClient.modificationsAllowed() ? (str) -> {
+                stationTag.getOwner().isAllowed() && GlobalSettingsClient.modificationsAllowed() ? (str) -> {
                     if (!str.isBlank() && !str.equals(stationTag.getTagName().get())) {
                         GlobalSettingsClient.updateStationTagNameData(stationTag.getId(), str, () -> {});
                         return true;
@@ -223,7 +221,7 @@ public class StationTagSettingsScreen extends AbstractNavigatorScreen {
                 } : null);
 
                 if (GlobalSettingsClient.modificationsAllowed()) {
-                    if (stationTag.getOwner().isAllowed(me)) {
+                    if (stationTag.getOwner().isAllowed()) {
                         opt.addAdditionalButton(ModGuiIcons.DELETE.getAsSprite(16, 16), List.of(tooltipDeleteTag),
                         (entry, btn) -> {                            
                             FlyoutConfirmDialog<?> dlg = new FlyoutConfirmDialog<>(this, FlyoutPointer.UP, () -> {
@@ -237,7 +235,7 @@ public class StationTagSettingsScreen extends AbstractNavigatorScreen {
                     }
                     DLIconButton btnPermissions = opt.addAdditionalButton(stationTag.getOwner().get().getIcon(), stationTag.getOwner().asText(new Owner(Minecraft.getInstance().player)),
                         (entry, btn) -> {
-                            if (!stationTag.getOwner().isAllowed(me)) {
+                            if (!stationTag.getOwner().isAllowed()) {
                                 return;
                             }
                             GlobalSettingsClient.updateStationTagPermissions(new PermissionsUpdateData(entry.getContentContainer().getData().getId(), null, stationTag.getOwner().get().next(), null), (a) -> {                            
@@ -250,7 +248,7 @@ public class StationTagSettingsScreen extends AbstractNavigatorScreen {
                             });
                         }
                     );
-                    if (stationTag.getOwner().isAdmin(me)) {
+                    if (stationTag.getOwner().isAdmin()) {
                         btnPermissions.setMenu(new DLContextMenu(() -> GuiAreaDefinition.of(btnPermissions), () -> new DLContextMenuItem.Builder()
                             .add(new ContextMenuItemData(TextUtils.translate(Lock.TRANSLATION_KEY_TRUSTED_PLAYERS), Sprite.empty(), true, (b) -> {
                                 FlyoutPlayerList<?> flyout = new FlyoutPlayerList<>(this, this::updateEditorSubwidgetsOnlinePlayers, stationTag.getOwner().getTrusted(), this::addRenderableWidget, (w) -> {

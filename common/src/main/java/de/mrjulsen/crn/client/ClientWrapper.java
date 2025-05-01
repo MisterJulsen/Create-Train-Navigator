@@ -35,6 +35,7 @@ import de.mrjulsen.crn.item.NavigatorItem;
 import de.mrjulsen.crn.mixin.ModularGuiLineBuilderAccessor;
 import de.mrjulsen.crn.mixin.ScheduleScreenAccessor;
 import de.mrjulsen.crn.network.packets.stc.ServerErrorPacket;
+import de.mrjulsen.crn.util.Owner;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.ber.RenderGraphics;
 import de.mrjulsen.mcdragonlib.client.gui.DLScreen;
@@ -65,6 +66,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
@@ -315,5 +317,13 @@ public class ClientWrapper {
         poseStack.scale(0.2f, 0.2f, 0.2f);
         BERUtils.drawString(graphics, font, 0, 0, TimeUtils.formatTime(DragonLib.getCurrentWorldTime(), ModClientConfig.TIME_FORMAT.get()), 0xFFFFFFFF, EAlignment.CENTER, false, LightTexture.FULL_BRIGHT);
         poseStack.popPose();
+    }
+
+    public static Owner getMe() {
+        return new Owner(Minecraft.getInstance().player);
+    }
+
+    public static Player getClientPlayer() {
+        return Minecraft.getInstance().player;
     }
 }

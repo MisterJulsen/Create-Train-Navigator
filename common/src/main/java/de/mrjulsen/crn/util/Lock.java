@@ -13,13 +13,18 @@ import java.util.stream.Collectors;
 import com.google.common.collect.ImmutableSet;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.config.ModCommonConfig;
+import de.mrjulsen.crn.exceptions.RuntimeSideException;
+import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.render.Sprite;
 import de.mrjulsen.mcdragonlib.core.IIterableEnum;
 import de.mrjulsen.mcdragonlib.core.ITranslatableEnum;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
+import dev.architectury.platform.Platform;
 import dev.architectury.utils.GameInstance;
+import net.fabricmc.api.EnvType;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -160,15 +165,52 @@ public class Lock {
         return state;
     }
 
-    public boolean isAllowed(Owner target) {
+    /**
+     * @throws RuntimeSideException Server-side only!
+     */
+    public boolean isAllowed(Owner target) throws RuntimeSideException {
+        if (!DragonLib.hasServer()) {
+            throw new RuntimeSideException(false);
+        }
         return this.owner == null || isAdmin(target) || (this.owner.equals(target) || switch (state) {
             case LOCKED -> isTrusted(target);
             default -> true;
         });
     }
     
-    public boolean isAdmin(Owner target) {
+    /**
+     * @throws RuntimeSideException Server-side only!
+     */
+    public boolean isAdmin(Owner target) throws RuntimeSideException {
+        if (!DragonLib.hasServer()) {
+            throw new RuntimeSideException(false);
+        }
         return this.owner != null && (this.owner.equals(target) || (ModCommonConfig.GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL.get() >= 0 && GameInstance.getServer().getPlayerList().getPlayer(target.uuid()).hasPermissions(ModCommonConfig.GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL.get())));
+    }
+
+    /**
+     * @throws RuntimeSideException Client-side only!
+     */
+    public boolean isAllowed() throws RuntimeSideException {
+        if (Platform.getEnv() != EnvType.CLIENT) {
+            throw new RuntimeSideException(true);
+        }
+        Owner self = ClientWrapper.getMe();
+        return this.owner == null || isAdmin() || (this.owner.equals(self) || switch (state) {
+            case LOCKED -> isTrusted(self);
+            default -> true;
+        });
+    }
+    
+    /**
+     * @throws RuntimeSideException Client-side only!
+     */
+    public boolean isAdmin() throws RuntimeSideException {
+        if (Platform.getEnv() != EnvType.CLIENT) {
+            throw new RuntimeSideException(true);
+        }
+        Owner self = ClientWrapper.getMe();
+        return this.owner != null && (this.owner.equals(self) || (ModCommonConfig.GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL.get() >= 0 && ClientWrapper.getClientPlayer().hasPermissions(ModCommonConfig.GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL.get())));
     }
 
     public Set<Owner> getTrusted() {
@@ -202,10 +244,10 @@ public class Lock {
     
     public List<FormattedText> asText(Owner target) {
         List<FormattedText> texts = new ArrayList<>(4);
-        texts.add(TextUtils.empty().append(txtPermissions).append(" ").append(isTrusted(target) ? charTrusted : (isAllowed(target) ? charAllowed : charLocked)));
+        texts.add(TextUtils.empty().append(txtPermissions).append(" ").append(isTrusted(target) ? charTrusted : (isAllowed() ? charAllowed : charLocked)));
         texts.add(TextUtils.translate(keyStatus, get().getFormattedText()).withStyle(ChatFormatting.GRAY));
         texts.add(TextUtils.translate(keyOwner, getOwner().map(x -> x.name().isBlank() ? txtNoOwner : TextUtils.text(x.name()).withStyle(ChatFormatting.GREEN)).orElse(txtNoOwner)).withStyle(ChatFormatting.GRAY));        
-        if (isAdmin(target)) {
+        if (isAdmin()) {
             texts.add(txtRightClickOptions);
         }
         return texts;
