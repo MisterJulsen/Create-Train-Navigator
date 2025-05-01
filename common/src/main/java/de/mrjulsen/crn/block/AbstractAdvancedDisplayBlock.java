@@ -369,7 +369,7 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 			}
 
             return InteractionResult.SUCCESS;
-		} else if (heldItem.getItem() == Items.NAME_TAG && heldItem.hasCustomHoverName()) {
+		} else if (heldItem.getItem() == Items.NAME_TAG && heldItem.hasCustomHoverName() && pLevel.isClientSide) {
 			AdvancedDisplayBlockEntity controller = blockEntity.getController();
             if (controller != null) {
 				SimpleStaticTextDisplaySettings settings = new SimpleStaticTextDisplaySettings();
@@ -377,7 +377,7 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 				CreateRailwaysNavigator.net().CHANNEL.sendToServer(new AdvancedDisplayUpdatePacket(controller.getLevel(), controller.getBlockPos(), ModDisplayTypes.SIMPLE_TEXT, controller.getBlockState().getValue(AbstractAdvancedSidedDisplayBlock.SIDE) == ESide.BOTH, settings));
 				return InteractionResult.SUCCESS;
             }
-		} else if (AllBlocks.CLIPBOARD.isIn(heldItem)) {
+		} else if (AllBlocks.CLIPBOARD.isIn(heldItem) && pLevel.isClientSide) {
 			AdvancedDisplayBlockEntity controller = blockEntity.getController();
             if (controller != null) {				
 				StaticTextDisplaySettings settings = new StaticTextDisplaySettings();			
