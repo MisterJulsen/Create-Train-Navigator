@@ -25,6 +25,7 @@ This mod adds a new item, the Create Railways Navigator, which is inspired by th
 - Russian (by VGamerGroup)
 - French (by GeoffreyGx)
 - Portuguese (by AlfredoProgramer)
+- Portuguese Brazil (by Lucasofchirstms)
 - Korean (by queso-gato1355)
 - Swedish (by Geoffrey)
 
