@@ -55,7 +55,11 @@ public class RouteWidget extends DLButton implements ITickable {
     private final Animator animator = new Animator();
 
     public RouteWidget(RouteViewer parent, ClientRoute route, int x, int y) {
-        super(x, y, WIDTH, HEIGHT, TextUtils.empty(), (b) -> Minecraft.getInstance().setScreen(new RouteDetailsScreen(parent.getParent(), route)));
+        super(x, y, WIDTH, HEIGHT, TextUtils.empty(), (b) -> {
+            route.addListener();
+            Minecraft.getInstance().setScreen(new RouteDetailsScreen(parent.getParent(), route));
+            route.close();
+        });
         this.route = route;
 
         setRenderStyle(AreaStyle.FLAT);

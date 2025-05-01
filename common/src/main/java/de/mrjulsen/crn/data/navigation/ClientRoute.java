@@ -622,6 +622,7 @@ public class ClientRoute extends Route implements AutoCloseable, IListenable<Cli
     @Override
     public void close() {
         listenersCount--;
+        if (ModCommonConfig.ADVANCED_LOGGING.get()) CreateRailwaysNavigator.LOGGER.info("Route listener removed. Remaining: " + listenersCount);
         if (listenersCount <= 0) {
             closeAll();
         }

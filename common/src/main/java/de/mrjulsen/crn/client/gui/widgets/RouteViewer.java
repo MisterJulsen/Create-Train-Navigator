@@ -102,8 +102,8 @@ public class RouteViewer extends DLScrollableWidgetContainer implements Closeabl
         return ImmutableList.copyOf(routes);
     }
 
-    public void setRoutes(Collection<ClientRoute> routes) {
-        clear();
+    public void setRoutes(Collection<ClientRoute> routes, boolean closeCurrent) {
+        if (closeCurrent) clear();
         if (routes != null) {
             this.routes.addAll(routes);
             DLUtils.doIfNotNull(onUpdateRoutes, x -> x.accept(getRoutes()));
@@ -117,7 +117,7 @@ public class RouteViewer extends DLScrollableWidgetContainer implements Closeabl
         this.userSettings = settings;
         userSettings.recentSearchQueries.getValue().add(new RecentSearchQuery(from, to));
         clear();
-
+        
         userSettings.clientSave(() -> {
             animator.start(10, (poseStack, current, total, percentage) -> {
                 this.animPercentage = Math.pow(1D - percentage, 4);
@@ -132,7 +132,7 @@ public class RouteViewer extends DLScrollableWidgetContainer implements Closeabl
                         this.animationStarted = false;
                         this.animPercentage = 0;
                         this.renderOffsetX = 0;
-                        setRoutes(routeList);
+                        setRoutes(routeList, true);
                         this.loadingRoutes = false;
                         DLUtils.doIfNotNull(andThen, x -> x.accept(this));            
                         if (this.routes.isEmpty()) {
@@ -267,15 +267,9 @@ public class RouteViewer extends DLScrollableWidgetContainer implements Closeabl
     }
 
     public void clear() {
-        this.routes.stream().forEach(x -> x.close());
+        this.routes.forEach(ClientRoute::close);
         this.routes.clear();
         clearWidgets();
-    }
-    
-    @Override
-    public void close() {
-        super.close();
-        clear();
     }
 
 

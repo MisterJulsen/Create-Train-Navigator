@@ -120,6 +120,7 @@ public class NavigatorScreen extends AbstractNavigatorScreen {
     @Override
     public void onClose() {
         super.onClose();
+        DLUtils.doIfNotNull(currentRoutes, x -> x.forEach(ClientRoute::close));
     }
 
     @Override
@@ -231,7 +232,7 @@ public class NavigatorScreen extends AbstractNavigatorScreen {
             currentRoutes = routes;
         }));
         routeViewer.enableRecentlySearchedList(userSettings);
-        routeViewer.setRoutes(currentRoutes);
+        routeViewer.setRoutes(currentRoutes, false);
         addRenderableWidget(scrollBar);
 
         searchButton = this.addRenderableWidget(new DLCreateIconButton(guiLeft + 195, guiTop + 42, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, AllIcons.I_MTD_SCAN) {
