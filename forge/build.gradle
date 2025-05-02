@@ -38,10 +38,14 @@ dependencies {
 
     modCompileOnly("dev.architectury:architectury-forge:${rootProject.architectury_api_version}")
     modImplementation(include("de.mrjulsen.mcdragonlib:dragonlib-forge:${rootProject.minecraft_version}-${rootProject.dragonlib_version}"))
-        
+
     modImplementation("com.simibubi.create:create-${rootProject.minecraft_version}:${rootProject.create_forge_version}:slim") { transitive = false }
+    modImplementation("net.createmod.ponder:Ponder-Forge-${rootProject.minecraft_version}:${rootProject.ponder_forge_version}")
+    modCompileOnly("dev.engine-room.flywheel:flywheel-forge-api-${rootProject.minecraft_version}:${rootProject.flywheel_forge_version}")
+    modRuntimeOnly("dev.engine-room.flywheel:flywheel-forge-${rootProject.minecraft_version}:${rootProject.flywheel_forge_version}")
     modImplementation("com.tterrag.registrate:Registrate:${rootProject.registrate_forge_version}")
-    modImplementation("com.jozufozu.flywheel:flywheel-forge-${rootProject.minecraft_version}:${rootProject.flywheel_forge_version}")
+    compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:0.4.1"))
+    implementation("io.github.llamalad7:mixinextras-forge:0.4.1")
 
     common(project(path: ':common', configuration: 'namedElements')) { transitive false }
     shadowBundle project(path: ':common', configuration: 'transformProductionForge')

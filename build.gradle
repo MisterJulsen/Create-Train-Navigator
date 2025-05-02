@@ -28,15 +28,14 @@ subprojects {
         maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" } // Forge Config API
         maven { url = "https://maven.parchmentmc.org" } // ParchmentMC
         maven { url = "https://maven.terraformersmc.com/" } // ModMenu
-        maven { url = "https://maven.tterrag.com/" } // Flywheel        
         maven { url = "https://maven.shedaniel.me/" } // Cloth Config, REI
         maven { url = "https://maven.blamejared.com/" } // JEI
         maven { url = "https://maven.quiltmc.org/repository/release" } // Quilt Mappings
         maven { url = "https://api.modrinth.com/maven" } // LazyDFU
-        maven { url = "https://mvn.devos.one/snapshots/" } // Create, Porting Lib, Forge Tags, Milk Lib, Registrate
         maven { url = "https://maven.jamieswhiteshirt.com/libs-release" } // Reach Entity Attributes
         maven { url = "https://jitpack.io/" } // Mixin Extras, Fabric ASM
-        maven { url = "https://maven.tterrag.com/" } // Flywheel
+        maven { url = "https://maven.createmod.net" } // Create, Ponder, Flywheel
+        maven { url = "https://maven.tterrag.com" } // Registrate
         maven { url = "https://cursemaven.com"
             content {
                 includeGroup "curse.maven"
@@ -75,7 +74,7 @@ subprojects {
             "maven_group": rootProject.maven_group,
             "create_forge_version": rootProject.create_forge_version,
             "create_forge_dependency_version": rootProject.create_forge_dependency_version,
-            "create_fabric_version": rootProject.create_fabric_version,
+            //"create_fabric_version": rootProject.create_fabric_version,
             "main_class_name": rootProject.main_class_name,
         ]
         filesMatching(['pack.mcmeta', 'fabric.mod.json', 'META-INF/mods.toml', 'createrailwaysnavigator.mixins.json']) {
