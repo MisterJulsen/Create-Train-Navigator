@@ -1,7 +1,9 @@
 package de.mrjulsen.crn.client.gui.widgets.options;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -23,7 +25,7 @@ import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.client.gui.components.Widget;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
 
 public abstract class AbstractDataListEntry<T, S, E extends AbstractDataListEntry.AbstractDataSectionDefinition<T, S>> extends DLWidgetContainer {
@@ -40,6 +42,7 @@ public abstract class AbstractDataListEntry<T, S, E extends AbstractDataListEntr
     private int buttonsXOffset = 0;
     private int sectionsXOffset = 0;
     private List<E> sections = new ArrayList<>();
+    private final Map<DLIconButton, DLTooltip> tooltips = new HashMap<>();
 
     protected final S data;
     private String text;
@@ -50,6 +53,10 @@ public abstract class AbstractDataListEntry<T, S, E extends AbstractDataListEntr
         super(x, y, width, 20);
         this.parent = parent;
         this.data = data;
+    }
+
+    public DataListContainer<T, S> getParent() {
+        return parent;
     }
 
     public void setText(String text) {        
@@ -81,7 +88,7 @@ public abstract class AbstractDataListEntry<T, S, E extends AbstractDataListEntr
         return widget;
     }
 
-    public DLIconButton addButton(Sprite icon, Component text, DataListEntryContext<DLIconButton, T, S> onClick) {
+    public DLIconButton addButton(Sprite icon, List<FormattedText> text, DataListEntryContext<DLIconButton, T, S> onClick) {
         if (wasBuild) {
             throw new IllegalStateException("Cannot add elements to this widget after finishing creation.");
         }
@@ -91,14 +98,21 @@ public abstract class AbstractDataListEntry<T, S, E extends AbstractDataListEntr
         }));
         btn.setBackColor(0x00000000);
         buttonsXOffset += btn.width();
-        DLTooltip tooltip = DLTooltip.of(text).assignedTo(btn);        
+        DLTooltip tooltip = DLTooltip.of(text).assignedTo(btn); 
+        tooltips.put(btn, tooltip);       
         tooltip.setDynamicOffset(() -> (int)parent.getParentEntry().getParentList().getXScrollOffset(), () -> (int)parent.getParentEntry().getParentList().getYScrollOffset());
-        parent.getTooltips().add(tooltip);
+        //parent.getTooltips().add(tooltip);
         return btn;
     }
 
     public DLIconButton addDeleteButton(DataListEntryContext<DLIconButton, T, S> onClick) {
-        return addButton(ModGuiIcons.DELETE.getAsSprite(16, 16), textDelete, onClick);
+        return addButton(ModGuiIcons.DELETE.getAsSprite(16, 16), List.of(textDelete), onClick);
+    }    
+
+    public void updateTooltipOf(DLIconButton widget, List<FormattedText> text) {
+        DLTooltip tooltip = DLTooltip.of(text).assignedTo(widget);
+        tooltip.setDynamicOffset(() -> (int)parent.getParentEntry().getParentList().getXScrollOffset(), () -> (int)parent.getParentEntry().getParentList().getYScrollOffset());
+        tooltips.put(widget, tooltip);
     }
 
     protected E createSection(E section) {
@@ -130,6 +144,17 @@ public abstract class AbstractDataListEntry<T, S, E extends AbstractDataListEntr
         int xCoord = x() + CONTENT_POS_LEFT;
         renderMainSection(graphics, mouseX, mouseY, partialTicks, text, new GuiAreaDefinition(xCoord, y() + 1, remainingWidth, 18));
         super.renderMainLayer(graphics, mouseX, mouseY, partialTicks);
+    }
+
+    @Override
+    public void renderFrontLayer(Graphics graphics, int mouseX, int mouseY, float partialTicks) {
+        super.renderFrontLayer(graphics, mouseX, mouseY, partialTicks);
+        
+        tooltips.values().stream().forEach(x -> {
+            if (x.getAssignedWidget() instanceof IDragonLibWidget dlw && dlw.isMouseSelected()) {
+                x.render(parent.getParentScreen(), graphics, mouseX, mouseY);
+            }
+        });
     }
 
     protected abstract void renderWidgetBase(Graphics graphics, int mouseX, int mouseY, float partialTicks);

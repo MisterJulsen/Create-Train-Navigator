@@ -23,6 +23,15 @@ public class Constants {
     public static final Component TEXT_COPY = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.copy");
     public static final Component TEXT_PASTE = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.paste");
     public static final Component TEXT_RESET = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.reset_defaults");
+    public static final Component TEXT_REMOVE = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.remove");
+    public static final Component TEXT_DELETE = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.delete");
+    public static final Component TEXT_ADD = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.add");
+    public static final Component TEXT_NEW = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.new");
+    public static final Component TEXT_CLEAR_ALL = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.clear_all");
+    public static final Component TEXT_CLEAR = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.clear");
+    public static final Component TEXT_LOADING = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.loading");
+    public static final Component TEXT_READ_ONLY = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.read_only");
+    public static final Component TEXT_SERVER = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.server");
     public static final UUID ZERO_UUID = new UUID(0, 0);
     public static final int[] DEFAULT_TRAIN_TYPE_COLORS = new int[] { 0xFF393939, 0xFFf0f3f5, 0xFFafb4bb, 0xFF878c96, 0xFF2a7230, 0xFF814997, 0xFF1455c0, 0xFFa9455d, 0xFF55b9e6, 0xFFffd800 };
      
@@ -34,6 +43,7 @@ public class Constants {
     public static final String HELP_PAGE_ADVANCED_DISPLAYS = GITHUB_WIKI + "Advanced-Displays";
     public static final String HELP_PAGE_DYNAMIC_DELAYS = GITHUB_WIKI + "Dynamic-Delays";
     public static final String HELP_PAGE_TRAIN_SEPARATION = GITHUB_WIKI + "Train-Separation";
+    public static final String HELP_PAGE_PRIORITIZED_DESTINATION_INSTRUCTION = GITHUB_WIKI + "Prioritized-Destination-Instruction";
     public static final String HELP_PAGE_GLOBAL_SETTINGS = GITHUB_WIKI + "Global-Settings";
     public static final String HELP_PAGE_NAVIGATION_WARNING = GITHUB_WIKI + "Navigation-Warning";
     public static final String HELP_PAGE_SCHEDULE_SECTIONS = GITHUB_WIKI + "Train-Schedule-Sections";
@@ -41,7 +51,7 @@ public class Constants {
     public static final String HELP_PAGE_STATION_BLACKLIST = GITHUB_WIKI + "Station-Blacklist";
     public static final String HELP_PAGE_STATION_TAGS = GITHUB_WIKI + "Station-Tags";
     public static final String HELP_PAGE_TRAIN_BLACKLIST = GITHUB_WIKI + "Train-Blacklist";
-    public static final String HELP_PAGE_TRAIN_GROUPS = GITHUB_WIKI + "Train-Groups";
+    public static final String HELP_PAGE_TRAIN_CATEGORIES = GITHUB_WIKI + "Train-Categories";
     public static final String HELP_PAGE_TRAIN_INITIALIZATION = GITHUB_WIKI + "Train-Imnitialization";
     public static final String HELP_PAGE_TRAIN_LINES = GITHUB_WIKI + "Train-Lines";
 }

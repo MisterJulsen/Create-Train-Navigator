@@ -2,6 +2,8 @@ package de.mrjulsen.crn.data.schedule.condition;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.google.common.collect.ImmutableList;
 import com.simibubi.create.content.trains.entity.Train;
@@ -12,8 +14,8 @@ import com.simibubi.create.foundation.utility.Lang;
 import com.simibubi.create.foundation.utility.Pair;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.api.IPredictableWaitCondition;
 import de.mrjulsen.crn.client.ClientWrapper;
-import de.mrjulsen.crn.data.train.TrainData;
 import de.mrjulsen.crn.data.train.TrainListener;
 import de.mrjulsen.crn.data.train.TrainPrediction;
 import de.mrjulsen.mcdragonlib.DragonLib;
@@ -29,7 +31,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 
-public class DynamicDelayCondition extends ScheduledDelay {
+public class DynamicDelayCondition extends ScheduledDelay implements IPredictableWaitCondition {
 
     public static final String NBT_MIN = "Min";
     
@@ -62,27 +64,26 @@ public class DynamicDelayCondition extends ScheduledDelay {
 	public boolean tickCompletion(Level level, Train train, CompoundTag context) {
 		int time = context.getInt("Time");
 
-		long currentDelay = 0;
-		long scheduledDepartureTime = 0;
-		boolean initialized = false;
+		AtomicLong currentDelay = new AtomicLong(0);
+		AtomicLong scheduledDepartureTime = new AtomicLong(0);
+		AtomicBoolean initialized = new AtomicBoolean(false);
 
-		if (TrainListener.data.containsKey(train.id)) {
-			TrainData data = TrainListener.data.get(train.id);
+		TrainListener.getTrainData(train.id).ifPresent(data -> {
 			Optional<TrainPrediction> pred = data.getNextStopPrediction();
 			if (pred.isPresent()) {
-				currentDelay = pred.get().getArrivalTimeDeviation();
-				initialized = data.isInitialized() && !data.isPreparing();
-				scheduledDepartureTime = pred.get().getScheduledDepartureTime();
-			} 
-		}
+				currentDelay.set(pred.get().getArrivalTimeDeviation());
+				initialized.set(data.isInitialized() && !data.isPreInitializationPhase());
+				scheduledDepartureTime.set(pred.get().scheduled().departureTime());
+			}
+		});
 
-		long totalTicks = initialized ? Math.max(totalWaitTicks() - currentDelay, minWaitTicks()) : totalWaitTicks();
+		long totalTicks = initialized.get() ? Math.max(totalWaitTicks() - currentDelay.get(), minWaitTicks()) : totalWaitTicks();
 
-		if (time >= (initialized ? Math.max(totalWaitTicks() - currentDelay, minWaitTicks()) : totalWaitTicks()) && (!initialized || DragonLib.getCurrentWorldTime() >= scheduledDepartureTime))
+		if (time >= (initialized.get() ? Math.max(totalWaitTicks() - currentDelay.get(), minWaitTicks()) : totalWaitTicks()) && (!initialized.get() || DragonLib.getCurrentWorldTime() >= scheduledDepartureTime.get()))
 			return true;
 		
 		context.putInt("Time", time + 1);
-		context.putLong("TotalTicks", Math.max(totalTicks, scheduledDepartureTime - DragonLib.getCurrentWorldTime() + time));
+		context.putLong("TotalTicks", Math.max(totalTicks, scheduledDepartureTime.get() - DragonLib.getCurrentWorldTime() + time));
 		requestDisplayIfNecessary(context, time);
 		return false;
 	}
@@ -117,5 +118,15 @@ public class DynamicDelayCondition extends ScheduledDelay {
 			: num == 1 ? "daytime.second" : "unit.seconds");
 			
 		return Lang.translateDirect("schedule.condition." + getId().getPath() + ".status", Components.literal(num + " ").append(Lang.translateDirect(key)));
+	}
+
+	@Override
+	public long waitUntil(long worldTime) {
+		return worldTime + totalWaitTicks();
+	}
+
+	@Override
+	public long waitMinUntil(long worldTime) {
+		return worldTime + minWaitTicks();
 	}
 }

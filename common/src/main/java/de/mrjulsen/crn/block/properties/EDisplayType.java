@@ -10,7 +10,8 @@ public enum EDisplayType implements StringRepresentable, ITranslatableEnum {
 	TRAIN_DESTINATION((byte)0, "train_destination", ModGuiIcons.TRAIN_DESTINATION, EDisplayTypeDataSource.TRAIN_INFORMATION),
     PASSENGER_INFORMATION((byte)1, "passenger_information", ModGuiIcons.PASSENGER_INFORMATION, EDisplayTypeDataSource.TRAIN_INFORMATION),
 	PLATFORM((byte)2, "platform", ModGuiIcons.PLATFORM_INFORMATION, EDisplayTypeDataSource.PLATFORM),
-	DEPARTURE_BOARD((byte)3, "departure_board", ModGuiIcons.PLATFORM_INFORMATION, EDisplayTypeDataSource.PLATFORM);
+	DEPARTURE_BOARD((byte)3, "departure_board", ModGuiIcons.PLATFORM_INFORMATION, EDisplayTypeDataSource.PLATFORM),
+	STATIC_TEXT((byte)4, "static_text", ModGuiIcons.TEXT, EDisplayTypeDataSource.NONE);
 	
 	private String name;
 	private byte id;
@@ -65,7 +66,8 @@ public enum EDisplayType implements StringRepresentable, ITranslatableEnum {
 
 	public static enum EDisplayTypeDataSource {
 		TRAIN_INFORMATION(0),
-		PLATFORM(1);
+		PLATFORM(1),
+		NONE(2);
 
 		private int index;
 

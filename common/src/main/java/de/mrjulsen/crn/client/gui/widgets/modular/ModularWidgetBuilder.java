@@ -25,6 +25,10 @@ public class ModularWidgetBuilder {
         lineBuilders.put(name, lineBuilder);
     }
 
+    public void clear() {
+        lineBuilders.clear();
+    }
+
     public int getCurrentLinesCount() {
         return lineBuilders.size();
     }

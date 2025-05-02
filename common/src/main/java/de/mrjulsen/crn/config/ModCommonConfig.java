@@ -8,6 +8,7 @@ public class ModCommonConfig {
     public static final ForgeConfigSpec SPEC;
 
     public static final ForgeConfigSpec.ConfigValue<Integer> GLOBAL_SETTINGS_PERMISSION_LEVEL;
+    public static final ForgeConfigSpec.ConfigValue<Integer> GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL;
     public static final ForgeConfigSpec.ConfigValue<Integer> TOTAL_DURATION_BUFFER_SIZE;
     public static final ForgeConfigSpec.ConfigValue<Integer> SCHEDULE_DEVIATION_THRESHOLD;
     public static final ForgeConfigSpec.ConfigValue<Integer> AUTO_RESET_TIMINGS;
@@ -18,17 +19,21 @@ public class ModCommonConfig {
     public static final ForgeConfigSpec.ConfigValue<Boolean> EXCLUDE_TRAINS;
     public static final ForgeConfigSpec.ConfigValue<Boolean> ADVANCED_LOGGING;
 
+    public static final ForgeConfigSpec.ConfigValue<Boolean> EXPERIMENT_SIMULATION_ALGORITHM;
+
     static {
         BUILDER.push(CreateRailwaysNavigator.MOD_ID + "_common_config");
 
         GLOBAL_SETTINGS_PERMISSION_LEVEL = BUILDER.comment("Minimum permission level required to edit the global navigator settings. 0 allows everyone to edit these settings. (Default: 0)")
             .defineInRange("permissions.global_settings_permission_level", 0, 0, 4);
+        GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL = BUILDER.comment("Minimum permission level required to use admin features in CRN. 0 gives everybody admin permissions in CRN (not recommended), -1 disables admin features. (Default: 3)")
+            .defineInRange("permissions.admin_mode_permission_level", 3, -1, 4);
         
 
 
         EXCLUDE_TRAINS = BUILDER.comment("If activated, used trains are excluded from the route search for all following route parts. This prevents the same train from being suggested multiple times in the same route and forces the navigator to use other trains instead. Normally, however, there are no problems, so this option can be left off if in doubt. (Default: OFF)")
             .define("navigation.exclude_trains", false);
-        TRANSFER_COST = BUILDER.comment("How much transfers should be avoided. Higher values try to use fewer transfers, even if this increases the travel time. (Default: 5000)")
+        TRANSFER_COST = BUILDER.comment("How much transfers should be avoided. Higher values try to use fewer transfers, even if this increases the travel time. (Default: 10000)")
             .defineInRange("navigation.transfer_cost", 10000, 1000, Integer.MAX_VALUE);
 
 
@@ -47,6 +52,9 @@ public class ModCommonConfig {
 
         ADVANCED_LOGGING = BUILDER.comment(new String[] {"Prints more details to the console to better observe the behavior of CRN. Only relevant for debugging."})
             .define("debug.advanced_logging", false);
+
+        EXPERIMENT_SIMULATION_ALGORITHM = BUILDER.comment("The new simulation algorithm calculates the times step by step for the respective stations and pays attention to the schedule conditions instead of adding up the total journey time until the desired time is reached. This should lead to more precise results, especially when using time based departure times. (Default: OFF)")
+            .define("experimental.use_new_simulation_algorithm", false);
 
         BUILDER.pop();
         SPEC = BUILDER.build();

@@ -10,7 +10,6 @@ import com.simibubi.create.content.trains.entity.TrainIconType;
 
 import de.mrjulsen.crn.exceptions.RuntimeSideException;
 import de.mrjulsen.mcdragonlib.data.Cache;
-import de.mrjulsen.crn.data.train.TrainData;
 import de.mrjulsen.crn.data.train.TrainListener;
 import de.mrjulsen.crn.data.train.TrainStop;
 import de.mrjulsen.crn.data.train.TrainStatus.CompiledTrainStatus;
@@ -68,18 +67,15 @@ public class BasicTrainDisplayData {
         if (!ModCommonEvents.hasServer()) {
             throw new RuntimeSideException(false);
         }
-        if (!TrainListener.data.containsKey(train)) {
-            return empty();
-        }
-        TrainData data = TrainListener.data.get(train);
-        return new BasicTrainDisplayData(
+        
+        return TrainListener.getTrainData(train).map(data -> new BasicTrainDisplayData(
             data.getTrainId(),
             data.getTrainDisplayName(),
             data.getCurrentSection().getTrainLine().map(x -> x.getColor()).orElse(0),
             data.getTrain().icon,
             new ArrayList<>(data.getStatus()),
             data.isCancelled()
-        );
+        )).orElse(empty());
     }
 
     /** Server-side only! */
@@ -87,18 +83,15 @@ public class BasicTrainDisplayData {
         if (!ModCommonEvents.hasServer()) {
             throw new RuntimeSideException(false);
         }
-        if (!TrainListener.data.containsKey(stop.getTrainId())) {
-            return empty();
-        }
-        TrainData data = TrainListener.data.get(stop.getTrainId());
-        return new BasicTrainDisplayData(
+
+        return TrainListener.getTrainData(stop.getTrainId()).map(data -> new BasicTrainDisplayData(
             stop.getTrainId(),
             stop.getTrainDisplayName(),
             data.getSectionForIndex(stop.getScheduleIndex()).getTrainLine().map(x -> x.getColor()).orElse(0),
             stop.getTrainIcon(),
             new ArrayList<>(data.getStatus()),
             data.isCancelled()
-        );
+        )).orElse(empty());
     }
 
     public UUID getId() {

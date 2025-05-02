@@ -90,7 +90,7 @@ public class AdvancedDisplayTarget extends DisplayBoardTarget {
 					String filter = context.sourceConfig().getString("Filter");
 					List<StationDisplayData> preds = prepare(filter, controller.getDisplayProperties().platformDisplayTrainsCount().apply(controller));
 					
-					controller.setDepartureData(
+					controller.setData(
 						preds,
 						filter,
 						GlobalSettings.getInstance().getOrCreateStationTagFor(filter).getInfoForStation(filter),
@@ -106,7 +106,7 @@ public class AdvancedDisplayTarget extends DisplayBoardTarget {
 		List<StationDisplayData> result = new ArrayList<>(maxLines);
 
 		int i = 0;
-		for (TrainStop stop : TrainUtils.getDeparturesAtStationName(filter, null)) {
+		for (TrainStop stop : TrainUtils.getDeparturesAtStationName(filter, null, false)) {
 			i++;
 			result.add(StationDisplayData.of(stop));
 			if (i >= maxLines) {

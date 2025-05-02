@@ -44,10 +44,14 @@ public class Animator extends DLRenderable {
 
     @Override
     public void renderMainLayer(Graphics graphics, int mouseX, int mouseY, float partialTicks) {
-        partialTicks = Minecraft.getInstance().getFrameTime();
-        currentTicksSmooth += partialTicks;
         if (running) {
+            partialTicks = Minecraft.getInstance().getDeltaFrameTime();
+            currentTicksSmooth += partialTicks;
             DLUtils.doIfNotNull(onAnimateRender, x -> x.execute(graphics.poseStack(), getCurrentTicks(), getTotalTicks(), getPercentage()));
+            if (currentTicks >= maxTicks) {
+                stop();
+                DLUtils.doIfNotNull(onCompleted, x -> x.run());
+            }
         }
     }
 
@@ -58,6 +62,7 @@ public class Animator extends DLRenderable {
             currentTicks++;
             currentTicksSmooth = currentTicks;
             if (currentTicks >= maxTicks) {
+                currentTicksSmooth = maxTicks;
                 stop();
                 DLUtils.doIfNotNull(onCompleted, x -> x.run());
             }

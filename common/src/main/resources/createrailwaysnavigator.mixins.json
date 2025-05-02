@@ -10,6 +10,8 @@
     "StationBlockEntityMixin"
   ],
   "mixins": [
+    "extensions.ScheduledDelayMixin",
+    "extensions.TimeOfDayConditionMixin",
     "ScheduleRuntimeAccessor",
     "TrainStatusAccessor",
     "ControlsHandlerMixin",
@@ -19,7 +21,9 @@
     "TrainMixin",
     "ItemMixin",
     "NavigationMixin",
-    "ScheduleEntryMixin"
+    "ScheduleEntryMixin",
+    "FrontierEntryMixin",
+    "TrainPenaltyAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

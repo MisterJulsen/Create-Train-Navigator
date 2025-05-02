@@ -4,18 +4,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.function.BiFunction;
 
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLAbstractScrollBar;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.DLButton;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLScrollableWidgetContainer;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.IDragonLibWidget;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
+import net.minecraft.client.gui.components.Widget;
+import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 
-public class CRNListBox<T, W extends DLButton> extends DLScrollableWidgetContainer {
+public class CRNListBox<T, W extends GuiEventListener & Widget & IDragonLibWidget> extends DLScrollableWidgetContainer {
 
     private final Screen parent;
     private final DLAbstractScrollBar<?> scrollBar;
@@ -56,7 +57,7 @@ public class CRNListBox<T, W extends DLButton> extends DLScrollableWidgetContain
         scrollBar.setMaxScroll(contentHeight);
     }
 
-    public Set<Entry<W, T>> getEntries() {
+    public Set<Map.Entry<W, T>> getEntries() {
         return values.entrySet();
     }
 
@@ -84,5 +85,4 @@ public class CRNListBox<T, W extends DLButton> extends DLScrollableWidgetContain
     public boolean consumeScrolling(double mouseX, double mouseY) {
         return false;
     }
-    
 }

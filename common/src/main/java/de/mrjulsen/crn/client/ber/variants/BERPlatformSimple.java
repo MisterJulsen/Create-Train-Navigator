@@ -78,10 +78,10 @@ public class BERPlatformSimple implements AbstractAdvancedDisplayRenderer<Platfo
         }).map(x -> {
             String timeString = ModUtils.formatTime(x.getStationData().getScheduledDepartureTime(), getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA);
             MutableComponent text = TextUtils.empty();
-            if (x.getStationData().getStationInfo().platform() == null || x.getStationData().getStationInfo().platform().isBlank()) {
+            if (x.getStationData().getRealTimeStation().info().platform() == null || x.getStationData().getRealTimeStation().info().platform().isBlank()) {
                 text.append(CustomLanguage.translate(keyTrainDeparture, x.getTrainData().getName(), x.getStationData().getDestination(), timeString));
             } else {
-                text.append(CustomLanguage.translate(keyTrainDepartureWithPlatform, x.getTrainData().getName(), x.getStationData().getDestination(), timeString, x.getStationData().getStationInfo().platform()));
+                text.append(CustomLanguage.translate(keyTrainDepartureWithPlatform, x.getTrainData().getName(), x.getStationData().getDestination(), timeString, x.getStationData().getRealTimeStation().info().platform()));
             }
 
             if (x.getTrainData().isCancelled()) {

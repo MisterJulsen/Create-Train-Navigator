@@ -32,7 +32,7 @@ public class RoutePartEntryWidget extends DLButton {
 
     public RoutePartEntryWidget(Screen parent, ClientRoutePart part, ClientTrainStop stop, int pX, int pY, int width, TrainStopType type, boolean valid) {
         super(pX, pY, width, type.h, TextUtils.empty(), (b) -> {
-            DLScreen.setScreen(new ScheduleBoardScreen(parent, stop.getClientTag()));
+            DLScreen.setScreen(new ScheduleBoardScreen(parent, stop.getRealTimeStationTag()));
         });
         this.part = part;
         this.stop = stop;
@@ -56,12 +56,12 @@ public class RoutePartEntryWidget extends DLButton {
 
     protected void renderData(Graphics graphics, int y) {
         final float scale = 0.75f;
-        String platformText = stop.getClientTag().info().platform();
-        String nameText = stop.getClientTag().tagName();
+        String platformText = stop.getRealTimeStationTag().info().platform();
+        String nameText = stop.getRealTimeStationTag().tagName();
         int maxStationNameWidth = 138 - 8 - font.width(platformText) - 6;
         
         if (font.width(nameText) > maxStationNameWidth) {
-            GuiUtils.drawString(graphics, font, x() + 80, y + 5, TextUtils.text(font.substrByWidth(TextUtils.text(stop.getClientTag().tagName()), maxStationNameWidth).getString()).append(Constants.ELLIPSIS_STRING), 0xFFFFFFFF, EAlignment.LEFT, false);
+            GuiUtils.drawString(graphics, font, x() + 80, y + 5, TextUtils.text(font.substrByWidth(TextUtils.text(stop.getRealTimeStationTag().tagName()), maxStationNameWidth).getString()).append(Constants.ELLIPSIS_STRING), 0xFFFFFFFF, EAlignment.LEFT, false);
         } else {
             GuiUtils.drawString(graphics, font, x() + 80, y + 5, nameText, 0xFFFFFFFF, EAlignment.LEFT, false);
         }
