@@ -15,6 +15,7 @@ import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.data.ETimeSource;
 import de.mrjulsen.crn.data.schedule.IConditionsRequiresInstruction;
 import de.mrjulsen.crn.data.schedule.INavigationExtension;
+import de.mrjulsen.crn.data.schedule.instruction.PrioritizedDestinationInstruction;
 import de.mrjulsen.crn.data.train.DepartureHistory;
 import de.mrjulsen.crn.data.train.DepartureHistory.ETrainFilter;
 import de.mrjulsen.mcdragonlib.DragonLib;
@@ -111,13 +112,14 @@ public class TrainSeparationCondition extends ScheduledDelay implements IDelayed
 
 	@Override
 	public boolean runDelayed(DelayedWaitConditionContext context) {
-
 		int delayValue = getSeparationTime();
 		long lastDepartureTimestamp = Long.MIN_VALUE;
-		String stationName = "";
 		ScheduleEntry entry = context.scheduleEntry();
-		if (entry.instruction instanceof DestinationInstruction instruction) {
-			stationName = instruction.getFilter();
+		if (entry.instruction instanceof PrioritizedDestinationInstruction instruction) {
+			List<String> stationName = instruction.getFilters();
+			lastDepartureTimestamp = stationName.stream().mapToLong(x -> DepartureHistory.getLatestDepartureFor(getTrainFilter(), context.train(), x)).max().orElse(0);
+		} else if (entry.instruction instanceof DestinationInstruction instruction) {
+			String stationName = instruction.getFilter();
 			lastDepartureTimestamp = DepartureHistory.getLatestDepartureFor(getTrainFilter(), context.train(), stationName);
 		}
 
