@@ -3,6 +3,7 @@ package de.mrjulsen.crn.client.ber;
 import com.mojang.math.Axis;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.block.TrainStationClockBlock;
 import de.mrjulsen.crn.block.blockentity.TrainStationClockBlockEntity;
 import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.DragonLib;
@@ -25,7 +26,23 @@ public class TrainStationClockRenderer extends AbstractBlockEntityRenderInstance
     public void render(BERGraphics<TrainStationClockBlockEntity> graphics, float partialTick) {
         BERUtils.initRenderEngine();
         
-        float z = 3.2f;
+        graphics.poseStack().pushPose();
+        renderInternal(graphics, partialTick);
+        graphics.poseStack().popPose();
+
+        if (graphics.blockEntity().getBlockState().getValue(TrainStationClockBlock.DOUBLE)) {
+            graphics.poseStack().pushPose();
+            graphics.poseStack().translate(8, 8, 8);
+            graphics.poseStack().mulPose(Axis.YP.rotationDegrees(90));
+            graphics.poseStack().translate(-8, -8, -8);
+            renderInternal(graphics, partialTick);
+            graphics.poseStack().popPose();
+        }
+        
+    }
+
+    private void renderInternal(BERGraphics<TrainStationClockBlockEntity> graphics, float partialTicks) {
+        float z = graphics.blockEntity().getBlockState().getValue(TrainStationClockBlock.DOUBLE) ? 7.25f : 3.25f;
 
         graphics.poseStack().translate(8, 8, 8 + z);
         BERUtils.renderTexture(DIAL_TEXTURE, graphics, !graphics.blockEntity().isGlowing(), -7, -7, -0.2f, 14, 14, 0, 0, 1, 1, graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING), (0xFF << 24) | (graphics.blockEntity().getColor()), graphics.blockEntity().isGlowing() ? LightTexture.FULL_BRIGHT : graphics.packedLight());

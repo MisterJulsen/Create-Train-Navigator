@@ -56,7 +56,7 @@ public class ResetTimingsInstruction extends ScheduleInstruction implements ISta
     @Override
     public void run(ScheduleRuntime runtime, TrainData data, Train train, int index) {
         DLUtils.doIfNotNull(data, x -> {
-            data.resetPredictions();
+            data.softResetPredictions();
         });
     }
 

@@ -38,13 +38,13 @@ public class ClientTrainStop extends TrainStop implements ITrainListenerClient<C
     public ClientTrainStop(int scheduleIndex, int sectionIndex, UUID trainId, String trainName, TrainIconType trainIcon, TrainInfo trainInfo,
             String scheduleTitle, boolean isCustomTitle, String terminusText, int stayDuration, boolean simulated,
             long scheduledDepartureTime, long scheduledArrivalTime, int cycle, ClientStationTag tag, long realTimeArrivalTime,
-            long realTimeDepartureTime, int realTimeCycle, ClientStationTag realTimeTag, long arrivalTimeDeviation,
-            long departureTimeDeviation, int realTimeTicksUntilArrival, TrainState trainPosition)
+            long realTimeDepartureTime, int realTimeCycle, ClientStationTag realTimeTag,
+             int realTimeTicksUntilArrival, TrainState trainPosition)
     {
         super(scheduleIndex, sectionIndex, trainId, trainName, trainIcon, trainInfo, scheduleTitle, isCustomTitle,
                 terminusText, stayDuration, simulated, scheduledDepartureTime, scheduledArrivalTime, cycle, tag,
-                realTimeArrivalTime, realTimeDepartureTime, realTimeCycle, realTimeTag, arrivalTimeDeviation,
-                departureTimeDeviation, realTimeTicksUntilArrival, trainPosition);
+                realTimeArrivalTime, realTimeDepartureTime, realTimeCycle, realTimeTag,
+                realTimeTicksUntilArrival, trainPosition);
         initEvents();
     }
 
@@ -106,8 +106,6 @@ public class ClientTrainStop extends TrainStop implements ITrainListenerClient<C
         this.scheduledDepartureTime = data.scheduledDepartureTime();
         this.realTimeArrivalTime = data.realTimeArrivalTime();
         this.realTimeDepartureTime = data.realTimeDepartureTime();
-        this.arrivalTimeDeviation = data.deltaArrivalTime();
-        this.departureTimeDeviation = data.deltaDepartureTime();
         this.realTimeCycle = data.cycle();
         this.realTimeTag = data.station();
         this.realTimeTicksUntilArrival = data.ticksUntilArrival();
@@ -152,8 +150,6 @@ public class ClientTrainStop extends TrainStop implements ITrainListenerClient<C
             nbt.getLong(NBT_REAL_TIME_DEPARTURE_TIME),
             nbt.getInt(NBT_REAL_CYCLE),
             ClientStationTag.fromNbt(nbt.getCompound(NBT_REAL_TIME_TAG)),
-            nbt.contains(NBT_REAL_TIME_ARRIVAL_TIME) ? nbt.getLong(NBT_REAL_TIME_ARRIVAL_TIME) - nbt.getLong(NBT_SCHEDULED_ARRIVAL_TIME) : 0,
-            nbt.contains(NBT_REAL_TIME_DEPARTURE_TIME) ? nbt.getLong(NBT_REAL_TIME_DEPARTURE_TIME) - nbt.getLong(NBT_SCHEDULED_DEPARTURE_TIME) : 0,
             0,
             TrainState.BEFORE
         );
@@ -165,15 +161,13 @@ public class ClientTrainStop extends TrainStop implements ITrainListenerClient<C
         isClosed = true;
     }
     
-    public static record TrainStopRealTimeData(ClientStationTag station, int entryIndex, long scheduledArrivalTime, long scheduledDepartureTime, long realTimeArrivalTime, long realTimeDepartureTime, long deltaArrivalTime, long deltaDepartureTime, int ticksUntilArrival, int cycle) {
+    public static record TrainStopRealTimeData(ClientStationTag station, int entryIndex, long scheduledArrivalTime, long scheduledDepartureTime, long realTimeArrivalTime, long realTimeDepartureTime, int ticksUntilArrival, int cycle) {
         private static final String NBT_INDEX = "Index";
         private static final String NBT_STATION = "Station";
         private static final String NBT_SCHEDULED_ARRIVAL = "Arrival";
         private static final String NBT_SCHEDULED_DEPARTURE = "Departure";
         private static final String NBT_REAL_TIME_ARRIVAL = "RealArrival";
         private static final String NBT_REAL_TIME_DEPARTURE = "RealDeparture";
-        private static final String NBT_DELTA_ARRIVAL = "DeltaArrival";
-        private static final String NBT_DELTA_DEPARTURE = "DeltaDeparture";
         private static final String NBT_CYCLE = "Cycle";
         private static final String NBT_TICKS_UNTIL_ARRIVAL = "TUA";
 
@@ -185,8 +179,6 @@ public class ClientTrainStop extends TrainStop implements ITrainListenerClient<C
             nbt.putLong(NBT_SCHEDULED_DEPARTURE, scheduledDepartureTime);
             nbt.putLong(NBT_REAL_TIME_ARRIVAL, realTimeArrivalTime);
             nbt.putLong(NBT_REAL_TIME_DEPARTURE, realTimeDepartureTime);
-            nbt.putLong(NBT_DELTA_ARRIVAL, deltaArrivalTime);
-            nbt.putLong(NBT_DELTA_DEPARTURE, deltaDepartureTime);
             nbt.putInt(NBT_CYCLE, cycle);
             nbt.putInt(NBT_TICKS_UNTIL_ARRIVAL, ticksUntilArrival);
             
@@ -201,8 +193,6 @@ public class ClientTrainStop extends TrainStop implements ITrainListenerClient<C
                 nbt.getLong(NBT_SCHEDULED_DEPARTURE),
                 nbt.getLong(NBT_REAL_TIME_ARRIVAL),
                 nbt.getLong(NBT_REAL_TIME_DEPARTURE),
-                nbt.getLong(NBT_DELTA_ARRIVAL),
-                nbt.getLong(NBT_DELTA_DEPARTURE),
                 nbt.getInt(NBT_TICKS_UNTIL_ARRIVAL),
                 nbt.getInt(NBT_CYCLE)
             );

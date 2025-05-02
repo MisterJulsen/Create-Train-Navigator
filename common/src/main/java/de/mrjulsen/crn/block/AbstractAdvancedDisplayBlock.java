@@ -3,16 +3,26 @@ package de.mrjulsen.crn.block;
 import java.util.Collection;
 import java.util.List;
 
+import com.simibubi.create.AllBlocks;
+import com.simibubi.create.content.equipment.clipboard.ClipboardEntry;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.foundation.block.IBE;
 import com.simibubi.create.foundation.utility.Iterate;
 
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity.EUpdateReason;
 import de.mrjulsen.crn.block.display.properties.BasicDisplaySettings;
+import de.mrjulsen.crn.block.display.properties.SimpleStaticTextDisplaySettings;
+import de.mrjulsen.crn.block.display.properties.StaticTextDisplaySettings;
+import de.mrjulsen.crn.block.display.properties.StaticTextDisplaySettings.TextComponent;
+import de.mrjulsen.crn.block.properties.ESide;
 import de.mrjulsen.crn.client.ClientWrapper;
+import de.mrjulsen.crn.network.packets.cts.AdvancedDisplayUpdatePacket;
 import de.mrjulsen.crn.registry.ModBlockEntities;
+import de.mrjulsen.crn.registry.ModDisplayTypes;
+import de.mrjulsen.mcdragonlib.core.EAlignment;
 import de.mrjulsen.mcdragonlib.data.Pair;
 import de.mrjulsen.mcdragonlib.data.Tripple;
 import net.fabricmc.api.EnvType;
@@ -23,6 +33,7 @@ import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.Direction.AxisDirection;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -347,9 +358,7 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 
 				return InteractionResult.SUCCESS;
 			}
-		}
-       
-		if (heldItem.is(Items.GLOW_INK_SAC)) {
+		} else if (heldItem.is(Items.GLOW_INK_SAC)) {
 			pLevel.playSound(null, pPos, SoundEvents.GLOW_INK_SAC_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
 			blockEntity.applyToAll(be -> {
                 be.setGlowing(true);
@@ -361,6 +370,42 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 			}
 
             return InteractionResult.SUCCESS;
+		} else if (heldItem.getItem() == Items.NAME_TAG && heldItem.hasCustomHoverName() && pLevel.isClientSide) {
+			AdvancedDisplayBlockEntity controller = blockEntity.getController();
+            if (controller != null) {
+				SimpleStaticTextDisplaySettings settings = new SimpleStaticTextDisplaySettings();				
+				settings.setStaticText(heldItem.getHoverName().getString());	
+				CreateRailwaysNavigator.net().CHANNEL.sendToServer(new AdvancedDisplayUpdatePacket(controller.getLevel(), controller.getBlockPos(), ModDisplayTypes.SIMPLE_TEXT, controller.getBlockState().getValue(AbstractAdvancedSidedDisplayBlock.SIDE) == ESide.BOTH, settings));
+				return InteractionResult.SUCCESS;
+            }
+		} else if (AllBlocks.CLIPBOARD.isIn(heldItem) && pLevel.isClientSide) {
+			AdvancedDisplayBlockEntity controller = blockEntity.getController();
+            if (controller != null) {				
+				StaticTextDisplaySettings settings = new StaticTextDisplaySettings();			
+				List<ClipboardEntry> entries = ClipboardEntry.getLastViewedEntries(heldItem);
+				int line = 0;
+				entryLoop: for (ClipboardEntry entry : entries) {
+					for (String string : entry.text.getString().split("\n")) {
+						TextComponent component = new TextComponent(string);
+						component.setTextAlignment(EAlignment.LEFT);
+						component.setXScale(0.4f);
+						component.setMinXScale(0.4f);
+						component.setYScale(0.4f);
+						component.setY(line * 5.5f);
+						if (line >= settings.getComponentsCount()) {
+							settings.addComponent(component);
+						} else {
+							settings.setComponent(line, component);
+						}
+						line++;
+						if (line >= controller.getYSize() * 3 - 1) {
+							break entryLoop;
+						}
+					}
+				}
+				CreateRailwaysNavigator.net().CHANNEL.sendToServer(new AdvancedDisplayUpdatePacket(controller.getLevel(), controller.getBlockPos(), ModDisplayTypes.RICH_TEXT, controller.getBlockState().getValue(AbstractAdvancedSidedDisplayBlock.SIDE) == ESide.BOTH, settings));
+				return InteractionResult.SUCCESS;
+            }
 		}
 
 		return InteractionResult.FAIL;

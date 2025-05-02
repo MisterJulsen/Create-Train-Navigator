@@ -77,6 +77,15 @@ public class CreateDynamicWidgets {
         renderDuoShadeWidget(graphics, x, y, w, h1, color1.getColor(), h2, color2.getColor());
     }
 
+    public static void renderGrabber(Graphics graphics, int x, int y) {
+        for (int i = 0; i < 2; i++) {
+            for (int k = 0; k < 4; k++) {
+                GuiUtils.fill(graphics, x + 1 + i * 4, y + 1 + k * 4, 2, 2, COLOR_3D_SHADOW);
+                GuiUtils.fill(graphics, x + 1 + i * 4, y + 1 + k * 4, 1, 1, COLOR_3D_HIGHLIGHT);
+            }
+        }
+    }
+
     public static void renderTextSlotOverlay(Graphics graphics, int x, int y, int w, int h) {
         GuiUtils.fill(graphics, x, y, w, 1, COLOR_3D_SHADOW); // top line
         GuiUtils.fill(graphics, x, y + h - 1, w, 1, COLOR_3D_HIGHLIGHT); // bottom line        

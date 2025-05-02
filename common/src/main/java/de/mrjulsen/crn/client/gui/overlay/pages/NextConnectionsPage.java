@@ -36,7 +36,7 @@ public class NextConnectionsPage extends AbstractRouteDetailsPage {
         super(route);
         this.afterFirstCycle = afterFirstCycle;
         
-        DataAccessor.getFromServer(new DeparturesData(route.getCurrentPart().getNextStop().getClientTag().tagId(), route.getCurrentPart().getNextStop().getTrainId()), ModAccessorTypes.GET_DEPARTURES_AT, (stops) -> {
+        DataAccessor.getFromServer(new DeparturesData(route.getCurrentPart().getNextStop().getRealTimeStationTag().tagId(), route.getCurrentPart().getNextStop().getTrainId(), true), ModAccessorTypes.GET_DEPARTURES_AT, (stops) -> {
             if (stops.isEmpty()) {
                 afterFirstCycle.run();
                 return;

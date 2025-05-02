@@ -4,14 +4,14 @@ import javax.annotation.Nullable;
 
 import net.minecraft.nbt.CompoundTag;
 
-public record TrainInfo(@Nullable TrainLine line, @Nullable TrainGroup group) {
+public record TrainInfo(@Nullable TrainLine line, @Nullable TrainCategory category) {
 
-    private static final String NBT_TRAIN_GROUP = "Group";
+    private static final String NBT_TRAIN_CATEGORY = "Category";
     private static final String NBT_TRAIN_LINE = "Line";
 
     public CompoundTag toNbt() {
         CompoundTag nbt = new CompoundTag();
-        if (group != null) nbt.put(NBT_TRAIN_GROUP, group.toNbt());
+        if (category != null) nbt.put(NBT_TRAIN_CATEGORY, category.toNbt());
         if (line != null) nbt.put(NBT_TRAIN_LINE, line.toNbt());
 
         return nbt;
@@ -20,7 +20,7 @@ public record TrainInfo(@Nullable TrainLine line, @Nullable TrainGroup group) {
     public static TrainInfo fromNbt(CompoundTag nbt) {
         return new TrainInfo(
             nbt.contains(NBT_TRAIN_LINE) ? TrainLine.fromNbt(nbt.getCompound(NBT_TRAIN_LINE)) : null, 
-            nbt.contains(NBT_TRAIN_GROUP) ? TrainGroup.fromNbt(nbt.getCompound(NBT_TRAIN_GROUP)) : null
+            nbt.contains(NBT_TRAIN_CATEGORY) ? TrainCategory.fromNbt(nbt.getCompound(NBT_TRAIN_CATEGORY)) : null
         );
     }
 

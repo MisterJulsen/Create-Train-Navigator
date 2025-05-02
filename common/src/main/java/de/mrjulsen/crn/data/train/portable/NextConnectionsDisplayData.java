@@ -36,7 +36,7 @@ public class NextConnectionsDisplayData {
             throw new RuntimeSideException(false);
         }
 
-        List<TrainStop> departures = TrainUtils.getDeparturesAt(GlobalSettings.getInstance().getOrCreateStationTagFor(TagName.of(stationName)), selfTrainId);
+        List<TrainStop> departures = TrainUtils.getDeparturesAt(GlobalSettings.getInstance().getOrCreateStationTagFor(TagName.of(stationName)), selfTrainId, true);
         List<TrainStopDisplayData> displayData = new ArrayList<>(departures.size());
         for (TrainStop stop : departures) {
             displayData.add(TrainStopDisplayData.of(stop));

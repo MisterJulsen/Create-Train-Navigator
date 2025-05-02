@@ -8,6 +8,7 @@ import java.util.HashSet;
 import com.simibubi.create.content.trains.entity.Train;
 
 import de.mrjulsen.crn.data.StationTag;
+import de.mrjulsen.crn.data.train.TrainData;
 import de.mrjulsen.crn.data.train.TrainListener;
 import de.mrjulsen.crn.data.train.TrainStop;
 import de.mrjulsen.mcdragonlib.config.ECachingPriority;
@@ -30,7 +31,11 @@ public class TrainSchedule {
     }
 
     public TrainSchedule(UUID sessionId, Train train) {
-        this(TrainListener.data.get(train.id).getSessionId(), train, TrainListener.data.get(train.id).getPredictions().stream().map(x -> new TrainStop(x)).toList());
+        this(
+            TrainListener.getTrainData(train.id).map(TrainData::getSessionId).orElse(new UUID(0, 0)),
+            train,
+            TrainListener.getTrainData(train.id).map(a -> a.getPredictions().stream().map(x -> new TrainStop(x)).toList()).orElse(List.of())
+        );
     }
 
     public static TrainSchedule empty() {
@@ -38,7 +43,7 @@ public class TrainSchedule {
     }
 
     public static TrainSchedule ofSectionForIndex(UUID sessionId, Train train, int stationSectionIndex, int targetStationIndex, long simulationTime) {
-        return new TrainSchedule(sessionId, train, TrainListener.data.get(train.id).getSectionForIndex(stationSectionIndex).getAllStops(simulationTime, targetStationIndex));
+        return new TrainSchedule(sessionId, train, TrainListener.getTrainData(train.id).map(x -> x.getSectionForIndex(stationSectionIndex).getAllStops(simulationTime, targetStationIndex)).orElse(List.of()));
     }
     
     public List<TrainStop> getAllStops() {

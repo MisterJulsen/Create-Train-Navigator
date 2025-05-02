@@ -100,27 +100,46 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
     public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason) {
         List<StationDisplayData> preds = blockEntity.getStops().stream().filter(x -> x.getStationData().getRealTimeArrivalTime() < DragonLib.getCurrentWorldTime() + ModClientConfig.DISPLAY_LEAD_TIME.get() && (!x.getTrainData().isCancelled() || DragonLib.getCurrentWorldTime() < x.getStationData().getScheduledDepartureTime() + ModClientConfig.DISPLAY_LEAD_TIME.get())).toList();
         
-        showInfoLine = !preds.isEmpty() && preds.get(0).getStationData().isDepartureDelayed() && preds.get(0).getTrainData().hasStatusInfo();
+        showInfoLine = !preds.isEmpty() && ((preds.get(0).getStationData().isDepartureDelayed() && preds.get(0).getTrainData().hasStatusInfo()) || preds.get(0).getStationData().isStationChanged());
         if (showInfoLine) {
             // Update status label
-            this.infoLineText = TextUtils.concat(TextUtils.text("  +++  "), preds.stream().limit(maxLines).filter(x -> x.getTrainData().hasStatusInfo() && x.getStationData().isDepartureDelayed()).flatMap(x -> {
+            this.infoLineText = TextUtils.concat(TextUtils.text("  +++  "), preds.stream().limit(maxLines).filter(x -> 
+                (x.getTrainData().hasStatusInfo() &&
+                x.getStationData().isDepartureDelayed()) ||
+                x.getStationData().isStationChanged()
+            ).map(x -> {
                 Collection<Component> content = new ArrayList<>();
                 if (x.getTrainData().isCancelled()) {
-                    content.add(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.information_about_cancelled", x.getTrainData().getName()));
+                    content.add(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.cancelled"));
                     return content.stream();
                 }
-                String delay = getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA ? ModUtils.timeRemainingString(x.getStationData().getDepartureTimeDeviation()) : String.valueOf(TimeUtils.formatToMinutes(x.getStationData().getDepartureTimeDeviation()));
-               
-                MutableComponent delayComponent = CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.information_about_delayed", x.getTrainData().getName(), delay);
-                if (getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ABS) {
-                    delayComponent.append(" ").append(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.delay_abs_suffix"));
-                }
-                content.add(delayComponent);
 
+                // DELAYED
+                if (x.getStationData().isDepartureDelayed()) {
+                    String delay = getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA ? ModUtils.timeRemainingString(x.getStationData().getDepartureTimeDeviation()) : String.valueOf(TimeUtils.formatToMinutes(x.getStationData().getDepartureTimeDeviation()));
+                    MutableComponent delayComponent = CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.delayed", delay);
+                    if (getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ABS) {
+                        delayComponent.append(" ").append(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.delay_abs_suffix"));
+                    }
+                    content.add(delayComponent);
+                }
+                
+                // PLATFORM CHANGED
+                if (x.getStationData().isStationChanged()) {
+                    if (!x.getStationData().getScheduledStation().tagId().equals(x.getStationData().getRealTimeStation().tagId())) {
+                        content.add(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.platform_and_station_changed", x.getStationData().getRealTimeStation().tagName(), x.getStationData().getRealTimeStation().info().platform()));
+                    } else {
+                        content.add(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.platform_changed", x.getStationData().getRealTimeStation().info().platform()));
+                    }
+                }
+
+                // STATUS
                 for (CompiledTrainStatus status : x.getTrainData().getStatus()) {
                     content.add(status.text());
                 }
-                return content.stream();
+                return CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.information_about_train", x.getTrainData().getName())
+                    .append(": ")
+                    .append(TextUtils.concat(TextUtils.text(" - "), content));
             }).toArray(Component[]::new));
         } else {
             infoLineText = TextUtils.empty();
@@ -153,7 +172,7 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
             updateContent(blockEntity, stop, i);
         }
         statusLabel
-            .setBackground((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF), false)
+            .setBackground((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF), true)
             .setColor(ColorUtils.brightnessDependingFontColor(getDisplaySettings(blockEntity).getFontColor(), LIGHT_FONT_COLOR, DARK_FONT_COLOR))
         ;
         timeLabel
@@ -194,8 +213,9 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
             ;
         }
         components[LineComponent.PLATFORM.i()]
-            .setText(TextUtils.text(stop.getStationData().getStationInfo().platform()))
+            .setText(TextUtils.text(stop.getStationData().getRealTimeStation().info().platform()))
         ;
+        
         components[LineComponent.DESTINATION.i()]
             .setText(isLast ?
                 CustomLanguage.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".schedule_board.train_from", stop.getFirstStopName()) :
@@ -221,6 +241,19 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
             .setPos(blockEntity.getXSizeScaled() * 16 - 3 - platformLabel.getTextWidth(), 3 + index * LINE_HEIGHT)
             .setMaxWidth(platformWidth, BoundsHitReaction.SCALE_SCROLL)
         ;
+        
+        if (stop.getStationData().isStationChanged()) {
+            platformLabel                
+                .setBackground((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF), false)
+                .setColor(0xFF111111)
+            ;
+        } else {
+            platformLabel
+                .setBackground(0, false)
+                .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
+            ;
+        }
+
         components[LineComponent.DESTINATION.i()]
             .setPos(x, 3 + index * LINE_HEIGHT)
             .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 3 - x - platformWidth - 3, BoundsHitReaction.SCALE_SCROLL)
@@ -228,7 +261,7 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
     }    
 
     private BERLabel[] createLine(AdvancedDisplayBlockEntity blockEntity, StationDisplayData stop, int index) {
-        BERLabel[] components = new BERLabel[5];
+        BERLabel[] components = new BERLabel[LineComponent.values().length];
 
         components[LineComponent.TIME.i()] = new BERLabel()
             .setYScale(0.4f)

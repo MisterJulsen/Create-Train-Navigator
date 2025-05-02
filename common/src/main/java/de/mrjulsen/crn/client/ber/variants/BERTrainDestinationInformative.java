@@ -136,13 +136,13 @@ public class BERTrainDestinationInformative implements AbstractAdvancedDisplayRe
         fromLabel
             .setPos(6, 6)
             .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 9, BoundsHitReaction.SCALE_SCROLL)
-            .setText(TextUtils.text(!blockEntity.getTrainData().getAllStops().isEmpty() ? blockEntity.getTrainData().getAllStops().get(0).getName() : ""))
+            .setText(TextUtils.text(!blockEntity.getTrainData().getAllStops().isEmpty() ? blockEntity.getTrainData().getAllStops().get(0).getRealTimeStation().tagName() : ""))
             .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
         ;
         stopoversLabel
             .setPos(6, 8.75f)
             .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 9, BoundsHitReaction.SCALE_SCROLL)
-            .setText(TextUtils.concat(TextUtils.text(" \u25CF "), blockEntity.getTrainData().getStopovers().stream().map(x -> (Component)TextUtils.text(x.getName())).toList()))
+            .setText(TextUtils.concat(TextUtils.text(" \u25CF "), blockEntity.getTrainData().getStopovers().stream().map(x -> (Component)TextUtils.text(x.getRealTimeStation().tagName())).toList()))
             .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
         ;
         destinationLabel

@@ -1,6 +1,7 @@
 package de.mrjulsen.crn.client.gui.widgets.options;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -22,6 +23,7 @@ import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
 
 public class SimpleDataListNewEntry<T, S> extends AbstractDataListEntry<T, S, SimpleDataListNewEntry.InputDataSectionDefinition<T, S>> { 
     
@@ -46,7 +48,7 @@ public class SimpleDataListNewEntry<T, S> extends AbstractDataListEntry<T, S, Si
         createSection(new InputDataSectionDefinition<>(getCurrentSectionsXOffset(), width, key, text, onCreateEditBox));
     }
 
-    public void addAddButton(Sprite icon, Component description, DataListAddNewEntryContext<DLIconButton, T> onClick) {
+    public void addAddButton(Sprite icon, List<FormattedText> description, DataListAddNewEntryContext<DLIconButton, T> onClick) {
         addButton(icon, description,
         (btn, data, entry, refreshAction) -> {
             if (onClick.run(btn, parent.getData(), ImmutableMap.copyOf(values), refreshAction)) {

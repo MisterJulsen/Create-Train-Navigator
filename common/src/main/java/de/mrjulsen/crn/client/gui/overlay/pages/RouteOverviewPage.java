@@ -71,7 +71,7 @@ public class RouteOverviewPage extends AbstractRouteDetailsPage {
             GuiUtils.drawString(graphics, font, 7 + 32, y + ENTRY_HEIGHT - 2 - font.lineHeight / 2, TimeUtils.parseTime((isStart ? stop.getScheduledDepartureTime() + (stop.getDepartureTimeDeviation() / precision * precision) : stop.getScheduledArrivalTime() + (stop.getArrivalTimeDeviation() / precision * precision)) + DragonLib.daytimeShift(), ModClientConfig.TIME_FORMAT.get()), stop.isArrivalDelayed() ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME, EAlignment.LEFT, false);
         }
         icon.getAsSprite().render(graphics, 10 + 64, y);
-        GuiUtils.drawString(graphics, font, 17 + 64 + RoutePathIcons.SPRITE_WIDTH, y + ENTRY_HEIGHT - 2 - font.lineHeight / 2, GuiUtils.ellipsisString(font, TextUtils.text(stop.getClientTag().tagName()), width - (17 + 64 + RoutePathIcons.SPRITE_WIDTH) - font.width(stop.getRealTimeStationTag().info().platform()) - 10), 0xFFDBDBDB, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, 17 + 64 + RoutePathIcons.SPRITE_WIDTH, y + ENTRY_HEIGHT - 2 - font.lineHeight / 2, GuiUtils.ellipsisString(font, TextUtils.text(stop.getRealTimeStationTag().tagName()), width - (17 + 64 + RoutePathIcons.SPRITE_WIDTH) - font.width(stop.getRealTimeStationTag().info().platform()) - 10), 0xFFDBDBDB, EAlignment.LEFT, false);
         GuiUtils.drawString(graphics, font, width - 4, y + ENTRY_HEIGHT - 2 - font.lineHeight / 2, stop.getRealTimeStationTag().info().platform(), stop.isStationInfoChanged() ? Constants.COLOR_DELAYED : 0xFFDBDBDB, EAlignment.RIGHT, false);
 
     }

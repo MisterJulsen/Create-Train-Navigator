@@ -73,6 +73,7 @@ public class PassengerInformationDetailedSettings extends BasicDisplaySettings i
         copyShowStatsSetting(oldSettings);
         copyShowConnectionSetting(oldSettings);
         copyCarriageIndexSetting(oldSettings);
+        copyTrainTextSetting(oldSettings);
     }
 
     @Override

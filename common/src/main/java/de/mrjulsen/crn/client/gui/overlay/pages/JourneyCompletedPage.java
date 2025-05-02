@@ -24,7 +24,7 @@ public class JourneyCompletedPage extends AbstractRouteDetailsPage {
 
     public JourneyCompletedPage(ClientRoute route, Runnable after) {
         super(route);
-        this.messageLabel = MultiLineLabel.create(font, TextUtils.translate(keyAfterJourney, route.getEnd().getClientTag().tagName()), width() - 10);
+        this.messageLabel = MultiLineLabel.create(font, TextUtils.translate(keyAfterJourney, route.getEnd().getRealTimeStationTag().tagName()), width() - 10);
         this.after = after;
     }
 

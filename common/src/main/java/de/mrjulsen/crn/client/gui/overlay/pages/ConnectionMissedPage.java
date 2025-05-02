@@ -19,7 +19,7 @@ public class ConnectionMissedPage extends AbstractRouteDetailsPage {
 
     public ConnectionMissedPage(ClientRoute route) {
         super(route);
-        this.messageLabel = MultiLineLabel.create(font, TextUtils.translate(keyConnectionMissedPageText, route.getEnd().getClientTag().tagName()), width() - 10);
+        this.messageLabel = MultiLineLabel.create(font, TextUtils.translate(keyConnectionMissedPageText, route.getEnd().getRealTimeStationTag().tagName()), width() - 10);
     }
 
     @Override

@@ -157,8 +157,8 @@
     "gui.createrailwaysnavigator.global_settings.option_alias.description": "Define etiquetas de estaciones para tratar estaciones con múltiples andenes (por ejemplo, MiEstación 1, MiEstación 2, ...) como una sola estación (por ejemplo, MiEstación) con nombres personalizados.",
     "gui.createrailwaysnavigator.global_settings.option_blacklist.title": "Lista negra de estaciones de tren",
     "gui.createrailwaysnavigator.global_settings.option_blacklist.description": "Excluir estaciones de tren que no deberían aparecer en los resultados de navegación. Estas estaciones serán ignoradas al generar rutas.",
-    "gui.createrailwaysnavigator.global_settings.train_group.title": "Grupos de trenes",
-    "gui.createrailwaysnavigator.global_settings.train_group.description": "Crear grupos de trenes para organizar todos los trenes (por ejemplo, servicios regionales, servicios de larga distancia, ...). Los usuarios pueden decidir qué grupos quieren usar.",
+    "gui.createrailwaysnavigator.global_settings.train_category.title": "Grupos de trenes",
+    "gui.createrailwaysnavigator.global_settings.train_category.description": "Crear grupos de trenes para organizar todos los trenes (por ejemplo, servicios regionales, servicios de larga distancia, ...). Los usuarios pueden decidir qué grupos quieren usar.",
     "gui.createrailwaysnavigator.global_settings.train_blacklist.title": "Lista negra de trenes",
     "gui.createrailwaysnavigator.global_settings.train_blacklist.description": "Excluir trenes, por ejemplo, trenes de carga, trenes especiales, etc., para que no se utilicen en las sugerencias de rutas.",
     
@@ -300,7 +300,7 @@
     "gui.createrailwaysnavigator.display_source.advanced_display.stopovers_width.description": "en porcentaje del ancho restante de la pantalla",
     
     "gui.createrailwaysnavigator.section_settings.title": "Configuración de las secciones",
-    "gui.createrailwaysnavigator.section_settings.train_groups": "Asignar el grupo del tren",
+    "gui.createrailwaysnavigator.section_settings.train_categories": "Asignar el grupo del tren",
     "gui.createrailwaysnavigator.section_settings.train_lines": "Asignar la línea del tren",
     "gui.createrailwaysnavigator.section_settings.include_previous_station": "Incluye inicio de la próxima sección",
     "gui.createrailwaysnavigator.section_settings.usable": "Navegable",

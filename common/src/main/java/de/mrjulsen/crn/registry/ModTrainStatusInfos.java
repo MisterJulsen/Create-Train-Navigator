@@ -4,6 +4,7 @@ import com.simibubi.create.content.trains.entity.Train;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
+import de.mrjulsen.crn.data.train.TrainData;
 import de.mrjulsen.crn.data.train.TrainListener;
 import de.mrjulsen.crn.data.train.TrainStatus;
 import de.mrjulsen.crn.data.train.TrainStatus.Registry;
@@ -40,7 +41,7 @@ public final class ModTrainStatusInfos {
             break;
         }
 
-        return TrainListener.data.containsKey(occupyingTrain.id) ? !TrainListener.data.get(occupyingTrain.id).isDelayed() : false;
+        return TrainListener.getTrainData(occupyingTrain.id).map(TrainData::isDelayed).orElse(false);
     }));
 
     public static final TrainStatus PERVIOUS_TRAIN_DELAYED = REGISTRY.register("previous_train_delayed", new TrainStatus(TrainStatusCategory.TRAIN, TrainStatusType.DELAY, () -> CustomLanguage.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".train_status.delay_other_train"), (data) -> {
@@ -58,7 +59,7 @@ public final class ModTrainStatusInfos {
             break;
         }
 
-        return TrainListener.data.containsKey(occupyingTrain.id) ? TrainListener.data.get(occupyingTrain.id).isDelayed() : false;
+        return TrainListener.getTrainData(occupyingTrain.id).map(TrainData::isDelayed).orElse(false);
     }));
 
     public static final TrainStatus TRACK_CLOSED = REGISTRY.register("track_closed", new TrainStatus(TrainStatusCategory.TRAIN, TrainStatusType.DELAY, () -> CustomLanguage.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".train_status.track_closed"), (data) -> {

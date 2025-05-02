@@ -22,6 +22,7 @@ public class OptionEntryHeader extends DLButton {
 public static final int DEFAULT_HEIGHT = 20;
 
     private final OptionEntry<?> parent;
+    private boolean customMouseSelected;
 
     public OptionEntryHeader(OptionEntry<?> parent, int pX, int pY, int pWidth, Component pMessage, Consumer<OptionEntryHeader> pOnPress) {
         super(pX, pY, pWidth, DEFAULT_HEIGHT, pMessage, pOnPress);
@@ -30,12 +31,20 @@ public static final int DEFAULT_HEIGHT = 20;
         setBackColor(0x00000000);
     }
 
+    void setCustomMouseSelected(boolean b) {
+        this.customMouseSelected = b;
+    }
+
+    boolean isSelected() {
+        return isMouseSelected() || this.customMouseSelected;
+    }
+
     @Override
     public void renderMainLayer(Graphics graphics, int mouseX, int mouseY, float partialTick) {
         CreateDynamicWidgets.renderSingleShadeWidget(graphics, x(), y(), width(), height(), ColorShade.LIGHT);
         CreateDynamicWidgets.renderSingleShadeWidget(graphics, x(), y(), width(), 20, ColorShade.DARK);
-        DynamicGuiRenderer.renderArea(graphics, x(), y(), width, height, getBackColor(), style, isActive() ? (isFocused() || isMouseSelected() ? ButtonState.SELECTED : ButtonState.BUTTON) : ButtonState.DISABLED);
-        int j = active ? (isMouseSelected() ? DragonLib.NATIVE_BUTTON_FONT_COLOR_HIGHLIGHT : DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE) : DragonLib.NATIVE_BUTTON_FONT_COLOR_DISABLED;
+        DynamicGuiRenderer.renderArea(graphics, x(), y(), width, height, getBackColor(), style, isActive() ? (isFocused() || isSelected() ? ButtonState.SELECTED : ButtonState.BUTTON) : ButtonState.DISABLED);
+        int j = active ? (isSelected() ? DragonLib.NATIVE_BUTTON_FONT_COLOR_HIGHLIGHT : DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE) : DragonLib.NATIVE_BUTTON_FONT_COLOR_DISABLED;
         GuiUtils.drawString(graphics, font, x() + 5, this.y() + (20 - 8) / 2, this.getMessage(), j, EAlignment.LEFT, false);
         if (parent.isExpanded()) {
             GuiIcons.ARROW_UP.render(graphics, x() + width() - 2 - GuiIcons.ICON_SIZE, y() + 2);
@@ -45,15 +54,15 @@ public static final int DEFAULT_HEIGHT = 20;
             } else {
                 GuiIcons.ARROW_DOWN.render(graphics, x() + width() - 2 - GuiIcons.ICON_SIZE, y() + 2);
             }
-        }
+        }        
     }
 
     @Override
     public void renderFrontLayer(Graphics graphics, int mouseX, int mouseY, float partialTicks) {
         super.renderFrontLayer(graphics, mouseX, mouseY, partialTicks);
         
-        if (isMouseSelected()) {
-            renderDescriptionTooltip(graphics, mouseX, mouseY, partialTicks);
+        if (isMouseSelected()) {            
+            GuiUtils.renderTooltip(parent.getParentScreen(), this, parent.getTooltips(), parent.getParentScreen().width, graphics, mouseX, mouseY);
         }
     }
 

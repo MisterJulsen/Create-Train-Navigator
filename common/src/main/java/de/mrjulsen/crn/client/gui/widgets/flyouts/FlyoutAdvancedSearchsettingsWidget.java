@@ -21,27 +21,14 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.network.chat.MutableComponent;
 
-public class FlyoutAdvancedSearchsettingsWidget<T extends GuiEventListener & Renderable & NarratableEntry> extends AbstractFlyoutWidget<T> {
+public class FlyoutAdvancedSearchSettingsWidget<T extends GuiEventListener & Renderable & NarratableEntry> extends AbstractFlyoutWidget<T> {
 
-    private final MutableComponent textTrainGroups = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.advanced_options").withStyle(ChatFormatting.BOLD);
+    private final MutableComponent textTrainCategories = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.advanced_options").withStyle(ChatFormatting.BOLD);
     //private UserSettings settings;
 
-    public FlyoutAdvancedSearchsettingsWidget(DLScreen screen, FlyoutPointer pointer, ColorShade pointerShade, Consumer<T> addRenderableWidgetFunc, Consumer<GuiEventListener> removeWidgetFunc) {
+    public FlyoutAdvancedSearchSettingsWidget(DLScreen screen, FlyoutPointer pointer, ColorShade pointerShade, Consumer<T> addRenderableWidgetFunc, Consumer<GuiEventListener> removeWidgetFunc) {
         super(screen, 1, 120, pointer, pointerShade, addRenderableWidgetFunc, removeWidgetFunc);
-        set_width(Math.max(150, font.width(textTrainGroups) + DLIconButton.DEFAULT_BUTTON_WIDTH + 16 + 10 + FlyoutPointer.WIDTH * 2));
-
-        //int top = getContentArea().getY() + 21;
-        //int contentHeight = getContentArea().getHeight() - 21 - 2;
-        
-        /*
-        addRenderableWidget(new SearchOptionButton(getContentArea().getX() + 2, top, getContentArea().getWidth() - 4, 18, TextUtils.text("Train Groups"), () -> "Here be Dragons!", (b) -> {
-            new FlyoutTrainGroupsWidget<>(screen, FlyoutPointer.UP, ColorShade.DARK, addRenderableWidgetFunc, (settings) -> {
-                return settings.navigationExcludedTrainGroups;
-            }, (w) -> {
-                removeWidgetFunc.accept(w);
-            }).open(b);
-        }));
-        */
+        set_width(Math.max(150, font.width(textTrainCategories) + DLIconButton.DEFAULT_BUTTON_WIDTH + 16 + 10 + FlyoutPointer.WIDTH * 2));
 
         DLIconButton resetBtn = addRenderableWidget(new DLIconButton(ButtonType.DEFAULT, AreaStyle.FLAT, ModGuiIcons.REFRESH.getAsSprite(16, 16), getContentArea().getX() + getContentArea().getWidth() - DLIconButton.DEFAULT_BUTTON_WIDTH - 2, getContentArea().getY() + 2, TextUtils.empty(), (b) -> {
             
@@ -53,6 +40,6 @@ public class FlyoutAdvancedSearchsettingsWidget<T extends GuiEventListener & Ren
     @Override
     public void renderFlyoutContent(Graphics graphics, int mouseX, int mouseY, float partialTicks, GuiAreaDefinition contentArea) {
         super.renderFlyoutContent(graphics, mouseX, mouseY, partialTicks, contentArea);
-        GuiUtils.drawString(graphics, font, contentArea.getX() + 8, contentArea.getY() + 8, textTrainGroups, DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, contentArea.getX() + 8, contentArea.getY() + 8, textTrainCategories, DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, EAlignment.LEFT, false);
     }
 }
