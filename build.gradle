@@ -97,6 +97,20 @@ subprojects {
         it.options.release = 17
     }
 
+    jar {
+        manifest {
+            attributes([
+                    "Specification-Title"     : "${rootProject.display_name}",
+                    "Specification-Vendor"    : "${rootProject.authors}",
+                    "Specification-Version"   : "1",
+                    "Implementation-Title"    : project.name,
+                    "Implementation-Version"  : project.jar.archiveVersion,
+                    "Implementation-Vendor"   : "${rootProject.authors}",
+                    "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+            ])
+        }
+    }
+
     // Configure Maven publishing.
     publishing {
         publications {
