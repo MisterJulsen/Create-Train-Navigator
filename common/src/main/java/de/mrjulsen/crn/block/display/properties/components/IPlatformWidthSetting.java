@@ -2,8 +2,6 @@ package de.mrjulsen.crn.block.display.properties.components;
 
 import de.mrjulsen.crn.block.display.properties.IDisplaySettings;
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 
 /**
  * For data conversion: Indicates that this class adopts the original
@@ -18,7 +16,6 @@ public interface IPlatformWidthSetting extends ICustomTextWidthSetting {
     byte getPlatformWidth();
     void setPlatformWidth(byte b);
 
-    @Environment(EnvType.CLIENT)
     default void buildPlatformWidthGui(GuiBuilderContext context, boolean allowAuto) {
         buildBasicTextWidthGui(context);
         GuiBuilderWrapper.buildPlatformWidthGui(this, context, allowAuto);

@@ -216,7 +216,7 @@
     "enum.createrailwaysnavigator.time_display.info.abs": "ABS (Absolud)",
     "enum.createrailwaysnavigator.time_display.eta": "ETA",
     "enum.createrailwaysnavigator.time_display.info.eta": "ETA (Geschädsde Angunfdszeid)",
-    "create.display_source.advanced_display": "Forbessorrde Anzeiche",
+    "createrailwaysnavigator.display_source.advanced_display": "Forbessorrde Anzeiche",
     "gui.createrailwaysnavigator.section_settings.title": "Abbschniddseenschdellungen",
     "gui.createrailwaysnavigator.section_settings.train_categories": "Zuchgrubbe zuweisn",
     "gui.createrailwaysnavigator.section_settings.train_lines": "Zuchlinie zuweisn",

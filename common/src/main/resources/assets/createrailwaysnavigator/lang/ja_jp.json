@@ -216,7 +216,7 @@
     "enum.createrailwaysnavigator.time_display.info.abs": "ABS（絶対時刻）",
     "enum.createrailwaysnavigator.time_display.eta": "ETA (到着予定時刻)",
     "enum.createrailwaysnavigator.time_display.info.eta": "ETA（到着予定時刻）",
-    "create.display_source.advanced_display": "高度なディスプレイ",
+    "createrailwaysnavigator.display_source.advanced_display": "高度なディスプレイ",
     "gui.createrailwaysnavigator.section_settings.title": "セクション設定",
     "gui.createrailwaysnavigator.section_settings.train_categories": "列車グループを割り当てる",
     "gui.createrailwaysnavigator.section_settings.train_lines": "路線を割り当てる",

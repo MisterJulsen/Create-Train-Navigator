@@ -3,8 +3,6 @@ package de.mrjulsen.crn.block.display.properties.components;
 import de.mrjulsen.crn.block.display.properties.IDisplaySettings;
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.network.chat.MutableComponent;
 
 public interface ICarriageIndexSetting {
@@ -22,7 +20,6 @@ public interface ICarriageIndexSetting {
     void setCarriageIndex(byte b);
     void setOverwriteCarriageIndex(boolean b);
 
-    @Environment(EnvType.CLIENT)
     default void buildCarriageIndexGui(GuiBuilderContext context) {
         GuiBuilderWrapper.buildCarriageIndexGui(this, context);
     }

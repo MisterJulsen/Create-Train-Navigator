@@ -21,7 +21,7 @@ import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import de.mrjulsen.mcdragonlib.data.Single;
 import dev.architectury.platform.Platform;
-import net.fabricmc.api.EnvType;
+import dev.architectury.utils.Env;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.Component;
@@ -134,7 +134,7 @@ public class TrainStatus {
 
         /** Client-side only! */
         public static List<CompiledTrainStatus> load(Collection<ResourceLocation> ids) throws RuntimeSideException {
-            if (Platform.getEnv() == EnvType.SERVER) {
+            if (Platform.getEnvironment() == Env.SERVER) {
                 throw new RuntimeSideException(true);
             }
             List<CompiledTrainStatus> status = new ArrayList<>(ids.size());
@@ -146,7 +146,7 @@ public class TrainStatus {
 
         /** Client-side only! */
         public static CompiledTrainStatus load(ResourceLocation id) throws RuntimeSideException {
-            if (Platform.getEnv() == EnvType.SERVER) {
+            if (Platform.getEnvironment() == Env.SERVER) {
                 throw new RuntimeSideException(true);
             }
             return TrainStatus.Registry.getRegisteredStatus().get(id).compile();

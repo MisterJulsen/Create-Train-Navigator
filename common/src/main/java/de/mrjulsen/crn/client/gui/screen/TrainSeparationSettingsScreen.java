@@ -5,9 +5,8 @@ import java.util.Arrays;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.content.trains.schedule.condition.TimedWaitCondition.TimeUnit;
 import com.simibubi.create.foundation.gui.AllIcons;
-import com.simibubi.create.foundation.gui.element.GuiGameElement;
-import com.simibubi.create.foundation.utility.Lang;
 
+import com.simibubi.create.foundation.utility.CreateLang;
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.CRNGui;
@@ -33,6 +32,7 @@ import de.mrjulsen.mcdragonlib.client.util.GuiAreaDefinition;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import de.mrjulsen.mcdragonlib.core.EAlignment;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
+import net.createmod.catnip.gui.element.GuiGameElement;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -114,7 +114,7 @@ public class TrainSeparationSettingsScreen extends DLScreen {
                         int[] times = TrainSeparationCondition.toInGameTime(this.ticks);
                         line.add(new DLCreateScrollInput(this, line.getCurrentX() + 6, line.getY() + 2, 22, 18)
                             .setRenderArrow(true)
-                            .titled(Lang.translateDirect("generic.unit.days"))
+                            .titled(CreateLang.translateDirect("generic.unit.days"))
                             .withShiftStep(5)
                             .withRange(0, 50)
                             .setState(times[2])
@@ -125,7 +125,7 @@ public class TrainSeparationSettingsScreen extends DLScreen {
                             })
                         );
                         line.add(new DLCreateScrollInput(this, line.getCurrentX() + 2, line.getY() + 2, 22, 18)
-                            .titled(Lang.translateDirect("generic.unit.hours"))
+                            .titled(CreateLang.translateDirect("generic.unit.hours"))
                             .withShiftStep(8)
                             .withRange(0, 24)
                             .setState(times[1])
@@ -136,7 +136,7 @@ public class TrainSeparationSettingsScreen extends DLScreen {
                             })
                         );
                         line.add(new DLCreateScrollInput(this, line.getCurrentX() + 2, line.getY() + 2, 22, 18)
-                            .titled(Lang.translateDirect("generic.unit.minutes"))
+                            .titled(CreateLang.translateDirect("generic.unit.minutes"))
                             .withShiftStep(5)
                             .withRange(0, 60)
                             .setState(times[0])
@@ -151,7 +151,7 @@ public class TrainSeparationSettingsScreen extends DLScreen {
                         int[] times = TrainSeparationCondition.toRealLifeTime(this.ticks);
                         line.add(new DLCreateScrollInput(this, line.getCurrentX() + 6, line.getY() + 2, 28, 18)
                             .setRenderArrow(true)
-                            .titled(Lang.translateDirect("generic.unit.minutes"))
+                            .titled(CreateLang.translateDirect("generic.unit.minutes"))
                             .withShiftStep(10)
                             .withRange(0, 1000)
                             .setState(times[2])
@@ -162,7 +162,7 @@ public class TrainSeparationSettingsScreen extends DLScreen {
                             })
                         );
                         line.add(new DLCreateScrollInput(this, line.getCurrentX() + 2, line.getY() + 2, 22, 18)
-                            .titled(Lang.translateDirect("generic.unit.seconds"))
+                            .titled(CreateLang.translateDirect("generic.unit.seconds"))
                             .withShiftStep(10)
                             .withRange(0, 60)
                             .setState(times[1])
@@ -173,7 +173,7 @@ public class TrainSeparationSettingsScreen extends DLScreen {
                             })
                         );
                         line.add(new DLCreateScrollInput(this, line.getCurrentX() + 2, line.getY() + 2, 22, 18)
-                            .titled(Lang.translateDirect("generic.unit.ticks"))
+                            .titled(CreateLang.translateDirect("generic.unit.ticks"))
                             .withShiftStep(5)
                             .withRange(0, 20)
                             .setState(times[0])

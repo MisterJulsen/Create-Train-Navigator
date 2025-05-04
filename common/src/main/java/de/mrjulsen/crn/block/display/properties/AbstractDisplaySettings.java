@@ -1,8 +1,6 @@
 package de.mrjulsen.crn.block.display.properties;
 
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.nbt.CompoundTag;
 
 public abstract class AbstractDisplaySettings implements IDisplaySettings {
@@ -13,7 +11,6 @@ public abstract class AbstractDisplaySettings implements IDisplaySettings {
         public void deserializeNbt(CompoundTag nbt) { }
 
         @Override
-        @Environment(EnvType.CLIENT)
         public void buildGui(GuiBuilderContext context) { }
 
         @Override

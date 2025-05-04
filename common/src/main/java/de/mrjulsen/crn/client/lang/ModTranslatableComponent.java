@@ -24,7 +24,6 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.contents.TranslatableFormatException;
 import net.minecraft.world.entity.Entity;
-import org.jetbrains.annotations.Nullable;
 
 @SuppressWarnings("all")
 public class ModTranslatableComponent implements ComponentContents {
@@ -33,7 +32,6 @@ public class ModTranslatableComponent implements ComponentContents {
    private static final FormattedText TEXT_NULL = FormattedText.of("null");
    private final String key;
    private final Object[] args;
-   @Nullable
    private Language decomposedWith;
    private List<FormattedText> decomposedParts = ImmutableList.of();
    private static final Pattern FORMAT_PATTERN = Pattern.compile("%(?:(\\d+)\\$)?([A-Za-z%]|$)");
@@ -160,7 +158,7 @@ public class ModTranslatableComponent implements ComponentContents {
       return optional;
    }
 
-   public MutableComponent resolve(@Nullable CommandSourceStack commandSourceStack, @Nullable Entity entity, int i) throws CommandSyntaxException {
+   public MutableComponent resolve(CommandSourceStack commandSourceStack, Entity entity, int i) throws CommandSyntaxException {
       Object[] objects = new Object[this.args.length];
 
       for(int j = 0; j < objects.length; ++j) {

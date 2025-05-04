@@ -255,7 +255,7 @@
     "enum.createrailwaysnavigator.train_filter.info.same_line": "Apenas trens com a mesma linha de trem são considerados.",
     "enum.createrailwaysnavigator.train_filter.same_category": "Mesmo grupo",
     "enum.createrailwaysnavigator.train_filter.info.same_category": "Apenas trens com o mesmo grupo de trens são considerados.",
-    "create.display_source.advanced_display": "Exibições avançadas",
+    "createrailwaysnavigator.display_source.advanced_display": "Exibições avançadas",
     "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width": "Largura do nome do trem",
     "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width_next": "Largura do nome do trem (Próxima partida)",
     "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width_table": "Largura do nome do trem (Seguintes trens)",

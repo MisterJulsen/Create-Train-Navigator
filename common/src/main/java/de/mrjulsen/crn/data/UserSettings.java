@@ -27,7 +27,7 @@ import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.TimeUtils;
 import de.mrjulsen.mcdragonlib.util.accessor.DataAccessor;
 import dev.architectury.platform.Platform;
-import net.fabricmc.api.EnvType;
+import dev.architectury.utils.Env;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtIo;
@@ -142,7 +142,7 @@ public class UserSettings {
 
     /** Client-side only! */
     public final void clientSave(Runnable andThen) throws RuntimeSideException {
-        if (Platform.getEnv() == EnvType.SERVER) {
+        if (Platform.getEnvironment() == Env.SERVER) {
             throw new RuntimeSideException(true);
         }  
         checkReadOnly();

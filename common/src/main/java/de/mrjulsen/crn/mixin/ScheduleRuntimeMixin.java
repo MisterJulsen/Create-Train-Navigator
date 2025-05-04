@@ -8,6 +8,8 @@ import java.util.stream.Collectors;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import com.simibubi.create.content.trains.display.GlobalTrainDisplayData;
+import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -82,24 +84,16 @@ public class ScheduleRuntimeMixin {
         }
     }
 
-    @PlatformOnly(value = "FORGE")
-    @Inject(method = "startCurrentInstruction", remap = false, at = @At(value = "RETURN"), locals = LocalCapture.CAPTURE_FAILHARD)
-    public void onStartCurrentInstructionRetForge(CallbackInfoReturnable<GlobalStation> cir, ScheduleEntry entry, ScheduleInstruction instruction) {        
+    @Inject(method = "startCurrentInstruction", remap = false, at = @At(value = "RETURN", ordinal = 1), locals = LocalCapture.CAPTURE_FAILHARD)
+    public void onStartCurrentInstructionRetForge(Level level, CallbackInfoReturnable<DiscoveredPath> cir, ScheduleEntry entry, ScheduleInstruction instruction) {
 		if (CRNEventsManager.isRegistered(TrainDestinationChangedEvent.class) && cir.getReturnValue() != null && instruction instanceof DestinationInstruction) {
-            CRNEventsManager.getEvent(TrainDestinationChangedEvent.class).run(accessor().crn$getTrain(), accessor().crn$getTrain().getCurrentStation(), cir.getReturnValue(), self().currentEntry);
+            CRNEventsManager.getEvent(TrainDestinationChangedEvent.class).run(accessor().crn$getTrain(), accessor().crn$getTrain().getCurrentStation(), cir.getReturnValue().destination, self().currentEntry);
         }
     }
     
-    @PlatformOnly(value = "FABRIC")
-    @Inject(method = "startCurrentInstruction", remap = false, at = @At(value = "RETURN"), locals = LocalCapture.CAPTURE_FAILHARD)
-    public void onStartCurrentInstructionRetFabric(CallbackInfoReturnable<DiscoveredPath> cir, ScheduleEntry entry, ScheduleInstruction instruction) {        
-		if (CRNEventsManager.isRegistered(TrainDestinationChangedEvent.class) && cir.getReturnValue() != null && instruction instanceof DestinationInstruction) {
-            CRNEventsManager.getEvent(TrainDestinationChangedEvent.class).run(accessor().crn$getTrain(), accessor().crn$getTrain().getCurrentStation(), cir.getReturnValue().destination, self().currentEntry);
-        }        
-    }
-    
     @Inject(method = "startCurrentInstruction", remap = false, at = @At(value = "TAIL"), cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD)
-    public void onStartCurrentInstructionPost(CallbackInfoReturnable<Object> cir, ScheduleEntry entry, ScheduleInstruction instruction) {
+    public void onStartCurrentInstructionPost(Level level, CallbackInfoReturnable<DiscoveredPath> cir, ScheduleEntry entry, ScheduleInstruction instruction) {
+        /*
         if (instruction instanceof ICustomSuggestionsInstruction custom) {
             TrainListener.getTrainData(accessor().crn$getTrain().id).ifPresent(x -> custom.run(self(), x, accessor().crn$getTrain(), self().currentEntry));
 
@@ -111,16 +105,18 @@ public class ScheduleRuntimeMixin {
             self().currentEntry++;
 		}
         cir.setReturnValue(null);
+
+         */
     }
 
     @Inject(method = "startCurrentInstruction", remap = false, at = @At(value = "HEAD"), cancellable = true)
     public void startCurrentInstructionHeadForge(CallbackInfoReturnable<DiscoveredPath> cir) {        
 		ScheduleEntry entry = self().getSchedule().entries.get(self().currentEntry);
 		ScheduleInstruction instruction = entry.instruction;
-        DiscoveredPath res = customDestinationInstructions(self(), entry, instruction);
-        if (res != null) {
-            cir.setReturnValue(res);
-        }
+        //DiscoveredPath res = customDestinationInstructions(self(), entry, instruction);
+        //if (res != null) {
+        //    cir.setReturnValue(res);
+        //}
     }    
 
     private DiscoveredPath customDestinationInstructions(ScheduleRuntime runtime, ScheduleEntry entry, ScheduleInstruction instruction) {

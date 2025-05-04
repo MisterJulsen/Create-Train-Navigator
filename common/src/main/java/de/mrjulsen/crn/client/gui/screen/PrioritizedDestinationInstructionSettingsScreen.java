@@ -9,18 +9,17 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import net.createmod.catnip.gui.element.GuiGameElement;
+import net.createmod.catnip.gui.widget.AbstractSimiWidget;
+import net.createmod.catnip.lang.FontHelper;
 import org.apache.commons.lang3.StringUtils;
 
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.foundation.gui.AllIcons;
-import com.simibubi.create.foundation.gui.element.GuiGameElement;
-import com.simibubi.create.foundation.gui.widget.AbstractSimiWidget;
 import com.simibubi.create.foundation.gui.widget.IconButton;
 import com.simibubi.create.foundation.gui.widget.Indicator.State;
 import com.simibubi.create.foundation.item.TooltipHelper;
-import com.simibubi.create.foundation.item.TooltipHelper.Palette;
-import com.simibubi.create.foundation.utility.Components;
 
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
@@ -156,7 +155,7 @@ public class PrioritizedDestinationInstructionSettingsScreen extends DLScreen {
             }
 
             x.setToolTip(toggleButtonTooltips.get(x).getFirst());
-            x.getToolTip().add(TooltipHelper.holdShift(Palette.YELLOW, hasShiftDown()));
+            x.getToolTip().add(TooltipHelper.holdShift(FontHelper.Palette.YELLOW, hasShiftDown()));
 
             if (hasShiftDown()) {
                 x.getToolTip().add(toggleButtonTooltips.get(x).getSecond());
@@ -203,7 +202,7 @@ public class PrioritizedDestinationInstructionSettingsScreen extends DLScreen {
         
         // Buttons
         avoidSignalsButton = addRenderableWidget(new DLCreateIconButton(guiLeft + 7, guiTop + GUI_HEIGHT - 6 - DLIconButton.DEFAULT_BUTTON_HEIGHT, GuiGameElement.of(AllBlocks.TRACK_SIGNAL.asStack())));
-        avoidSignalsIndicator = this.addRenderableWidget(new DLCreateIndicator(avoidSignalsButton.x(), avoidSignalsButton.y() - 6, Components.immutableEmpty()));
+        avoidSignalsIndicator = this.addRenderableWidget(new DLCreateIndicator(avoidSignalsButton.x(), avoidSignalsButton.y() - 6, TextUtils.empty()));
         avoidSignalsIndicator.state = this.shouldAvoidSignals ? State.ON : State.OFF;
         avoidSignalsButton.withCallback(() -> {
             this.shouldAvoidSignals = !this.shouldAvoidSignals;
@@ -213,7 +212,7 @@ public class PrioritizedDestinationInstructionSettingsScreen extends DLScreen {
         toggleButtonTooltips.put(avoidSignalsButton, Pair.of(txtAvoidSignalsTitle, txtAvoidSignalsDescription));
 
         avoidTrainsButton = addRenderableWidget(new DLCreateIconButton(guiLeft + 7 + DLIconButton.DEFAULT_BUTTON_WIDTH, guiTop + GUI_HEIGHT - 6 - DLIconButton.DEFAULT_BUTTON_HEIGHT, GuiGameElement.of(AllBlocks.TRAIN_CONTROLS.asStack())));
-        avoidTrainsIndicator = this.addRenderableWidget(new DLCreateIndicator(avoidTrainsButton.x(), avoidTrainsButton.y() - 6, Components.immutableEmpty()));
+        avoidTrainsIndicator = this.addRenderableWidget(new DLCreateIndicator(avoidTrainsButton.x(), avoidTrainsButton.y() - 6, TextUtils.empty()));
         avoidTrainsIndicator.state = this.shouldAvoidTrains ? State.ON : State.OFF;
         avoidTrainsButton.withCallback(() -> {
             this.shouldAvoidTrains = !this.shouldAvoidTrains;

@@ -15,8 +15,6 @@ import de.mrjulsen.crn.block.display.properties.components.ITextWidthSetting;
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
 import de.mrjulsen.mcdragonlib.core.EAlignment;
 import de.mrjulsen.mcdragonlib.util.MathUtils;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -214,7 +212,6 @@ public class StaticTextDisplaySettings extends BasicDisplaySettings implements I
     }
 
     @Override
-    @Environment(EnvType.CLIENT)
     public void buildGui(GuiBuilderContext context) {
         super.buildGui(context);
         GuiBuilderWrapper.buildStaticTextBaseGui(this, context);

@@ -2,8 +2,6 @@ package de.mrjulsen.crn.client.gui;
 
 import java.util.List;
 
-import javax.annotation.Nullable;
-
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.systems.RenderSystem;
 
@@ -38,7 +36,7 @@ public class NavigatorToast implements Toast {
     private final int width;
 
     @SuppressWarnings("resource")
-    public NavigatorToast(Component pTitle, @Nullable Component pMessage) {
+    public NavigatorToast(Component pTitle, Component pMessage) {
         this(pTitle, nullToEmpty(pMessage), Math.max(160, 30 + Math.max(Minecraft.getInstance().font.width(pTitle), pMessage == null ? 0 : Minecraft.getInstance().font.width(pMessage))));
     }
 
@@ -56,7 +54,7 @@ public class NavigatorToast implements Toast {
         this.width = pWidth;
     }
 
-    private static ImmutableList<FormattedCharSequence> nullToEmpty(@Nullable Component pMessage) {
+    private static ImmutableList<FormattedCharSequence> nullToEmpty(Component pMessage) {
         return pMessage == null ? ImmutableList.of() : ImmutableList.of(pMessage.getVisualOrderText());
     }
 

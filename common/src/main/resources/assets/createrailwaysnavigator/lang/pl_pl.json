@@ -216,7 +216,7 @@
     "enum.createrailwaysnavigator.time_display.info.abs": "ABS (absolutny)",
     "enum.createrailwaysnavigator.time_display.eta": "ETA",
     "enum.createrailwaysnavigator.time_display.info.eta": "ETA (Przewidywany czas przybycia)",
-    "create.display_source.advanced_display": "Zaawansowane Wyświetlacze",
+    "createrailwaysnavigator.display_source.advanced_display": "Zaawansowane Wyświetlacze",
     "gui.createrailwaysnavigator.section_settings.title": "Ustawienia sekcji",
     "gui.createrailwaysnavigator.section_settings.train_categories": "Przypisz grupę pociągów",
     "gui.createrailwaysnavigator.section_settings.train_lines": "Przypisz linię pociągów",

@@ -2,10 +2,11 @@ package de.mrjulsen.crn.mixin;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import net.createmod.catnip.data.IntAttached;
 import org.spongepowered.asm.mixin.Mixin;
 import com.simibubi.create.content.trains.schedule.IScheduleInput;
 import com.simibubi.create.content.trains.schedule.ScheduleScreen;
-import com.simibubi.create.foundation.utility.IntAttached;
 
 import de.mrjulsen.crn.data.StationTag;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
@@ -28,24 +29,6 @@ public class ScheduleScreenMixin {
         return ((AbstractContainerScreen<?>)(Object)this).topPos;
     }
 
-
-    /*
-    @SuppressWarnings("resource")
-    @Inject(method = "updateEditorSubwidgets", remap = false, at = @At(value = "INVOKE", shift = Shift.AFTER, target = "Lcom/simibubi/create/foundation/gui/ModularGuiLine;loadValues(Lnet/minecraft/nbt/CompoundTag;Ljava/util/function/Consumer;Ljava/util/function/Consumer;)V"), cancellable = true)
-    public void onUpdateEditorSubwidgets(IScheduleInput field, CallbackInfo ci) {
-        if (field instanceof ICustomSuggestionsInstruction) {
-            accessor().crn$getEditorSubWidgets().forEach(e -> {
-                if (!(e instanceof EditBox destinationBox))
-                    return;
-                accessor().crn$setDestinationSuggestions(new DestinationSuggestions(Minecraft.getInstance(), self(), destinationBox, Minecraft.getInstance().font, onGetViableStations(field), getTopPos() + 33));
-                accessor().crn$getDestinationSuggestions().setAllowSuggestions(true);
-                accessor().crn$getDestinationSuggestions().updateCommandInfo();
-                destinationBox.setResponder(accessor()::crn$onDestinationEdited);
-            });
-        }
-
-    }
-        */
 
 
     public List<IntAttached<String>> onGetViableStations(IScheduleInput field) {

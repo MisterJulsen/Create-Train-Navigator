@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import javax.annotation.Nullable;
-
 import com.simibubi.create.content.trains.display.FlapDisplayBlock;
 import com.simibubi.create.content.trains.entity.CarriageContraption;
 import com.simibubi.create.content.trains.entity.CarriageContraptionEntity;
@@ -46,7 +44,7 @@ import de.mrjulsen.mcdragonlib.data.Tripple;
 import de.mrjulsen.mcdragonlib.util.ListUtils;
 import de.mrjulsen.mcdragonlib.util.accessor.DataAccessor;
 import dev.architectury.platform.Platform;
-import net.fabricmc.api.EnvType;
+import dev.architectury.utils.Env;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.Direction;
@@ -304,7 +302,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
      * @param key The new display type key.
      * @param settings Custom display settings or {@code null} for default settings.
      */
-    public void setDisplayType(DisplayTypeResourceKey key, @Nullable IDisplaySettings settings) {
+    public void setDisplayType(DisplayTypeResourceKey key,  IDisplaySettings settings) {
         this.displayTypeId = key;
         this.displayTypeSettings = settings;
         if (level.isClientSide) {
@@ -315,7 +313,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     public void setData(List<StationDisplayData> predictions, String stationNameFilter, StationInfo staionInfo, long lastRefreshedTime) {
         this.dataOrderChanged = dataOrderChanged || !ListUtils.compareCollections(this.predictions, predictions, StationDisplayData::equals);
 
-        boolean clientUpdate = Platform.getEnv() == EnvType.CLIENT && !getStationInfo().equals(staionInfo);
+        boolean clientUpdate = Platform.getEnvironment() == Env.CLIENT && !getStationInfo().equals(staionInfo);
         
         this.predictions = predictions;
         this.stationNameFilter = stationNameFilter;

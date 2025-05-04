@@ -9,8 +9,6 @@ import de.mrjulsen.crn.block.display.properties.components.ITrainNameWidthSettin
 import de.mrjulsen.crn.block.properties.ETimeDisplay;
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
 import de.mrjulsen.mcdragonlib.util.MathUtils;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.nbt.CompoundTag;
 
 public class DepartureBoardDisplayTableSettings extends BasicDisplaySettings implements ITimeDisplaySetting, ITrainNameWidthSetting, IPlatformWidthSetting, IShowArrivalSetting, IShowLineColorSetting {
@@ -51,7 +49,6 @@ public class DepartureBoardDisplayTableSettings extends BasicDisplaySettings imp
     }
 
     @Override
-    @Environment(EnvType.CLIENT)
     public void buildGui(GuiBuilderContext context) {
         super.buildGui(context);
         this.buildTimeDisplayGui(context);

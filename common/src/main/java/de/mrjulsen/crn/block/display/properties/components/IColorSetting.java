@@ -4,8 +4,6 @@ import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.display.properties.IDisplaySettings;
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.MutableComponent;
 
@@ -25,7 +23,6 @@ public interface IColorSetting {
     void setFontColor(int color);
     void setBackColor(int color);
 
-    @Environment(EnvType.CLIENT)
     default void buildColorGui(GuiBuilderContext context) {
         GuiBuilderWrapper.buildColorGui(this, context);
     }

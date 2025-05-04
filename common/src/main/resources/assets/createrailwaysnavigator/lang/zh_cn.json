@@ -255,7 +255,7 @@
     "enum.createrailwaysnavigator.train_filter.info.same_line": "只涵盖相同路线的列车。",
     "enum.createrailwaysnavigator.train_filter.same_category": "相同编组",
     "enum.createrailwaysnavigator.train_filter.info.same_category": "只涵盖相同编组的列车。",
-    "create.display_source.advanced_display": "高级显示",
+    "createrailwaysnavigator.display_source.advanced_display": "高级显示",
     "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width": "列车名称信息显示宽度",
     "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width_next": "名称信息显示宽度（下班列车）",
     "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width_table": "名称信息显示宽度（后续列车）",

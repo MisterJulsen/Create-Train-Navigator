@@ -17,6 +17,7 @@ import de.mrjulsen.mcdragonlib.data.Cache;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 
 public class DLCreateScrollInput extends ScrollInput implements IDragonLibWidget {
@@ -57,14 +58,21 @@ public class DLCreateScrollInput extends ScrollInput implements IDragonLibWidget
         return formatter.apply(state);
     }
 
-    @Override
+
+    /*
+        @Override
     protected void updateTooltip() {
         super.updateTooltip();
         cachedTooltip.clear();
     }
 
+     */
+
     @Override
-    public final void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+    public void updateWidgetNarration(NarrationElementOutput narrationElementOutput) {}
+
+    @Override
+    public final void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
         renderMainLayer(new Graphics(guiGraphics, guiGraphics.pose()), mouseX, mouseY, partialTicks);
     }
 

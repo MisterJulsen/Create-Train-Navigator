@@ -23,6 +23,7 @@ import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 
 public class DLCreateSelectionScrollInput extends SelectionScrollInput implements IDragonLibWidget {
@@ -75,7 +76,7 @@ public class DLCreateSelectionScrollInput extends SelectionScrollInput implement
     }
 
     @Override
-    public final void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+    public final void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
         renderMainLayer(new Graphics(guiGraphics, guiGraphics.pose()), mouseX, mouseY, partialTicks);
     }
 
@@ -108,6 +109,9 @@ public class DLCreateSelectionScrollInput extends SelectionScrollInput implement
         }, this).open(this);
         super.onClick(mouseX, mouseY);
     }
+
+    @Override
+    public void updateWidgetNarration(NarrationElementOutput narrationElementOutput) {}
 
     @Override
     public void onFocusChangeEvent(boolean focus) {}

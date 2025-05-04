@@ -6,8 +6,6 @@ import java.util.Map;
 import com.simibubi.create.foundation.gui.widget.IconButton;
 import com.simibubi.create.foundation.gui.widget.Indicator.State;
 import com.simibubi.create.foundation.item.TooltipHelper;
-import com.simibubi.create.foundation.item.TooltipHelper.Palette;
-import com.simibubi.create.foundation.utility.Components;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
@@ -36,6 +34,7 @@ import de.mrjulsen.mcdragonlib.core.EAlignment;
 import de.mrjulsen.mcdragonlib.data.Pair;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.TimeUtils;
+import net.createmod.catnip.lang.FontHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -128,7 +127,7 @@ public class RouteDetailsScreen extends AbstractNavigatorScreen {
         addTooltip(DLTooltip.of(tooltipShowPopup).assignedTo(popupBtn));
 
         
-        notificationIndicator = this.addRenderableWidget(new DLCreateIndicator(guiLeft + GUI_WIDTH - DLIconButton.DEFAULT_BUTTON_WIDTH - 8, guiTop + 220, Components.immutableEmpty()));
+        notificationIndicator = this.addRenderableWidget(new DLCreateIndicator(guiLeft + GUI_WIDTH - DLIconButton.DEFAULT_BUTTON_WIDTH - 8, guiTop + 220, TextUtils.empty()));
         notificationButton = this.addRenderableWidget(new DLCreateIconButton(guiLeft + GUI_WIDTH - DLIconButton.DEFAULT_BUTTON_WIDTH - 8, guiTop + 225, DLIconButton.DEFAULT_BUTTON_WIDTH, DLIconButton.DEFAULT_BUTTON_HEIGHT, ModGuiIcons.INFO.getAsCreateIcon()));
         notificationButton.withCallback(() -> {
             route.setShowNotifications(!route.shouldShowNotifications());
@@ -152,7 +151,7 @@ public class RouteDetailsScreen extends AbstractNavigatorScreen {
             }
 
             x.setToolTip(buttonTooltips.get(x).getFirst());
-            x.getToolTip().add(TooltipHelper.holdShift(Palette.YELLOW, hasShiftDown()));
+            x.getToolTip().add(TooltipHelper.holdShift(FontHelper.Palette.YELLOW, hasShiftDown()));
 
             if (hasShiftDown()) {
                 x.getToolTip().add(buttonTooltips.get(x).getSecond());

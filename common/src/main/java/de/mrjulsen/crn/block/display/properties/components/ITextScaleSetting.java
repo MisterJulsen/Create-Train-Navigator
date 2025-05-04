@@ -2,8 +2,6 @@ package de.mrjulsen.crn.block.display.properties.components;
 
 import de.mrjulsen.crn.block.display.properties.IDisplaySettings;
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 
 /**
  * For data conversion: Indicates that this class adopts the original
@@ -29,7 +27,6 @@ public interface ITextScaleSetting {
     float getMinXScale();
     void setMinXScale(float f);
 
-    @Environment(EnvType.CLIENT)
     default void buildTextScaleGui(GuiBuilderContext context) {
         GuiBuilderWrapper.buildTextScaleGui(this, context);
     }

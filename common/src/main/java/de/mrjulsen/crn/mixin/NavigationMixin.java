@@ -9,6 +9,7 @@ import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import net.createmod.catnip.data.Couple;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -31,7 +32,6 @@ import com.simibubi.create.content.trains.graph.TrackNode;
 import com.simibubi.create.content.trains.signal.SignalBoundary;
 import com.simibubi.create.content.trains.signal.SignalEdgeGroup;
 import com.simibubi.create.content.trains.station.GlobalStation;
-import com.simibubi.create.foundation.utility.Couple;
 
 import de.mrjulsen.crn.data.schedule.INavigationExtension;
 import de.mrjulsen.crn.data.schedule.condition.IDelayedWaitCondition;
@@ -129,8 +129,8 @@ public abstract class NavigationMixin implements INavigationExtension {
         this.forward = forward;
     }
     
-    @Redirect(method = "search(DDZLjava/util/ArrayList;Lcom/simibubi/create/content/trains/entity/Navigation$StationTest;)V", remap = false, at = @At(value = "INVOKE", target = "Lcom/simibubi/create/content/trains/entity/Navigation$StationTest;test", remap = false))
-    public boolean onTestStationFab(StationTest test, double distance, double cost, Map<TrackEdge, com.simibubi.create.foundation.utility.Pair<Boolean, Couple<TrackNode>>> reachedVia, com.simibubi.create.foundation.utility.Pair<Couple<TrackNode>, TrackEdge> current, GlobalStation station) {
+    @Redirect(method = "search(DDZLjava/util/ArrayList;Lcom/simibubi/create/content/trains/entity/Navigation$StationTest;)V", remap = false, at = @At(value = "INVOKE", target = "Lcom/simibubi/create/content/trains/entity/Navigation$StationTest;test(DDLjava/util/Map;Lnet/createmod/catnip/data/Pair;Lcom/simibubi/create/content/trains/station/GlobalStation;)Z", remap = false))
+    public boolean onTestStationFab(StationTest test, double distance, double cost, Map<TrackEdge, net.createmod.catnip.data.Pair<Boolean, Couple<TrackNode>>> reachedVia, net.createmod.catnip.data.Pair<Couple<TrackNode>, TrackEdge> current, GlobalStation station) {
         boolean b = test.test(distance, cost, reachedVia, current, station);        
         if (this.shouldCheckPenalties && b) {
             this.finalReasonByDirection.put(forward, new PenaltyResult(currentReasons));            
@@ -138,7 +138,7 @@ public abstract class NavigationMixin implements INavigationExtension {
         return b;
     }
     
-    @Redirect(method = "search(DDZLjava/util/ArrayList;Lcom/simibubi/create/content/trains/entity/Navigation$StationTest;)V", remap = false, at = @At(value = "INVOKE", target = "Ljava/util/PriorityQueue;add", remap = false))
+    @Redirect(method = "search(DDZLjava/util/ArrayList;Lcom/simibubi/create/content/trains/entity/Navigation$StationTest;)V", remap = false, at = @At(value = "INVOKE", target = "Ljava/util/PriorityQueue;add(Ljava/lang/Object;)Z", remap = false))
     public boolean onReadFrontierEntryFab(PriorityQueue<Object> queue, @Coerce Object obj) {
         IFrontierEntry entry = (IFrontierEntry)obj;
         if (this.shouldCheckPenalties) {
@@ -170,13 +170,13 @@ public abstract class NavigationMixin implements INavigationExtension {
         remap = false,
         at = @At(
             value = "INVOKE",
-            target = "Ljava/util/Map;getOrDefault",
+            target = "Ljava/util/Map;getOrDefault(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;",
             remap = false
         ),
         slice = @Slice(
             from = @At(
                 value = "INVOKE",
-                target = "Ljava/util/PriorityQueue;<init>",
+                target = "Ljava/util/PriorityQueue;<init>()V",
                 remap = false
             )
         )
@@ -189,7 +189,7 @@ public abstract class NavigationMixin implements INavigationExtension {
         return val;
     }
 
-    @Redirect(method = "search(DDZLjava/util/ArrayList;Lcom/simibubi/create/content/trains/entity/Navigation$StationTest;)V", remap = false, at = @At(value = "INVOKE", target = "Lcom/simibubi/create/content/trains/signal/SignalEdgeGroup;isOccupiedUnless", remap = false))
+    @Redirect(method = "search(DDZLjava/util/ArrayList;Lcom/simibubi/create/content/trains/entity/Navigation$StationTest;)V", remap = false, at = @At(value = "INVOKE", target = "Lcom/simibubi/create/content/trains/signal/SignalEdgeGroup;isOccupiedUnless(Lcom/simibubi/create/content/trains/signal/SignalBoundary;)Z", remap = false))
     public boolean onCheckOccupiedRedSignalFab(SignalEdgeGroup group, SignalBoundary signal) {
         boolean b = group.isOccupiedUnless(signal);
         if (this.shouldCheckPenalties && b) {
@@ -207,7 +207,7 @@ public abstract class NavigationMixin implements INavigationExtension {
         slice = @Slice(
             from = @At(
                 value = "INVOKE",
-                target = "Lcom/simibubi/create/foundation/utility/Couple;create",
+                target = "Lnet/createmod/catnip/data/Couple;create(Ljava/lang/Object;Ljava/lang/Object;)Lnet/createmod/catnip/data/Couple;",
                 remap = false
             )
         ),

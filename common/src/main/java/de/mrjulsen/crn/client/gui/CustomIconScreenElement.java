@@ -1,9 +1,8 @@
 package de.mrjulsen.crn.client.gui;
 
-import com.simibubi.create.foundation.gui.element.ScreenElement;
-
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
+import net.createmod.catnip.gui.element.ScreenElement;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 

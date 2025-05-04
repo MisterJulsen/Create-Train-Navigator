@@ -285,7 +285,7 @@
     "enum.createrailwaysnavigator.train_filter.same_group": "Mismo grupo",
     "enum.createrailwaysnavigator.train_filter.info.same_group": "Solo trenes del mismo grupo.",
     
-    "create.display_source.advanced_display": "Pantallas avanzadas",
+    "createrailwaysnavigator.display_source.advanced_display": "Pantallas avanzadas",
     "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width": "Ancho del nombre del tren",
     "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width_next": "Ancho del nombre del tren (próxima salida)",
     "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width_table": "Ancho del nombre del tren (trenes siguientes)",

@@ -216,7 +216,7 @@
     "enum.createrailwaysnavigator.time_display.info.abs": "ABS (absolutua)",
     "enum.createrailwaysnavigator.time_display.eta": "HDE",
     "enum.createrailwaysnavigator.time_display.info.eta": "HDE (Heldura Denboa Estimatua)",
-    "create.display_source.advanced_display": "Pantaila Aurreratua",
+    "createrailwaysnavigator.display_source.advanced_display": "Pantaila Aurreratua",
     "gui.createrailwaysnavigator.section_settings.title": "Atal Ezarpenak",
     "gui.createrailwaysnavigator.section_settings.train_categories": "Tren Taldea Ezarri",
     "gui.createrailwaysnavigator.section_settings.train_lines": "Tren Linea Ezarri",

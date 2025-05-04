@@ -214,7 +214,7 @@
     "enum.createrailwaysnavigator.time_display.info.abs": "АБС (Абсолютное)",
     "enum.createrailwaysnavigator.time_display.eta": "ПВП",
     "enum.createrailwaysnavigator.time_display.info.eta": "ПВП (Предполагаемое время прибытия)",
-    "create.display_source.advanced_display": "Улучшенные дисплеи",
+    "createrailwaysnavigator.display_source.advanced_display": "Улучшенные дисплеи",
     "gui.createrailwaysnavigator.section_settings.title": "Настройки раздела",
     "gui.createrailwaysnavigator.section_settings.train_categories": "Назначить группу поездов",
     "gui.createrailwaysnavigator.section_settings.train_lines": "Назначить линию поезда",

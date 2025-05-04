@@ -11,4 +11,4 @@ include("common")
 //include("fabric")
 include("forge")
 
-rootProject.name = "Create Railways Navigator"
+rootProject.name = "Create Railways Navigator 1.20.1 - Create 6"

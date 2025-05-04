@@ -2,8 +2,6 @@ package de.mrjulsen.crn.block.display.properties.components;
 
 import de.mrjulsen.crn.block.display.properties.IDisplaySettings;
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 
 /**
  * For data conversion: Indicates that this class adopts the original
@@ -21,7 +19,6 @@ public interface ITrainNameWidthSetting extends ICustomTextWidthSetting {
     byte getTrainNameWidth();
     void setTrainNameWidth(byte b);
 
-    @Environment(EnvType.CLIENT)
     default void buildTrainNameGui(GuiBuilderContext context, boolean allowAuto, boolean allowMax) {
         buildBasicTextWidthGui(context);
         GuiBuilderWrapper.buildTrainNameGui(this, context, allowAuto, allowMax);

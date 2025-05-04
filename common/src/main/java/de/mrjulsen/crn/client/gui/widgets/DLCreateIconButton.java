@@ -2,12 +2,13 @@ package de.mrjulsen.crn.client.gui.widgets;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.simibubi.create.foundation.gui.AllGuiTextures;
-import com.simibubi.create.foundation.gui.element.ScreenElement;
 import com.simibubi.create.foundation.gui.widget.IconButton;
 
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLContextMenu;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.IDragonLibWidget;
+import net.createmod.catnip.gui.element.ScreenElement;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
 
 public class DLCreateIconButton extends IconButton implements IDragonLibWidget {
 
@@ -22,7 +23,7 @@ public class DLCreateIconButton extends IconButton implements IDragonLibWidget {
     }
 
     @Override
-    public final void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+    public final void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
         if (visible) {
 			isHovered = mouseX >= getX() && mouseY >= getY() && mouseX < getX() + width && mouseY < getY() + height;
 
@@ -34,6 +35,9 @@ public class DLCreateIconButton extends IconButton implements IDragonLibWidget {
 			icon.render(guiGraphics, getX() + 1, getY() + 1);
 		}
 	}
+
+    @Override
+    public void updateWidgetNarration(NarrationElementOutput narrationElementOutput) {}
 
     @Override
     public void onFocusChangeEvent(boolean focus) {}

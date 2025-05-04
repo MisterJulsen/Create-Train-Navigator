@@ -25,7 +25,6 @@ import com.simibubi.create.content.trains.signal.SignalBoundary;
 import com.simibubi.create.content.trains.signal.TrackEdgePoint;
 import com.simibubi.create.content.trains.station.GlobalStation;
 import com.simibubi.create.content.trains.station.StationBlockEntity;
-import com.simibubi.create.foundation.utility.Couple;
 
 import de.mrjulsen.crn.data.NearestTrackStationResult;
 import de.mrjulsen.crn.data.StationTag;
@@ -38,6 +37,7 @@ import de.mrjulsen.mcdragonlib.data.Cache;
 import de.mrjulsen.mcdragonlib.data.MapCache;
 import de.mrjulsen.mcdragonlib.data.Single.MutableSingle;
 import de.mrjulsen.mcdragonlib.util.MathUtils;
+import net.createmod.catnip.data.Couple;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;

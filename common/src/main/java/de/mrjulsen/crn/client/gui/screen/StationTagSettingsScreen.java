@@ -149,143 +149,144 @@ public class StationTagSettingsScreen extends AbstractNavigatorScreen {
                 }
                 final StationTag stationTag = tag;
                 OptionEntry<DataListContainer<StationTag, Map.Entry<String, StationInfo>>> opt = viewer.addOption((option) -> {
-                    GuiAreaDefinition workspace = option.getContentSpace();
+                            GuiAreaDefinition workspace = option.getContentSpace();
 
-                    DataListContainer<StationTag, Map.Entry<String, StationInfo>> cont = new DataListContainer<>(option, workspace.getX(), workspace.getY(), workspace.getWidth(), stationTag,
-                        /* dataIterator */ (tg) -> {
-                            return tg.getAllStations().entrySet().stream().sorted((a, b) -> a.getKey().compareToIgnoreCase(b.getKey())).iterator();
-                        }, /* onCreateEntry */ (data, entryWidget) -> {                            
-                            if (stationTag.getOwner().isAllowed() && GlobalSettingsClient.modificationsAllowed()) {
-                                entryWidget.addDeleteButton((btn, tg, entry, refreshAction) -> {
-                                    FlyoutConfirmDialog<?> dlg = new FlyoutConfirmDialog<>(this, FlyoutPointer.RIGHT, () -> {
-                                        GlobalSettingsClient.removeStationTagEntry(tag.getId(), entry.getKey(),
-                                        (newTag) -> {
-                                            newTag.ifPresent(a -> refreshAction.accept(newTag));
-                                        });
-                                    }, this::addRenderableWidget, this::removeWidget);
-                                    dlg.setYOffset((int)-scrollBar.getScrollValue());
-                                    dlg.open(btn);
-                                });
-                            }
-                            entryWidget.addDataSection(40, (entry) -> entry.getValue().platform(), EAlignment.RIGHT,
-                                stationTag.getOwner().isAllowed() && GlobalSettingsClient.modificationsAllowed() ? (tg, entry, newValue, refreshAction) -> {
-                                    if (!newValue.isBlank() && !entry.getValue().platform().equals(newValue)) {
-                                        GlobalSettingsClient.updateStationTagEntry(tg.getId(), entry.getKey(), new StationInfo(newValue),
-                                        (newTag) -> {
-                                            newTag.ifPresent(a -> refreshAction.accept(newTag));
-                                        });
-                                    }
-                                } : null
-                            );
-                            return data.getKey();
-                        }, /* createNewEntry */ stationTag.getOwner().isAllowed() && GlobalSettingsClient.modificationsAllowed() ? (data, entryWidget) -> {
-                            entryWidget.addAddButton(ModGuiIcons.ADD.getAsSprite(16, 16), List.of(Constants.TEXT_ADD),
-                            (btn, tg, inputValues, refreshAction) -> {
-                                String name = inputValues.get(SimpleDataListNewEntry.MAIN_INPUT_KEY).get();
-                                String platform = inputValues.get("platform").get();
-                                if (name == null || platform == null || name.isBlank() || platform.isBlank()) {
-                                    return false;
+                            DataListContainer<StationTag, Map.Entry<String, StationInfo>> cont = new DataListContainer<>(option, workspace.getX(), workspace.getY(), workspace.getWidth(), stationTag,
+                                    /* dataIterator */ (tg) -> {
+                                return tg.getAllStations().entrySet().stream().sorted((a, b) -> a.getKey().compareToIgnoreCase(b.getKey())).iterator();
+                            }, /* onCreateEntry */ (data, entryWidget) -> {
+                                if (stationTag.getOwner().isAllowed() && GlobalSettingsClient.modificationsAllowed()) {
+                                    entryWidget.addDeleteButton((btn, tg, entry, refreshAction) -> {
+                                        FlyoutConfirmDialog<?> dlg = new FlyoutConfirmDialog<>(this, FlyoutPointer.RIGHT, () -> {
+                                            GlobalSettingsClient.removeStationTagEntry(tag.getId(), entry.getKey(),
+                                                    (newTag) -> {
+                                                        newTag.ifPresent(a -> refreshAction.accept(newTag));
+                                                    });
+                                        }, this::addRenderableWidget, this::removeWidget);
+                                        dlg.setYOffset((int) -scrollBar.getScrollValue());
+                                        dlg.open(btn);
+                                    });
                                 }
-                                GlobalSettingsClient.addStationTagEntry(tg.getId(), name, new StationInfo(platform),
-                                (newTag) -> {
-                                    newTag.ifPresent(a -> refreshAction.accept(newTag));
+                                entryWidget.addDataSection(40, (entry) -> entry.getValue().platform(), EAlignment.RIGHT,
+                                        stationTag.getOwner().isAllowed() && GlobalSettingsClient.modificationsAllowed() ? (tg, entry, newValue, refreshAction) -> {
+                                            if (!newValue.isBlank() && !entry.getValue().platform().equals(newValue)) {
+                                                GlobalSettingsClient.updateStationTagEntry(tg.getId(), entry.getKey(), new StationInfo(newValue),
+                                                        (newTag) -> {
+                                                            newTag.ifPresent(a -> refreshAction.accept(newTag));
+                                                        });
+                                            }
+                                        } : null
+                                );
+                                return data.getKey();
+                            }, /* createNewEntry */ stationTag.getOwner().isAllowed() && GlobalSettingsClient.modificationsAllowed() ? (data, entryWidget) -> {
+                                entryWidget.addAddButton(ModGuiIcons.ADD.getAsSprite(16, 16), List.of(Constants.TEXT_ADD),
+                                        (btn, tg, inputValues, refreshAction) -> {
+                                            String name = inputValues.get(SimpleDataListNewEntry.MAIN_INPUT_KEY).get();
+                                            String platform = inputValues.get("platform").get();
+                                            if (name == null || platform == null || name.isBlank() || platform.isBlank()) {
+                                                return false;
+                                            }
+                                            GlobalSettingsClient.addStationTagEntry(tg.getId(), name, new StationInfo(platform),
+                                                    (newTag) -> {
+                                                        newTag.ifPresent(a -> refreshAction.accept(newTag));
+                                                    });
+                                            return true;
+                                        });
+                                entryWidget.editNameEditBox((box) -> {
+                                    box.setResponder((b) -> {
+                                        this.updateEditorSubwidgets(box, data);
+                                    });
+                                    box.setMaxLength(StationTag.MAX_NAME_LENGTH);
+                                });
+                                entryWidget.setNameEditBoxTooltip((box) -> textStationName);
+                                entryWidget.addDataSection(40, "platform", textPlatformName, (box) -> box.setMaxLength(StationInfo.MAX_PLATFORM_NAME_LENGTH));
+                            } : null, /* onContainerSizeChanged */ (self) -> {
+                                option.notifyContentSizeChanged();
+                            }
+                            );
+                            cont.setPadding(3, 0, 3, 18);
+                            cont.setFilter((entry, searchText) -> {
+                                return entry.getKey().toLowerCase(Locale.ROOT).contains(searchText.get().toLowerCase(Locale.ROOT));
+                            });
+                            cont.setBordered(false);
+
+                            return cont;
+                        }, TextUtils.text(tag.getTagName().get()), TextUtils.empty(), (a, b) -> OptionEntry.expandOrCollapse(a),
+                        stationTag.getOwner().isAllowed() && GlobalSettingsClient.modificationsAllowed() ? (str) -> {
+                            if (!str.isBlank() && !str.equals(stationTag.getTagName().get())) {
+                                GlobalSettingsClient.updateStationTagNameData(stationTag.getId(), str, () -> {
                                 });
                                 return true;
-                            });
-                            entryWidget.editNameEditBox((box) -> {
-                                box.setResponder((b) -> {
-                                    this.updateEditorSubwidgets(box, data);
-                                });
-                                box.setMaxLength(StationTag.MAX_NAME_LENGTH);
-                            });
-                            entryWidget.setNameEditBoxTooltip((box) -> textStationName);
-                            entryWidget.addDataSection(40, "platform", textPlatformName, (box) -> box.setMaxLength(StationInfo.MAX_PLATFORM_NAME_LENGTH));
-                        } : null, /* onContainerSizeChanged */ (self) -> {
-                            option.notifyContentSizeChanged();
-                        }
-                    );
-                    cont.setPadding(3, 0, 3, 18);
-                    cont.setFilter((entry, searchText) -> {
-                        return entry.getKey().toLowerCase(Locale.ROOT).contains(searchText.get().toLowerCase(Locale.ROOT));
-                    });
-                    cont.setBordered(false);
-
-                    return cont;
-                }, TextUtils.text(tag.getTagName().get()), TextUtils.empty(), (a, b) -> OptionEntry.expandOrCollapse(a),
-                stationTag.getOwner().isAllowed() && GlobalSettingsClient.modificationsAllowed() ? (str) -> {
-                    if (!str.isBlank() && !str.equals(stationTag.getTagName().get())) {
-                        GlobalSettingsClient.updateStationTagNameData(stationTag.getId(), str, () -> {});
-                        return true;
-                    }
-                    return false;
-                } : null);
+                            }
+                            return false;
+                        } : null);
 
                 if (GlobalSettingsClient.modificationsAllowed()) {
                     if (stationTag.getOwner().isAllowed()) {
                         opt.addAdditionalButton(ModGuiIcons.DELETE.getAsSprite(16, 16), List.of(tooltipDeleteTag),
-                        (entry, btn) -> {                            
-                            FlyoutConfirmDialog<?> dlg = new FlyoutConfirmDialog<>(this, FlyoutPointer.UP, () -> {
-                                GlobalSettingsClient.deleteStationTag(entry.getContentContainer().getData().getId(), () -> {
-                                    reload();
+                                (entry, btn) -> {
+                                    FlyoutConfirmDialog<?> dlg = new FlyoutConfirmDialog<>(this, FlyoutPointer.UP, () -> {
+                                        GlobalSettingsClient.deleteStationTag(entry.getContentContainer().getData().getId(), () -> {
+                                            reload();
+                                        });
+                                    }, this::addRenderableWidget, this::removeWidget);
+                                    dlg.setYOffset((int) -scrollBar.getScrollValue());
+                                    dlg.open(btn);
                                 });
-                            }, this::addRenderableWidget, this::removeWidget);
-                            dlg.setYOffset((int)-scrollBar.getScrollValue());
-                            dlg.open(btn);
-                        });
                     }
                     DLIconButton btnPermissions = opt.addAdditionalButton(stationTag.getOwner().get().getIcon(), stationTag.getOwner().asText(new Owner(Minecraft.getInstance().player)),
-                        (entry, btn) -> {
-                            if (!stationTag.getOwner().isAllowed()) {
-                                return;
-                            }
-                            GlobalSettingsClient.updateStationTagPermissions(new PermissionsUpdateData(entry.getContentContainer().getData().getId(), null, stationTag.getOwner().get().next(), null), (a) -> {                            
-                                a.ifPresent(x -> {
-                                    stationTag.getOwner().set(x.getOwner().get());
-                                    stationTag.getOwner().updateTrusted(x.getOwner().getTrusted());
-                                    btn.setSprite(x.getOwner().get().getIcon());
-                                    entry.updateTooltipOf(btn, x.getOwner().asText(new Owner(Minecraft.getInstance().player)));
+                            (entry, btn) -> {
+                                if (!stationTag.getOwner().isAllowed()) {
+                                    return;
+                                }
+                                GlobalSettingsClient.updateStationTagPermissions(new PermissionsUpdateData(entry.getContentContainer().getData().getId(), null, stationTag.getOwner().get().next(), null), (a) -> {
+                                    a.ifPresent(x -> {
+                                        stationTag.getOwner().set(x.getOwner().get());
+                                        stationTag.getOwner().updateTrusted(x.getOwner().getTrusted());
+                                        btn.setSprite(x.getOwner().get().getIcon());
+                                        entry.updateTooltipOf(btn, x.getOwner().asText(new Owner(Minecraft.getInstance().player)));
+                                    });
                                 });
-                            });
-                        }
+                            }
                     );
                     if (stationTag.getOwner().isAdmin()) {
                         btnPermissions.setMenu(new DLContextMenu(() -> GuiAreaDefinition.of(btnPermissions), () -> new DLContextMenuItem.Builder()
-                            .add(new ContextMenuItemData(TextUtils.translate(Lock.TRANSLATION_KEY_TRUSTED_PLAYERS), Sprite.empty(), true, (b) -> {
-                                FlyoutPlayerList<?> flyout = new FlyoutPlayerList<>(this, this::updateEditorSubwidgetsOnlinePlayers, stationTag.getOwner().getTrusted(), this::addRenderableWidget, (w) -> {
-                                    GlobalSettingsClient.updateStationTagPermissions(new PermissionsUpdateData(stationTag.getId(), null, null, ((FlyoutPlayerList<?>)w).getPlayerList().getPlayers()), $ -> {
-                                        GlobalSettingsClient.getStationTags((res) -> {
-                                            reload();
+                                .add(new ContextMenuItemData(TextUtils.translate(Lock.TRANSLATION_KEY_TRUSTED_PLAYERS), Sprite.empty(), true, (b) -> {
+                                    FlyoutPlayerList<?> flyout = new FlyoutPlayerList<>(this, this::updateEditorSubwidgetsOnlinePlayers, stationTag.getOwner().getTrusted(), this::addRenderableWidget, (w) -> {
+                                        GlobalSettingsClient.updateStationTagPermissions(new PermissionsUpdateData(stationTag.getId(), null, null, ((FlyoutPlayerList<?>) w).getPlayerList().getPlayers()), $ -> {
+                                            GlobalSettingsClient.getStationTags((res) -> {
+                                                reload();
+                                            });
                                         });
+                                        removeWidget(w);
                                     });
-                                    removeWidget(w);
-                                });
-                                flyout.setYOffset((int)-scrollBar.getScrollValue());
-                                flyout.open(btnPermissions);
-                            }, null))
-                            .add(new ContextMenuItemData(TextUtils.translate(Lock.TRANSLATION_KEY_TRANSFER_OWNERSHIP), Sprite.empty(), true, (b) -> {
-                                addRenderableWidget(new TransferOwnershipWidget<>(this, stationTag.getOwner().getOwner().orElse(null), (newOwner) -> {
-                                    GlobalSettingsClient.updateStationTagPermissions(new PermissionsUpdateData(stationTag.getId(), newOwner, null, null), $ -> {
-                                        GlobalSettingsClient.getStationTags((res) -> {
-                                            reload();
+                                    flyout.setYOffset((int) -scrollBar.getScrollValue());
+                                    flyout.open(btnPermissions);
+                                }, null))
+                                .add(new ContextMenuItemData(TextUtils.translate(Lock.TRANSLATION_KEY_TRANSFER_OWNERSHIP), Sprite.empty(), true, (b) -> {
+                                    addRenderableWidget(new TransferOwnershipWidget<>(this, stationTag.getOwner().getOwner().orElse(null), (newOwner) -> {
+                                        GlobalSettingsClient.updateStationTagPermissions(new PermissionsUpdateData(stationTag.getId(), newOwner, null, null), $ -> {
+                                            GlobalSettingsClient.getStationTags((res) -> {
+                                                reload();
+                                            });
                                         });
-                                    });
-                                }, this::addRenderableWidget, this::removeWidget));
-                            }, null))
+                                    }, this::addRenderableWidget, this::removeWidget));
+                                }, null))
                         ));
                     }
                 }
 
                 opt.setTooltip(List.of(
-                    TextUtils.text(stationTag.getTagName().get()),
-                    TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".station_tags.summary", TextUtils.text(String.valueOf(stationTag.getAllStationNames().size())).withStyle(ChatFormatting.GREEN)).withStyle(ChatFormatting.GRAY),
-                    TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.last_edited",
-                        stationTag.getLastEditor().map(x -> {
-                            return x.name().isBlank()
-                                ? TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.unknown").withStyle(ChatFormatting.GRAY).withStyle(ChatFormatting.ITALIC)
-                                : TextUtils.text(x.name()).withStyle(ChatFormatting.GREEN);
-                        }).orElse(TextUtils.text("Server").withStyle(ChatFormatting.GREEN)),
-                        TextUtils.text(stationTag.getLastEditedTimeFormatted()).withStyle(ChatFormatting.GREEN)
-                    ).withStyle(ChatFormatting.GRAY)
+                        TextUtils.text(stationTag.getTagName().get()),
+                        TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".station_tags.summary", TextUtils.text(String.valueOf(stationTag.getAllStationNames().size())).withStyle(ChatFormatting.GREEN)).withStyle(ChatFormatting.GRAY),
+                        TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.last_edited",
+                                stationTag.getLastEditor().map(x -> {
+                                    return x.name().isBlank()
+                                            ? TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.unknown").withStyle(ChatFormatting.GRAY).withStyle(ChatFormatting.ITALIC)
+                                            : TextUtils.text(x.name()).withStyle(ChatFormatting.GREEN);
+                                }).orElse(TextUtils.text("Server").withStyle(ChatFormatting.GREEN)),
+                                TextUtils.text(stationTag.getLastEditedTimeFormatted()).withStyle(ChatFormatting.GREEN)
+                        ).withStyle(ChatFormatting.GRAY)
                 ));
             }
             

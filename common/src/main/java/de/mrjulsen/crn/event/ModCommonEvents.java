@@ -38,10 +38,6 @@ public class ModCommonEvents {
             CreateRailwaysNavigator.LOGGER.info("Welcome to the CREATE RAILWAYS NAVIGATOR mod by MRJULSEN.");
         });
 
-        LifecycleEvent.SERVER_LEVEL_LOAD.register((level) -> {
-            ModExtras.init();
-        });        
-
         LifecycleEvent.SERVER_STARTED.register((server) -> {
             currentServer = server;
             // Register Events

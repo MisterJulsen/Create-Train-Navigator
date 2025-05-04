@@ -6,14 +6,10 @@ import java.util.Map;
 
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 import com.simibubi.create.foundation.gui.AllIcons;
-import com.simibubi.create.foundation.gui.element.GuiGameElement;
-import com.simibubi.create.foundation.gui.widget.AbstractSimiWidget;
 import com.simibubi.create.foundation.gui.widget.IconButton;
 import com.simibubi.create.foundation.gui.widget.ScrollInput;
 import com.simibubi.create.foundation.item.TooltipHelper;
-import com.simibubi.create.foundation.item.TooltipHelper.Palette;
 import com.simibubi.create.foundation.gui.widget.Indicator.State;
-import com.simibubi.create.foundation.utility.Components;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
@@ -34,6 +30,9 @@ import de.mrjulsen.mcdragonlib.client.util.WidgetsCollection;
 import de.mrjulsen.mcdragonlib.core.EAlignment;
 import de.mrjulsen.mcdragonlib.data.Pair;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
+import net.createmod.catnip.gui.element.GuiGameElement;
+import net.createmod.catnip.gui.widget.AbstractSimiWidget;
+import net.createmod.catnip.lang.FontHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -152,7 +151,7 @@ public class RouteOverlaySettingsScreen extends DLScreen {
         });
         buttons.add(notificationsButton);
         buttonTooltips.put(notificationsButton, Pair.of(textNotifications, textNotificationsDescription));
-        notificationsIndicator = this.addRenderableWidget(new DLCreateIndicator(guiLeft + 20, guiTop + 20, Components.immutableEmpty()));
+        notificationsIndicator = this.addRenderableWidget(new DLCreateIndicator(guiLeft + 20, guiTop + 20, TextUtils.empty()));
 
         // scale
         scaleInput = addRenderableWidget(new ScrollInput(guiLeft + 63, guiTop + 23, 43, 18)
@@ -185,7 +184,7 @@ public class RouteOverlaySettingsScreen extends DLScreen {
             }
 
             x.setToolTip(buttonTooltips.get(x).getFirst());
-            x.getToolTip().add(TooltipHelper.holdShift(Palette.YELLOW, hasShiftDown()));
+            x.getToolTip().add(TooltipHelper.holdShift(FontHelper.Palette.YELLOW, hasShiftDown()));
 
             if (hasShiftDown()) {
                 x.getToolTip().add(buttonTooltips.get(x).getSecond());

@@ -29,6 +29,7 @@ import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition.Builder;
@@ -38,6 +39,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jetbrains.annotations.Nullable;
 
 public class TrainStationClockBlock extends Block implements IWrenchable, IBE<TrainStationClockBlockEntity> {
 
@@ -144,6 +146,11 @@ public class TrainStationClockBlock extends Block implements IWrenchable, IBE<Tr
     @Override
     public Class<TrainStationClockBlockEntity> getBlockEntityClass() {
         return TrainStationClockBlockEntity.class;
+    }
+
+    @Override
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new TrainStationClockBlockEntity(getBlockEntityType(), pos, state);
     }
 
     @Override

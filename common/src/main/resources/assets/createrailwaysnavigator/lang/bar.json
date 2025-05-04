@@ -201,6 +201,6 @@
     "enum.createrailwaysnavigator.time_display.description": "Gibt an, in welchem Formad de Zeid oggm werd.",
     "enum.createrailwaysnavigator.time_display.info.abs": "ABS (Obsolut)",
     "enum.createrailwaysnavigator.time_display.info.eta": "ETA (Gschätzte Okunftszeid)",
-    "create.display_source.advanced_display": "Vabesserte Ozeig",
+    "createrailwaysnavigator.display_source.advanced_display": "Vabesserte Ozeig",
     "gui.createrailwaysnavigator.station_tags.title": "Bohhof Dogs Einstäiunga"
 }

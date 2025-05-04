@@ -216,7 +216,7 @@
     "enum.createrailwaysnavigator.time_display.info.abs": "ABS (абсолютний)",
     "enum.createrailwaysnavigator.time_display.eta": "ЕТА",
     "enum.createrailwaysnavigator.time_display.info.eta": "ETA (орієнтовний час прибуття)",
-    "create.display_source.advanced_display": "Просунуті Дисплеї",
+    "createrailwaysnavigator.display_source.advanced_display": "Просунуті Дисплеї",
     "gui.createrailwaysnavigator.section_settings.title": "Налаштування секції",
     "gui.createrailwaysnavigator.section_settings.train_categories": "Призначити поїздну групу",
     "gui.createrailwaysnavigator.section_settings.train_lines": "Призначити залізничну лінію",

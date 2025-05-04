@@ -7,7 +7,6 @@ import com.simibubi.create.content.trains.schedule.ScheduleEntry;
 import com.simibubi.create.content.trains.schedule.condition.ScheduledDelay;
 import com.simibubi.create.content.trains.schedule.destination.DestinationInstruction;
 import com.simibubi.create.foundation.gui.ModularGuiLineBuilder;
-import com.simibubi.create.foundation.utility.Pair;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.api.IPredictableWaitCondition;
@@ -21,8 +20,7 @@ import de.mrjulsen.crn.data.train.DepartureHistory.ETrainFilter;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import dev.architectury.utils.GameInstance;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
+import net.createmod.catnip.data.Pair;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -144,7 +142,6 @@ public class TrainSeparationCondition extends ScheduledDelay implements IDelayed
 	}
 
     @Override
-	@Environment(EnvType.CLIENT)
 	public void initConfigurationWidgets(ModularGuiLineBuilder builder) {
 		ClientWrapper.initTimingAdjustmentGui(this, builder);
 	}

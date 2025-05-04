@@ -3,6 +3,8 @@ package de.mrjulsen.crn.client;
 import java.util.List;
 import java.util.function.Supplier;
 
+import com.simibubi.create.foundation.utility.CreateLang;
+import net.createmod.catnip.data.Pair;
 import org.joml.Vector3f;
 
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -11,8 +13,6 @@ import com.mojang.math.Axis;
 import com.simibubi.create.content.trains.schedule.ScheduleScreen;
 import com.simibubi.create.content.trains.schedule.condition.TimedWaitCondition.TimeUnit;
 import com.simibubi.create.foundation.gui.ModularGuiLineBuilder;
-import com.simibubi.create.foundation.utility.Lang;
-import com.simibubi.create.foundation.utility.Pair;
 
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
@@ -216,7 +216,7 @@ public class ClientWrapper {
 		}, DynamicDelayCondition.NBT_MIN);
 
 		builder.addScrollInput(26, 26, (i, l) -> {
-			i.titled(Lang.translateDirect("generic.duration"))
+			i.titled(CreateLang.translateDirect("generic.duration"))
 				.withShiftStep(15)
 				.withRange(0, 121);
 			i.lockedTooltipX = -15;
@@ -225,7 +225,7 @@ public class ClientWrapper {
 
 		builder.addSelectionScrollInput(52, 58, (i, l) -> {
 			i.forOptions(TimeUnit.translatedOptions())
-				.titled(Lang.translateDirect("generic.timeUnit"));
+				.titled(CreateLang.translateDirect("generic.timeUnit"));
 		}, "TimeUnit");
 
 		

@@ -28,7 +28,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -63,11 +62,9 @@ public class ModCommandSuggestions {
    private final List<FormattedCharSequence> commandUsage = Lists.newArrayList();
    private int commandUsagePosition;
    private int commandUsageWidth;
-   @Nullable
+
    private ParseResults<SharedSuggestionProvider> currentParse;
-   @Nullable
    private CompletableFuture<Suggestions> pendingSuggestions;
-   @Nullable
    protected ModCommandSuggestions.SuggestionsList suggestions;
    boolean keepSuggestions;
 
@@ -269,7 +266,6 @@ public class ModCommandSuggestions {
       return this.currentParse != null ? formatText(this.currentParse, p_93915_, p_93916_) : FormattedCharSequence.forward(p_93915_, Style.EMPTY);
    }
 
-   @Nullable
    static String calculateSuggestionSuffix(String pInputText, String pSuggestionText) {
       return pSuggestionText.startsWith(pInputText) ? pSuggestionText.substring(pInputText.length()) : null;
    }

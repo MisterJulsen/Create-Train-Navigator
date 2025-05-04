@@ -4,8 +4,6 @@ import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.display.properties.IDisplaySettings;
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.network.chat.MutableComponent;
 
 public interface IShowLineColorSetting {
@@ -20,7 +18,6 @@ public interface IShowLineColorSetting {
     boolean showLineColor();
     void setShowLineColor(boolean b);
 
-    @Environment(EnvType.CLIENT)
     default void buildShowLineColorGui(GuiBuilderContext context) {
         GuiBuilderWrapper.buildShowLineColorGui(this, context);
     }

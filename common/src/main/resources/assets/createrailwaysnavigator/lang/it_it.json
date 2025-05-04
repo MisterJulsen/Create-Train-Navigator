@@ -216,7 +216,7 @@
     "enum.createrailwaysnavigator.time_display.info.abs": "ASS (assoluto)",
     "enum.createrailwaysnavigator.time_display.eta": "TAS",
     "enum.createrailwaysnavigator.time_display.info.eta": "TAS (Tempo di Arrivo Stimato)",
-    "create.display_source.advanced_display": "Visualizzazioni avanzate",
+    "createrailwaysnavigator.display_source.advanced_display": "Visualizzazioni avanzate",
     "gui.createrailwaysnavigator.section_settings.title": "Impostazioni sezione",
     "gui.createrailwaysnavigator.section_settings.train_categories": "Assegna gruppo treni",
     "gui.createrailwaysnavigator.section_settings.train_lines": "Assegna linea treni",

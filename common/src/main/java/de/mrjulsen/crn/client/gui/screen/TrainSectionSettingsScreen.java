@@ -8,11 +8,8 @@ import java.util.stream.Collectors;
 
 import com.simibubi.create.AllItems;
 import com.simibubi.create.foundation.gui.AllIcons;
-import com.simibubi.create.foundation.gui.element.GuiGameElement;
-import com.simibubi.create.foundation.gui.widget.AbstractSimiWidget;
 import com.simibubi.create.foundation.gui.widget.Label;
 import com.simibubi.create.foundation.gui.widget.ScrollInput;
-import com.simibubi.create.foundation.utility.Components;
 
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
@@ -33,6 +30,8 @@ import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import de.mrjulsen.mcdragonlib.core.EAlignment;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
+import net.createmod.catnip.gui.element.GuiGameElement;
+import net.createmod.catnip.gui.widget.AbstractSimiWidget;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Renderable;
@@ -163,7 +162,7 @@ public class TrainSectionSettingsScreen extends DLScreen {
 
                 List<MutableComponent> categoriesList = new ArrayList<>(trainCategories.stream().map(x -> TextUtils.text(x.getCategoryName())).toList());
                 categoriesList.add(0, textNone);
-                displayTypeLabel = addRenderableWidget(new DLCreateLabel(guiLeft + 45 + 5, guiTop + 23 + 5, Components.immutableEmpty()).withShadow());
+                displayTypeLabel = addRenderableWidget(new DLCreateLabel(guiLeft + 45 + 5, guiTop + 23 + 5, TextUtils.empty()).withShadow());
                 displayTypeInput = addRenderableWidget(new DLCreateSelectionScrollInput(this, guiLeft + 45, guiTop + 23, 138, 18)
                     .forOptions(categoriesList)
                     .titled(tooltipTrainCatrgory)
@@ -177,7 +176,7 @@ public class TrainSectionSettingsScreen extends DLScreen {
 
                 List<MutableComponent> linesList = new ArrayList<>(trainLines.stream().map(x -> TextUtils.text(x.getLineName())).toList());
                 linesList.add(0, textNone);
-                infoTypeLabel = addRenderableWidget(new DLCreateLabel(guiLeft + 45 + 5, guiTop + 45 + 5, Components.immutableEmpty()).withShadow());
+                infoTypeLabel = addRenderableWidget(new DLCreateLabel(guiLeft + 45 + 5, guiTop + 45 + 5, TextUtils.empty()).withShadow());
                 infoTypeInput = addRenderableWidget(new DLCreateSelectionScrollInput(this, guiLeft + 45, guiTop + 45, 138, 18)
                     .forOptions(linesList)
                     .titled(tooltipTrainLine)

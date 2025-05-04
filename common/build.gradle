@@ -8,11 +8,15 @@ loom {
 
 dependencies {
     modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"   
+    forge "net.minecraftforge:forge:$rootProject.forge_version"
 
-    modCompileOnly("dev.architectury:architectury:${rootProject.architectury_api_version}")
-    modCompileOnly("com.electronwill.night-config:toml:3.6.0")
-    modCompileOnly("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${rootProject.forge_config_api_port_version}")    
-    modImplementation("de.mrjulsen.mcdragonlib:dragonlib-fabric:${rootProject.minecraft_version}-${rootProject.dragonlib_version}")
+    //modCompileOnly("dev.architectury:architectury:${rootProject.architectury_api_version}")
+    //modCompileOnly("com.electronwill.night-config:toml:3.6.0")
+    //modCompileOnly("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${rootProject.forge_config_api_port_version}")    
+    //modImplementation("de.mrjulsen.mcdragonlib:dragonlib-fabric:${rootProject.minecraft_version}-${rootProject.dragonlib_version}")
+    
+    modCompileOnly("dev.architectury:architectury-forge:${rootProject.architectury_api_version}")
+    modImplementation("de.mrjulsen.mcdragonlib:dragonlib-forge:${rootProject.minecraft_version}-${rootProject.dragonlib_version}")
 
     modImplementation("com.simibubi.create:create-${rootProject.minecraft_version}:${rootProject.create_forge_version}:slim") { transitive = false }
     modImplementation("net.createmod.ponder:Ponder-Forge-${rootProject.minecraft_version}:${rootProject.ponder_forge_version}")

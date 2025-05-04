@@ -5,10 +5,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLAbstractScrollBar;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 
-@Environment(EnvType.CLIENT)
 public class ModularWidgetBuilder {
 
     private final ModularWidgetContainer container;

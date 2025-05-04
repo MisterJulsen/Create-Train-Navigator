@@ -5,10 +5,10 @@ import java.util.List;
 import java.util.UUID;
 
 import com.simibubi.create.content.trains.entity.Train;
+import com.simibubi.create.content.trains.graph.DiscoveredPath;
 import com.simibubi.create.content.trains.schedule.ScheduleRuntime;
 import com.simibubi.create.content.trains.schedule.destination.ScheduleInstruction;
 import com.simibubi.create.foundation.gui.ModularGuiLineBuilder;
-import com.simibubi.create.foundation.utility.Pair;
 
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
@@ -23,8 +23,7 @@ import de.mrjulsen.crn.registry.ModBlocks;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.accessor.DataAccessor;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
+import net.createmod.catnip.data.Pair;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -33,6 +32,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 
 public class TravelSectionInstruction extends ScheduleInstruction implements IStationTagInstruction, IPredictableInstruction {
     
@@ -75,6 +75,13 @@ public class TravelSectionInstruction extends ScheduleInstruction implements ISt
     @Override
     public boolean supportsConditions() {
         return false;
+    }
+
+    @Override
+    public DiscoveredPath start(ScheduleRuntime runtime, Level level) {
+        runtime.state = ScheduleRuntime.State.PRE_TRANSIT;
+        runtime.currentEntry++;
+        return null;
     }
 
     private void requestCategory(UUID categoryId) {
@@ -143,7 +150,6 @@ public class TravelSectionInstruction extends ScheduleInstruction implements ISt
 
     /** HERE BE DRAGONS! This code is very illegal, but it works... */
 	@Override
-	@Environment(EnvType.CLIENT)
 	public void initConfigurationWidgets(ModularGuiLineBuilder builder) {   
         ClientWrapper.initScheduleSectionInstruction(this, builder);
 	}

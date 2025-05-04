@@ -2,8 +2,6 @@ package de.mrjulsen.crn.block.display.properties;
 
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
 import de.mrjulsen.mcdragonlib.data.INBTSerializable;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.nbt.CompoundTag;
 
 public interface IDisplaySettings extends INBTSerializable {
@@ -30,6 +28,5 @@ public interface IDisplaySettings extends INBTSerializable {
      * Called when building the "Advanced Settings" section in the Advanced Display Settings Screen.
      * @param container The container of the settings.
      * @param builder The builder to build the settings lines.
-     */
-    @Environment(EnvType.CLIENT) void buildGui(GuiBuilderContext context);
+     */ void buildGui(GuiBuilderContext context);
 }

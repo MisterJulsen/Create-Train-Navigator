@@ -8,8 +8,6 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-
 import com.simibubi.create.content.trains.entity.Train;
 
 import de.mrjulsen.crn.data.TrainCategory;
@@ -44,7 +42,7 @@ public final class DepartureHistory {
             });
         }
 
-        public long getLastDepartureTime(ETrainFilter filter, String trainName, @Nullable ScheduleSection section) {
+        public long getLastDepartureTime(ETrainFilter filter, String trainName, ScheduleSection section) {
             return switch (filter) {
                 case SAME_CATEGORY -> section != null ? section.getTrainCategory().map(x -> lastDepartureByCategory.getOrDefault(x, Long.MIN_VALUE)).orElse(Long.MIN_VALUE) : Long.MIN_VALUE;
                 case SAME_LINE -> section != null ? section.getTrainLine().map(x -> lastDepartureByLine.getOrDefault(x, Long.MIN_VALUE)).orElse(Long.MIN_VALUE) : Long.MIN_VALUE;

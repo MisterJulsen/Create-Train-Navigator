@@ -203,7 +203,7 @@
     "enum.createrailwaysnavigator.time_display.info.eta": "ETA (hora prevista de chegada)",
     "enum.createrailwaysnavigator.train_filter.info.any": "Cada comboio é tido em conta aqui.",
     "enum.createrailwaysnavigator.train_filter.same_line": "Mesma Linha",
-    "create.display_source.advanced_display": "Monitores Avancados",
+    "createrailwaysnavigator.display_source.advanced_display": "Monitores Avancados",
     "display.createrailwaysnavigator.platform.running_text": "Texto de deslocação",
     "gui.createrailwaysnavigator.station_tags.title": "Configurações de tags da estação de comboios",
     "gui.createrailwaysnavigator.saved_route_widget.notifications": "Mostrar notificações"

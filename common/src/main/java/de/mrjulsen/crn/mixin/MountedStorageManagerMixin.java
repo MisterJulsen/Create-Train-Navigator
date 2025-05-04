@@ -18,12 +18,12 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 @Mixin(MountedStorageManager.class)
 public class MountedStorageManagerMixin {
 
-    @Inject(method = "entityTick", remap = false, at = @At(value = "HEAD"))
+    @Inject(method = "tick", remap = false, at = @At(value = "HEAD"))
     public void onEntityTick(AbstractContraptionEntity entity, CallbackInfo ci) {
         if (entity.getContraption() instanceof CarriageContraption carriage) {
             Set<BlockEntity> beList = new LinkedHashSet<>();
-            beList.addAll(entity.getContraption().maybeInstancedBlockEntities);
-            beList.addAll(entity.getContraption().specialRenderedBlockEntities);
+            beList.addAll(entity.getContraption().presentBlockEntities.values());
+            beList.addAll(entity.getContraption().renderedBlockEntities);
 
             for (BlockEntity be : beList) {            
                 if (be instanceof IContraptionBlockEntity tile) {

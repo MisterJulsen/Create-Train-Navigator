@@ -3,9 +3,6 @@ package de.mrjulsen.crn.client.gui.overlay;
 import java.util.Set;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.simibubi.create.foundation.gui.UIRenderHelper;
-import com.simibubi.create.foundation.utility.animation.LerpedFloat;
-import com.simibubi.create.foundation.utility.animation.LerpedFloat.Chaser;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.ModGuiUtils;
@@ -35,6 +32,8 @@ import de.mrjulsen.mcdragonlib.core.EAlignment;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.TimeUtils;
+import net.createmod.catnip.animation.LerpedFloat;
+import net.createmod.catnip.gui.UIRenderHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -243,8 +242,8 @@ public class RouteDetailsOverlay extends DLOverlayScreen {
         final int x = pos == OverlayPosition.TOP_LEFT || pos == OverlayPosition.BOTTOM_LEFT ? 8 : (int)(width - GUI_WIDTH * getUIScale() - 10);
         final int y = pos == OverlayPosition.TOP_LEFT || pos == OverlayPosition.TOP_RIGHT ? 8 : (int)(height - GUI_HEIGHT * getUIScale() - 10);
 
-        xPos.chase(x, 0.2f, Chaser.EXP);
-        yPos.chase(y, 0.2f, Chaser.EXP);
+        xPos.chase(x, 0.2f, LerpedFloat.Chaser.EXP);
+        yPos.chase(y, 0.2f, LerpedFloat.Chaser.EXP);
 
         graphics.poseStack().pushPose();
         graphics.poseStack().translate((int)xPos.getValue(partialTicks), (int)yPos.getValue(partialTicks), 0);

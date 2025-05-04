@@ -9,10 +9,8 @@ import com.google.common.collect.ImmutableList;
 import com.simibubi.create.content.trains.entity.Train;
 import com.simibubi.create.content.trains.schedule.condition.ScheduledDelay;
 import com.simibubi.create.foundation.gui.ModularGuiLineBuilder;
-import com.simibubi.create.foundation.utility.Components;
-import com.simibubi.create.foundation.utility.Lang;
-import com.simibubi.create.foundation.utility.Pair;
 
+import com.simibubi.create.foundation.utility.CreateLang;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.api.IPredictableWaitCondition;
 import de.mrjulsen.crn.client.ClientWrapper;
@@ -20,8 +18,7 @@ import de.mrjulsen.crn.data.train.TrainListener;
 import de.mrjulsen.crn.data.train.TrainPrediction;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
+import net.createmod.catnip.data.Pair;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -47,15 +44,15 @@ public class DynamicDelayCondition extends ScheduledDelay implements IPredictabl
 
     protected Component formatCustomTime(int time, boolean compact) {
 		if (compact)
-			return Components.literal(time + getUnit().suffix);
-		return Components.literal(time + " ").append(Lang.translateDirect(getUnit().key));
+			return TextUtils.text(time + getUnit().suffix);
+		return TextUtils.text(time + " ").append(CreateLang.translateDirect(getUnit().key));
 	}
 
     @Override
 	public List<Component> getTitleAs(String type) {
 		return ImmutableList.of(
 			TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule." + type + "." + getId().getPath()),
-			Lang.translateDirect("schedule.condition.for_x_time", formatTime(false)).withStyle(ChatFormatting.DARK_AQUA),
+				CreateLang.translateDirect("schedule.condition.for_x_time", formatTime(false)).withStyle(ChatFormatting.DARK_AQUA),
 			TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule." + type + "." + getId().getPath() + ".at_least", formatCustomTime(getMinValue(), false)).withStyle(ChatFormatting.DARK_AQUA)
         );
 	}
@@ -102,7 +99,6 @@ public class DynamicDelayCondition extends ScheduledDelay implements IPredictabl
 	}
 
     @Override
-	@Environment(EnvType.CLIENT)
 	public void initConfigurationWidgets(ModularGuiLineBuilder builder) {
 		ClientWrapper.initDynamicDelayCondition(this, builder);
 	}
@@ -117,7 +113,7 @@ public class DynamicDelayCondition extends ScheduledDelay implements IPredictabl
 		String key = "generic." + (showInMinutes ? num == 1 ? "daytime.minute" : "unit.minutes"
 			: num == 1 ? "daytime.second" : "unit.seconds");
 			
-		return Lang.translateDirect("schedule.condition." + getId().getPath() + ".status", Components.literal(num + " ").append(Lang.translateDirect(key)));
+		return CreateLang.translateDirect("schedule.condition." + getId().getPath() + ".status", TextUtils.text(num + " ").append(CreateLang.translateDirect(key)));
 	}
 
 	@Override

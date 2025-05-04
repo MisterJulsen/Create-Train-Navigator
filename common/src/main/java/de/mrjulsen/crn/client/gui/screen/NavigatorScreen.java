@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import com.simibubi.create.foundation.gui.AllIcons;
-import com.simibubi.create.foundation.utility.animation.LerpedFloat;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.CRNGui;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
@@ -43,6 +42,7 @@ import de.mrjulsen.mcdragonlib.core.EAlignment;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.accessor.DataAccessor;
+import net.createmod.catnip.animation.LerpedFloat;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
@@ -69,7 +69,7 @@ public class NavigatorScreen extends AbstractNavigatorScreen {
 	private DLEditBox fromBox;
 	private DLEditBox toBox;    
     private RouteViewer routeViewer;
-	private LerpedFloat scroll = LerpedFloat.linear().startWithValue(0);   
+	private LerpedFloat scroll = LerpedFloat.linear().startWithValue(0);
 	private ModDestinationSuggestions destinationSuggestions; 
     private AbstractNotificationPopup notificationPopup;
 

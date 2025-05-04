@@ -355,7 +355,7 @@
     "enum.createrailwaysnavigator.departure_board_train_filter.arrival_only": "Nur Ankünfte",
     "enum.createrailwaysnavigator.departure_board_train_filter.departure_only": "Nur Abfahrten",
 
-    "create.display_source.advanced_display": "Verbesserte Anzeige",
+    "createrailwaysnavigator.display_source.advanced_display": "Verbesserte Anzeige",
     "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width": "Zugname Spaltenbreite",
     "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width_next": "Zugname Breite (Nächste Abfahrt)",
     "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width_table": "Zugname Breite (Folgezüge)",

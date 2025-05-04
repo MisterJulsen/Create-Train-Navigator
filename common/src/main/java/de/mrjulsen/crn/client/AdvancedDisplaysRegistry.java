@@ -16,8 +16,6 @@ import de.mrjulsen.crn.block.properties.EDisplayType;
 import de.mrjulsen.crn.registry.ModDisplayTypes;
 import de.mrjulsen.crn.client.ber.variants.AbstractAdvancedDisplayRenderer;
 import de.mrjulsen.crn.client.ber.variants.BERError;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 
@@ -108,7 +106,6 @@ public final class AdvancedDisplaysRegistry {
         return key != null && newDisplayTypes.containsKey(key.category()) && newDisplayTypes.get(key.category()).containsKey(key.name());
     }
 
-    @Environment(EnvType.CLIENT)
     public static AbstractAdvancedDisplayRenderer<?> createRenderer(DisplayTypeResourceKey key) {
         if (!isRegietered(key)) {
             return new BERError();

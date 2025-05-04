@@ -255,7 +255,7 @@
     "enum.createrailwaysnavigator.train_filter.info.same_line": "Endast tåg med samma tåglinje beaktas.",
     "enum.createrailwaysnavigator.train_filter.same_category": "Samma grupp",
     "enum.createrailwaysnavigator.train_filter.info.same_category": "Endast tåg med samma tåggrupp beaktas.",
-    "create.display_source.advanced_display": "Avancerade Skärmar",
+    "createrailwaysnavigator.display_source.advanced_display": "Avancerade Skärmar",
     "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width": "Tågnamnsbredd",
     "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width_next": "Tågnamnsbredd (Nästa avgång)",
     "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width_table": "Tågnamnsbredd (Nästkommande tåg)",

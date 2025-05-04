@@ -2,8 +2,6 @@ package de.mrjulsen.crn.block.display.properties;
 
 import de.mrjulsen.crn.block.display.properties.components.IColorSetting;
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.nbt.CompoundTag;
 
 /**
@@ -27,7 +25,6 @@ public class BasicDisplaySettings extends AbstractDisplaySettings implements ICo
     }
 
     @Override
-    @Environment(EnvType.CLIENT)
     public void buildGui(GuiBuilderContext context) {
         this.buildColorGui(context);
     }

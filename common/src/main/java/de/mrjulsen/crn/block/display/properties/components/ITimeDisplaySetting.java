@@ -3,8 +3,6 @@ package de.mrjulsen.crn.block.display.properties.components;
 import de.mrjulsen.crn.block.display.properties.IDisplaySettings;
 import de.mrjulsen.crn.block.properties.ETimeDisplay;
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 
 /**
  * For data conversion: Indicates that this class adopts the original
@@ -20,7 +18,6 @@ public interface ITimeDisplaySetting extends ICustomTextWidthSetting {
     ETimeDisplay getTimeDisplay();
     void setTimeDisplay(ETimeDisplay display);
 
-    @Environment(EnvType.CLIENT)
     default void buildTimeDisplayGui(GuiBuilderContext context) {
         GuiBuilderWrapper.buildTimeDisplayGui(this, context);
     }

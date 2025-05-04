@@ -1,5 +1,6 @@
 accessWidener   v2  named
 accessible class net/minecraft/client/gui/Font$StringRenderOutput
 accessible field net/minecraft/client/gui/screens/inventory/AbstractContainerScreen topPos I
+accessible field net/minecraft/client/gui/screens/Screen renderables Ljava/util/List;
 
 

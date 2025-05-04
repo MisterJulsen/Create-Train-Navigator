@@ -4,8 +4,6 @@ import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.display.properties.IDisplaySettings;
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.network.chat.MutableComponent;
 
 /**
@@ -33,7 +31,6 @@ public interface ITextBackgroundColorSetting {
     boolean isFullLabelBackgroundColor();
     void setFullLabelBackgroundColor(boolean b);
 
-    @Environment(EnvType.CLIENT)
     default void buildTextBackgroundColorGui(GuiBuilderContext context) {
         GuiBuilderWrapper.buildTextBackgroundColorGui(this, context);
     }

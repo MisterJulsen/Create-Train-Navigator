@@ -23,8 +23,8 @@ import de.mrjulsen.mcdragonlib.core.IIterableEnum;
 import de.mrjulsen.mcdragonlib.core.ITranslatableEnum;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import dev.architectury.platform.Platform;
+import dev.architectury.utils.Env;
 import dev.architectury.utils.GameInstance;
-import net.fabricmc.api.EnvType;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -192,7 +192,7 @@ public class Lock {
      * @throws RuntimeSideException Client-side only!
      */
     public boolean isAllowed() throws RuntimeSideException {
-        if (Platform.getEnv() != EnvType.CLIENT) {
+        if (Platform.getEnvironment() != Env.CLIENT) {
             throw new RuntimeSideException(true);
         }
         Owner self = ClientWrapper.getMe();
@@ -206,7 +206,7 @@ public class Lock {
      * @throws RuntimeSideException Client-side only!
      */
     public boolean isAdmin() throws RuntimeSideException {
-        if (Platform.getEnv() != EnvType.CLIENT) {
+        if (Platform.getEnvironment() != Env.CLIENT) {
             throw new RuntimeSideException(true);
         }
         Owner self = ClientWrapper.getMe();

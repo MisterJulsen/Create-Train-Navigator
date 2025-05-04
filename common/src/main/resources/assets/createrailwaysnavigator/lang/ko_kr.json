@@ -207,6 +207,6 @@
     "enum.createrailwaysnavigator.time_display.info.abs": "정확한 시간을 띄웁니다. (기본)",
     "enum.createrailwaysnavigator.time_display.eta": "상대",
     "enum.createrailwaysnavigator.time_display.info.eta": "남은 시간을 띄웁니다.",
-    "create.display_source.advanced_display": "고급 전광판",
+    "createrailwaysnavigator.display_source.advanced_display": "고급 전광판",
     "gui.createrailwaysnavigator.station_tags.title": "기차역 태그 설정"
 }

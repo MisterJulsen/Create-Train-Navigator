@@ -11,7 +11,6 @@ import de.mrjulsen.crn.data.train.DepartureHistory;
 import de.mrjulsen.crn.event.events.DefaultTrainDataRefreshEvent;
 import de.mrjulsen.crn.event.events.RouteDetailsActionsEvent;
 import de.mrjulsen.crn.network.InstanceManager;
-import de.mrjulsen.crn.registry.ModDisplayTags;
 import de.mrjulsen.crn.registry.ModExtras;
 import de.mrjulsen.mcdragonlib.client.OverlayManager;
 import de.mrjulsen.mcdragonlib.data.Single.MutableSingle;
@@ -31,7 +30,6 @@ public class ModClientEvents {
 
         ClientLifecycleEvent.CLIENT_SETUP.register((mc) -> {
             ModKeys.init();
-            ModDisplayTags.register();
         });
 
         ClientTickEvent.CLIENT_POST.register((mc) -> {
@@ -49,10 +47,6 @@ public class ModClientEvents {
                     CRNEventsManager.getEvent(DefaultTrainDataRefreshEvent.class).run();
                 });
             }
-        });
-
-        ClientLifecycleEvent.CLIENT_LEVEL_LOAD.register((level) -> {
-            ModExtras.init();
         });
 
         ClientPlayerEvent.CLIENT_PLAYER_JOIN.register((player) -> {

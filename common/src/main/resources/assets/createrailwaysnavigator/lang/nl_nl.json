@@ -216,7 +216,7 @@
     "enum.createrailwaysnavigator.time_display.info.abs": "ABS (absoluut)",
     "enum.createrailwaysnavigator.time_display.eta": "ETA",
     "enum.createrailwaysnavigator.time_display.info.eta": "ETA (geschatte aankomsttijd)",
-    "create.display_source.advanced_display": "Geavanceerde Displays",
+    "createrailwaysnavigator.display_source.advanced_display": "Geavanceerde Displays",
     "gui.createrailwaysnavigator.section_settings.title": "Sectie-instellingen",
     "gui.createrailwaysnavigator.section_settings.train_categories": "Treingroep Toewijzen",
     "gui.createrailwaysnavigator.section_settings.train_lines": "Treinlijn Toewijzen",

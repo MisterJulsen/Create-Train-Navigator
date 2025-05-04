@@ -5,8 +5,6 @@ import java.util.Arrays;
 import de.mrjulsen.crn.block.display.properties.IDisplaySettings;
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
 import de.mrjulsen.mcdragonlib.core.ITranslatableEnum;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.util.StringRepresentable;
 
 public interface ITrainTextSetting {
@@ -63,7 +61,6 @@ public interface ITrainTextSetting {
     ETrainTextComponents getTrainTextComponents();
     void setTrainTextComponents(ETrainTextComponents v);
 
-    @Environment(EnvType.CLIENT)
     default void buildTrainTextGui(GuiBuilderContext context) {
         GuiBuilderWrapper.buildTrainTextGui(this, context);
     }

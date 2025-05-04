@@ -2,18 +2,27 @@ package de.mrjulsen.crn.data.schedule.instruction;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import com.simibubi.create.AllBlocks;
+import com.simibubi.create.content.trains.entity.Train;
+import com.simibubi.create.content.trains.graph.DiscoveredPath;
+import com.simibubi.create.content.trains.graph.EdgePointType;
+import com.simibubi.create.content.trains.schedule.ScheduleRuntime;
 import com.simibubi.create.content.trains.schedule.destination.DestinationInstruction;
+import com.simibubi.create.content.trains.station.GlobalStation;
 import com.simibubi.create.foundation.gui.ModularGuiLineBuilder;
-import com.simibubi.create.foundation.utility.Components;
-import com.simibubi.create.foundation.utility.Pair;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.ClientWrapper;
+import de.mrjulsen.crn.data.schedule.INavigationExtension;
+import de.mrjulsen.crn.mixin.ScheduleRuntimeAccessor;
+import de.mrjulsen.crn.util.PenaltyResult;
+import de.mrjulsen.mcdragonlib.data.MapCache;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
+import net.createmod.catnip.data.Pair;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.nbt.CompoundTag;
@@ -22,6 +31,8 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 
 public class PrioritizedDestinationInstruction extends DestinationInstruction {
 
@@ -36,7 +47,7 @@ public class PrioritizedDestinationInstruction extends DestinationInstruction {
 
 	@Override
 	public Pair<ItemStack, Component> getSummary() {
-		return Pair.of(AllBlocks.TRACK_STATION.asStack(), Components.literal(getLabelText()));
+		return Pair.of(AllBlocks.TRACK_STATION.asStack(), TextUtils.text(getLabelText()));
 	}	
 
 	@Override
@@ -121,8 +132,102 @@ public class PrioritizedDestinationInstruction extends DestinationInstruction {
 	}
 
     @Override
-	@Environment(EnvType.CLIENT)
 	public void initConfigurationWidgets(ModularGuiLineBuilder builder) {   
         ClientWrapper.initPrioritizedDestinationInstruction(this, builder);
+	}
+
+	@Override
+	public @Nullable DiscoveredPath start(ScheduleRuntime runtime, Level level) {
+		ScheduleRuntimeAccessor accessor = (ScheduleRuntimeAccessor) runtime;
+		Train train = accessor.crn$getTrain();
+		List<String> filters = getFilters();
+		List<Pattern> patterns = filters.stream()
+				.map(Pattern::compile)
+				.collect(Collectors.toList());
+		INavigationExtension ext = (INavigationExtension)train.navigation;
+
+		DiscoveredPath selectedDestination = null;
+		int selectedPainCount = Integer.MAX_VALUE;
+		boolean anyMatch = false;
+
+
+		MapCache<DiscoveredPath, GlobalStation, GlobalStation> navigationCache = new MapCache<>((station) -> {
+			return train.navigation.findPathTo(station, Double.MAX_VALUE);
+		}, GlobalStation::hashCode);
+
+		if (!train.hasForwardConductor() && !train.hasBackwardConductor()) {
+			train.status.missingConductor();
+			accessor.crn$setCooldown(accessor.crn$getInterval());
+			return null;
+		}
+
+		for (Pattern regex : patterns) {
+			AtomicInteger painCount = new AtomicInteger(0);
+			GlobalStation bestStation = null;
+			DiscoveredPath bestPath = null;
+			double bestCost = Double.MAX_VALUE;
+
+			for (GlobalStation globalStation : train.graph.getPoints(EdgePointType.STATION)) {
+				if (!regex.matcher(globalStation.name).matches()) {
+					continue;
+				}
+				DiscoveredPath discoveredPath = navigationCache.get(globalStation, globalStation);
+
+				if (discoveredPath == null) {
+					continue;
+				}
+
+				if (discoveredPath.cost < 0)
+					continue;
+				if (discoveredPath.cost > bestCost)
+					continue;
+				bestStation = globalStation;
+				bestPath = discoveredPath;
+				bestCost = discoveredPath.cost;
+			}
+
+			if (bestStation == null) {
+				continue;
+			}
+			anyMatch = true;
+
+			if (
+				(bestStation.getImminentTrain() == null || bestStation.getImminentTrain() == train) &&
+				(bestStation.getPresentTrain() == null || bestStation.getPresentTrain() == train) &&
+				(bestStation.getNearestTrain() == null || bestStation.getNearestTrain() == train)
+			) {
+				painCount.addAndGet(1);
+			}
+
+			ext.getPenaltiesByDirection().ifPresent(x -> {
+				for (PenaltyResult.Type type : x.getPenalties().keySet()) {
+					if (shouldAvoidRedSignals() && type == PenaltyResult.Type.REDSTONE_RED_SIGNAL) {
+						painCount.addAndGet(1);
+					} else if (shouldAvoidTrains() && type.getCategory() == PenaltyResult.Category.TRAINS) {
+						painCount.addAndGet(1);
+					}
+				}
+			});
+
+			if (painCount.get() < selectedPainCount) {
+				selectedPainCount = painCount.get();
+				selectedDestination = bestPath;
+
+				if (painCount.get() <= 0)
+					break;
+			}
+		}
+
+		if (selectedDestination == null) {
+			if (anyMatch) {
+				train.status.failedNavigation();
+			} else {
+				train.status.failedNavigationNoTarget(String.join(", ", filters));
+			}
+			accessor.crn$setCooldown(accessor.crn$getInterval());
+			return null;
+		}
+
+		return selectedDestination;
 	}
 }

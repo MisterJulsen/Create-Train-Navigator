@@ -8,7 +8,6 @@ import com.simibubi.create.content.equipment.clipboard.ClipboardEntry;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.foundation.block.IBE;
-import com.simibubi.create.foundation.utility.Iterate;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
@@ -25,15 +24,13 @@ import de.mrjulsen.crn.registry.ModDisplayTypes;
 import de.mrjulsen.mcdragonlib.core.EAlignment;
 import de.mrjulsen.mcdragonlib.data.Pair;
 import de.mrjulsen.mcdragonlib.data.Tripple;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
+import net.createmod.catnip.data.Iterate;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.Direction.AxisDirection;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -55,6 +52,7 @@ import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition.Builder;
@@ -64,6 +62,7 @@ import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.ticks.LevelTickAccess;
+import org.jetbrains.annotations.Nullable;
 
 public abstract class AbstractAdvancedDisplayBlock extends Block implements IWrenchable, IBE<AdvancedDisplayBlockEntity> {
 
@@ -84,7 +83,6 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
         );
     }
 	
-	@Environment(EnvType.CLIENT)
 	public static BlockColor getDisplayColor() {
 		return (state, world, pos, layer) -> {
 			if (world == null || state == null || pos == null) {
@@ -446,6 +444,11 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
     public BlockEntityType<? extends AdvancedDisplayBlockEntity> getBlockEntityType() {
         return ModBlockEntities.ADVANCED_DISPLAY_BLOCK_ENTITY.get();
     }
+
+	@Override
+	public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+		return new AdvancedDisplayBlockEntity(getBlockEntityType(), pos, state);
+	}
 
 	public abstract boolean isSingleLined();
 

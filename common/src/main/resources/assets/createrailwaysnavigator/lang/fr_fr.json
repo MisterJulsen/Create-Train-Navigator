@@ -241,7 +241,7 @@
     "enum.createrailwaysnavigator.train_filter.info.same_line": "Seuls les trains de la même ligne sont pris en compte.",
     "enum.createrailwaysnavigator.train_filter.same_category": "Même groupe",
     "enum.createrailwaysnavigator.train_filter.info.same_category": "Seuls les trains du même groupe sont pris en compte.",
-    "create.display_source.advanced_display": "Affichage Avancé",
+    "createrailwaysnavigator.display_source.advanced_display": "Affichage Avancé",
     "gui.createrailwaysnavigator.display_source.advanced_display.platform_width": "Largeur du libellé du quai",
     "gui.createrailwaysnavigator.display_source.advanced_display.platform_width_next": "Largeur du libellé du quai (Prochain départ)",
     "gui.createrailwaysnavigator.display_source.advanced_display.platform_width_table": "Largeur du libellé du quai (Trains suivants)",

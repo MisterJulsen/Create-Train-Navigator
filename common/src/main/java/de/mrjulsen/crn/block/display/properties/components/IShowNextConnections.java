@@ -4,8 +4,6 @@ import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.display.properties.IDisplaySettings;
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.network.chat.MutableComponent;
 
 public interface IShowNextConnections {
@@ -19,7 +17,6 @@ public interface IShowNextConnections {
     boolean showConnections();
     void setShowConnection(boolean b);
 
-    @Environment(EnvType.CLIENT)
     default void buildShowConnectionGui(GuiBuilderContext context) {
         GuiBuilderWrapper.buildShowConnectionGui(this, context);        
     }

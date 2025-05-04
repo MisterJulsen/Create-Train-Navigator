@@ -262,7 +262,8 @@ public final class ModAccessorTypes {
                 return false;
             }
             for (int i = 0; i < 64 && !tags.isEmpty(); i++) {
-                nbt.put(DataAccessorType.DEFAULT_NBT_DATA + i, tags.poll().toNbt());
+                StationTag tag = tags.poll();
+                nbt.put(DataAccessorType.DEFAULT_NBT_DATA + i, tag.toNbt());
             }
             return !tags.isEmpty();
         }, (IChunkReceiver<Collection<StationTag>>)(hasMore, list, iteration, nbt) -> {

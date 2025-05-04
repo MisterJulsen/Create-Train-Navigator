@@ -1,10 +1,8 @@
 package de.mrjulsen.crn.data;
 
-import javax.annotation.Nullable;
-
 import net.minecraft.nbt.CompoundTag;
 
-public record TrainInfo(@Nullable TrainLine line, @Nullable TrainCategory category) {
+public record TrainInfo(TrainLine line, TrainCategory category) {
 
     private static final String NBT_TRAIN_CATEGORY = "Category";
     private static final String NBT_TRAIN_LINE = "Line";

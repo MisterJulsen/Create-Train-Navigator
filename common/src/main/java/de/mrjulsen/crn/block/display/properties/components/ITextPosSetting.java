@@ -4,8 +4,6 @@ import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.block.display.properties.IDisplaySettings;
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
 import de.mrjulsen.mcdragonlib.core.EAlignment;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 
 /**
  * For data conversion: Indicates that this class adopts the original
@@ -35,7 +33,6 @@ public interface ITextPosSetting {
     EAlignment getTextAlignment();
     void setTextAlignment(EAlignment align);
 
-    @Environment(EnvType.CLIENT)
     default void buildTextPosGui(GuiBuilderContext context) {
         GuiBuilderWrapper.buildTextPosGui(this, context);
     }

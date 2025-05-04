@@ -2,7 +2,6 @@ package de.mrjulsen.crn.registry;
 
 import java.util.function.Supplier;
 
-import com.simibubi.create.content.redstone.displayLink.AllDisplayBehaviours;
 import com.simibubi.create.foundation.block.connected.ConnectedTextureBehaviour;
 import com.simibubi.create.foundation.data.SharedProperties;
 import com.simibubi.create.foundation.data.TagGen;
@@ -21,17 +20,14 @@ import de.mrjulsen.crn.block.AdvancedDisplaySmallBlock;
 import de.mrjulsen.crn.block.TrainStationClockBlock;
 import de.mrjulsen.crn.block.connected.AdvancedDisplayCTBehaviour;
 import de.mrjulsen.crn.block.connected.AdvancedDisplaySmallCTBehaviour;
-import de.mrjulsen.crn.block.display.AdvancedDisplayTarget;
+import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
-import net.fabricmc.api.EnvType;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.level.block.Block;
 
-public class ModBlocks {	
+import static com.simibubi.create.api.behaviour.display.DisplayTarget.displayTarget;
 
-	static {
-		//CreateRailwaysNavigator.REGISTRATE.creativeModeTab(() -> ModCreativeModeTab.MAIN);
-	}
+public class ModBlocks {	
 
 	public static final BlockEntry<AdvancedDisplayBlock> ADVANCED_DISPLAY_BLOCK = CreateRailwaysNavigator.REGISTRATE.block("advanced_display_block", AdvancedDisplayBlock::new)
 		.onRegister(connectedTextures(() -> new AdvancedDisplayCTBehaviour(ClientWrapper.CT_ADVANCED_DISPLAY_ALL)))
@@ -40,7 +36,7 @@ public class ModBlocks {
 		.color(() -> AbstractAdvancedDisplayBlock::getDisplayColor)
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
-		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
+		.transform(displayTarget(ModExtras.ADVANCED_DISPLAY_BOARD_TARGET))
 		.item()
 		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
@@ -52,7 +48,7 @@ public class ModBlocks {
 		.color(() -> AbstractAdvancedDisplayBlock::getDisplayColor)
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
-		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
+		.transform(displayTarget(ModExtras.ADVANCED_DISPLAY_BOARD_TARGET))
 		.item()
 		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
@@ -65,7 +61,7 @@ public class ModBlocks {
 		.color(() -> AbstractAdvancedDisplayBlock::getDisplayColor)
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
-		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
+		.transform(displayTarget(ModExtras.ADVANCED_DISPLAY_BOARD_TARGET))
 		.item()
 		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
@@ -78,7 +74,7 @@ public class ModBlocks {
 		.color(() -> AbstractAdvancedDisplayBlock::getDisplayColor)
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
-		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
+		.transform(displayTarget(ModExtras.ADVANCED_DISPLAY_BOARD_TARGET))
 		.item()
 		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
@@ -91,7 +87,7 @@ public class ModBlocks {
 		.color(() -> AbstractAdvancedDisplayBlock::getDisplayColor)
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
-		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
+		.transform(displayTarget(ModExtras.ADVANCED_DISPLAY_BOARD_TARGET))
 		.item()
 		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
@@ -104,7 +100,7 @@ public class ModBlocks {
 		.color(() -> AbstractAdvancedDisplayBlock::getDisplayColor)
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
-		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
+		.transform(displayTarget(ModExtras.ADVANCED_DISPLAY_BOARD_TARGET))
 		.item()
 		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
@@ -117,7 +113,7 @@ public class ModBlocks {
 		.color(() -> AbstractAdvancedDisplayBlock::getDisplayColor)
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
-		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
+		.transform(displayTarget(ModExtras.ADVANCED_DISPLAY_BOARD_TARGET))
 		.item()
 		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
@@ -138,7 +134,7 @@ public class ModBlocks {
 	}
 
 	protected static void onClient(Supplier<Runnable> toRun) {
-		EnvExecutor.runInEnv(EnvType.CLIENT, toRun);
+		EnvExecutor.runInEnv(Env.CLIENT, toRun);
 	}
 
     public static void init() {

@@ -4,8 +4,6 @@ import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.display.properties.IDisplaySettings;
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.network.chat.MutableComponent;
 
 public interface IShowTimeAndDateSetting {
@@ -19,7 +17,6 @@ public interface IShowTimeAndDateSetting {
     boolean showTimeAndDate();
     void setShowTimeAndDate(boolean b);
 
-    @Environment(EnvType.CLIENT)
     default void buildShowTimeAndDateGui(GuiBuilderContext context) {
         GuiBuilderWrapper.buildShowTimeAndDateGui(this, context);
     }

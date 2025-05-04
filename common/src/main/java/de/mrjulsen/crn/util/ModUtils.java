@@ -13,9 +13,7 @@ import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.simibubi.create.foundation.utility.Components;
-import com.simibubi.create.foundation.utility.Lang;
-
+import com.simibubi.create.foundation.utility.CreateLang;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.exceptions.RuntimeSideException;
 import de.mrjulsen.mcdragonlib.DragonLib;
@@ -79,7 +77,7 @@ public class ModUtils {
             sb.append(unpredictable);
 
         } else if (ticks < 200) {
-            sb.append(Lang.translateDirect("display_source.station_summary.now").getString());
+            sb.append(CreateLang.translateDirect("display_source.station_summary.now").getString());
 
         } else {
             long min = ticks / 1200;
@@ -89,8 +87,8 @@ public class ModUtils {
                 min++;
                 sec = 0;
             }
-            sb.append(min > 0 ? Components.literal(String.valueOf(min)).getString() : "");
-            sb.append(min > 0 ? Lang.translateDirect("display_source.station_summary.minutes").getString() : Lang.translateDirect("display_source.station_summary.seconds", sec).getString());
+            sb.append(min > 0 ? TextUtils.text(String.valueOf(min)).getString() : "");
+            sb.append(min > 0 ? CreateLang.translateDirect("display_source.station_summary.minutes").getString() : CreateLang.translateDirect("display_source.station_summary.seconds", sec).getString());
         }
 
         return sb.toString();

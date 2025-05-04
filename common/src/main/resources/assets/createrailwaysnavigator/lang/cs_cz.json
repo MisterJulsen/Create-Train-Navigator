@@ -255,7 +255,7 @@
     "enum.createrailwaysnavigator.train_filter.info.same_line": "V potaz se vezmou pouze vlaky se stejnou linkou.",
     "enum.createrailwaysnavigator.train_filter.same_category": "Stejná skupina",
     "enum.createrailwaysnavigator.train_filter.info.same_category": "V potaz se vezmou pouze vlaky se stejnou vlakovou skupinou.",
-    "create.display_source.advanced_display": "Rozšířené displeje",
+    "createrailwaysnavigator.display_source.advanced_display": "Rozšířené displeje",
     "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width": "Šířka jména vlaku",
     "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width_next": "Šířka jména vlaku (Příští odjezd)",
     "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width_table": "Šířka jména vlaku (Následujících vlaků)",

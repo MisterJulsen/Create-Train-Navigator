@@ -7,11 +7,8 @@ import de.mrjulsen.mcdragonlib.client.gui.widgets.DLAbstractScrollBar;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLScrollableWidgetContainer;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 
-@Environment(EnvType.CLIENT)
 public class ModularWidgetContainer extends DLScrollableWidgetContainer {
 
     public static final int DEFAULT_PADDING = 10;
