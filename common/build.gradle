@@ -7,22 +7,20 @@ loom {
 }
 
 dependencies {
-    modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"   
-    forge "net.minecraftforge:forge:$rootProject.forge_version"
+    modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
+    neoForge "net.neoforged:neoforge:$rootProject.neoforge_version"
 
     //modCompileOnly("dev.architectury:architectury:${rootProject.architectury_api_version}")
     //modCompileOnly("com.electronwill.night-config:toml:3.6.0")
     //modCompileOnly("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${rootProject.forge_config_api_port_version}")    
     //modImplementation("de.mrjulsen.mcdragonlib:dragonlib-fabric:${rootProject.minecraft_version}-${rootProject.dragonlib_version}")
     
-    modCompileOnly("dev.architectury:architectury-forge:${rootProject.architectury_api_version}")
-    modImplementation("de.mrjulsen.mcdragonlib:dragonlib-forge:${rootProject.minecraft_version}-${rootProject.dragonlib_version}")
+    modCompileOnly("dev.architectury:architectury-neoforge:${rootProject.architectury_api_version}")
+    modImplementation("de.mrjulsen.mcdragonlib:dragonlib-neoforge:${rootProject.minecraft_version}-${rootProject.dragonlib_version}")
 
-    modImplementation("com.simibubi.create:create-${rootProject.minecraft_version}:${rootProject.create_forge_version}:slim") { transitive = false }
-    modImplementation("net.createmod.ponder:Ponder-Forge-${rootProject.minecraft_version}:${rootProject.ponder_forge_version}")
-    modCompileOnly("dev.engine-room.flywheel:flywheel-forge-api-${rootProject.minecraft_version}:${rootProject.flywheel_forge_version}")
-    modRuntimeOnly("dev.engine-room.flywheel:flywheel-forge-${rootProject.minecraft_version}:${rootProject.flywheel_forge_version}")
-    modImplementation("com.tterrag.registrate:Registrate:${rootProject.registrate_forge_version}")
-    compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:0.4.1"))
-    implementation("io.github.llamalad7:mixinextras-forge:0.4.1")
+    modImplementation("com.simibubi.create:create-${rootProject.minecraft_version}:${rootProject.create_neoforge_version}:slim") { transitive = false }
+    modImplementation("net.createmod.ponder:Ponder-NeoForge-${rootProject.minecraft_version}:${rootProject.ponder_neoforge_version}")
+    modCompileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-${rootProject.minecraft_version}:${rootProject.flywheel_neoforge_version}")
+    modRuntimeOnly("dev.engine-room.flywheel:flywheel-neoforge-${rootProject.minecraft_version}:${rootProject.flywheel_neoforge_version}")
+    modImplementation("com.tterrag.registrate:Registrate:${rootProject.registrate_neoforge_version}")
 }

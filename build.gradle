@@ -1,5 +1,5 @@
 plugins {
-    id 'dev.architectury.loom' version '1.6-SNAPSHOT' apply false
+    id 'dev.architectury.loom' version '1.7-SNAPSHOT' apply false
     id 'architectury-plugin' version '3.4-SNAPSHOT'
     id 'com.github.johnrengelman.shadow' version '8.1.1' apply false
 }
@@ -35,7 +35,8 @@ subprojects {
         maven { url = "https://maven.jamieswhiteshirt.com/libs-release" } // Reach Entity Attributes
         maven { url = "https://jitpack.io/" } // Mixin Extras, Fabric ASM
         maven { url = "https://maven.createmod.net" } // Create, Ponder, Flywheel
-        maven { url = "https://maven.tterrag.com" } // Registrate
+        maven { url = "https://mvn.devos.one/snapshots" } // Registrate
+        maven { url = 'https://maven.neoforged.net/releases' } // NeoForge
         maven { url = "https://cursemaven.com"
             content {
                 includeGroup "curse.maven"
@@ -67,17 +68,17 @@ subprojects {
             "discord": rootProject.discord,
             "next_unsupported_minecraft_version": rootProject.next_unsupported_minecraft_version,
             "dragonlib_version": "$rootProject.minecraft_version-$rootProject.dragonlib_version",
-            "forge_dependency_version": rootProject.forge_dependency_version,
-            "forge_loader_version": rootProject.forge_loader_version,
+            "neoforge_dependency_version": rootProject.neoforge_dependency_version,
+            "neoforge_loader_version": rootProject.neoforge_loader_version,
             "fabric_loader_version": rootProject.fabric_loader_version,
             "java_version": rootProject.java_version,
             "maven_group": rootProject.maven_group,
-            "create_forge_version": rootProject.create_forge_version,
-            "create_forge_dependency_version": rootProject.create_forge_dependency_version,
+            "create_neoforge_version": rootProject.create_neoforge_version,
+            "create_neoforge_dependency_version": rootProject.create_neoforge_dependency_version,
             //"create_fabric_version": rootProject.create_fabric_version,
             "main_class_name": rootProject.main_class_name,
         ]
-        filesMatching(['pack.mcmeta', 'fabric.mod.json', 'META-INF/mods.toml', 'createrailwaysnavigator.mixins.json']) {
+        filesMatching(['pack.mcmeta', 'fabric.mod.json', 'META-INF/neoforge.mods.toml', 'createrailwaysnavigator.mixins.json']) {
             expand expandProps
         }
         inputs.properties(expandProps)
@@ -88,12 +89,12 @@ subprojects {
         withSourcesJar()
         withJavadocJar()
 
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
 
     tasks.withType(JavaCompile).configureEach {
-        it.options.release = 17
+        it.options.release = 21
     }
 
     jar {

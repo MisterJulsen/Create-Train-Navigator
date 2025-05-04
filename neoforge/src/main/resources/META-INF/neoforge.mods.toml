@@ -1,5 +1,5 @@
 modLoader = "javafml"
-loaderVersion = "[${forge_loader_version},)"
+loaderVersion = "[${neoforge_loader_version},)"
 issueTrackerURL = "${issues}"
 license = "${license}"
 
@@ -13,22 +13,22 @@ description = '''${description}'''
 logoFile = "${icon}"
 
 [[dependencies.${modid}]]
-modId = "forge"
-mandatory = true
-versionRange = "[${forge_dependency_version},)"
+modId = "neoforge"
+type = "required"
+versionRange = "[${neoforge_dependency_version},)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.${modid}]]
 modId = "minecraft"
-mandatory = true
+type = "required"
 versionRange = "[${minecraft_version},${next_unsupported_minecraft_version})"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.${modid}]]
 modId = "dragonlib"
-mandatory = true
+type = "required"
 versionRange = "[${dragonlib_version},)"
 ordering = "BEFORE"
 side = "BOTH"
@@ -36,7 +36,10 @@ side = "BOTH"
 
 [[dependencies.${modid}]]
 modId = "create"
-mandatory = true
+type = "required"
 versionRange = "[${create_forge_dependency_version},)"
 ordering = "BEFORE"
 side = "BOTH"
+
+[[mixins]]
+config = "${modid}.mixins.json"
