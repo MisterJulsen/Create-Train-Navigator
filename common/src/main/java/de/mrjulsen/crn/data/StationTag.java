@@ -45,6 +45,9 @@ public class StationTag {
         }
 
         public static ClientStationTag fromNbt(CompoundTag nbt) {
+            if (nbt == null) {
+                return empty();
+            }
             return new ClientStationTag(
                 nbt.getString(NBT_TAG_NAME),
                 nbt.getString(NBT_STATION_NAME),
