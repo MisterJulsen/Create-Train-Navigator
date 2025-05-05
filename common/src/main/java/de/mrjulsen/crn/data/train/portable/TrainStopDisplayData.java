@@ -151,8 +151,8 @@ public class TrainStopDisplayData {
     public static TrainStopDisplayData fromNbt(CompoundTag nbt) {
         return new TrainStopDisplayData(
             nbt.getInt(NBT_STATION_INDEX),
-            ClientStationTag.fromNbt(nbt.getCompound(NBT_SCHEDULED_STATION)),
-            ClientStationTag.fromNbt(nbt.getCompound(NBT_REAL_TIME_STATION)),
+            nbt.contains(NBT_SCHEDULED_STATION) ? ClientStationTag.fromNbt(nbt.getCompound(NBT_SCHEDULED_STATION)) : ClientStationTag.empty(),
+            nbt.contains(NBT_REAL_TIME_STATION) ? ClientStationTag.fromNbt(nbt.getCompound(NBT_REAL_TIME_STATION)) : ClientStationTag.empty(),
             nbt.getLong(NBT_SCHEDULED_DEPARTURE_TIME),
             nbt.getLong(NBT_SCHEDULED_ARRIVAL_TIME), 
             nbt.getLong(NBT_REAL_TIME_DEPARTURE_TIME), 
