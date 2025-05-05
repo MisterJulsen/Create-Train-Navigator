@@ -1,5 +1,6 @@
 package de.mrjulsen.crn.client.ber.variants;
 
+import com.simibubi.create.Create;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity.EUpdateReason;
@@ -20,7 +21,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class BERTrainDestinationInformative implements AbstractAdvancedDisplayRenderer<TrainDestinationDetailedSettings> {
 
-    private static final ResourceLocation CARRIAGE_ICON = ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "textures/gui/assemble.png");
+    private static final ResourceLocation CARRIAGE_ICON = ResourceLocation.fromNamespaceAndPath(Create.ID, "textures/gui/assemble.png");
     private static final ResourceLocation ICONS = ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "textures/gui/icons.png");  
 
 

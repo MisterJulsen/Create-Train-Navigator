@@ -1,5 +1,6 @@
 package de.mrjulsen.crn.client.ber.variants;
 
+import com.simibubi.create.Create;
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
@@ -35,7 +36,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRenderer<PassengerInformationDetailedSettings> {
 
-    private static final ResourceLocation CARRIAGE_ICON = ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID,  "textures/gui/assemble.png");
+    private static final ResourceLocation CARRIAGE_ICON = ResourceLocation.fromNamespaceAndPath(Create.ID,  "textures/gui/assemble.png");
     private static final ResourceLocation ICONS = ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "textures/gui/icons.png");  
     private static final String keyDate = "gui.createrailwaysnavigator.route_overview.date";
     private static final String keyNextStop = "gui.createrailwaysnavigator.route_overview.next_stop";
