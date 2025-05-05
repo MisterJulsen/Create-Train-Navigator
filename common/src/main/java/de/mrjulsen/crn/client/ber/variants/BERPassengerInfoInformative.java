@@ -35,8 +35,8 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRenderer<PassengerInformationDetailedSettings> {
 
-    private static final ResourceLocation CARRIAGE_ICON = new ResourceLocation("create:textures/gui/assemble.png");  
-    private static final ResourceLocation ICONS = new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/icons.png");  
+    private static final ResourceLocation CARRIAGE_ICON = ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID,  "textures/gui/assemble.png");
+    private static final ResourceLocation ICONS = ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "textures/gui/icons.png");  
     private static final String keyDate = "gui.createrailwaysnavigator.route_overview.date";
     private static final String keyNextStop = "gui.createrailwaysnavigator.route_overview.next_stop";
     private static final String keyNextConnections = "gui.createrailwaysnavigator.route_overview.next_connections";

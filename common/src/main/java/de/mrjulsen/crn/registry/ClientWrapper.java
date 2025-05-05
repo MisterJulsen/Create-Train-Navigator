@@ -33,7 +33,7 @@ public class ClientWrapper {
 	}
     
 	public static CTSpriteShiftEntry getCT(CTType type, String blockTextureName, String connectedTextureName) {
-		return CTSpriteShifter.getCT(type, new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "block/" + blockTextureName),
-			new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "block/" + connectedTextureName + "_connected"));
+		return CTSpriteShifter.getCT(type, ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "block/" + blockTextureName),
+			ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "block/" + connectedTextureName + "_connected"));
 	}
 }

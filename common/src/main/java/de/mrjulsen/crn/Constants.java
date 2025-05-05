@@ -7,7 +7,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 public class Constants {
-    public static final ResourceLocation GUI_WIDGETS = new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/widgets.png");
+    public static final ResourceLocation GUI_WIDGETS = ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "textures/gui/widgets.png");
     public static final Component ELLIPSIS_STRING = TextUtils.text("...");
     public static final Component TOOLTIP_GO_BACK = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.go_back");
     public static final Component TOOLTIP_GO_TO_TOP = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.go_to_top");

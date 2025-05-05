@@ -39,21 +39,30 @@ configurations {
     }
 }
 
+repositories {
+    maven {
+        name = 'NeoForged'
+        url = 'https://maven.neoforged.net/releases'
+    }
+}
+
 dependencies {
     neoForge "net.neoforged:neoforge:$rootProject.neoforge_version"
 
-    modCompileOnly("dev.architectury:architectury-neoforge:${rootProject.architectury_api_version}")
-    modImplementation(include("de.mrjulsen.mcdragonlib:dragonlib-neoforge:${rootProject.minecraft_version}-${rootProject.dragonlib_version}"))
+    modImplementation "dev.architectury:architectury-neoforge:$rootProject.architectury_api_version"
+    modImplementation(include("de.mrjulsen.mcdragonlib:dragonlib-neoforge:${rootProject.minecraft_version}-2.2.24"))
 
-    modImplementation("com.simibubi.create:create-${rootProject.minecraft_version}:${rootProject.create_neoforge_version}:slim") { transitive = false }
-    modImplementation("net.createmod.ponder:Ponder-NeoForge-${rootProject.minecraft_version}:${rootProject.ponder_neoforge_version}")
-    modCompileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-${rootProject.minecraft_version}:${rootProject.flywheel_neoforge_version}")
-    modRuntimeOnly("dev.engine-room.flywheel:flywheel-neoforge-${rootProject.minecraft_version}:${rootProject.flywheel_neoforge_version}")
-    modImplementation("com.tterrag.registrate:Registrate:${rootProject.registrate_neoforge_version}")
+    implementation("com.simibubi.create:create-${minecraft_version}:${create_neoforge_version}:slim") { transitive = false }
+    implementation("net.createmod.ponder:Ponder-NeoForge-${minecraft_version}:${ponder_neoforge_version}")
+    compileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-${minecraft_version}:${flywheel_neoforge_version}")
+    runtimeOnly("dev.engine-room.flywheel:flywheel-neoforge-${minecraft_version}:${flywheel_neoforge_version}")
+    implementation("com.tterrag.registrate:Registrate:${registrate_neoforge_version}")
+
 
     common(project(path: ':common', configuration: 'namedElements')) { transitive false }
     shadowBundle project(path: ':common', configuration: 'transformProductionNeoForge')
 }
+
 processResources {
     inputs.property 'version', project.version
 

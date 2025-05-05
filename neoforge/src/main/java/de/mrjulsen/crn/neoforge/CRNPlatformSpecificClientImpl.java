@@ -1,0 +1,20 @@
+package de.mrjulsen.crn.neoforge;
+
+import java.util.function.Supplier;
+
+import com.simibubi.create.CreateClient;
+import com.simibubi.create.foundation.block.connected.CTModel;
+import com.simibubi.create.foundation.block.connected.ConnectedTextureBehaviour;
+
+import net.createmod.catnip.registry.RegisteredObjectsHelper;
+import net.minecraft.world.level.block.Block;
+
+public class CRNPlatformSpecificClientImpl {
+    
+    public static void registerCTBehviour(Block entry, Supplier<ConnectedTextureBehaviour> behaviorSupplier) {
+		ConnectedTextureBehaviour behavior = behaviorSupplier.get();
+
+		CreateClient.MODEL_SWAPPER.getCustomBlockModels()
+			.register(RegisteredObjectsHelper.getKeyOrThrow(entry), model -> new CTModel(model, behavior));
+	}
+}

@@ -9,6 +9,7 @@ import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import com.simibubi.create.content.trains.graph.DiscoveredPath;
 import net.createmod.catnip.data.Couple;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
@@ -46,7 +47,7 @@ import net.minecraft.world.level.Level;
 public abstract class NavigationMixin implements INavigationExtension {
 
     public Queue<Pair<IDelayedWaitCondition, DelayedWaitConditionContext>> delayedWaitConditions = new ConcurrentLinkedQueue<>();
-    
+
     public PenaltyResult currentReasons;
     public boolean forward;
     public Map<Boolean, PenaltyResult> finalReasonByDirection;
@@ -57,6 +58,7 @@ public abstract class NavigationMixin implements INavigationExtension {
     public Train train;
 
 
+    @Shadow public abstract double startNavigation(DiscoveredPath pathTo);
 
     @Override
     public void addDelayedWaitCondition(Pair<IDelayedWaitCondition, DelayedWaitConditionContext> pair) {
@@ -67,7 +69,7 @@ public abstract class NavigationMixin implements INavigationExtension {
     public boolean isDelayedWaitConditionPending() {
         return !delayedWaitConditions.isEmpty();
     }
-    
+
     @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lcom/simibubi/create/content/trains/entity/Train;leaveStation()V", shift = Shift.BEFORE), remap = false, cancellable = true)
     public void onTick(Level level, CallbackInfo ci) {
         if (!delayedWaitConditions.isEmpty()) {
@@ -77,7 +79,7 @@ public abstract class NavigationMixin implements INavigationExtension {
             }
             if (p.getFirst().runDelayed(p.getSecond())) {
                 delayedWaitConditions.poll().getSecond().nbt().remove(IDelayedWaitCondition.NBT_DELAY);
-            } else {                
+            } else {
                 p.getSecond().nbt().putInt(IDelayedWaitCondition.NBT_DELAY, p.getSecond().nbt().getInt(IDelayedWaitCondition.NBT_DELAY) + 1);
             }
             ci.cancel();
@@ -88,7 +90,7 @@ public abstract class NavigationMixin implements INavigationExtension {
     public void resetOnCancel(CallbackInfo ci) {
         delayedWaitConditions.clear();
     }
-    
+
     private boolean shouldCheckPenalties = false;
     private boolean isForwardSelected = false;
 
@@ -101,11 +103,15 @@ public abstract class NavigationMixin implements INavigationExtension {
     }
 
     @Inject(method = "findPathTo", remap = false, at = @At(value = "HEAD"))
-    public void onStartNavigationFor(@Coerce Object a, double maxCost, CallbackInfoReturnable<?> cir) {
+    public void onStartNavigation(@Coerce Object a, double maxCost, CallbackInfoReturnable<?> cir) {
+        if (train == null || train.runtime == null || train.runtime.getSchedule() == null) {
+            return;
+        }
+
         if (!(this.shouldCheckPenalties = train.runtime.getSchedule().entries.get(train.runtime.currentEntry).instruction instanceof PrioritizedDestinationInstruction)) {
             return;
         }
-        
+
         if (this.finalReasonByDirection == null) {
             this.finalReasonByDirection = new IdentityHashMap<>(2);
         } else {
@@ -115,52 +121,52 @@ public abstract class NavigationMixin implements INavigationExtension {
         this.finalReasonByDirection.put(false, new PenaltyResult());
         this.currentReasons = null;
     }
-        
+
     @Inject(method = "findPathTo", remap = false, at = @At(value = "TAIL"))
-    public void onEndNavigationFor(@Coerce Object a, double maxCost, CallbackInfoReturnable<?> cir) {
+    public void onEndNavigation(@Coerce Object a, double maxCost, CallbackInfoReturnable<?> cir) {
         this.shouldCheckPenalties = false;
         this.currentReasons = null;
     }
 
     @Inject(method = "search(DDZLjava/util/ArrayList;Lcom/simibubi/create/content/trains/entity/Navigation$StationTest;)V", remap = false, at = @At(value = "HEAD"))
-    public void onStartSearchFab(double maxDistance, double maxCosts, boolean forward, ArrayList<GlobalStation> destinations, StationTest stationTest, CallbackInfo ci) {
+    public void onStartSearch(double maxDistance, double maxCosts, boolean forward, ArrayList<GlobalStation> destinations, StationTest stationTest, CallbackInfo ci) {
         if (!this.shouldCheckPenalties) return;
         this.currentReasons = new PenaltyResult();
         this.forward = forward;
     }
-    
+
     @Redirect(method = "search(DDZLjava/util/ArrayList;Lcom/simibubi/create/content/trains/entity/Navigation$StationTest;)V", remap = false, at = @At(value = "INVOKE", target = "Lcom/simibubi/create/content/trains/entity/Navigation$StationTest;test(DDLjava/util/Map;Lnet/createmod/catnip/data/Pair;Lcom/simibubi/create/content/trains/station/GlobalStation;)Z", remap = false))
-    public boolean onTestStationFab(StationTest test, double distance, double cost, Map<TrackEdge, net.createmod.catnip.data.Pair<Boolean, Couple<TrackNode>>> reachedVia, net.createmod.catnip.data.Pair<Couple<TrackNode>, TrackEdge> current, GlobalStation station) {
-        boolean b = test.test(distance, cost, reachedVia, current, station);        
+    public boolean onTestStation(StationTest test, double distance, double cost, Map<TrackEdge, net.createmod.catnip.data.Pair<Boolean, Couple<TrackNode>>> reachedVia, net.createmod.catnip.data.Pair<Couple<TrackNode>, TrackEdge> current, GlobalStation station) {
+        boolean b = test.test(distance, cost, reachedVia, current, station);
         if (this.shouldCheckPenalties && b) {
-            this.finalReasonByDirection.put(forward, new PenaltyResult(currentReasons));            
+            this.finalReasonByDirection.put(forward, new PenaltyResult(currentReasons));
         }
         return b;
     }
-    
+
     @Redirect(method = "search(DDZLjava/util/ArrayList;Lcom/simibubi/create/content/trains/entity/Navigation$StationTest;)V", remap = false, at = @At(value = "INVOKE", target = "Ljava/util/PriorityQueue;add(Ljava/lang/Object;)Z", remap = false))
-    public boolean onReadFrontierEntryFab(PriorityQueue<Object> queue, @Coerce Object obj) {
+    public boolean onReadFrontierEntry(PriorityQueue<Object> queue, @Coerce Object obj) {
         IFrontierEntry entry = (IFrontierEntry)obj;
         if (this.shouldCheckPenalties) {
-            entry.setPenaltyReasons(new PenaltyResult(currentReasons));            
+            entry.setPenaltyReasons(new PenaltyResult(currentReasons));
         }
         return queue.add(obj);
     }
 
     @Redirect(method = "search(DDZLjava/util/ArrayList;Lcom/simibubi/create/content/trains/entity/Navigation$StationTest;)V", remap = false, at = @At(value = "FIELD", target = "Lcom/simibubi/create/content/trains/entity/Navigation$FrontierEntry;penalty:I", remap = false, opcode = Opcodes.GETFIELD))
-    public int onCreateFrontierEntryFab(@Coerce Object obj) {
-        IFrontierEntry entry = (IFrontierEntry)obj;        
+    public int onCreateFrontierEntry(@Coerce Object obj) {
+        IFrontierEntry entry = (IFrontierEntry)obj;
         if (this.shouldCheckPenalties) {
-            this.currentReasons = new PenaltyResult(entry.getPenaltyReasons());            
+            this.currentReasons = new PenaltyResult(entry.getPenaltyReasons());
         }
         return entry.getPenalty();
     }
 
     @Redirect(method = "search(DDZLjava/util/ArrayList;Lcom/simibubi/create/content/trains/entity/Navigation$StationTest;)V", remap = false, at = @At(value = "INVOKE", target = "Lcom/simibubi/create/content/trains/signal/SignalBoundary;isForcedRed(Lcom/simibubi/create/content/trains/graph/TrackNode;)Z", remap = false))
-    public boolean onForceRedFab(SignalBoundary signal, TrackNode node) {
-        boolean b = signal.isForcedRed(node);        
+    public boolean onForceRed(SignalBoundary signal, TrackNode node) {
+        boolean b = signal.isForcedRed(node);
         if (this.shouldCheckPenalties && b) {
-            this.currentReasons.add(PenaltyResult.Type.REDSTONE_RED_SIGNAL);            
+            this.currentReasons.add(PenaltyResult.Type.REDSTONE_RED_SIGNAL);
         }
         return b;
     }
@@ -181,7 +187,7 @@ public abstract class NavigationMixin implements INavigationExtension {
             )
         )
     )
-    public Object onGetPenaltyByEdgeFab(Map<TrackEdge, Integer> map, Object edge, Object defaultValue) {
+    public Object onGetPenaltyByEdge(Map<TrackEdge, Integer> map, Object edge, Object defaultValue) {
         int val = map.getOrDefault((TrackEdge)edge, (Integer)defaultValue);
         if (this.shouldCheckPenalties && val > 0) {
             PenaltyResult.Type.getTypeByPenalty(PenaltyResult.Category.TRAINS, val).ifPresent(currentReasons::add);
@@ -190,7 +196,7 @@ public abstract class NavigationMixin implements INavigationExtension {
     }
 
     @Redirect(method = "search(DDZLjava/util/ArrayList;Lcom/simibubi/create/content/trains/entity/Navigation$StationTest;)V", remap = false, at = @At(value = "INVOKE", target = "Lcom/simibubi/create/content/trains/signal/SignalEdgeGroup;isOccupiedUnless(Lcom/simibubi/create/content/trains/signal/SignalBoundary;)Z", remap = false))
-    public boolean onCheckOccupiedRedSignalFab(SignalEdgeGroup group, SignalBoundary signal) {
+    public boolean onCheckOccupiedRedSignal(SignalEdgeGroup group, SignalBoundary signal) {
         boolean b = group.isOccupiedUnless(signal);
         if (this.shouldCheckPenalties && b) {
             this.currentReasons.add(PenaltyResult.Type.RED_SIGNAL);
@@ -213,7 +219,7 @@ public abstract class NavigationMixin implements INavigationExtension {
         ),
         locals = LocalCapture.CAPTURE_FAILHARD
     )
-    public void selectDirectionFabric(@Coerce Object a, double maxCost, CallbackInfoReturnable<Object> cir, TrackGraph graph, Couple<Object> results) {
+    public void selectDirection(@Coerce Object a, double maxCost, CallbackInfoReturnable<Object> cir, TrackGraph graph, Couple<Object> results) {
         if (this.shouldCheckPenalties) {
             Object selected = cir.getReturnValue();
             this.isForwardSelected = results.getFirst() == selected;

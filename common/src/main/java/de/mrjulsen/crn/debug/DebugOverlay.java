@@ -1,5 +1,6 @@
 package de.mrjulsen.crn.debug;
 
+import net.minecraft.client.DeltaTracker;
 import org.lwjgl.glfw.GLFW;
 
 import com.simibubi.create.content.trains.entity.Carriage;
@@ -43,7 +44,7 @@ public class DebugOverlay extends DLOverlayScreen {
     int lastKey = -1;
 
     @Override
-    public void render(Graphics graphics, float partialTicks, int screenWidth, int screenHeight) {
+    public void render(Graphics graphics, DeltaTracker deltaTracker, int screenWidth, int screenHeight) {
         graphics.poseStack().pushPose();
         graphics.poseStack().scale(0.75f, 0.75f, 0.75f);
         line = 0;

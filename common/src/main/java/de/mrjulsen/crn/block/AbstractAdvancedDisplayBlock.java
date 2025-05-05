@@ -24,6 +24,7 @@ import de.mrjulsen.crn.registry.ModDisplayTypes;
 import de.mrjulsen.mcdragonlib.core.EAlignment;
 import de.mrjulsen.mcdragonlib.data.Pair;
 import de.mrjulsen.mcdragonlib.data.Tripple;
+import de.mrjulsen.mcdragonlib.net.DLNetworkManager;
 import net.createmod.catnip.data.Iterate;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.core.BlockPos;
@@ -31,17 +32,18 @@ import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.Direction.AxisDirection;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.DyeItem;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.BlockGetter;
@@ -328,59 +330,34 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 		}
 	}
 
-    @Override
-    public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHit) {
-        ItemStack heldItem = pPlayer.getItemInHand(pHand);
-        AdvancedDisplayBlockEntity blockEntity = ((AdvancedDisplayBlockEntity)pLevel.getBlockEntity(pPos)).getController();
-
-		if (heldItem.getItem() instanceof DyeItem dyeItem) {
-			DyeColor dye = dyeItem.getDyeColor();        
-			if (dye != null) {
-				pLevel.playSound(null, pPos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
-				int dyeColor = dye == DyeColor.ORANGE ? 0xFFFF9900 : dye.getTextColor();
-				
-				blockEntity.applyToAll(be -> {
-					be.getSettingsAs(BasicDisplaySettings.class).ifPresent(x -> {
-						if (pPlayer.isShiftKeyDown()) {
-							x.setBackColor(dyeColor);
-						} else {
-							x.setFontColor(dyeColor);
-						}
-						be.notifyUpdate();
-					});
-				});
-
-				if (pLevel.isClientSide) {
-					blockEntity.getRenderer().update(pLevel, pPos, pState, blockEntity, EUpdateReason.LAYOUT_CHANGED);
-				}
-
-				return InteractionResult.SUCCESS;
-			}
-		} else if (heldItem.is(Items.GLOW_INK_SAC)) {
-			pLevel.playSound(null, pPos, SoundEvents.GLOW_INK_SAC_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
+	@Override
+    public ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+		AdvancedDisplayBlockEntity blockEntity = ((AdvancedDisplayBlockEntity)level.getBlockEntity(pos)).getController();
+		if (stack.is(Items.GLOW_INK_SAC)) {
+			level.playSound(null, pos, SoundEvents.GLOW_INK_SAC_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
 			blockEntity.applyToAll(be -> {
-                be.setGlowing(true);
+				be.setGlowing(true);
 				be.notifyUpdate();
-            });
-			
-			if (pLevel.isClientSide) {
-				blockEntity.getRenderer().update(pLevel, pPos, pState, blockEntity, EUpdateReason.LAYOUT_CHANGED);
+			});
+
+			if (level.isClientSide) {
+				blockEntity.getRenderer().update(level, pos, state, blockEntity, EUpdateReason.LAYOUT_CHANGED);
 			}
 
-            return InteractionResult.SUCCESS;
-		} else if (heldItem.getItem() == Items.NAME_TAG && heldItem.hasCustomHoverName() && pLevel.isClientSide) {
+			return ItemInteractionResult.SUCCESS;
+		} else if (stack.getItem() == Items.NAME_TAG && stack.has(DataComponents.CUSTOM_NAME) && level.isClientSide) {
 			AdvancedDisplayBlockEntity controller = blockEntity.getController();
-            if (controller != null) {
-				SimpleStaticTextDisplaySettings settings = new SimpleStaticTextDisplaySettings();				
-				settings.setStaticText(heldItem.getHoverName().getString());	
-				CreateRailwaysNavigator.net().CHANNEL.sendToServer(new AdvancedDisplayUpdatePacket(controller.getLevel(), controller.getBlockPos(), ModDisplayTypes.SIMPLE_TEXT, controller.getBlockState().getValue(AbstractAdvancedSidedDisplayBlock.SIDE) == ESide.BOTH, settings));
-				return InteractionResult.SUCCESS;
-            }
-		} else if (AllBlocks.CLIPBOARD.isIn(heldItem) && pLevel.isClientSide) {
+			if (controller != null) {
+				SimpleStaticTextDisplaySettings settings = new SimpleStaticTextDisplaySettings();
+				settings.setStaticText(Component.Serializer.toJson(stack.get(DataComponents.CUSTOM_NAME), RegistryAccess.EMPTY));
+				DLNetworkManager.sendToServer(new AdvancedDisplayUpdatePacket(controller.getLevel(), controller.getBlockPos(), ModDisplayTypes.SIMPLE_TEXT, controller.getBlockState().getValue(AbstractAdvancedSidedDisplayBlock.SIDE) == ESide.BOTH, settings));
+				return ItemInteractionResult.SUCCESS;
+			}
+		} else if (AllBlocks.CLIPBOARD.isIn(stack) && level.isClientSide) {
 			AdvancedDisplayBlockEntity controller = blockEntity.getController();
-            if (controller != null) {				
-				StaticTextDisplaySettings settings = new StaticTextDisplaySettings();			
-				List<ClipboardEntry> entries = ClipboardEntry.getLastViewedEntries(heldItem);
+			if (controller != null) {
+				StaticTextDisplaySettings settings = new StaticTextDisplaySettings();
+				List<ClipboardEntry> entries = ClipboardEntry.getLastViewedEntries(stack);
 				int line = 0;
 				entryLoop: for (ClipboardEntry entry : entries) {
 					for (String string : entry.text.getString().split("\n")) {
@@ -401,14 +378,14 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 						}
 					}
 				}
-				CreateRailwaysNavigator.net().CHANNEL.sendToServer(new AdvancedDisplayUpdatePacket(controller.getLevel(), controller.getBlockPos(), ModDisplayTypes.RICH_TEXT, controller.getBlockState().getValue(AbstractAdvancedSidedDisplayBlock.SIDE) == ESide.BOTH, settings));
-				return InteractionResult.SUCCESS;
-            }
+				DLNetworkManager.sendToServer(new AdvancedDisplayUpdatePacket(controller.getLevel(), controller.getBlockPos(), ModDisplayTypes.RICH_TEXT, controller.getBlockState().getValue(AbstractAdvancedSidedDisplayBlock.SIDE) == ESide.BOTH, settings));
+				return ItemInteractionResult.SUCCESS;
+			}
 		}
 
-		return InteractionResult.FAIL;
-    }
-	
+		return super.useItemOn(stack, state, level, pos, player, hand, hitResult);
+	}
+
     protected boolean updateNeighbour(BlockState pState, Level pLevel, BlockPos pPos, BlockPos neighbourPos) {
         if (pLevel.getBlockState(neighbourPos).is(this) && pLevel.getBlockEntity(neighbourPos) instanceof AdvancedDisplayBlockEntity otherBe && pLevel.getBlockEntity(pPos) instanceof AdvancedDisplayBlockEntity be) {
 	    	be.copyFrom(otherBe);
@@ -460,4 +437,5 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 	public Collection<Property<?>> getExcludedProperties() {
 		return List.of();
 	}
+
 }

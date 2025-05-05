@@ -3,6 +3,7 @@ package de.mrjulsen.crn.data.train;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.UUID;
 import java.util.Collection;
 import java.util.HashMap;
@@ -34,6 +35,7 @@ import de.mrjulsen.crn.event.events.TrainArrivalAndDepartureEvent;
 import de.mrjulsen.crn.event.events.TrainDestinationChangedEvent;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.world.level.storage.LevelResource;
 
@@ -248,19 +250,19 @@ public final class TrainListener {
         nbt.put(NBT_DEPARTURE_HISTORY, DepartureHistory.toNbt());
     
         try {
-            NbtIo.writeCompressed(nbt, new File(ModCommonEvents.getCurrentServer().get().getWorldPath(new LevelResource("data/" + FILENAME)).toString()));
+            NbtIo.writeCompressed(nbt, ModCommonEvents.getCurrentServer().get().getWorldPath(new LevelResource("data/" + FILENAME)));
             CreateRailwaysNavigator.LOGGER.debug("Saved train listener data.");
         } catch (IOException e) {
             CreateRailwaysNavigator.LOGGER.error("Unable to save train listener data.", e);
         }    
     }
     
-    private static void load() throws IOException {   
-        File settingsFile = new File(ModCommonEvents.getCurrentServer().get().getWorldPath(new LevelResource("data/" + FILENAME)).toString());  
-        if (!settingsFile.exists()) {
+    private static void load() throws IOException {
+        Path path = ModCommonEvents.getCurrentServer().get().getWorldPath(new LevelResource("data/" + FILENAME));
+        if (!path.toFile().exists()) {
             return;
         }  
-        CompoundTag nbt = NbtIo.readCompressed(settingsFile);
+        CompoundTag nbt = NbtIo.readCompressed(path, NbtAccounter.unlimitedHeap());
 
         CompoundTag dataNbt = nbt.getCompound(NBT_TRAIN_DATA);
         for (String key : dataNbt.getAllKeys()) {

@@ -41,17 +41,17 @@ public final class AdvancedDisplaysRegistry {
         }
 
         public ResourceLocation getLocation() {
-            return new ResourceLocation(CreateRailwaysNavigator.MOD_ID, category().getInfoTypeName() + "/" + name());
+            return ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, category().getInfoTypeName() + "/" + name());
         }
 
         @Deprecated
         public static DisplayTypeResourceKey legacy_fromNbt(CompoundTag nbt) {
-            return new DisplayTypeResourceKey(EDisplayType.getTypeById(nbt.getByte(LEGACY_NBT_CATEGORY)), new ResourceLocation(nbt.getString(LEGACY_NBT_ID)).getPath());
+            return new DisplayTypeResourceKey(EDisplayType.getTypeById(nbt.getByte(LEGACY_NBT_CATEGORY)), ResourceLocation.parse(nbt.getString(LEGACY_NBT_ID)).getPath());
         }
         
         public static DisplayTypeResourceKey fromNbt(CompoundTag nbt) {
             String id = nbt.getString(NBT_ID);
-            String[] data = new ResourceLocation(id).getPath().split("/");
+            String[] data = ResourceLocation.parse(id).getPath().split("/");
             return new DisplayTypeResourceKey(data.length > 0 ? EDisplayType.getTypeByName(data[0]) : ModDisplayTypes.TRAIN_DESTINATION_SIMPLE.category(), data.length > 1 ? data[1] : ModDisplayTypes.TRAIN_DESTINATION_SIMPLE.name());
         }
 

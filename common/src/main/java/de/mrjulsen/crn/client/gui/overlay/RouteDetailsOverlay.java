@@ -35,6 +35,7 @@ import de.mrjulsen.mcdragonlib.util.TimeUtils;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.gui.UIRenderHelper;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.Screen;
@@ -44,7 +45,7 @@ import net.minecraft.world.level.Level;
 
 public class RouteDetailsOverlay extends DLOverlayScreen {
 
-    private static final ResourceLocation GUI = new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/overview.png");
+    private static final ResourceLocation GUI = ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "textures/gui/overview.png");
     private static final Component title = TextUtils.translate("gui.createrailwaysnavigator.route_overview.title");
     private static final int GUI_WIDTH = 226;
     private static final int GUI_HEIGHT = 118;
@@ -233,11 +234,13 @@ public class RouteDetailsOverlay extends DLOverlayScreen {
     //#endregion
 
     //#region RENDERING
+
+
     @Override
-    public void render(Graphics graphics, float partialTicks, int width, int height) {
+    public void render(Graphics graphics, DeltaTracker deltaTracker, int width, int height) {
         width = Minecraft.getInstance().getWindow().getGuiScaledWidth();
         height = Minecraft.getInstance().getWindow().getGuiScaledHeight();
-        partialTicks = Minecraft.getInstance().getFrameTime();
+        float partialTicks = Minecraft.getInstance().getTimer().getGameTimeDeltaTicks();
         OverlayPosition pos = ModClientConfig.ROUTE_OVERLAY_POSITION.get();
         final int x = pos == OverlayPosition.TOP_LEFT || pos == OverlayPosition.BOTTOM_LEFT ? 8 : (int)(width - GUI_WIDTH * getUIScale() - 10);
         final int y = pos == OverlayPosition.TOP_LEFT || pos == OverlayPosition.TOP_RIGHT ? 8 : (int)(height - GUI_HEIGHT * getUIScale() - 10);
@@ -250,7 +253,7 @@ public class RouteDetailsOverlay extends DLOverlayScreen {
         renderInternal(graphics, 0, 0, width, height, partialTicks, (int)xPos.getValue(partialTicks), (int)yPos.getValue(partialTicks));
         graphics.poseStack().popPose();
 
-        tickSlidingText(2 * Minecraft.getInstance().getDeltaFrameTime());
+        tickSlidingText(2 * Minecraft.getInstance().getTimer().getGameTimeDeltaTicks());
     }
 
     public void renderSlidingText(Graphics graphics, int x, int y, int transX, int transY) {

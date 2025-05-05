@@ -48,6 +48,7 @@ import dev.architectury.utils.Env;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -537,99 +538,98 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
                 getRenderer().update(level, pos, state, this, shouldUpdate ? EUpdateReason.LAYOUT_CHANGED : EUpdateReason.DATA_CHANGED);
             });
         }
-    }    
+    }
 
     @Override
-    protected void write(CompoundTag pTag, boolean clientPacket) {
-        super.write(pTag, clientPacket);
-        pTag.putByte(NBT_XSIZE, getXSize());
-        pTag.putByte(NBT_YSIZE, getYSize());
-        pTag.putBoolean(NBT_CONTROLLER, isController());
-        pTag.putString(NBT_FILTER, getStationNameFilter());
-        pTag.putBoolean(NBT_GLOWING, isGlowing());
-        pTag.putLong(NBT_LAST_REFRESH_TIME, getLastRefreshedTime());
+    protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+        super.write(tag, registries, clientPacket);
+        tag.putByte(NBT_XSIZE, getXSize());
+        tag.putByte(NBT_YSIZE, getYSize());
+        tag.putBoolean(NBT_CONTROLLER, isController());
+        tag.putString(NBT_FILTER, getStationNameFilter());
+        tag.putBoolean(NBT_GLOWING, isGlowing());
+        tag.putLong(NBT_LAST_REFRESH_TIME, getLastRefreshedTime());
 
-        displayTypeId.toNbt(pTag);
-        pTag.put(NBT_DISPLAY_TYPE_SETTINGS, displayTypeSettings.serializeNbt());
+        displayTypeId.toNbt(tag);
+        tag.put(NBT_DISPLAY_TYPE_SETTINGS, displayTypeSettings.serializeNbt());
 
-        getStationInfo().writeNbt(pTag);
+        getStationInfo().writeNbt(tag);
 
         if (getStops() != null && !getStops().isEmpty()) {            
             ListTag list = new ListTag();
             for (StationDisplayData data : getStops()) {
                 list.add(data.toNbt());
             }
-            pTag.put(NBT_TRAIN_STOPS, list);
+            tag.put(NBT_TRAIN_STOPS, list);
         }
     }
 
-    @SuppressWarnings("deprecation")
     @Override
-    public void read(CompoundTag pTag, boolean clientPacket) {
+    protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         boolean updateClient = false;
         IDisplaySettings oldDisplayTypeSettings = displayTypeSettings;
-        StationInfo info = StationInfo.fromNbt(pTag);
+        StationInfo info = StationInfo.fromNbt(tag);
         if (level != null && getBlockState() != null && level.isClientSide) {
             if (
-                isController() != pTag.getBoolean(NBT_CONTROLLER) ||
-                getXSize() != pTag.getByte(NBT_XSIZE) ||
-                getYSize() != pTag.getByte(NBT_YSIZE) ||
+                isController() != tag.getBoolean(NBT_CONTROLLER) ||
+                getXSize() != tag.getByte(NBT_XSIZE) ||
+                getYSize() != tag.getByte(NBT_YSIZE) ||
                 !getStationInfo().equals(info) ||
-                (getStops().isEmpty() ^ !pTag.contains(NBT_TRAIN_STOPS))
+                (getStops().isEmpty() ^ !tag.contains(NBT_TRAIN_STOPS))
             ) {
                 updateClient = true;
             }
         }
 
-        super.read(pTag, clientPacket);
+        super.read(tag, registries, clientPacket);
 
 
-        xSize = pTag.getByte(NBT_XSIZE);
-        ySize = pTag.getByte(NBT_YSIZE);
-        glowing = pTag.getBoolean(NBT_GLOWING);
-        isController = pTag.getBoolean(NBT_CONTROLLER);
+        xSize = tag.getByte(NBT_XSIZE);
+        ySize = tag.getByte(NBT_YSIZE);
+        glowing = tag.getBoolean(NBT_GLOWING);
+        isController = tag.getBoolean(NBT_CONTROLLER);
 
         Class<? extends IDisplaySettings> oldDisplaySettings = displayTypeSettings.getClass();
         DisplayTypeResourceKey oldDisplayType = displayTypeId;
         
         // ### Convert deprecated data
-        if (pTag.contains(LEGACY_NBT_INFO_TYPE) && pTag.contains(LEGACY_NBT_DISPLAY_TYPE)) {
-            displayTypeId = ModDisplayTypes.legacy_getKeyForType(EDisplayType.getTypeById(pTag.getInt(LEGACY_NBT_DISPLAY_TYPE)), EDisplayInfo.getTypeById(pTag.getInt(LEGACY_NBT_INFO_TYPE)));
+        if (tag.contains(LEGACY_NBT_INFO_TYPE) && tag.contains(LEGACY_NBT_DISPLAY_TYPE)) {
+            displayTypeId = ModDisplayTypes.legacy_getKeyForType(EDisplayType.getTypeById(tag.getInt(LEGACY_NBT_DISPLAY_TYPE)), EDisplayInfo.getTypeById(tag.getInt(LEGACY_NBT_INFO_TYPE)));
             displayTypeSettings = AdvancedDisplaysRegistry.createSettings(displayTypeId);
-        } else if (pTag.contains(LEGACY_NBT_DISPLAY_TYPE_KEY)) {
-            displayTypeId = DisplayTypeResourceKey.legacy_fromNbt(pTag.getCompound(LEGACY_NBT_DISPLAY_TYPE_KEY));
+        } else if (tag.contains(LEGACY_NBT_DISPLAY_TYPE_KEY)) {
+            displayTypeId = DisplayTypeResourceKey.legacy_fromNbt(tag.getCompound(LEGACY_NBT_DISPLAY_TYPE_KEY));
             displayTypeSettings = AdvancedDisplaysRegistry.createSettings(displayTypeId);
         } else {
-            displayTypeId = DisplayTypeResourceKey.fromNbt(pTag);
+            displayTypeId = DisplayTypeResourceKey.fromNbt(tag);
             displayTypeSettings = AdvancedDisplaysRegistry.createSettings(displayTypeId);
-            displayTypeSettings.deserializeNbt(pTag.getCompound(NBT_DISPLAY_TYPE_SETTINGS));
+            displayTypeSettings.deserializeNbt(tag.getCompound(NBT_DISPLAY_TYPE_SETTINGS));
         }
 
         if (level != null && level.isClientSide) {
             updateClient = updateClient || !oldDisplayTypeSettings.getClass().equals(displayTypeSettings.getClass());
         }
         
-        if (pTag.contains(LEGACY_NBT_COLOR)) {
-            getSettingsAs(BasicDisplaySettings.class).ifPresent(x -> x.setFontColor(pTag.getInt(LEGACY_NBT_COLOR)));
+        if (tag.contains(LEGACY_NBT_COLOR)) {
+            getSettingsAs(BasicDisplaySettings.class).ifPresent(x -> x.setFontColor(tag.getInt(LEGACY_NBT_COLOR)));
         }
         if (displayTypeId.category().getSource() == EDisplayTypeDataSource.PLATFORM) {            
-            if (pTag.contains(LEGACY_NBT_PLATFORM_WIDTH)) {
-                getSettingsAs(IPlatformWidthSetting.class).ifPresent(x -> x.setPlatformWidth(pTag.getByte(LEGACY_NBT_PLATFORM_WIDTH)));
+            if (tag.contains(LEGACY_NBT_PLATFORM_WIDTH)) {
+                getSettingsAs(IPlatformWidthSetting.class).ifPresent(x -> x.setPlatformWidth(tag.getByte(LEGACY_NBT_PLATFORM_WIDTH)));
             }
-            if (pTag.contains(LEGACY_NBT_TRAIN_NAME_WIDTH)) {
-                getSettingsAs(ITrainNameWidthSetting.class).ifPresent(x -> x.setTrainNameWidth(pTag.getByte(LEGACY_NBT_TRAIN_NAME_WIDTH)));
+            if (tag.contains(LEGACY_NBT_TRAIN_NAME_WIDTH)) {
+                getSettingsAs(ITrainNameWidthSetting.class).ifPresent(x -> x.setTrainNameWidth(tag.getByte(LEGACY_NBT_TRAIN_NAME_WIDTH)));
             }
-            if (pTag.contains(LEGACY_NBT_TIME_DISPLAY)) {
-                getSettingsAs(ITimeDisplaySetting.class).ifPresent(x -> x.setTimeDisplay(ETimeDisplay.getById(pTag.getByte(LEGACY_NBT_TIME_DISPLAY))));
+            if (tag.contains(LEGACY_NBT_TIME_DISPLAY)) {
+                getSettingsAs(ITimeDisplaySetting.class).ifPresent(x -> x.setTimeDisplay(ETimeDisplay.getById(tag.getByte(LEGACY_NBT_TIME_DISPLAY))));
             }
         }
         // ###
 
         setData(
-            pTag.contains(NBT_TRAIN_STOPS) ? new ArrayList<>(pTag.getList(NBT_TRAIN_STOPS, Tag.TAG_COMPOUND).stream().map(x -> StationDisplayData.fromNbt((CompoundTag)x)).toList()) : new ArrayList<>(),
-            pTag.getString(NBT_FILTER),
+            tag.contains(NBT_TRAIN_STOPS) ? new ArrayList<>(tag.getList(NBT_TRAIN_STOPS, Tag.TAG_COMPOUND).stream().map(x -> StationDisplayData.fromNbt((CompoundTag)x)).toList()) : new ArrayList<>(),
+            tag.getString(NBT_FILTER),
             info,
-            pTag.getLong(NBT_LAST_REFRESH_TIME)
+            tag.getLong(NBT_LAST_REFRESH_TIME)
         );
 
         if (level != null && getBlockState() != null && level.isClientSide && (!oldDisplaySettings.isInstance(displayTypeSettings) || !oldDisplayType.equals(displayTypeId))) {
@@ -687,13 +687,14 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     }
 
     @Override
-    public CompoundTag getUpdateTag() {
-        return this.saveWithFullMetadata();
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        return this.saveWithFullMetadata(registries);
     }
 
     @Override
-    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
-        this.load(pkt.getTag());
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider registries) {
+        super.onDataPacket(net, pkt, registries);
+        this.loadAdditional(pkt.getTag(), registries);
         this.level.sendBlockUpdated(this.worldPosition, this.getBlockState(), this.getBlockState(), 512);
     }
 

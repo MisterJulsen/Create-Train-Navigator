@@ -357,7 +357,7 @@ public class ClientRoutePart extends RoutePart implements ITrainListenerClient<C
             return createClient(
                 nbt.getUUID(NBT_SESSION_ID),
                 nbt.getAllKeys().stream().filter(x -> { try { Integer.parseInt(x); return true; } catch (Exception e) { return false; } }).collect(Collectors.toMap(x -> Integer.parseInt(x), x -> TrainStopRealTimeData.fromNbt(nbt.getCompound(x)))),
-                nbt.getList(NBT_STATUS_INFOS, Tag.TAG_STRING).stream().map(x -> CompiledTrainStatus.load(new ResourceLocation(((StringTag)x).getAsString()))).collect(Collectors.toSet()),
+                nbt.getList(NBT_STATUS_INFOS, Tag.TAG_STRING).stream().map(x -> CompiledTrainStatus.load(ResourceLocation.parse(((StringTag)x).getAsString()))).collect(Collectors.toSet()),
                 nbt.getBoolean(NBT_CANCELLED)
             );
         }

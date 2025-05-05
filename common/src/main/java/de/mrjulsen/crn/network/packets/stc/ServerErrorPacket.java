@@ -3,13 +3,13 @@ package de.mrjulsen.crn.network.packets.stc;
 import java.util.function.Supplier;
 
 import de.mrjulsen.crn.client.ClientWrapper;
-import de.mrjulsen.mcdragonlib.net.IPacketBase;
+import de.mrjulsen.mcdragonlib.net.BaseNetworkPacket;
 import dev.architectury.networking.NetworkManager.PacketContext;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 
-public class ServerErrorPacket implements IPacketBase<ServerErrorPacket> {
+public class ServerErrorPacket extends BaseNetworkPacket<ServerErrorPacket> {
     public String message;
     
     public ServerErrorPacket() { }
@@ -19,12 +19,12 @@ public class ServerErrorPacket implements IPacketBase<ServerErrorPacket> {
     }
 
     @Override
-    public void encode(ServerErrorPacket packet, FriendlyByteBuf buffer) {
+    public void encode(ServerErrorPacket packet, RegistryFriendlyByteBuf buffer) {
         buffer.writeUtf(packet.message);
     }
 
     @Override
-    public ServerErrorPacket decode(FriendlyByteBuf buffer) {        
+    public ServerErrorPacket decode(RegistryFriendlyByteBuf buffer) {
         return new ServerErrorPacket(buffer.readUtf());
     }
 

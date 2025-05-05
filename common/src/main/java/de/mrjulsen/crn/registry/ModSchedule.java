@@ -27,11 +27,11 @@ public class ModSchedule {
     }
 
     private static void registerInstruction(String name, Supplier<? extends ScheduleInstruction> factory) {
-        Schedule.INSTRUCTION_TYPES.add(Pair.of(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, name), factory));
+        Schedule.INSTRUCTION_TYPES.add(Pair.of(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, name), factory));
     }    
 
     private static void registerCondition(String name, Supplier<? extends ScheduleWaitCondition> factory) {
-        Schedule.CONDITION_TYPES.add(Pair.of(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, name), factory));
+        Schedule.CONDITION_TYPES.add(Pair.of(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, name), factory));
     }
 
     public static void init() {}

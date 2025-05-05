@@ -39,7 +39,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RoutePartTrainDetailsWidget extends DLWidgetContainer implements Closeable {
 
-    protected static final ResourceLocation GUI = new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/widgets.png");
+    protected static final ResourceLocation GUI = ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "textures/gui/widgets.png");
     protected static final int GUI_TEXTURE_WIDTH = 256;
     protected static final int GUI_TEXTURE_HEIGHT = 256;
     protected static final int ENTRY_WIDTH = 225;

@@ -45,7 +45,7 @@ import net.minecraft.world.item.ItemStack;
 
 public class TrainSectionSettingsScreen extends DLScreen {
 
-    private static final ResourceLocation TEXTURE = new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/section_settings.png");
+    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "textures/gui/section_settings.png");
     private static final int GUI_WIDTH = 212;
     private static final int GUI_HEIGHT = 143;
     private static final int DEFAULT_ICON_BUTTON_WIDTH = 18;
@@ -208,7 +208,7 @@ public class TrainSectionSettingsScreen extends DLScreen {
 
     @Override
     public void renderMainLayer(Graphics graphics, int mouseX, int mouseY, float partialTicks) {
-        renderScreenBackground(graphics);
+        renderBlurredBackground(partialTicks);
         GuiUtils.drawTexture(TEXTURE, graphics, guiLeft, guiTop, GUI_WIDTH, GUI_HEIGHT, 0, 0, 256, 256);
         GuiUtils.drawString(graphics, font, guiLeft + 6, guiTop + 4, getTitle(), DragonLib.NATIVE_UI_FONT_COLOR, EAlignment.LEFT, false);
 

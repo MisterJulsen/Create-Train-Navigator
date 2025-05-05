@@ -1,25 +1,25 @@
 package de.mrjulsen.crn.config;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class ModCommonConfig {
-    public static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
-    public static final ForgeConfigSpec SPEC;
+    public static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
+    public static final ModConfigSpec SPEC;
 
-    public static final ForgeConfigSpec.ConfigValue<Integer> GLOBAL_SETTINGS_PERMISSION_LEVEL;
-    public static final ForgeConfigSpec.ConfigValue<Integer> GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL;
-    public static final ForgeConfigSpec.ConfigValue<Integer> TOTAL_DURATION_BUFFER_SIZE;
-    public static final ForgeConfigSpec.ConfigValue<Integer> SCHEDULE_DEVIATION_THRESHOLD;
-    public static final ForgeConfigSpec.ConfigValue<Integer> AUTO_RESET_TIMINGS;
-    public static final ForgeConfigSpec.ConfigValue<Integer> TRANSFER_COST;
-    public static final ForgeConfigSpec.ConfigValue<Integer> TOTAL_DURATION_DEVIATION_THRESHOLD;
-    public static final ForgeConfigSpec.ConfigValue<Boolean> CUSTOM_TRANSIT_TIME_CALCULATION;
-    public static final ForgeConfigSpec.ConfigValue<Boolean> USE_CREATE_TRANSIT_TIMES_ON_INIT;
-    public static final ForgeConfigSpec.ConfigValue<Boolean> EXCLUDE_TRAINS;
-    public static final ForgeConfigSpec.ConfigValue<Boolean> ADVANCED_LOGGING;
+    public static final ModConfigSpec.ConfigValue<Integer> GLOBAL_SETTINGS_PERMISSION_LEVEL;
+    public static final ModConfigSpec.ConfigValue<Integer> GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL;
+    public static final ModConfigSpec.ConfigValue<Integer> TOTAL_DURATION_BUFFER_SIZE;
+    public static final ModConfigSpec.ConfigValue<Integer> SCHEDULE_DEVIATION_THRESHOLD;
+    public static final ModConfigSpec.ConfigValue<Integer> AUTO_RESET_TIMINGS;
+    public static final ModConfigSpec.ConfigValue<Integer> TRANSFER_COST;
+    public static final ModConfigSpec.ConfigValue<Integer> TOTAL_DURATION_DEVIATION_THRESHOLD;
+    public static final ModConfigSpec.ConfigValue<Boolean> CUSTOM_TRANSIT_TIME_CALCULATION;
+    public static final ModConfigSpec.ConfigValue<Boolean> USE_CREATE_TRANSIT_TIMES_ON_INIT;
+    public static final ModConfigSpec.ConfigValue<Boolean> EXCLUDE_TRAINS;
+    public static final ModConfigSpec.ConfigValue<Boolean> ADVANCED_LOGGING;
 
-    public static final ForgeConfigSpec.ConfigValue<Boolean> EXPERIMENT_SIMULATION_ALGORITHM;
+    public static final ModConfigSpec.ConfigValue<Boolean> EXPERIMENT_SIMULATION_ALGORITHM;
 
     static {
         BUILDER.push(CreateRailwaysNavigator.MOD_ID + "_common_config");

@@ -14,12 +14,14 @@ import de.mrjulsen.crn.event.ModCommonEvents;
 import de.mrjulsen.crn.network.packets.cts.AdvancedDisplayUpdatePacket;
 import de.mrjulsen.crn.network.packets.stc.ServerErrorPacket;
 import de.mrjulsen.crn.registry.*;
-import de.mrjulsen.mcdragonlib.net.NetworkManagerBase;
+import de.mrjulsen.mcdragonlib.net.DLNetworkManager;
+import de.mrjulsen.mcdragonlib.util.TextUtils;
 import dev.architectury.platform.Platform;
 import dev.architectury.utils.Env;
 import net.createmod.catnip.lang.FontHelper;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 
 import java.util.List;
@@ -41,7 +43,10 @@ public final class CreateRailwaysNavigator {
 		REGISTRATE.setTooltipModifierFactory(item -> {
 			return new ItemDescription.Modifier(item, FontHelper.Palette.STANDARD_CREATE)
 				.andThen(TooltipModifier.mapNull(KineticStats.create(item)));
-		});
+		}).defaultCreativeTab(MOD_ID, builder -> builder
+            .title(TextUtils.text("Create Railways Navigator"))
+            .icon(() -> new ItemStack(ModItems.NAVIGATOR.get()))
+        ).build();
 	}
 
     public static KineticStats create(Item item) {
@@ -54,9 +59,6 @@ public final class CreateRailwaysNavigator {
         return null;
     }
 
-    private static NetworkManagerBase crnNet;
-
-    
 
     public static void load() {}
 
@@ -70,13 +72,11 @@ public final class CreateRailwaysNavigator {
         ModAccessorTypes.init();
         ModTrainStatusInfos.init();
         ModDisplayTypes.init();
-        ModCreativeModeTab.setup();
-        
-        crnNet = new NetworkManagerBase(MOD_ID, "crn_network", List.of(
-            // cts
-            AdvancedDisplayUpdatePacket.class,
+        ModDataComponents.init();
 
-            // stc
+        DLNetworkManager.registerPackets(MOD_ID, List.of(
+            AdvancedDisplayUpdatePacket.class
+        ), List.of(
             ServerErrorPacket.class
         ));
         
@@ -90,10 +90,6 @@ public final class CreateRailwaysNavigator {
         CRNEventsManager.getEvent(CRNClientEventsRegistryEvent.class).register(MOD_ID, () -> {
         });
 
-    }
-
-    public static NetworkManagerBase net() {
-        return crnNet;
     }
 
     public static boolean isDebug() {

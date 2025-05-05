@@ -4,7 +4,7 @@ run/
 *.iws
 out/
 *.iml
-.gradle/
+../CRN 1.21.1/.gradle/
 .vscode/
 output/
 bin/

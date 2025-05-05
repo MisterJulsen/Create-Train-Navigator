@@ -34,7 +34,7 @@ public class ResetTimingsInstruction extends ScheduleInstruction implements ISta
 
     @Override
     public ResourceLocation getId() {
-        return new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "reset_timings");
+        return ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "reset_timings");
     }
 
     @Override

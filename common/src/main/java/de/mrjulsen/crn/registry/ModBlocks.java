@@ -2,6 +2,7 @@ package de.mrjulsen.crn.registry;
 
 import java.util.function.Supplier;
 
+import com.simibubi.create.AllCreativeModeTabs;
 import com.simibubi.create.foundation.block.connected.ConnectedTextureBehaviour;
 import com.simibubi.create.foundation.data.SharedProperties;
 import com.simibubi.create.foundation.data.TagGen;
@@ -29,6 +30,7 @@ import static com.simibubi.create.api.behaviour.display.DisplayTarget.displayTar
 
 public class ModBlocks {	
 
+
 	public static final BlockEntry<AdvancedDisplayBlock> ADVANCED_DISPLAY_BLOCK = CreateRailwaysNavigator.REGISTRATE.block("advanced_display_block", AdvancedDisplayBlock::new)
 		.onRegister(connectedTextures(() -> new AdvancedDisplayCTBehaviour(ClientWrapper.CT_ADVANCED_DISPLAY_ALL)))
 		.onRegister(connectedTextures(() -> new AdvancedDisplayCTBehaviour(ClientWrapper.CT_ADVANCED_DISPLAY_ALL_BORDER)))
@@ -38,7 +40,6 @@ public class ModBlocks {
 		.transform(TagGen.pickaxeOnly())
 		.transform(displayTarget(ModExtras.ADVANCED_DISPLAY_BOARD_TARGET))
 		.item()
-		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
 		.register();
 	public static final BlockEntry<AdvancedDisplaySlabBlock> ADVANCED_DISPLAY_SLAB = CreateRailwaysNavigator.REGISTRATE.block("advanced_display_slab", AdvancedDisplaySlabBlock::new)
@@ -50,7 +51,6 @@ public class ModBlocks {
 		.transform(TagGen.pickaxeOnly())
 		.transform(displayTarget(ModExtras.ADVANCED_DISPLAY_BOARD_TARGET))
 		.item()
-		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
 		.register();
 
@@ -63,7 +63,6 @@ public class ModBlocks {
 		.transform(TagGen.pickaxeOnly())
 		.transform(displayTarget(ModExtras.ADVANCED_DISPLAY_BOARD_TARGET))
 		.item()
-		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
 		.register();
 
@@ -76,7 +75,6 @@ public class ModBlocks {
 		.transform(TagGen.pickaxeOnly())
 		.transform(displayTarget(ModExtras.ADVANCED_DISPLAY_BOARD_TARGET))
 		.item()
-		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
 		.register();
 
@@ -89,7 +87,6 @@ public class ModBlocks {
 		.transform(TagGen.pickaxeOnly())
 		.transform(displayTarget(ModExtras.ADVANCED_DISPLAY_BOARD_TARGET))
 		.item()
-		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
 		.register();
 
@@ -102,7 +99,6 @@ public class ModBlocks {
 		.transform(TagGen.pickaxeOnly())
 		.transform(displayTarget(ModExtras.ADVANCED_DISPLAY_BOARD_TARGET))
 		.item()
-		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
 		.register();
 
@@ -115,7 +111,6 @@ public class ModBlocks {
 		.transform(TagGen.pickaxeOnly())
 		.transform(displayTarget(ModExtras.ADVANCED_DISPLAY_BOARD_TARGET))
 		.item()
-		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
 		.register();	
 	
@@ -124,7 +119,6 @@ public class ModBlocks {
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
 		.item()
-		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
 		.register();
 

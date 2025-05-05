@@ -324,13 +324,13 @@ public class StationTagSettingsScreen extends AbstractNavigatorScreen {
             graphics.poseStack().popPose();
         });
     }
-    
+
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
-        if (destinationSuggestions != null && destinationSuggestions.mouseScrolled(mouseX + viewer.getXScrollOffset(), mouseY + viewer.getYScrollOffset(), MathUtils.clamp(delta, -1.0D, 1.0D)))
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        if (destinationSuggestions != null && destinationSuggestions.mouseScrolled(mouseX + viewer.getXScrollOffset(), mouseY + viewer.getYScrollOffset(), MathUtils.clamp(scrollY, -1.0D, 1.0D)))
 			return true;
 
-        return super.mouseScrolled(mouseX, mouseY, delta);
+        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
     }
 
     @Override

@@ -88,7 +88,7 @@ public enum ModGuiIcons {
     private int v;
 
     public static final int ICON_SIZE = 16;
-    public static final ResourceLocation ICON_LOCATION = new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/icons.png");
+    public static final ResourceLocation ICON_LOCATION = ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "textures/gui/icons.png");
 
     ModGuiIcons(String id, int u, int v) {
         this.id = id;

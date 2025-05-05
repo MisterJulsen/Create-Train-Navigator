@@ -148,8 +148,8 @@ public class BasicTrainDisplayData {
             nbt.getUUID(NBT_ID),
             nbt.getString(NBT_NAME),
             nbt.getInt(NBT_COLOR),
-            TrainIconType.byId(new ResourceLocation(nbt.getString(NBT_ICON))),
-            nbt.getList(NBT_STATUS, Tag.TAG_STRING).stream().map(x -> new ResourceLocation(((StringTag)x).getAsString())).toList(),
+            TrainIconType.byId(ResourceLocation.parse(nbt.getString(NBT_ICON))),
+            nbt.getList(NBT_STATUS, Tag.TAG_STRING).stream().map(x -> ResourceLocation.parse(((StringTag)x).getAsString())).toList(),
             nbt.getBoolean(NBT_CANCELLED)
         );
     }

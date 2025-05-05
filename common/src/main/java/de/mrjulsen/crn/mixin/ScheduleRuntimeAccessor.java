@@ -33,13 +33,4 @@ public interface ScheduleRuntimeAccessor {
     
 	@Accessor("predictionTicks")
 	List<Integer> crn$predictionTicks();
-
-    @Accessor("cooldown")
-    int crn$getCooldown();
-
-    @Accessor("cooldown")
-    void crn$setCooldown(int i);
-
-    @Accessor("INTERVAL")
-    int crn$getInterval();
 }

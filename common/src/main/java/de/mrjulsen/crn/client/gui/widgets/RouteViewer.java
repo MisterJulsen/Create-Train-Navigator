@@ -201,7 +201,7 @@ public class RouteViewer extends DLScrollableWidgetContainer implements Closeabl
         graphics.poseStack().pushPose();
         graphics.poseStack().translate(renderOffsetX, 0, 0);
         
-        partialTicks = Minecraft.getInstance().getFrameTime();
+        partialTicks = Minecraft.getInstance().getTimer().getGameTimeDeltaTicks();
         angle += 6 * partialTicks;
         if (angle > 360) {
             angle = 0;

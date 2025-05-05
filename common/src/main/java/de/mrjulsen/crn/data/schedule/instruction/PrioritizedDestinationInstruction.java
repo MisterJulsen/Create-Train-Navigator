@@ -1,5 +1,6 @@
 package de.mrjulsen.crn.data.schedule.instruction;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -25,6 +26,7 @@ import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.createmod.catnip.data.Pair;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -48,11 +50,11 @@ public class PrioritizedDestinationInstruction extends DestinationInstruction {
 	@Override
 	public Pair<ItemStack, Component> getSummary() {
 		return Pair.of(AllBlocks.TRACK_STATION.asStack(), TextUtils.text(getLabelText()));
-	}	
+	}
 
 	@Override
-	protected void readAdditional(CompoundTag tag) {
-		super.readAdditional(tag);
+	protected void readAdditional(HolderLookup.Provider registries, CompoundTag tag) {
+		super.readAdditional(registries, tag);
         if (!tag.contains(NBT_AVOID_RED_SIGNAL)) tag.putBoolean(NBT_AVOID_RED_SIGNAL, true);
         if (!tag.contains(NBT_AVOID_TRAINS)) tag.putBoolean(NBT_AVOID_TRAINS, true);
 	}
@@ -95,7 +97,7 @@ public class PrioritizedDestinationInstruction extends DestinationInstruction {
 
 	@Override
 	public ResourceLocation getId() {
-		return new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "prioritized_destination_instruction");
+		return ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "prioritized_destination_instruction");
 	}
 
 	@Override
@@ -138,8 +140,7 @@ public class PrioritizedDestinationInstruction extends DestinationInstruction {
 
 	@Override
 	public @Nullable DiscoveredPath start(ScheduleRuntime runtime, Level level) {
-		ScheduleRuntimeAccessor accessor = (ScheduleRuntimeAccessor) runtime;
-		Train train = accessor.crn$getTrain();
+		Train train = runtime.train;
 		List<String> filters = getFilters();
 		List<Pattern> patterns = filters.stream()
 				.map(Pattern::compile)
@@ -157,7 +158,7 @@ public class PrioritizedDestinationInstruction extends DestinationInstruction {
 
 		if (!train.hasForwardConductor() && !train.hasBackwardConductor()) {
 			train.status.missingConductor();
-			accessor.crn$setCooldown(accessor.crn$getInterval());
+			runtime.startCooldown();
 			return null;
 		}
 
@@ -166,7 +167,6 @@ public class PrioritizedDestinationInstruction extends DestinationInstruction {
 			GlobalStation bestStation = null;
 			DiscoveredPath bestPath = null;
 			double bestCost = Double.MAX_VALUE;
-
 			for (GlobalStation globalStation : train.graph.getPoints(EdgePointType.STATION)) {
 				if (!regex.matcher(globalStation.name).matches()) {
 					continue;
@@ -224,7 +224,7 @@ public class PrioritizedDestinationInstruction extends DestinationInstruction {
 			} else {
 				train.status.failedNavigationNoTarget(String.join(", ", filters));
 			}
-			accessor.crn$setCooldown(accessor.crn$getInterval());
+			runtime.startCooldown();
 			return null;
 		}
 

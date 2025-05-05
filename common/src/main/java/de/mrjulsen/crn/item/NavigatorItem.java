@@ -16,8 +16,6 @@ import net.minecraft.world.level.Level;
 
 public class NavigatorItem extends Item implements ICustomItemRenderer {
 
-    public static final String NBT_BACKGROUND_ID = "BackgroundId";
-
     public NavigatorItem(Properties props) {
         super(props);
     }

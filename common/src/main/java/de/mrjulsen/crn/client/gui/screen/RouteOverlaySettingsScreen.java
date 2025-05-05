@@ -43,7 +43,7 @@ import net.minecraft.world.item.ItemStack;
 
 public class RouteOverlaySettingsScreen extends DLScreen {
 
-    private static final ResourceLocation GUI = new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/route_overlay_settings.png");
+    private static final ResourceLocation GUI = ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "textures/gui/route_overlay_settings.png");
     private static final int GUI_WIDTH = 213;
     private static final int GUI_HEIGHT = 79;
     private static final int DEFAULT_ICON_BUTTON_WIDTH = 18;
@@ -193,13 +193,12 @@ public class RouteOverlaySettingsScreen extends DLScreen {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double pDelta) {
-
-        if (scaleInput.mouseScrolled(mouseX, mouseY, pDelta)) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        if (scaleInput.mouseScrolled(mouseX, mouseY, scrollX, scrollY)) {
             return true;
         }
         
-        if (super.mouseScrolled(mouseX, mouseY, pDelta)) {
+        if (super.mouseScrolled(mouseX, mouseY, scrollX, scrollY)) {
             return true;
         }
 
@@ -208,7 +207,7 @@ public class RouteOverlaySettingsScreen extends DLScreen {
     
     @Override
     public void renderMainLayer(Graphics graphics, int pMouseX, int pMouseY, float pPartialTick) {
-        renderScreenBackground(graphics);
+        renderBlurredBackground(pPartialTick);
         GuiUtils.drawTexture(GUI, graphics, guiLeft, guiTop, 0, 0, GUI_WIDTH, GUI_HEIGHT);
         GuiUtils.drawString(graphics, shadowlessFont, guiLeft + 6, guiTop + 4, title, DragonLib.NATIVE_UI_FONT_COLOR, EAlignment.LEFT, false);
 

@@ -140,7 +140,7 @@ public class ScheduleRuntimeMixin {
 
 			if (!train.hasForwardConductor() && !train.hasBackwardConductor()) {
 				train.status.missingConductor();
-				accessor.crn$setCooldown(accessor.crn$getInterval());
+                self().startCooldown();
 				return null;
 			}
 
@@ -207,7 +207,7 @@ public class ScheduleRuntimeMixin {
                 } else {
 					train.status.failedNavigationNoTarget(String.join(", ", filters));
                 }
-                accessor.crn$setCooldown(accessor.crn$getInterval());
+                self().startCooldown();
 				return null;
 			}
 

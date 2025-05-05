@@ -8,16 +8,16 @@ import de.mrjulsen.crn.block.display.properties.IDisplaySettings;
 import de.mrjulsen.crn.block.properties.ESide;
 import de.mrjulsen.crn.client.AdvancedDisplaysRegistry;
 import de.mrjulsen.crn.client.AdvancedDisplaysRegistry.DisplayTypeResourceKey;
-import de.mrjulsen.mcdragonlib.net.IPacketBase;
+import de.mrjulsen.mcdragonlib.net.BaseNetworkPacket;
 import dev.architectury.networking.NetworkManager.PacketContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class AdvancedDisplayUpdatePacket implements IPacketBase<AdvancedDisplayUpdatePacket> {
+public class AdvancedDisplayUpdatePacket extends BaseNetworkPacket<AdvancedDisplayUpdatePacket> {
     private BlockPos pos;
     private DisplayTypeResourceKey key;
     private boolean doubleSided;
@@ -41,7 +41,7 @@ public class AdvancedDisplayUpdatePacket implements IPacketBase<AdvancedDisplayU
     }
 
     @Override
-    public void encode(AdvancedDisplayUpdatePacket packet, FriendlyByteBuf buffer) {
+    public void encode(AdvancedDisplayUpdatePacket packet, RegistryFriendlyByteBuf buffer) {
         CompoundTag k = new CompoundTag();
         packet.key.toNbt(k);
         
@@ -52,7 +52,7 @@ public class AdvancedDisplayUpdatePacket implements IPacketBase<AdvancedDisplayU
     }
 
     @Override
-    public AdvancedDisplayUpdatePacket decode(FriendlyByteBuf buffer) {
+    public AdvancedDisplayUpdatePacket decode(RegistryFriendlyByteBuf buffer) {
         BlockPos pos = buffer.readBlockPos();
         DisplayTypeResourceKey key = DisplayTypeResourceKey.fromNbt(buffer.readNbt());
         boolean doubleSided = buffer.readBoolean();

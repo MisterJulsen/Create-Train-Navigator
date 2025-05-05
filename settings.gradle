@@ -7,8 +7,7 @@ pluginManagement {
     }
 }
 
-include("common")
-//include("fabric")
-include("neoforge")
+rootProject.name = 'Create Railways Navigator 1.21.1'
 
-rootProject.name = "Create Railways Navigator 1.21.1"
+include 'common'
+include 'neoforge'

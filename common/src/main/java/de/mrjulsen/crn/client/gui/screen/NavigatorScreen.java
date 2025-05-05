@@ -46,7 +46,6 @@ import net.createmod.catnip.animation.LerpedFloat;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
-import net.minecraft.client.gui.components.toasts.SystemToast.SystemToastIds;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.Mth;
@@ -241,12 +240,12 @@ public class NavigatorScreen extends AbstractNavigatorScreen {
                 super.onClick(mouseX, mouseY);
                 
                 if (stationFrom == null || stationTo == null || stationFrom.isBlank() || stationTo.isBlank()) {
-                    Minecraft.getInstance().getToasts().addToast(new SystemToast(SystemToastIds.PERIODIC_NOTIFICATION, errorTitle, startEndNullText));
+                    Minecraft.getInstance().getToasts().addToast(new SystemToast(SystemToast.SystemToastId.PERIODIC_NOTIFICATION, errorTitle, startEndNullText));
                     return;
                 }
 
                 if (stationFrom.equals(stationTo)) {
-                    Minecraft.getInstance().getToasts().addToast(new SystemToast(SystemToastIds.PERIODIC_NOTIFICATION, errorTitle, startEndEqualText));
+                    Minecraft.getInstance().getToasts().addToast(new SystemToast(SystemToast.SystemToastId.PERIODIC_NOTIFICATION, errorTitle, startEndEqualText));
                     return;
                 }
 
@@ -401,11 +400,11 @@ public class NavigatorScreen extends AbstractNavigatorScreen {
     }
 
     @Override
-    public boolean mouseScrolled(double pMouseX, double pMouseY, double pDelta) {
-        if (destinationSuggestions != null && destinationSuggestions.mouseScrolled(pMouseX, pMouseY, Mth.clamp(pDelta, -1.0D, 1.0D)))
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        if (destinationSuggestions != null && destinationSuggestions.mouseScrolled(mouseX, mouseY, Mth.clamp(scrollY, -1.0D, 1.0D)))
 			return true;
 
-		return super.mouseScrolled(pMouseX, pMouseY, pDelta);
+		return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
     }
     
 }

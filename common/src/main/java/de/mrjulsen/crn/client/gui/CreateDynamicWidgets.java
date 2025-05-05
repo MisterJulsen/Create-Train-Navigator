@@ -2,6 +2,7 @@ package de.mrjulsen.crn.client.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat.Mode;
@@ -16,6 +17,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import org.joml.Matrix4f;
 
 public class CreateDynamicWidgets {
 
@@ -116,19 +118,19 @@ public class CreateDynamicWidgets {
         GuiUtils.fill(graphics, x, y + 1, w - 1, 1, COLOR_BORDER);
     }
 
-    public static void renderContainerBackground(Graphics graphics, int x, int y, int w, int h, ContainerColor color) {        
-        Tesselator tesselator = Tesselator.getInstance();
-        BufferBuilder bufferbuilder = tesselator.getBuilder();
+    public static void renderContainerBackground(Graphics graphics, int x, int y, int w, int h, ContainerColor color) {
         RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
         RenderSystem.setShaderTexture(0, color.res);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         float f = 2f;
-        bufferbuilder.begin(Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-        bufferbuilder.vertex(x, y + (double)h, 0.0).uv(0.0F, (float)h / f).color(1f, 1f, 1f, 1f).endVertex();
-        bufferbuilder.vertex(x + (double)w, y + (double)h, 0.0).uv((float)w / f, (float)h / f).color(1f, 1f, 1f, 1f).endVertex();
-        bufferbuilder.vertex(x + (double)w, y, 0.0).uv((float)w / f, 0).color(1f, 1f, 1f, 1f).endVertex();
-        bufferbuilder.vertex(x, y, 0.0).uv(0.0F, 0).color(1f, 1f, 1f, 1f).endVertex();
-        tesselator.end();
+        Matrix4f matrix4f = graphics.poseStack().last().pose();
+        BufferBuilder bufferbuilder = Tesselator.getInstance().begin(Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+        bufferbuilder.addVertex(matrix4f, (float)x, (float)y + h, 0.0f).setUv(0.0F, (float)h / f).setColor(1f, 1f, 1f, 1f);
+        bufferbuilder.addVertex(matrix4f, (float)x + w, (float)y + h, 0.0f).setUv((float)w / f, (float)h / f).setColor(1f, 1f, 1f, 1f);
+        bufferbuilder.addVertex(matrix4f, (float)x + w, (float)y, 0.0f).setUv((float)w / f, 0).setColor(1f, 1f, 1f, 1f);
+        bufferbuilder.addVertex(matrix4f, (float)x, (float)y, 0.0f).setUv(0.0F, 0).setColor(1f, 1f, 1f, 1f);
+        BufferUploader.drawWithShader(bufferbuilder.buildOrThrow());
+        RenderSystem.disableBlend();
     }
 
     protected static void renderNineSliced(Graphics graphics, int x, int y, int w, int h, int u, int v, int textureWidth, int textureHeight, int cornerSliceSize, ResourceLocation location, boolean renderCenter) {
@@ -171,7 +173,7 @@ public class CreateDynamicWidgets {
     }
 
     public static void renderShadow(Graphics graphics, int x, int y, int w, int h) {
-        renderNineSliced(graphics, x - 5, y - 5, w + 10, h + 10, 0, 0, 11, 11, 5, new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/shadow.png"), true);
+        renderNineSliced(graphics, x - 5, y - 5, w + 10, h + 10, 0, 0, 11, 11, 5, ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "textures/gui/shadow.png"), true);
     }
 
     public static void renderTextHighlighted(Graphics graphics, int x, int y, Font font, Component text, int color) {
@@ -214,10 +216,10 @@ public class CreateDynamicWidgets {
 
     
     public static enum ContainerColor {
-        GRAY(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/container_gray.png")),
-        PURPLE(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/container_purple.png")),
-        BLUE(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/container_blue.png")),
-        GOLD(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/container_gold.png"));
+        GRAY(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "textures/gui/container_gray.png")),
+        PURPLE(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "textures/gui/container_purple.png")),
+        BLUE(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "textures/gui/container_blue.png")),
+        GOLD(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "textures/gui/container_gold.png"));
 
         private final ResourceLocation res;
 

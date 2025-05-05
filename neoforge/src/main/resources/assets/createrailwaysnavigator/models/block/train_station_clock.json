@@ -1,5 +1,5 @@
 {
-	"loader": "forge:obj",
+	"loader": "neoforge:obj",
 	"flip_v": true,
 	"model": "createrailwaysnavigator:models/block/train_station_clock.obj",
 	"textures": {

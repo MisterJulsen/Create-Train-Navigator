@@ -2,6 +2,7 @@ package de.mrjulsen.crn.registry;
 
 import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.api.behaviour.display.DisplaySource;
+import com.simibubi.create.api.behaviour.display.DisplayTarget;
 import com.simibubi.create.api.registry.CreateRegistries;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
@@ -24,8 +25,9 @@ public class ModExtras {
         return obj;
     });
 
-    public static final RegistryEntry<AdvancedDisplayTarget> ADVANCED_DISPLAY_BOARD_TARGET = CreateRailwaysNavigator.REGISTRATE.displayTarget("advanced_display", AdvancedDisplayTarget::new)
+    public static final RegistryEntry<DisplayTarget, AdvancedDisplayTarget> ADVANCED_DISPLAY_BOARD_TARGET = CreateRailwaysNavigator.REGISTRATE.displayTarget("advanced_display", AdvancedDisplayTarget::new)
             .register();
+
 
     public static void init() {
         DISPLAY_SOURCES.register();

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 import com.simibubi.create.foundation.utility.CreateLang;
+import de.mrjulsen.crn.registry.ModDataComponents;
 import net.createmod.catnip.data.Pair;
 import org.joml.Vector3f;
 
@@ -57,7 +58,6 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.components.toasts.SystemToast;
-import net.minecraft.client.gui.components.toasts.SystemToast.SystemToastIds;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.resources.language.ClientLanguage;
@@ -75,7 +75,7 @@ import net.minecraft.world.level.Level;
 
 public class ClientWrapper {
     
-    public static final ModelResourceLocation NAVIGATOR_WORLD_MODEL = new ModelResourceLocation(CreateRailwaysNavigator.MOD_ID, "navigator_world", "inventory");
+    public static final ModelResourceLocation NAVIGATOR_WORLD_MODEL = ModelResourceLocation.inventory(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "navigator_world"));
     
     private static CustomLanguage currentLanguage;
     private static Language currentClientLanguage;
@@ -89,7 +89,7 @@ public class ClientWrapper {
     }
 
     public static void handleErrorMessagePacket(ServerErrorPacket packet, Supplier<PacketContext> ctx) {        
-        Minecraft.getInstance().getToasts().addToast(new SystemToast(SystemToastIds.PERIODIC_NOTIFICATION, Constants.TEXT_SERVER_ERROR, TextUtils.text(packet.message)));   
+        Minecraft.getInstance().getToasts().addToast(new SystemToast(SystemToast.SystemToastId.PERIODIC_NOTIFICATION, Constants.TEXT_SERVER_ERROR, TextUtils.text(packet.message)));
     }
     
     public static void showAdvancedDisplaySettingsScreen(AdvancedDisplayBlockEntity blockEntity) {
@@ -302,14 +302,17 @@ public class ClientWrapper {
         if (context != ItemDisplayContext.FIRST_PERSON_LEFT_HAND && context != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND) {
             return;
         }
-        
 
-        int backgroundId = itemStack.getOrCreateTag().getInt(NavigatorItem.NBT_BACKGROUND_ID);
+
+        int backgroundId = 0;
+        if (itemStack.has(ModDataComponents.NAVIGATOR_BACKGROUND_COMPONENT)) {
+            backgroundId = itemStack.get(ModDataComponents.NAVIGATOR_BACKGROUND_COMPONENT).backgroundId();
+        }
         
         Font font = Minecraft.getInstance().font;
         poseStack.mulPose(Axis.XP.rotationDegrees(90F));
         poseStack.translate(4, 2, -1.26f);
-        BERUtils.renderTexture(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, String.format("textures/item/navigator_backgrounds/%s.png", backgroundId)), graphics, false, 0, 0, 0, 8, 12, 0, 0, 1F / 12F * 8, 1F, Direction.UP, 0xFFFFFFFF, LightTexture.FULL_BRIGHT);
+        BERUtils.renderTexture(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, String.format("textures/item/navigator_backgrounds/%s.png", backgroundId)), graphics, false, 0, 0, 0, 8, 12, 0, 0, 1F / 12F * 8, 1F, Direction.UP, 0xFFFFFFFF, LightTexture.FULL_BRIGHT);
         
         poseStack.translate(0, 0, -0.01f);
         poseStack.pushPose();

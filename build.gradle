@@ -1,5 +1,5 @@
 plugins {
-    id 'dev.architectury.loom' version '1.7-SNAPSHOT' apply false
+    id 'dev.architectury.loom' version '1.10-SNAPSHOT' apply false
     id 'architectury-plugin' version '3.4-SNAPSHOT'
     id 'com.github.johnrengelman.shadow' version '8.1.1' apply false
 }
@@ -19,29 +19,18 @@ subprojects {
     apply plugin: 'maven-publish'
 
     base {
+        // Set up a suffixed format for the mod jar names, e.g. `example-fabric`.
         archivesName = "$rootProject.archives_name-$project.name"
     }
 
     repositories {
         maven { url = "file://${System.getProperty('user.home')}/.m2/github/modsrepo/maven" } // Local
-        maven { url = "https://raw.githubusercontent.com/MisterJulsen/modsrepo/main/maven" } // DragonLib
-        maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" } // Forge Config API
         maven { url = "https://maven.parchmentmc.org" } // ParchmentMC
-        maven { url = "https://maven.terraformersmc.com/" } // ModMenu
-        maven { url = "https://maven.shedaniel.me/" } // Cloth Config, REI
-        maven { url = "https://maven.blamejared.com/" } // JEI
-        maven { url = "https://maven.quiltmc.org/repository/release" } // Quilt Mappings
-        maven { url = "https://api.modrinth.com/maven" } // LazyDFU
-        maven { url = "https://maven.jamieswhiteshirt.com/libs-release" } // Reach Entity Attributes
-        maven { url = "https://jitpack.io/" } // Mixin Extras, Fabric ASM
+        maven { url = "https://raw.githubusercontent.com/MisterJulsen/modsrepo/main/maven" } // DragonLib
         maven { url = "https://maven.createmod.net" } // Create, Ponder, Flywheel
         maven { url = "https://mvn.devos.one/snapshots" } // Registrate
+        maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" } // ForgeConfigAPIPort
         maven { url = 'https://maven.neoforged.net/releases' } // NeoForge
-        maven { url = "https://cursemaven.com"
-            content {
-                includeGroup "curse.maven"
-            }
-        }
     }
 
     dependencies {
@@ -54,29 +43,29 @@ subprojects {
 
     processResources {
         def expandProps = [
-            "version": version,
-            "minecraft_version": rootProject.minecraft_version,
-            "issues": rootProject.issues,
-            "source": rootProject.source,
-            "license": rootProject.license,
-            "modid": rootProject.archives_name,
-            "display_name": rootProject.display_name,
-            "homepage": rootProject.homepage,
-            "authors": rootProject.authors,
-            "description": rootProject.description,
-            "icon": rootProject.icon,
-            "discord": rootProject.discord,
-            "next_unsupported_minecraft_version": rootProject.next_unsupported_minecraft_version,
-            "dragonlib_version": "$rootProject.minecraft_version-$rootProject.dragonlib_version",
-            "neoforge_dependency_version": rootProject.neoforge_dependency_version,
-            "neoforge_loader_version": rootProject.neoforge_loader_version,
-            "fabric_loader_version": rootProject.fabric_loader_version,
-            "java_version": rootProject.java_version,
-            "maven_group": rootProject.maven_group,
-            "create_neoforge_version": rootProject.create_neoforge_version,
-            "create_neoforge_dependency_version": rootProject.create_neoforge_dependency_version,
-            //"create_fabric_version": rootProject.create_fabric_version,
-            "main_class_name": rootProject.main_class_name,
+                "version": version,
+                "minecraft_version": rootProject.minecraft_version,
+                "issues": rootProject.issues,
+                "source": rootProject.source,
+                "license": rootProject.license,
+                "modid": rootProject.archives_name,
+                "display_name": rootProject.display_name,
+                "homepage": rootProject.homepage,
+                "authors": rootProject.authors,
+                "description": rootProject.description,
+                "icon": rootProject.icon,
+                "discord": rootProject.discord,
+                "next_unsupported_minecraft_version": rootProject.next_unsupported_minecraft_version,
+                "dragonlib_version": "$rootProject.minecraft_version-$rootProject.dragonlib_version",
+                "neoforge_dependency_version": rootProject.neoforge_dependency_version,
+                "neoforge_loader_version": rootProject.neoforge_loader_version,
+                "fabric_loader_version": rootProject.fabric_loader_version,
+                "java_version": rootProject.java_version,
+                "maven_group": rootProject.maven_group,
+                "create_neoforge_version": rootProject.create_neoforge_version,
+                "create_neoforge_dependency_version": rootProject.create_neoforge_dependency_version,
+                //"create_fabric_version": rootProject.create_fabric_version,
+                "main_class_name": rootProject.main_class_name,
         ]
         filesMatching(['pack.mcmeta', 'fabric.mod.json', 'META-INF/neoforge.mods.toml', 'createrailwaysnavigator.mixins.json']) {
             expand expandProps
@@ -87,7 +76,6 @@ subprojects {
 
     java {
         withSourcesJar()
-        withJavadocJar()
 
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
@@ -108,23 +96,6 @@ subprojects {
                     "Implementation-Vendor"   : "${rootProject.authors}",
                     "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
             ])
-        }
-    }
-
-    // Configure Maven publishing.
-    publishing {
-        publications {
-            mavenJava(MavenPublication) {
-                artifactId = rootProject.archives_name + "-" + project.name             
-                from components.java
-            }
-        }
-
-        repositories {
-            maven {
-                name "GitHub"
-                url "file://${System.getProperty('user.home')}/.m2/github/modsrepo/maven"
-            }
         }
     }
 }

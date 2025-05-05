@@ -50,7 +50,7 @@ public class ScheduleBoardScreen extends AbstractNavigatorScreen {
     private UserSettings userSettings = new UserSettings(Minecraft.getInstance().player.getUUID(), false);
 
     private DLEditBox stationBox;
-    private String stationFrom;
+    private String stationFrom = "";
 	private ModDestinationSuggestions destinationSuggestions;
 
     private GuiAreaDefinition workingArea;
@@ -109,11 +109,12 @@ public class ScheduleBoardScreen extends AbstractNavigatorScreen {
         workingArea = new GuiAreaDefinition(guiLeft + 3, guiTop + wY + 2, GUI_WIDTH - 6, wH - 3);
 
         if (!fixedStation) {            
-            stationBox = addEditBox(guiLeft + 32 + 5, guiTop + 25, 152, 12, stationFrom, TextUtils.empty(), false, (v) -> {
+            stationBox = addEditBox(guiLeft + 32 + 5, guiTop + 25, 152, 12, stationFrom, TextUtils.empty(), false, (s) -> {}, NO_EDIT_BOX_FOCUS_CHANGE_ACTION, null);
+            stationBox.setMaxLength(StationTag.MAX_NAME_LENGTH);
+            stationBox.setResponder((v) -> {
                 stationFrom = v;
                 updateEditorSubwidgets(stationBox);
-            }, NO_EDIT_BOX_FOCUS_CHANGE_ACTION, null);
-            stationBox.setMaxLength(StationTag.MAX_NAME_LENGTH);
+            });
 
             DLCreateIconButton searchButton = this.addRenderableWidget(new DLCreateIconButton(guiLeft + 190, guiTop + 20, 18, 18, AllIcons.I_MTD_SCAN) {
                 @Override
@@ -263,10 +264,10 @@ public class ScheduleBoardScreen extends AbstractNavigatorScreen {
     }
 
     @Override
-    public boolean mouseScrolled(double pMouseX, double pMouseY, double pDelta) {
-        if (destinationSuggestions != null && destinationSuggestions.mouseScrolled(pMouseX, pMouseY, Mth.clamp(pDelta, -1.0D, 1.0D)))
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        if (destinationSuggestions != null && destinationSuggestions.mouseScrolled(mouseX, mouseY, Mth.clamp(scrollY, -1.0D, 1.0D)))
 			return true;
 
-		return super.mouseScrolled(pMouseX, pMouseY, pDelta);
+		return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
     }
 }

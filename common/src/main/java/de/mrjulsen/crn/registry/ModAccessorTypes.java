@@ -53,6 +53,7 @@ import de.mrjulsen.crn.data.navigation.RoutePart;
 import de.mrjulsen.crn.data.navigation.ClientRoutePart.TrainRealTimeData;
 import de.mrjulsen.mcdragonlib.data.Pair;
 import de.mrjulsen.mcdragonlib.data.Single.MutableSingle;
+import de.mrjulsen.mcdragonlib.net.DLNetworkManager;
 import de.mrjulsen.mcdragonlib.util.accessor.BasicDataAccessorPacket.IChunkReceiver;
 import de.mrjulsen.mcdragonlib.util.accessor.DataAccessorType;
 import de.mrjulsen.crn.network.packets.stc.ServerErrorPacket;
@@ -70,7 +71,7 @@ public final class ModAccessorTypes {
 
 //#region STATION TAGS
 
-    public static final DataAccessorType<String, StationTag, StationTag> GET_STATION_TAG = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "get_station_tag"), DataAccessorType.Builder.create(
+    public static final DataAccessorType<String, StationTag, StationTag> GET_STATION_TAG = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "get_station_tag"), DataAccessorType.Builder.create(
         (in, nbt) -> {
             nbt.putString(DataAccessorType.DEFAULT_NBT_DATA, in);
         }, (nbt) -> {
@@ -83,7 +84,7 @@ public final class ModAccessorTypes {
         }
     ));
 
-    public static final DataAccessorType<TagName, StationTag, StationTag> GET_STATION_TAG_BY_TAG_NAME = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "get_station_tag_by_tag_name"), DataAccessorType.Builder.create(
+    public static final DataAccessorType<TagName, StationTag, StationTag> GET_STATION_TAG_BY_TAG_NAME = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "get_station_tag_by_tag_name"), DataAccessorType.Builder.create(
         (in, nbt) -> {
             nbt.putString(DataAccessorType.DEFAULT_NBT_DATA, in.get());
         }, (nbt) -> {
@@ -96,7 +97,7 @@ public final class ModAccessorTypes {
         }
     ));
 
-    public static final DataAccessorType<CreateStationTagData, Optional<StationTag>, Optional<StationTag>> CREATE_STATION_TAG = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "create_station_tag"), DataAccessorType.Builder.create(
+    public static final DataAccessorType<CreateStationTagData, Optional<StationTag>, Optional<StationTag>> CREATE_STATION_TAG = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "create_station_tag"), DataAccessorType.Builder.create(
         (in, nbt) -> {
             nbt.putString("Name", in.name());
             if (in.owner() != null) nbt.put("Owner", in.owner().toNbt());
@@ -113,7 +114,7 @@ public final class ModAccessorTypes {
         }
     ));
 
-    public static final DataAccessorType<StationTag, Void, Void> REGISTER_STATION_TAG = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "register_station_tag"), DataAccessorType.Builder.createEmptyResponse(
+    public static final DataAccessorType<StationTag, Void, Void> REGISTER_STATION_TAG = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "register_station_tag"), DataAccessorType.Builder.createEmptyResponse(
         (in, nbt) -> {
             nbt.put(DataAccessorType.DEFAULT_NBT_DATA, in.toNbt());
         }, (nbt) -> {
@@ -128,7 +129,7 @@ public final class ModAccessorTypes {
         }
     ));
 
-    public static final DataAccessorType<UUID, Void, Void> DELETE_STATION_TAG = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "delete_station_tag"), DataAccessorType.Builder.createEmptyResponse(
+    public static final DataAccessorType<UUID, Void, Void> DELETE_STATION_TAG = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "delete_station_tag"), DataAccessorType.Builder.createEmptyResponse(
         (in, nbt) -> {
             nbt.putUUID(DataAccessorType.DEFAULT_NBT_DATA, in);
         }, (nbt) -> {
@@ -144,7 +145,7 @@ public final class ModAccessorTypes {
         }
     ));
 
-    public static final DataAccessorType<UpdateStationTagNameData, Void, Void> UPDATE_STATION_TAG_NAME = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "update_station_tag_name"), DataAccessorType.Builder.createEmptyResponse(
+    public static final DataAccessorType<UpdateStationTagNameData, Void, Void> UPDATE_STATION_TAG_NAME = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "update_station_tag_name"), DataAccessorType.Builder.createEmptyResponse(
         (in, nbt) -> {
             nbt.putUUID("Id", in.tagId());
             nbt.putString("Name", in.name());
@@ -162,7 +163,7 @@ public final class ModAccessorTypes {
         }
     ));
 
-    public static final DataAccessorType<PermissionsUpdateData, Optional<StationTag>, Optional<StationTag>> UPDATE_STATION_TAG_PERMISSIONS = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "update_station_tag_permissions"), DataAccessorType.Builder.create(
+    public static final DataAccessorType<PermissionsUpdateData, Optional<StationTag>, Optional<StationTag>> UPDATE_STATION_TAG_PERMISSIONS = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "update_station_tag_permissions"), DataAccessorType.Builder.create(
         (in, nbt) -> {
             nbt.put(DataAccessorType.DEFAULT_NBT_DATA, in.toNbt());
         }, (nbt) -> {
@@ -186,7 +187,7 @@ public final class ModAccessorTypes {
         }
     ));
 
-    public static final DataAccessorType<AddStationTagEntryData, Optional<StationTag>, Optional<StationTag>> ADD_STATION_TAG_ENTRY = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "add_station_tag_entry"), DataAccessorType.Builder.create(
+    public static final DataAccessorType<AddStationTagEntryData, Optional<StationTag>, Optional<StationTag>> ADD_STATION_TAG_ENTRY = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "add_station_tag_entry"), DataAccessorType.Builder.create(
         (in, nbt) -> {
             nbt.putUUID("Id", in.tagId());
             nbt.putString("Name", in.station());
@@ -208,7 +209,7 @@ public final class ModAccessorTypes {
         }
     )); 
 
-    public static final DataAccessorType<AddStationTagEntryData, Optional<StationTag>, Optional<StationTag>> UPDATE_STATION_TAG_ENTRY = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "update_station_tag_entry"), DataAccessorType.Builder.create(
+    public static final DataAccessorType<AddStationTagEntryData, Optional<StationTag>, Optional<StationTag>> UPDATE_STATION_TAG_ENTRY = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "update_station_tag_entry"), DataAccessorType.Builder.create(
         (in, nbt) -> {
             nbt.putUUID("Id", in.tagId());
             nbt.putString("Name", in.station());
@@ -230,7 +231,7 @@ public final class ModAccessorTypes {
         }
     ));    
 
-    public static final DataAccessorType<RemoveStationTagEntryData, Optional<StationTag>, Optional<StationTag>> REMOVE_STATION_TAG_ENTRY = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "remove_station_tag_entry"), DataAccessorType.Builder.create(
+    public static final DataAccessorType<RemoveStationTagEntryData, Optional<StationTag>, Optional<StationTag>> REMOVE_STATION_TAG_ENTRY = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "remove_station_tag_entry"), DataAccessorType.Builder.create(
         (in, nbt) -> {
             nbt.putUUID("Id", in.tagId());
             nbt.putString("Name", in.station());
@@ -251,7 +252,7 @@ public final class ModAccessorTypes {
         }
     ));
     
-    public static final DataAccessorType<Void, Collection<StationTag>, Collection<StationTag>> GET_ALL_STATION_TAGS = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "get_all_station_tags"), DataAccessorType.Builder.createNoInputChunked(
+    public static final DataAccessorType<Void, Collection<StationTag>, Collection<StationTag>> GET_ALL_STATION_TAGS = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "get_all_station_tags"), DataAccessorType.Builder.createNoInputChunked(
         (player, in, temp, nbt, iteration) -> {
             if (temp.getFirst() == null) {
                 temp.setFirst(new ConcurrentLinkedQueue<>(GlobalSettings.getInstance().getAllStationTags().stream().sorted((a, b) -> a.getTagName().get().compareToIgnoreCase(b.getTagName().get())).toList()));
@@ -279,7 +280,7 @@ public final class ModAccessorTypes {
     ));
 
     /** Input: true = exclude blacklisted */
-    public static final DataAccessorType<Boolean, Collection<StationTag>, Collection<StationTag>> GET_ALL_STATIONS_AS_TAGS = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "get_all_stations_as_tags"), DataAccessorType.Builder.createChunked(
+    public static final DataAccessorType<Boolean, Collection<StationTag>, Collection<StationTag>> GET_ALL_STATIONS_AS_TAGS = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "get_all_stations_as_tags"), DataAccessorType.Builder.createChunked(
         (in, nbt) -> {
             nbt.putBoolean(DataAccessorType.DEFAULT_NBT_DATA, in);
         }, (nbt) -> {
@@ -312,7 +313,7 @@ public final class ModAccessorTypes {
 //#endregion
 //#region TRAIN CATEGORIES
 
-    public static final DataAccessorType<Void, List<TrainCategory>, List<TrainCategory>> GET_ALL_TRAIN_CATEGORIES = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "get_all_train_categories"), DataAccessorType.Builder.createNoInputChunked(
+    public static final DataAccessorType<Void, List<TrainCategory>, List<TrainCategory>> GET_ALL_TRAIN_CATEGORIES = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "get_all_train_categories"), DataAccessorType.Builder.createNoInputChunked(
         (player, in, temp, nbt, iteration) -> {
             if (temp.getFirst() == null) {
                 temp.setFirst(new ConcurrentLinkedQueue<>(GlobalSettings.getInstance().getAllTrainCategories()));
@@ -338,7 +339,7 @@ public final class ModAccessorTypes {
         }
     ));
 
-    public static final DataAccessorType<UUID, Void, Void> DELETE_TRAIN_CATEGORY = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "delete_train_category"), DataAccessorType.Builder.createEmptyResponse(
+    public static final DataAccessorType<UUID, Void, Void> DELETE_TRAIN_CATEGORY = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "delete_train_category"), DataAccessorType.Builder.createEmptyResponse(
         (in, nbt) -> {
             nbt.putUUID(DataAccessorType.DEFAULT_NBT_DATA, in);
         }, (nbt) -> {
@@ -354,7 +355,7 @@ public final class ModAccessorTypes {
         }
     ));
 
-    public static final DataAccessorType<UUID, Optional<TrainCategory>, Optional<TrainCategory>> GET_TRAIN_CATEGORY = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "get_train_category"), DataAccessorType.Builder.create(
+    public static final DataAccessorType<UUID, Optional<TrainCategory>, Optional<TrainCategory>> GET_TRAIN_CATEGORY = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "get_train_category"), DataAccessorType.Builder.create(
         (in, nbt) -> {
             nbt.putUUID(DataAccessorType.DEFAULT_NBT_DATA, in);
         }, (nbt) -> {
@@ -367,7 +368,7 @@ public final class ModAccessorTypes {
         }
     ));
 
-    public static final DataAccessorType<UpdateTrainCategoryColorData, Void, Void> UPDATE_TRAIN_CATEGORY_COLOR = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "update_train_category_color"), DataAccessorType.Builder.createEmptyResponse(
+    public static final DataAccessorType<UpdateTrainCategoryColorData, Void, Void> UPDATE_TRAIN_CATEGORY_COLOR = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "update_train_category_color"), DataAccessorType.Builder.createEmptyResponse(
         (in, nbt) -> {
             nbt.putUUID("Id", in.id());
             nbt.putInt("Color", in.color());
@@ -384,7 +385,7 @@ public final class ModAccessorTypes {
         }
     ));
 
-    public static final DataAccessorType<UpdateTrainCategoryNameData, Optional<TrainCategory>, Optional<TrainCategory>> UPDATE_TRAIN_CATEGORY_NAME = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "update_train_category_name"), DataAccessorType.Builder.create(
+    public static final DataAccessorType<UpdateTrainCategoryNameData, Optional<TrainCategory>, Optional<TrainCategory>> UPDATE_TRAIN_CATEGORY_NAME = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "update_train_category_name"), DataAccessorType.Builder.create(
         (in, nbt) -> {
             nbt.putUUID("Id", in.id());
             nbt.putString("Name", in.name());
@@ -404,7 +405,7 @@ public final class ModAccessorTypes {
         }
     )); 
 
-    public static final DataAccessorType<String, Optional<TrainCategory>, Optional<TrainCategory>> CREATE_TRAIN_CATEGORY = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "create_train_category"), DataAccessorType.Builder.create(
+    public static final DataAccessorType<String, Optional<TrainCategory>, Optional<TrainCategory>> CREATE_TRAIN_CATEGORY = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "create_train_category"), DataAccessorType.Builder.create(
         (in, nbt) -> {
             nbt.putString(DataAccessorType.DEFAULT_NBT_DATA, in);
         }, (nbt) -> {
@@ -421,7 +422,7 @@ public final class ModAccessorTypes {
         }
     ));
 
-    public static final DataAccessorType<PermissionsUpdateData, Optional<TrainCategory>, Optional<TrainCategory>> UPDATE_TRAIN_CATEGORY_PERMISSIONS = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "update_train_category_permissions"), DataAccessorType.Builder.create(
+    public static final DataAccessorType<PermissionsUpdateData, Optional<TrainCategory>, Optional<TrainCategory>> UPDATE_TRAIN_CATEGORY_PERMISSIONS = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "update_train_category_permissions"), DataAccessorType.Builder.create(
         (in, nbt) -> {
             nbt.put(DataAccessorType.DEFAULT_NBT_DATA, in.toNbt());
         }, (nbt) -> {
@@ -448,7 +449,7 @@ public final class ModAccessorTypes {
 //#endregion
 //#region STATION BLACKLIST
 
-    public static final DataAccessorType<String, Collection<String>, Collection<String>> ADD_STATION_TO_BLACKLIST = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "add_station_to_blacklist"), DataAccessorType.Builder.createChunked(
+    public static final DataAccessorType<String, Collection<String>, Collection<String>> ADD_STATION_TO_BLACKLIST = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "add_station_to_blacklist"), DataAccessorType.Builder.createChunked(
         (in, nbt) -> {
             nbt.putString(DataAccessorType.DEFAULT_NBT_DATA, in);
         }, (nbt) -> {
@@ -479,7 +480,7 @@ public final class ModAccessorTypes {
         }
     ));
 
-    public static final DataAccessorType<String, Collection<String>, Collection<String>> REMOVE_STATION_FROM_BLACKLIST = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "remove_station_from_blacklist"), DataAccessorType.Builder.createChunked(
+    public static final DataAccessorType<String, Collection<String>, Collection<String>> REMOVE_STATION_FROM_BLACKLIST = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "remove_station_from_blacklist"), DataAccessorType.Builder.createChunked(
         (in, nbt) -> {
             nbt.putString(DataAccessorType.DEFAULT_NBT_DATA, in);
         }, (nbt) -> {
@@ -510,7 +511,7 @@ public final class ModAccessorTypes {
         }
     ));
     
-    public static final DataAccessorType<Void, List<String>, List<String>> GET_BLACKLISTED_STATIONS = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "get_blacklisted_stations"), DataAccessorType.Builder.createNoInputChunked(
+    public static final DataAccessorType<Void, List<String>, List<String>> GET_BLACKLISTED_STATIONS = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "get_blacklisted_stations"), DataAccessorType.Builder.createNoInputChunked(
         (player, in, temp, nbt, iteration) -> {
             if (temp.getFirst() == null) {
                 temp.setFirst(new ConcurrentLinkedQueue<>(GlobalSettings.getInstance().getAllBlacklistedStations()));
@@ -536,7 +537,7 @@ public final class ModAccessorTypes {
 //#endregion
 //#region TRAIN BLACKLIST
 
-    public static final DataAccessorType<String, Collection<String>, Collection<String>> ADD_TRAIN_TO_BLACKLIST = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "add_train_to_blacklist"), DataAccessorType.Builder.createChunked(
+    public static final DataAccessorType<String, Collection<String>, Collection<String>> ADD_TRAIN_TO_BLACKLIST = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "add_train_to_blacklist"), DataAccessorType.Builder.createChunked(
         (in, nbt) -> {
             nbt.putString(DataAccessorType.DEFAULT_NBT_DATA, in);
         }, (nbt) -> {
@@ -567,7 +568,7 @@ public final class ModAccessorTypes {
         }
     ));
 
-    public static final DataAccessorType<String, Collection<String>, Collection<String>> REMOVE_TRAIN_FROM_BLACKLIST = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "remove_train_from_blacklist"), DataAccessorType.Builder.createChunked(
+    public static final DataAccessorType<String, Collection<String>, Collection<String>> REMOVE_TRAIN_FROM_BLACKLIST = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "remove_train_from_blacklist"), DataAccessorType.Builder.createChunked(
         (in, nbt) -> {
             nbt.putString(DataAccessorType.DEFAULT_NBT_DATA, in);
         }, (nbt) -> {
@@ -598,7 +599,7 @@ public final class ModAccessorTypes {
         }
     ));
     
-    public static final DataAccessorType<Void, List<String>, List<String>> GET_BLACKLISTED_TRAINS = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "get_blacklisted_trains"), DataAccessorType.Builder.createNoInputChunked(
+    public static final DataAccessorType<Void, List<String>, List<String>> GET_BLACKLISTED_TRAINS = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "get_blacklisted_trains"), DataAccessorType.Builder.createNoInputChunked(
         (player, in, temp, nbt, iteration) -> {
             if (temp.getFirst() == null) {
                 temp.setFirst(new ConcurrentLinkedQueue<>(GlobalSettings.getInstance().getAllBlacklistedTrains()));
@@ -623,7 +624,7 @@ public final class ModAccessorTypes {
 
 
 
-    public static final DataAccessorType<UUID, TrainRealTimeData, TrainRealTimeData> UPDATE_REALTIME = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "update_realtime"), DataAccessorType.Builder.create(
+    public static final DataAccessorType<UUID, TrainRealTimeData, TrainRealTimeData> UPDATE_REALTIME = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "update_realtime"), DataAccessorType.Builder.create(
         (in, nbt) -> {
             nbt.putUUID(DataAccessorType.DEFAULT_NBT_DATA, in);
         }, (nbt) -> {
@@ -655,7 +656,7 @@ public final class ModAccessorTypes {
 
 
 
-    public static final DataAccessorType<UUID, UserSettings, UserSettings> GET_USER_SETTINGS = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "get_user_settings"), DataAccessorType.Builder.create(
+    public static final DataAccessorType<UUID, UserSettings, UserSettings> GET_USER_SETTINGS = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "get_user_settings"), DataAccessorType.Builder.create(
         (in, nbt) -> {
             nbt.putUUID(DataAccessorType.DEFAULT_NBT_DATA, in);
         }, (nbt) -> {
@@ -669,7 +670,7 @@ public final class ModAccessorTypes {
         }
     ));
 
-    public static final DataAccessorType<UserSettings, Void, Void> SAVE_USER_SETTINGS = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "save_user_settings"), DataAccessorType.Builder.createEmptyResponse(
+    public static final DataAccessorType<UserSettings, Void, Void> SAVE_USER_SETTINGS = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "save_user_settings"), DataAccessorType.Builder.createEmptyResponse(
         (in, nbt) -> {
             nbt.put(DataAccessorType.DEFAULT_NBT_DATA, in.toNbt());
             nbt.putUUID("Id", in.getOwnerId());
@@ -681,7 +682,7 @@ public final class ModAccessorTypes {
         }
     ));
 
-    public static final DataAccessorType<BlockPos, NearestTrackStationResult, NearestTrackStationResult> GET_NEAREST_STATION = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "get_nearest_station"), DataAccessorType.Builder.create(
+    public static final DataAccessorType<BlockPos, NearestTrackStationResult, NearestTrackStationResult> GET_NEAREST_STATION = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "get_nearest_station"), DataAccessorType.Builder.create(
         (in, nbt) -> {
             nbt.putInt("x", in.getX());
             nbt.putInt("y", in.getY());
@@ -694,7 +695,7 @@ public final class ModAccessorTypes {
                 result = TrainUtils.getNearestTrackStation(player.level(), in);                    
             } catch (Exception e) {
                 CreateRailwaysNavigator.LOGGER.error("Error while trying to find nearest track station.", e);
-                CreateRailwaysNavigator.net().CHANNEL.sendToPlayer((ServerPlayer)player, new ServerErrorPacket(e.getMessage()));
+                DLNetworkManager.sendToPlayer((ServerPlayer)player, new ServerErrorPacket(e.getMessage()));
             }
             nbt.put(DataAccessorType.DEFAULT_NBT_DATA, result.toNbt());
             return false;
@@ -703,7 +704,7 @@ public final class ModAccessorTypes {
         }
     ));
 
-    public static final DataAccessorType<UUID, TrainDisplayData, TrainDisplayData> GET_TRAIN_DISPLAY_DATA_FROM_SERVER = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "get_train_display_data"), DataAccessorType.Builder.create(
+    public static final DataAccessorType<UUID, TrainDisplayData, TrainDisplayData> GET_TRAIN_DISPLAY_DATA_FROM_SERVER = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "get_train_display_data"), DataAccessorType.Builder.create(
         (in, nbt) -> {
             nbt.putUUID(DataAccessorType.DEFAULT_NBT_DATA, in);
         }, (nbt) -> {
@@ -721,7 +722,7 @@ public final class ModAccessorTypes {
         }
     ));
     
-    public static final DataAccessorType<NextConnectionsRequestData, NextConnectionsDisplayData, NextConnectionsDisplayData> GET_NEXT_CONNECTIONS_DISPLAY_DATA = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "get_next_connections_display_data"), DataAccessorType.Builder.create(
+    public static final DataAccessorType<NextConnectionsRequestData, NextConnectionsDisplayData, NextConnectionsDisplayData> GET_NEXT_CONNECTIONS_DISPLAY_DATA = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "get_next_connections_display_data"), DataAccessorType.Builder.create(
         (in, nbt) -> {
             nbt.put(DataAccessorType.DEFAULT_NBT_DATA, in.toNbt());
         }, (nbt) -> {
@@ -735,7 +736,7 @@ public final class ModAccessorTypes {
     ));
 
     
-    public static final DataAccessorType<Void, Collection<String>, Collection<String>> GET_ALL_TRAIN_NAMES = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "get_all_train_names"), DataAccessorType.Builder.createNoInputChunked(
+    public static final DataAccessorType<Void, Collection<String>, Collection<String>> GET_ALL_TRAIN_NAMES = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "get_all_train_names"), DataAccessorType.Builder.createNoInputChunked(
         (player, in, temp, nbt, iteration) -> {
             if (temp.getFirst() == null) {
                 temp.setFirst(new ConcurrentLinkedQueue<>(TrainUtils.getTrains(false).stream().map(x -> x.name.getString()).toList()));
@@ -758,7 +759,7 @@ public final class ModAccessorTypes {
         }
     ));
 
-    public static final DataAccessorType<Void, Collection<String>, Collection<String>> GET_ALL_STATION_NAMES = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "get_all_station_names"), DataAccessorType.Builder.createNoInputChunked(
+    public static final DataAccessorType<Void, Collection<String>, Collection<String>> GET_ALL_STATION_NAMES = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "get_all_station_names"), DataAccessorType.Builder.createNoInputChunked(
         (player, in, temp, nbt, iteration) -> {
             if (temp.getFirst() == null) {
                 temp.setFirst(new ConcurrentLinkedQueue<>(TrainUtils.getAllStations().stream().map(x -> x.name).toList()));
@@ -783,7 +784,7 @@ public final class ModAccessorTypes {
 
     //#region TRAIN LINES
 
-    public static final DataAccessorType<Void, List<TrainLine>, List<TrainLine>> GET_ALL_TRAIN_LINES = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "get_all_train_lines"), DataAccessorType.Builder.createNoInputChunked(
+    public static final DataAccessorType<Void, List<TrainLine>, List<TrainLine>> GET_ALL_TRAIN_LINES = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "get_all_train_lines"), DataAccessorType.Builder.createNoInputChunked(
         (player, in, temp, nbt, iteration) -> {
             if (temp.getFirst() == null) {
                 temp.setFirst(new ConcurrentLinkedQueue<>(GlobalSettings.getInstance().getAllTrainLines()));
@@ -810,7 +811,7 @@ public final class ModAccessorTypes {
         }
     ));
 
-    public static final DataAccessorType<UUID, Void, Void> DELETE_TRAIN_LINE = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "delete_train_line"), DataAccessorType.Builder.createEmptyResponse(
+    public static final DataAccessorType<UUID, Void, Void> DELETE_TRAIN_LINE = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "delete_train_line"), DataAccessorType.Builder.createEmptyResponse(
         (in, nbt) -> {
             nbt.putUUID(DataAccessorType.DEFAULT_NBT_DATA, in);
         }, (nbt) -> {
@@ -827,7 +828,7 @@ public final class ModAccessorTypes {
     ));
     
 
-    public static final DataAccessorType<UUID, Optional<TrainLine>, Optional<TrainLine>> GET_TRAIN_LINE = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "get_train_line"), DataAccessorType.Builder.create(
+    public static final DataAccessorType<UUID, Optional<TrainLine>, Optional<TrainLine>> GET_TRAIN_LINE = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "get_train_line"), DataAccessorType.Builder.create(
         (in, nbt) -> {
             nbt.putUUID(DataAccessorType.DEFAULT_NBT_DATA, in);
         }, (nbt) -> {
@@ -840,7 +841,7 @@ public final class ModAccessorTypes {
         }
     ));
 
-    public static final DataAccessorType<UpdateTrainLineColorData, Void, Void> UPDATE_TRAIN_LINE_COLOR = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "update_train_line_color"), DataAccessorType.Builder.createEmptyResponse(
+    public static final DataAccessorType<UpdateTrainLineColorData, Void, Void> UPDATE_TRAIN_LINE_COLOR = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "update_train_line_color"), DataAccessorType.Builder.createEmptyResponse(
         (in, nbt) -> {
             nbt.putUUID("Id", in.id());
             nbt.putInt("Color", in.color());
@@ -857,7 +858,7 @@ public final class ModAccessorTypes {
         }
     )); 
 
-    public static final DataAccessorType<UpdateTrainLineNameData, Optional<TrainLine>, Optional<TrainLine>> UPDATE_TRAIN_LINE_NAME = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "update_train_line_name"), DataAccessorType.Builder.create(
+    public static final DataAccessorType<UpdateTrainLineNameData, Optional<TrainLine>, Optional<TrainLine>> UPDATE_TRAIN_LINE_NAME = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "update_train_line_name"), DataAccessorType.Builder.create(
         (in, nbt) -> {
             nbt.putUUID("Id", in.id());
             nbt.putString("Name", in.name());
@@ -877,7 +878,7 @@ public final class ModAccessorTypes {
         }
     )); 
 
-    public static final DataAccessorType<String, Optional<TrainLine>, Optional<TrainLine>> CREATE_TRAIN_LINE = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "create_train_line"), DataAccessorType.Builder.create(
+    public static final DataAccessorType<String, Optional<TrainLine>, Optional<TrainLine>> CREATE_TRAIN_LINE = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "create_train_line"), DataAccessorType.Builder.create(
         (in, nbt) -> {
             nbt.putString(DataAccessorType.DEFAULT_NBT_DATA, in);
         }, (nbt) -> {
@@ -894,7 +895,7 @@ public final class ModAccessorTypes {
         }
     ));    
 
-    public static final DataAccessorType<PermissionsUpdateData, Optional<TrainLine>, Optional<TrainLine>> UPDATE_TRAIN_LINE_PERMISSIONS = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "update_train_line_permissions"), DataAccessorType.Builder.create(
+    public static final DataAccessorType<PermissionsUpdateData, Optional<TrainLine>, Optional<TrainLine>> UPDATE_TRAIN_LINE_PERMISSIONS = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "update_train_line_permissions"), DataAccessorType.Builder.create(
         (in, nbt) -> {
             nbt.put(DataAccessorType.DEFAULT_NBT_DATA, in.toNbt());
         }, (nbt) -> {
@@ -921,7 +922,7 @@ public final class ModAccessorTypes {
     //#endregion
 
     public static record NavigationData(String start, String end, UUID player) {}
-    public static final DataAccessorType<NavigationData, List<ClientRoute>, List<ClientRoute>> NAVIGATE = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "navigate"), DataAccessorType.Builder.createChunked(
+    public static final DataAccessorType<NavigationData, List<ClientRoute>, List<ClientRoute>> NAVIGATE = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "navigate"), DataAccessorType.Builder.createChunked(
         (in, nbt) -> {
             nbt.putString("Start", in.start());
             nbt.putString("End", in.end());
@@ -967,7 +968,7 @@ public final class ModAccessorTypes {
     ));
 
     public static record DepartureRoutesData(String stationTagName, UUID player) {}
-    public static final DataAccessorType<DepartureRoutesData, List<Pair<Boolean, ClientRoute>>, List<Pair<Boolean, ClientRoute>>> GET_DEPARTURE_AND_ARRIVAL_ROUTES_AT = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "get_departure_and_arrival_routes_at"), DataAccessorType.Builder.createChunked(
+    public static final DataAccessorType<DepartureRoutesData, List<Pair<Boolean, ClientRoute>>, List<Pair<Boolean, ClientRoute>>> GET_DEPARTURE_AND_ARRIVAL_ROUTES_AT = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "get_departure_and_arrival_routes_at"), DataAccessorType.Builder.createChunked(
         (in, nbt) -> {
             nbt.putString("Station", in.stationTagName());
             nbt.putUUID("Player", in.player());
@@ -1066,7 +1067,7 @@ public final class ModAccessorTypes {
 
     
     public static record DeparturesData(UUID stationTagId, UUID trainId, boolean realTimeOnly) {}
-    public static final DataAccessorType<DeparturesData, List<ClientTrainStop>, List<ClientTrainStop>> GET_DEPARTURES_AT = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "get_departures_at"), DataAccessorType.Builder.create(
+    public static final DataAccessorType<DeparturesData, List<ClientTrainStop>, List<ClientTrainStop>> GET_DEPARTURES_AT = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "get_departures_at"), DataAccessorType.Builder.create(
         (in, nbt) -> {
             nbt.putUUID("Tag", in.stationTagId());
             nbt.putUUID("Train", in.trainId());
@@ -1093,7 +1094,7 @@ public final class ModAccessorTypes {
         }
     ));
 
-    public static final DataAccessorType<Void, Boolean, Boolean> ALL_TRAINS_INITIALIZED = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "all_trains_initialized"), DataAccessorType.Builder.createNoInput(
+    public static final DataAccessorType<Void, Boolean, Boolean> ALL_TRAINS_INITIALIZED = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "all_trains_initialized"), DataAccessorType.Builder.createNoInput(
         (player, in, temp, nbt, iteration) -> {            
             nbt.putBoolean(DataAccessorType.DEFAULT_NBT_DATA, TrainListener.allTrainsInitialized());
             return false;
@@ -1102,7 +1103,7 @@ public final class ModAccessorTypes {
         }
     ));
 
-    public static final DataAccessorType<Void, List<TrainDebugData>, List<TrainDebugData>> GET_ALL_TRAINS_DEBUG_DATA = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "get_all_trains_debug_data"), DataAccessorType.Builder.createNoInput(
+    public static final DataAccessorType<Void, List<TrainDebugData>, List<TrainDebugData>> GET_ALL_TRAINS_DEBUG_DATA = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "get_all_trains_debug_data"), DataAccessorType.Builder.createNoInput(
         (player, in, temp, nbt, iteration) -> {
             ListTag list = new ListTag();
             for (TrainData x : TrainListener.getAllTrainData()) {
@@ -1115,14 +1116,14 @@ public final class ModAccessorTypes {
         }
     ));
 
-    public static final DataAccessorType<Void, Void, Void> SHOW_TRAIN_DEBUG_SCREEN = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "show_train_debug_screen"), DataAccessorType.Builder.createNoIO(
+    public static final DataAccessorType<Void, Void, Void> SHOW_TRAIN_DEBUG_SCREEN = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "show_train_debug_screen"), DataAccessorType.Builder.createNoIO(
         (player, in, temp, nbt, iteration) -> {
             ClientWrapper.showTrainDebugScreen();
             return false;
         }
     ));
 
-    public static final DataAccessorType<UUID, Void, Void> TRAIN_SOFT_RESET = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "train_soft_reset"), DataAccessorType.Builder.createEmptyResponse(
+    public static final DataAccessorType<UUID, Void, Void> TRAIN_SOFT_RESET = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "train_soft_reset"), DataAccessorType.Builder.createEmptyResponse(
         (in, nbt) -> {
             nbt.putUUID(DataAccessorType.DEFAULT_NBT_DATA, in);
         }, (nbt) -> {
@@ -1133,7 +1134,7 @@ public final class ModAccessorTypes {
         }
     ));
 
-    public static final DataAccessorType<UUID, Void, Void> TRAIN_HARD_RESET = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "train_hard_reset"), DataAccessorType.Builder.createEmptyResponse(
+    public static final DataAccessorType<UUID, Void, Void> TRAIN_HARD_RESET = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "train_hard_reset"), DataAccessorType.Builder.createEmptyResponse(
         (in, nbt) -> {
             nbt.putUUID(DataAccessorType.DEFAULT_NBT_DATA, in);
         }, (nbt) -> {
@@ -1144,7 +1145,7 @@ public final class ModAccessorTypes {
         }
     ));
     
-    public static final DataAccessorType<String, DepartureHistory.Stats, DepartureHistory.Stats> GET_STATION_DEPARTURE_HISTORY = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "get_station_departure_history"), DataAccessorType.Builder.create(
+    public static final DataAccessorType<String, DepartureHistory.Stats, DepartureHistory.Stats> GET_STATION_DEPARTURE_HISTORY = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "get_station_departure_history"), DataAccessorType.Builder.create(
         (in, nbt) -> {
             nbt.putString(DataAccessorType.DEFAULT_NBT_DATA, in);
         }, (nbt) -> {
@@ -1157,7 +1158,7 @@ public final class ModAccessorTypes {
         }
     ));
 
-    public static final DataAccessorType<Void, List<Owner>, List<Owner>> GET_ONLINE_PLAYERS = DataAccessorType.register(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "get_online_players"), DataAccessorType.Builder.createNoInput(
+    public static final DataAccessorType<Void, List<Owner>, List<Owner>> GET_ONLINE_PLAYERS = DataAccessorType.register(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "get_online_players"), DataAccessorType.Builder.createNoInput(
         (player, in, temp, nbt, iteration) -> {
             ListTag list = new ListTag();
             list.addAll(CRNPlatformSpecific.getAllKnownPlayers().entrySet().stream().map(e -> new Owner(e.getKey()).toNbt()).toList());

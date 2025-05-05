@@ -262,7 +262,7 @@ public class PrioritizedDestinationInstructionSettingsScreen extends DLScreen {
     
     @Override
     public void renderMainLayer(Graphics graphics, int pMouseX, int pMouseY, float pPartialTick) {
-        renderScreenBackground(graphics);
+        renderBlurredBackground(pPartialTick);
         CreateDynamicWidgets.renderWindow(graphics, guiLeft, guiTop, GUI_WIDTH, GUI_HEIGHT, ContainerColor.PURPLE, BarColor.GOLD, BarColor.GRAY, headerSize.size(), footerSize.size(), true);
         CreateDynamicWidgets.renderVerticalSeparator(graphics, guiLeft + GUI_WIDTH - 31, guiTop + GUI_HEIGHT - footerSize.size() + 2, footerSize.size() - 4, BarColor.GRAY);
 
@@ -320,11 +320,11 @@ public class PrioritizedDestinationInstructionSettingsScreen extends DLScreen {
     }
 
     @Override
-    public boolean mouseScrolled(double pMouseX, double pMouseY, double pDelta) {
-        if (destinationSuggestions != null && destinationSuggestions.mouseScrolled(pMouseX, pMouseY, Mth.clamp(pDelta, -1.0D, 1.0D)))
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        if (destinationSuggestions != null && destinationSuggestions.mouseScrolled(mouseX, mouseY, Mth.clamp(scrollY, -1.0D, 1.0D)))
 			return true;
 
-		return super.mouseScrolled(pMouseX, pMouseY, pDelta);
+		return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
     }
 
     public void updateEditorSubwidgets(EditBox field) {

@@ -32,10 +32,8 @@ import de.mrjulsen.crn.client.gui.widgets.modular.ModularWidgetContainer;
 import de.mrjulsen.crn.network.packets.cts.AdvancedDisplayUpdatePacket;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.gui.DLScreen;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.*;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLAbstractImageButton.ButtonType;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.DLCheckBox;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.DLIconButton;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.DLTooltip;
 import de.mrjulsen.mcdragonlib.client.render.GuiIcons;
 import de.mrjulsen.mcdragonlib.client.render.DynamicGuiRenderer.AreaStyle;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
@@ -45,6 +43,7 @@ import de.mrjulsen.mcdragonlib.config.ECachingPriority;
 import de.mrjulsen.mcdragonlib.core.EAlignment;
 import de.mrjulsen.mcdragonlib.data.Cache;
 import de.mrjulsen.mcdragonlib.data.Clipboard;
+import de.mrjulsen.mcdragonlib.net.DLNetworkManager;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.createmod.catnip.gui.element.GuiGameElement;
@@ -52,6 +51,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
@@ -134,7 +134,7 @@ public class AdvancedDisplaySettingsScreen extends DLScreen {
 
     @Override
     public void onClose() {
-        CreateRailwaysNavigator.net().CHANNEL.sendToServer(new AdvancedDisplayUpdatePacket(level, pos, typeKey, doubleSided, settings));
+        DLNetworkManager.sendToServer(new AdvancedDisplayUpdatePacket(level, pos, typeKey, doubleSided, settings));
         super.onClose();
     }
 
@@ -346,7 +346,7 @@ public class AdvancedDisplaySettingsScreen extends DLScreen {
     
     @Override
     public void renderMainLayer(Graphics graphics, int pMouseX, int pMouseY, float pPartialTick) {
-        renderScreenBackground(graphics);
+        renderBlurredBackground(pPartialTick);
         CreateDynamicWidgets.renderWindow(graphics, guiLeft, guiTop, GUI_WIDTH, guiHeight(), ContainerColor.PURPLE, BarColor.GOLD, BarColor.GRAY, headerSize.size(), footerSize.size(), false);
         CreateDynamicWidgets.renderVerticalSeparator(graphics, guiLeft + GUI_WIDTH - 31, guiTop + guiHeight() - footerSize.size() + 2, footerSize.size() - 4, BarColor.GRAY);
         GuiUtils.drawTexture(CRNGui.GUI, graphics, guiLeft + GUI_WIDTH - 3, guiTop + guiHeight() - footerSize.size() / 2 - 9, 11, 18, 0, 12, 11, 18, CRNGui.GUI_WIDTH, CRNGui.GUI_HEIGHT);
