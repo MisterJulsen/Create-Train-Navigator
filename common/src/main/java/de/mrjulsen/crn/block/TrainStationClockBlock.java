@@ -63,7 +63,9 @@ public class TrainStationClockBlock extends Block implements IWrenchable, IBE<Tr
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
-        player.displayClientMessage(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".time", TimeUtils.parseTime((int)(level.getDayTime() % DragonLib.ticksPerDay() + DragonLib.daytimeShift()), ModClientConfig.TIME_FORMAT.get())), true);
+        if (level.isClientSide()) {
+            player.displayClientMessage(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".time", TimeUtils.parseTime((int)(level.getDayTime() % DragonLib.ticksPerDay() + DragonLib.daytimeShift()), ModClientConfig.TIME_FORMAT.get())), true);
+        }
         return InteractionResult.SUCCESS;
     }
 
