@@ -178,11 +178,11 @@ public class ScheduleRuntimeMixin {
                 }
                 anyMatch = true;
 
-                if (
-                    (bestStation.getImminentTrain() == null || bestStation.getImminentTrain() == train) &&
-                    (bestStation.getPresentTrain() == null || bestStation.getPresentTrain() == train) &&
-                    (bestStation.getNearestTrain() == null || bestStation.getNearestTrain() == train)
-                ) {
+                if (destination.shouldAvoidTrains() && (
+                    (bestStation.getImminentTrain() != null && bestStation.getImminentTrain() != train) ||
+                    (bestStation.getPresentTrain() != null && bestStation.getPresentTrain() != train) ||
+                    (bestStation.getNearestTrain() != null && bestStation.getNearestTrain() != train)
+                )) {
                     painCount.addAndGet(1);
                 }
 
@@ -190,7 +190,7 @@ public class ScheduleRuntimeMixin {
                     for (PenaltyResult.Type type : x.getPenalties().keySet()) {
                         if (destination.shouldAvoidRedSignals() && type == Type.REDSTONE_RED_SIGNAL) {
                             painCount.addAndGet(1);
-                        } else if (destination.shouldAvoidTrains() && type.getCategory() == Category.TRAINS) {
+                        } else if (destination.shouldAvoidTrains() && (type.getCategory() == Category.TRAINS || type == Type.RED_SIGNAL)) {
                             painCount.addAndGet(1);
                         }
                     }

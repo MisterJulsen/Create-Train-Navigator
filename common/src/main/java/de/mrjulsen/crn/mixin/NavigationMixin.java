@@ -133,7 +133,7 @@ public abstract class NavigationMixin implements INavigationExtension {
         this.forward = forward;
     }
     
-    @Redirect(method = "search(DDZLjava/util/ArrayList;Lcom/simibubi/create/content/trains/entity/Navigation$StationTest;)V", remap = false, at = @At(value = "INVOKE", target = "Lcom/simibubi/create/content/trains/entity/Navigation$StationTest;test", remap = false))
+    @Redirect(method = "search(DDZLjava/util/ArrayList;Lcom/simibubi/create/content/trains/entity/Navigation$StationTest;)V", remap = false, at = @At(value = "INVOKE", target = "Lcom/simibubi/create/content/trains/entity/Navigation$StationTest;test(DDLjava/util/Map;Lcom/simibubi/create/foundation/utility/Pair;Lcom/simibubi/create/content/trains/station/GlobalStation;)Z", remap = false))
     public boolean onTestStation(StationTest test, double distance, double cost, Map<TrackEdge, com.simibubi.create.foundation.utility.Pair<Boolean, Couple<TrackNode>>> reachedVia, com.simibubi.create.foundation.utility.Pair<Couple<TrackNode>, TrackEdge> current, GlobalStation station) {
         boolean b = test.test(distance, cost, reachedVia, current, station);        
         if (this.shouldCheckPenalties && b) {
@@ -142,7 +142,7 @@ public abstract class NavigationMixin implements INavigationExtension {
         return b;
     }
     
-    @Redirect(method = "search(DDZLjava/util/ArrayList;Lcom/simibubi/create/content/trains/entity/Navigation$StationTest;)V", remap = false, at = @At(value = "INVOKE", target = "Ljava/util/PriorityQueue;add", remap = false))
+    @Redirect(method = "search(DDZLjava/util/ArrayList;Lcom/simibubi/create/content/trains/entity/Navigation$StationTest;)V", remap = false, at = @At(value = "INVOKE", target = "Ljava/util/PriorityQueue;add(Ljava/lang/Object;)Z", remap = false))
     public boolean onReadFrontierEntry(PriorityQueue<Object> queue, @Coerce Object obj) {
         IFrontierEntry entry = (IFrontierEntry)obj;
         if (this.shouldCheckPenalties) {
@@ -174,13 +174,13 @@ public abstract class NavigationMixin implements INavigationExtension {
         remap = false,
         at = @At(
             value = "INVOKE",
-            target = "Ljava/util/Map;getOrDefault",
+            target = "Ljava/util/Map;getOrDefault(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;",
             remap = false
         ),
         slice = @Slice(
             from = @At(
                 value = "INVOKE",
-                target = "Ljava/util/PriorityQueue;<init>",
+                target = "Ljava/util/PriorityQueue;<init>()V",
                 remap = false
             )
         )
@@ -193,7 +193,7 @@ public abstract class NavigationMixin implements INavigationExtension {
         return val;
     }
 
-    @Redirect(method = "search(DDZLjava/util/ArrayList;Lcom/simibubi/create/content/trains/entity/Navigation$StationTest;)V", remap = false, at = @At(value = "INVOKE", target = "Lcom/simibubi/create/content/trains/signal/SignalEdgeGroup;isOccupiedUnless", remap = false))
+    @Redirect(method = "search(DDZLjava/util/ArrayList;Lcom/simibubi/create/content/trains/entity/Navigation$StationTest;)V", remap = false, at = @At(value = "INVOKE", target = "Lcom/simibubi/create/content/trains/signal/SignalEdgeGroup;isOccupiedUnless(Lcom/simibubi/create/content/trains/signal/SignalBoundary;)Z", remap = false))
     public boolean onCheckOccupiedRedSignal(SignalEdgeGroup group, SignalBoundary signal) {
         boolean b = group.isOccupiedUnless(signal);
         if (this.shouldCheckPenalties && b) {
@@ -211,7 +211,7 @@ public abstract class NavigationMixin implements INavigationExtension {
         slice = @Slice(
             from = @At(
                 value = "INVOKE",
-                target = "Lcom/simibubi/create/foundation/utility/Couple;create",
+                target = "Lcom/simibubi/create/foundation/utility/Couple;create(Ljava/lang/Object;Ljava/lang/Object;)Lcom/simibubi/create/foundation/utility/Couple;",
                 remap = false
             )
         ),
