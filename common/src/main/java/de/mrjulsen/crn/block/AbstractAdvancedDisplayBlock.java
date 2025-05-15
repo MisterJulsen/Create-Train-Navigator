@@ -374,8 +374,12 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 			AdvancedDisplayBlockEntity controller = blockEntity.getController();
             if (controller != null) {
 				SimpleStaticTextDisplaySettings settings = new SimpleStaticTextDisplaySettings();				
-				settings.setStaticText(heldItem.getHoverName().getString());	
-				CreateRailwaysNavigator.net().CHANNEL.sendToServer(new AdvancedDisplayUpdatePacket(controller.getLevel(), controller.getBlockPos(), ModDisplayTypes.SIMPLE_TEXT, controller.getBlockState().getValue(AbstractAdvancedSidedDisplayBlock.SIDE) == ESide.BOTH, settings));
+				settings.setStaticText(heldItem.getHoverName().getString());
+				boolean doubleSided = false;
+				if (controller.getBlockState().getBlock() instanceof AbstractAdvancedSidedDisplayBlock) {
+					doubleSided = controller.getBlockState().getValue(AbstractAdvancedSidedDisplayBlock.SIDE) == ESide.BOTH;
+				}
+				CreateRailwaysNavigator.net().CHANNEL.sendToServer(new AdvancedDisplayUpdatePacket(controller.getLevel(), controller.getBlockPos(), ModDisplayTypes.SIMPLE_TEXT, doubleSided, settings));
 				return InteractionResult.SUCCESS;
             }
 		} else if (AllBlocks.CLIPBOARD.isIn(heldItem) && pLevel.isClientSide) {
@@ -403,7 +407,11 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 						}
 					}
 				}
-				CreateRailwaysNavigator.net().CHANNEL.sendToServer(new AdvancedDisplayUpdatePacket(controller.getLevel(), controller.getBlockPos(), ModDisplayTypes.RICH_TEXT, controller.getBlockState().getValue(AbstractAdvancedSidedDisplayBlock.SIDE) == ESide.BOTH, settings));
+				boolean doubleSided = false;
+				if (controller.getBlockState().getBlock() instanceof AbstractAdvancedSidedDisplayBlock) {
+					doubleSided = controller.getBlockState().getValue(AbstractAdvancedSidedDisplayBlock.SIDE) == ESide.BOTH;
+				}
+				CreateRailwaysNavigator.net().CHANNEL.sendToServer(new AdvancedDisplayUpdatePacket(controller.getLevel(), controller.getBlockPos(), ModDisplayTypes.RICH_TEXT, doubleSided, settings));
 				return InteractionResult.SUCCESS;
             }
 		}
