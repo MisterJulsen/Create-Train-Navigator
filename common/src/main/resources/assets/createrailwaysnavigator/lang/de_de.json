@@ -43,7 +43,8 @@
 	"block.createrailwaysnavigator.train_station_clock.tooltip.behaviour1": "Zeigt die _aktuelle Uhrzeit_ über der _Inventarleiste_ an.",
     "block.createrailwaysnavigator.train_station_clock.tooltip.condition2": "R-Klick auf eine andere Bahnhofsuhr",
 	"block.createrailwaysnavigator.train_station_clock.tooltip.behaviour2": "Ändert die Uhr, sodass die Zeit auf _allen vier Seiten_ angezeigt wird.", 
-    
+	"block.createrailwaysnavigator.navigator_lectern": "Lesepult mit Navigator",
+
     "block.createrailwaysnavigator.advanced_display.ber.not_in_service": "Betriebsfahrt",
 
     "category.createrailwaysnavigator.crn": "Create Railways Navigator",

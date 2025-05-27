@@ -42,7 +42,8 @@
     "block.createrailwaysnavigator.train_station_clock.tooltip.condition1": "When R-Clicked",
 	"block.createrailwaysnavigator.train_station_clock.tooltip.behaviour1": "Displays the _current time_ above the _hotbar_.",
     "block.createrailwaysnavigator.train_station_clock.tooltip.condition2": "When R-Clicked on another Train Station Clock",
-	"block.createrailwaysnavigator.train_station_clock.tooltip.behaviour2": "Changes the clock to display the time on _all four sides_.", 
+	"block.createrailwaysnavigator.train_station_clock.tooltip.behaviour2": "Changes the clock to display the time on _all four sides_.",
+    "block.createrailwaysnavigator.navigator_lectern": "Lectern with Navigator",
 
     "block.createrailwaysnavigator.advanced_display.ber.not_in_service": "Out of service!",
 
