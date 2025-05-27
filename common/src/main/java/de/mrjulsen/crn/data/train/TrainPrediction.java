@@ -67,6 +67,9 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
     private boolean shouldSoftReset;
 
     private final Cache<Boolean> isCustomTitle = new Cache<>(() -> {
+        if (getTitle() == null || getTitle().isEmpty()) {
+            return false;
+        }
         if (this.getData().getPredictionsChronologically().isEmpty()) {
             return false;
         }
