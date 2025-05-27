@@ -9,21 +9,14 @@ import com.tterrag.registrate.util.entry.BlockEntry;
 import com.tterrag.registrate.util.nullness.NonNullConsumer;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
-import de.mrjulsen.crn.block.AbstractAdvancedDisplayBlock;
-import de.mrjulsen.crn.block.AdvancedDisplayBlock;
-import de.mrjulsen.crn.block.AdvancedDisplayBoardBlock;
-import de.mrjulsen.crn.block.AdvancedDisplayHalfPanelBlock;
-import de.mrjulsen.crn.block.AdvancedDisplayPanelBlock;
-import de.mrjulsen.crn.block.AdvancedDisplaySlabBlock;
-import de.mrjulsen.crn.block.AdvancedDisplaySlopedBlock;
-import de.mrjulsen.crn.block.AdvancedDisplaySmallBlock;
-import de.mrjulsen.crn.block.TrainStationClockBlock;
+import de.mrjulsen.crn.block.*;
 import de.mrjulsen.crn.block.connected.AdvancedDisplayCTBehaviour;
 import de.mrjulsen.crn.block.connected.AdvancedDisplaySmallCTBehaviour;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 
 import static com.simibubi.create.api.behaviour.display.DisplayTarget.displayTarget;
 
@@ -127,6 +120,12 @@ public class ModBlocks {
 		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
 		.register();
+
+	public static final BlockEntry<NavigatorLecternBlock> NAVIGATOR_LECTERN = CreateRailwaysNavigator.REGISTRATE.block("navigator_lectern", NavigatorLecternBlock::new)
+			.initialProperties(() -> Blocks.LECTERN)
+			.transform(TagGen.axeOnly())
+			.loot((lt, block) -> lt.dropOther(block, Blocks.LECTERN))
+			.register();
 
 	public static <T extends Block> NonNullConsumer<? super T> connectedTextures(
 		Supplier<ConnectedTextureBehaviour> behavior) {

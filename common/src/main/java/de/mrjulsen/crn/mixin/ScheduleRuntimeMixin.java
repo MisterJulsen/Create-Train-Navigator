@@ -32,7 +32,6 @@ import com.simibubi.create.content.trains.station.GlobalStation;
 
 import de.mrjulsen.crn.data.train.TrainListener;
 import de.mrjulsen.crn.event.CRNEventsManager;
-import de.mrjulsen.crn.event.events.CreateTrainPredictionEvent;
 import de.mrjulsen.crn.event.events.ScheduleResetEvent;
 import de.mrjulsen.crn.event.events.SubmitTrainPredictionsEvent;
 import de.mrjulsen.crn.event.events.TrainDestinationChangedEvent;
@@ -46,13 +45,10 @@ import de.mrjulsen.crn.data.schedule.INavigationExtension;
 import de.mrjulsen.crn.data.schedule.condition.DynamicDelayCondition;
 import de.mrjulsen.crn.data.schedule.instruction.ICustomSuggestionsInstruction;
 import de.mrjulsen.crn.data.schedule.instruction.IPredictableInstruction;
-import de.mrjulsen.crn.data.schedule.instruction.IStationPredictableInstruction;
 import de.mrjulsen.crn.data.schedule.instruction.PrioritizedDestinationInstruction;
 
 @Mixin(ScheduleRuntime.class)
 public class ScheduleRuntimeMixin {
-
-    public final Map<Class<? extends IStationPredictableInstruction>, IStationPredictableInstruction> customData = new LinkedHashMap<>();
 
     public ScheduleRuntime self() {
         return (ScheduleRuntime)(Object)this;
@@ -90,51 +86,5 @@ public class ScheduleRuntimeMixin {
             CRNEventsManager.getEvent(TrainDestinationChangedEvent.class).run(accessor().crn$getTrain(), accessor().crn$getTrain().getCurrentStation(), cir.getReturnValue().destination, self().currentEntry);
         }
     }
-
-    @Inject(method = "predictForEntry", remap = false, at = @At(value = "HEAD"))
-    public void onPredictForEntryPre(int index, String currentTitle, int accumulatedTime, Collection<TrainDeparturePrediction> predictions, CallbackInfoReturnable<Integer> cir) {
-        ScheduleInstruction instruction = self().getSchedule().entries.get(index).instruction;
-        if (instruction instanceof IStationPredictableInstruction predictable) {
-            customData.put(predictable.getClass(), predictable::predictForStation);
-        }
-        if (instruction instanceof IPredictableInstruction predictable) {
-            TrainListener.getTrainData(accessor().crn$getTrain().id).ifPresent(x -> predictable.predict(x, accessor().crn$getTrain().runtime, index, accessor().crn$getTrain()));
-        }
-    }
-
-    @Inject(method = "createPrediction", remap = false, at = @At(value = "RETURN"))
-    public void onCreatePrediction(int index, String destination, String currentTitle, int time, CallbackInfoReturnable<TrainDeparturePrediction> cir) {
-        if (CRNEventsManager.isRegistered(CreateTrainPredictionEvent.class) && cir.getReturnValue() != null) {
-            int stayDuration = accessor().crn$runEstimateStayDuration(index);
-            int minStayDuration = estimateMinStayDuration(accessor().crn$getTrain(), index);
-            CRNEventsManager.getEvent(CreateTrainPredictionEvent.class).run(accessor().crn$getTrain(), self(), new LinkedHashMap<>(customData), index, stayDuration, minStayDuration, cir.getReturnValue());
-        }
-    }
-
-    
-
-    private static int estimateMinStayDuration(Train train, int index) {
-        Schedule schedule = train.runtime.getSchedule();
-		if (index >= schedule.entries.size()) {
-			if (!schedule.cyclic)
-				return -1;
-			index = 0;
-		}
-
-		ScheduleEntry scheduleEntry = schedule.entries.get(index);
-		Columns: for (List<ScheduleWaitCondition> list : scheduleEntry.conditions) {
-			int total = 0;
-			for (ScheduleWaitCondition condition : list) {
-				if (condition instanceof DynamicDelayCondition wait)
-				    total += wait.minWaitTicks();
-                else if (condition instanceof ScheduledDelay wait)
-                    total += wait.totalWaitTicks();
-                else
-                    continue Columns;
-			}
-			return total;
-		}
-
-		return -1;
-	}
+   
 }

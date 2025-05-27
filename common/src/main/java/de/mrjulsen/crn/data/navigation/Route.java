@@ -8,7 +8,7 @@ import java.lang.StringBuilder;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
-import de.mrjulsen.crn.data.ISaveableNavigatorData;
+import de.mrjulsen.crn.data.ISavableNavigatorData;
 import de.mrjulsen.crn.data.train.TrainStop;
 import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.DragonLib;
@@ -20,7 +20,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 
-public class Route implements ISaveableNavigatorData {
+public class Route implements ISavableNavigatorData {
 
     protected static final String NBT_PARTS = "Parts";
 
@@ -129,21 +129,21 @@ public class Route implements ISaveableNavigatorData {
     }
 
     @Override
-    public List<SaveableNavigatorDataLine> getOverviewData() {
-        List<SaveableNavigatorDataLine> lines = new ArrayList<>();
-        lines.add(new SaveableNavigatorDataLine(TextUtils.text(ModUtils.formatTime(getStart().getScheduledDepartureTime(), false) + "   " + getStart().getRealTimeStationTag().tagName()), ModGuiIcons.ROUTE_START.getAsSprite(ModGuiIcons.ICON_SIZE, ModGuiIcons.ICON_SIZE)));
-        lines.add(new SaveableNavigatorDataLine(TextUtils.text(ModUtils.formatTime(getEnd().getScheduledArrivalTime(), false) + "   " + getEnd().getRealTimeStationTag().tagName()), ModGuiIcons.ROUTE_END.getAsSprite(ModGuiIcons.ICON_SIZE, ModGuiIcons.ICON_SIZE)));
-        lines.add(new SaveableNavigatorDataLine(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".route_overview.date", (getStart().getScheduledDepartureTime() + DragonLib.daytimeShift()) / DragonLib.ticksPerDay(), ModUtils.formatTime(getStart().getScheduledDepartureTime(), false)).append(" | ").append(TimeUtils.parseDurationShort(departureIn())), ModGuiIcons.CALENDAR.getAsSprite(ModGuiIcons.ICON_SIZE, ModGuiIcons.ICON_SIZE)));
-        lines.add(new SaveableNavigatorDataLine(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".route_overview.transfers", getTransferCount()).append(TextUtils.text(" | " + TimeUtils.parseDurationShort(travelTime()))), ModGuiIcons.INFO.getAsSprite(ModGuiIcons.ICON_SIZE, ModGuiIcons.ICON_SIZE)));
+    public List<SavableNavigatorDataLine> getOverviewData() {
+        List<SavableNavigatorDataLine> lines = new ArrayList<>();
+        lines.add(new SavableNavigatorDataLine(TextUtils.text(ModUtils.formatTime(getStart().getScheduledDepartureTime(), false) + "   " + getStart().getRealTimeStationTag().tagName()), ModGuiIcons.ROUTE_START.getAsSprite(ModGuiIcons.ICON_SIZE, ModGuiIcons.ICON_SIZE)));
+        lines.add(new SavableNavigatorDataLine(TextUtils.text(ModUtils.formatTime(getEnd().getScheduledArrivalTime(), false) + "   " + getEnd().getRealTimeStationTag().tagName()), ModGuiIcons.ROUTE_END.getAsSprite(ModGuiIcons.ICON_SIZE, ModGuiIcons.ICON_SIZE)));
+        lines.add(new SavableNavigatorDataLine(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".route_overview.date", (getStart().getScheduledDepartureTime() + DragonLib.daytimeShift()) / DragonLib.ticksPerDay(), ModUtils.formatTime(getStart().getScheduledDepartureTime(), false)).append(" | ").append(TimeUtils.parseDurationShort(departureIn())), ModGuiIcons.CALENDAR.getAsSprite(ModGuiIcons.ICON_SIZE, ModGuiIcons.ICON_SIZE)));
+        lines.add(new SavableNavigatorDataLine(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".route_overview.transfers", getTransferCount()).append(TextUtils.text(" | " + TimeUtils.parseDurationShort(travelTime()))), ModGuiIcons.INFO.getAsSprite(ModGuiIcons.ICON_SIZE, ModGuiIcons.ICON_SIZE)));
         if (isAnyCancelled()) {
-            lines.add(new SaveableNavigatorDataLine(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".route_overview.cancelled").withStyle(ChatFormatting.RED), ModGuiIcons.IMPORTANT.getAsSprite(ModGuiIcons.ICON_SIZE, ModGuiIcons.ICON_SIZE)));
+            lines.add(new SavableNavigatorDataLine(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".route_overview.cancelled").withStyle(ChatFormatting.RED), ModGuiIcons.IMPORTANT.getAsSprite(ModGuiIcons.ICON_SIZE, ModGuiIcons.ICON_SIZE)));
         }
         return lines;
     }
 
     @Override
-    public SaveableNavigatorDataLine getTitle() {
-        return new SaveableNavigatorDataLine(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".saved_routes.saved_route"), ModGuiIcons.BOOKMARK.getAsSprite(ModGuiIcons.ICON_SIZE, ModGuiIcons.ICON_SIZE));
+    public SavableNavigatorDataLine getTitle() {
+        return new SavableNavigatorDataLine(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".saved_routes.saved_route"), ModGuiIcons.BOOKMARK.getAsSprite(ModGuiIcons.ICON_SIZE, ModGuiIcons.ICON_SIZE));
     }
 
     @Override

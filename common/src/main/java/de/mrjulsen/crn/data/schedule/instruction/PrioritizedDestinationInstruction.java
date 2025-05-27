@@ -20,6 +20,8 @@ import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.data.schedule.INavigationExtension;
 import de.mrjulsen.crn.mixin.ScheduleRuntimeAccessor;
 import de.mrjulsen.crn.util.PenaltyResult;
+import de.mrjulsen.crn.util.PenaltyResult.Category;
+import de.mrjulsen.crn.util.PenaltyResult.Type;
 import de.mrjulsen.mcdragonlib.data.MapCache;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.createmod.catnip.data.Pair;
@@ -189,21 +191,21 @@ public class PrioritizedDestinationInstruction extends DestinationInstruction {
 			if (bestStation == null) {
 				continue;
 			}
-			anyMatch = true;
+			anyMatch = true;			
 
-			if (
-				(bestStation.getImminentTrain() == null || bestStation.getImminentTrain() == train) &&
-				(bestStation.getPresentTrain() == null || bestStation.getPresentTrain() == train) &&
-				(bestStation.getNearestTrain() == null || bestStation.getNearestTrain() == train)
-			) {
+			if (shouldAvoidTrains() && (
+				(bestStation.getImminentTrain() != null && bestStation.getImminentTrain() != train) ||
+				(bestStation.getPresentTrain() != null && bestStation.getPresentTrain() != train) ||
+				(bestStation.getNearestTrain() != null && bestStation.getNearestTrain() != train)
+			)) {
 				painCount.addAndGet(1);
 			}
 
 			ext.getPenaltiesByDirection().ifPresent(x -> {
 				for (PenaltyResult.Type type : x.getPenalties().keySet()) {
-					if (shouldAvoidRedSignals() && type == PenaltyResult.Type.REDSTONE_RED_SIGNAL) {
+					if (shouldAvoidRedSignals() && type == Type.REDSTONE_RED_SIGNAL) {
 						painCount.addAndGet(1);
-					} else if (shouldAvoidTrains() && type.getCategory() == PenaltyResult.Category.TRAINS) {
+					} else if (shouldAvoidTrains() && (type.getCategory() == Category.TRAINS || type == Type.RED_SIGNAL)) {
 						painCount.addAndGet(1);
 					}
 				}
