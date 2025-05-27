@@ -42,7 +42,7 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
     private transient final TrainData data;
     
     private final int entryIndex;
-    private final String title;
+    private String title;
     private String stationFilter;
     private String stationName;
     private final PrimaryStringSelector recentStationNames = new PrimaryStringSelector(10);
@@ -359,10 +359,11 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
 
     
 
-    public void updateRealTime(String stationFilter, String stationName, long refreshTime, long arrivalTime) {
+    public void updateRealTime(String stationFilter, String stationName, long refreshTime, long arrivalTime, String title) {
         isCustomTitle.clear();
         this.stationFilter = stationFilter == null ? this.stationFilter : stationFilter;
         this.stationName = stationName == null ? this.stationName : stationName;
+        this.title = title;
         
         DepartureTime departures = estimateDepartures(getData().getTrain(), entryIndex, arrivalTime);
         this.realTimes = new PredictionTimes(this, refreshTime, arrivalTime, departures.defaultDepartureTime(), departures.minDepartureTime());
