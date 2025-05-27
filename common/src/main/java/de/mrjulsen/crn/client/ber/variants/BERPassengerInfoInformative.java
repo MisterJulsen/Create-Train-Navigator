@@ -312,59 +312,63 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
                         }
 
                         final float uv32 = 1f / CRNGui.GUI_WIDTH;
+
+                        float pX = a[LineComponent.SCHEDULED_TIME.i()].getX() + a[LineComponent.SCHEDULED_TIME.i()].getTextWidth() + 1 + (a[LineComponent.REAL_TIME.i()] == null ? 0 : a[LineComponent.REAL_TIME.i()].getTextWidth() + 1);
+                        //float eX = a[LineComponent.REAL_TIME.i()] == null ? a[LineComponent.SCHEDULED_TIME.i()].getX() + a[LineComponent.SCHEDULED_TIME.i()].getMaxWidth() : a[LineComponent.REAL_TIME.i()].getX() + a[LineComponent.REAL_TIME.i()].getMaxWidth()
+
                         if (idx == 0 && scheduleLines.length > 1) {
                             BERUtils.renderTexture(
-                                CRNGui.GUI,
-                                graphics,
-                                false,
-                                (a[LineComponent.REAL_TIME.i()] == null ? a[LineComponent.SCHEDULED_TIME.i()].getX() + a[LineComponent.SCHEDULED_TIME.i()].getMaxWidth() : a[LineComponent.REAL_TIME.i()].getX() + a[LineComponent.REAL_TIME.i()].getMaxWidth()) - 1,
-                                a[LineComponent.SCHEDULED_TIME.i()].getY() - 1,
-                                0.0f,
-                                1,
-                                2,
-                                uv32 * 21,
-                                uv32 * 30,
-                                uv32 * (21 + 7),
-                                uv32 * (30 + 14),
-                                graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING),
-                                (0xFF << 24) | (getDisplaySettings(graphics.blockEntity()).getFontColor() & 0x00FFFFFF),
-                                light
+                                    CRNGui.GUI,
+                                    graphics,
+                                    false,
+                                    pX,//(a[LineComponent.REAL_TIME.i()] == null ? a[LineComponent.SCHEDULED_TIME.i()].getX() + a[LineComponent.SCHEDULED_TIME.i()].getMaxWidth() : a[LineComponent.REAL_TIME.i()].getX() + a[LineComponent.REAL_TIME.i()].getMaxWidth()) - 1,
+                                    a[LineComponent.SCHEDULED_TIME.i()].getY() - 1,
+                                    0.0f,
+                                    1,
+                                    2,
+                                    uv32 * 21,
+                                    uv32 * 30,
+                                    uv32 * (21 + 7),
+                                    uv32 * (30 + 14),
+                                    graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING),
+                                    (0xFF << 24) | (getDisplaySettings(graphics.blockEntity()).getFontColor() & 0x00FFFFFF),
+                                    light
                             );
                         } else if (idx >= MAX_LINES - 1) {
                             BERUtils.renderTexture(
-                                CRNGui.GUI,
-                                graphics,
-                                false,
-                                (a[LineComponent.REAL_TIME.i()] == null ? a[LineComponent.SCHEDULED_TIME.i()].getX() + a[LineComponent.SCHEDULED_TIME.i()].getMaxWidth() : a[LineComponent.REAL_TIME.i()].getX() + a[LineComponent.REAL_TIME.i()].getMaxWidth()) - 1,
-                                a[LineComponent.SCHEDULED_TIME.i()].getY() - 1,
-                                0.0f,
-                                1,
-                                2,
-                                uv32 * 35,
-                                uv32 * 30,
-                                uv32 * (35 + 7),
-                                uv32 * (30 + 14),
-                                graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING),
-                                (0xFF << 24) | (getDisplaySettings(graphics.blockEntity()).getFontColor() & 0x00FFFFFF),
-                                light
+                                    CRNGui.GUI,
+                                    graphics,
+                                    false,
+                                    pX,//(a[LineComponent.REAL_TIME.i()] == null ? a[LineComponent.SCHEDULED_TIME.i()].getX() + a[LineComponent.SCHEDULED_TIME.i()].getMaxWidth() : a[LineComponent.REAL_TIME.i()].getX() + a[LineComponent.REAL_TIME.i()].getMaxWidth()) - 1,
+                                    a[LineComponent.SCHEDULED_TIME.i()].getY() - 1,
+                                    0.0f,
+                                    1,
+                                    2,
+                                    uv32 * 35,
+                                    uv32 * 30,
+                                    uv32 * (35 + 7),
+                                    uv32 * (30 + 14),
+                                    graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING),
+                                    (0xFF << 24) | (getDisplaySettings(graphics.blockEntity()).getFontColor() & 0x00FFFFFF),
+                                    light
                             );
                         } else {
                             BERUtils.renderTexture(
-                                CRNGui.GUI,
-                                graphics,
-                                false,
-                                (a[LineComponent.REAL_TIME.i()] == null ? a[LineComponent.SCHEDULED_TIME.i()].getX() + a[LineComponent.SCHEDULED_TIME.i()].getMaxWidth() : a[LineComponent.REAL_TIME.i()].getX() + a[LineComponent.REAL_TIME.i()].getMaxWidth()) - 1,
-                                a[LineComponent.SCHEDULED_TIME.i()].getY() - 1,
-                                0.0f,
-                                1,
-                                2,
-                                uv32 * 28,
-                                uv32 * 30,
-                                uv32 * (28 + 7),
-                                uv32 * (30 + 14),
-                                graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING),
-                                (0xFF << 24) | (getDisplaySettings(graphics.blockEntity()).getFontColor() & 0x00FFFFFF),
-                                light
+                                    CRNGui.GUI,
+                                    graphics,
+                                    false,
+                                    pX,//(a[LineComponent.REAL_TIME.i()] == null ? a[LineComponent.SCHEDULED_TIME.i()].getX() + a[LineComponent.SCHEDULED_TIME.i()].getMaxWidth() : a[LineComponent.REAL_TIME.i()].getX() + a[LineComponent.REAL_TIME.i()].getMaxWidth()) - 1,
+                                    a[LineComponent.SCHEDULED_TIME.i()].getY() - 1,
+                                    0.0f,
+                                    1,
+                                    2,
+                                    uv32 * 28,
+                                    uv32 * 30,
+                                    uv32 * (28 + 7),
+                                    uv32 * (30 + 14),
+                                    graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING),
+                                    (0xFF << 24) | (getDisplaySettings(graphics.blockEntity()).getFontColor() & 0x00FFFFFF),
+                                    light
                             );
                         }
                     });
