@@ -18,6 +18,7 @@ import de.mrjulsen.crn.data.TrainLine;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
 import de.mrjulsen.crn.data.train.TrainData;
 import de.mrjulsen.crn.data.train.ScheduleSection;
+import de.mrjulsen.crn.data.train.TrainListener;
 import de.mrjulsen.crn.registry.ModAccessorTypes;
 import de.mrjulsen.crn.registry.ModBlocks;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
@@ -34,7 +35,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
-public class TravelSectionInstruction extends ScheduleInstruction implements IStationTagInstruction, IPredictableInstruction {
+public class TravelSectionInstruction extends ScheduleInstruction implements IPredictableInstruction {
     
     @Deprecated
     public static final String LEGACY_NBT_TRAIN_CATEGORY = "TrainGroup";
@@ -79,6 +80,10 @@ public class TravelSectionInstruction extends ScheduleInstruction implements ISt
 
     @Override
     public DiscoveredPath start(ScheduleRuntime runtime, Level level) {
+        TrainListener.getTrainData(runtime.train.id).ifPresent(x -> {
+            x.addScheduleSection(getSectionData(x, runtime.currentEntry));
+            x.changeCurrentSection(runtime.currentEntry);
+        });
         runtime.state = ScheduleRuntime.State.PRE_TRANSIT;
         runtime.currentEntry++;
         return null;
@@ -153,14 +158,6 @@ public class TravelSectionInstruction extends ScheduleInstruction implements ISt
 	public void initConfigurationWidgets(ModularGuiLineBuilder builder) {   
         ClientWrapper.initScheduleSectionInstruction(this, builder);
 	}
-
-    @Override
-    public void run(ScheduleRuntime runtime, TrainData data, Train train, int index) {
-        DLUtils.doIfNotNull(data, x -> {
-            x.addScheduleSection(getSectionData(x, index));
-            x.changeCurrentSection(index);
-        });
-    }
 
     private ScheduleSection getSectionData(TrainData data, int index) {
         String categoryNbtKey = null;
