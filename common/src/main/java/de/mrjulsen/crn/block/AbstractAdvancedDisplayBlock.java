@@ -384,7 +384,7 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
             }
 		} else if (AllBlocks.CLIPBOARD.isIn(heldItem) && pLevel.isClientSide) {
 			AdvancedDisplayBlockEntity controller = blockEntity.getController();
-            if (controller != null) {				
+            if (controller != null) {
 				StaticTextDisplaySettings settings = new StaticTextDisplaySettings();			
 				List<ClipboardEntry> entries = ClipboardEntry.getLastViewedEntries(heldItem);
 				int line = 0;

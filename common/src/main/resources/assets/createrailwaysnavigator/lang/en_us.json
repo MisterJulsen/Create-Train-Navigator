@@ -367,6 +367,7 @@
     "enum.createrailwaysnavigator.departure_board_train_filter.departure_only": "Departures only",
     
     "create.display_source.advanced_display": "Advanced Displays",
+    "create.display_target.advanced_display.component": "Component %s",
 
     "gui.createrailwaysnavigator.section_settings.title": "Section Settings",
     "gui.createrailwaysnavigator.section_settings.train_categories": "Assign Train Category",
