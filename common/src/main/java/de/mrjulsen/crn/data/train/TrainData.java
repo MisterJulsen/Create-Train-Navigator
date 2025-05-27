@@ -528,6 +528,15 @@ public class TrainData implements IListenable<TrainData> {
         Schedule schedule = train.runtime.getSchedule();
         int entryCount = train.runtime.getSchedule().entries.size();
         AtomicReference<String> currentTitle = new AtomicReference<>("");
+
+        // ##### PRE-ITERATION #####
+        for (int i = 0; i < entryCount; i++) {
+            final int cyclicIndex = (i + getCurrentScheduleIndex()) % entryCount;
+            final ScheduleEntry entry = schedule.entries.get(cyclicIndex);
+            if (entry.instruction instanceof ChangeTitleInstruction instruction) {
+                currentTitle.set(instruction.getScheduleTitle());
+            }
+        }
         
         Set<Integer> validPredictionEntries = new HashSet<>();
         boolean hasCycled = false;
@@ -535,7 +544,7 @@ public class TrainData implements IListenable<TrainData> {
         final long now = DragonLib.getCurrentWorldTime() - waitingAtStationTicks();
         long time = now;
 
-        for (int i = 0; i < entryCount * 2; i++) {
+        for (int i = 0; i < entryCount; i++) {
             final int cyclicIndex = (i + getCurrentScheduleIndex()) % entryCount;
             final ScheduleEntry entry = schedule.entries.get(cyclicIndex);
 
