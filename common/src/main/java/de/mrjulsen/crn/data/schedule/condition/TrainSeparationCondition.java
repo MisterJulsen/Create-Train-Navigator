@@ -13,7 +13,6 @@ import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.api.IPredictableWaitCondition;
 import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.data.ETimeSource;
-import de.mrjulsen.crn.data.schedule.IConditionsRequiresInstruction;
 import de.mrjulsen.crn.data.schedule.INavigationExtension;
 import de.mrjulsen.crn.data.schedule.instruction.PrioritizedDestinationInstruction;
 import de.mrjulsen.crn.data.train.DepartureHistory;
@@ -31,7 +30,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 
-public class TrainSeparationCondition extends ScheduledDelay implements IDelayedWaitCondition, IConditionsRequiresInstruction, IPredictableWaitCondition {
+public class TrainSeparationCondition extends ScheduledDelay implements IDelayedWaitCondition, IPredictableWaitCondition {
 
     @Deprecated public static final String NBT_TIME = "Value";
     @Deprecated public static final String NBT_TIME_UNIT = "TimeUnit";

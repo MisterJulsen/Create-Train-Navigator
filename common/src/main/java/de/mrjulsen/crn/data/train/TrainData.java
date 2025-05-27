@@ -24,6 +24,7 @@ import com.simibubi.create.content.trains.station.GlobalStation;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.config.ModCommonConfig;
+import de.mrjulsen.crn.data.schedule.instruction.IPredictableInstruction;
 import de.mrjulsen.crn.event.CRNEventsManager;
 import de.mrjulsen.crn.event.events.TotalDurationTimeChangedEvent;
 import de.mrjulsen.crn.mixin.ScheduleRuntimeAccessor;
@@ -534,11 +535,14 @@ public class TrainData implements IListenable<TrainData> {
         final long now = DragonLib.getCurrentWorldTime() - waitingAtStationTicks();
         long time = now;
 
-        for (int i = 0; i < entryCount; i++) {
+        for (int i = 0; i < entryCount * 2; i++) {
             final int cyclicIndex = (i + getCurrentScheduleIndex()) % entryCount;
             final ScheduleEntry entry = schedule.entries.get(cyclicIndex);
 
-            if (entry.instruction instanceof ChangeTitleInstruction instruction) {
+            if (entry.instruction instanceof IPredictableInstruction instruction) {
+                instruction.predict(this, train.runtime, cyclicIndex, train);
+                continue;
+            } else if (entry.instruction instanceof ChangeTitleInstruction instruction) {
                 currentTitle.set(instruction.getScheduleTitle());
                 continue;
             } else if (!(entry.instruction instanceof DestinationInstruction)) {
@@ -565,7 +569,7 @@ public class TrainData implements IListenable<TrainData> {
                 pred.preInit();
             }
             predictionsChronologically.add(pred);
-            pred.updateRealTime(destination.getFilter(), name.get(), now, time);
+            pred.updateRealTime(destination.getFilter(), name.get(), now, time, currentTitle.get());
             time = pred.realTime().departureTime();
         }
 
@@ -707,8 +711,6 @@ public class TrainData implements IListenable<TrainData> {
 
     /**
      * Called when the train reaches a station.
-     * @param destinationReachTime The time when the train reached this station.
-     * @param createTicksInTransit Ticks measured by Create.
      */
     public void onReachDestination() {        
         if (!isPreInitializationPhase()) {
