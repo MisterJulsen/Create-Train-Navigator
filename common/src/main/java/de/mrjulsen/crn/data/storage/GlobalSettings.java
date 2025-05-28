@@ -87,7 +87,7 @@ public class GlobalSettings implements INBTSerializable {
         if (instance == null) {
             try {
                 instance = GlobalSettings.open(ModCommonEvents.getCurrentServer().get());
-            } catch (IOException e) {
+            } catch (Exception e) {
                 CreateRailwaysNavigator.LOGGER.error("Unable to open settings file.", e);
                 instance = new GlobalSettings(ModCommonEvents.getCurrentServer().get());
             }
@@ -117,7 +117,7 @@ public class GlobalSettings implements INBTSerializable {
         }    
     }
     
-    public synchronized static GlobalSettings open(MinecraftServer server) throws IOException {   
+    public synchronized static GlobalSettings open(MinecraftServer server) throws Exception {   
         File legacyFile = new File(server.getWorldPath(new LevelResource("data/" + LEGACY_FILENAME)).toString()); 
         File settingsFile = new File(server.getWorldPath(new LevelResource("data/" + FILENAME)).toString());    
 
