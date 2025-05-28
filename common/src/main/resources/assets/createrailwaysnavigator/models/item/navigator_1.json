@@ -1,6 +1,0 @@
-{
-	"parent": "createrailwaysnavigator:item/navigator_base",
-	"textures": {
-		"screen": "createrailwaysnavigator:item/navigator_backgrounds/1"
-	}
-}

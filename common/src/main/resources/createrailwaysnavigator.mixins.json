@@ -1,15 +1,13 @@
 {
   "required": true,
-  "package": "${maven_group}.mixin",
+  "package": "de.mrjulsen.crn.mixin",
   "compatibilityLevel": "JAVA_17",
   "minVersion": "0.8",
   "client": [
     "ScheduleScreenAccessor",
     "ModularGuiLineBuilderAccessor",
     "ScheduleScreenMixin",
-    "StationBlockEntityMixin",
-    "ItemRendererMixin",
-    "ModelBakeryMixin"
+    "StationBlockEntityMixin"
   ],
   "mixins": [
     "extensions.ScheduledDelayMixin",

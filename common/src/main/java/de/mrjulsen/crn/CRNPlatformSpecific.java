@@ -2,15 +2,14 @@ package de.mrjulsen.crn;
 
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
 import java.nio.file.Path;
+
+import com.simibubi.create.content.trains.station.GlobalStation;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-
-import com.simibubi.create.content.trains.schedule.ScheduleEntry;
-import com.simibubi.create.content.trains.schedule.ScheduleRuntime;
-import com.simibubi.create.content.trains.schedule.destination.ScheduleInstruction;
 
 public abstract class CRNPlatformSpecific {
     
@@ -29,6 +28,10 @@ public abstract class CRNPlatformSpecific {
         throw new AssertionError();
     }
 
+    @ExpectPlatform
+    public static GlobalStation getStationFromBlockEntity(BlockEntity be) {
+        throw new AssertionError();
+    }
     @ExpectPlatform
     public static Optional<String> getLastKnownPlayerName(UUID uuid) {
         throw new AssertionError();

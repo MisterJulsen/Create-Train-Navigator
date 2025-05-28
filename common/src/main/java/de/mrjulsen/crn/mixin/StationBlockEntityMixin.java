@@ -9,6 +9,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import com.simibubi.create.content.equipment.goggles.IHaveGoggleInformation;
 import com.simibubi.create.content.trains.station.StationBlockEntity;
 import com.simibubi.create.foundation.utility.Lang;
+
+import de.mrjulsen.crn.CRNPlatformSpecific;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.data.train.DepartureHistory;
 import de.mrjulsen.crn.registry.ModAccessorTypes;
@@ -37,12 +39,12 @@ public class StationBlockEntityMixin implements IHaveGoggleInformation {
 
     @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
-        if (self().getStation() == null) {
+        if (CRNPlatformSpecific.getStationFromBlockEntity(self()) == null) {
             return false;
         }
 
         if (Minecraft.getInstance().level.getGameTime() % 100 == 0) {
-            DataAccessor.getFromServer(self().getStation().name, ModAccessorTypes.GET_STATION_DEPARTURE_HISTORY, x -> this.stats = x);
+            DataAccessor.getFromServer(CRNPlatformSpecific.getStationFromBlockEntity(self()).name, ModAccessorTypes.GET_STATION_DEPARTURE_HISTORY, x -> this.stats = x);
         }
         
         Lang.builder(CreateRailwaysNavigator.MOD_ID)

@@ -362,7 +362,7 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
         this.platformLabel
             .setText(TextUtils.text(blockEntity.isPlatformFixed() ?
                 blockEntity.getStationInfo().platform() :
-                stop.getStationData().getScheduledStation().info().platform()).withStyle(ChatFormatting.BOLD)
+                stop.getStationData().getRealTimeStation().info().platform()).withStyle(ChatFormatting.BOLD)
             )
         ;
         
@@ -433,7 +433,7 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
         components[LineComponent.PLATFORM.i()]
             .setText(blockEntity.isPlatformFixed() ?
                 TextUtils.empty() :
-                TextUtils.text(stop.getStationData().getScheduledStation().info().platform()))
+                TextUtils.text(stop.getStationData().getRealTimeStation().info().platform()))
         ;
         components[LineComponent.DESTINATION.i()]
             .setText(isLast ?

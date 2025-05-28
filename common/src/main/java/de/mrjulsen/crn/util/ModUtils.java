@@ -18,7 +18,6 @@ import com.simibubi.create.foundation.utility.Lang;
 
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.exceptions.RuntimeSideException;
-import de.mrjulsen.crn.web.WebsitePreparableReloadListener;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.config.ECachingPriority;
 import de.mrjulsen.mcdragonlib.data.Cache;
@@ -33,8 +32,6 @@ import net.minecraft.world.item.DyeColor;
 public class ModUtils {
 
     private static final Cache<int[]> dyeColorsCache = new Cache<>(() -> Arrays.stream(DyeColor.values()).mapToInt(x -> x == DyeColor.ORANGE ? 0xFFFF9900 : (0xFF << 24) | (x.getTextColor() & 0x00FFFFFF)).toArray(), ECachingPriority.LOW);
-
-    private static WebsitePreparableReloadListener websitemanager;
     
     public static float clockHandDegrees(long time, int divisor) {
         return 360.0F / divisor * (time % divisor);
@@ -105,14 +102,6 @@ public class ModUtils {
             id = DragonLib.RANDOM.nextLong();
         } while (exists.test(id));
         return id;
-    }
-
-    public static void setWebsiteResourceManager(WebsitePreparableReloadListener manager) {
-        websitemanager = manager;
-    }
-
-    public static WebsitePreparableReloadListener getWebsiteResourceManager() {
-        return websitemanager;
     }
 
     /** Client-side only! */

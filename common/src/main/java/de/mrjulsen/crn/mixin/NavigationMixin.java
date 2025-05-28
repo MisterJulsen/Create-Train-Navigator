@@ -174,13 +174,13 @@ public abstract class NavigationMixin implements INavigationExtension {
         remap = false,
         at = @At(
             value = "INVOKE",
-            target = "Ljava/util/Map;getOrDefault",
+            target = "Ljava/util/Map;getOrDefault(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;",
             remap = false
         ),
         slice = @Slice(
             from = @At(
                 value = "INVOKE",
-                target = "Ljava/util/PriorityQueue;<init>",
+                target = "Ljava/util/PriorityQueue;<init>()V",
                 remap = false
             )
         )
@@ -211,7 +211,7 @@ public abstract class NavigationMixin implements INavigationExtension {
         slice = @Slice(
             from = @At(
                 value = "INVOKE",
-                target = "Lcom/simibubi/create/foundation/utility/Couple;create",
+                target = "Lcom/simibubi/create/foundation/utility/Couple;create(Ljava/lang/Object;Ljava/lang/Object;)Lcom/simibubi/create/foundation/utility/Couple;",
                 remap = false
             )
         ),

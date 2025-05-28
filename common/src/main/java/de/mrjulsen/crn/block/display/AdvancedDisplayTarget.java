@@ -5,28 +5,35 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
-
 import com.simibubi.create.content.redstone.displayLink.DisplayLinkContext;
-import com.simibubi.create.content.redstone.displayLink.target.DisplayBoardTarget;
+import com.simibubi.create.content.redstone.displayLink.target.DisplayTarget;
 import com.simibubi.create.content.redstone.displayLink.target.DisplayTargetStats;
 
+import com.simibubi.create.foundation.utility.Lang;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
+import de.mrjulsen.crn.block.display.properties.StaticTextDisplaySettings;
+import de.mrjulsen.crn.block.properties.EDisplayType;
 import de.mrjulsen.crn.block.properties.EDisplayType.EDisplayTypeDataSource;
+import de.mrjulsen.crn.client.AdvancedDisplaysRegistry;
+import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
 import de.mrjulsen.crn.data.train.TrainStop;
 import de.mrjulsen.crn.data.train.TrainUtils;
 import de.mrjulsen.crn.data.train.portable.StationDisplayData;
 import de.mrjulsen.crn.event.ModCommonEvents;
+import de.mrjulsen.crn.registry.ModDisplayTypes;
+import de.mrjulsen.mcdragonlib.core.EAlignment;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
 
-public class AdvancedDisplayTarget extends DisplayBoardTarget {
+public class AdvancedDisplayTarget extends DisplayTarget {
 	
 	private static boolean running = false;
 	private static boolean threadRunning = false;
@@ -37,7 +44,7 @@ public class AdvancedDisplayTarget extends DisplayBoardTarget {
 		while (running && threadRunning) {
 			try {
 				TimeUnit.SECONDS.sleep(1);
-			} catch (InterruptedException e) {}
+			} catch (InterruptedException ignored) {}
 		}
 
 		workerTasks.clear();
@@ -56,7 +63,7 @@ public class AdvancedDisplayTarget extends DisplayBoardTarget {
 				}
 				try {
 					TimeUnit.SECONDS.sleep(1);
-				} catch (InterruptedException e) {}
+				} catch (InterruptedException ignored) {}
 			}
 			workerTasks.clear();
 			CreateRailwaysNavigator.LOGGER.info("Advanced Display Data Manager has been stopped.");
@@ -72,33 +79,83 @@ public class AdvancedDisplayTarget extends DisplayBoardTarget {
 	private static void queueAdvancedDisplayWorkerTask(Runnable task) {
 		workerTasks.add(task);
 	}
-    
-	@Override
-	public void acceptFlapText(int line, List<List<MutableComponent>> text, DisplayLinkContext context) {
 
+	@Override
+	public void acceptText(final int line, List<MutableComponent> text, DisplayLinkContext context) {
 		CompoundTag nbt = context.sourceConfig();
-		if (!nbt.contains(AdvancedDisplaySource.NBT_ADVANCED_DISPLAY)) {
-			return;
-		}
 
 		if (context.getTargetBlockEntity() instanceof AdvancedDisplayBlockEntity blockEntity && ModCommonEvents.hasServer()) {
 			final AdvancedDisplayBlockEntity controller = blockEntity.getController();
+			if (controller == null) {
+				return;
+			}
+
 			long dayTime = context.getTargetBlockEntity().getLevel().getDayTime();
+			boolean advancedDisplaySource = context.blockEntity().activeSource instanceof AdvancedDisplaySource;//nbt.contains(AdvancedDisplaySource.NBT_ADVANCED_DISPLAY);
 
 			queueAdvancedDisplayWorkerTask(() -> {
-				if (controller != null && controller.getDisplayType().category().getSource() == EDisplayTypeDataSource.PLATFORM) {
+				if (advancedDisplaySource) {
 					String filter = context.sourceConfig().getString("Filter");
+
+					if (controller.getDisplayType().category().getSource() != EDisplayTypeDataSource.PLATFORM) {
+						if (!ModCommonConfig.AUTO_UPDATE_DISPLAY_TYPE.get()) return;
+						if (controller.getDisplayType().category() != EDisplayType.PLATFORM) {
+							AdvancedDisplaysRegistry.DisplayTypeResourceKey displayType;
+							if (filter.contains("*")) {
+								displayType = ModDisplayTypes.DEPARTURE_BOARD_TABLE;
+							} else if (controller.getDisplayProperties().singleLined()) {
+								displayType = ModDisplayTypes.PLATFORM_RUNNING_TEXT;
+							} else {
+								displayType = ModDisplayTypes.PLATFORM_TABLE;
+							}
+							ModCommonEvents.getCurrentServer().ifPresent(server -> server.executeIfPossible(() -> {
+								controller.applyToAll(x -> {
+									x.setDisplayType(displayType, null);
+									x.notifyUpdate();
+								});
+							}));
+						}
+					}
+
 					List<StationDisplayData> preds = prepare(filter, controller.getDisplayProperties().platformDisplayTrainsCount().apply(controller));
-					
 					controller.setData(
-						preds,
-						filter,
-						GlobalSettings.getInstance().getOrCreateStationTagFor(filter).getInfoForStation(filter),
-						dayTime
+							preds,
+							filter,
+							GlobalSettings.getInstance().getOrCreateStationTagFor(filter).getInfoForStation(filter),
+							dayTime
 					);
-					ModCommonEvents.getCurrentServer().get().executeIfPossible(controller::sendData);
+					ModCommonEvents.getCurrentServer().ifPresent(x -> x.executeIfPossible(controller::notifyUpdate));
+				} else {
+					if (controller.getDisplayType() != ModDisplayTypes.RICH_TEXT) {
+						if (!ModCommonConfig.AUTO_UPDATE_DISPLAY_TYPE.get()) return;
+					}
+
+					StaticTextDisplaySettings settings = controller.getSettingsAs(StaticTextDisplaySettings.class).orElse(new StaticTextDisplaySettings());
+					int currentLine = line;
+					for (MutableComponent comp : text) {
+						StaticTextDisplaySettings.TextComponent component = new StaticTextDisplaySettings.TextComponent(Component.Serializer.toJson(comp));
+						component.setTextAlignment(EAlignment.LEFT);
+						component.setXScale(0.4f);
+						component.setMinXScale(0.4f);
+						component.setYScale(0.4f);
+						component.setY(currentLine * 5.5f);
+						if (currentLine >= settings.getComponentsCount()) {
+							settings.addComponent(component);
+						} else {
+							settings.setComponent(currentLine, component);
+						}
+						currentLine++;
+						if (currentLine >= controller.getYSize() * 3 - 1) {
+							break;
+						}
+					}
+					ModCommonEvents.getCurrentServer().ifPresent(x -> x.executeIfPossible(() -> controller.applyToAll(a -> {
+						a.setDisplayType(ModDisplayTypes.RICH_TEXT, settings);
+						a.notifyUpdate();
+					})));
 				}
 			});
+
 		}
 	}
 
@@ -125,8 +182,14 @@ public class AdvancedDisplayTarget extends DisplayBoardTarget {
 	public DisplayTargetStats provideStats(DisplayLinkContext context) {
 		AdvancedDisplayBlockEntity controller = getController(context);
 		if (controller == null)
-			return new DisplayTargetStats(1, 1, this);
-		return new DisplayTargetStats(1, 1, this);
+			return new DisplayTargetStats(1, 1024, this);
+
+		return new DisplayTargetStats(context.blockEntity().activeSource instanceof AdvancedDisplaySource ? 1 : 50, 1024, this);
+	}
+
+	@Override
+	public Component getLineOptionText(int line) {
+		return Lang.translateDirect("display_target.advanced_display.component", line + 1);
 	}
 
 	private AdvancedDisplayBlockEntity getController(DisplayLinkContext context) {

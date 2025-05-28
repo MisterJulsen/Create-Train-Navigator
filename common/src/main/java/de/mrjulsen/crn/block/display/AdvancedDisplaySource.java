@@ -7,10 +7,10 @@ import com.simibubi.create.content.redstone.displayLink.DisplayLinkContext;
 import com.simibubi.create.content.redstone.displayLink.source.DisplaySource;
 import com.simibubi.create.content.redstone.displayLink.target.DisplayTargetStats;
 import com.simibubi.create.content.trains.station.GlobalStation;
-import com.simibubi.create.content.trains.station.StationBlockEntity;
 import com.simibubi.create.foundation.gui.ModularGuiLineBuilder;
 import com.simibubi.create.foundation.utility.Lang;
 
+import de.mrjulsen.crn.CRNPlatformSpecific;
 import de.mrjulsen.crn.block.properties.ETimeDisplay;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
@@ -26,6 +26,7 @@ public class AdvancedDisplaySource extends DisplaySource {
 
 	@Override
 	public List<MutableComponent> provideText(DisplayLinkContext context, DisplayTargetStats stats) {
+		context.sourceConfig().putBoolean(NBT_ADVANCED_DISPLAY, true);
 		return EMPTY;
 	}
 
@@ -53,12 +54,11 @@ public class AdvancedDisplaySource extends DisplaySource {
 
 		if (conf.contains(NBT_FILTER))
 			return;
-		if (!(context.getSourceBlockEntity() instanceof StationBlockEntity stationBe))
+
+		GlobalStation station = CRNPlatformSpecific.getStationFromBlockEntity(context.getSourceBlockEntity());
+		if (station == null) {
 			return;
-		
-            GlobalStation station = stationBe.getStation();
-		if (station == null)
-			return;
+		}
 
 		conf.putString(NBT_FILTER, station.name);
 	}
