@@ -1,14 +1,6 @@
 package de.mrjulsen.crn.mixin;
 
 import java.util.Collection;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.LinkedHashMap;
-import java.util.List;
-
-import com.simibubi.create.content.trains.display.GlobalTrainDisplayData;
 import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -18,34 +10,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import com.simibubi.create.content.trains.display.GlobalTrainDisplayData.TrainDeparturePrediction;
-import com.simibubi.create.content.trains.entity.Train;
 import com.simibubi.create.content.trains.graph.DiscoveredPath;
-import com.simibubi.create.content.trains.graph.EdgePointType;
-import com.simibubi.create.content.trains.schedule.Schedule;
 import com.simibubi.create.content.trains.schedule.ScheduleEntry;
 import com.simibubi.create.content.trains.schedule.ScheduleRuntime;
-import com.simibubi.create.content.trains.schedule.condition.ScheduleWaitCondition;
-import com.simibubi.create.content.trains.schedule.condition.ScheduledDelay;
 import com.simibubi.create.content.trains.schedule.destination.DestinationInstruction;
 import com.simibubi.create.content.trains.schedule.destination.ScheduleInstruction;
-import com.simibubi.create.content.trains.station.GlobalStation;
-
-import de.mrjulsen.crn.data.train.TrainListener;
 import de.mrjulsen.crn.event.CRNEventsManager;
 import de.mrjulsen.crn.event.events.ScheduleResetEvent;
 import de.mrjulsen.crn.event.events.SubmitTrainPredictionsEvent;
 import de.mrjulsen.crn.event.events.TrainDestinationChangedEvent;
-import de.mrjulsen.crn.util.PenaltyResult;
-import de.mrjulsen.crn.util.PenaltyResult.Category;
-import de.mrjulsen.crn.util.PenaltyResult.Type;
-import de.mrjulsen.mcdragonlib.data.MapCache;
-import dev.architectury.injectables.annotations.PlatformOnly;
-import de.mrjulsen.crn.CRNPlatformSpecific;
-import de.mrjulsen.crn.data.schedule.INavigationExtension;
-import de.mrjulsen.crn.data.schedule.condition.DynamicDelayCondition;
-import de.mrjulsen.crn.data.schedule.instruction.ICustomSuggestionsInstruction;
-import de.mrjulsen.crn.data.schedule.instruction.IPredictableInstruction;
-import de.mrjulsen.crn.data.schedule.instruction.PrioritizedDestinationInstruction;
 
 @Mixin(ScheduleRuntime.class)
 public class ScheduleRuntimeMixin {
