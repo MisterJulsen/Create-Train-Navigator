@@ -23,6 +23,7 @@ import de.mrjulsen.mcdragonlib.client.ber.BERGraphics;
 import de.mrjulsen.mcdragonlib.client.ber.BERLabel;
 import de.mrjulsen.mcdragonlib.client.ber.BERLabel.BoundsHitReaction;
 import de.mrjulsen.mcdragonlib.client.util.BERUtils;
+import de.mrjulsen.mcdragonlib.util.ColorUtils;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.accessor.DataAccessor;
@@ -423,8 +424,20 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
         trainLineLabel
             .setText(nextStopAnnounced ? CustomLanguage.translate(keyNextStop, displayData.getNextStop().get().getRealTimeStation().tagName()) : TextUtils.text((settings.getTrainTextComponents().showTrainName() ? displayData.getTrainData().getName() + " " : "") + (settings.getTrainTextComponents().showDestination() ? displayData.getNextStop().get().getDestination() : "")).withStyle(ChatFormatting.BOLD))
             .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 6 - (blockEntity.getXSizeScaled() > 1 && !nextStopAnnounced ? timeLabel.getTextWidth() - 4 : 0) - (blockEntity.getXSizeScaled() > 1 && !nextStopAnnounced ? carriageLabel.getTextWidth() - 5 : 0) - (this.exitSide != TrainExitSide.UNKNOWN ? 4 : 0), BoundsHitReaction.SCALE_SCROLL)
-            .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
         ;
+        
+        if (settings.showLineColor() && blockEntity.getTrainData().getTrainData().hasColor() && !nextStopAnnounced) {
+            trainLineLabel
+                .setBackground((0xFF << 24) | (blockEntity.getTrainData().getTrainData().getColor() & 0x00FFFFFF), false)
+                .setColor(ColorUtils.brightnessDependingFontColor(blockEntity.getTrainData().getTrainData().getColor(), LIGHT_FONT_COLOR, DARK_FONT_COLOR))
+            ;
+        } else {
+            trainLineLabel
+                .setBackground(0, false)
+                .setColor((0xFF << 24) | (settings.getFontColor() & 0x00FFFFFF))
+            ;
+        }
+
         speedLabel
             .setText(ModUtils.calcSpeedString(displayData.getSpeed(), ModClientConfig.SPEED_UNIT.get()).withStyle(ChatFormatting.BOLD))
             .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 6, BoundsHitReaction.CUT_OFF)
