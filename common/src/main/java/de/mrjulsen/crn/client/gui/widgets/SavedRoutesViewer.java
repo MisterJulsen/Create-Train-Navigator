@@ -5,7 +5,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
-import de.mrjulsen.crn.data.ISaveableNavigatorData;
+import de.mrjulsen.crn.data.ISavableNavigatorData;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLAbstractScrollBar;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLRenderable;
@@ -26,7 +26,7 @@ public class SavedRoutesViewer extends DLScrollableWidgetContainer {
     private final DLAbstractScrollBar<?> scrollBar;
     private int contentHeight = 0;
 
-    private List<? extends ISaveableNavigatorData> data = List.of();
+    private List<? extends ISavableNavigatorData> data = List.of();
 
     public SavedRoutesViewer(Screen parent, int x, int y, int width, int height, DLAbstractScrollBar<?> scrollBar) {
         super(x, y, width, height);
@@ -48,18 +48,18 @@ public class SavedRoutesViewer extends DLScrollableWidgetContainer {
         displayRoutes(data);
     }
 
-    public void displayRoutes(List<? extends ISaveableNavigatorData> data) {
+    public void displayRoutes(List<? extends ISavableNavigatorData> data) {
         this.data = data;
         Collections.sort(data, Comparator
-            .comparing(x -> ((ISaveableNavigatorData)x).customGroup() == null ? null : ((ISaveableNavigatorData)x).customGroup().getFirst(), Comparator.nullsLast(Comparator.naturalOrder()))
-            .thenComparingLong(x -> ((ISaveableNavigatorData)x).dayOrderValue())
-            .thenComparingLong(x -> ((ISaveableNavigatorData)x).timeOrderValue()));
+            .comparing(x -> ((ISavableNavigatorData)x).customGroup() == null ? null : ((ISavableNavigatorData)x).customGroup().getFirst(), Comparator.nullsLast(Comparator.naturalOrder()))
+            .thenComparingLong(x -> ((ISavableNavigatorData)x).dayOrderValue())
+            .thenComparingLong(x -> ((ISavableNavigatorData)x).timeOrderValue()));
         
         clearWidgets();
         contentHeight = 5;
-        ISaveableNavigatorData lastData = null;
+        ISavableNavigatorData lastData = null;
         for (int i = 0; i < data.size(); i++) {
-            ISaveableNavigatorData d = data.get(i);
+            ISavableNavigatorData d = data.get(i);
 
             if (lastData != null && lastData.customGroup() != d.customGroup()) {
                 contentHeight += addRenderableOnly(new GroupingHeader(x(), y() + contentHeight, width(), (d.customGroup() == null ? TextUtils.empty() : d.customGroup().getSecond()).withStyle(ChatFormatting.BOLD))).height();

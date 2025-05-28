@@ -92,6 +92,8 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
     private BERLabel[][] scheduleLines;
     private BERLabel[][] nextConnectionsLines = new BERLabel[MAX_LINES - 1][];
 
+    private float listDestinationLabelX = 0;
+
 
     private boolean shouldRenderNextConnections() {
         return nextConnections != null && !nextConnections.getConnections().isEmpty() && nextStopAnnounced;
@@ -312,59 +314,60 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
                         }
 
                         final float uv32 = 1f / CRNGui.GUI_WIDTH;
+
                         if (idx == 0 && scheduleLines.length > 1) {
                             BERUtils.renderTexture(
-                                CRNGui.GUI,
-                                graphics,
-                                false,
-                                (a[LineComponent.REAL_TIME.i()] == null ? a[LineComponent.SCHEDULED_TIME.i()].getX() + a[LineComponent.SCHEDULED_TIME.i()].getMaxWidth() : a[LineComponent.REAL_TIME.i()].getX() + a[LineComponent.REAL_TIME.i()].getMaxWidth()) - 1,
-                                a[LineComponent.SCHEDULED_TIME.i()].getY() - 1,
-                                0.0f,
-                                1,
-                                2,
-                                uv32 * 21,
-                                uv32 * 30,
-                                uv32 * (21 + 7),
-                                uv32 * (30 + 14),
-                                graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING),
-                                (0xFF << 24) | (getDisplaySettings(graphics.blockEntity()).getFontColor() & 0x00FFFFFF),
-                                light
+                                    CRNGui.GUI,
+                                    graphics,
+                                    false,
+                                    listDestinationLabelX - 2,
+                                    a[LineComponent.SCHEDULED_TIME.i()].getY() - 1,
+                                    0.0f,
+                                    1,
+                                    2,
+                                    uv32 * 21,
+                                    uv32 * 30,
+                                    uv32 * (21 + 7),
+                                    uv32 * (30 + 14),
+                                    graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING),
+                                    (0xFF << 24) | (getDisplaySettings(graphics.blockEntity()).getFontColor() & 0x00FFFFFF),
+                                    light
                             );
                         } else if (idx >= MAX_LINES - 1) {
                             BERUtils.renderTexture(
-                                CRNGui.GUI,
-                                graphics,
-                                false,
-                                (a[LineComponent.REAL_TIME.i()] == null ? a[LineComponent.SCHEDULED_TIME.i()].getX() + a[LineComponent.SCHEDULED_TIME.i()].getMaxWidth() : a[LineComponent.REAL_TIME.i()].getX() + a[LineComponent.REAL_TIME.i()].getMaxWidth()) - 1,
-                                a[LineComponent.SCHEDULED_TIME.i()].getY() - 1,
-                                0.0f,
-                                1,
-                                2,
-                                uv32 * 35,
-                                uv32 * 30,
-                                uv32 * (35 + 7),
-                                uv32 * (30 + 14),
-                                graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING),
-                                (0xFF << 24) | (getDisplaySettings(graphics.blockEntity()).getFontColor() & 0x00FFFFFF),
-                                light
+                                    CRNGui.GUI,
+                                    graphics,
+                                    false,
+                                    listDestinationLabelX - 2,
+                                    a[LineComponent.SCHEDULED_TIME.i()].getY() - 1,
+                                    0.0f,
+                                    1,
+                                    2,
+                                    uv32 * 35,
+                                    uv32 * 30,
+                                    uv32 * (35 + 7),
+                                    uv32 * (30 + 14),
+                                    graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING),
+                                    (0xFF << 24) | (getDisplaySettings(graphics.blockEntity()).getFontColor() & 0x00FFFFFF),
+                                    light
                             );
                         } else {
                             BERUtils.renderTexture(
-                                CRNGui.GUI,
-                                graphics,
-                                false,
-                                (a[LineComponent.REAL_TIME.i()] == null ? a[LineComponent.SCHEDULED_TIME.i()].getX() + a[LineComponent.SCHEDULED_TIME.i()].getMaxWidth() : a[LineComponent.REAL_TIME.i()].getX() + a[LineComponent.REAL_TIME.i()].getMaxWidth()) - 1,
-                                a[LineComponent.SCHEDULED_TIME.i()].getY() - 1,
-                                0.0f,
-                                1,
-                                2,
-                                uv32 * 28,
-                                uv32 * 30,
-                                uv32 * (28 + 7),
-                                uv32 * (30 + 14),
-                                graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING),
-                                (0xFF << 24) | (getDisplaySettings(graphics.blockEntity()).getFontColor() & 0x00FFFFFF),
-                                light
+                                    CRNGui.GUI,
+                                    graphics,
+                                    false,
+                                    listDestinationLabelX - 2,
+                                    a[LineComponent.SCHEDULED_TIME.i()].getY() - 1,
+                                    0.0f,
+                                    1,
+                                    2,
+                                    uv32 * 28,
+                                    uv32 * 30,
+                                    uv32 * (28 + 7),
+                                    uv32 * (30 + 14),
+                                    graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING),
+                                    (0xFF << 24) | (getDisplaySettings(graphics.blockEntity()).getFontColor() & 0x00FFFFFF),
+                                    light
                             );
                         }
                     });
@@ -510,6 +513,7 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
             DLUtils.doIfNotNull(scheduleLines, x -> {
                 int totalStationsCount = displayData.getStopsFromCurrentStation().size();
                 int linesCount = Math.min(scheduleLines.length, totalStationsCount);
+                listDestinationLabelX = 0;
                 for (int i = 0; i < linesCount; i++) {
                     final int j = i;
                     int k = i >= linesCount - 1 ? totalStationsCount - 1 : i;
@@ -533,12 +537,20 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
                                 .setColor(stop.isArrivalDelayed() ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME)
                             ;
                         }
-                        float pX = a[LineComponent.SCHEDULED_TIME.i()].getX() + a[LineComponent.SCHEDULED_TIME.i()].getTextWidth() + 3 + (a[LineComponent.REAL_TIME.i()] == null ? 0 : a[LineComponent.REAL_TIME.i()].getTextWidth() + 1);
+                        listDestinationLabelX = Math.max(listDestinationLabelX, a[LineComponent.SCHEDULED_TIME.i()].getX() + a[LineComponent.SCHEDULED_TIME.i()].getTextWidth() + 3 + (a[LineComponent.REAL_TIME.i()] == null ? 0 : a[LineComponent.REAL_TIME.i()].getTextWidth() + 1));
+                    });
+                }
+
+                for (int i = 0; i < linesCount; i++) {
+                    final int j = i;
+                    int k = i >= linesCount - 1 ? totalStationsCount - 1 : i;
+                    DLUtils.doIfNotNull(scheduleLines[i], a -> {
+                        TrainStopDisplayData stop = displayData.getStopsFromCurrentStation().get(k);
                         a[LineComponent.DESTINATION.i()]
-                            .setPos(pX, 6 + j * 2)
-                            .setText(TextUtils.text(stop.getRealTimeStation().tagName()).withStyle(j >= linesCount - 1 ? ChatFormatting.BOLD : ChatFormatting.RESET))
-                            .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 3 - pX, BoundsHitReaction.SCALE_SCROLL)
-                            .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
+                                .setPos(listDestinationLabelX, 6 + j * 2)
+                                .setText(TextUtils.text(stop.getRealTimeStation().tagName()).withStyle(j >= linesCount - 1 ? ChatFormatting.BOLD : ChatFormatting.RESET))
+                                .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 3 - listDestinationLabelX, BoundsHitReaction.SCALE_SCROLL)
+                                .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
                         ;
                     });
                 }

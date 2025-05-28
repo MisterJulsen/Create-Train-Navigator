@@ -10,7 +10,6 @@ import de.mrjulsen.crn.data.storage.GlobalSettings;
 import de.mrjulsen.crn.data.train.DepartureHistory;
 import de.mrjulsen.crn.data.train.TrainData;
 import de.mrjulsen.crn.data.train.TrainListener;
-import de.mrjulsen.crn.event.events.CreateTrainPredictionEvent;
 import de.mrjulsen.crn.event.events.GlobalTrainDisplayDataRefreshEventPost;
 import de.mrjulsen.crn.event.events.GlobalTrainDisplayDataRefreshEventPre;
 import de.mrjulsen.crn.event.events.ScheduleResetEvent;
@@ -50,7 +49,6 @@ public class ModCommonEvents {
             CRNEventsManager.registerEvent(TrainDestinationChangedEvent::new);
             CRNEventsManager.registerEvent(TrainArrivalAndDepartureEvent::new);
             CRNEventsManager.registerEvent(SubmitTrainPredictionsEvent::new);
-            CRNEventsManager.registerEvent(CreateTrainPredictionEvent::new);
             CRNEventsManager.registerEvent(ScheduleResetEvent::new);
             CRNEventsManager.registerEvent(TotalDurationTimeChangedEvent::new);
 

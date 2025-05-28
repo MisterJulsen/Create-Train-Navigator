@@ -395,7 +395,7 @@ public class StaticTextDisplaySettings extends BasicDisplaySettings implements I
     }
 
     public void verifyComponents() {
-        TextComponent current = this.components.get(getSelectedComponentIndex());
+        TextComponent current = getSelectedComponentIndex() > 0 && getSelectedComponentIndex() < this.components.size() ? this.components.get(getSelectedComponentIndex()) : null;
         Iterator<TextComponent> components = this.components.iterator();
         int i = 1;
         while (components.hasNext()) {
@@ -405,7 +405,7 @@ public class StaticTextDisplaySettings extends BasicDisplaySettings implements I
             }
             i++;
         }
-        int k = this.components.indexOf(current);
+        int k = current == null ? -1 : this.components.indexOf(current);
         if (k < 0) {
             this.setSelectedComponentIndex(getSelectedComponentIndex());
         }

@@ -8,12 +8,12 @@ import de.mrjulsen.mcdragonlib.data.Pair;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
-public interface ISaveableNavigatorData {
+public interface ISavableNavigatorData {
 
     /** All lines with information to be displayed in the overview. */
-    List<SaveableNavigatorDataLine> getOverviewData();
+    List<SavableNavigatorDataLine> getOverviewData();
     /** Content of the title line. */
-    SaveableNavigatorDataLine getTitle();
+    SavableNavigatorDataLine getTitle();
     /** The value (usually the time at which the corresponding entry is relevant) by which the items are sorted and grouped. */
     long timeOrderValue();
     default long dayOrderValue() {
@@ -24,5 +24,5 @@ public interface ISaveableNavigatorData {
         return null;
     }
 
-    public static record SaveableNavigatorDataLine(Component text, Sprite icon) {}
+    public static record SavableNavigatorDataLine(Component text, Sprite icon) {}
 }
