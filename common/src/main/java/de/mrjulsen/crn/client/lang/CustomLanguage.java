@@ -31,7 +31,9 @@ public enum CustomLanguage implements StringRepresentable {
     CZECH("czech", "cs_cz"),
     GERMAN_SWITZERLAND("german_switzerland", "de_ch"),
     ROMANIAN("romanian", "ro_ro"),
-    TURKISH("turkish", "tr_tr");
+    TURKISH("turkish", "tr_tr"),
+    HUNGARIAN("hungarian", "hu_hu"),
+    HEBREW("hebrew", "he_il");
 
     private String name;
     private String code;
