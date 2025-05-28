@@ -29,7 +29,6 @@ import de.mrjulsen.crn.event.events.GlobalTrainDisplayDataRefreshEventPre;
 import de.mrjulsen.crn.event.events.ScheduleResetEvent;
 import de.mrjulsen.crn.event.events.TotalDurationTimeChangedEvent;
 import de.mrjulsen.crn.event.events.TrainArrivalAndDepartureEvent;
-import de.mrjulsen.crn.event.events.TrainDestinationChangedEvent;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;

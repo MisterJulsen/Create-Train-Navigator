@@ -170,8 +170,22 @@ public class TravelSectionInstruction extends ScheduleInstruction implements IPr
         return new ScheduleSection(
             data,
             index,
-            !this.data.contains(categoryNbtKey) ? null : GlobalSettings.getInstance().getTrainCategory(this.data.getTagType(categoryNbtKey) == Tag.TAG_STRING ? TrainCategory.genMD5Uuid(this.data.getString(categoryNbtKey)) : this.data.getUUID(categoryNbtKey)).orElse(null),
-            !this.data.contains(NBT_TRAIN_LINE) ? null : GlobalSettings.getInstance().getTrainLine(this.data.getTagType(NBT_TRAIN_LINE) == Tag.TAG_STRING ? TrainCategory.genMD5Uuid(this.data.getString(NBT_TRAIN_LINE)) : this.data.getUUID(NBT_TRAIN_LINE)).orElse(null),
+            !this.data.contains(categoryNbtKey) || (this.data.getTagType(categoryNbtKey) != Tag.TAG_STRING && this.data.getTagType(categoryNbtKey) != Tag.TAG_INT_ARRAY)
+                ? null
+                : GlobalSettings.getInstance().getTrainCategory(
+                    this.data.getTagType(categoryNbtKey) == Tag.TAG_STRING
+                        ? TrainCategory.genMD5Uuid(this.data.getString(categoryNbtKey))
+                        : this.data.getUUID(categoryNbtKey)
+                    ).orElse(null),
+
+            !this.data.contains(NBT_TRAIN_LINE) || (this.data.getTagType(NBT_TRAIN_LINE) != Tag.TAG_STRING && this.data.getTagType(NBT_TRAIN_LINE) != Tag.TAG_INT_ARRAY)
+                ? null
+                : GlobalSettings.getInstance().getTrainLine(
+                    this.data.getTagType(NBT_TRAIN_LINE) == Tag.TAG_STRING
+                        ? TrainCategory.genMD5Uuid(this.data.getString(NBT_TRAIN_LINE))
+                        : this.data.getUUID(NBT_TRAIN_LINE)
+                    ).orElse(null),
+                    
             this.data.getBoolean(NBT_INCLUDE_PREVIOUS_STATION),
             this.data.getBoolean(NBT_USABLE)
         );
