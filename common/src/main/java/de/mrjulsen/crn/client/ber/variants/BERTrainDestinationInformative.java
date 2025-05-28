@@ -9,6 +9,7 @@ import de.mrjulsen.mcdragonlib.client.ber.BERGraphics;
 import de.mrjulsen.mcdragonlib.client.ber.BERLabel;
 import de.mrjulsen.mcdragonlib.client.ber.BERLabel.BoundsHitReaction;
 import de.mrjulsen.mcdragonlib.client.util.BERUtils;
+import de.mrjulsen.mcdragonlib.util.ColorUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -131,8 +132,20 @@ public class BERTrainDestinationInformative implements AbstractAdvancedDisplayRe
             .setPos(3, 2.5f)
             .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 6 - carriageIndexLabel.getTextWidth() - 5, BoundsHitReaction.SCALE_SCROLL)
             .setText(TextUtils.text(blockEntity.getTrainData().getTrainData().getName()).withStyle(ChatFormatting.BOLD))
-            .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
         ;
+
+        if (settings.showLineColor() && blockEntity.getTrainData().getTrainData().hasColor()) {
+            trainLineLabel
+                .setBackground((0xFF << 24) | (blockEntity.getTrainData().getTrainData().getColor() & 0x00FFFFFF), false)
+                .setColor(ColorUtils.brightnessDependingFontColor(blockEntity.getTrainData().getTrainData().getColor(), LIGHT_FONT_COLOR, DARK_FONT_COLOR))
+            ;
+        } else {
+            trainLineLabel
+                .setBackground(0, false)
+                .setColor((0xFF << 24) | (settings.getFontColor() & 0x00FFFFFF))
+            ;
+        }
+        
         fromLabel
             .setPos(6, 6)
             .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 9, BoundsHitReaction.SCALE_SCROLL)
