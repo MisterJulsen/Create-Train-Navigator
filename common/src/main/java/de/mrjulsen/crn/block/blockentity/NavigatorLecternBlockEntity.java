@@ -1,13 +1,15 @@
 package de.mrjulsen.crn.block.blockentity;
 
-import com.simibubi.create.AllItems;
-import com.simibubi.create.content.redstone.link.controller.LecternControllerBlock;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+
+import de.mrjulsen.crn.block.NavigatorLecternBlock;
 import de.mrjulsen.crn.registry.ModItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -52,7 +54,7 @@ public class NavigatorLecternBlockEntity extends SmartBlockEntity {
     public void setNavigator(ItemStack newNavigator) {
         if (newNavigator != null) {
             navigatorNbt = newNavigator.getTag();
-            //SoundEvents.ITEM_FRAME_PLACE.(level, worldPosition);
+            level.playSound(null, getBlockPos(), SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, 0.8F, 1.0F);
         }
     }
 
@@ -68,7 +70,7 @@ public class NavigatorLecternBlockEntity extends SmartBlockEntity {
     }
 
     public void dropController(BlockState state) {
-        Direction dir = state.getValue(LecternControllerBlock.FACING);
+        Direction dir = state.getValue(NavigatorLecternBlock.FACING);
         double x = worldPosition.getX() + 0.5 + 0.25 * dir.getStepX();
         double y = worldPosition.getY() + 1;
         double z = worldPosition.getZ() + 0.5 + 0.25 * dir.getStepZ();
@@ -76,6 +78,7 @@ public class NavigatorLecternBlockEntity extends SmartBlockEntity {
         itementity.setDefaultPickUpDelay();
         level.addFreshEntity(itementity);
         navigatorNbt = new CompoundTag();
+        level.playSound(null, getBlockPos(), SoundEvents.ITEM_FRAME_REMOVE_ITEM, SoundSource.BLOCKS, 0.8F, 1.0F);
     }
 
     public static boolean playerInRange(Player player, Level world, BlockPos pos) {
