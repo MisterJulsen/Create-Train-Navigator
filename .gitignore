@@ -11,6 +11,8 @@ bin/
 libs/
 doc/
 
+.gradle/
+*/.gradle/
 .classpath
 .project
 .idea/

@@ -1,41 +1,31 @@
 {
     "type": "create:mechanical_crafting",
-    "acceptMirrored": true,
+    "accept_mirrored": true,
     "key": {
-      "A": [
-          {
-              "item": "create:andesite_alloy"
-          }
-      ],
-      "I": [
-          {
-              "tag": "c:plates/iron"
-          }
-      ],
-      "G": [
-          {
-              "tag": "c:glass_panes/colorless"
-          }
-      ],
-      "P": [
-          {
-              "item": "create:precision_mechanism"
-          }
-      ],
-      "C": [
-          {
-              "tag": "c:plates/copper"
-          }
-      ]
+        "A": {
+            "item": "create:andesite_alloy"
+        },
+        "I": {
+            "tag": "c:plates/iron"
+        },
+        "G": {
+            "tag": "c:glass_panes/colorless"
+        },
+        "P": {
+            "item": "create:precision_mechanism"
+        },
+        "C": {
+            "tag": "c:plates/copper"
+        }
     },
     "pattern": [
-      "AIA",
-      "IGI",
-      "IPI",
-      "ACA"
+        "AIA",
+        "IGI",
+        "IPI",
+        "ACA"
     ],
     "result": {
-      "id": "createrailwaysnavigator:navigator",
+        "id": "createrailwaysnavigator:navigator",
         "count": 1
     }
-  }
+}
