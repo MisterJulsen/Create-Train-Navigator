@@ -23,7 +23,8 @@
     "NavigationMixin",
     "ScheduleEntryMixin",
     "FrontierEntryMixin",
-    "TrainPenaltyAccessor"
+    "TrainPenaltyAccessor",
+    "LecternBlockMixin"
   ],
   "injectors": {
     "defaultRequire": 1

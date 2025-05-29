@@ -350,7 +350,11 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 			if (controller != null) {
 				SimpleStaticTextDisplaySettings settings = new SimpleStaticTextDisplaySettings();
 				settings.setStaticText(Component.Serializer.toJson(stack.get(DataComponents.CUSTOM_NAME), RegistryAccess.EMPTY));
-				DLNetworkManager.sendToServer(new AdvancedDisplayUpdatePacket(controller.getLevel(), controller.getBlockPos(), ModDisplayTypes.SIMPLE_TEXT, controller.getBlockState().getValue(AbstractAdvancedSidedDisplayBlock.SIDE) == ESide.BOTH, settings));
+				boolean doubleSided = false;
+				if (controller.getBlockState().getBlock() instanceof AbstractAdvancedSidedDisplayBlock) {
+					doubleSided = controller.getBlockState().getValue(AbstractAdvancedSidedDisplayBlock.SIDE) == ESide.BOTH;
+				}
+				DLNetworkManager.sendToServer(new AdvancedDisplayUpdatePacket(controller.getLevel(), controller.getBlockPos(), ModDisplayTypes.SIMPLE_TEXT, doubleSided, settings));
 				return ItemInteractionResult.SUCCESS;
 			}
 		} else if (AllBlocks.CLIPBOARD.isIn(stack) && level.isClientSide) {
@@ -378,7 +382,11 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 						}
 					}
 				}
-				DLNetworkManager.sendToServer(new AdvancedDisplayUpdatePacket(controller.getLevel(), controller.getBlockPos(), ModDisplayTypes.RICH_TEXT, controller.getBlockState().getValue(AbstractAdvancedSidedDisplayBlock.SIDE) == ESide.BOTH, settings));
+				boolean doubleSided = false;
+				if (controller.getBlockState().getBlock() instanceof AbstractAdvancedSidedDisplayBlock) {
+					doubleSided = controller.getBlockState().getValue(AbstractAdvancedSidedDisplayBlock.SIDE) == ESide.BOTH;
+				}
+				DLNetworkManager.sendToServer(new AdvancedDisplayUpdatePacket(controller.getLevel(), controller.getBlockPos(), ModDisplayTypes.RICH_TEXT, doubleSided, settings));
 				return ItemInteractionResult.SUCCESS;
 			}
 		}

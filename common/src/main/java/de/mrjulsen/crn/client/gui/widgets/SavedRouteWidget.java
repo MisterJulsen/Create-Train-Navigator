@@ -6,9 +6,9 @@ import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.ColorShade;
 import de.mrjulsen.crn.client.gui.screen.RouteDetailsScreen;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
-import de.mrjulsen.crn.data.ISaveableNavigatorData;
+import de.mrjulsen.crn.data.ISavableNavigatorData;
 import de.mrjulsen.crn.data.SavedRoutesManager;
-import de.mrjulsen.crn.data.ISaveableNavigatorData.SaveableNavigatorDataLine;
+import de.mrjulsen.crn.data.ISavableNavigatorData.SavableNavigatorDataLine;
 import de.mrjulsen.crn.data.navigation.ClientRoute;
 import de.mrjulsen.crn.data.navigation.Route;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLButton;
@@ -35,7 +35,7 @@ public class SavedRouteWidget extends DLButton {
 
     private static final int DISPLAY_WIDTH = WIDTH - 20;
     
-    private final ISaveableNavigatorData data;
+    private final ISavableNavigatorData data;
 
     private final MutableComponent transferText = CustomLanguage.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.route_entry.transfer");
     private final MutableComponent connectionInPast = CustomLanguage.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.route_entry.connection_in_past");
@@ -45,7 +45,7 @@ public class SavedRouteWidget extends DLButton {
     private final MutableComponent textShare = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".saved_route_widget.share");
     private final MutableComponent textShowNotifications = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".saved_route_widget.notifications");
 
-    public SavedRouteWidget(SavedRoutesViewer parent, int x, int y, ISaveableNavigatorData data) {
+    public SavedRouteWidget(SavedRoutesViewer parent, int x, int y, ISavableNavigatorData data) {
         super(x, y, WIDTH, 50, TextUtils.empty(), (b) -> clickAction(parent, data));
         this.data = data;
         set_height(HEADER_HEIGHT + 10 + data.getOverviewData().stream().mapToInt(a -> (int)(Math.max(DEFAULT_LINE_HEIGHT, ClientWrapper.getTextBlockHeight(font, a.text(), (int)(DISPLAY_WIDTH / DEFAULT_SCALE))) * DEFAULT_SCALE)).sum());
@@ -69,7 +69,7 @@ public class SavedRouteWidget extends DLButton {
         ));
     }
 
-    private static void clickAction(SavedRoutesViewer parent, ISaveableNavigatorData data) {
+    private static void clickAction(SavedRoutesViewer parent, ISavableNavigatorData data) {
         if (data instanceof ClientRoute route) {
             Minecraft.getInstance().setScreen(new RouteDetailsScreen(parent.getParent(), route));
         }
@@ -90,7 +90,7 @@ public class SavedRouteWidget extends DLButton {
         
         graphics.poseStack().pushPose();
         graphics.poseStack().translate(x() + 10, y() + HEADER_HEIGHT, 0);
-        for (SaveableNavigatorDataLine line : data.getOverviewData()) {
+        for (SavableNavigatorDataLine line : data.getOverviewData()) {
             graphics.poseStack().pushPose();
             graphics.poseStack().scale(DEFAULT_SCALE, DEFAULT_SCALE, 1);
             line.icon().render(graphics, 0, -2);

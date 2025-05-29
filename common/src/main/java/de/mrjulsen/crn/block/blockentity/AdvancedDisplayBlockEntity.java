@@ -305,7 +305,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
      */
     public void setDisplayType(DisplayTypeResourceKey key,  IDisplaySettings settings) {
         this.displayTypeId = key;
-        this.displayTypeSettings = settings;
+        this.displayTypeSettings = settings == null ? AdvancedDisplaysRegistry.createSettings(key) : settings;
         if (level.isClientSide) {
             getRenderer().update(level, worldPosition, getBlockState(), this, EUpdateReason.LAYOUT_CHANGED);
         }

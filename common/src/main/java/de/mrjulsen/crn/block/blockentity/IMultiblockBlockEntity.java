@@ -56,6 +56,5 @@ public interface IMultiblockBlockEntity<T extends BlockEntity & IMultiblockBlock
                 }
             }
 		}
-        
 	}
 }

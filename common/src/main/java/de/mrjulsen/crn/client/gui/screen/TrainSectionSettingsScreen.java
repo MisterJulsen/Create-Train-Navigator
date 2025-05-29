@@ -156,11 +156,13 @@ public class TrainSectionSettingsScreen extends DLScreen {
         addTooltip(DLTooltip.of(tooltipGlobalSettings).assignedTo(globalSettingsButton));
 
         GlobalSettingsClient.getTrainCategories((trainCategories) -> {
-            this.categoriesById = trainCategories.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
+            List<TrainCategory> orderedCategories = trainCategories.stream().sorted((a, b) -> a.getCategoryName().compareToIgnoreCase(b.getCategoryName())).toList();
+            this.categoriesById = orderedCategories.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
             GlobalSettingsClient.getTrainLines((trainLines) -> {
-                this.linesById = trainLines.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
+                List<TrainLine> orderedLines = trainLines.stream().sorted((a, b) -> a.getLineName().compareToIgnoreCase(b.getLineName())).toList();
+                this.linesById = orderedLines.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
 
-                List<MutableComponent> categoriesList = new ArrayList<>(trainCategories.stream().map(x -> TextUtils.text(x.getCategoryName())).toList());
+                List<MutableComponent> categoriesList = new ArrayList<>(orderedCategories.stream().map(x -> TextUtils.text(x.getCategoryName())).toList());
                 categoriesList.add(0, textNone);
                 displayTypeLabel = addRenderableWidget(new DLCreateLabel(guiLeft + 45 + 5, guiTop + 23 + 5, TextUtils.empty()).withShadow());
                 displayTypeInput = addRenderableWidget(new DLCreateSelectionScrollInput(this, guiLeft + 45, guiTop + 23, 138, 18)
@@ -168,13 +170,13 @@ public class TrainSectionSettingsScreen extends DLScreen {
                     .titled(tooltipTrainCatrgory)
                     .writingTo(displayTypeLabel)
                     .calling((i) -> {
-                        this.trainCategoryId = i <= 0 ? null : trainCategories.get(i - 1).getId();
+                        this.trainCategoryId = i <= 0 ? null : orderedCategories.get(i - 1).getId();
                     })
-                    .setState(trainCategoryId != null && categoriesById.containsKey(trainCategoryId) ? trainCategories.indexOf(categoriesById.get(trainCategoryId)) + 1 : 0)
+                    .setState(trainCategoryId != null && categoriesById.containsKey(trainCategoryId) ? orderedCategories.indexOf(categoriesById.get(trainCategoryId)) + 1 : 0)
                 );
                 displayTypeInput.onChanged();
 
-                List<MutableComponent> linesList = new ArrayList<>(trainLines.stream().map(x -> TextUtils.text(x.getLineName())).toList());
+                List<MutableComponent> linesList = new ArrayList<>(orderedLines.stream().map(x -> TextUtils.text(x.getLineName())).toList());
                 linesList.add(0, textNone);
                 infoTypeLabel = addRenderableWidget(new DLCreateLabel(guiLeft + 45 + 5, guiTop + 45 + 5, TextUtils.empty()).withShadow());
                 infoTypeInput = addRenderableWidget(new DLCreateSelectionScrollInput(this, guiLeft + 45, guiTop + 45, 138, 18)
@@ -182,9 +184,9 @@ public class TrainSectionSettingsScreen extends DLScreen {
                     .titled(tooltipTrainLine)
                     .writingTo(infoTypeLabel)
                     .calling((i) -> {
-                        this.trainLineId = i <= 0 ? null : trainLines.get(i - 1).getId();
+                        this.trainLineId = i <= 0 ? null : orderedLines.get(i - 1).getId();
                     })
-                    .setState(trainLineId != null && linesById.containsKey(trainLineId) ? trainLines.indexOf(linesById.get(trainLineId)) + 1 : 0)
+                    .setState(trainLineId != null && linesById.containsKey(trainLineId) ? orderedLines.indexOf(linesById.get(trainLineId)) + 1 : 0)
                 );
                 infoTypeInput.onChanged();  
 

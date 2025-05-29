@@ -137,7 +137,7 @@ public abstract class NavigationMixin implements INavigationExtension {
 
     @Redirect(method = "search(DDZLjava/util/ArrayList;Lcom/simibubi/create/content/trains/entity/Navigation$StationTest;)V", remap = false, at = @At(value = "INVOKE", target = "Lcom/simibubi/create/content/trains/entity/Navigation$StationTest;test(DDLjava/util/Map;Lnet/createmod/catnip/data/Pair;Lcom/simibubi/create/content/trains/station/GlobalStation;)Z", remap = false))
     public boolean onTestStation(StationTest test, double distance, double cost, Map<TrackEdge, net.createmod.catnip.data.Pair<Boolean, Couple<TrackNode>>> reachedVia, net.createmod.catnip.data.Pair<Couple<TrackNode>, TrackEdge> current, GlobalStation station) {
-        boolean b = test.test(distance, cost, reachedVia, current, station);
+        boolean b = test.test(distance, cost, reachedVia, current, station);        
         if (this.shouldCheckPenalties && b) {
             this.finalReasonByDirection.put(forward, new PenaltyResult(currentReasons));
         }
@@ -155,7 +155,7 @@ public abstract class NavigationMixin implements INavigationExtension {
 
     @Redirect(method = "search(DDZLjava/util/ArrayList;Lcom/simibubi/create/content/trains/entity/Navigation$StationTest;)V", remap = false, at = @At(value = "FIELD", target = "Lcom/simibubi/create/content/trains/entity/Navigation$FrontierEntry;penalty:I", remap = false, opcode = Opcodes.GETFIELD))
     public int onCreateFrontierEntry(@Coerce Object obj) {
-        IFrontierEntry entry = (IFrontierEntry)obj;
+        IFrontierEntry entry = (IFrontierEntry)obj;        
         if (this.shouldCheckPenalties) {
             this.currentReasons = new PenaltyResult(entry.getPenaltyReasons());
         }
@@ -164,7 +164,7 @@ public abstract class NavigationMixin implements INavigationExtension {
 
     @Redirect(method = "search(DDZLjava/util/ArrayList;Lcom/simibubi/create/content/trains/entity/Navigation$StationTest;)V", remap = false, at = @At(value = "INVOKE", target = "Lcom/simibubi/create/content/trains/signal/SignalBoundary;isForcedRed(Lcom/simibubi/create/content/trains/graph/TrackNode;)Z", remap = false))
     public boolean onForceRed(SignalBoundary signal, TrackNode node) {
-        boolean b = signal.isForcedRed(node);
+        boolean b = signal.isForcedRed(node);        
         if (this.shouldCheckPenalties && b) {
             this.currentReasons.add(PenaltyResult.Type.REDSTONE_RED_SIGNAL);
         }
@@ -219,7 +219,7 @@ public abstract class NavigationMixin implements INavigationExtension {
         ),
         locals = LocalCapture.CAPTURE_FAILHARD
     )
-    public void selectDirection(@Coerce Object a, double maxCost, CallbackInfoReturnable<Object> cir, TrackGraph graph, Couple<Object> results) {
+    public void selectDirection(ArrayList<GlobalStation> destinations, double maxCost, CallbackInfoReturnable<DiscoveredPath> cir, TrackGraph graph, Couple<DiscoveredPath> results) {
         if (this.shouldCheckPenalties) {
             Object selected = cir.getReturnValue();
             this.isForwardSelected = results.getFirst() == selected;
