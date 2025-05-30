@@ -67,7 +67,7 @@ public class BERTrainDestinationInformative implements AbstractAdvancedDisplayRe
         BERUtils.renderTexture(CARRIAGE_ICON, graphics, false, graphics.blockEntity().getXSizeScaled() * 16 - 7 - carriageIndexLabel.getTextWidth(), 2.5f, 0, 3, 2, uv * 22, uv * 231, uv * 22 + uv * 13, uv * 231 + uv * 5, graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING).getOpposite(), (0xFF << 24) | (getDisplaySettings(graphics.blockEntity()).getFontColor() & 0x00FFFFFF), light);
         carriageIndexLabel.render(graphics, light);
 
-        if (graphics.blockEntity().getTrainData() == null || graphics.blockEntity().getTrainData().isEmpty()) {
+        if (graphics.blockEntity().getTrainData() == null || graphics.blockEntity().getTrainData().isOutOfService()) {
             return;
         }
 
@@ -115,7 +115,7 @@ public class BERTrainDestinationInformative implements AbstractAdvancedDisplayRe
 
     @Override
     public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason) {
-        if (blockEntity.getTrainData() == null || blockEntity.getTrainData().isEmpty()) {
+        if (blockEntity.getTrainData() == null || blockEntity.getTrainData().isOutOfService()) {
             return;
         }
         updateContent(blockEntity);
@@ -162,7 +162,7 @@ public class BERTrainDestinationInformative implements AbstractAdvancedDisplayRe
         destinationLabel
             .setPos(6, 11)
             .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 9, BoundsHitReaction.SCALE_SCROLL)
-            .setText(TextUtils.text(blockEntity.getTrainData().getNextStop().isPresent() ? blockEntity.getTrainData().getNextStop().get().getDestination() : "").withStyle(ChatFormatting.BOLD))
+            .setText(TextUtils.text(blockEntity.getTrainData().getCurrentStop().isPresent() ? blockEntity.getTrainData().getCurrentStop().get().getDestination() : "").withStyle(ChatFormatting.BOLD))
             .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
         ;
     }

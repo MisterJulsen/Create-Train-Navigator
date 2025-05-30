@@ -512,7 +512,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         syncTicks++;       
         if ((syncTicks %= 100) == 0 && level.isClientSide) {
             DataAccessor.getFromServer(((CarriageContraptionEntity)carriage.entity).trainId, ModAccessorTypes.GET_TRAIN_DISPLAY_DATA_FROM_SERVER, (data) -> { 
-                if (data.isEmpty() && this.trainData.isEmpty()) {
+                if (data.isOutOfService() && !data.doNotBoard() && this.trainData.isOutOfService() && !this.trainData.doNotBoard()) {
                     return;
                 }
 
