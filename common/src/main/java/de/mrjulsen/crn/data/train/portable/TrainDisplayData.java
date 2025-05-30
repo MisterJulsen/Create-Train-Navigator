@@ -81,20 +81,33 @@ public class TrainDisplayData {
         this.stopsFromHere = new Cache<>(() -> {
             boolean startFound = false;
             List<TrainStopDisplayData> list = new ArrayList<>();
+            int targetIndex = getCurrentScheduleIndex();
             int idx = 0;
+            int startIndex = -1;
+            int lastIdx = -1;
+            
             for (int i = 0; i < getAllStops().size(); i++) {
                 TrainStopDisplayData stop = getAllStops().get(i);
-                if (!startFound && stop.getStationEntryIndex() >= getCurrentScheduleIndex()) {
+                int stopIdx = stop.getStationEntryIndex();
+                if (startIndex < 0) {
+                    startIndex = stopIdx;
+                }
+                if (lastIdx > stopIdx) {
+                    startIndex = 0;
+                }
+                if (!startFound && targetIndex >= startIndex && stopIdx >= targetIndex) {
                     startFound = true;
                     idx = i;
                 }
+                lastIdx = stopIdx;
+                
                 if (!startFound) continue;
                 list.add(stop);
             }
             return Pair.of(idx, list);
         });
-        this.isWaitingAtStation = (this.stopsFromHere.get().getSecond().isEmpty() || this.stopsFromHere.get().getSecond().get(0).getStationEntryIndex() == getCurrentScheduleIndex()) && isWaitingAtStation;
-        this.stopovers = new Cache<>(() -> getStopsFromCurrentStation().size() > (isWaitingAtStation() ? 2 : 1) ? getStopsFromCurrentStation().stream().limit(getStopsFromCurrentStation().size() - 1).skip(isWaitingAtStation() ? 1 : 0).toList() : List.of());
+        this.isWaitingAtStation = isWaitingAtStation && (this.stopsFromHere.get().getSecond().isEmpty() || this.stopsFromHere.get().getSecond().get(0).getStationEntryIndex() == getCurrentScheduleIndex());
+        this.stopovers = new Cache<>(() -> getStopsFromCurrentStation().size() > (isWaitingAtStation ? 2 : 1) ? getStopsFromCurrentStation().stream().limit(getStopsFromCurrentStation().size() - 1).skip(isWaitingAtStation ? 1 : 0).toList() : List.of());
         this.outOfService = outOfService;
         this.doNotBoard = doNotBoard;
     }
