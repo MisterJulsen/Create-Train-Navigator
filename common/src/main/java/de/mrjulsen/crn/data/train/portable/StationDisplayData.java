@@ -84,8 +84,8 @@ public class StationDisplayData {
                 }
             }
             ScheduleSection sectionForOrigin = section;
-            if (isLastStopOfSection && isFirstStopOfSection) {
-                section = previousSection;
+            if (isFirstStopOfSection) {
+                sectionForOrigin = previousSection;
             }
             String firstStop = sectionForOrigin.getFirstStop().isPresent() ? sectionForOrigin.getFirstStop().get().getStationTag().getTagName().get() : "?";
 

@@ -324,7 +324,7 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
 
     private void updateFocusContent(AdvancedDisplayBlockEntity blockEntity, StationDisplayData stop) {
         PlatformDisplayFocusSettings settings = getDisplaySettings(blockEntity);
-        boolean isLast = settings.showArrival() && stop.isLastStop();
+        boolean isLast = (settings.showArrival() && stop.shouldShowArrivalOfTrain()) || stop.isNextSectionExcluded();
 
         followingTrainsLabel
             .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
@@ -401,7 +401,7 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
 
     private void updateTableContent(AdvancedDisplayBlockEntity blockEntity, StationDisplayData stop, int index) {
         PlatformDisplayFocusSettings settings = getDisplaySettings(blockEntity);
-        boolean isLast = (settings.showArrival() && stop.isLastStop()) || stop.isNextSectionExcluded();
+        boolean isLast = (settings.showArrival() && stop.shouldShowArrivalOfTrain()) || stop.isNextSectionExcluded();
 
         BERLabel[] components = lines[index];
         components[LineComponent.TIME.i()]
