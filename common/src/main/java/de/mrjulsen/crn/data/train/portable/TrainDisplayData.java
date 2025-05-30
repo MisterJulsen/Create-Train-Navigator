@@ -16,6 +16,7 @@ import de.mrjulsen.crn.data.train.ScheduleSection;
 import de.mrjulsen.crn.data.train.TrainUtils;
 import de.mrjulsen.crn.event.ModCommonEvents;
 import de.mrjulsen.mcdragonlib.data.Cache;
+import de.mrjulsen.mcdragonlib.data.Pair;
 import de.mrjulsen.mcdragonlib.data.Single.MutableSingle;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -29,9 +30,10 @@ public class TrainDisplayData {
     private final boolean oppositeDirection;
     private final TrainExitSide exitSide;
     private final boolean isWaitingAtStation;
-    private final boolean empty;
+    private final boolean outOfService;
+    private final boolean doNotBoard;
 
-    private final Cache<List<TrainStopDisplayData>> stopsFromHere;
+    private final Cache<Pair<Integer, List<TrainStopDisplayData>>> stopsFromHere;
     private final Cache<List<TrainStopDisplayData>> stopovers;
 
     private static final String NBT_TRAIN = "Train";
@@ -76,13 +78,13 @@ public class TrainDisplayData {
         this.speed = speed;
         this.oppositeDirection = oppositeDirection;
         this.exitSide = exitSide;
-        this.isWaitingAtStation = isWaitingAtStation;
         this.stopsFromHere = new Cache<>(() -> {
             boolean startFound = false;
             List<TrainStopDisplayData> list = new ArrayList<>();
             int idx = 0;
             for (int i = 0; i < getAllStops().size(); i++) {
                 TrainStopDisplayData stop = getAllStops().get(i);
+                if (!startFound && stop.getStationEntryIndex() >= getCurrentScheduleIndex()) {
                     startFound = true;
                     idx = i;
                 }
@@ -91,6 +93,7 @@ public class TrainDisplayData {
             }
             return Pair.of(idx, list);
         });
+        this.isWaitingAtStation = (this.stopsFromHere.get().getSecond().isEmpty() || this.stopsFromHere.get().getSecond().get(0).getStationEntryIndex() == getCurrentScheduleIndex()) && isWaitingAtStation;
         this.stopovers = new Cache<>(() -> getStopsFromCurrentStation().size() > (isWaitingAtStation() ? 2 : 1) ? getStopsFromCurrentStation().stream().limit(getStopsFromCurrentStation().size() - 1).skip(isWaitingAtStation() ? 1 : 0).toList() : List.of());
         this.outOfService = outOfService;
         this.doNotBoard = doNotBoard;
