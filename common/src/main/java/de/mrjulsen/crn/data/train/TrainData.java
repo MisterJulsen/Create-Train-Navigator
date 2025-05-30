@@ -496,6 +496,8 @@ public class TrainData implements IListenable<TrainData> {
     } 
 
     public int ticksToNextStop = 0;
+    
+    public int waitingAtStationIndex = INVALID;
 
     /** Called every ~5 seconds */
     public synchronized void refreshPre() {
@@ -512,7 +514,7 @@ public class TrainData implements IListenable<TrainData> {
         this.scheduleIndexChanged = lastScheduleIndex != getCurrentScheduleIndex();
 
         if (this.scheduleIndexChanged && lastScheduleIndex >= 0 && predictionsByIndex.containsKey(lastScheduleIndex)) {
-            predictionsByIndex.get(lastScheduleIndex).nextCycle();
+            predictionsByIndex.get(lastScheduleIndex).nextCycle();            
         }
         if (!hasCustomScheduleSections() && lastScheduleIndex > getCurrentScheduleIndex()) { // Manually call section change event atthe end of the schedule if there are no sections defined.
             changeCurrentSection(currentTravelSectionIndex);
@@ -653,6 +655,7 @@ public class TrainData implements IListenable<TrainData> {
 
         // Finish
         this.scheduleIndexChanged = false;
+        this.waitingAtStationIndex = isAtStation() ? getCurrentScheduleIndex() : INVALID;
     }
 
     private void resetCaches() {
