@@ -49,7 +49,7 @@ public class BERTrainDestinationSimple implements AbstractAdvancedDisplayRendere
 
     @Override
     public void render(BERGraphics<AdvancedDisplayBlockEntity> graphics, float partialTick, AdvancedDisplayRenderInstance parent, int light, boolean backSide) {
-        if (graphics.blockEntity().getTrainData() == null || graphics.blockEntity().getTrainData().isEmpty()) {
+        if (graphics.blockEntity().getTrainData() == null || graphics.blockEntity().getTrainData().isOutOfService()) {
             outOfServiceLabel.render(graphics, light);
             return;
         }
@@ -59,7 +59,7 @@ public class BERTrainDestinationSimple implements AbstractAdvancedDisplayRendere
 
     @Override
     public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason) {
-        if (blockEntity.getTrainData() == null || blockEntity.getTrainData().isEmpty()) {
+        if (blockEntity.getTrainData() == null || blockEntity.getTrainData().isOutOfService()) {
             outOfServiceLabel
                 .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 6, BoundsHitReaction.SCALE_SCROLL)
                 .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
@@ -103,7 +103,7 @@ public class BERTrainDestinationSimple implements AbstractAdvancedDisplayRendere
         destinationLabel
             .setPos((settings.isAutoTrainNameWidth() ? trainLineLabel.getTextWidth() : width) + 5, 6)
             .setMaxWidth(blockEntity.getXSizeScaled() * 16 - destinationLabel.getX() - 3, BoundsHitReaction.SCALE_SCROLL)
-            .setText(settings.isFullTrainNameWidth() ? TextUtils.empty() : TextUtils.text(blockEntity.getTrainData().getNextStop().isPresent() ? blockEntity.getTrainData().getNextStop().get().getDestination() : ""))
+            .setText(settings.isFullTrainNameWidth() ? TextUtils.empty() : TextUtils.text(blockEntity.getTrainData().getCurrentStop().isPresent() ? blockEntity.getTrainData().getCurrentStop().get().getDestination() : ""))
             .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
         ;
         
