@@ -184,7 +184,7 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
 
     private void updateContent(AdvancedDisplayBlockEntity blockEntity, StationDisplayData stop, int index) {
         PlatformDisplayTableSettings settings = getDisplaySettings(blockEntity);
-        boolean isLast = (settings.showArrival() && stop.isLastStop()) || stop.isNextSectionExcluded();
+        boolean isLast = (settings.showArrival() && stop.shouldShowArrivalOfTrain()) || stop.isNextSectionExcluded();
         
         BERLabel[] components = lines[index];
         components[LineComponent.TIME.i()]
