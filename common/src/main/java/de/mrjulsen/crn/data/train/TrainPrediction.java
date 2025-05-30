@@ -357,7 +357,7 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
         if (sec.isDefault()) {
             section.clear();
         }
-        return isLastStopOfSection.get() ? sec.nextSection().getDisplayText() : sec.getDisplayText();
+        return isLastStopOfSection.get() && !sec.shouldIncludeNextStationOfNextSection() ? sec.nextSection().getDisplayText() : sec.getDisplayText();
     }
 
     
