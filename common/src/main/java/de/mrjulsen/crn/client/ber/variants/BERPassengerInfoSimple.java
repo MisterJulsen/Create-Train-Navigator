@@ -46,7 +46,7 @@ public class BERPassengerInfoSimple implements AbstractAdvancedDisplayRenderer<P
 
     @Override
     public void render(BERGraphics<AdvancedDisplayBlockEntity> graphics, float partialTick, AdvancedDisplayRenderInstance parent, int light, boolean backSide) {
-        if (graphics.blockEntity().getTrainData() == null || graphics.blockEntity().getTrainData().isEmpty()) {
+        if (graphics.blockEntity().getTrainData() == null || graphics.blockEntity().getTrainData().isOutOfService()) {
             return;
         }
 
@@ -112,7 +112,7 @@ public class BERPassengerInfoSimple implements AbstractAdvancedDisplayRenderer<P
     
     @Override
     public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason data) {
-        if (blockEntity.getTrainData() == null ||blockEntity.getTrainData().isEmpty()) {
+        if (blockEntity.getTrainData() == null ||blockEntity.getTrainData().isOutOfService()) {
             return;
         }
 
@@ -138,13 +138,14 @@ public class BERPassengerInfoSimple implements AbstractAdvancedDisplayRenderer<P
             if ((slide == 2 && !settings.showStats())) {
                 slide++;
             }
+            
             slide %= slides;
             switch (slide) {
                 case 0 -> label.setText(TextUtils.text((settings.getTrainTextComponents().showTrainName()
                         ? blockEntity.getTrainData().getTrainData().getName() + " "
                         : "")
-                        + (settings.getTrainTextComponents().showDestination()
-                            ? blockEntity.getTrainData().getNextStop().get().getDestination()
+                        + ((settings.getTrainTextComponents().showDestination() && blockEntity.getTrainData().getCurrentStop().isPresent())
+                            ? (blockEntity.getTrainData().getCurrentStop().get().getDestination())//blockEntity.getTrainData().isWaitingAtStation() ? blockEntity.getTrainData().getNextStop().get().getDestination() : blockEntity.getTrainData().getFinalStop().get().getDestination())
                             : "")));
                 case 1 -> label
                         .setText(CustomLanguage.translate(keyDate, blockEntity.getLevel().getDayTime() / Level.TICKS_PER_DAY,

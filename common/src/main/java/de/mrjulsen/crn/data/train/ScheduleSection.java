@@ -58,7 +58,7 @@ public class ScheduleSection {
             }
     
             List<ScheduleSection> sections = data.getSections();
-            if (sections.isEmpty()) {
+            if (sections.size() <= 1) {
                 return this;
             }
             int selfIndex = sections.indexOf(this);
@@ -75,7 +75,7 @@ public class ScheduleSection {
             }
     
             List<ScheduleSection> sections = data.getSections();
-            if (sections.isEmpty()) {
+            if (sections.size() <= 1) {
                 return this;
             }
             int selfIndex = sections.indexOf(this);
@@ -223,6 +223,7 @@ public class ScheduleSection {
             boolean wasStartFound = startFound;
             if (prediction.getEntryIndex() == startIndex) startFound = true;
             if (!wasStartFound) continue;
+            if (GlobalSettings.getInstance().isStationBlacklisted(prediction.getStationFilter())) continue;
             predictions.add(prediction.getStationTag().getTagName().get());
         }
         return predictions;

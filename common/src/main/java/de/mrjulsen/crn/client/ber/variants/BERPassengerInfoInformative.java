@@ -184,7 +184,7 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
             );
         }
 
-        if (graphics.blockEntity().getTrainData() == null || graphics.blockEntity().getTrainData().isEmpty()) {
+        if (graphics.blockEntity().getTrainData() == null || graphics.blockEntity().getTrainData().isOutOfService()) {
             graphics.poseStack().popPose();
             return;
         }
@@ -266,7 +266,7 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
         renderHeader(graphics, partialTick, parent, light, backSide);
         BERUtils.fillColor(graphics, 2.5f, 5.0f, 0.01f, graphics.blockEntity().getXSizeScaled() * 16 - 5, 0.25f, (0xFF << 24) | (getDisplaySettings(graphics.blockEntity()).getFontColor() & 0x00FFFFFF), graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING), light);
 
-        if (graphics.blockEntity().getTrainData() == null || graphics.blockEntity().getTrainData().isEmpty()) {
+        if (graphics.blockEntity().getTrainData() == null || graphics.blockEntity().getTrainData().isOutOfService()) {
             return;
         }
 
@@ -380,7 +380,7 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
 
     @Override
     public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason) {
-        if (blockEntity.getTrainData() == null || blockEntity.getTrainData().isEmpty()) {
+        if (blockEntity.getTrainData() == null || blockEntity.getTrainData().isOutOfService()) {
             return;
         }
         TrainDisplayData data = blockEntity.getTrainData();
