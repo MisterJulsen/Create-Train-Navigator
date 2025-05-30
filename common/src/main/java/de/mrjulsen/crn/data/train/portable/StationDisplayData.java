@@ -17,7 +17,9 @@ public class StationDisplayData {
     private final BasicTrainDisplayData trainData;
     private final TrainStopDisplayData stationData;
     private final String firstStopName;
+    private final boolean isFirstStop;
     private final boolean isLastStop;
+    private final boolean showArrival;
     private final boolean isNextSectionExcluded;
     private final List<String> stopovers;
 
@@ -25,7 +27,9 @@ public class StationDisplayData {
     private static final String NBT_STATION = "Station";
     private static final String NBT_STOPOVERS = "Stopovers";
     private static final String NBT_FIRST_STOP = "FirstStop";
+    private static final String NBT_IS_FIRST = "IsFirst";
     private static final String NBT_IS_LAST = "IsLast";
+    private static final String NBT_SHOW_ARRIVAL = "ShowArrival";
     private static final String NBT_IS_NEXT_EXCLUDED = "IsNextSectionExcluded";
 
     
@@ -34,7 +38,9 @@ public class StationDisplayData {
         BasicTrainDisplayData trainData,
         TrainStopDisplayData stationData,
         String firstStopName,
+        boolean isFirstStop,
         boolean isLastStop,
+        boolean showArrival,
         boolean isNextSectionExcluded,
         List<String> stopovers
     ) {
@@ -42,12 +48,14 @@ public class StationDisplayData {
         this.stationData = stationData;
         this.stopovers = stopovers;
         this.firstStopName = firstStopName;
+        this.isFirstStop = isFirstStop;
         this.isLastStop = isLastStop;
+        this.showArrival = showArrival;
         this.isNextSectionExcluded = isNextSectionExcluded;
     }
 
     public static StationDisplayData empty() {
-        return new StationDisplayData(BasicTrainDisplayData.empty(), TrainStopDisplayData.empty(), "", false, false, List.of());
+        return new StationDisplayData(BasicTrainDisplayData.empty(), TrainStopDisplayData.empty(), "", false, false, false, false, List.of());
     }
 
     /** Server-side only! */
@@ -59,28 +67,39 @@ public class StationDisplayData {
         return TrainListener.getTrainData(stop.getTrainId()).map(data -> {
             ScheduleSection section = data.getSectionByIndex(stop.getSectionIndex());
             ScheduleSection previousSection = section.previousSection();
-            String firstStop = section.getFirstStop().isPresent() ? section.getFirstStop().get().getStationTag().getTagName().get() : "";
-            boolean isLastStopOfSection = section.getFinalStop().isPresent() && (previousSection.shouldIncludeNextStationOfNextSection() && previousSection.getFinalStop().isPresent() ? previousSection.getFinalStop().get() : section.getFinalStop().get()).getEntryIndex() == stop.getScheduleIndex();
-            if (isLastStopOfSection) {
-                if (previousSection.shouldIncludeNextStationOfNextSection() && previousSection.getFinalStop().isPresent() && previousSection.getFinalStop().get().getEntryIndex() == stop.getScheduleIndex()) {
-                    firstStop = previousSection.getFirstStop().isPresent() ? previousSection.getFirstStop().get().getStationTag().getTagName().get() : "";
-                    if ((data.isAtStation() && data.getCurrentScheduleIndex() == stop.getScheduleIndex()) || !previousSection.isUsable()) {
-                        isLastStopOfSection = false; 
-                    }
-                    if (!section.isUsable()) {
-                        isLastStopOfSection = true;
-                    }
+
+            boolean isFirstStopOfSection = section.getFirstStop().isPresent() && section.getFirstStop().get().getEntryIndex() == stop.getScheduleIndex();
+            boolean isLastStopOfSection = section.getFinalStop().isPresent() && (isFirstStopOfSection
+                ? ((previousSection.shouldIncludeNextStationOfNextSection() && previousSection.getFinalStop().isPresent()) ? previousSection.getFinalStop().get() : section.getFinalStop().get())
+                : (section.getFinalStop().get())
+            ).getEntryIndex() == stop.getScheduleIndex();
+            boolean showArrival = false;
+            if (isLastStopOfSection && section.isUsable()) {
+                if (!section.nextSection().isUsable()) {
+                    showArrival = true;
+                } else if (!isFirstStopOfSection) {
+                    showArrival = true;
+                } else if (!(data.waitingAtStationIndex == stop.getScheduleIndex())) {
+                    showArrival = true;
                 }
             }
+            ScheduleSection sectionForOrigin = section;
+            if (isLastStopOfSection && isFirstStopOfSection) {
+                section = previousSection;
+            }
+            String firstStop = sectionForOrigin.getFirstStop().isPresent() ? sectionForOrigin.getFirstStop().get().getStationTag().getTagName().get() : "?";
+
             return new StationDisplayData(
                 BasicTrainDisplayData.of(stop),
                 TrainStopDisplayData.of(stop),
                 firstStop,
+                isFirstStopOfSection,
                 isLastStopOfSection,
+                showArrival,
                 isLastStopOfSection && !section.nextSection().isUsable(),
                 section.getStopoversFrom(stop.getScheduleIndex())
             );
-        }).orElse(empty());        
+        }).orElse(empty());
     }
 
     public BasicTrainDisplayData getTrainData() {
@@ -99,8 +118,16 @@ public class StationDisplayData {
         return firstStopName;
     }
 
+    public boolean isFirstStop() {
+        return isFirstStop;
+    }
+
     public boolean isLastStop() {
         return isLastStop;
+    }
+
+    public boolean shouldShowArrivalOfTrain() {
+        return showArrival;
     }
 
     public boolean isNextSectionExcluded() {
@@ -132,7 +159,9 @@ public class StationDisplayData {
         nbt.put(NBT_TRAIN, trainData.toNbt());
         nbt.put(NBT_STATION, stationData.toNbt());
         nbt.putString(NBT_FIRST_STOP, firstStopName);
+        nbt.putBoolean(NBT_IS_FIRST, isFirstStop);
         nbt.putBoolean(NBT_IS_LAST, isLastStop);
+        nbt.putBoolean(NBT_SHOW_ARRIVAL, showArrival);
         nbt.putBoolean(NBT_IS_NEXT_EXCLUDED, isNextSectionExcluded);
         nbt.put(NBT_STOPOVERS, stopoversList);
         return nbt;
@@ -143,7 +172,9 @@ public class StationDisplayData {
             BasicTrainDisplayData.fromNbt(nbt.getCompound(NBT_TRAIN)),
             TrainStopDisplayData.fromNbt(nbt.getCompound(NBT_STATION)),
             nbt.getString(NBT_FIRST_STOP),
+            nbt.getBoolean(NBT_IS_FIRST),
             nbt.getBoolean(NBT_IS_LAST),
+            nbt.getBoolean(NBT_SHOW_ARRIVAL),
             nbt.getBoolean(NBT_IS_NEXT_EXCLUDED),
             nbt.getList(NBT_STOPOVERS, Tag.TAG_STRING).stream().map(x -> ((StringTag)x).getAsString()).toList()
         );

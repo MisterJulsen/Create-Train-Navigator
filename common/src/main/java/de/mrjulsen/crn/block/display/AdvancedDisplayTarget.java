@@ -5,25 +5,16 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-
-import com.simibubi.create.content.equipment.clipboard.ClipboardEntry;
 import com.simibubi.create.content.redstone.displayLink.DisplayLinkContext;
-import com.simibubi.create.content.redstone.displayLink.source.DisplaySource;
-import com.simibubi.create.content.redstone.displayLink.source.SingleLineDisplaySource;
-import com.simibubi.create.content.redstone.displayLink.target.DisplayBoardTarget;
 import com.simibubi.create.content.redstone.displayLink.target.DisplayTarget;
 import com.simibubi.create.content.redstone.displayLink.target.DisplayTargetStats;
 
-import com.simibubi.create.content.trains.display.FlapDisplayLayout;
 import com.simibubi.create.foundation.utility.Lang;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
-import de.mrjulsen.crn.block.AbstractAdvancedSidedDisplayBlock;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.block.display.properties.StaticTextDisplaySettings;
 import de.mrjulsen.crn.block.properties.EDisplayType;
 import de.mrjulsen.crn.block.properties.EDisplayType.EDisplayTypeDataSource;
-import de.mrjulsen.crn.block.properties.ESide;
 import de.mrjulsen.crn.client.AdvancedDisplaysRegistry;
 import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
@@ -31,10 +22,8 @@ import de.mrjulsen.crn.data.train.TrainStop;
 import de.mrjulsen.crn.data.train.TrainUtils;
 import de.mrjulsen.crn.data.train.portable.StationDisplayData;
 import de.mrjulsen.crn.event.ModCommonEvents;
-import de.mrjulsen.crn.network.packets.cts.AdvancedDisplayUpdatePacket;
 import de.mrjulsen.crn.registry.ModDisplayTypes;
 import de.mrjulsen.mcdragonlib.core.EAlignment;
-import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
@@ -43,7 +32,6 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
-import org.apache.commons.lang3.mutable.MutableBoolean;
 
 public class AdvancedDisplayTarget extends DisplayTarget {
 	
