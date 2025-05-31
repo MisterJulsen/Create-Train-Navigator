@@ -511,7 +511,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         syncTicks++;       
         if ((syncTicks %= 100) == 0 && level.isClientSide) {
             DataAccessor.getFromServer(((CarriageContraptionEntity)carriage.entity).trainId, ModAccessorTypes.GET_TRAIN_DISPLAY_DATA_FROM_SERVER, (data) -> { 
-                if (data.isOutOfService() && !data.doNotBoard() && this.trainData.isOutOfService() && !this.trainData.doNotBoard()) {
+                if (data.getState().isOutOfService() && this.trainData.getState().isOutOfService()) {
                     return;
                 }
 
@@ -526,7 +526,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
                         this.trainData.isWaitingAtStation() != data.isWaitingAtStation()
                     ;
                 }
-                boolean outOfService = this.trainData != null && !this.trainData.getTrainData().getId().equals(Constants.ZERO_UUID) && !data.getNextStop().isPresent();
+                boolean outOfService = data.getState().isOutOfService();
                 if (outOfService) {
                     shouldUpdate = true;
                 }
