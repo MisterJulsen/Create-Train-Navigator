@@ -2,11 +2,13 @@ package de.mrjulsen.crn.data.train.portable;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import com.simibubi.create.content.trains.entity.Train;
 
+import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.TrainExitSide;
 import de.mrjulsen.crn.exceptions.RuntimeSideException;
 import de.mrjulsen.crn.data.train.TrainListener;
@@ -23,6 +25,51 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 
 public class TrainDisplayData {
+
+    public enum State {
+        RUNNING(0),
+        OUT_OF_SERVICE(1),
+        AT_TERMINUS(2),
+        BEFORE_TERMINUS(3),
+        TERMINUS_ANNOUNCED(4),
+        BEFORE_START(5);
+
+        private final int id;
+
+        private State(int id) {
+            this.id = id;
+        }
+
+        public int id() {
+            return id;
+        }
+
+        public static State getById(int id) {
+            return Arrays.stream(values()).filter(x -> x.id() == id).findFirst().orElse(OUT_OF_SERVICE);
+        }
+
+        public boolean isOutOfService() {
+            return this == OUT_OF_SERVICE || this == BEFORE_START;
+        }
+
+        public boolean isTerminating() {
+            return this == AT_TERMINUS || this == BEFORE_TERMINUS || this == TERMINUS_ANNOUNCED;
+        }
+
+        public boolean isAboutToStart() {
+            return this == BEFORE_START;
+        }
+
+        public boolean shouldNotBoard() {
+            return this == AT_TERMINUS || this == TERMINUS_ANNOUNCED || isAboutToStart();
+        }
+
+        public boolean isIrregular() {
+            return shouldNotBoard() || isAboutToStart() || isOutOfService();
+        }
+    }
+    
+
     private final BasicTrainDisplayData trainData;
     private final List<TrainStopDisplayData> stops;
     private final int currentScheduleIndex;
@@ -30,8 +77,7 @@ public class TrainDisplayData {
     private final boolean oppositeDirection;
     private final TrainExitSide exitSide;
     private final boolean isWaitingAtStation;
-    private final boolean outOfService;
-    private final boolean doNotBoard;
+    private final State state;
 
     private final Cache<Pair<Integer, List<TrainStopDisplayData>>> stopsFromHere;
     private final Cache<List<TrainStopDisplayData>> stopovers;
@@ -45,7 +91,7 @@ public class TrainDisplayData {
     private static final String NBT_AT_STATION = "AtStation";
     private static final String NBT_OUT_OF_SERVICE = "OutOfService";
     private static final String NBT_DO_NOT_BOARD = "DoNotBoard";
-    
+    private static final String NBT_STATE = "State";
 
     private TrainDisplayData() {
         this.trainData = BasicTrainDisplayData.empty();
@@ -57,8 +103,7 @@ public class TrainDisplayData {
         this.stopsFromHere = new Cache<>(() -> Pair.of(0, List.of()));
         this.stopovers = new Cache<>(() -> List.of());
         this.isWaitingAtStation = false;
-        this.outOfService = true;
-        this.doNotBoard = false;
+        this.state = State.OUT_OF_SERVICE;
     }
 
     public TrainDisplayData(
@@ -69,8 +114,7 @@ public class TrainDisplayData {
         double speed,
         boolean oppositeDirection,
         boolean isWaitingAtStation,
-        boolean outOfService,
-        boolean doNotBoard
+        State state
     ) {
         this.trainData = trainData;
         this.stops = stops;
@@ -108,8 +152,7 @@ public class TrainDisplayData {
         });
         this.isWaitingAtStation = isWaitingAtStation && (this.stopsFromHere.get().getSecond().isEmpty() || this.stopsFromHere.get().getSecond().get(0).getStationEntryIndex() == getCurrentScheduleIndex());
         this.stopovers = new Cache<>(() -> getStopsFromCurrentStation().size() > (isWaitingAtStation ? 2 : 1) ? getStopsFromCurrentStation().stream().limit(getStopsFromCurrentStation().size() - 1).skip(isWaitingAtStation ? 1 : 0).toList() : List.of());
-        this.outOfService = outOfService;
-        this.doNotBoard = doNotBoard;
+        this.state = state;
     }
 
     public static TrainDisplayData empty() {
@@ -134,13 +177,21 @@ public class TrainDisplayData {
                 }
             });
             TrainExitSide side = sideHolder.getFirst() == null ? TrainExitSide.UNKNOWN : sideHolder.getFirst();
+
             final ScheduleSection section = data.getCurrentSection();
             final ScheduleSection prevSection = section.previousSection();
             ScheduleSection selectedSection = section;
 
-            boolean isFirstStationInSection = section.getFirstStop().isPresent() && section.getFirstStop().get().getEntryIndex() == data.getCurrentScheduleIndex();
-            boolean isLastStationInSection = section.getFinalStop().isPresent() && section.getFinalStop().get().getEntryIndex() == data.getCurrentScheduleIndex();
-            if (isFirstStationInSection && !data.isAtStation() && prevSection.shouldIncludeNextStationOfNextSection()) {
+            boolean isAtStation = data.waitingAtStationIndex == data.getCurrentScheduleIndex();
+            boolean isFirstStationInSection = section.getFirstStop().map(x -> x.getEntryIndex() == data.getCurrentScheduleIndex()).orElse(false);
+            boolean isLastStationInSection;
+            if (isFirstStationInSection) {
+                isLastStationInSection = prevSection.isUsable() && prevSection.getFinalStop().map(x -> x.getEntryIndex() == data.getCurrentScheduleIndex()).orElse(false);
+            } else {
+                isLastStationInSection = section.isUsable() && section.getFinalStop().map(x -> x.getEntryIndex() == data.getCurrentScheduleIndex()).orElse(false);
+            }
+
+            if (isFirstStationInSection && !isAtStation && prevSection.shouldIncludeNextStationOfNextSection()) {
                 selectedSection = prevSection;
             }
 
@@ -151,9 +202,24 @@ public class TrainDisplayData {
                     displayData.add(TrainStopDisplayData.of(new TrainStop(prediction)));
                 }
             }
+            boolean preStart = isFirstStationInSection && (!prevSection.shouldIncludeNextStationOfNextSection() || !prevSection.isUsable()) && !isAtStation;
+            boolean nextStopTerminus = false;
+            if (isLastStationInSection) {
+                if (isFirstStationInSection) {
+                    nextStopTerminus = !prevSection.shouldIncludeNextStationOfNextSection() || !section.isUsable() || !isAtStation;
+                } else {
+                    nextStopTerminus = (!section.shouldIncludeNextStationOfNextSection() || !section.nextSection().isUsable());
+                }
+            }
+            boolean atTerminus = nextStopTerminus && isAtStation;
+            boolean teminusAnnounced = nextStopTerminus && data.getNextStopPrediction().map(x -> x.realTime().arrivalIn() < ModClientConfig.NEXT_STOP_ANNOUNCEMENT.get()).orElse(false);
 
-            boolean isPreStart = isFirstStationInSection && !prevSection.shouldIncludeNextStationOfNextSection() && data.waitingAtStationIndex != data.getCurrentScheduleIndex();
-            boolean isPostEnd = isLastStationInSection && !selectedSection.shouldIncludeNextStationOfNextSection() && data.waitingAtStationIndex == data.getCurrentScheduleIndex();
+            State state = State.OUT_OF_SERVICE;
+            if (preStart) state = State.BEFORE_START;
+            else if (atTerminus) state = State.AT_TERMINUS;
+            else if (teminusAnnounced) state = State.TERMINUS_ANNOUNCED;
+            else if (nextStopTerminus) state = State.BEFORE_TERMINUS;
+            else if (selectedSection.isUsable())   state = State.RUNNING;
 
             return new TrainDisplayData(
                 BasicTrainDisplayData.of(train.id),
@@ -162,9 +228,8 @@ public class TrainDisplayData {
                 side,
                 train.speed,
                 train.currentlyBackwards,
-                data.isAtStation(),
-                !selectedSection.isUsable() || isPreStart || isPostEnd,
-                selectedSection.isUsable() && (isPreStart || isPostEnd)
+                isAtStation,
+                state
             );
         }).orElse(empty());        
     }
@@ -204,13 +269,9 @@ public class TrainDisplayData {
     public boolean isWaitingAtStation() {
         return isWaitingAtStation;
     }
-
-    public boolean isOutOfService() {
-        return outOfService;
-    }
-
-    public boolean doNotBoard() {
-        return doNotBoard;
+    
+    public State getState() {
+        return state;
     }
 
     public int getCurrentScheduleIndex() {
@@ -250,8 +311,7 @@ public class TrainDisplayData {
         nbt.putBoolean(NBT_OPPOSITE_DIRECTION, oppositeDirection);
         nbt.putByte(NBT_EXIT_SIDE, exitSide.getAsByte());
         nbt.putBoolean(NBT_AT_STATION, isWaitingAtStation);
-        nbt.putBoolean(NBT_OUT_OF_SERVICE, isOutOfService());
-        nbt.putBoolean(NBT_DO_NOT_BOARD, doNotBoard());
+        nbt.putInt(NBT_STATE, state.id());
         return nbt;
     }
 
@@ -269,8 +329,7 @@ public class TrainDisplayData {
             nbt.getDouble(NBT_SPEED),
             nbt.getBoolean(NBT_OPPOSITE_DIRECTION),
             nbt.getBoolean(NBT_AT_STATION),
-            nbt.getBoolean(NBT_OUT_OF_SERVICE),
-            nbt.getBoolean(NBT_DO_NOT_BOARD)
+            State.getById(nbt.getInt(NBT_STATE))
         );
     }
 }
