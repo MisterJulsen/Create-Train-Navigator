@@ -69,10 +69,16 @@ public class StationDisplayData {
             ScheduleSection previousSection = section.previousSection();
 
             boolean isFirstStopOfSection = section.getFirstStop().isPresent() && section.getFirstStop().get().getEntryIndex() == stop.getScheduleIndex();
-            boolean isLastStopOfSection = section.getFinalStop().isPresent() && (isFirstStopOfSection
-                ? ((previousSection.shouldIncludeNextStationOfNextSection() && previousSection.getFinalStop().isPresent()) ? previousSection.getFinalStop().get() : section.getFinalStop().get())
-                : (section.getFinalStop().get())
-            ).getEntryIndex() == stop.getScheduleIndex();
+            
+            ScheduleSection targetedSection = section;
+            boolean isLastStopOfSection = false;
+            if (section.getFinalStop().isPresent()) {
+                if (isFirstStopOfSection && previousSection.shouldIncludeNextStationOfNextSection() && previousSection.getFinalStop().isPresent()) {
+                    targetedSection = previousSection;
+                }
+                isLastStopOfSection = targetedSection.getFinalStop().get().getEntryIndex() == stop.getScheduleIndex();
+            }
+            
             boolean showArrival = false;
             if (isLastStopOfSection && section.isUsable()) {
                 if (!section.nextSection().isUsable()) {
@@ -83,10 +89,12 @@ public class StationDisplayData {
                     showArrival = true;
                 }
             }
+
             ScheduleSection sectionForOrigin = section;
             if (isFirstStopOfSection) {
                 sectionForOrigin = previousSection;
             }
+
             String firstStop = sectionForOrigin.getFirstStop().isPresent() ? sectionForOrigin.getFirstStop().get().getStationTag().getTagName().get() : "?";
 
             return new StationDisplayData(
@@ -96,7 +104,7 @@ public class StationDisplayData {
                 isFirstStopOfSection,
                 isLastStopOfSection,
                 showArrival,
-                isLastStopOfSection && !section.nextSection().isUsable(),
+                isLastStopOfSection && (!targetedSection.nextSection().isUsable() || !targetedSection.shouldIncludeNextStationOfNextSection()),
                 section.getStopoversFrom(stop.getScheduleIndex())
             );
         }).orElse(empty());
