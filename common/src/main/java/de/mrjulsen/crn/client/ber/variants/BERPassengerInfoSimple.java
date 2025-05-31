@@ -1,5 +1,6 @@
 package de.mrjulsen.crn.client.ber.variants;
 
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity.EUpdateReason;
 import de.mrjulsen.crn.block.display.properties.PassengerInformationScrollingTextSettings;
@@ -8,6 +9,7 @@ import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.TrainExitSide;
+import de.mrjulsen.crn.data.train.portable.TrainDisplayData.State;
 import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.ber.BERGraphics;
@@ -16,14 +18,14 @@ import de.mrjulsen.mcdragonlib.client.ber.BERLabel.BoundsHitReaction;
 import de.mrjulsen.mcdragonlib.client.util.BERUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class BERPassengerInfoSimple implements AbstractAdvancedDisplayRenderer<PassengerInformationScrollingTextSettings> {
 
-    public BERPassengerInfoSimple() {}
-
+    private final MutableComponent textDoNotBoard = CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.do_not_board");
     private static final String keyNextStop = "gui.createrailwaysnavigator.route_overview.next_stop";
     private static final String keyDate = "gui.createrailwaysnavigator.route_overview.date";
 
@@ -46,7 +48,7 @@ public class BERPassengerInfoSimple implements AbstractAdvancedDisplayRenderer<P
 
     @Override
     public void render(BERGraphics<AdvancedDisplayBlockEntity> graphics, float partialTick, AdvancedDisplayRenderInstance parent, int light, boolean backSide) {
-        if (graphics.blockEntity().getTrainData() == null || graphics.blockEntity().getTrainData().isOutOfService()) {
+        if (graphics.blockEntity().getTrainData() == null || graphics.blockEntity().getTrainData().getState().isOutOfService()) {
             return;
         }
 
@@ -112,14 +114,17 @@ public class BERPassengerInfoSimple implements AbstractAdvancedDisplayRenderer<P
     
     @Override
     public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason data) {
-        if (blockEntity.getTrainData() == null ||blockEntity.getTrainData().isOutOfService()) {
+        if (blockEntity.getTrainData() == null || blockEntity.getTrainData().getState().isOutOfService()) {
             return;
         }
 
         PassengerInformationScrollingTextSettings settings = getDisplaySettings(blockEntity);
-
         this.exitSide = settings.showExit() ? (blockEntity.getTrainData().isWaitingAtStation() ? exitSide : blockEntity.relativeExitDirection.get()) : TrainExitSide.UNKNOWN;
-        if (!blockEntity.getTrainData().getNextStop().isPresent()) {
+
+        
+        if (blockEntity.getTrainData().getState() == State.AT_TERMINUS) {
+            label.setText(textDoNotBoard);
+        } else if (!blockEntity.getTrainData().getNextStop().isPresent()) {
             label.setText(settings.getTrainTextComponents().showTrainName() ? TextUtils.text(blockEntity.getTrainData().getTrainData().getName()) : TextUtils.empty());
         } else if (blockEntity.getTrainData().isWaitingAtStation()) {
             label.setText(TextUtils.text(blockEntity.getTrainData().getNextStop().get().getRealTimeStation().tagName()));
