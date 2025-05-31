@@ -30,6 +30,7 @@ import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.accessor.DataAccessor;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
@@ -37,6 +38,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRenderer<PassengerInformationDetailedSettings> {
 
+    private final MutableComponent textDoNotBoard = CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.do_not_board");
     private static final ResourceLocation CARRIAGE_ICON = ResourceLocation.fromNamespaceAndPath(Create.ID,  "textures/gui/assemble.png");
     private static final ResourceLocation ICONS = ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "textures/gui/icons.png");  
     private static final String keyDate = "gui.createrailwaysnavigator.route_overview.date";
@@ -185,13 +187,13 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
             );
         }
 
-        if (graphics.blockEntity().getTrainData() == null || graphics.blockEntity().getTrainData().isOutOfService()) {
+        if (graphics.blockEntity().getTrainData() == null || graphics.blockEntity().getTrainData().getState().isOutOfService()) {
             graphics.poseStack().popPose();
             return;
         }
 
         trainLineLabel.render(graphics, light);
-
+                
         // Carriage label
         if (graphics.blockEntity().getXSizeScaled() > 2 && !nextStopAnnounced) {            
             carriageLabel.render(graphics, light);
@@ -267,7 +269,7 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
         renderHeader(graphics, partialTick, parent, light, backSide);
         BERUtils.fillColor(graphics, 2.5f, 5.0f, 0.01f, graphics.blockEntity().getXSizeScaled() * 16 - 5, 0.25f, (0xFF << 24) | (getDisplaySettings(graphics.blockEntity()).getFontColor() & 0x00FFFFFF), graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING), light);
 
-        if (graphics.blockEntity().getTrainData() == null || graphics.blockEntity().getTrainData().isOutOfService()) {
+        if (graphics.blockEntity().getTrainData() == null || graphics.blockEntity().getTrainData().getState().isOutOfService()) {
             return;
         }
 
@@ -380,14 +382,28 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
     }
 
     @Override
-    public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason) {
-        if (blockEntity.getTrainData() == null || blockEntity.getTrainData().isOutOfService()) {
-            return;
-        }
+    public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason) {        
+        boolean oos = blockEntity.getTrainData() == null || blockEntity.getTrainData().getState().isOutOfService();
+
         TrainDisplayData data = blockEntity.getTrainData();
         boolean wasNextStopAnnounced = nextStopAnnounced;
         nextStopAnnounced = !data.isWaitingAtStation() && data.getNextStop().isPresent() && data.getNextStop().get().getRealTimeArrivalTime() - DragonLib.getCurrentWorldTime() < ModClientConfig.NEXT_STOP_ANNOUNCEMENT.get();
         this.exitSide = (!nextStopAnnounced && !data.isWaitingAtStation()) || !getDisplaySettings(blockEntity).showExit() ? TrainExitSide.UNKNOWN : (data.isWaitingAtStation() ? exitSide : blockEntity.relativeExitDirection.get());
+        
+        if (oos) {
+            this.nextStopAnnounced = false;
+            this.exitSide = TrainExitSide.UNKNOWN;
+        }
+
+        timeLabel
+            .setText(blockEntity.getXSizeScaled() > 1 && !nextStopAnnounced ? TextUtils.text(ModUtils.formatTime(DragonLib.getCurrentWorldTime(), false)).withStyle(ChatFormatting.BOLD) : TextUtils.empty())
+            .setPos(blockEntity.getXSizeScaled() * 16 - 3 - timeLabel.getTextWidth() - (this.exitSide != TrainExitSide.UNKNOWN ? 4 : 0), 2.5f)
+            .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
+        ;
+
+        if (oos) {
+            return;
+        }
 
         if (getDisplaySettings(blockEntity).showConnections() && blockEntity.getXSizeScaled() > 1 && nextStopAnnounced && !wasNextStopAnnounced && data.getNextStop().isPresent()) {
             DataAccessor.getFromServer(new NextConnectionsRequestData(data.getNextStop().get().getRealTimeStation().stationName(), data.getTrainData().getId()), ModAccessorTypes.GET_NEXT_CONNECTIONS_DISPLAY_DATA, (res) -> {
@@ -412,11 +428,6 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
     private void updateContent(AdvancedDisplayBlockEntity blockEntity, TrainDisplayData displayData) {
         PassengerInformationDetailedSettings settings = getDisplaySettings(blockEntity);
         int carriageIndex = getCarriageIndex(blockEntity);
-        timeLabel
-            .setText(blockEntity.getXSizeScaled() > 1 && !nextStopAnnounced ? TextUtils.text(ModUtils.formatTime(DragonLib.getCurrentWorldTime(), getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA)).withStyle(ChatFormatting.BOLD) : TextUtils.empty())
-            .setPos(blockEntity.getXSizeScaled() * 16 - 3 - timeLabel.getTextWidth() - (this.exitSide != TrainExitSide.UNKNOWN ? 4 : 0), 2.5f)
-            .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
-        ;
         carriageLabel
             .setText(blockEntity.getXSizeScaled() > 1 && !nextStopAnnounced ? TextUtils.text(String.format("%02d", carriageIndex)).withStyle(ChatFormatting.BOLD) : TextUtils.empty())
             .setPos(timeLabel.getX() - 4 - carriageLabel.getTextWidth(), 2.5f)

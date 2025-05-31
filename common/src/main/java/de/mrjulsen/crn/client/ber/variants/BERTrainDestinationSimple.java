@@ -14,13 +14,16 @@ import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class BERTrainDestinationSimple implements AbstractAdvancedDisplayRenderer<TrainDestinationCompactSettings> {
 
+    private final Component TEXT_OUT_OF_SERVICE = CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.not_in_service");
+    private final Component TEXT_DO_NOT_BOARD = CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.do_not_board");
     
-    private final BERLabel outOfServiceLabel = new BERLabel(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.not_in_service"))
+    private final BERLabel outOfServiceLabel = new BERLabel(TEXT_OUT_OF_SERVICE)
         .setPos(3, 6)
         .setScale(0.5f, 0.25f)
         .setYScale(0.5f)
@@ -49,7 +52,7 @@ public class BERTrainDestinationSimple implements AbstractAdvancedDisplayRendere
 
     @Override
     public void render(BERGraphics<AdvancedDisplayBlockEntity> graphics, float partialTick, AdvancedDisplayRenderInstance parent, int light, boolean backSide) {
-        if (graphics.blockEntity().getTrainData() == null || graphics.blockEntity().getTrainData().isOutOfService()) {
+        if (graphics.blockEntity().getTrainData() == null || graphics.blockEntity().getTrainData().getState().isIrregular()) {
             outOfServiceLabel.render(graphics, light);
             return;
         }
@@ -59,10 +62,11 @@ public class BERTrainDestinationSimple implements AbstractAdvancedDisplayRendere
 
     @Override
     public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason) {
-        if (blockEntity.getTrainData() == null || blockEntity.getTrainData().isOutOfService()) {
+        if (blockEntity.getTrainData() == null || blockEntity.getTrainData().getState().isIrregular()) {
             outOfServiceLabel
                 .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 6, BoundsHitReaction.SCALE_SCROLL)
                 .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
+                .setText((blockEntity.getTrainData() != null && blockEntity.getTrainData().getState().shouldNotBoard()) ? TEXT_DO_NOT_BOARD : TEXT_OUT_OF_SERVICE)
             ;
             return;
         }
