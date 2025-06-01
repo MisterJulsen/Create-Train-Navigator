@@ -137,7 +137,7 @@ public class BERTrainDestinationInformative implements AbstractAdvancedDisplayRe
         }
         trainLineLabel
             .setPos(3, 2.5f)
-            .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 6 - carriageIndexLabel.getTextWidth() - 5, BoundsHitReaction.SCALE_SCROLL)
+            .setMaxWidth(carriageIndexLabel.getX() - 9, BoundsHitReaction.SCALE_SCROLL)
             .setText(TextUtils.text(blockEntity.getTrainData().getTrainData().getName()).withStyle(ChatFormatting.BOLD))
         ;
         if (settings.showLineColor() && blockEntity.getTrainData().getTrainData().hasColor()) {
