@@ -434,7 +434,7 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
         ;
         trainLineLabel
             .setText(nextStopAnnounced ? CustomLanguage.translate(keyNextStop, displayData.getNextStop().get().getRealTimeStation().tagName()) : TextUtils.text((settings.getTrainTextComponents().showTrainName() ? displayData.getTrainData().getName() + " " : "") + (settings.getTrainTextComponents().showDestination() ? displayData.getNextStop().get().getDestination() : "")).withStyle(ChatFormatting.BOLD))
-            .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 6 - (blockEntity.getXSizeScaled() > 1 && !nextStopAnnounced ? timeLabel.getTextWidth() - 4 : 0) - (blockEntity.getXSizeScaled() > 1 && !nextStopAnnounced ? carriageLabel.getTextWidth() - 5 : 0) - (this.exitSide != TrainExitSide.UNKNOWN ? 4 : 0), BoundsHitReaction.SCALE_SCROLL)
+            .setMaxWidth((nextStopAnnounced ? 0 : carriageLabel.getX()) - 9, BoundsHitReaction.SCALE_SCROLL)
         ;
         
         if (settings.showLineColor() && blockEntity.getTrainData().getTrainData().hasColor() && !nextStopAnnounced) {
