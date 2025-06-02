@@ -264,7 +264,8 @@ public class TrainSeparationSettingsScreen extends DLScreen {
     
     @Override
     public void renderMainLayer(Graphics graphics, int pMouseX, int pMouseY, float pPartialTick) {
-        renderBlurredBackground(pPartialTick);
+        this.renderBlurredBackground(pPartialTick);
+        this.renderMenuBackground(graphics.graphics());
         CreateDynamicWidgets.renderWindow(graphics, guiLeft, guiTop, GUI_WIDTH, GUI_HEIGHT, ContainerColor.PURPLE, BarColor.GOLD, BarColor.GRAY, headerSize.size(), footerSize.size(), false);
         CreateDynamicWidgets.renderVerticalSeparator(graphics, guiLeft + GUI_WIDTH - 31, guiTop + GUI_HEIGHT - footerSize.size() + 2, footerSize.size() - 4, BarColor.GRAY);
 

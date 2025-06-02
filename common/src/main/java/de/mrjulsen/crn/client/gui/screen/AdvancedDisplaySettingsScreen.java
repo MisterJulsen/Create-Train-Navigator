@@ -346,7 +346,8 @@ public class AdvancedDisplaySettingsScreen extends DLScreen {
     
     @Override
     public void renderMainLayer(Graphics graphics, int pMouseX, int pMouseY, float pPartialTick) {
-        renderBlurredBackground(pPartialTick);
+        this.renderBlurredBackground(pPartialTick);
+        this.renderMenuBackground(graphics.graphics());
         CreateDynamicWidgets.renderWindow(graphics, guiLeft, guiTop, GUI_WIDTH, guiHeight(), ContainerColor.PURPLE, BarColor.GOLD, BarColor.GRAY, headerSize.size(), footerSize.size(), false);
         CreateDynamicWidgets.renderVerticalSeparator(graphics, guiLeft + GUI_WIDTH - 31, guiTop + guiHeight() - footerSize.size() + 2, footerSize.size() - 4, BarColor.GRAY);
         GuiUtils.drawTexture(CRNGui.GUI, graphics, guiLeft + GUI_WIDTH - 3, guiTop + guiHeight() - footerSize.size() / 2 - 9, 11, 18, 0, 12, 11, 18, CRNGui.GUI_WIDTH, CRNGui.GUI_HEIGHT);

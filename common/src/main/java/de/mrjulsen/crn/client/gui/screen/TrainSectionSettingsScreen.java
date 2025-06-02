@@ -210,7 +210,8 @@ public class TrainSectionSettingsScreen extends DLScreen {
 
     @Override
     public void renderMainLayer(Graphics graphics, int mouseX, int mouseY, float partialTicks) {
-        renderBlurredBackground(partialTicks);
+        this.renderBlurredBackground(partialTicks);
+        this.renderMenuBackground(graphics.graphics());
         GuiUtils.drawTexture(TEXTURE, graphics, guiLeft, guiTop, GUI_WIDTH, GUI_HEIGHT, 0, 0, 256, 256);
         GuiUtils.drawString(graphics, font, guiLeft + 6, guiTop + 4, getTitle(), DragonLib.NATIVE_UI_FONT_COLOR, EAlignment.LEFT, false);
 
