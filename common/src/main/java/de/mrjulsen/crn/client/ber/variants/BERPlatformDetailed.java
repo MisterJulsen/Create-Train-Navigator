@@ -115,12 +115,11 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
             ).map(x -> {
                 Collection<Component> content = new ArrayList<>();
                 if (x.getTrainData().isCancelled()) {
-                    content.add(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.cancelled"));
-                    return content.stream();
+                    return CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.cancelled");
                 }
 
                 // TRAIN TERMINATES
-                if (preds.get(0).isNextSectionExcluded()) {
+                if (x.isNextSectionExcluded()) {
                     content.add(textTrainTerminatesHere);
                 }
 
@@ -148,7 +147,7 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
                     content.add(status.text());
                 }
                 return CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.information_about_train", x.getTrainData().getName())
-                    .append(": ")
+                    .append(TextUtils.text(": "))
                     .append(TextUtils.concat(TextUtils.text(" - "), content));
             }).toArray(Component[]::new));
         } else {
