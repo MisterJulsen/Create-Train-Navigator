@@ -14,6 +14,7 @@ import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.TrainExitSide;
 import de.mrjulsen.crn.data.train.portable.NextConnectionsDisplayData;
 import de.mrjulsen.crn.data.train.portable.TrainDisplayData;
+import de.mrjulsen.crn.data.train.portable.TrainDisplayData.State;
 import de.mrjulsen.crn.data.train.portable.TrainStopDisplayData;
 import de.mrjulsen.crn.registry.ModAccessorTypes;
 import de.mrjulsen.crn.registry.data.NextConnectionsRequestData;
@@ -37,7 +38,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRenderer<PassengerInformationDetailedSettings> {
 
-    private final MutableComponent textDoNotBoard = CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.do_not_board");
+    private final MutableComponent textTrainTerminates = CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.train_terminates");
     private static final ResourceLocation CARRIAGE_ICON = new ResourceLocation("create:textures/gui/assemble.png");  
     private static final ResourceLocation ICONS = new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/icons.png");  
     private static final String keyDate = "gui.createrailwaysnavigator.route_overview.date";
@@ -432,12 +433,22 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
             .setPos(timeLabel.getX() - 4 - carriageLabel.getTextWidth(), 2.5f)
             .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
         ;
+        boolean atTerminus = blockEntity.getTrainData().getState() == State.AT_TERMINUS;
+        MutableComponent labelText = TextUtils.empty();
+        if (atTerminus) {
+            labelText = textTrainTerminates;
+        } else if (nextStopAnnounced) {
+            labelText = CustomLanguage.translate(keyNextStop, displayData.getNextStop().get().getRealTimeStation().tagName());
+        } else {
+            labelText = TextUtils.text((settings.getTrainTextComponents().showTrainName() ? displayData.getTrainData().getName() + " " : "") + (settings.getTrainTextComponents().showDestination() ? displayData.getNextStop().get().getDestination() : "")).withStyle(ChatFormatting.BOLD);
+        }
+
         trainLineLabel
-            .setText(nextStopAnnounced ? CustomLanguage.translate(keyNextStop, displayData.getNextStop().get().getRealTimeStation().tagName()) : TextUtils.text((settings.getTrainTextComponents().showTrainName() ? displayData.getTrainData().getName() + " " : "") + (settings.getTrainTextComponents().showDestination() ? displayData.getNextStop().get().getDestination() : "")).withStyle(ChatFormatting.BOLD))
-            .setMaxWidth((nextStopAnnounced ? 0 : carriageLabel.getX()) - 9, BoundsHitReaction.SCALE_SCROLL)
+            .setText(labelText)
+            .setMaxWidth((nextStopAnnounced ? blockEntity.getXSizeScaled() * 16 - 6 - (this.exitSide != TrainExitSide.UNKNOWN ? 4 : 0) : carriageLabel.getX()) - 9, BoundsHitReaction.SCALE_SCROLL)
         ;
         
-        if (settings.showLineColor() && blockEntity.getTrainData().getTrainData().hasColor() && !nextStopAnnounced) {
+        if (settings.showLineColor() && blockEntity.getTrainData().getTrainData().hasColor() && !nextStopAnnounced && !atTerminus) {
             trainLineLabel
                 .setBackground((0xFF << 24) | (blockEntity.getTrainData().getTrainData().getColor() & 0x00FFFFFF), false)
                 .setColor(ColorUtils.brightnessDependingFontColor(blockEntity.getTrainData().getTrainData().getColor(), LIGHT_FONT_COLOR, DARK_FONT_COLOR))

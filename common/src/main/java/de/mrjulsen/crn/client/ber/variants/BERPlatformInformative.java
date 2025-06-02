@@ -36,6 +36,7 @@ import net.minecraft.world.level.block.state.BlockState;
 public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<PlatformDisplayFocusSettings> {
    
     private static final String keyFollowingTrains = "gui.createrailwaysnavigator.following_trains";
+    private final MutableComponent textTrainTerminatesHere = CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.train_terminates");
 
     private static final float LINE_HEIGHT = 5.4f;
 
@@ -164,7 +165,7 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
         }
 
         // STATUS
-        showInfoLine = (preds.get(0).getStationData().isDepartureDelayed() && preds.get(0).getTrainData().hasStatusInfo()) || preds.get(0).getStationData().isStationChanged();
+        showInfoLine = (preds.get(0).getStationData().isDepartureDelayed() && preds.get(0).getTrainData().hasStatusInfo()) || preds.get(0).getStationData().isStationChanged() || preds.get(0).isNextSectionExcluded();
         if (showInfoLine) {
             // Update status label
             Collection<Component> content = new ArrayList<>();
@@ -173,6 +174,11 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
             } else {
                 TrainStopDisplayData displayData = preds.get(0).getStationData();
                 String delay = getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA ? ModUtils.timeRemainingString(displayData.getDepartureTimeDeviation()) : String.valueOf(TimeUtils.formatToMinutes(displayData.getDepartureTimeDeviation()));
+                
+                // TRAIN TERMINATES
+                if (preds.get(0).isNextSectionExcluded()) {
+                    content.add(textTrainTerminatesHere);
+                }
                 // DELAYED
                 if (displayData.isDepartureDelayed()) {
                     MutableComponent delayComponent = CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.delayed", delay);
