@@ -306,7 +306,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
      */
     public void setDisplayType(DisplayTypeResourceKey key, @Nullable IDisplaySettings settings) {
         this.displayTypeId = key;
-        this.displayTypeSettings = settings;
+        this.displayTypeSettings = settings == null ? AdvancedDisplaysRegistry.createSettings(key) : settings;
         if (level.isClientSide) {
             getRenderer().update(level, worldPosition, getBlockState(), this, EUpdateReason.LAYOUT_CHANGED);
         }
@@ -513,7 +513,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         syncTicks++;       
         if ((syncTicks %= 100) == 0 && level.isClientSide) {
             DataAccessor.getFromServer(((CarriageContraptionEntity)carriage.entity).trainId, ModAccessorTypes.GET_TRAIN_DISPLAY_DATA_FROM_SERVER, (data) -> { 
-                if (data.isEmpty() && this.trainData.isEmpty()) {
+                if (data.getState().isOutOfService() && this.trainData.getState().isOutOfService()) {
                     return;
                 }
 
@@ -528,7 +528,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
                         this.trainData.isWaitingAtStation() != data.isWaitingAtStation()
                     ;
                 }
-                boolean outOfService = this.trainData != null && !this.trainData.getTrainData().getId().equals(Constants.ZERO_UUID) && !data.getNextStop().isPresent();
+                boolean outOfService = data.getState().isOutOfService();
                 if (outOfService) {
                     shouldUpdate = true;
                 }

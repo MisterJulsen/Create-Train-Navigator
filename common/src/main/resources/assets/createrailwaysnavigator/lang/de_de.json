@@ -43,8 +43,13 @@
 	"block.createrailwaysnavigator.train_station_clock.tooltip.behaviour1": "Zeigt die _aktuelle Uhrzeit_ über der _Inventarleiste_ an.",
     "block.createrailwaysnavigator.train_station_clock.tooltip.condition2": "R-Klick auf eine andere Bahnhofsuhr",
 	"block.createrailwaysnavigator.train_station_clock.tooltip.behaviour2": "Ändert die Uhr, sodass die Zeit auf _allen vier Seiten_ angezeigt wird.", 
-    
+	"block.createrailwaysnavigator.navigator_lectern": "Lesepult mit Navigator",
+
     "block.createrailwaysnavigator.advanced_display.ber.not_in_service": "Betriebsfahrt",
+    "block.createrailwaysnavigator.advanced_display.ber.do_not_board": "Nicht einsteigen!",
+    "block.createrailwaysnavigator.advanced_display.ber.this_train_terminates_there": "Diese Zugfahrt endet dort!",
+    "block.createrailwaysnavigator.advanced_display.ber.train_terminates": "Zug endet hier!",
+    "block.createrailwaysnavigator.advanced_display.ber.passengers_leave_train": "Bitte alle aussteigen.",
 
     "category.createrailwaysnavigator.crn": "Create Railways Navigator",
     "key.createrailwaysnavigator.route_overlay_options": "Routenanzeige Einstellungen",
@@ -356,6 +361,8 @@
     "enum.createrailwaysnavigator.departure_board_train_filter.departure_only": "Nur Abfahrten",
 
     "create.display_source.advanced_display": "Verbesserte Anzeige",
+    "create.display_target.advanced_display.component": "Komponente %s",
+
     "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width": "Zugname Spaltenbreite",
     "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width_next": "Zugname Breite (Nächste Abfahrt)",
     "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width_table": "Zugname Breite (Folgezüge)",

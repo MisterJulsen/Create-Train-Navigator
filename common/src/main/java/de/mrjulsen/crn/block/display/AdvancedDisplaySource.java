@@ -26,6 +26,7 @@ public class AdvancedDisplaySource extends DisplaySource {
 
 	@Override
 	public List<MutableComponent> provideText(DisplayLinkContext context, DisplayTargetStats stats) {
+		context.sourceConfig().putBoolean(NBT_ADVANCED_DISPLAY, true);
 		return EMPTY;
 	}
 

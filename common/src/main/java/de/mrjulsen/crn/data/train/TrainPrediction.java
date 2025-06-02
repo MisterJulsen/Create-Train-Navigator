@@ -42,15 +42,15 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
     private transient final TrainData data;
     
     private final int entryIndex;
-    private final String title;
+    private String title;
     private String stationFilter;
     private String stationName;
     private final PrimaryStringSelector recentStationNames = new PrimaryStringSelector(10);
 
 
     // TIMES
-    private PredictionTimes scheduledTimes;
-    private PredictionTimes realTimes;
+    private PredictionTimes scheduledTimes = new PredictionTimes(this, 0, 0, 0, 0);;
+    private PredictionTimes realTimes = new PredictionTimes(this, 0, 0, 0, 0);
     private int averageStayDuration = -1;
     private int cycle;
 
@@ -67,6 +67,9 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
     private boolean shouldSoftReset;
 
     private final Cache<Boolean> isCustomTitle = new Cache<>(() -> {
+        if (getTitle() == null || getTitle().isEmpty()) {
+            return false;
+        }
         if (this.getData().getPredictionsChronologically().isEmpty()) {
             return false;
         }
@@ -354,15 +357,16 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
         if (sec.isDefault()) {
             section.clear();
         }
-        return isLastStopOfSection.get() ? sec.nextSection().getDisplayText() : sec.getDisplayText();
+        return isLastStopOfSection.get() && !sec.shouldIncludeNextStationOfNextSection() ? sec.nextSection().getDisplayText() : sec.getDisplayText();
     }
 
     
 
-    public void updateRealTime(String stationFilter, String stationName, long refreshTime, long arrivalTime) {
+    public void updateRealTime(String stationFilter, String stationName, long refreshTime, long arrivalTime, String title) {
         isCustomTitle.clear();
         this.stationFilter = stationFilter == null ? this.stationFilter : stationFilter;
         this.stationName = stationName == null ? this.stationName : stationName;
+        this.title = title;
         
         DepartureTime departures = estimateDepartures(getData().getTrain(), entryIndex, arrivalTime);
         this.realTimes = new PredictionTimes(this, refreshTime, arrivalTime, departures.defaultDepartureTime(), departures.minDepartureTime());

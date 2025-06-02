@@ -64,7 +64,7 @@ public final class ModDisplayTypes {
         
     public static final DisplayTypeResourceKey DEPARTURE_BOARD_TABLE = AdvancedDisplaysRegistry.register(
         EDisplayType.DEPARTURE_BOARD, "table",
-        DepartureBoardDisplayTableSettings::new, BERDepartureBoardTable::new, new DisplayProperties(false, be -> be.getYSize() * 3 - 1));
+        DepartureBoardDisplayTableSettings::new, BERDepartureBoardTable::new, new DisplayProperties(false, be -> be.getYSize() * 3 - 2));
 
     public static final DisplayTypeResourceKey SIMPLE_TEXT = AdvancedDisplaysRegistry.register(
         EDisplayType.STATIC_TEXT, "simple_text",

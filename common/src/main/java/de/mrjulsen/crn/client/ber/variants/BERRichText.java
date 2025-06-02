@@ -2,6 +2,8 @@ package de.mrjulsen.crn.client.ber.variants;
 
 import java.util.List;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity.EUpdateReason;
 import de.mrjulsen.crn.block.display.properties.StaticTextDisplaySettings;
@@ -53,7 +55,8 @@ public class BERRichText implements AbstractAdvancedDisplayRenderer<StaticTextDi
         MutableComponent text = TextUtils.empty();
         if (staticText != null) {
             try {
-                text = Component.Serializer.fromJson(staticText);
+                JsonElement elem = JsonParser.parseString(staticText);
+                text = Component.Serializer.fromJsonLenient(staticText);
             } catch (Exception e) {
                 text = TextUtils.text(staticText);
             }

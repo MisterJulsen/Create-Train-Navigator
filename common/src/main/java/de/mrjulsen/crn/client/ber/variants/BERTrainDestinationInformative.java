@@ -5,10 +5,12 @@ import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity.EUpdateReason;
 import de.mrjulsen.crn.block.display.properties.TrainDestinationDetailedSettings;
 import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
+import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.mcdragonlib.client.ber.BERGraphics;
 import de.mrjulsen.mcdragonlib.client.ber.BERLabel;
 import de.mrjulsen.mcdragonlib.client.ber.BERLabel.BoundsHitReaction;
 import de.mrjulsen.mcdragonlib.client.util.BERUtils;
+import de.mrjulsen.mcdragonlib.util.ColorUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -20,6 +22,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class BERTrainDestinationInformative implements AbstractAdvancedDisplayRenderer<TrainDestinationDetailedSettings> {
 
+    private final Component TEXT_DO_NOT_BOARD = CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.do_not_board");
     private static final ResourceLocation CARRIAGE_ICON = new ResourceLocation("create:textures/gui/assemble.png");
     private static final ResourceLocation ICONS = new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/icons.png");  
 
@@ -65,14 +68,18 @@ public class BERTrainDestinationInformative implements AbstractAdvancedDisplayRe
         BERUtils.renderTexture(CARRIAGE_ICON, graphics, false, graphics.blockEntity().getXSizeScaled() * 16 - 7 - carriageIndexLabel.getTextWidth(), 2.5f, 0, 3, 2, uv * 22, uv * 231, uv * 22 + uv * 13, uv * 231 + uv * 5, graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING).getOpposite(), (0xFF << 24) | (getDisplaySettings(graphics.blockEntity()).getFontColor() & 0x00FFFFFF), light);
         carriageIndexLabel.render(graphics, light);
 
-        if (graphics.blockEntity().getTrainData() == null || graphics.blockEntity().getTrainData().isEmpty()) {
+        if (graphics.blockEntity().getTrainData() == null || graphics.blockEntity().getTrainData().getState().isOutOfService()) {
             return;
         }
 
         trainLineLabel.render(graphics, light);
-        fromLabel.render(graphics, light);
-        stopoversLabel.render(graphics, light);
+        fromLabel.render(graphics, light);        
+        if (graphics.blockEntity().getTrainData().getState().shouldNotBoard()) {
+            return;
+        }
+
         destinationLabel.render(graphics, light);
+        stopoversLabel.render(graphics, light);
 
         BERUtils.renderTexture(
             ICONS,
@@ -112,10 +119,7 @@ public class BERTrainDestinationInformative implements AbstractAdvancedDisplayRe
     }
 
     @Override
-    public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason) {
-        if (blockEntity.getTrainData() == null || blockEntity.getTrainData().isEmpty()) {
-            return;
-        }
+    public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason) {        
         updateContent(blockEntity);
     }
 
@@ -127,12 +131,36 @@ public class BERTrainDestinationInformative implements AbstractAdvancedDisplayRe
             .setPos(blockEntity.getXSizeScaled() * 16 - 3 - carriageIndexLabel.getTextWidth(), 2.5f)
             .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
         ;
+        if (blockEntity.getTrainData() == null || blockEntity.getTrainData().getState().isOutOfService()) {
+            return;
+        }
         trainLineLabel
             .setPos(3, 2.5f)
-            .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 6 - carriageIndexLabel.getTextWidth() - 5, BoundsHitReaction.SCALE_SCROLL)
+            .setMaxWidth(carriageIndexLabel.getX() - 9, BoundsHitReaction.SCALE_SCROLL)
             .setText(TextUtils.text(blockEntity.getTrainData().getTrainData().getName()).withStyle(ChatFormatting.BOLD))
-            .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
         ;
+        if (settings.showLineColor() && blockEntity.getTrainData().getTrainData().hasColor()) {
+            trainLineLabel
+                .setBackground((0xFF << 24) | (blockEntity.getTrainData().getTrainData().getColor() & 0x00FFFFFF), false)
+                .setColor(ColorUtils.brightnessDependingFontColor(blockEntity.getTrainData().getTrainData().getColor(), LIGHT_FONT_COLOR, DARK_FONT_COLOR))
+            ;
+        } else {
+            trainLineLabel
+                .setBackground(0, false)
+                .setColor((0xFF << 24) | (settings.getFontColor() & 0x00FFFFFF))
+            ;
+        }
+        
+        if (blockEntity.getTrainData().getState().shouldNotBoard()) {            
+            fromLabel
+                .setPos(3, 6)
+                .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 9, BoundsHitReaction.SCALE_SCROLL)
+                .setText(TEXT_DO_NOT_BOARD)
+                .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
+            ;
+            return;
+        }
+        
         fromLabel
             .setPos(6, 6)
             .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 9, BoundsHitReaction.SCALE_SCROLL)
@@ -148,7 +176,7 @@ public class BERTrainDestinationInformative implements AbstractAdvancedDisplayRe
         destinationLabel
             .setPos(6, 11)
             .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 9, BoundsHitReaction.SCALE_SCROLL)
-            .setText(TextUtils.text(blockEntity.getTrainData().getNextStop().isPresent() ? blockEntity.getTrainData().getNextStop().get().getDestination() : "").withStyle(ChatFormatting.BOLD))
+            .setText(TextUtils.text(blockEntity.getTrainData().getCurrentStop().isPresent() ? blockEntity.getTrainData().getCurrentStop().get().getDestination() : "").withStyle(ChatFormatting.BOLD))
             .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
         ;
     }

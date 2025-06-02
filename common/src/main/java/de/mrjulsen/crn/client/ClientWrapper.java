@@ -293,7 +293,7 @@ public class ClientWrapper {
     }
 
     public static void renderNavigatorItem(RenderGraphics graphics, ItemStack itemStack, TransformType transformType, boolean leftHand, PoseStack poseStack, MultiBufferSource buffer, int combinedLight, int combinedOverlay, BakedModel model) {
-        if (transformType != TransformType.FIRST_PERSON_LEFT_HAND && transformType != TransformType.FIRST_PERSON_RIGHT_HAND) {
+        if (transformType != TransformType.FIRST_PERSON_LEFT_HAND && transformType != TransformType.FIRST_PERSON_RIGHT_HAND && transformType != TransformType.FIXED) {
             return;
         }
         
