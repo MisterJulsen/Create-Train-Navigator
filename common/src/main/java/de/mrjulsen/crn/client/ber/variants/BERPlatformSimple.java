@@ -51,7 +51,11 @@ public class BERPlatformSimple implements AbstractAdvancedDisplayRenderer<Platfo
     @Override
     public void tick(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent) {
         List<Component> textContent = new ArrayList<>(texts);
-        textContent.add(0, CustomLanguage.translate(keyTime, TimeUtils.parseTime((int)(blockEntity.getLevel().getDayTime() % DragonLib.ticksPerDay() + DragonLib.daytimeShift()), ModClientConfig.TIME_FORMAT.get())));
+        if (blockEntity.getXSize() > 2) {
+            textContent.add(0, CustomLanguage.translate(keyTime, TimeUtils.parseTime((int)(blockEntity.getLevel().getDayTime() % DragonLib.ticksPerDay() + DragonLib.daytimeShift()), ModClientConfig.TIME_FORMAT.get())));
+        } else {
+            textContent.add(0, TextUtils.text(TimeUtils.parseTime((int)(blockEntity.getLevel().getDayTime() % DragonLib.ticksPerDay() + DragonLib.daytimeShift()), ModClientConfig.TIME_FORMAT.get())));
+        }
         MutableComponent txt = TextUtils.concat(textContent);
         label
             .setText(txt)
