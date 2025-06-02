@@ -49,8 +49,8 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
 
 
     // TIMES
-    private PredictionTimes scheduledTimes = new PredictionTimes(null, 0, 0, 0, 0);;
-    private PredictionTimes realTimes = new PredictionTimes(null, 0, 0, 0, 0);
+    private PredictionTimes scheduledTimes = new PredictionTimes(this, 0, 0, 0, 0);;
+    private PredictionTimes realTimes = new PredictionTimes(this, 0, 0, 0, 0);
     private int averageStayDuration = -1;
     private int cycle;
 
