@@ -31,6 +31,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<PlatformDisplayTableSettings> {
 
+    private final MutableComponent textTrainTerminatesHere = CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.train_terminates");
     private static final String keyTime = "gui.createrailwaysnavigator.time";
 
     private static final float LINE_HEIGHT = 5.4f;
@@ -100,18 +101,24 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
     public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason) {
         List<StationDisplayData> preds = blockEntity.getStops().stream().filter(x -> x.getStationData().getRealTimeArrivalTime() < DragonLib.getCurrentWorldTime() + ModClientConfig.DISPLAY_LEAD_TIME.get() && (!x.getTrainData().isCancelled() || DragonLib.getCurrentWorldTime() < x.getStationData().getScheduledDepartureTime() + ModClientConfig.DISPLAY_LEAD_TIME.get())).toList();
         
-        showInfoLine = !preds.isEmpty() && ((preds.get(0).getStationData().isDepartureDelayed() && preds.get(0).getTrainData().hasStatusInfo()) || preds.get(0).getStationData().isStationChanged());
+        showInfoLine = !preds.isEmpty() && ((preds.get(0).getStationData().isDepartureDelayed() && preds.get(0).getTrainData().hasStatusInfo()) || preds.get(0).getStationData().isStationChanged() || preds.get(0).isNextSectionExcluded());
         if (showInfoLine) {
             // Update status label
             this.infoLineText = TextUtils.concat(TextUtils.text("  +++  "), preds.stream().limit(maxLines).filter(x -> 
                 (x.getTrainData().hasStatusInfo() &&
                 x.getStationData().isDepartureDelayed()) ||
-                x.getStationData().isStationChanged()
+                x.getStationData().isStationChanged() || 
+                x.isNextSectionExcluded()
             ).map(x -> {
                 Collection<Component> content = new ArrayList<>();
                 if (x.getTrainData().isCancelled()) {
                     content.add(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.cancelled"));
                     return content.stream();
+                }
+
+                // TRAIN TERMINATES
+                if (preds.get(0).isNextSectionExcluded()) {
+                    content.add(textTrainTerminatesHere);
                 }
 
                 // DELAYED

@@ -25,7 +25,10 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class BERPassengerInfoSimple implements AbstractAdvancedDisplayRenderer<PassengerInformationScrollingTextSettings> {
 
-    private final MutableComponent textDoNotBoard = CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.do_not_board");
+    private final MutableComponent textTrainTerminatesHere = CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.this_train_terminates_there")
+        .append(" ")
+        .append(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.passengers_leave_train"));
+    private final MutableComponent textTrainTerminated = CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.train_terminates");
     private static final String keyNextStop = "gui.createrailwaysnavigator.route_overview.next_stop";
     private static final String keyDate = "gui.createrailwaysnavigator.route_overview.date";
 
@@ -123,13 +126,17 @@ public class BERPassengerInfoSimple implements AbstractAdvancedDisplayRenderer<P
 
         
         if (blockEntity.getTrainData().getState() == State.AT_TERMINUS) {
-            label.setText(textDoNotBoard);
+            label.setText(textTrainTerminated);
         } else if (!blockEntity.getTrainData().getNextStop().isPresent()) {
             label.setText(settings.getTrainTextComponents().showTrainName() ? TextUtils.text(blockEntity.getTrainData().getTrainData().getName()) : TextUtils.empty());
         } else if (blockEntity.getTrainData().isWaitingAtStation()) {
             label.setText(TextUtils.text(blockEntity.getTrainData().getNextStop().get().getRealTimeStation().tagName()));
         } else if (blockEntity.getTrainData().getNextStop().get().getRealTimeArrivalTime() - DragonLib.getCurrentWorldTime() < ModClientConfig.NEXT_STOP_ANNOUNCEMENT.get()) {
-            label.setText(CustomLanguage.translate(keyNextStop, blockEntity.getTrainData().getNextStop().get().getRealTimeStation().tagName()));
+            MutableComponent txt = CustomLanguage.translate(keyNextStop, blockEntity.getTrainData().getNextStop().get().getRealTimeStation().tagName());
+            if (blockEntity.getTrainData().getState().isTerminating()) {
+                txt = TextUtils.concatWithStarChars(txt, textTrainTerminatesHere);
+            }
+            label.setText(txt);
         } else {
             final int slides = 3;
             int slide = (int)(DragonLib.getCurrentWorldTime() % (TICKS_PER_SLIDE * slides)) / TICKS_PER_SLIDE;
