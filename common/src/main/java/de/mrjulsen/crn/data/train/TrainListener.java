@@ -271,22 +271,26 @@ public final class TrainListener {
         trainDataHookTasks.add(task);
     }
     
-    public synchronized static void refreshPre() {
+    public synchronized static void refreshPre() throws Exception {
         if (!trainDataListenerActive) return;
         statusByDestination.clear();
         Set<Train> trains = TrainUtils.getTrains(true);
         Iterator<Train> iterator = trains.iterator();
         while (iterator.hasNext()) {
             final Train train = iterator.next();
-            if (GlobalSettings.getInstance().isTrainBlacklisted(train)) {
-                iterator.remove();
-                data.remove(train.id);
-                continue;
-            }
-            TrainData trainData = data.computeIfAbsent(train.id, x -> TrainData.of(train));
-            trainData.refreshPre();
-            for (TrainPrediction p : trainData.getPredictions()) {
-                statusByDestination.computeIfAbsent(p.getTargetedStationName(), $ -> new HashSet<>()).add(p);
+            try {
+                if (GlobalSettings.getInstance().isTrainBlacklisted(train)) {
+                    iterator.remove();
+                    data.remove(train.id);
+                    continue;
+                }
+                TrainData trainData = data.computeIfAbsent(train.id, x -> TrainData.of(train));
+                trainData.refreshPre();
+                for (TrainPrediction p : trainData.getPredictions()) {
+                    statusByDestination.computeIfAbsent(p.getTargetedStationName(), $ -> new HashSet<>()).add(p);
+                }
+            } catch (Exception e) {
+                throw new Exception("Unable to process train: " + train.name + " (" + train.id + ")", e);
             }
         }
     }

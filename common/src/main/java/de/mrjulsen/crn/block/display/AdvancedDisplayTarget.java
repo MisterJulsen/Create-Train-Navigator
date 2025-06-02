@@ -118,6 +118,8 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 						}
 					}
 
+					if (controller.getDisplayType().category().getSource() != EDisplayTypeDataSource.PLATFORM) return;
+
 					List<StationDisplayData> preds = prepare(filter, controller.getDisplayProperties().platformDisplayTrainsCount().apply(controller));
 					controller.setData(
 							preds,
@@ -130,6 +132,8 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 					if (controller.getDisplayType() != ModDisplayTypes.RICH_TEXT) {
 						if (!ModCommonConfig.AUTO_UPDATE_DISPLAY_TYPE.get()) return;
 					}
+
+					if (controller.getDisplayType() != ModDisplayTypes.RICH_TEXT) return;
 
 					StaticTextDisplaySettings settings = controller.getSettingsAs(StaticTextDisplaySettings.class).orElse(new StaticTextDisplaySettings());
 					int currentLine = line;
