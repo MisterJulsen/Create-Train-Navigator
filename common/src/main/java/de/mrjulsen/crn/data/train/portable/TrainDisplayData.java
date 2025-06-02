@@ -212,7 +212,7 @@ public class TrainDisplayData {
                 }
             }
             boolean atTerminus = nextStopTerminus && isAtStation;
-            boolean teminusAnnounced = nextStopTerminus && data.getNextStopPrediction().map(x -> x.realTime().arrivalIn() < ModClientConfig.NEXT_STOP_ANNOUNCEMENT.get()).orElse(false);
+            boolean teminusAnnounced = nextStopTerminus && data.getNextStopPrediction().map(x -> x.realTime().arrivalIn() < 600).orElse(false);
 
             State state = State.OUT_OF_SERVICE;
             if (preStart) state = State.BEFORE_START;

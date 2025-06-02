@@ -6,9 +6,9 @@ import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.block.blockentity.NavigatorLecternBlockEntity;
 import de.mrjulsen.crn.block.blockentity.TrainStationClockBlockEntity;
+import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.client.ber.NavigatorLecternBlockEntityRenderer;
 import de.mrjulsen.mcdragonlib.client.ber.StaticBlockEntityRenderer;
-import net.minecraft.world.phys.AABB;
 
 public class ModBlockEntities {
 	
@@ -23,15 +23,7 @@ public class ModBlockEntities {
 			ModBlocks.ADVANCED_DISPLAY_SLOPED,
 			ModBlocks.ADVANCED_DISPLAY_SLAB
 		)
-		.renderer(() -> (context) -> new StaticBlockEntityRenderer<>(context) {
-			public boolean shouldRenderOffScreen(AdvancedDisplayBlockEntity blockEntity) {
-				return blockEntity.isController();
-			}
-			public AABB getRenderBoundingBox(AdvancedDisplayBlockEntity blockEntity) {
-				return blockEntity.getRenderBoundingBox();
-			}
-
-		})
+		.renderer(() -> ClientWrapper::createAdvancedDisplayBlockEntityRenderer)
 		.register();
 
 	public static final BlockEntityEntry<TrainStationClockBlockEntity> TRAIN_STATION_CLOCK_BLOCK_ENTITY = CreateRailwaysNavigator.REGISTRATE

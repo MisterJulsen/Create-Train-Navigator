@@ -6,8 +6,6 @@ import java.util.function.Supplier;
 import com.simibubi.create.foundation.utility.CreateLang;
 import de.mrjulsen.crn.registry.ModDataComponents;
 import net.createmod.catnip.data.Pair;
-import org.joml.Vector3f;
-
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
@@ -34,13 +32,13 @@ import de.mrjulsen.crn.data.schedule.condition.TrainSeparationCondition;
 import de.mrjulsen.crn.data.schedule.instruction.PrioritizedDestinationInstruction;
 import de.mrjulsen.crn.data.schedule.instruction.ResetTimingsInstruction;
 import de.mrjulsen.crn.data.schedule.instruction.TravelSectionInstruction;
-import de.mrjulsen.crn.item.NavigatorItem;
 import de.mrjulsen.crn.mixin.ModularGuiLineBuilderAccessor;
 import de.mrjulsen.crn.mixin.ScheduleScreenAccessor;
 import de.mrjulsen.crn.network.packets.stc.ServerErrorPacket;
 import de.mrjulsen.crn.util.Owner;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.ber.RenderGraphics;
+import de.mrjulsen.mcdragonlib.client.ber.StaticBlockEntityRenderer;
 import de.mrjulsen.mcdragonlib.client.gui.DLScreen;
 import de.mrjulsen.mcdragonlib.client.render.DynamicGuiRenderer;
 import de.mrjulsen.mcdragonlib.client.render.DynamicGuiRenderer.AreaStyle;
@@ -60,6 +58,7 @@ import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.resources.language.ClientLanguage;
 import net.minecraft.client.resources.language.LanguageInfo;
 import net.minecraft.client.resources.model.BakedModel;
@@ -72,6 +71,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 
 public class ClientWrapper {
     
@@ -334,5 +334,17 @@ public class ClientWrapper {
 
     public static Player getClientPlayer() {
         return Minecraft.getInstance().player;
+    }
+
+    public static StaticBlockEntityRenderer<AdvancedDisplayBlockEntity> createAdvancedDisplayBlockEntityRenderer(BlockEntityRendererProvider.Context context) {
+        return new StaticBlockEntityRenderer<>(context) {
+			public boolean shouldRenderOffScreen(AdvancedDisplayBlockEntity blockEntity) {
+				return blockEntity.isController();
+			}
+			public AABB getRenderBoundingBox(AdvancedDisplayBlockEntity blockEntity) {
+				return blockEntity.getRenderBoundingBox();
+			}
+
+		};
     }
 }
