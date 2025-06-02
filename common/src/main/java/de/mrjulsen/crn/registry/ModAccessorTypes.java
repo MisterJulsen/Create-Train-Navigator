@@ -1005,6 +1005,7 @@ public final class ModAccessorTypes {
                             ScheduleSection previousSection = section.previousSection();
 
                             boolean isStart = section.isFirstStop(prediction); 
+                            boolean isLast = section.isFinalStop(prediction); 
                             boolean isStartAndFinal = isStart && previousSection.isUsable() && previousSection.shouldIncludeNextStationOfNextSection() && (previousSection.getTrainCategory().map(x -> !settings.searchExcludedTrainCaegories.getValue().contains(x.getId())).orElse(true)); 
                             
                             TrainStop stop = new TrainStop(prediction);
@@ -1024,7 +1025,7 @@ public final class ModAccessorTypes {
                                 }
                                 routesL.add(Pair.of(true, selectedRoute)); // Arrival
                             }
-                            if ((section.isUsable()) && (section.getTrainCategory().map(x -> !settings.searchExcludedTrainCaegories.getValue().contains(x.getId())).orElse(true))) {
+                            if ((section.isUsable() && (!isLast || section.shouldIncludeNextStationOfNextSection())) && (section.getTrainCategory().map(x -> !settings.searchExcludedTrainCaegories.getValue().contains(x.getId())).orElse(true))) {
                                 routesL.add(Pair.of(false, route)); // Departure
                             }
                         }
