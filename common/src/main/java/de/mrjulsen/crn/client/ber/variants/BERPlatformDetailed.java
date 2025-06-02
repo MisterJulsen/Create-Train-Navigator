@@ -72,7 +72,10 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
     @Override
     public void tick(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent) {
         timeLabel
-            .setText(CustomLanguage.translate(keyTime, ModUtils.formatTime(DragonLib.getCurrentWorldTime(), false)))
+            .setText(blockEntity.getXSize() > 1
+                ? CustomLanguage.translate(keyTime, ModUtils.formatTime(DragonLib.getCurrentWorldTime(), false))
+                : TextUtils.text(ModUtils.formatTime(DragonLib.getCurrentWorldTime(), false))
+            ) 
         ;
     }
     
