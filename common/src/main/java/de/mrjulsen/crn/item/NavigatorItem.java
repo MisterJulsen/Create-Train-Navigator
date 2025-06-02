@@ -45,6 +45,17 @@ public class NavigatorItem extends Item implements ICustomItemRenderer {
                 }
                 return InteractionResult.SUCCESS;
             }
+        } else {
+            if (state.is(Blocks.LECTERN) && !state.getValue(LecternBlock.HAS_BOOK)) {
+                if (!level.isClientSide) {
+                    ItemStack lecternStack = player.isCreative() ? stack.copy() : stack.split(1);
+                    ModBlocks.NAVIGATOR_LECTERN.get().replaceLectern(state, level, pos, lecternStack);
+                }
+                return InteractionResult.SUCCESS;
+            }
+
+            if (ModBlocks.NAVIGATOR_LECTERN.has(state))
+                return InteractionResult.PASS;
         }
 
         return player.isShiftKeyDown() ? InteractionResult.FAIL : use(level, player, context.getHand()).getResult();
