@@ -53,7 +53,6 @@ public class NavigatorLecternBlockEntity extends SmartBlockEntity {
 
     public void setNavigator(ItemStack newNavigator) {
         if (newNavigator != null) {
-            navigatorNbt = newNavigator.getTag();
             level.playSound(null, getBlockPos(), SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, 0.8F, 1.0F);
         }
     }
