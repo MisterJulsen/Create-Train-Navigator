@@ -38,26 +38,26 @@ public class NavigatorItem extends Item implements ICustomItemRenderer {
         BlockState state = level.getBlockState(pos);
         ItemStack stack = context.getItemInHand();
 
-        if (player.mayBuild()) {
-        }
-        if (player.isShiftKeyDown()) {
-            if (ModBlocks.NAVIGATOR_LECTERN.has(state)) {
-                if (!level.isClientSide) {
-                    ModBlocks.NAVIGATOR_LECTERN.get().withBlockEntityDo(level, pos, be -> be.swapControllers(stack, player, context.getHand(), state));
+        if (player.mayBuild()) {            
+            if (player.isShiftKeyDown()) {
+                if (ModBlocks.NAVIGATOR_LECTERN.has(state)) {
+                    if (!level.isClientSide) {
+                        ModBlocks.NAVIGATOR_LECTERN.get().withBlockEntityDo(level, pos, be -> be.swapControllers(stack, player, context.getHand(), state));
+                    }
+                    return InteractionResult.SUCCESS;
                 }
-                return InteractionResult.SUCCESS;
-            }
-        } else {
-            if (state.is(Blocks.LECTERN) && !state.getValue(LecternBlock.HAS_BOOK)) {
-                if (!level.isClientSide) {
-                    ItemStack lecternStack = player.isCreative() ? stack.copy() : stack.split(1);
-                    ModBlocks.NAVIGATOR_LECTERN.get().replaceLectern(state, level, pos, lecternStack);
+            } else {
+                if (state.is(Blocks.LECTERN) && !state.getValue(LecternBlock.HAS_BOOK)) {
+                    if (!level.isClientSide) {
+                        ItemStack lecternStack = player.isCreative() ? stack.copy() : stack.split(1);
+                        ModBlocks.NAVIGATOR_LECTERN.get().replaceLectern(state, level, pos, lecternStack);
+                    }
+                    return InteractionResult.SUCCESS;
                 }
-                return InteractionResult.SUCCESS;
-            }
 
-            if (ModBlocks.NAVIGATOR_LECTERN.has(state))
-                return InteractionResult.PASS;
+                if (ModBlocks.NAVIGATOR_LECTERN.has(state))
+                    return InteractionResult.PASS;
+            }
         }
 
         return player.isShiftKeyDown() ? InteractionResult.FAIL : use(level, player, context.getHand()).getResult();

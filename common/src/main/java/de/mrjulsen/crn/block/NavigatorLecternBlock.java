@@ -80,16 +80,15 @@ public class NavigatorLecternBlock extends LecternBlock implements IBE<Navigator
         return 15;
     }
 
-    public void replaceLectern(BlockState lecternState, Level world, BlockPos pos, ItemStack controller) {
+    public void replaceLectern(BlockState lecternState, Level world, BlockPos pos, ItemStack navigator) {
         world.setBlockAndUpdate(pos, defaultBlockState()
                 .setValue(FACING, lecternState.getValue(FACING))
                 .setValue(POWERED, lecternState.getValue(POWERED))
         );
-        withBlockEntityDo(world, pos, be -> be.setNavigator(controller));
+        withBlockEntityDo(world, pos, be -> be.setNavigator(navigator));
     }
 
     public void replaceWithLectern(BlockState state, Level world, BlockPos pos) {
-        AllSoundEvents.CONTROLLER_TAKE.playOnServer(world, pos);
         world.setBlockAndUpdate(pos, Blocks.LECTERN.defaultBlockState()
                 .setValue(FACING, state.getValue(FACING))
                 .setValue(POWERED, state.getValue(POWERED)));
