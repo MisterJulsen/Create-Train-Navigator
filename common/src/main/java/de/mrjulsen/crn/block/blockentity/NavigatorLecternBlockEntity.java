@@ -36,23 +36,24 @@ public class NavigatorLecternBlockEntity extends SmartBlockEntity {
     @Override
     protected void write(CompoundTag compound, boolean clientPacket) {
         super.write(compound, clientPacket);
-        compound.put(NBT_NAVIGATOR, navigatorNbt);
+        if (navigatorNbt != null) compound.put(NBT_NAVIGATOR, navigatorNbt);
     }
 
     @Override
     public void writeSafe(CompoundTag compound) {
         super.writeSafe(compound);
-        compound.put(NBT_NAVIGATOR, navigatorNbt);
+        if (navigatorNbt != null) compound.put(NBT_NAVIGATOR, navigatorNbt);
     }
 
     @Override
     protected void read(CompoundTag compound, boolean clientPacket) {
         super.read(compound, clientPacket);
-        navigatorNbt = compound.getCompound(NBT_NAVIGATOR);
+        navigatorNbt = compound.contains(NBT_NAVIGATOR) ? compound.getCompound(NBT_NAVIGATOR) : new CompoundTag();
     }
 
     public void setNavigator(ItemStack newNavigator) {
         if (newNavigator != null) {
+            this.navigatorNbt = newNavigator.getOrCreateTag();
             level.playSound(null, getBlockPos(), SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, 0.8F, 1.0F);
         }
     }
@@ -88,7 +89,7 @@ public class NavigatorLecternBlockEntity extends SmartBlockEntity {
 
     private ItemStack createNavigator() {
         ItemStack stack = ModItems.NAVIGATOR.asStack();
-        stack.setTag(navigatorNbt);
+        stack.setTag(navigatorNbt == null ? new CompoundTag() : navigatorNbt);
         return stack;
     }
 
