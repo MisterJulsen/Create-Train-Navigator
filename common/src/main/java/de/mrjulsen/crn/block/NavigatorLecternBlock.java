@@ -1,6 +1,5 @@
 package de.mrjulsen.crn.block;
 
-import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.api.schematic.requirement.SpecialBlockItemRequirement;
 import com.simibubi.create.content.schematics.requirement.ItemRequirement;
 import com.simibubi.create.foundation.block.IBE;
@@ -109,7 +108,6 @@ public class NavigatorLecternBlock extends LecternBlock implements IBE<Navigator
     }
 
     public void replaceWithLectern(BlockState state, Level world, BlockPos pos) {
-        AllSoundEvents.CONTROLLER_TAKE.playOnServer(world, pos);
         world.setBlockAndUpdate(pos, Blocks.LECTERN.defaultBlockState()
                 .setValue(FACING, state.getValue(FACING))
                 .setValue(POWERED, state.getValue(POWERED)));
