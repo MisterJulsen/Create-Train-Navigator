@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
 
@@ -12,8 +14,6 @@ import com.simibubi.create.content.trains.entity.Train;
 import com.simibubi.create.content.trains.station.GlobalStation;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
@@ -66,11 +66,11 @@ public class GlobalSettings implements INBTSerializable {
 
     private final MinecraftServer server;
 
-    private final Map<UUID, StationTag> stationTags = new HashMap<>();
-    private final Map<UUID, TrainCategory> trainCategories = new HashMap<>();
-    private final Map<UUID, TrainLine> trainLines = new HashMap<>();
-    private final Set<String> stationBlacklist = new HashSet<>();
-    private final Set<String> trainBlacklist = new HashSet<>();
+    private final Map<UUID, StationTag> stationTags = new ConcurrentHashMap<>();
+    private final Map<UUID, TrainCategory> trainCategories = new ConcurrentHashMap<>();
+    private final Map<UUID, TrainLine> trainLines = new ConcurrentHashMap<>();
+    private final Set<String> stationBlacklist = new ConcurrentSkipListSet<>();
+    private final Set<String> trainBlacklist = new ConcurrentSkipListSet<>();
 
     private static GlobalSettings instance;
 
