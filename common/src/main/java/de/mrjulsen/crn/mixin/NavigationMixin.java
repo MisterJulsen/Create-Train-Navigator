@@ -27,6 +27,7 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import com.simibubi.create.content.trains.entity.Navigation;
 import com.simibubi.create.content.trains.entity.Train;
 import com.simibubi.create.content.trains.entity.Navigation.StationTest;
+import com.simibubi.create.content.trains.graph.DiscoveredPath;
 import com.simibubi.create.content.trains.graph.TrackEdge;
 import com.simibubi.create.content.trains.graph.TrackGraph;
 import com.simibubi.create.content.trains.graph.TrackNode;
@@ -107,7 +108,7 @@ public abstract class NavigationMixin implements INavigationExtension {
             return;
         }
 
-        if (!(this.shouldCheckPenalties = train.runtime.getSchedule().entries.get(train.runtime.currentEntry).instruction instanceof PrioritizedDestinationInstruction)) {
+        if ((train.runtime.currentEntry < 0 || train.runtime.currentEntry > train.runtime.getSchedule().entries.size()) && !(this.shouldCheckPenalties = train.runtime.getSchedule().entries.get(train.runtime.currentEntry).instruction instanceof PrioritizedDestinationInstruction)) {
             return;
         }
         

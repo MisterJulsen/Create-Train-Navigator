@@ -255,6 +255,9 @@ public class GlobalSettings implements INBTSerializable {
     }
 
     public boolean stationTagExists(UUID id) {
+        if (id == null) {
+            return false;
+        }
         return stationTags.containsKey(id);
     }
         
@@ -382,6 +385,9 @@ public class GlobalSettings implements INBTSerializable {
 //#region +++ TRAIN CATEGORIES +++
 
     public boolean trainCategoryExists(UUID id) {
+        if (id == null) {
+            return false;
+        }
         return trainCategories.containsKey(id);
     }
 
@@ -551,6 +557,9 @@ public class GlobalSettings implements INBTSerializable {
 //#region +++ TRAIN LINES +++
 
     public boolean trainLineExists(UUID id) {
+        if (id == null) {
+            return false;
+        }
         return trainLines.containsKey(id);
     }
 
