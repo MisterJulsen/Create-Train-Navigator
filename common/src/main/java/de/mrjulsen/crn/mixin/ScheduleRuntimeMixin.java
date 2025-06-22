@@ -2,8 +2,7 @@ package de.mrjulsen.crn.mixin;
 
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import java.util.regex.PatternSyntaxException;
 import java.util.List;
 
 import org.spongepowered.asm.mixin.Mixin;
@@ -102,10 +101,7 @@ public class ScheduleRuntimeMixin {
         if (instruction instanceof PrioritizedDestinationInstruction destination) {
             ScheduleRuntimeAccessor accessor = (ScheduleRuntimeAccessor)runtime;
             Train train = accessor.crn$getTrain();   
-            List<String> filters = destination.getFilters();         
-            List<Pattern> patterns = filters.stream()
-                .map(Pattern::compile)
-                .collect(Collectors.toList());
+            List<String> filters = destination.getFilters();
             INavigationExtension ext = (INavigationExtension)train.navigation;
 
             DiscoveredPath selectedDestination = null;
@@ -123,16 +119,20 @@ public class ScheduleRuntimeMixin {
 				return null;
 			}
 
-            for (Pattern regex : patterns) {
+            for (String regex : filters) {
                 AtomicInteger painCount = new AtomicInteger(0);
                 GlobalStation bestStation = null;
                 DiscoveredPath bestPath = null;
                 double bestCost = Double.MAX_VALUE;
                 
                 for (GlobalStation globalStation : train.graph.getPoints(EdgePointType.STATION)) {
-                    if (!regex.matcher(globalStation.name).matches()) {
+                    try {
+                        if (!globalStation.name.matches(regex))
+                            continue;
+                    } catch (PatternSyntaxException ignored) {
                         continue;
                     }
+            
                     DiscoveredPath discoveredPath = navigationCache.get(globalStation, globalStation);
 
                     if (discoveredPath == null) {
