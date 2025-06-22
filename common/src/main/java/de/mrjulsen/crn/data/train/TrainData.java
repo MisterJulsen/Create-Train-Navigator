@@ -2,9 +2,11 @@ package de.mrjulsen.crn.data.train;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.Map.Entry;
@@ -81,6 +83,7 @@ public class TrainData implements IListenable<TrainData> {
     public transient int transitTime = 0;
     public transient int waitingAtStationTime = 0;
     private transient boolean wasAtStation = false;
+    private transient int wasAtStationIndex = -1;
     private transient boolean wasWaitingForSignal = false;
     public transient UUID waitingForSignalId;
     public transient final Set<Train> occupyingTrains = new HashSet<>();
@@ -363,6 +366,7 @@ public class TrainData implements IListenable<TrainData> {
         }
         lastSectionDelayOffset = 0;
         refreshTimingsCounter = 0;
+        wasAtStationIndex = -1;
         resetStatus(true);
         isDynamic.clear();
         if (CreateRailwaysNavigator.isDebug() || ModCommonConfig.ADVANCED_LOGGING.get()) CreateRailwaysNavigator.LOGGER.info(getTrainName() + " has reset their scheduled times.");
@@ -491,6 +495,7 @@ public class TrainData implements IListenable<TrainData> {
         sectionsCache.clear();
         lastScheduleIndex = INVALID;
         totalDuration = INVALID;
+        wasAtStationIndex = INVALID;
 
         resetCaches();
     } 
@@ -664,21 +669,42 @@ public class TrainData implements IListenable<TrainData> {
         isInitializedCache.clear();
     }
 
+    private final Queue<Runnable> deferredTickQueue = new ConcurrentLinkedQueue<>();
+
     /** Called every tick */
     public void tick() {       
         if (train.runtime.paused) {
             return;
         }
 
+        while (!deferredTickQueue.isEmpty()) {
+            deferredTickQueue.poll().run();
+        }
+
         boolean isAtStation = isAtStation();
-        if (wasAtStation != isAtStation) {
+        int isAtStationIndex = train.runtime.currentEntry;
+        boolean stationChanged = wasAtStation != isAtStation;
+        boolean stationIndexChanged = wasAtStationIndex != isAtStationIndex;
+        if (stationChanged) {
             if (isAtStation) {
                 onReachDestination();
             } else {
                 onLeaveDestination();
             }
             this.wasAtStation = isAtStation;
+        } else if (wasAtStationIndex > INVALID && isAtStation && stationIndexChanged && predictionsByIndex.containsKey(getCurrentScheduleIndex())) {
+            deferredTickQueue.add(() -> {
+                if (!isAtStation() || !predictionsByIndex.containsKey(getCurrentScheduleIndex())) return;
+                System.out.println("CHANGED " + getCurrentScheduleIndex() + " " + predictionsByIndex.containsKey(getCurrentScheduleIndex()));
+                this.transitTime = 0;
+                this.waitingAtStationTime = 0;
+                this.waitingForSignalTicks = 0;
+                this.waitingForSignalId = null;
+                this.delaysBySignal.clear();
+                onReachDestination();
+            });
         }
+        this.wasAtStationIndex = isAtStationIndex;
 
         if (isAtStation) {
             waitingAtStationTime++;
@@ -724,7 +750,7 @@ public class TrainData implements IListenable<TrainData> {
     /**
      * Called when the train reaches a station.
      */
-    public void onReachDestination() {        
+    public void onReachDestination() {
         if (!isPreInitializationPhase()) {
             this.getPredictionByIndex(getCurrentScheduleIndex()).ifPresent(x -> {
                 x.transitTime().add(transitTime, false);
