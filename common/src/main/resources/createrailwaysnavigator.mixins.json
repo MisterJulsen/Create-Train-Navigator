@@ -24,6 +24,7 @@
     "ScheduleEntryMixin",
     "FrontierEntryMixin",
     "TrainPenaltyAccessor",
+    "GlobalRailwayManagerMixin",
     "LecternBlockMixin"
   ],
   "injectors": {
