@@ -83,7 +83,7 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
     public void render(BERGraphics<AdvancedDisplayBlockEntity> graphics, float pPartialTicks, AdvancedDisplayRenderInstance parent, int light, boolean backSide) {
         for (int i = 0; i < lines.length && i < maxLines; i++) {
             for (int k = 0; k < lines[i].length; k++) {
-                if (i >= maxLines - 1 && (DragonLib.getCurrentWorldTime() % 200 > 100)) {
+                if (getDisplaySettings(graphics.blockEntity()).showTimeAndDate() && i >= maxLines - 1 && (DragonLib.getCurrentWorldTime() % 200 > 100)) {
                     timeLabel.render(graphics, light);
                     continue;
                 }
@@ -91,7 +91,7 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
             }
         }
 
-        if (lines.length < maxLines) {            
+        if (getDisplaySettings(graphics.blockEntity()).showTimeAndDate() && lines.length < maxLines) {            
             timeLabel.render(graphics, light);
         }
 
