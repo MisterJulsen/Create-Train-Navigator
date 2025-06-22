@@ -143,6 +143,17 @@ public final class TrainListener {
                 }
             });
         });
+        CRNEventsManager.getEvent(TrainArrivalAndDepartureEvent.class).register(CreateRailwaysNavigator.MOD_ID, (train, station, arrival) -> {
+            queueTrainListenerTask(() -> {
+                try {
+                    if (train != null) {
+                        //System.out.println(train.name.getString() + " " + (arrival ? "arrives" : "leaves") + ": " + station.map(x -> x.name).orElse("?"));
+                    }
+                } catch (Exception e) {
+                    DragonLib.LOGGER.error("Cannot run train listener task 'TrainListener#ScheduleResetEvent': {}", e.getMessage(), e);
+                }
+            });
+        });
     }
 
     public static Set<Train> getAllTrains() {

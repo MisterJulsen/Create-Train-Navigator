@@ -86,8 +86,6 @@ public class ModCommonEvents {
                 }
                 lastTicks = currentTicks;
             }
-
-            TrainListener.tick();
         });
 
         CommandRegistrationEvent.EVENT.register((dispatcher, selection) -> {
