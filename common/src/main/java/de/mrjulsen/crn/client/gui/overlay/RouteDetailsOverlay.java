@@ -1,6 +1,5 @@
 package de.mrjulsen.crn.client.gui.overlay;
 
-import java.util.Set;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 
@@ -21,7 +20,6 @@ import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.StationTag.StationInfo;
 import de.mrjulsen.crn.data.navigation.ClientRoute;
 import de.mrjulsen.crn.data.navigation.TransferConnection;
-import de.mrjulsen.crn.registry.ModItems;
 import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.gui.DLOverlayScreen;
@@ -185,10 +183,9 @@ public class RouteDetailsOverlay extends DLOverlayScreen {
     }
 
 
-    @SuppressWarnings("resource")
     @Override
     public void tick() {
-        if (Screen.hasControlDown() && ModKeys.KEY_OVERLAY_SETTINGS.isDown() && Minecraft.getInstance().player.getInventory().hasAnyOf(Set.of(ModItems.NAVIGATOR.get()))) {
+        if (Screen.hasControlDown() && ModKeys.KEY_OVERLAY_SETTINGS.isDown()) {
             DLScreen.setScreen(new RouteOverlaySettingsScreen(this));
         }
 
