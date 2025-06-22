@@ -243,10 +243,11 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
         x += components[LineComponent.TIME.i()].getTextWidth() + 2;
         components[LineComponent.REAL_TIME.i()].setPos(x, 3 + index * LINE_HEIGHT);
         x += components[LineComponent.REAL_TIME.i()].getTextWidth() + 2 + (!components[LineComponent.REAL_TIME.i()].getText().getString().isEmpty() ? 2 : 0);
-              
-        float trainNameWidth = settings.isAutoTrainNameWidth() ? trainNameLabel.getTextWidth() : settings.getTrainNameWidth();
         trainNameLabel
             .setPos(x, 3 + index * LINE_HEIGHT)
+        ;
+        float trainNameWidth = Math.min(settings.isAutoTrainNameWidth() ? trainNameLabel.getTextWidth() : settings.getTrainNameWidth(), (int)blockEntity.getXSizeScaled() * 16 - 3 - trainNameLabel.getX());
+        trainNameLabel
             .setMaxWidth(trainNameWidth, BoundsHitReaction.SCALE_SCROLL)
         ;
         x += trainNameLabel.getMaxWidth() + 2;
