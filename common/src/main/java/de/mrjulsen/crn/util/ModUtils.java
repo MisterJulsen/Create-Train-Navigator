@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 import com.simibubi.create.foundation.utility.Components;
 import com.simibubi.create.foundation.utility.Lang;
 
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.exceptions.RuntimeSideException;
 import de.mrjulsen.mcdragonlib.DragonLib;
@@ -133,14 +134,19 @@ public class ModUtils {
     }
 
     public static Collection<String> wildcardMatches(String src, Collection<String> pool) {
-        Pattern p = buildPattern(src);
-        List<String> res = new LinkedList<>();
-        for (String text : pool) {
-            Matcher m = p.matcher(text);
-            if (!m.matches()) continue;
-            res.add(text);
+        try {
+            Pattern p = buildPattern(src);
+            List<String> res = new LinkedList<>();
+            for (String text : pool) {
+                Matcher m = p.matcher(text);
+                if (!m.matches()) continue;
+                res.add(text);
+            }
+            return res;
+        } catch (Exception e) {
+            CreateRailwaysNavigator.LOGGER.warn("Error while checking regex: " + e);
+            return List.of();
         }
-        return res;
     }
 
     public static Map<String, List<String>> mapWildcards(String src, List<String> targets, Collection<String> pool) {
