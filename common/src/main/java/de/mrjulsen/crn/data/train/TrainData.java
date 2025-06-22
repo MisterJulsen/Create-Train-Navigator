@@ -695,7 +695,6 @@ public class TrainData implements IListenable<TrainData> {
         } else if (wasAtStationIndex > INVALID && isAtStation && stationIndexChanged && predictionsByIndex.containsKey(getCurrentScheduleIndex())) {
             deferredTickQueue.add(() -> {
                 if (!isAtStation() || !predictionsByIndex.containsKey(getCurrentScheduleIndex())) return;
-                System.out.println("CHANGED " + getCurrentScheduleIndex() + " " + predictionsByIndex.containsKey(getCurrentScheduleIndex()));
                 this.transitTime = 0;
                 this.waitingAtStationTime = 0;
                 this.waitingForSignalTicks = 0;
