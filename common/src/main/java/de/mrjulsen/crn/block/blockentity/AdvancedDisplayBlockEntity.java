@@ -24,6 +24,7 @@ import de.mrjulsen.crn.client.AdvancedDisplaysRegistry;
 import de.mrjulsen.crn.client.AdvancedDisplaysRegistry.DisplayProperties;
 import de.mrjulsen.crn.client.AdvancedDisplaysRegistry.DisplayTypeResourceKey;
 import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
+import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.CarriageData;
 import de.mrjulsen.crn.data.TrainExitSide;
 import de.mrjulsen.crn.data.StationTag.ClientStationTag;
@@ -90,8 +91,6 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     public static final byte MAX_XSIZE = 16;
     public static final byte MAX_YSIZE = 16;
 
-    private static final int REFRESH_FREQUENCY = 100;
-
     // DATA
     private DisplayTypeResourceKey displayTypeId = ModDisplayTypes.TRAIN_DESTINATION_SIMPLE;
     private byte xSize = 1;
@@ -110,7 +109,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     private CarriageData carriageData = new CarriageData(0, Direction.NORTH, false);
     
     // OTHER
-    private int syncTicks = REFRESH_FREQUENCY - 1;
+    private int syncTicks = 0;
     private final Cache<IBlockEntityRendererInstance<AdvancedDisplayBlockEntity>> renderer = new Cache<>(() -> new AdvancedDisplayRenderInstance(this), ECachingPriority.ALWAYS);
 
     public final Cache<TrainExitSide> relativeExitDirection = new Cache<>(() -> {        
@@ -478,14 +477,13 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
             return;
         }
 
-        syncTicks++;
-        if ((syncTicks %= REFRESH_FREQUENCY) == 0) {
-            if (level.isClientSide) {
-                boolean shouldUpdate = getStops().size() > 0 || dataOrderChanged;
-                if (shouldUpdate) {
-                    getRenderer().update(level, getBlockPos(), getBlockState(), this, dataOrderChanged ? EUpdateReason.LAYOUT_CHANGED : EUpdateReason.DATA_CHANGED);
-                    dataOrderChanged = false;
-                }
+        syncTicks--;
+        if (level.isClientSide && syncTicks <= 0) {
+            syncTicks = ModClientConfig.DISPLAY_REFRESH_RATE.get();
+            boolean shouldUpdate = getStops().size() > 0 || dataOrderChanged;
+            if (shouldUpdate) {
+                getRenderer().update(level, getBlockPos(), getBlockState(), this, dataOrderChanged ? EUpdateReason.LAYOUT_CHANGED : EUpdateReason.DATA_CHANGED);
+                dataOrderChanged = false;
             }
         }
     }
@@ -508,8 +506,9 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
             return;
         }
 
-        syncTicks++;       
-        if ((syncTicks %= 100) == 0 && level.isClientSide) {
+        syncTicks--;
+        if (level.isClientSide && syncTicks <= 0) {
+            syncTicks = ModClientConfig.DISPLAY_REFRESH_RATE.get();
             DataAccessor.getFromServer(((CarriageContraptionEntity)carriage.entity).trainId, ModAccessorTypes.GET_TRAIN_DISPLAY_DATA_FROM_SERVER, (data) -> { 
                 if (data.getState().isOutOfService() && this.trainData.getState().isOutOfService()) {
                     return;

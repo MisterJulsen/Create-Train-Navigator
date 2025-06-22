@@ -14,6 +14,7 @@ public class ModClientConfig {
     public static final ModConfigSpec.ConfigValue<Integer> REALTIME_PRECISION_THRESHOLD;
     public static final ModConfigSpec.ConfigValue<Integer> NEXT_STOP_ANNOUNCEMENT;
     public static final ModConfigSpec.ConfigValue<Integer> DISPLAY_LEAD_TIME;
+    public static final ModConfigSpec.ConfigValue<Integer> DISPLAY_REFRESH_RATE;
     public static final ModConfigSpec.ConfigValue<Double> OVERLAY_SCALE;
     public static final ModConfigSpec.ConfigValue<Boolean> ROUTE_NOTIFICATIONS;
     public static final ModConfigSpec.ConfigValue<OverlayPosition> ROUTE_OVERLAY_POSITION;
@@ -34,6 +35,9 @@ public class ModClientConfig {
             .defineInRange("general.realtime_precision_threshold", 167, 1, 1000); 
         DISPLAY_LEAD_TIME = BUILDER.comment(new String[] {"[in Ticks]", "How early a train should be shown on the display. (Default: 1200, 1 real life minute)"})
             .defineInRange("general.display_lead_time", 1200, 100, 24000);
+        DISPLAY_REFRESH_RATE = BUILDER.comment(new String[] {"[in Ticks]", "The interval in which the displays are updated with new information. Lower values can decrease performance and increase the network traffic, while larger values reduce the reaction speed of the displays. (Default: 50, Recommended: 50 - 100)"})
+            .defineInRange("general.display_refresh_rate", 50, 20, 200);
+        
         OVERLAY_SCALE = BUILDER.comment("Scale of the route overlay UI. (Default: 0.75)")
             .defineInRange("route_overlay.scale", 0.75f, MIN_SCALE, MAX_SCALE);
         ROUTE_NOTIFICATIONS = BUILDER.comment("If active, you will receive short toasts about important events on your trip, e.g. delays, changes, ... (Default: ON)")
