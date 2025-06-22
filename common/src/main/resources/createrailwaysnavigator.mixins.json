@@ -23,7 +23,8 @@
     "NavigationMixin",
     "ScheduleEntryMixin",
     "FrontierEntryMixin",
-    "TrainPenaltyAccessor"
+    "TrainPenaltyAccessor",
+    "GlobalRailwayManagerMixin"
   ],
   "injectors": {
     "defaultRequire": 1
