@@ -139,6 +139,22 @@ public class GuiBuilderWrapper {
         });
     }
 
+    static void buildShowDoNotBoardTextGui(IShowDoNotBoardText setting, GuiBuilderContext context) {
+        context.builder().addLine(IShowDoNotBoardText.GUI_LINE_SHOW_DO_NOT_BOARD_TEXT_NAME, (line) -> {            
+            line.add(new IconSlotWidget(line.getCurrentX(), line.y() + 2, ModGuiIcons.WALK.getAsSprite(16, 16)));            
+            line.add(new DLCheckBox(line.getCurrentX() + 4, line.y() + line.height() / 2 - 8, line.getRemainingWidth(), IShowDoNotBoardText.textShowDoNotBoardText.getString(), setting.showDoNotBoardText(), (cb) -> setting.setShowDoNotBoardText(cb.isChecked())) {
+                @Override
+                public void renderFrontLayer(Graphics graphics, int mouseX, int mouseY, float partialTicks) {
+                    super.renderFrontLayer(graphics, mouseX, mouseY, partialTicks);                    
+                    if (!isMouseSelected()) {
+                        return;
+                    }
+                    GuiUtils.renderTooltip(context.container().getParentScreen(), this, List.of(IShowDoNotBoardText.textShowDoNotBoardTextDescription), context.container().getParentScreen().width() / 3, graphics, mouseX, mouseY);
+                }
+            });
+        });
+    }
+
     static void buildShowExitGui(IShowExitDirectionSetting settings, GuiBuilderContext context) {
         context.builder().addLine(IShowExitDirectionSetting.GUI_LINE_SHOW_ARRIVAL_NAME, (line) -> {            
             line.add(new IconSlotWidget(line.getCurrentX(), line.y() + 2, ModGuiIcons.EXIT.getAsSprite(16, 16)));            
