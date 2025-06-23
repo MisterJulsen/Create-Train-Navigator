@@ -157,7 +157,7 @@ public class ScheduleSection {
 
         boolean customStartFound = false;
         boolean endReached = false;
-        for (int i = 0; i <= count; i++) {
+        for (int i = 0; i <= count * 2; i++) {
             final int j = (startIndex + i) % count;
             if (i != 0 && j == stopIndex) {
                 if (!ignoreIncludeLastStationRule && shouldIncludeNextStationOfNextSection()) {
