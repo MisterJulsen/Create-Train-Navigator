@@ -2,6 +2,8 @@ package de.mrjulsen.crn.registry;
 
 import java.util.function.Supplier;
 
+import com.simibubi.create.AllInteractionBehaviours;
+import com.simibubi.create.AllMovementBehaviours;
 import com.simibubi.create.content.redstone.displayLink.AllDisplayBehaviours;
 import com.simibubi.create.foundation.block.connected.ConnectedTextureBehaviour;
 import com.simibubi.create.foundation.data.SharedProperties;
@@ -11,6 +13,8 @@ import com.tterrag.registrate.util.nullness.NonNullConsumer;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.*;
+import de.mrjulsen.crn.block.blockentity.AdvancedDisplayInteractionBehaviour;
+import de.mrjulsen.crn.block.blockentity.AdvancedDisplayMovementBehaviour;
 import de.mrjulsen.crn.block.connected.AdvancedDisplayCTBehaviour;
 import de.mrjulsen.crn.block.connected.AdvancedDisplaySmallCTBehaviour;
 import de.mrjulsen.crn.block.display.AdvancedDisplayTarget;
@@ -34,6 +38,8 @@ public class ModBlocks {
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
 		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
+		.onRegister(AllMovementBehaviours.movementBehaviour(new AdvancedDisplayMovementBehaviour()))
+		.onRegister(AllInteractionBehaviours.interactionBehaviour(new AdvancedDisplayInteractionBehaviour()))
 		.item()
 		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
@@ -46,6 +52,8 @@ public class ModBlocks {
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
 		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
+		.onRegister(AllMovementBehaviours.movementBehaviour(new AdvancedDisplayMovementBehaviour()))
+		.onRegister(AllInteractionBehaviours.interactionBehaviour(new AdvancedDisplayInteractionBehaviour()))
 		.item()
 		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
@@ -59,6 +67,8 @@ public class ModBlocks {
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
 		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
+		.onRegister(AllMovementBehaviours.movementBehaviour(new AdvancedDisplayMovementBehaviour()))
+		.onRegister(AllInteractionBehaviours.interactionBehaviour(new AdvancedDisplayInteractionBehaviour()))
 		.item()
 		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
@@ -72,6 +82,8 @@ public class ModBlocks {
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
 		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
+		.onRegister(AllMovementBehaviours.movementBehaviour(new AdvancedDisplayMovementBehaviour()))
+		.onRegister(AllInteractionBehaviours.interactionBehaviour(new AdvancedDisplayInteractionBehaviour()))
 		.item()
 		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
@@ -85,6 +97,8 @@ public class ModBlocks {
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
 		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
+		.onRegister(AllMovementBehaviours.movementBehaviour(new AdvancedDisplayMovementBehaviour()))
+		.onRegister(AllInteractionBehaviours.interactionBehaviour(new AdvancedDisplayInteractionBehaviour()))
 		.item()
 		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
@@ -98,6 +112,8 @@ public class ModBlocks {
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
 		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
+		.onRegister(AllMovementBehaviours.movementBehaviour(new AdvancedDisplayMovementBehaviour()))
+		.onRegister(AllInteractionBehaviours.interactionBehaviour(new AdvancedDisplayInteractionBehaviour()))
 		.item()
 		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
@@ -111,6 +127,8 @@ public class ModBlocks {
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
 		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
+		.onRegister(AllMovementBehaviours.movementBehaviour(new AdvancedDisplayMovementBehaviour()))
+		.onRegister(AllInteractionBehaviours.interactionBehaviour(new AdvancedDisplayInteractionBehaviour()))
 		.item()
 		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()

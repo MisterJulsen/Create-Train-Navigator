@@ -38,8 +38,9 @@ public class AdvancedDisplayRenderInstance extends AbstractBlockEntityRenderInst
         }
         
         final int light = graphics.blockEntity().isGlowing() ? LightTexture.FULL_BRIGHT : graphics.packedLight();
+        BlockState state = graphics.blockEntity().getLevel().getBlockState(graphics.blockEntity().getBlockPos());
 
-        if (graphics.blockEntity().getBlockState().getBlock() instanceof AbstractAdvancedDisplayBlock) {
+        if (state.getBlock() instanceof AbstractAdvancedDisplayBlock) {
 
             renderSubtype.renderTick(Minecraft.getInstance().getDeltaFrameTime());
             
@@ -57,7 +58,7 @@ public class AdvancedDisplayRenderInstance extends AbstractBlockEntityRenderInst
             renderSubtype.render(graphics, partialTick, this, light, false);
             graphics.poseStack().popPose();
 
-            if (!(graphics.blockEntity().getBlockState().getBlock() instanceof AbstractAdvancedSidedDisplayBlock) || graphics.blockEntity().getBlockState().getValue(AbstractAdvancedSidedDisplayBlock.SIDE) == ESide.BOTH) {
+            if (!(state.getBlock() instanceof AbstractAdvancedSidedDisplayBlock) || state.getValue(AbstractAdvancedSidedDisplayBlock.SIDE) == ESide.BOTH) {
                 graphics.poseStack().pushPose();
                 graphics.poseStack().mulPose(Axis.YP.rotationDegrees(180));
                 graphics.poseStack().translate(-graphics.blockEntity().getXSize() * 16, 0, -16);
