@@ -33,7 +33,6 @@ import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.Direction.AxisDirection;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -47,7 +46,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
@@ -191,7 +189,7 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 		updateNeighbours(pState, pLevel, pPos);
 
 		if (pLevel.isClientSide) {
-			withBlockEntityDo(pLevel, pPos, be -> be.getController().getRenderer().update(pLevel, pPos, pState, be, EUpdateReason.LAYOUT_CHANGED));			
+			withBlockEntityDo(pLevel, pPos, be -> be.getController(new IBlockGetter.WorldBlockGetter(pLevel)).getRenderer().update(pLevel, pPos, pState, be, EUpdateReason.LAYOUT_CHANGED));			
 		}
 	}
 
@@ -218,7 +216,7 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 	}
 
 	public <T extends Comparable<T>> BlockState getPropertyFromNeighbour(BlockState pState, Level pLevel, BlockPos pPos, BlockPos relPos, Property<T> property) {
-		if (canConnectWithBlock(pLevel, pState, pLevel.getBlockState(relPos))) {
+		if (canConnectWithBlock(new IBlockGetter.WorldBlockGetter(pLevel), pState, pLevel.getBlockState(relPos))) {
 			return pState.setValue(property, pLevel.getBlockState(relPos).getValue(property));
 		}
 		return null;
@@ -252,7 +250,6 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 		BlockState belowState = pLevel.getBlockState(belowPos);
 		if (!canConnect(pLevel, pPos, pState, belowState))
 			KineticBlockEntity.switchToBlockState(pLevel, pPos, updateColumn(pLevel, pPos, pState, true));
-		//withBlockEntityDo(pLevel, pPos, AdvancedDisplayBlockEntity::updateControllerStatus);
 	}
 
     @Override
@@ -292,7 +289,7 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 		return other.getBlock() == this && state.getValue(FACING) == other.getValue(FACING);
 	}
 
-	public boolean canConnectWithBlock(BlockGetter level, BlockState selfState, BlockState otherState) {
+	public boolean canConnectWithBlock(IBlockGetter level, BlockState selfState, BlockState otherState) {
 		return selfState.getBlock() instanceof AbstractAdvancedDisplayBlock && otherState.getBlock() instanceof AbstractAdvancedDisplayBlock &&
 			selfState.getBlock() == otherState.getBlock() &&
 			selfState.getValue(FACING) == otherState.getValue(FACING)
@@ -333,7 +330,7 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
     @Override
     public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHit) {
         ItemStack heldItem = pPlayer.getItemInHand(pHand);
-        AdvancedDisplayBlockEntity blockEntity = ((AdvancedDisplayBlockEntity)pLevel.getBlockEntity(pPos)).getController();
+        AdvancedDisplayBlockEntity blockEntity = ((AdvancedDisplayBlockEntity)pLevel.getBlockEntity(pPos)).getController(new IBlockGetter.WorldBlockGetter(pLevel));
 
 		if (heldItem.getItem() instanceof DyeItem dyeItem) {
 			DyeColor dye = dyeItem.getDyeColor();        
@@ -371,7 +368,7 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 
             return InteractionResult.SUCCESS;
 		} else if (heldItem.getItem() == Items.NAME_TAG && heldItem.hasCustomHoverName() && pLevel.isClientSide) {
-			AdvancedDisplayBlockEntity controller = blockEntity.getController();
+			AdvancedDisplayBlockEntity controller = blockEntity.getController(new IBlockGetter.WorldBlockGetter(pLevel));
             if (controller != null) {
 				SimpleStaticTextDisplaySettings settings = new SimpleStaticTextDisplaySettings();				
 				settings.setStaticText(heldItem.getHoverName().getString());
@@ -379,11 +376,11 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 				if (controller.getBlockState().getBlock() instanceof AbstractAdvancedSidedDisplayBlock) {
 					doubleSided = controller.getBlockState().getValue(AbstractAdvancedSidedDisplayBlock.SIDE) == ESide.BOTH;
 				}
-				CreateRailwaysNavigator.net().CHANNEL.sendToServer(new AdvancedDisplayUpdatePacket(controller.getLevel(), controller.getBlockPos(), ModDisplayTypes.SIMPLE_TEXT, doubleSided, settings));
+				CreateRailwaysNavigator.net().CHANNEL.sendToServer(new AdvancedDisplayUpdatePacket(controller.getLevel(), controller.getBlockPos(), null, ModDisplayTypes.SIMPLE_TEXT, doubleSided, settings));
 				return InteractionResult.SUCCESS;
             }
 		} else if (AllBlocks.CLIPBOARD.isIn(heldItem) && pLevel.isClientSide) {
-			AdvancedDisplayBlockEntity controller = blockEntity.getController();
+			AdvancedDisplayBlockEntity controller = blockEntity.getController(new IBlockGetter.WorldBlockGetter(pLevel));
             if (controller != null) {
 				StaticTextDisplaySettings settings = new StaticTextDisplaySettings();			
 				List<ClipboardEntry> entries = ClipboardEntry.getLastViewedEntries(heldItem);
@@ -411,7 +408,7 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 				if (controller.getBlockState().getBlock() instanceof AbstractAdvancedSidedDisplayBlock) {
 					doubleSided = controller.getBlockState().getValue(AbstractAdvancedSidedDisplayBlock.SIDE) == ESide.BOTH;
 				}
-				CreateRailwaysNavigator.net().CHANNEL.sendToServer(new AdvancedDisplayUpdatePacket(controller.getLevel(), controller.getBlockPos(), ModDisplayTypes.RICH_TEXT, doubleSided, settings));
+				CreateRailwaysNavigator.net().CHANNEL.sendToServer(new AdvancedDisplayUpdatePacket(controller.getLevel(), controller.getBlockPos(), null, ModDisplayTypes.RICH_TEXT, doubleSided, settings));
 				return InteractionResult.SUCCESS;
             }
 		}
@@ -431,9 +428,9 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
     public InteractionResult onWrenched(BlockState state, UseOnContext context) {
         Level level = context.getLevel();
         if (level.isClientSide && level.getBlockEntity(context.getClickedPos()) instanceof AdvancedDisplayBlockEntity be) {
-            AdvancedDisplayBlockEntity controller = be.getController();
+            AdvancedDisplayBlockEntity controller = be.getController(new IBlockGetter.WorldBlockGetter(context.getLevel()));
             if (controller != null) {
-                ClientWrapper.showAdvancedDisplaySettingsScreen(controller);
+                ClientWrapper.showAdvancedDisplaySettingsScreen(controller, null);
                 return InteractionResult.SUCCESS;
             }
         }
