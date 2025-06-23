@@ -75,7 +75,7 @@ public class BERTrainDestinationInformative implements AbstractAdvancedDisplayRe
 
         trainLineLabel.render(graphics, light);
         fromLabel.render(graphics, light);        
-        if (graphics.blockEntity().getTrainData().getState().shouldNotBoard()) {
+        if (graphics.blockEntity().getTrainData().getState().shouldNotBoard(getDisplaySettings(graphics.blockEntity()).showDoNotBoardText())) {
             return;
         }
 
@@ -152,7 +152,7 @@ public class BERTrainDestinationInformative implements AbstractAdvancedDisplayRe
             ;
         }
         
-        if (blockEntity.getTrainData().getState().shouldNotBoard()) {            
+        if (blockEntity.getTrainData().getState().shouldNotBoard(getDisplaySettings(blockEntity).showDoNotBoardText())) {            
             fromLabel
                 .setPos(3, 6)
                 .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 9, BoundsHitReaction.SCALE_SCROLL)

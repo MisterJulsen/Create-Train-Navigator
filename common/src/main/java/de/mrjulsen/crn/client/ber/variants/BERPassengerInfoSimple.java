@@ -133,7 +133,7 @@ public class BERPassengerInfoSimple implements AbstractAdvancedDisplayRenderer<P
             label.setText(TextUtils.text(blockEntity.getTrainData().getNextStop().get().getRealTimeStation().tagName()));
         } else if (blockEntity.getTrainData().getNextStop().get().getRealTimeArrivalTime() - DragonLib.getCurrentWorldTime() < ModClientConfig.NEXT_STOP_ANNOUNCEMENT.get()) {
             MutableComponent txt = CustomLanguage.translate(keyNextStop, blockEntity.getTrainData().getNextStop().get().getRealTimeStation().tagName());
-            if (blockEntity.getTrainData().getState().isTerminating()) {
+            if (blockEntity.getTrainData().getState().isTerminating(getDisplaySettings(blockEntity).showDoNotBoardText())) {
                 txt = TextUtils.concatWithStarChars(txt, textTrainTerminatesHere);
             }
             label.setText(txt);

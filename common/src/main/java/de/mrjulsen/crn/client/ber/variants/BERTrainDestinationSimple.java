@@ -52,7 +52,7 @@ public class BERTrainDestinationSimple implements AbstractAdvancedDisplayRendere
 
     @Override
     public void render(BERGraphics<AdvancedDisplayBlockEntity> graphics, float partialTick, AdvancedDisplayRenderInstance parent, int light, boolean backSide) {
-        if (graphics.blockEntity().getTrainData() == null || graphics.blockEntity().getTrainData().getState().isIrregular()) {
+        if (graphics.blockEntity().getTrainData() == null || graphics.blockEntity().getTrainData().getState().isIrregular(getDisplaySettings(graphics.blockEntity()).showDoNotBoardText())) {
             outOfServiceLabel.render(graphics, light);
             return;
         }
@@ -62,11 +62,11 @@ public class BERTrainDestinationSimple implements AbstractAdvancedDisplayRendere
 
     @Override
     public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason) {
-        if (blockEntity.getTrainData() == null || blockEntity.getTrainData().getState().isIrregular()) {
+        if (blockEntity.getTrainData() == null || blockEntity.getTrainData().getState().isIrregular(getDisplaySettings(blockEntity).showDoNotBoardText())) {
             outOfServiceLabel
                 .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 6, BoundsHitReaction.SCALE_SCROLL)
                 .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
-                .setText((blockEntity.getTrainData() != null && blockEntity.getTrainData().getState().shouldNotBoard()) ? TEXT_DO_NOT_BOARD : TEXT_OUT_OF_SERVICE)
+                .setText((blockEntity.getTrainData() != null && blockEntity.getTrainData().getState().shouldNotBoard(getDisplaySettings(blockEntity).showDoNotBoardText())) ? TEXT_DO_NOT_BOARD : TEXT_OUT_OF_SERVICE)
             ;
             return;
         }

@@ -32,7 +32,8 @@ public class TrainDisplayData {
         AT_TERMINUS(2),
         BEFORE_TERMINUS(3),
         TERMINUS_ANNOUNCED(4),
-        BEFORE_START(5);
+        SOFT_TERMINUS_ANNOUNCED(5),
+        BEFORE_START(6);
 
         private final int id;
 
@@ -52,20 +53,20 @@ public class TrainDisplayData {
             return this == OUT_OF_SERVICE || this == BEFORE_START;
         }
 
-        public boolean isTerminating() {
-            return this == AT_TERMINUS || this == BEFORE_TERMINUS || this == TERMINUS_ANNOUNCED;
+        public boolean isTerminating(boolean includeSoftTerminus) {
+            return this == AT_TERMINUS || this == BEFORE_TERMINUS || this == TERMINUS_ANNOUNCED || (this == SOFT_TERMINUS_ANNOUNCED && includeSoftTerminus);
         }
 
         public boolean isAboutToStart() {
             return this == BEFORE_START;
         }
 
-        public boolean shouldNotBoard() {
-            return this == AT_TERMINUS || this == TERMINUS_ANNOUNCED || isAboutToStart();
+        public boolean shouldNotBoard(boolean includeSoftTerminus) {
+            return this == AT_TERMINUS || this == TERMINUS_ANNOUNCED || (this == SOFT_TERMINUS_ANNOUNCED && includeSoftTerminus) || isAboutToStart();
         }
 
-        public boolean isIrregular() {
-            return shouldNotBoard() || isAboutToStart() || isOutOfService();
+        public boolean isIrregular(boolean includeSoftTerminus) {
+            return shouldNotBoard(includeSoftTerminus) || isAboutToStart() || isOutOfService();
         }
     }
     
@@ -217,7 +218,13 @@ public class TrainDisplayData {
             State state = State.OUT_OF_SERVICE;
             if (preStart) state = State.BEFORE_START;
             else if (atTerminus) state = State.AT_TERMINUS;
-            else if (teminusAnnounced) state = State.TERMINUS_ANNOUNCED;
+            else if (teminusAnnounced) {
+                if (isLastStationInSection && isFirstStationInSection && prevSection.shouldIncludeNextStationOfNextSection() && section.isUsable()) {
+                    state = State.SOFT_TERMINUS_ANNOUNCED;
+                } else {
+                    state = State.TERMINUS_ANNOUNCED;
+                }
+            }
             else if (nextStopTerminus) state = State.BEFORE_TERMINUS;
             else if (selectedSection.isUsable())   state = State.RUNNING;
 
