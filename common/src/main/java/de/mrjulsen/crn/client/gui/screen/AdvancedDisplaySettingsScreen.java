@@ -2,6 +2,8 @@ package de.mrjulsen.crn.client.gui.screen;
 
 import java.util.Arrays;
 import java.util.List;
+
+import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 import com.simibubi.create.foundation.gui.AllIcons;
 import com.simibubi.create.foundation.gui.element.GuiGameElement;
@@ -58,6 +60,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class AdvancedDisplaySettingsScreen extends DLScreen {
 
@@ -80,6 +83,7 @@ public class AdvancedDisplaySettingsScreen extends DLScreen {
 	private final ItemStack renderedItem;
 
     // Settings
+    private final AbstractContraptionEntity contraption;
     private final Level level;
     private final BlockPos pos;
     private DisplayTypeResourceKey typeKey;
@@ -97,7 +101,6 @@ public class AdvancedDisplaySettingsScreen extends DLScreen {
     private final MutableComponent tooltipInfoType = TextUtils.translate("gui.createrailwaysnavigator.advanced_display_settings.info_type");
     private final MutableComponent textDoubleSided = TextUtils.translate("gui.createrailwaysnavigator.advanced_display_settings.double_sided");
 
-    @SuppressWarnings("resource")
     private final MutableComponent textAdvancedSettings(int maxWidth) {
         Font font = Minecraft.getInstance().font;
         MutableComponent comp = TextUtils.translate("gui.createrailwaysnavigator.advanced_display_settings.advanced_settings").withStyle(ChatFormatting.BOLD);
@@ -117,24 +120,26 @@ public class AdvancedDisplaySettingsScreen extends DLScreen {
 
     private final AdvancedDisplayBlockEntity blockEntity;
     
-    @SuppressWarnings("resource")
-    public AdvancedDisplaySettingsScreen(AdvancedDisplayBlockEntity blockEntity) {
+    public AdvancedDisplaySettingsScreen(AdvancedDisplayBlockEntity blockEntity, AbstractContraptionEntity contraption) {
         super(title);
         this.blockEntity = blockEntity;
         this.settings = blockEntity.getSettings();
         this.shadowlessFont = new NoShadowFontWrapper(Minecraft.getInstance().font);
         this.pos = blockEntity.getBlockPos();
-        this.level = blockEntity.getLevel();
+        boolean isOnContraption = contraption != null;
+        this.contraption = contraption;
+        this.level = isOnContraption ? contraption.getContraption().getContraptionWorld() : blockEntity.getLevel();
         this.type = blockEntity.getDisplayType().category();
         this.typeKey = blockEntity.getDisplayType();
-        this.renderedItem = new ItemStack(blockEntity.getBlockState().getBlock());
-        this.canBeDoubleSided = blockEntity.getBlockState().getBlock() instanceof AbstractAdvancedSidedDisplayBlock;
-        this.doubleSided = !canBeDoubleSided || blockEntity.getBlockState().getValue(AbstractAdvancedSidedDisplayBlock.SIDE) == ESide.BOTH;
+        BlockState state = level.getBlockState(blockEntity.getBlockPos());
+        this.renderedItem = new ItemStack(state.getBlock());
+        this.canBeDoubleSided = state.getBlock() instanceof AbstractAdvancedSidedDisplayBlock;
+        this.doubleSided = !canBeDoubleSided || state.getValue(AbstractAdvancedSidedDisplayBlock.SIDE) == ESide.BOTH;
     }
 
     @Override
     public void onClose() {
-        CreateRailwaysNavigator.net().CHANNEL.sendToServer(new AdvancedDisplayUpdatePacket(level, pos, typeKey, doubleSided, settings));
+        CreateRailwaysNavigator.net().CHANNEL.sendToServer(new AdvancedDisplayUpdatePacket(level, pos, contraption, typeKey, doubleSided, settings));
         super.onClose();
     }
 
