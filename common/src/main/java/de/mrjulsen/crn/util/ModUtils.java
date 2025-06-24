@@ -14,6 +14,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.simibubi.create.foundation.utility.CreateLang;
+
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.exceptions.RuntimeSideException;
 import de.mrjulsen.mcdragonlib.DragonLib;
