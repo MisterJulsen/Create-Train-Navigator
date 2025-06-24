@@ -116,7 +116,7 @@ public class AdvancedDisplayBoardBlock extends AbstractAdvancedSidedDisplayBlock
 	}
     
     @Override
-    public boolean canConnectWithBlock(BlockGetter level, BlockState selfState, BlockState otherState) {
+    public boolean canConnectWithBlock(IBlockGetter level, BlockState selfState, BlockState otherState) {
 		return super.canConnectWithBlock(level, selfState, otherState) &&
             selfState.getValue(Z_ALIGN) == otherState.getValue(Z_ALIGN)
 		;

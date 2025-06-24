@@ -9,6 +9,7 @@ import net.createmod.catnip.data.Pair;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
 import com.simibubi.create.content.trains.schedule.ScheduleScreen;
 import com.simibubi.create.content.trains.schedule.condition.TimedWaitCondition.TimeUnit;
 import com.simibubi.create.foundation.gui.ModularGuiLineBuilder;
@@ -92,8 +93,8 @@ public class ClientWrapper {
         Minecraft.getInstance().getToasts().addToast(new SystemToast(SystemToast.SystemToastId.PERIODIC_NOTIFICATION, Constants.TEXT_SERVER_ERROR, TextUtils.text(packet.message)));
     }
     
-    public static void showAdvancedDisplaySettingsScreen(AdvancedDisplayBlockEntity blockEntity) {
-        DLScreen.setScreen(new AdvancedDisplaySettingsScreen(blockEntity));
+    public static void showAdvancedDisplaySettingsScreen(AdvancedDisplayBlockEntity blockEntity, AbstractContraptionEntity contraption) {
+        DLScreen.setScreen(new AdvancedDisplaySettingsScreen(blockEntity, contraption));
     }
 
     public static void updateLanguage(CustomLanguage lang, boolean force) {

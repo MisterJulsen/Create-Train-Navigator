@@ -10,6 +10,7 @@ import com.simibubi.create.content.redstone.displayLink.DisplayLinkContext;
 import com.simibubi.create.content.redstone.displayLink.target.DisplayTargetStats;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.block.IBlockGetter;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.block.display.properties.StaticTextDisplaySettings;
 import de.mrjulsen.crn.block.properties.EDisplayType;
@@ -86,7 +87,7 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 		CompoundTag nbt = context.sourceConfig();
 
 		if (context.getTargetBlockEntity() instanceof AdvancedDisplayBlockEntity blockEntity && ModCommonEvents.hasServer()) {
-			final AdvancedDisplayBlockEntity controller = blockEntity.getController();
+			final AdvancedDisplayBlockEntity controller = blockEntity.getController(new IBlockGetter.WorldBlockGetter(blockEntity.getLevel()));
 			if (controller == null) {
 				return;
 			}
@@ -197,7 +198,7 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 		BlockEntity teIn = context.getTargetBlockEntity();
 		if (!(teIn instanceof AdvancedDisplayBlockEntity be))
 			return null;
-		return be.getController();
+		return be.getController(new IBlockGetter.WorldBlockGetter(be.getLevel()));
 	}
 
 	@Override
@@ -208,7 +209,7 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 		if (!(be instanceof AdvancedDisplayBlockEntity fdbe))
 			return baseShape;
 
-		AdvancedDisplayBlockEntity controller = fdbe.getController();
+		AdvancedDisplayBlockEntity controller = fdbe.getController(new IBlockGetter.WorldBlockGetter(fdbe.getLevel()));
 		if (controller == null)
 			return baseShape;
 

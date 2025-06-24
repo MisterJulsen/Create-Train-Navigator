@@ -25,7 +25,8 @@
     "FrontierEntryMixin",
     "TrainPenaltyAccessor",
     "GlobalRailwayManagerMixin",
-    "LecternBlockMixin"
+    "LecternBlockMixin",
+    "ContraptionAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
