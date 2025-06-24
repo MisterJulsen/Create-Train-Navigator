@@ -199,8 +199,13 @@ public class TrainDisplayData {
             List<TrainStopDisplayData> displayData = new ArrayList<>();
             if (selectedSection.isUsable()) {
                 List<TrainPrediction> predictions = selectedSection.getPredictions(-1, false);
-                for (TrainPrediction prediction : predictions) {
-                    displayData.add(TrainStopDisplayData.of(new TrainStop(prediction)));
+                for (int i = 0; i < predictions.size(); i++) {
+                    TrainPrediction prediction = predictions.get(i);
+                    TrainStop stop = new TrainStop(prediction);
+                    if (i == predictions.size() - 1 && predictions.get(0) == prediction) {
+                        stop.simulateCycles(1);
+                    }
+                    displayData.add(TrainStopDisplayData.of(stop));
                 }
             }
             boolean preStart = isFirstStationInSection && (!prevSection.shouldIncludeNextStationOfNextSection() || !prevSection.isUsable()) && !isAtStation;
@@ -286,7 +291,13 @@ public class TrainDisplayData {
     }
 
     public Optional<TrainStopDisplayData> getCurrentStop() {
-        int idx = getCurrentStopIndex() - (isWaitingAtStation() ? 0 : 1);
+        int idx = getCurrentStopIndex();
+        if (isWaitingAtStation()) {
+            idx -= 1;
+            if (idx < 0) {
+                idx = getAllStops().size() - 1;
+            }
+        }
         if (idx < 0 || idx >= getAllStops().size()) {
             return Optional.empty();
         }
