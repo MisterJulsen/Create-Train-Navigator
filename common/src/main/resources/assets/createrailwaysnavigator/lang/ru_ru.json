@@ -43,8 +43,13 @@
   "block.createrailwaysnavigator.train_station_clock.tooltip.behaviour1": "Отображает _текущее время_ над панелью быстрого доступа.",
   "block.createrailwaysnavigator.train_station_clock.tooltip.condition2": "ПКМ по другим станционным часам",
   "block.createrailwaysnavigator.train_station_clock.tooltip.behaviour2": "Изменяет часы для отображения времени _со всех четырёх сторон_.",
+  "block.createrailwaysnavigator.navigator_lectern": "Lectern with Navigator",
 
   "block.createrailwaysnavigator.advanced_display.ber.not_in_service": "Не работает!",
+  "block.createrailwaysnavigator.advanced_display.ber.do_not_board": "Не входить!",
+  "block.createrailwaysnavigator.advanced_display.ber.this_train_terminates_there": "Поезд следует до указанной станции!",
+  "block.createrailwaysnavigator.advanced_display.ber.train_terminates": "Конечная станция!",
+  "block.createrailwaysnavigator.advanced_display.ber.passengers_leave_train": "Пожалуйста, сделайте пересадку",
 
   "category.createrailwaysnavigator.crn": "Create: Railways Navigator",
   "key.createrailwaysnavigator.route_overlay_options": "Показать настройки наложения маршрута",
@@ -243,7 +248,9 @@
   "gui.createrailwaysnavigator.advanced_display_settings.font_color": "Цвет текста",
   "gui.createrailwaysnavigator.advanced_display_settings.back_color": "Цвет фона",
   "gui.createrailwaysnavigator.advanced_display_settings.show_arrival": "Показывать прибытие",
-  "gui.createrailwaysnavigator.advanced_display_settings.show_arrival.description": "При активации или если поезд следует в исключённый участок, будет отображаться время прибытия.",
+  "gui.createrailwaysnavigator.advanced_display_settings.show_arrival.description": "При активации или если поезд следует в исключённый участок, будет отображаться время прибытия. Если поезд затем следует в не-навигационный участок или опция 'Включить начало следующего участка' отключена, данная настройка игнорируется.",
+  "gui.createrailwaysnavigator.advanced_display_settings.show_do_not_board_text": "Показывать текст 'Не входить'",
+  "gui.createrailwaysnavigator.advanced_display_settings.show_do_not_board_text.description": "Если включено, текст 'Не входить' отображается при смене участка расписания поезда. Если поезд затем следует в не-навигационный участок или опция 'Включить начало следующего участка' отключена, данная настройка игнорируется.",
   "gui.createrailwaysnavigator.advanced_display_settings.carriage_index": "Смещение индекса вагона",
   "gui.createrailwaysnavigator.advanced_display_settings.carriage_index.description": "Число, добавляемое к текущему индексу вагона. (Например: Индекс 3 + Смещение 5 = 08)",
   "gui.createrailwaysnavigator.advanced_display_settings.overwrite_carriage_index": "Перезаписать индекс",
@@ -262,9 +269,9 @@
   "gui.createrailwaysnavigator.advanced_display_settings.platform_width_next": "Ширина платформы (следующий)",
   "gui.createrailwaysnavigator.advanced_display_settings.platform_width_table": "Ширина платформы (расписание)",
   "gui.createrailwaysnavigator.advanced_display_settings.platform_width.description": "в пикселях блока",
-  "gui.createrailwaysnavigator.advanced_display_settings.info_width": "Ширина инфо-секции",
+  "gui.createrailwaysnavigator.advanced_display_settings.info_width": "Ширина информационного участка",
   "gui.createrailwaysnavigator.advanced_display_settings.info_width.description": "в процентах от оставшегося места",
-  "gui.createrailwaysnavigator.advanced_display_settings.stopovers_width": "Ширина секции остановок",
+  "gui.createrailwaysnavigator.advanced_display_settings.stopovers_width": "Ширина участка остановок",
   "gui.createrailwaysnavigator.advanced_display_settings.stopovers_width.description": "в процентах от оставшегося места",
   "gui.createrailwaysnavigator.advanced_display_settings.static_text": "Статический текст",
   "gui.createrailwaysnavigator.advanced_display_settings.static_text.description": "можно использовать простой текст или компоненты форматирования.",
@@ -366,6 +373,7 @@
   "enum.createrailwaysnavigator.departure_board_train_filter.departure_only": "Только отправления",
 
   "createrailwaysnavigator.display_source.advanced_display": "Улучшенные табло",
+  "createrailwaysnavigator.display_target.advanced_display.component": "Компонент %s",
 
   "gui.createrailwaysnavigator.section_settings.title": "Настройки участка",
   "gui.createrailwaysnavigator.section_settings.train_categories": "Назначить категорию",
@@ -390,7 +398,7 @@
   "createrailwaysnavigator.schedule.instruction.travel_section.description": "Начало нового участка расписания.",
   "createrailwaysnavigator.schedule.instruction.travel_section.train_category": " — Категория поезда: ",
   "createrailwaysnavigator.schedule.instruction.travel_section.train_line": " — Линия поезда: ",
-  "createrailwaysnavigator.schedule.instruction.travel_section.include_previous_station": " — Включить начало след. участка: ",
+  "createrailwaysnavigator.schedule.instruction.travel_section.include_previous_station": " — Включить начало следующего участка: ",
   "createrailwaysnavigator.schedule.instruction.travel_section.usable": " — Доступно для навигации: ",
 
   "createrailwaysnavigator.schedule.instruction.reset_timings": "Сбросить тайминги",
@@ -498,5 +506,5 @@
   "create.generic.unit.days": "д.",
   "create.generic.unit.hours": "ч.",
 
-  "createrailwaysnavigator.moin": "moin"
+  "createrailwaysnavigator.moin": "Moin"
 }
