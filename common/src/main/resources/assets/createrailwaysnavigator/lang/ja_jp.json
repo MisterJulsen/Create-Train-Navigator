@@ -181,7 +181,7 @@
 
     "gui.createrailwaysnavigator.global_settings.title": "グローバル設定",
     "gui.createrailwaysnavigator.global_settings.option.tooltip": "クリックで編集",
-    "gui.createrailwaysnavigator.global_settings.option_alias.title": "駅のタグ",
+    "gui.createrailwaysnavigator.global_settings.option_alias.title": "駅タグ",
     "gui.createrailwaysnavigator.global_settings.option_alias.description": "駅タグを定義して、複数のプラットフォームを持つ駅（例：東京駅1番線、東京駅2番線、...）を、ナビゲーターではカスタム名で単一の駅（例：東京駅）として扱うようにします。",
     "gui.createrailwaysnavigator.global_settings.option_blacklist.title": "駅ブラックリスト",
     "gui.createrailwaysnavigator.global_settings.option_blacklist.description": "ナビゲーション結果に表示されるべきでない駅を除外します（車庫や貨物駅等の旅客が乗降できない駅用）。これらの駅はルート生成時に無視されます。",
