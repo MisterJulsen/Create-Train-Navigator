@@ -12,6 +12,7 @@ import com.simibubi.create.content.redstone.displayLink.target.DisplayTargetStat
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.IBlockGetter;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
+import de.mrjulsen.crn.block.display.properties.SimpleStaticTextDisplaySettings;
 import de.mrjulsen.crn.block.display.properties.StaticTextDisplaySettings;
 import de.mrjulsen.crn.block.properties.EDisplayType;
 import de.mrjulsen.crn.block.properties.EDisplayType.EDisplayTypeDataSource;
@@ -126,8 +127,19 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 							dayTime
 					);
 					ModCommonEvents.getCurrentServer().ifPresent(x -> x.executeIfPossible(controller::notifyUpdate));
+				} else if (controller.getDisplayType().equals(ModDisplayTypes.SIMPLE_TEXT)) {
+					SimpleStaticTextDisplaySettings settings = controller
+							.getSettingsAs(SimpleStaticTextDisplaySettings.class)
+							.orElse(new SimpleStaticTextDisplaySettings());
+					settings.setStaticText(Component.Serializer.toJson((text.get(0))));
+					CreateRailwaysNavigator.LOGGER.debug(settings.getStaticText());
+					ModCommonEvents.getCurrentServer()
+							.ifPresent(x -> x.executeIfPossible(() -> controller.applyToAll(a -> {
+								a.setDisplayType(ModDisplayTypes.SIMPLE_TEXT, settings);
+								a.notifyUpdate();
+							}, new IBlockGetter.WorldBlockGetter(blockEntity.getLevel()))));
 				} else {
-					if (controller.getDisplayType() != ModDisplayTypes.RICH_TEXT) {
+					if (!controller.getDisplayType().equals(ModDisplayTypes.RICH_TEXT)) {
 						if (!ModCommonConfig.AUTO_UPDATE_DISPLAY_TYPE.get()) return;
 					}
 
@@ -184,6 +196,10 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 		AdvancedDisplayBlockEntity controller = getController(context);
 		if (controller == null)
 			return new DisplayTargetStats(1, 1024, this);
+
+		if(controller.getDisplayType().equals(ModDisplayTypes.SIMPLE_TEXT)){
+			return new DisplayTargetStats(1, 1024, this);
+		}
 
 		return new DisplayTargetStats(context.blockEntity().activeSource instanceof AdvancedDisplaySource ? 1 : 50, 1024, this);
 	}
