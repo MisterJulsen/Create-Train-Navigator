@@ -446,7 +446,7 @@
     "gui.createrailwaysnavigator.color_picker.custom": "自定义...",
     "gui.createrailwaysnavigator.color_picker.no_color": "无色",
     "gui.createrailwaysnavigator.schedule_board.view_details": "查看详情",
-    "gui.createrailwaysnavigator.schedule_board.train_from": "来自 %s",
+    "gui.createrailwaysnavigator.schedule_board.train_from": "发自 %s",
     "gui.createrailwaysnavigator.search_options.departure_in": "距发车还有",
     "gui.createrailwaysnavigator.search_options.train_categories": "列车类别",
     "gui.createrailwaysnavigator.search_options.transfer_time": "换乘时间",
