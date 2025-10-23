@@ -47,7 +47,7 @@ public class ModCommonConfig {
         TOTAL_DURATION_DEVIATION_THRESHOLD = BUILDER.comment(new String[] {"[in Ticks]", "Deviations of the calculated time for a route section between two stations from the reference value that are smaller than the threshold value are not taken into account. (Default: 50)"})
             .defineInRange("train_data_calculation.total_duration_deviation_threshold", 50, 0, 1000);
         SCHEDULE_DEVIATION_THRESHOLD = BUILDER.comment(new String[] {"[in Ticks]", "How many ticks the real-time can deviate from the scheduled time before the train is considered delayed. (Default: 500)"})
-            .defineInRange("train_data_calculation.schedule_deviation_threshold", 500, 100, 24000);
+            .defineInRange("train_data_calculation.schedule_deviation_threshold", 500, 100, Integer.MAX_VALUE);
         AUTO_RESET_TIMINGS = BUILDER.comment(new String[] {"[In Cycles]", "(ONLY WORKS FOR TRAINS WITH DYNAMIC DELAYS! Trains without dynamic delays do this every new schedule section by default.)", " ", "Every X cycles the scheduled times are updated to the current real-time data. (Default: 2; Disabled: 0)"})
             .defineInRange("train_data_calculation.auto_reset_timings", 2, 0, Integer.MAX_VALUE);
 
