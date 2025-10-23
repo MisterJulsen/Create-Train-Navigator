@@ -9,6 +9,7 @@ import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.ContainerColor;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.FooterSize;
 import de.mrjulsen.crn.client.gui.widgets.DLCreateIconButton;
 import de.mrjulsen.crn.config.ModClientConfig;
+import de.mrjulsen.crn.util.ExtraTimeUtils;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.gui.DLScreen;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLIconButton;
@@ -61,7 +62,7 @@ public abstract class AbstractNavigatorScreen extends DLScreen {
         renderScreenBackground(graphics);
         CreateDynamicWidgets.renderWindow(graphics, guiLeft, guiTop, GUI_WIDTH, GUI_HEIGHT, ContainerColor.GRAY, primaryColoring, FooterSize.DEFAULT.size(), FooterSize.SMALL.size(), false);        
         GuiUtils.drawString(graphics, font, guiLeft + 6, guiTop + 4, getTitle(), 0x4F4F4F, EAlignment.LEFT, false);
-        String timeString = TimeUtils.parseTime((int)((Minecraft.getInstance().level.getDayTime() + DragonLib.daytimeShift()) % DragonLib.ticksPerDay()), ModClientConfig.TIME_FORMAT.get());
+        String timeString = TimeUtils.parseTime((int)((ExtraTimeUtils.getDayTimeScaled(Minecraft.getInstance().level) + DragonLib.daytimeShift()) % DragonLib.ticksPerDay()), ModClientConfig.TIME_FORMAT.get());
         GuiUtils.drawString(graphics, font, guiLeft + GUI_WIDTH - 6, guiTop + 4, TextUtils.text(timeString), 0x4F4F4F, EAlignment.RIGHT, false);
     }
     

@@ -15,8 +15,8 @@ import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.train.TrainStatus.CompiledTrainStatus;
 import de.mrjulsen.crn.data.train.portable.StationDisplayData;
 import de.mrjulsen.crn.data.train.portable.TrainStopDisplayData;
+import de.mrjulsen.crn.util.ExtraTimeUtils;
 import de.mrjulsen.crn.util.ModUtils;
-import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.ber.BERGraphics;
 import de.mrjulsen.mcdragonlib.client.ber.BERLabel;
 import de.mrjulsen.mcdragonlib.client.ber.BERLabel.BoundsHitReaction;
@@ -143,7 +143,7 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
 
     @Override
     public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason) {
-        List<StationDisplayData> preds = blockEntity.getStops().stream().filter(x -> !x.getTrainData().isCancelled() || DragonLib.getCurrentWorldTime() < x.getStationData().getScheduledDepartureTime() + ModClientConfig.DISPLAY_LEAD_TIME.get()).toList();
+        List<StationDisplayData> preds = blockEntity.getStops().stream().filter(x -> !x.getTrainData().isCancelled() || ExtraTimeUtils.getCurrentWorldTimeScaled() < x.getStationData().getScheduledDepartureTime() + ModClientConfig.DISPLAY_LEAD_TIME.get()).toList();
         
         if (preds.isEmpty()) {
             lines = null;

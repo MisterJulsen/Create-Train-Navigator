@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+import de.mrjulsen.crn.util.ExtraTimeUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
@@ -18,7 +19,6 @@ import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.train.TrainStatus.CompiledTrainStatus;
 import de.mrjulsen.crn.data.train.portable.StationDisplayData;
 import de.mrjulsen.crn.util.ModUtils;
-import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.ber.BERGraphics;
 import de.mrjulsen.mcdragonlib.client.ber.BERLabel;
 import de.mrjulsen.mcdragonlib.client.ber.BERLabel.BoundsHitReaction;
@@ -218,7 +218,7 @@ public class BERDepartureBoardTable implements AbstractAdvancedDisplayRenderer<D
     @Override
     public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason) {
         List<StationDisplayData> preds = blockEntity.getStops().stream().filter(x -> {
-            return (!x.isNextSectionExcluded() || getDisplaySettings(blockEntity).showArrival()) && (!x.getTrainData().isCancelled() || DragonLib.getCurrentWorldTime() < x.getStationData().getScheduledDepartureTime() + ModClientConfig.DISPLAY_LEAD_TIME.get());
+            return (!x.isNextSectionExcluded() || getDisplaySettings(blockEntity).showArrival()) && (!x.getTrainData().isCancelled() || ExtraTimeUtils.getCurrentWorldTimeScaled() < x.getStationData().getScheduledDepartureTime() + ModClientConfig.DISPLAY_LEAD_TIME.get());
         }).toList();
         
         MutableBoolean shouldShowLine = new MutableBoolean(false);

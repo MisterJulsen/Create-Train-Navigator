@@ -10,7 +10,7 @@ import de.mrjulsen.mcdragonlib.util.TimeUtils;
 public class VariableManager {
 
     private static final Map<String, Supplier<String>> variables = Map.ofEntries(
-        Map.entry("time", () -> TimeUtils.parseTime(DragonLib.getCurrentWorldTime() + DragonLib.daytimeShift(), ModClientConfig.TIME_FORMAT.get()))
+        Map.entry("time", () -> TimeUtils.parseTime(ExtraTimeUtils.getCurrentWorldTimeScaled() + DragonLib.daytimeShift(), ModClientConfig.TIME_FORMAT.get()))
     );
 
     public static String replacePlaceholders(String text) {

@@ -5,6 +5,7 @@ import com.mojang.math.Axis;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.TrainStationClockBlock;
 import de.mrjulsen.crn.block.blockentity.TrainStationClockBlockEntity;
+import de.mrjulsen.crn.util.ExtraTimeUtils;
 import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.ber.AbstractBlockEntityRenderInstance;
@@ -47,13 +48,15 @@ public class TrainStationClockRenderer extends AbstractBlockEntityRenderInstance
         graphics.poseStack().translate(8, 8, 8 + z);
         BERUtils.renderTexture(DIAL_TEXTURE, graphics, !graphics.blockEntity().isGlowing(), -7, -7, -0.2f, 14, 14, 0, 0, 1, 1, graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING), (0xFF << 24) | (graphics.blockEntity().getColor()), graphics.blockEntity().isGlowing() ? LightTexture.FULL_BRIGHT : graphics.packedLight());
 
+        long dayTime = ExtraTimeUtils.getDayTimeScaled(graphics.blockEntity().getLevel());
+
         graphics.poseStack().pushPose();
-        graphics.poseStack().mulPose(Axis.ZP.rotationDegrees(-90 + ModUtils.clockHandDegrees(graphics.blockEntity().getLevel().getDayTime() + DragonLib.daytimeShift(), 12000)));
+        graphics.poseStack().mulPose(Axis.ZP.rotationDegrees(-90 + ModUtils.clockHandDegrees(dayTime + DragonLib.daytimeShift(), 12000)));
         BERUtils.fillColor(graphics, -0.5f, -0.5f, 0, 6, 1, 0xFF191919, graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING));
         graphics.poseStack().popPose();
 
         graphics.poseStack().pushPose();
-        graphics.poseStack().mulPose(Axis.ZP.rotationDegrees(-90 + ModUtils.clockHandDegrees(graphics.blockEntity().getLevel().getDayTime() + DragonLib.daytimeShift(), 1000)));
+        graphics.poseStack().mulPose(Axis.ZP.rotationDegrees(-90 + ModUtils.clockHandDegrees(dayTime + DragonLib.daytimeShift(), 1000)));
         BERUtils.fillColor(graphics, -0.5f, -0.5f, 0.1f, 7, 1, 0xFF222222, graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING));
         graphics.poseStack().popPose();
 
@@ -64,13 +67,13 @@ public class TrainStationClockRenderer extends AbstractBlockEntityRenderInstance
         graphics.poseStack().popPose();
 
         graphics.poseStack().pushPose();
-        graphics.poseStack().mulPose(Axis.ZN.rotationDegrees(-90 + ModUtils.clockHandDegrees(graphics.blockEntity().getLevel().getDayTime() + DragonLib.daytimeShift(), 12000)));
+        graphics.poseStack().mulPose(Axis.ZN.rotationDegrees(-90 + ModUtils.clockHandDegrees(dayTime + DragonLib.daytimeShift(), 12000)));
         graphics.poseStack().mulPose(Axis.YP.rotationDegrees(180));
         BERUtils.fillColor(graphics, -0.5f, -0.5f, 0, 6, 1, 0xFF191919, graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING));
         graphics.poseStack().popPose();
 
         graphics.poseStack().pushPose();
-        graphics.poseStack().mulPose(Axis.ZN.rotationDegrees(-90 + ModUtils.clockHandDegrees(graphics.blockEntity().getLevel().getDayTime() + DragonLib.daytimeShift(), 1000)));
+        graphics.poseStack().mulPose(Axis.ZN.rotationDegrees(-90 + ModUtils.clockHandDegrees(dayTime + DragonLib.daytimeShift(), 1000)));
         graphics.poseStack().mulPose(Axis.YP.rotationDegrees(180));
         BERUtils.fillColor(graphics, -0.5f, -0.5f, 0.1f, 7, 1, 0xFF222222, graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING));
         graphics.poseStack().popPose();

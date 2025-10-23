@@ -33,9 +33,9 @@ import de.mrjulsen.crn.mixin.ScheduleRuntimeAccessor;
 import de.mrjulsen.crn.data.TrainInfo;
 import de.mrjulsen.crn.data.schedule.condition.DynamicDelayCondition;
 import de.mrjulsen.crn.data.train.TrainStatus.TrainStatusType;
+import de.mrjulsen.crn.util.ExtraTimeUtils;
 import de.mrjulsen.crn.util.IListenable;
 import de.mrjulsen.crn.util.LockedList;
-import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.config.ECachingPriority;
 import de.mrjulsen.mcdragonlib.data.Cache;
 import de.mrjulsen.mcdragonlib.util.MathUtils;
@@ -548,7 +548,7 @@ public class TrainData implements IListenable<TrainData> {
         Set<Integer> validPredictionEntries = new HashSet<>();
         boolean hasCycled = false;
 
-        final long now = DragonLib.getCurrentWorldTime() - waitingAtStationTicks();
+        final long now = ExtraTimeUtils.getCurrentWorldTimeScaled() - waitingAtStationTicks();
         long time = now;
 
         for (int i = 0; i < entryCount; i++) {
@@ -604,7 +604,7 @@ public class TrainData implements IListenable<TrainData> {
         SimulationResult result = new SimulationResult(entryIndex, 0, now, now);
 
         int iteration = 0;
-        while (duration - (now - DragonLib.getCurrentWorldTime()) > 0) {
+        while (duration - (now - ExtraTimeUtils.getCurrentWorldTimeScaled()) > 0) {
             long arrival = 0;
             long departure = 0;
             for (int i = 0; i < entryCount; i++) {

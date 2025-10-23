@@ -16,7 +16,7 @@ import de.mrjulsen.crn.api.IPredictableWaitCondition;
 import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.data.train.TrainListener;
 import de.mrjulsen.crn.data.train.TrainPrediction;
-import de.mrjulsen.mcdragonlib.DragonLib;
+import de.mrjulsen.crn.util.ExtraTimeUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.createmod.catnip.data.Pair;
 import net.minecraft.ChatFormatting;
@@ -76,11 +76,11 @@ public class DynamicDelayCondition extends ScheduledDelay implements IPredictabl
 
 		long totalTicks = initialized.get() ? Math.max(totalWaitTicks() - currentDelay.get(), minWaitTicks()) : totalWaitTicks();
 
-		if (time >= (initialized.get() ? Math.max(totalWaitTicks() - currentDelay.get(), minWaitTicks()) : totalWaitTicks()) && (!initialized.get() || DragonLib.getCurrentWorldTime() >= scheduledDepartureTime.get()))
+		if (time >= (initialized.get() ? Math.max(totalWaitTicks() - currentDelay.get(), minWaitTicks()) : totalWaitTicks()) && (!initialized.get() || ExtraTimeUtils.getCurrentWorldTimeScaled() >= scheduledDepartureTime.get()))
 			return true;
 		
 		context.putInt("Time", time + 1);
-		context.putLong("TotalTicks", Math.max(totalTicks, scheduledDepartureTime.get() - DragonLib.getCurrentWorldTime() + time));
+		context.putLong("TotalTicks", Math.max(totalTicks, scheduledDepartureTime.get() - ExtraTimeUtils.getCurrentWorldTimeScaled() + time));
 		requestDisplayIfNecessary(context, time);
 		return false;
 	}

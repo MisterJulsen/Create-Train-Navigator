@@ -6,6 +6,7 @@ import java.util.List;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.data.ISavableNavigatorData;
+import de.mrjulsen.crn.util.ExtraTimeUtils;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLAbstractScrollBar;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLRenderable;
@@ -66,7 +67,7 @@ public class SavedRoutesViewer extends DLScrollableWidgetContainer {
             }
             if (lastData == null || lastData.dayOrderValue() != d.dayOrderValue()) {
                 Component text;
-                long worldTime = DragonLib.getCurrentWorldTime();
+                long worldTime = ExtraTimeUtils.getCurrentWorldTimeScaled();
                 long dayDiff = d.dayOrderValue() - (worldTime + DragonLib.daytimeShift()) / DragonLib.ticksPerDay();
                 if (d.timeOrderValue() < worldTime) text = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".saved_routes.in_the_past");
                 else if (dayDiff == 0) text = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".saved_routes.today");

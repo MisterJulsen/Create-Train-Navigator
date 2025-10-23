@@ -20,6 +20,7 @@ import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.StationTag.StationInfo;
 import de.mrjulsen.crn.data.navigation.ClientRoute;
 import de.mrjulsen.crn.data.navigation.TransferConnection;
+import de.mrjulsen.crn.util.ExtraTimeUtils;
 import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.gui.DLOverlayScreen;
@@ -268,7 +269,7 @@ public class RouteDetailsOverlay extends DLOverlayScreen {
         GuiUtils.drawString(graphics, font, x + 6, y + 4, title, 0x4F4F4F, EAlignment.LEFT, false);
         GuiUtils.drawString(graphics, font, x + 6, y + GUI_HEIGHT - 2 - font.lineHeight, TextUtils.translate(keyOptionsText, TextUtils.translate(InputConstants.getKey(Minecraft.ON_OSX ? InputConstants.KEY_LWIN : InputConstants.KEY_LCONTROL, 0).getName()).append(" + ").append(TextUtils.keybind(keyKeybindOptions)).withStyle(ChatFormatting.BOLD)), 0x4F4F4F, EAlignment.LEFT, false);
         
-        String timeString = TimeUtils.parseTime((int)((level.getDayTime() + DragonLib.daytimeShift()) % DragonLib.ticksPerDay()), ModClientConfig.TIME_FORMAT.get());
+        String timeString = TimeUtils.parseTime((int)((ExtraTimeUtils.getDayTimeScaled(level) + DragonLib.daytimeShift()) % DragonLib.ticksPerDay()), ModClientConfig.TIME_FORMAT.get());
         GuiUtils.drawString(graphics, font, x + GUI_WIDTH - 4 - font.width(timeString), y + 4, timeString, 0x4F4F4F, EAlignment.LEFT, false);
         
         renderSlidingText(graphics, x, y + 2, transX, transY);

@@ -23,7 +23,7 @@ import de.mrjulsen.crn.data.SavedRoutesManager;
 import de.mrjulsen.crn.data.navigation.ClientRoute;
 import de.mrjulsen.crn.event.ModCommonEvents;
 import de.mrjulsen.crn.network.InstanceManager;
-import de.mrjulsen.mcdragonlib.DragonLib;
+import de.mrjulsen.crn.util.ExtraTimeUtils;
 import de.mrjulsen.mcdragonlib.client.OverlayManager;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLIconButton;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLTooltip;
@@ -180,10 +180,10 @@ public class RouteDetailsScreen extends AbstractNavigatorScreen {
             graphics.poseStack().scale(2, 2, 2);
             long time = 0;
             if (route.getStart().isDeparted()) {
-                time = route.getEnd().getRealTimeArrivalTime() - DragonLib.getCurrentWorldTime();
+                time = route.getEnd().getRealTimeArrivalTime() - ExtraTimeUtils.getCurrentWorldTimeScaled();
                 GuiUtils.drawString(graphics, font, (guiLeft + GUI_WIDTH / 2) / 2, (guiTop + 31) / 2, time < 0 ? timeNowText : TextUtils.text(TimeUtils.parseDurationShort(time)), 0xFFFFFF, EAlignment.CENTER, false);
             } else {
-                time = route.getStart().getRealTimeDepartureTime() - DragonLib.getCurrentWorldTime();
+                time = route.getStart().getRealTimeDepartureTime() - ExtraTimeUtils.getCurrentWorldTimeScaled();
                 GuiUtils.drawString(graphics, font, (guiLeft + GUI_WIDTH / 2) / 2, (guiTop + 31) / 2, time < 0 ? timeNowText : TextUtils.text(TimeUtils.parseDurationShort(time)), 0xFFFFFF, EAlignment.CENTER, false);
             }
             graphics.poseStack().popPose();

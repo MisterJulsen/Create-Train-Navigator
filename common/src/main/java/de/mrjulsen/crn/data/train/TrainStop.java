@@ -12,6 +12,7 @@ import de.mrjulsen.crn.data.storage.GlobalSettings;
 import de.mrjulsen.crn.data.train.TrainData.SimulationResult;
 import de.mrjulsen.crn.exceptions.RuntimeSideException;
 import de.mrjulsen.crn.data.TrainInfo;
+import de.mrjulsen.crn.util.ExtraTimeUtils;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -175,7 +176,7 @@ public class TrainStop implements Comparable<TrainStop> {
             return;
         }
 
-        long scheduledTimeUntilArrival = getScheduledArrivalTime() - DragonLib.getCurrentWorldTime();
+        long scheduledTimeUntilArrival = getScheduledArrivalTime() - ExtraTimeUtils.getCurrentWorldTimeScaled();
         int simulationCycles = (int)(ticks / totalDuration);
         long simulationRemaining = ticks % totalDuration;
         if (simulationRemaining > 0 && simulationRemaining >= scheduledTimeUntilArrival) {

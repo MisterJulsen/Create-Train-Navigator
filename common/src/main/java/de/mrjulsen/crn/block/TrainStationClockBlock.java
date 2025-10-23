@@ -7,6 +7,7 @@ import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.blockentity.TrainStationClockBlockEntity;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.registry.ModBlockEntities;
+import de.mrjulsen.crn.util.ExtraTimeUtils;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.TimeUtils;
@@ -39,7 +40,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.jetbrains.annotations.Nullable;
 
 public class TrainStationClockBlock extends Block implements IWrenchable, IBE<TrainStationClockBlockEntity> {
 
@@ -92,7 +92,7 @@ public class TrainStationClockBlock extends Block implements IWrenchable, IBE<Tr
 		}
 
 		if (!pPlayer.getItemInHand(pHand).is(this.asItem()) && pLevel.isClientSide) {
-            pPlayer.displayClientMessage(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".time", TimeUtils.parseTime((int)(pLevel.getDayTime() % DragonLib.ticksPerDay() + DragonLib.daytimeShift()), ModClientConfig.TIME_FORMAT.get())), true);
+            pPlayer.displayClientMessage(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".time", TimeUtils.parseTime((int)(ExtraTimeUtils.getDayTimeScaled(pLevel) % DragonLib.ticksPerDay() + DragonLib.daytimeShift()), ModClientConfig.TIME_FORMAT.get())), true);
             return InteractionResult.SUCCESS;
         }
         return InteractionResult.PASS;

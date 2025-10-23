@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.function.Supplier;
 
 import com.simibubi.create.foundation.utility.CreateLang;
+import de.mrjulsen.crn.util.ExtraTimeUtils;
 import net.createmod.catnip.data.Pair;
-import org.joml.Vector3f;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -316,13 +316,13 @@ public class ClientWrapper {
         poseStack.pushPose();
         poseStack.translate(4, 0.8f, 0);
         poseStack.scale(0.075f, 0.075f, 0.075f);
-        BERUtils.drawString(graphics, font, 0, 0, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".journey_info.date", (DragonLib.getCurrentWorldTime() + DragonLib.daytimeShift()) / DragonLib.ticksPerDay()), 0xFFFFFFFF, EAlignment.CENTER, false, LightTexture.FULL_BRIGHT);
+        BERUtils.drawString(graphics, font, 0, 0, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".journey_info.date", (ExtraTimeUtils.getCurrentWorldTimeScaled() + DragonLib.daytimeShift()) / DragonLib.ticksPerDay()), 0xFFFFFFFF, EAlignment.CENTER, false, LightTexture.FULL_BRIGHT);
         poseStack.popPose();
         
         poseStack.pushPose();
         poseStack.translate(4, 2, 0);
         poseStack.scale(0.2f, 0.2f, 0.2f);
-        BERUtils.drawString(graphics, font, 0, 0, TimeUtils.formatTime(DragonLib.getCurrentWorldTime(), ModClientConfig.TIME_FORMAT.get()), 0xFFFFFFFF, EAlignment.CENTER, false, LightTexture.FULL_BRIGHT);
+        BERUtils.drawString(graphics, font, 0, 0, TimeUtils.formatTime(ExtraTimeUtils.getCurrentWorldTimeScaled(), ModClientConfig.TIME_FORMAT.get()), 0xFFFFFFFF, EAlignment.CENTER, false, LightTexture.FULL_BRIGHT);
         poseStack.popPose();
     }
 

@@ -17,6 +17,7 @@ import de.mrjulsen.crn.data.train.PredictionTimes.DepartureTime;
 import de.mrjulsen.crn.event.ModCommonEvents;
 import de.mrjulsen.crn.exceptions.RuntimeSideException;
 import de.mrjulsen.crn.mixin.ScheduleRuntimeAccessor;
+import de.mrjulsen.crn.util.ExtraTimeUtils;
 import de.mrjulsen.crn.util.PrimaryStringSelector;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.data.Cache;
@@ -309,7 +310,7 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
 
     /** Time since start of recording. */
     public long getRuntime() {
-        return DragonLib.getCurrentWorldTime() - scheduled().refreshTime();
+        return ExtraTimeUtils.getCurrentWorldTimeScaled() - scheduled().refreshTime();
     }
 
     public boolean hasDepartedOnce() {

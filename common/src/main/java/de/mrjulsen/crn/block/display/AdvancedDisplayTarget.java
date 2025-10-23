@@ -23,6 +23,7 @@ import de.mrjulsen.crn.data.train.TrainUtils;
 import de.mrjulsen.crn.data.train.portable.StationDisplayData;
 import de.mrjulsen.crn.event.ModCommonEvents;
 import de.mrjulsen.crn.registry.ModDisplayTypes;
+import de.mrjulsen.crn.util.ExtraTimeUtils;
 import de.mrjulsen.mcdragonlib.core.EAlignment;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.core.BlockPos;
@@ -91,7 +92,7 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 				return;
 			}
 
-			long dayTime = context.getTargetBlockEntity().getLevel().getDayTime();
+			long dayTime = ExtraTimeUtils.getDayTimeScaled(context.getTargetBlockEntity().getLevel());
 			boolean advancedDisplaySource = context.blockEntity().activeSource instanceof AdvancedDisplaySource;//nbt.contains(AdvancedDisplaySource.NBT_ADVANCED_DISPLAY);
 
 			queueAdvancedDisplayWorkerTask(() -> {

@@ -110,7 +110,7 @@ public class ModUtils {
             throw new RuntimeSideException(true);
         }
         if (asETA) {
-            return timeRemainingString(time - DragonLib.getCurrentWorldTime());
+            return timeRemainingString(time - ExtraTimeUtils.getCurrentWorldTimeScaled());
         }
         return TimeUtils.parseTime((time + DragonLib.daytimeShift()) % DragonLib.ticksPerDay(), ModClientConfig.TIME_FORMAT.get());
     }

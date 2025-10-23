@@ -10,6 +10,7 @@ import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.TrainExitSide;
 import de.mrjulsen.crn.data.train.portable.TrainDisplayData.State;
+import de.mrjulsen.crn.util.ExtraTimeUtils;
 import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.ber.BERGraphics;
@@ -131,7 +132,7 @@ public class BERPassengerInfoSimple implements AbstractAdvancedDisplayRenderer<P
             label.setText(settings.getTrainTextComponents().showTrainName() ? TextUtils.text(blockEntity.getTrainData().getTrainData().getName()) : TextUtils.empty());
         } else if (blockEntity.getTrainData().isWaitingAtStation()) {
             label.setText(TextUtils.text(blockEntity.getTrainData().getNextStop().get().getRealTimeStation().tagName()));
-        } else if (blockEntity.getTrainData().getNextStop().get().getRealTimeArrivalTime() - DragonLib.getCurrentWorldTime() < ModClientConfig.NEXT_STOP_ANNOUNCEMENT.get()) {
+        } else if (blockEntity.getTrainData().getNextStop().get().getRealTimeArrivalTime() - ExtraTimeUtils.getCurrentWorldTimeScaled() < ModClientConfig.NEXT_STOP_ANNOUNCEMENT.get()) {
             MutableComponent txt = CustomLanguage.translate(keyNextStop, blockEntity.getTrainData().getNextStop().get().getRealTimeStation().tagName());
             if (blockEntity.getTrainData().getState().isTerminating(getDisplaySettings(blockEntity).showDoNotBoardText())) {
                 txt = TextUtils.concatWithStarChars(txt, textTrainTerminatesHere);
@@ -139,7 +140,7 @@ public class BERPassengerInfoSimple implements AbstractAdvancedDisplayRenderer<P
             label.setText(txt);
         } else {
             final int slides = 3;
-            int slide = (int)(DragonLib.getCurrentWorldTime() % (TICKS_PER_SLIDE * slides)) / TICKS_PER_SLIDE;
+            int slide = (int)(ExtraTimeUtils.getCurrentWorldTimeScaled() % (TICKS_PER_SLIDE * slides)) / TICKS_PER_SLIDE;
             while (true) {
 
                 break;
@@ -160,8 +161,8 @@ public class BERPassengerInfoSimple implements AbstractAdvancedDisplayRenderer<P
                             ? (blockEntity.getTrainData().getCurrentStop().get().getDestination())//blockEntity.getTrainData().isWaitingAtStation() ? blockEntity.getTrainData().getNextStop().get().getDestination() : blockEntity.getTrainData().getFinalStop().get().getDestination())
                             : "")));
                 case 1 -> label
-                        .setText(CustomLanguage.translate(keyDate, blockEntity.getLevel().getDayTime() / Level.TICKS_PER_DAY,
-                                ModUtils.formatTime(DragonLib.getCurrentWorldTime(), false)));
+                        .setText(CustomLanguage.translate(keyDate, ExtraTimeUtils.getDayTimeScaled(blockEntity.getLevel()) / DragonLib.ticksPerDay(),
+                                ModUtils.formatTime(ExtraTimeUtils.getCurrentWorldTimeScaled(), false)));
                 case 2 -> label.setText(ModUtils.calcSpeedString(blockEntity.getTrainData().getSpeed(),
                         ModClientConfig.SPEED_UNIT.get()));
             }            
