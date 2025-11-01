@@ -26,12 +26,7 @@ public class MountedStorageManagerMixin {
             Set<BlockEntity> beList = new LinkedHashSet<>();
 
             for (StructureBlockInfo info : entity.getContraption().getBlocks().values()) {
-                CompoundTag nbt = info.nbt();
-                if (nbt == null) {
-                    nbt = new CompoundTag();
-                }
-
-                BlockEntity be = BlockEntity.loadStatic(info.pos(), info.state(), nbt);
+                BlockEntity be = entity.getContraption().getBlockEntityClientSide(info.pos());
                 if (be != null) {
                     beList.add(be);
                 }
