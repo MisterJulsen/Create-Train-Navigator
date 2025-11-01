@@ -13,7 +13,9 @@ import com.simibubi.create.content.contraptions.MountedStorageManager;
 import com.simibubi.create.content.trains.entity.CarriageContraption;
 
 import de.mrjulsen.crn.block.blockentity.IContraptionBlockEntity;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate.StructureBlockInfo;
 
 @Mixin(MountedStorageManager.class)
 public class MountedStorageManagerMixin {
@@ -22,8 +24,18 @@ public class MountedStorageManagerMixin {
     public void onEntityTick(AbstractContraptionEntity entity, CallbackInfo ci) {
         if (entity.getContraption() instanceof CarriageContraption carriage) {
             Set<BlockEntity> beList = new LinkedHashSet<>();
-            beList.addAll(entity.getContraption().presentBlockEntities.values());
-            beList.addAll(entity.getContraption().renderedBlockEntities);
+
+            for (StructureBlockInfo info : entity.getContraption().getBlocks().values()) {
+                CompoundTag nbt = info.nbt();
+                if (nbt == null) {
+                    nbt = new CompoundTag();
+                }
+
+                BlockEntity be = BlockEntity.loadStatic(info.pos(), info.state(), nbt);
+                if (be != null) {
+                    beList.add(be);
+                }
+            }
 
             for (BlockEntity be : beList) {            
                 if (be instanceof IContraptionBlockEntity tile) {

@@ -13,7 +13,7 @@ public interface IContraptionBlockEntity<T extends BlockEntity> {
      * @param level
      * @param pos
      * @param state
-     * @param contraption
+     * @param carriage
      */
     void contraptionTick(Level level, BlockPos pos, BlockState state, CarriageContraption carriage);
 }
