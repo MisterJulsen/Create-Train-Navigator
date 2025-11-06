@@ -10,12 +10,13 @@ import java.util.stream.Collectors;
 
 import com.simibubi.create.content.trains.entity.Train;
 
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.data.TrainCategory;
 import de.mrjulsen.crn.data.TrainLine;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
 import de.mrjulsen.mcdragonlib.DragonLib;
-import de.mrjulsen.mcdragonlib.core.ITranslatableEnum;
-import de.mrjulsen.mcdragonlib.data.Pair;
+import de.mrjulsen.mcdragonlib.data.ITranslatableEnum;
+import de.mrjulsen.mcdragonlib.util.Pair;
 import net.minecraft.nbt.CompoundTag;
 
 public final class DepartureHistory {   
@@ -151,15 +152,10 @@ public final class DepartureHistory {
             return Arrays.stream(values()).filter(x -> x.getIndex() == i).findFirst().orElse(ANY);
         }
 
-		@Override
-		public String getEnumName() {
-			return "train_filter";
-		}
-
-		@Override
-		public String getEnumValueName() {
-			return name;
-		}
+        @Override
+        public Data getTranslationData() {
+            return new Data(CreateRailwaysNavigator.MOD_ID, "train_filter", name);
+        }
     }
 
     public static class Stats {

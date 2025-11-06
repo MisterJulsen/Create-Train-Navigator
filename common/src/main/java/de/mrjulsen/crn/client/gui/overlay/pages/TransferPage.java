@@ -9,7 +9,7 @@ import de.mrjulsen.crn.data.navigation.TransferConnection;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.core.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.TimeUtils;
 import net.minecraft.ChatFormatting;
@@ -59,7 +59,7 @@ public class TransferPage extends AbstractRouteDetailsPage {
         // Title
         ModGuiIcons.WALK.render(graphics, 5, y + 3);        
         long transferTime = connection.getDepartureStation().getRealTimeDepartureTime() - DragonLib.getCurrentWorldTime();
-        GuiUtils.drawString(graphics, font, 10 + ModGuiIcons.ICON_SIZE, y + 3 + ModGuiIcons.ICON_SIZE / 2 - font.lineHeight / 2, CustomLanguage.translate(keyScheduleTransfer).append(" ").append(transferTime > 0 ? TextUtils.text(TimeUtils.parseDurationShort((int)transferTime)) : CustomLanguage.translate(keyTimeNow)).withStyle(ChatFormatting.BOLD), 0xFFFFFFFF, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, 10 + ModGuiIcons.ICON_SIZE, y + 3 + ModGuiIcons.ICON_SIZE / 2 - font.lineHeight / 2, CustomLanguage.translate(keyScheduleTransfer).append(" ").append(transferTime > 0 ? TextUtils.text(TimeUtils.parseDurationShort((int)transferTime)) : CustomLanguage.translate(keyTimeNow)).withStyle(ChatFormatting.BOLD), 0xFFFFFFFF, ETextAlignment.LEFT, false);
         y += 5 + ModGuiIcons.ICON_SIZE;
         
         // Details

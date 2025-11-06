@@ -89,7 +89,7 @@ public class RouteDetailsViewer extends DLScrollableWidgetContainer {
         GuiUtils.fillGradient(graphics, x(), y(), 0, width(), 10, 0x77000000, 0x00000000);
         GuiUtils.fillGradient(graphics, x(), y() + height() - 10, 0, width(), 10, 0x00000000, 0x77000000);
 
-        //DLUtils.doIfNotNull(route, r -> GuiUtils.drawString(graphics, font, x(), y(), r.getState().name() + ", Running: " + !r.isClosed(), 0xFFFF0000, EAlignment.LEFT, false));
+        //DLUtils.doIfNotNull(route, r -> GuiUtils.drawString(graphics, font, x(), y(), r.getState().name() + ", Running: " + !r.isClosed(), 0xFFFF0000, ETextAlignment.LEFT, false));
     }
     
     @Override

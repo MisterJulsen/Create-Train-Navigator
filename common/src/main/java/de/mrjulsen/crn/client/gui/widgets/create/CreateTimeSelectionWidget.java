@@ -8,7 +8,7 @@ import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLWidgetContainer;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.core.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.TimeUtils;
@@ -47,7 +47,7 @@ public class CreateTimeSelectionWidget extends DLWidgetContainer {
     @Override
     public void renderMainLayer(Graphics graphics, int mouseX, int mouseY, float partialTicks) {
         CreateDynamicWidgets.renderTextBox(graphics, x(), y(), WIDHT);
-        GuiUtils.drawString(graphics, font, x() + 5, y() + 5, transferLabel, DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, EAlignment.LEFT, true);
+        GuiUtils.drawString(graphics, font, x() + 5, y() + 5, transferLabel, DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, ETextAlignment.LEFT, true);
     }
 
     @Override

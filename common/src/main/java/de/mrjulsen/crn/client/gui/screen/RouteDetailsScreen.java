@@ -30,7 +30,7 @@ import de.mrjulsen.mcdragonlib.client.gui.widgets.DLTooltip;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import de.mrjulsen.mcdragonlib.client.util.WidgetsCollection;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.core.ETextAlignment;
 import de.mrjulsen.mcdragonlib.data.Pair;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.TimeUtils;
@@ -172,23 +172,23 @@ public class RouteDetailsScreen extends AbstractNavigatorScreen {
 
         if (!route.isAnyCancelled()) {
             if (route.getStart().isDeparted()) {
-                GuiUtils.drawString(graphics, font, guiLeft + GUI_WIDTH / 2, guiTop + 19, textArrival, 0xFFFFFF, EAlignment.CENTER, false);
+                GuiUtils.drawString(graphics, font, guiLeft + GUI_WIDTH / 2, guiTop + 19, textArrival, 0xFFFFFF, ETextAlignment.CENTER, false);
             } else {
-                GuiUtils.drawString(graphics, font, guiLeft + GUI_WIDTH / 2, guiTop + 19, textDeparture, 0xFFFFFF, EAlignment.CENTER, false);
+                GuiUtils.drawString(graphics, font, guiLeft + GUI_WIDTH / 2, guiTop + 19, textDeparture, 0xFFFFFF, ETextAlignment.CENTER, false);
             }
             graphics.poseStack().pushPose();
             graphics.poseStack().scale(2, 2, 2);
             long time = 0;
             if (route.getStart().isDeparted()) {
                 time = route.getEnd().getRealTimeArrivalTime() - DragonLib.getCurrentWorldTime();
-                GuiUtils.drawString(graphics, font, (guiLeft + GUI_WIDTH / 2) / 2, (guiTop + 31) / 2, time < 0 ? timeNowText : TextUtils.text(TimeUtils.parseDurationShort(time)), 0xFFFFFF, EAlignment.CENTER, false);
+                GuiUtils.drawString(graphics, font, (guiLeft + GUI_WIDTH / 2) / 2, (guiTop + 31) / 2, time < 0 ? timeNowText : TextUtils.text(TimeUtils.parseDurationShort(time)), 0xFFFFFF, ETextAlignment.CENTER, false);
             } else {
                 time = route.getStart().getRealTimeDepartureTime() - DragonLib.getCurrentWorldTime();
-                GuiUtils.drawString(graphics, font, (guiLeft + GUI_WIDTH / 2) / 2, (guiTop + 31) / 2, time < 0 ? timeNowText : TextUtils.text(TimeUtils.parseDurationShort(time)), 0xFFFFFF, EAlignment.CENTER, false);
+                GuiUtils.drawString(graphics, font, (guiLeft + GUI_WIDTH / 2) / 2, (guiTop + 31) / 2, time < 0 ? timeNowText : TextUtils.text(TimeUtils.parseDurationShort(time)), 0xFFFFFF, ETextAlignment.CENTER, false);
             }
             graphics.poseStack().popPose();
         }
 
-        //GuiUtils.drawString(graphics, font, 5, 5, "State: " + route.getState(), 0xFFFF0000, EAlignment.LEFT, false);
+        //GuiUtils.drawString(graphics, font, 5, 5, "State: " + route.getState(), 0xFFFF0000, ETextAlignment.LEFT, false);
     }
 }

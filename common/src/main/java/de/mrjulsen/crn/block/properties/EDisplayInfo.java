@@ -2,12 +2,12 @@ package de.mrjulsen.crn.block.properties;
 
 import java.util.Arrays;
 
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
-import de.mrjulsen.mcdragonlib.core.ITranslatableEnum;
-import net.minecraft.util.StringRepresentable;
+import de.mrjulsen.mcdragonlib.data.ITranslatableEnum;
 
 @Deprecated
-public enum EDisplayInfo implements StringRepresentable, ITranslatableEnum {
+public enum EDisplayInfo implements ITranslatableEnum {
 	SIMPLE(0, "simple", ModGuiIcons.LESS_DETAILS),
     DETAILED(1, "detailed", ModGuiIcons.DETAILED),
 	INFORMATIVE(2, "informative", ModGuiIcons.VERY_DETAILED);
@@ -44,12 +44,7 @@ public enum EDisplayInfo implements StringRepresentable, ITranslatableEnum {
     }
 
 	@Override
-	public String getEnumName() {
-		return "display_info_type";
-	}
-
-	@Override
-	public String getEnumValueName() {
-		return this.name;
+	public Data getTranslationData() {
+		return new Data(CreateRailwaysNavigator.MOD_ID, "display_info_type", name);
 	}
 }

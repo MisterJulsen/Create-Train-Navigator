@@ -2,10 +2,10 @@ package de.mrjulsen.crn.block.properties;
 
 import java.util.Arrays;
 
-import de.mrjulsen.mcdragonlib.core.ITranslatableEnum;
-import net.minecraft.util.StringRepresentable;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.mcdragonlib.data.ITranslatableEnum;
 
-public enum ESide implements StringRepresentable, ITranslatableEnum {
+public enum ESide implements ITranslatableEnum {
 	FRONT(0, "front"),
     BOTH(2, "both");
 	
@@ -35,12 +35,7 @@ public enum ESide implements StringRepresentable, ITranslatableEnum {
     }
 
 	@Override
-	public String getEnumName() {
-		return "side";
-	}
-
-	@Override
-	public String getEnumValueName() {
-		return name;
+	public Data getTranslationData() {
+		return new Data(CreateRailwaysNavigator.MOD_ID, "side", name);
 	}
 }

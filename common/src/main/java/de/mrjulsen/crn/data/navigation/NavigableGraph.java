@@ -30,7 +30,7 @@ import de.mrjulsen.crn.data.train.TrainUtils;
 import de.mrjulsen.crn.event.ModCommonEvents;
 import de.mrjulsen.crn.data.navigation.Node.EdgeConnection;
 import de.mrjulsen.crn.exceptions.RuntimeSideException;
-import de.mrjulsen.mcdragonlib.data.Single.MutableSingle;
+import de.mrjulsen.mcdragonlib.util.Holder.MutableHolder;
 
 /* #######################################################
  * 
@@ -39,7 +39,7 @@ import de.mrjulsen.mcdragonlib.data.Single.MutableSingle;
  * #######################################################
  */ 
 
-public class NavigatableGraph {
+public class NavigableGraph {
 
     protected final UserSettings userSettings;
 
@@ -50,7 +50,7 @@ public class NavigatableGraph {
     //#region GRAPH GENERATION
 
     /** Server-side only! */
-    public NavigatableGraph(UserSettings userSettings) throws RuntimeSideException {
+    public NavigableGraph(UserSettings userSettings) throws RuntimeSideException {
         if (!ModCommonEvents.hasServer()) {
             throw new RuntimeSideException(false);
         }
@@ -240,20 +240,20 @@ public class NavigatableGraph {
         Node currentNode = startNode;
         while (!currentNode.getStationTag().equals(end)) {
             route.add(currentNode);
-            MutableSingle<Node> nextNode = new MutableSingle<Node>(currentNode.getNextNode());
-            List<EdgeConnection> connections = new ArrayList<>(currentNode.getNextConnections().stream().filter(x -> x.edge().getSecondNode().equals(nextNode.getFirst())).toList());
-            while (nextNode.getFirst() != null && connections != null && !connections.isEmpty()) {
-                Node pNode = nextNode.getFirst().getNextNode();
+            MutableHolder<Node> nextNode = new MutableHolder<Node>(currentNode.getNextNode());
+            List<EdgeConnection> connections = new ArrayList<>(currentNode.getNextConnections().stream().filter(x -> x.edge().getSecondNode().equals(nextNode.get())).toList());
+            while (nextNode.get() != null && connections != null && !connections.isEmpty()) {
+                Node pNode = nextNode.get().getNextNode();
                 if (pNode == null) {
                     break;
                 }
-                List<EdgeConnection> pConnections = nextNode.getFirst().getNextConnections().stream().filter(x -> x.edge().getSecondNode().equals(pNode)).toList();
+                List<EdgeConnection> pConnections = nextNode.get().getNextConnections().stream().filter(x -> x.edge().getSecondNode().equals(pNode)).toList();
                 connections.removeIf(x -> pConnections.stream().noneMatch(y -> x.edge().connected(y.edge())));
                 if (connections.isEmpty()) break;
-                nextNode.setFirst(pNode);
+                nextNode.set(pNode);
             }
 
-            currentNode = nextNode.getFirst();
+            currentNode = nextNode.get();
             currentNode.setTransferPoint(true);
         }
         currentNode.setTransferPoint(true);
@@ -419,7 +419,7 @@ public class NavigatableGraph {
     public static List<Route> searchRoutes(StationTag start, StationTag destination, UUID playerId, boolean avoidTransfers) {
         long startTime = System.currentTimeMillis();
         UserSettings userSettings = UserSettings.getSettingsFor(playerId, true);
-        NavigatableGraph graph = new NavigatableGraph(userSettings);
+        NavigableGraph graph = new NavigableGraph(userSettings);
 
         List<Node> nodes = graph.searchRoute(start, destination, avoidTransfers);
         List<Route> routes = graph.searchTrainsForRoute(nodes);

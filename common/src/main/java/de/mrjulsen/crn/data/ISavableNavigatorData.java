@@ -3,8 +3,8 @@ package de.mrjulsen.crn.data;
 import java.util.List;
 
 import de.mrjulsen.mcdragonlib.DragonLib;
-import de.mrjulsen.mcdragonlib.client.render.Sprite;
-import de.mrjulsen.mcdragonlib.data.Pair;
+import de.mrjulsen.mcdragonlib.client.util.DLSprite;
+import de.mrjulsen.mcdragonlib.util.Pair;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
@@ -24,5 +24,5 @@ public interface ISavableNavigatorData {
         return null;
     }
 
-    public static record SavableNavigatorDataLine(Component text, Sprite icon) {}
+    public static record SavableNavigatorDataLine(Component text, DLSprite icon) {}
 }

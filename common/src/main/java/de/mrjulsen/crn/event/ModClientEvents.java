@@ -13,7 +13,7 @@ import de.mrjulsen.crn.event.events.RouteDetailsActionsEvent;
 import de.mrjulsen.crn.network.InstanceManager;
 import de.mrjulsen.crn.registry.ModExtras;
 import de.mrjulsen.mcdragonlib.client.OverlayManager;
-import de.mrjulsen.mcdragonlib.data.Single.MutableSingle;
+import de.mrjulsen.mcdragonlib.util.Holder.MutableHolder;
 import dev.architectury.event.events.client.ClientGuiEvent;
 import dev.architectury.event.events.client.ClientLifecycleEvent;
 import dev.architectury.event.events.client.ClientPlayerEvent;
@@ -24,7 +24,7 @@ public class ModClientEvents {
     private static int tickTime;
 
     private static int langCheckerTicks = 0;
-    private static MutableSingle<Boolean> inGame = new MutableSingle<Boolean>(false);
+    private static MutableHolder<Boolean> inGame = new MutableHolder<Boolean>(false);
 
     public static void init() {
 
@@ -39,7 +39,7 @@ public class ModClientEvents {
                 ClientWrapper.updateLanguage(ModClientConfig.LANGUAGE.get(), false);
             }
 
-            if (!inGame.getFirst()) return;
+            if (!inGame.get()) return;
 
             tickTime++;
             if ((tickTime %= 100) == 0) {
@@ -60,11 +60,11 @@ public class ModClientEvents {
 
             SavedRoutesManager.pull(true, null);
 
-            inGame.setFirst(true);
+            inGame.set(true);
         });
 
         ClientPlayerEvent.CLIENT_PLAYER_QUIT.register((player) -> {
-            inGame.setFirst(false);
+            inGame.set(false);
             OverlayManager.clear();
             CreateRailwaysNavigator.LOGGER.info("Removed all overlays.");
             SavedRoutesManager.removeAllRoutes();

@@ -16,15 +16,10 @@ import java.util.regex.Pattern;
 import com.simibubi.create.foundation.utility.CreateLang;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
-import de.mrjulsen.crn.config.ModClientConfig;
-import de.mrjulsen.crn.exceptions.RuntimeSideException;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.config.ECachingPriority;
-import de.mrjulsen.mcdragonlib.data.Cache;
+import de.mrjulsen.mcdragonlib.util.Cache;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
-import de.mrjulsen.mcdragonlib.util.TimeUtils;
-import dev.architectury.platform.Platform;
-import dev.architectury.utils.Env;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.DyeColor;
@@ -108,17 +103,6 @@ public class ModUtils {
             id = DragonLib.RANDOM.nextLong();
         } while (exists.test(id));
         return id;
-    }
-
-    /** Client-side only! */
-    public static String formatTime(long time, boolean asETA) throws RuntimeSideException {
-        if (Platform.getEnvironment() != Env.CLIENT) {
-            throw new RuntimeSideException(true);
-        }
-        if (asETA) {
-            return timeRemainingString(time - DragonLib.getCurrentWorldTime());
-        }
-        return TimeUtils.parseTime((time + DragonLib.daytimeShift()) % DragonLib.ticksPerDay(), ModClientConfig.TIME_FORMAT.get());
     }
     
     public static int[] getDyeColors() {

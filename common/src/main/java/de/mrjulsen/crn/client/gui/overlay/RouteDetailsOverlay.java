@@ -22,14 +22,9 @@ import de.mrjulsen.crn.data.navigation.ClientRoute;
 import de.mrjulsen.crn.data.navigation.TransferConnection;
 import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.DragonLib;
-import de.mrjulsen.mcdragonlib.client.gui.DLOverlayScreen;
-import de.mrjulsen.mcdragonlib.client.gui.DLScreen;
-import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
-import de.mrjulsen.mcdragonlib.util.TimeUtils;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.gui.UIRenderHelper;
 import net.minecraft.ChatFormatting;
@@ -254,7 +249,7 @@ public class RouteDetailsOverlay extends DLOverlayScreen {
         startStencil(graphics, x + 3, y + 14, 220, 21);
         graphics.poseStack().pushPose();
         graphics.poseStack().scale(1.0f / 0.75f, 1.0f / 0.75f, 1.0f / 0.75f);
-        GuiUtils.drawString(graphics, font, (int)((x + 3) + slidingTextOffset), y + 14, slidingText, 0xFF9900, EAlignment.CENTER, false);
+        GuiUtils.drawString(graphics, font, (int)((x + 3) + slidingTextOffset), y + 14, slidingText, 0xFF9900, ETextAlignment.CENTER, false);
         graphics.poseStack().popPose();
         endStencil();
     }
@@ -265,11 +260,11 @@ public class RouteDetailsOverlay extends DLOverlayScreen {
         RenderSystem.setShaderTexture(0, GUI);
         GuiUtils.drawTexture(GUI, graphics, x, y, GUI_WIDTH, GUI_HEIGHT, 0, currentPage != null && currentPage.isImportant() ? 138 : 0, 256, 256);
         
-        GuiUtils.drawString(graphics, font, x + 6, y + 4, title, 0x4F4F4F, EAlignment.LEFT, false);
-        GuiUtils.drawString(graphics, font, x + 6, y + GUI_HEIGHT - 2 - font.lineHeight, TextUtils.translate(keyOptionsText, TextUtils.translate(InputConstants.getKey(Minecraft.ON_OSX ? InputConstants.KEY_LWIN : InputConstants.KEY_LCONTROL, 0).getName()).append(" + ").append(TextUtils.keybind(keyKeybindOptions)).withStyle(ChatFormatting.BOLD)), 0x4F4F4F, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, x + 6, y + 4, title, 0x4F4F4F, ETextAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, x + 6, y + GUI_HEIGHT - 2 - font.lineHeight, TextUtils.translate(keyOptionsText, TextUtils.translate(InputConstants.getKey(Minecraft.ON_OSX ? InputConstants.KEY_LWIN : InputConstants.KEY_LCONTROL, 0).getName()).append(" + ").append(TextUtils.keybind(keyKeybindOptions)).withStyle(ChatFormatting.BOLD)), 0x4F4F4F, ETextAlignment.LEFT, false);
         
         String timeString = TimeUtils.parseTime((int)((level.getDayTime() + DragonLib.daytimeShift()) % DragonLib.ticksPerDay()), ModClientConfig.TIME_FORMAT.get());
-        GuiUtils.drawString(graphics, font, x + GUI_WIDTH - 4 - font.width(timeString), y + 4, timeString, 0x4F4F4F, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, x + GUI_WIDTH - 4 - font.width(timeString), y + 4, timeString, 0x4F4F4F, ETextAlignment.LEFT, false);
         
         renderSlidingText(graphics, x, y + 2, transX, transY);
 
@@ -283,7 +278,7 @@ public class RouteDetailsOverlay extends DLOverlayScreen {
         graphics.poseStack().popPose();
         endStencil();
         DLUtils.doIfNotNull(currentPage, a -> a.renderFrontLayer(graphics, 0, 0, partialTicks));
-        if (CreateRailwaysNavigator.isDebug()) GuiUtils.drawString(graphics, font, 5, GUI_HEIGHT + 10, "State: " + route.getState() + ", " + route.getCurrentPartIndex() + ", " + route.getCurrentPart().getNextStop().getRealTimeStationTag().tagName(), 0xFFFF0000, EAlignment.LEFT, false);
+        if (CreateRailwaysNavigator.isDebug()) GuiUtils.drawString(graphics, font, 5, GUI_HEIGHT + 10, "State: " + route.getState() + ", " + route.getCurrentPartIndex() + ", " + route.getCurrentPart().getNextStop().getRealTimeStationTag().tagName(), 0xFFFF0000, ETextAlignment.LEFT, false);
         graphics.poseStack().popPose();
     }
 

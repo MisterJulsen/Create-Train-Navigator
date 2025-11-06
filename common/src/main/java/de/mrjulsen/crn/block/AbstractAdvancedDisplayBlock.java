@@ -9,7 +9,6 @@ import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.foundation.block.IBE;
 
-import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity.EUpdateReason;
 import de.mrjulsen.crn.block.display.properties.BasicDisplaySettings;
@@ -18,12 +17,14 @@ import de.mrjulsen.crn.block.display.properties.StaticTextDisplaySettings;
 import de.mrjulsen.crn.block.display.properties.StaticTextDisplaySettings.TextComponent;
 import de.mrjulsen.crn.block.properties.ESide;
 import de.mrjulsen.crn.client.ClientWrapper;
-import de.mrjulsen.crn.network.packets.cts.AdvancedDisplayUpdatePacket;
+import de.mrjulsen.crn.network.packets.cts.AdvancedDisplayUpdatePacketData;
 import de.mrjulsen.crn.registry.ModBlockEntities;
 import de.mrjulsen.crn.registry.ModDisplayTypes;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
-import de.mrjulsen.mcdragonlib.data.Pair;
-import de.mrjulsen.mcdragonlib.data.Tripple;
+import de.mrjulsen.crn.registry.ModNetworkManager;
+import de.mrjulsen.mcdragonlib.data.ETextAlignment;
+import de.mrjulsen.mcdragonlib.network.NetworkDirection;
+import de.mrjulsen.mcdragonlib.util.Pair;
+import de.mrjulsen.mcdragonlib.util.Tripple;
 import net.createmod.catnip.data.Iterate;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.core.BlockPos;
@@ -375,7 +376,8 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 				if (controller.getBlockState().getBlock() instanceof AbstractAdvancedSidedDisplayBlock) {
 					doubleSided = controller.getBlockState().getValue(AbstractAdvancedSidedDisplayBlock.SIDE) == ESide.BOTH;
 				}
-				CreateRailwaysNavigator.net().CHANNEL.sendToServer(new AdvancedDisplayUpdatePacket(controller.getLevel(), controller.getBlockPos(), null, ModDisplayTypes.SIMPLE_TEXT, doubleSided, settings));
+				
+				ModNetworkManager.ADVANCED_DISPLAY_UPDATE_PACKET.send(NetworkDirection.toServer(), new AdvancedDisplayUpdatePacketData(controller.getLevel(), controller.getBlockPos(), null, ModDisplayTypes.SIMPLE_TEXT, doubleSided, settings));
 				return InteractionResult.SUCCESS;
             }
 		} else if (AllBlocks.CLIPBOARD.isIn(heldItem) && pLevel.isClientSide) {
@@ -387,7 +389,7 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 				entryLoop: for (ClipboardEntry entry : entries) {
 					for (String string : entry.text.getString().split("\n")) {
 						TextComponent component = new TextComponent(string);
-						component.setTextAlignment(EAlignment.LEFT);
+						component.setTextAlignment(ETextAlignment.LEFT);
 						component.setXScale(0.4f);
 						component.setMinXScale(0.4f);
 						component.setYScale(0.4f);
@@ -407,7 +409,8 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 				if (controller.getBlockState().getBlock() instanceof AbstractAdvancedSidedDisplayBlock) {
 					doubleSided = controller.getBlockState().getValue(AbstractAdvancedSidedDisplayBlock.SIDE) == ESide.BOTH;
 				}
-				CreateRailwaysNavigator.net().CHANNEL.sendToServer(new AdvancedDisplayUpdatePacket(controller.getLevel(), controller.getBlockPos(), null, ModDisplayTypes.RICH_TEXT, doubleSided, settings));
+
+				ModNetworkManager.ADVANCED_DISPLAY_UPDATE_PACKET.send(NetworkDirection.toServer(), new AdvancedDisplayUpdatePacketData(controller.getLevel(), controller.getBlockPos(), null, ModDisplayTypes.RICH_TEXT, doubleSided, settings));
 				return InteractionResult.SUCCESS;
             }
 		}

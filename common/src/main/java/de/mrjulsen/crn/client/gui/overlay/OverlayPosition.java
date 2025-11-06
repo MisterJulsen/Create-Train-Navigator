@@ -2,11 +2,11 @@ package de.mrjulsen.crn.client.gui.overlay;
 
 import java.util.Arrays;
 
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
-import de.mrjulsen.mcdragonlib.core.ITranslatableEnum;
-import net.minecraft.util.StringRepresentable;
+import de.mrjulsen.mcdragonlib.data.ITranslatableEnum;
 
-public enum OverlayPosition implements StringRepresentable, ITranslatableEnum {
+public enum OverlayPosition implements ITranslatableEnum {
     TOP_LEFT("top_left", ModGuiIcons.TOP_LEFT),
     TOP_RIGHT("top_right", ModGuiIcons.TOP_RIGHT),
     BOTTOM_LEFT("bottom_left", ModGuiIcons.BOTTOM_LEFT),
@@ -34,17 +34,7 @@ public enum OverlayPosition implements StringRepresentable, ITranslatableEnum {
     }
 
     @Override
-    public String getEnumName() {
-        return ENUM_NAME;
-    }
-
-    @Override
-    public String getEnumValueName() {
-        return name;
-    }
-
-    @Override
-    public String getSerializedName() {
-        return name;
+    public Data getTranslationData() {
+        return new Data(CreateRailwaysNavigator.MOD_ID, ENUM_NAME, name);
     }
 }

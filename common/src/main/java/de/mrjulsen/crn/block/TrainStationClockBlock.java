@@ -9,7 +9,6 @@ import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.registry.ModBlockEntities;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
-import de.mrjulsen.mcdragonlib.util.TimeUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;

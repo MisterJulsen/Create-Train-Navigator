@@ -26,7 +26,7 @@ import de.mrjulsen.crn.data.train.TrainUtils;
 import de.mrjulsen.crn.data.train.portable.StationDisplayData;
 import de.mrjulsen.crn.event.ModCommonEvents;
 import de.mrjulsen.crn.registry.ModDisplayTypes;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.data.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
@@ -168,7 +168,7 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 							component.setStaticText("{\"text\":\"\"}");
 						} else
 							component.setStaticText(Component.Serializer.toJson(text.get(i)));
-						component.setTextAlignment(EAlignment.LEFT);
+						component.setTextAlignment(ETextAlignment.LEFT);
 						component.setXScale(0.4f);
 						component.setMinXScale(0.4f);
 						component.setYScale(0.4f);

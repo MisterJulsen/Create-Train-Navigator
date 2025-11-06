@@ -2,10 +2,10 @@ package de.mrjulsen.crn.block.properties;
 
 import java.util.Arrays;
 
-import de.mrjulsen.mcdragonlib.core.ITranslatableEnum;
-import net.minecraft.util.StringRepresentable;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.mcdragonlib.data.ITranslatableEnum;
 
-public enum EBlockAlignment implements StringRepresentable, ITranslatableEnum {
+public enum EBlockAlignment implements ITranslatableEnum {
 	NEGATIVE(-1, "negative"),
 	CENTER(0, "center"),
     POSITIVE(1, "positive");
@@ -36,12 +36,8 @@ public enum EBlockAlignment implements StringRepresentable, ITranslatableEnum {
     }
 
 	@Override
-	public String getEnumName() {
-		return "block_alignment";
+	public Data getTranslationData() {
+		return new Data(CreateRailwaysNavigator.MOD_ID, "block_alignment", name);
 	}
-
-	@Override
-	public String getEnumValueName() {
-		return name;
-	}
+	
 }

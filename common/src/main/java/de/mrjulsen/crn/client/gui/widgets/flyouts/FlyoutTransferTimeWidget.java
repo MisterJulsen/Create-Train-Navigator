@@ -19,7 +19,7 @@ import de.mrjulsen.mcdragonlib.client.render.DynamicGuiRenderer.AreaStyle;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiAreaDefinition;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.core.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.ChatFormatting;
@@ -55,7 +55,7 @@ public class FlyoutTransferTimeWidget<T extends GuiEventListener & Renderable & 
     @Override
     public void renderFlyoutContent(Graphics graphics, int mouseX, int mouseY, float partialTicks, GuiAreaDefinition contentArea) {
         super.renderFlyoutContent(graphics, mouseX, mouseY, partialTicks, contentArea);
-        GuiUtils.drawString(graphics, font, contentArea.getX() + 8, contentArea.getY() + 8, textTransferTime, DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, contentArea.getX() + 8, contentArea.getY() + 8, textTransferTime, DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, ETextAlignment.LEFT, false);
     }
 
     @Override

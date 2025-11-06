@@ -19,7 +19,7 @@ import de.mrjulsen.mcdragonlib.client.util.DLWidgetsCollection;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiAreaDefinition;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.core.ETextAlignment;
 import de.mrjulsen.mcdragonlib.data.Pair;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
@@ -103,7 +103,7 @@ public class NewEntryWidget extends DLWidgetContainer {
             CreateDynamicWidgets.renderSingleShadeWidget(graphics, x(), y(), width(), height(), ColorShade.DARK);
             int w = width() - 12 - DLIconButton.DEFAULT_BUTTON_WIDTH * 2 - font.width(textNew);
             CreateDynamicWidgets.renderTextBox(graphics, x() + 5 + font.width(textNew), y() + 4, w);
-            GuiUtils.drawString(graphics, font, x() + 5, y() + height() / 2 - font.lineHeight / 2, textNew, DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, EAlignment.LEFT, false);
+            GuiUtils.drawString(graphics, font, x() + 5, y() + height() / 2 - font.lineHeight / 2, textNew, DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, ETextAlignment.LEFT, false);
         }
         
         super.renderMainLayer(graphics, mouseX, mouseY, partialTicks);

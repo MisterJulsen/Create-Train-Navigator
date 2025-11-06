@@ -16,7 +16,7 @@ import de.mrjulsen.crn.data.train.TrainStop;
 import de.mrjulsen.crn.data.train.ScheduleSection;
 import de.mrjulsen.crn.data.train.TrainStatus.CompiledTrainStatus;
 import de.mrjulsen.mcdragonlib.DragonLib;
-import de.mrjulsen.mcdragonlib.data.Pair;
+import de.mrjulsen.mcdragonlib.util.Pair;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;

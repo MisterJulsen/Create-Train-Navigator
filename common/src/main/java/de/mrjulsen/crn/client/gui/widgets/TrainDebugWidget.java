@@ -14,7 +14,7 @@ import de.mrjulsen.mcdragonlib.client.render.Sprite;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiAreaDefinition;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.core.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.accessor.DataAccessor;
 import net.minecraft.ChatFormatting;
@@ -64,10 +64,10 @@ public class TrainDebugWidget extends DLButton {
         if (font.width(idText) > maxIdWidth) {
             idText = TextUtils.text(font.substrByWidth(idText, maxIdWidth).getString()).append(TextUtils.text("...")).withStyle(idText.getStyle());
         }
-        GuiUtils.drawString(graphics, font, 20 + font.width(trainName), 6, idText, 0xFFFFFF, EAlignment.LEFT, false);
-        GuiUtils.drawString(graphics, font, (int)(width() / scale) - 6, 6, predictionsText, 0xFFFFFF, EAlignment.RIGHT, false);
-        GuiUtils.drawString(graphics, font, 5, 20, TextUtils.text("Session: " + data.sessionId()), 0xFFDBDBDB, EAlignment.LEFT, false);
-        GuiUtils.drawString(graphics, font, 5, 30, TextUtils.text("Status: " + data.state().getName()), data.state().getColor(), EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, 20 + font.width(trainName), 6, idText, 0xFFFFFF, ETextAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, (int)(width() / scale) - 6, 6, predictionsText, 0xFFFFFF, ETextAlignment.RIGHT, false);
+        GuiUtils.drawString(graphics, font, 5, 20, TextUtils.text("Session: " + data.sessionId()), 0xFFDBDBDB, ETextAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, 5, 30, TextUtils.text("Status: " + data.state().getName()), data.state().getColor(), ETextAlignment.LEFT, false);
         graphics.poseStack().popPose();  
     }
     

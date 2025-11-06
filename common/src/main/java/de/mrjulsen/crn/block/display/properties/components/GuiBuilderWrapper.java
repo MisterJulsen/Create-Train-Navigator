@@ -23,14 +23,8 @@ import de.mrjulsen.crn.client.gui.widgets.DLCreateTextBox;
 import de.mrjulsen.crn.client.gui.widgets.IconSlotWidget;
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
 import de.mrjulsen.crn.util.ModUtils;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.DLCheckBox;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.DLIconButton;
-import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
-import de.mrjulsen.mcdragonlib.data.Single.MutableSingle;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
-import de.mrjulsen.mcdragonlib.util.MathUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -582,24 +576,24 @@ public class GuiBuilderWrapper {
                 leftAlignBtn.getFirst().set_active(false);
                 centerAlignBtn.getFirst().set_active(true);
                 rightAlignBtn.getFirst().set_active(true);
-                setting.setTextAlignment(EAlignment.LEFT);
+                setting.setTextAlignment(ETextAlignment.LEFT);
             });
             centerAlignBtn.getFirst().withCallback(() -> {
                 leftAlignBtn.getFirst().set_active(true);
                 centerAlignBtn.getFirst().set_active(false);
                 rightAlignBtn.getFirst().set_active(true);
-                setting.setTextAlignment(EAlignment.CENTER);
+                setting.setTextAlignment(ETextAlignment.CENTER);
             });
             rightAlignBtn.getFirst().withCallback(() -> {
                 leftAlignBtn.getFirst().set_active(true);
                 centerAlignBtn.getFirst().set_active(true);
                 rightAlignBtn.getFirst().set_active(false);
-                setting.setTextAlignment(EAlignment.RIGHT);
+                setting.setTextAlignment(ETextAlignment.RIGHT);
             });
             
-            leftAlignBtn.getFirst().set_active(setting.getTextAlignment() != EAlignment.LEFT);
-            centerAlignBtn.getFirst().set_active(setting.getTextAlignment() != EAlignment.CENTER);
-            rightAlignBtn.getFirst().set_active(setting.getTextAlignment() != EAlignment.RIGHT);
+            leftAlignBtn.getFirst().set_active(setting.getTextAlignment() != ETextAlignment.LEFT);
+            centerAlignBtn.getFirst().set_active(setting.getTextAlignment() != ETextAlignment.CENTER);
+            rightAlignBtn.getFirst().set_active(setting.getTextAlignment() != ETextAlignment.RIGHT);
         });
     }
 

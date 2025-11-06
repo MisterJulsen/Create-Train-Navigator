@@ -6,11 +6,12 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.simibubi.create.foundation.gui.AllIcons;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
-import de.mrjulsen.mcdragonlib.client.render.Sprite;
-import de.mrjulsen.mcdragonlib.client.util.Graphics;
+import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
+import de.mrjulsen.mcdragonlib.client.util.DLSprite;
+import de.mrjulsen.mcdragonlib.client.util.DLTexture;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
+import de.mrjulsen.mcdragonlib.util.DLUtils;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.resources.ResourceLocation;
 
 public enum ModGuiIcons {
     EMPTY("empty", 0, 0),
@@ -88,7 +89,7 @@ public enum ModGuiIcons {
     private int v;
 
     public static final int ICON_SIZE = 16;
-    public static final ResourceLocation ICON_LOCATION = new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/icons.png");
+    public static final DLTexture ICON = new DLTexture(DLUtils.resourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/icons.png"), 256, 256);
 
     ModGuiIcons(String id, int u, int v) {
         this.id = id;
@@ -124,12 +125,12 @@ public enum ModGuiIcons {
         return new ModAllIcons(u, v);
     }
 
-    public void render(Graphics graphics, int x, int y) {
-        GuiUtils.drawTexture(ModGuiIcons.ICON_LOCATION, graphics, x, y, getU(), getV(), ICON_SIZE, ICON_SIZE);
+    public void render(DLGuiGraphics graphics, int x, int y) {
+        GuiUtils.drawTexture(ModGuiIcons.ICON, graphics, x, y, ICON_SIZE, ICON_SIZE, getU(), getV());
     }
     
-    public Sprite getAsSprite(int renderWidth, int renderHeight) {
-        return new Sprite(ICON_LOCATION, 256, 256, getU(), getV(), ICON_SIZE, ICON_SIZE, renderWidth, renderHeight);
+    public DLSprite getAsSprite(int renderWidth, int renderHeight) {
+        return new DLSprite(ICON, renderWidth, renderHeight, getU(), getV(), ICON_SIZE, ICON_SIZE);
     }
 
     public static class ModAllIcons extends AllIcons {
@@ -143,12 +144,12 @@ public enum ModGuiIcons {
 
         @Override
         public void render(GuiGraphics graphics, int x, int y) {
-            graphics.blit(ICON_LOCATION, x, y, 0, u, v, ICON_SIZE, ICON_SIZE, 256, 256);
+            graphics.blit(ICON.getTexture().get(), x, y, 0, u, v, ICON_SIZE, ICON_SIZE, 256, 256);
         }
 
         @Override
         public void bind() {
-            RenderSystem.setShaderTexture(0, ICON_LOCATION);
+            RenderSystem.setShaderTexture(0, ICON.getTexture().get());
         }      
         
     }

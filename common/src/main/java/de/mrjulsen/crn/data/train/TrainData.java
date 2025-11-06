@@ -37,8 +37,8 @@ import de.mrjulsen.crn.util.IListenable;
 import de.mrjulsen.crn.util.LockedList;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.config.ECachingPriority;
-import de.mrjulsen.mcdragonlib.data.Cache;
-import de.mrjulsen.mcdragonlib.util.MathUtils;
+import de.mrjulsen.mcdragonlib.util.Cache;
+import de.mrjulsen.mcdragonlib.util.math.MathUtils;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 

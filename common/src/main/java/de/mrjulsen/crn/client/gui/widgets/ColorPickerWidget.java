@@ -12,7 +12,7 @@ import de.mrjulsen.mcdragonlib.client.gui.widgets.DLWidgetContainer;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiAreaDefinition;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.core.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
@@ -83,7 +83,7 @@ public class ColorPickerWidget extends DLWidgetContainer {
         @Override
         public void renderMainLayer(Graphics graphics, int mouseX, int mouseY, float partialTick) {
             GuiUtils.drawBox(graphics, GuiAreaDefinition.of(this), color.get(), isMouseSelected() ? DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE : DragonLib.NATIVE_BUTTON_FONT_COLOR_DISABLED);
-            GuiUtils.drawString(graphics, font, x() + width() / 2, y() + height() / 2 - font.lineHeight / 2, getMessage(), DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, EAlignment.CENTER, true);
+            GuiUtils.drawString(graphics, font, x() + width() / 2, y() + height() / 2 - font.lineHeight / 2, getMessage(), DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, ETextAlignment.CENTER, true);
         }
     }
 
@@ -97,7 +97,7 @@ public class ColorPickerWidget extends DLWidgetContainer {
         @Override
         public void renderMainLayer(Graphics graphics, int mouseX, int mouseY, float partialTick) {
             GuiUtils.drawBox(graphics, GuiAreaDefinition.of(this), color, isMouseSelected() ? DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE : DragonLib.NATIVE_BUTTON_FONT_COLOR_DISABLED);
-            GuiUtils.drawString(graphics, font, x() + width() / 2, y() + height() / 2 - font.lineHeight / 2, getMessage(), DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, EAlignment.CENTER, true);
+            GuiUtils.drawString(graphics, font, x() + width() / 2, y() + height() / 2 - font.lineHeight / 2, getMessage(), DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, ETextAlignment.CENTER, true);
         }
     }
     
@@ -109,7 +109,7 @@ public class ColorPickerWidget extends DLWidgetContainer {
         @Override
         public void renderMainLayer(Graphics graphics, int mouseX, int mouseY, float partialTick) {
             GuiUtils.drawBox(graphics, GuiAreaDefinition.of(this), 0, isMouseSelected() ? DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE : DragonLib.NATIVE_BUTTON_FONT_COLOR_DISABLED);
-            GuiUtils.drawString(graphics, font, x() + width() / 2, y() + height() / 2 - font.lineHeight / 2, getMessage(), DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, EAlignment.CENTER, true);
+            GuiUtils.drawString(graphics, font, x() + width() / 2, y() + height() / 2 - font.lineHeight / 2, getMessage(), DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, ETextAlignment.CENTER, true);
         }
     }
 }

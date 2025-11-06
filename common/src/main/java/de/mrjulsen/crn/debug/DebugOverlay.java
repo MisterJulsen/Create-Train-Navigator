@@ -19,7 +19,7 @@ import de.mrjulsen.mcdragonlib.client.OverlayManager;
 import de.mrjulsen.mcdragonlib.client.gui.DLOverlayScreen;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.core.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -106,7 +106,7 @@ public class DebugOverlay extends DLOverlayScreen {
         int x = 2;
         int y = 2;
         GuiUtils.fill(graphics, x - 1, y - 1 + line * (getFont().lineHeight + 2), getFont().width(str) + 2, getFont().lineHeight + 2, 0x44000000);
-        GuiUtils.drawString(graphics, getFont(), x, y + 1 + line * (getFont().lineHeight + 2), str, 0xFFFFFFFF, EAlignment.LEFT, true);
+        GuiUtils.drawString(graphics, getFont(), x, y + 1 + line * (getFont().lineHeight + 2), str, 0xFFFFFFFF, ETextAlignment.LEFT, true);
         line++;
     }
 

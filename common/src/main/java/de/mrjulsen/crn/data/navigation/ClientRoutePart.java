@@ -21,8 +21,8 @@ import de.mrjulsen.crn.data.train.TrainStop;
 import de.mrjulsen.crn.data.train.ClientTrainStop.TrainStopRealTimeData;
 import de.mrjulsen.crn.data.train.TrainStatus.CompiledTrainStatus;
 import de.mrjulsen.crn.util.IListenable;
-import de.mrjulsen.mcdragonlib.data.Cache;
-import de.mrjulsen.mcdragonlib.data.Single.MutableSingle;
+import de.mrjulsen.mcdragonlib.util.Cache;
+import de.mrjulsen.mcdragonlib.util.Holder.MutableHolder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -226,7 +226,7 @@ public class ClientRoutePart extends RoutePart implements ITrainListenerClient<C
             cancelled = true;
         }
 
-        MutableSingle<Boolean> shouldRenderStatus = new MutableSingle<>(false);
+        MutableHolder<Boolean> shouldRenderStatus = new MutableHolder<>(false);
 
         List<ClientTrainStop> allStops = getAllClientStops();
         synchronized (allStops) {
@@ -234,7 +234,7 @@ public class ClientRoutePart extends RoutePart implements ITrainListenerClient<C
                 if (data.stationData().containsKey(stop.getScheduleIndex())) {
                     stop.update(data.stationData().get(stop.getScheduleIndex()));
                     if (stop.shouldRenderRealTime())  {
-                        shouldRenderStatus.setFirst(true);
+                        shouldRenderStatus.set(true);
                     }
                 }
             }
@@ -248,7 +248,7 @@ public class ClientRoutePart extends RoutePart implements ITrainListenerClient<C
             }
         }
 
-        if (shouldRenderStatus.getFirst() || data.cancelled()) {
+        if (shouldRenderStatus.get() || data.cancelled()) {
             status.addAll(data.statusInfo());
         }
 

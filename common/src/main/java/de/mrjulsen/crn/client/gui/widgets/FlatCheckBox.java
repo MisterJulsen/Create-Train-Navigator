@@ -7,7 +7,7 @@ import de.mrjulsen.mcdragonlib.client.gui.widgets.DLCheckBox;
 import de.mrjulsen.mcdragonlib.client.render.GuiIcons;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.core.ETextAlignment;
 
 public class FlatCheckBox extends DLCheckBox {
 
@@ -21,7 +21,7 @@ public class FlatCheckBox extends DLCheckBox {
         if (isChecked()) {
             GuiIcons.CHECKMARK.render(graphics, x(), y());
         }
-        GuiUtils.drawString(graphics, font, x() + GuiIcons.ICON_SIZE + 2, y() + height() / 2 - font.lineHeight / 2, getMessage(), DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, x() + GuiIcons.ICON_SIZE + 2, y() + height() / 2 - font.lineHeight / 2, getMessage(), DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, ETextAlignment.LEFT, false);
 
         if (isMouseSelected()) {
             GuiUtils.fill(graphics, x(), y(), width(), height(), 0x44FFFFFF);

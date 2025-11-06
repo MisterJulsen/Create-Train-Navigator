@@ -11,15 +11,15 @@ import com.simibubi.create.content.trains.entity.Train;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.TrainExitSide;
 import de.mrjulsen.crn.exceptions.RuntimeSideException;
+import de.mrjulsen.mcdragonlib.util.Cache;
+import de.mrjulsen.mcdragonlib.util.Pair;
+import de.mrjulsen.mcdragonlib.util.Holder.MutableHolder;
 import de.mrjulsen.crn.data.train.TrainListener;
 import de.mrjulsen.crn.data.train.TrainPrediction;
 import de.mrjulsen.crn.data.train.TrainStop;
 import de.mrjulsen.crn.data.train.ScheduleSection;
 import de.mrjulsen.crn.data.train.TrainUtils;
 import de.mrjulsen.crn.event.ModCommonEvents;
-import de.mrjulsen.mcdragonlib.data.Cache;
-import de.mrjulsen.mcdragonlib.data.Pair;
-import de.mrjulsen.mcdragonlib.data.Single.MutableSingle;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -170,14 +170,14 @@ public class TrainDisplayData {
         }
 
         return TrainListener.getTrainData(train.id).map(data -> {
-            MutableSingle<TrainExitSide> sideHolder = new MutableSingle<>(null); 
+            MutableHolder<TrainExitSide> sideHolder = new MutableHolder<>(null); 
             ModCommonEvents.getCurrentServer().ifPresent(x -> {
-                x.execute(() -> sideHolder.setFirst(TrainUtils.getExitSide(train.navigation.destination)));
-                while (sideHolder.getFirst() == null) {
+                x.execute(() -> sideHolder.set(TrainUtils.getExitSide(train.navigation.destination)));
+                while (sideHolder.get() == null) {
                     try { TimeUnit.MILLISECONDS.sleep(10); } catch (InterruptedException e) {}
                 }
             });
-            TrainExitSide side = sideHolder.getFirst() == null ? TrainExitSide.UNKNOWN : sideHolder.getFirst();
+            TrainExitSide side = sideHolder.get() == null ? TrainExitSide.UNKNOWN : sideHolder.get();
 
             final ScheduleSection section = data.getCurrentSection();
             final ScheduleSection prevSection = section.previousSection();

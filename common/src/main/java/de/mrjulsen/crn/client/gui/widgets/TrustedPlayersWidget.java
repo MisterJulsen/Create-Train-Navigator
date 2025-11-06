@@ -23,7 +23,7 @@ import de.mrjulsen.mcdragonlib.client.render.DynamicGuiRenderer.AreaStyle;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiAreaDefinition;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.core.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.accessor.DataAccessor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -146,7 +146,7 @@ public class TrustedPlayersWidget extends DLWidgetContainer {
         public void renderMainLayer(Graphics graphics, int mouseX, int mouseY, float partialTicks) {
             super.renderMainLayer(graphics, mouseX, mouseY, partialTicks);
             CreateDynamicWidgets.renderTextSlotOverlay(graphics, x(), y() + 1, width() - 18, height() - 2);
-            GuiUtils.drawString(graphics, font, x() + 5, y() + 5, player.name(), DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, EAlignment.LEFT, false);
+            GuiUtils.drawString(graphics, font, x() + 5, y() + 5, player.name(), DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, ETextAlignment.LEFT, false);
         }
 
         @Override

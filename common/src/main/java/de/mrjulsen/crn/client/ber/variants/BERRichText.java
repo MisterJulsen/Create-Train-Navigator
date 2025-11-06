@@ -13,7 +13,7 @@ import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
 import de.mrjulsen.crn.util.VariableManager;
 import de.mrjulsen.mcdragonlib.client.ber.BERGraphics;
 import de.mrjulsen.mcdragonlib.client.ber.BERLabel;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.core.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -91,19 +91,19 @@ public class BERRichText implements AbstractAdvancedDisplayRenderer<StaticTextDi
                 .setForceScrolling(component.getBoundsAction() == TextScaleBounds.SCROLL)
                 .setScale(component.getXScale(), component.getMinXScale())
                 .setPos(3 + component.getX(), 3 + component.getY())
-                .setCentered(component.getTextAlignment() == EAlignment.CENTER)
+                .setCentered(component.getTextAlignment() == ETextAlignment.CENTER)
             ;
             label
                 .setMaxWidth(Math.min(blockEntity.getXSizeScaled() * 16 - 3 - label.getX(), component.getTextMaxWidth() > StaticTextDisplaySettings.DEFAULT_TEXT_MAX_WIDTH ? Float.MAX_VALUE : component.getTextMaxWidth()), component.getBoundsAction().hit())
             ;
-            if (component.getTextAlignment() == EAlignment.RIGHT && !label.isForceScrolling()) {
+            if (component.getTextAlignment() == ETextAlignment.RIGHT && !label.isForceScrolling()) {
                 label
                     .setPos(label.getX() + label.getMaxWidth() - Math.min(label.getTextWidth(), label.getMaxWidth()), label.getY())
                 ;
             }
             label
                 .setPos(label.getX(), Math.min(label.getY(), blockEntity.getYSize() * 16 - 2 - label.getYScale() * Minecraft.getInstance().font.lineHeight))
-                .setBackground(component.getTextBackgroundColor(), label.isForceScrolling() || (component.isFullLabelBackgroundColor() && component.getTextAlignment() != EAlignment.RIGHT))
+                .setBackground(component.getTextBackgroundColor(), label.isForceScrolling() || (component.isFullLabelBackgroundColor() && component.getTextAlignment() != ETextAlignment.RIGHT))
             ;
 
             this.labels[i] = label;

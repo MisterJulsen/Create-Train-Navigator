@@ -12,7 +12,7 @@ import de.mrjulsen.mcdragonlib.client.gui.widgets.DLRenderable;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLScrollableWidgetContainer;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.core.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -91,7 +91,7 @@ public class SavedRoutesViewer extends DLScrollableWidgetContainer {
         super.renderMainLayer(graphics, mouseX, mouseY, partialTicks);
 
         if (children().isEmpty()) {
-            GuiUtils.drawString(graphics, font, x() + width() / 2, y() + height() / 2, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".empty_list"), 0xFFDBDBDB, EAlignment.CENTER, false);
+            GuiUtils.drawString(graphics, font, x() + width() / 2, y() + height() / 2, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".empty_list"), 0xFFDBDBDB, ETextAlignment.CENTER, false);
         }
         
         GuiUtils.fillGradient(graphics, x(), y(), 0, width(), 10, 0x77000000, 0x00000000);
@@ -125,7 +125,7 @@ public class SavedRoutesViewer extends DLScrollableWidgetContainer {
         @SuppressWarnings("resource")
         @Override
         public void renderMainLayer(Graphics graphics, int mouseX, int mouseY, float partialTicks) {
-            GuiUtils.drawString(graphics, Minecraft.getInstance().font, x() + 10, y() + height() / 2 - Minecraft.getInstance().font.lineHeight / 2, text, DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, EAlignment.LEFT, true);
+            GuiUtils.drawString(graphics, Minecraft.getInstance().font, x() + 10, y() + height() / 2 - Minecraft.getInstance().font.lineHeight / 2, text, DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, ETextAlignment.LEFT, true);
         }        
     }
     

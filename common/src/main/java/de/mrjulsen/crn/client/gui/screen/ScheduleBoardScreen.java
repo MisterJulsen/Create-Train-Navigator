@@ -34,7 +34,7 @@ import de.mrjulsen.mcdragonlib.client.render.DynamicGuiRenderer.AreaStyle;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiAreaDefinition;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.core.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.accessor.DataAccessor;
@@ -202,7 +202,7 @@ public class ScheduleBoardScreen extends AbstractNavigatorScreen {
         if (fixedStation) {
             graphics.poseStack().pushPose();
             graphics.poseStack().scale(2, 2, 2);
-            GuiUtils.drawString(graphics, font, (guiLeft + GUI_WIDTH / 2) / 2, (guiTop + 22) / 2, GuiUtils.ellipsisString(font, TextUtils.text(stationTagName), GUI_WIDTH / 2), 0xFFFFFF, EAlignment.CENTER, false);
+            GuiUtils.drawString(graphics, font, (guiLeft + GUI_WIDTH / 2) / 2, (guiTop + 22) / 2, GuiUtils.ellipsisString(font, TextUtils.text(stationTagName), GUI_WIDTH / 2), 0xFFFFFF, ETextAlignment.CENTER, false);
             graphics.poseStack().popPose();
         } else {            
             ModGuiIcons.POSITION.render(graphics, workingArea.getX() + 5, workingArea.getY() + 4);

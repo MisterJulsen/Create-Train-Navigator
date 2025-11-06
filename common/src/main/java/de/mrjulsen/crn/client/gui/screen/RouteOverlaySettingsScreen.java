@@ -27,7 +27,7 @@ import de.mrjulsen.mcdragonlib.client.gui.widgets.IDragonLibWidget;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import de.mrjulsen.mcdragonlib.client.util.WidgetsCollection;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.core.ETextAlignment;
 import de.mrjulsen.mcdragonlib.data.Pair;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.createmod.catnip.gui.element.GuiGameElement;
@@ -210,7 +210,7 @@ public class RouteOverlaySettingsScreen extends DLScreen {
     public void renderMainLayer(Graphics graphics, int pMouseX, int pMouseY, float pPartialTick) {
         renderScreenBackground(graphics);
         GuiUtils.drawTexture(GUI, graphics, guiLeft, guiTop, 0, 0, GUI_WIDTH, GUI_HEIGHT);
-        GuiUtils.drawString(graphics, shadowlessFont, guiLeft + 6, guiTop + 4, title, DragonLib.NATIVE_UI_FONT_COLOR, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, shadowlessFont, guiLeft + 6, guiTop + 4, title, DragonLib.NATIVE_UI_FONT_COLOR, ETextAlignment.LEFT, false);
 
         GuiGameElement.of(renderedItem).<GuiGameElement
 			.GuiRenderBuilder>at(guiLeft + GUI_WIDTH, guiTop + GUI_HEIGHT - 48, -200)
@@ -219,7 +219,7 @@ public class RouteOverlaySettingsScreen extends DLScreen {
 
         CreateDynamicWidgets.renderTextBox(graphics, guiLeft + 63, guiTop + 23, 43);
 
-        GuiUtils.drawString(graphics, font, guiLeft + 67, guiTop + 28, scaleLabel, 0xFFFFFF, EAlignment.LEFT, true);
+        GuiUtils.drawString(graphics, font, guiLeft + 67, guiTop + 28, scaleLabel, 0xFFFFFF, ETextAlignment.LEFT, true);
 
         super.renderMainLayer(graphics, pMouseX, pMouseY, pPartialTick);
     }

@@ -2,14 +2,14 @@ package de.mrjulsen.crn.block.display.properties.components;
 
 import java.util.Arrays;
 
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.display.properties.IDisplaySettings;
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
-import de.mrjulsen.mcdragonlib.core.ITranslatableEnum;
-import net.minecraft.util.StringRepresentable;
+import de.mrjulsen.mcdragonlib.data.ITranslatableEnum;
 
 public interface ITrainTextSetting {
 
-    public static enum ETrainTextComponents implements StringRepresentable, ITranslatableEnum {
+    public static enum ETrainTextComponents implements ITranslatableEnum {
         ALL((byte)0, "all"),
         TRAIN_NAME((byte)1, "train_name"),
         DESTINATION((byte)2, "destination");
@@ -35,22 +35,17 @@ public interface ITrainTextSetting {
             return name;
         }
 
-        @Override
-        public String getEnumName() {
-            return "train_text_components";
-        }
-
-        @Override
-        public String getEnumValueName() {
-            return this.name;
-        }
-
         public boolean showTrainName() {
             return this == ALL || this == TRAIN_NAME;
         }
 
         public boolean showDestination() {
             return this == ALL || this == DESTINATION;
+        }
+
+        @Override
+        public Data getTranslationData() {
+            return new Data(CreateRailwaysNavigator.MOD_ID, "train_text_components", name);
         }
     }
 

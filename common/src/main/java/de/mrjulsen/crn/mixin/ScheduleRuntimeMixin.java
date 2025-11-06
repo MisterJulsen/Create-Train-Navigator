@@ -19,6 +19,13 @@ import de.mrjulsen.crn.event.CRNEventsManager;
 import de.mrjulsen.crn.event.events.ScheduleResetEvent;
 import de.mrjulsen.crn.event.events.SubmitTrainPredictionsEvent;
 import de.mrjulsen.crn.event.events.TrainDestinationChangedEvent;
+import de.mrjulsen.crn.util.PenaltyResult;
+import de.mrjulsen.crn.util.PenaltyResult.Category;
+import de.mrjulsen.crn.util.PenaltyResult.Type;
+import de.mrjulsen.mcdragonlib.util.MapCache;
+import de.mrjulsen.crn.data.schedule.INavigationExtension;
+import de.mrjulsen.crn.data.schedule.instruction.ICustomSuggestionsInstruction;
+import de.mrjulsen.crn.data.schedule.instruction.PrioritizedDestinationInstruction;
 
 @Mixin(ScheduleRuntime.class)
 public class ScheduleRuntimeMixin {

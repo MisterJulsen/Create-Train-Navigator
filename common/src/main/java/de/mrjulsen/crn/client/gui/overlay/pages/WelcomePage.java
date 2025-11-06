@@ -9,7 +9,7 @@ import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.crn.data.navigation.ClientRoute;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.core.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.TimeUtils;
 import net.minecraft.ChatFormatting;
@@ -40,7 +40,7 @@ public class WelcomePage extends AbstractRouteDetailsPage {
         // Title
         ModGuiIcons.TIME.render(graphics, 5, y + 3);
         long time = route.getCurrentPart().departureIn();
-        GuiUtils.drawString(graphics, font, 10 + ModGuiIcons.ICON_SIZE, y + 3 + ModGuiIcons.ICON_SIZE / 2 - font.lineHeight / 2, CustomLanguage.translate(keyDepartureIn).append(" ").append(time > 0 ? TextUtils.text(TimeUtils.parseDurationShort((int)time)) : CustomLanguage.translate(keyTimeNow)).withStyle(ChatFormatting.BOLD), 0xFFFFFFFF, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, 10 + ModGuiIcons.ICON_SIZE, y + 3 + ModGuiIcons.ICON_SIZE / 2 - font.lineHeight / 2, CustomLanguage.translate(keyDepartureIn).append(" ").append(time > 0 ? TextUtils.text(TimeUtils.parseDurationShort((int)time)) : CustomLanguage.translate(keyTimeNow)).withStyle(ChatFormatting.BOLD), 0xFFFFFFFF, ETextAlignment.LEFT, false);
         y += 5 + ModGuiIcons.ICON_SIZE;
         
         // Details
@@ -57,13 +57,13 @@ public class WelcomePage extends AbstractRouteDetailsPage {
         }
 
         ModGuiIcons.TARGET.render(graphics, 5, y + font.lineHeight / 2 - ModGuiIcons.ICON_SIZE / 2);
-        GuiUtils.drawString(graphics, font, 10 + ModGuiIcons.ICON_SIZE, y, stationText, 0xFFDBDBDB,  EAlignment.LEFT, false);
-        GuiUtils.drawString(graphics, font, width() - 5, y, platformText, endStation.isStationInfoChanged() ? Constants.COLOR_DELAYED : 0xFFDBDBDB, EAlignment.RIGHT, false);
+        GuiUtils.drawString(graphics, font, 10 + ModGuiIcons.ICON_SIZE, y, stationText, 0xFFDBDBDB,  ETextAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, width() - 5, y, platformText, endStation.isStationInfoChanged() ? Constants.COLOR_DELAYED : 0xFFDBDBDB, ETextAlignment.RIGHT, false);
         ModGuiIcons.INFO.render(graphics, 5, y + detailsLineHeight + font.lineHeight / 2 - ModGuiIcons.ICON_SIZE / 2);
         GuiUtils.drawString(graphics, font, 10 + ModGuiIcons.ICON_SIZE, y + detailsLineHeight, TextUtils.text(String.format("%s %s | %s",
             route.getTransferCount(),
             CustomLanguage.translate(keyTransferCount).getString(),
             TimeUtils.parseDurationShort((int)route.travelTime())
-        )), 0xFFDBDBDB, EAlignment.LEFT, false);
+        )), 0xFFDBDBDB, ETextAlignment.LEFT, false);
     }
 }

@@ -38,7 +38,7 @@ import de.mrjulsen.mcdragonlib.client.render.DynamicGuiRenderer.AreaStyle;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiAreaDefinition;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.core.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.accessor.DataAccessor;
@@ -364,7 +364,7 @@ public class NavigatorScreen extends AbstractNavigatorScreen {
         if (fixedStartStation == null) {            
             CreateDynamicWidgets.renderTextBox(graphics, guiLeft + 32, guiTop + 20, 159);
         } else {
-            GuiUtils.drawString(graphics, font, guiLeft + 32, guiTop + 25, TextUtils.text(fixedStartStation).withStyle(ChatFormatting.BOLD), 0xFFFFFFFF, EAlignment.LEFT, true);
+            GuiUtils.drawString(graphics, font, guiLeft + 32, guiTop + 25, TextUtils.text(fixedStartStation).withStyle(ChatFormatting.BOLD), 0xFFFFFFFF, ETextAlignment.LEFT, true);
         }
         CreateDynamicWidgets.renderTextBox(graphics, guiLeft + 32, guiTop + 42, 159);
         GuiUtils.drawTexture(CRNGui.GUI, graphics, guiLeft + 16, guiTop + 16, 7, 24, 0, 30, 7, 24, CRNGui.GUI_WIDTH, CRNGui.GUI_HEIGHT);

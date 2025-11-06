@@ -10,7 +10,7 @@ import de.mrjulsen.mcdragonlib.client.gui.widgets.DLAbstractScrollBar;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLScrollableWidgetContainer;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.core.ETextAlignment;
 import de.mrjulsen.mcdragonlib.data.Pair;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.accessor.DataAccessor;
@@ -67,7 +67,7 @@ public class StationDeparturesViewer extends DLScrollableWidgetContainer {
         super.renderMainLayer(graphics, mouseX, mouseY, partialTicks);
 
         if (children().isEmpty()) {
-            GuiUtils.drawString(graphics, font, x() + width() / 2, y() + height() / 2, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".empty_list"), 0xFFDBDBDB, EAlignment.CENTER, false);
+            GuiUtils.drawString(graphics, font, x() + width() / 2, y() + height() / 2, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".empty_list"), 0xFFDBDBDB, ETextAlignment.CENTER, false);
         }
         
         GuiUtils.fillGradient(graphics, x(), y(), 0, width(), 10, 0x77000000, 0x00000000);

@@ -11,10 +11,34 @@ import de.mrjulsen.crn.data.StationTag;
 import de.mrjulsen.crn.data.TrainCategory;
 import de.mrjulsen.crn.data.TrainLine;
 import de.mrjulsen.crn.data.StationTag.StationInfo;
-import de.mrjulsen.crn.registry.ModAccessorTypes;
+import de.mrjulsen.crn.network.packets.pain.AddStationTagEntryPacketData;
+import de.mrjulsen.crn.network.packets.pain.AddStationToBlacklistPacketData;
+import de.mrjulsen.crn.network.packets.pain.AddTrainToBlacklistPacketData;
+import de.mrjulsen.crn.network.packets.pain.CreateStationTagPacketData;
+import de.mrjulsen.crn.network.packets.pain.CreateTrainCategoryPacketData;
+import de.mrjulsen.crn.network.packets.pain.CreateTrainLinePacketData;
+import de.mrjulsen.crn.network.packets.pain.DeleteStationTagPacketData;
+import de.mrjulsen.crn.network.packets.pain.DeleteTrainCategoryPacketData;
+import de.mrjulsen.crn.network.packets.pain.DeleteTrainLinePacketData;
+import de.mrjulsen.crn.network.packets.pain.GetTrainCategoryPacketData;
+import de.mrjulsen.crn.network.packets.pain.RegisterStationTagPacketData;
+import de.mrjulsen.crn.network.packets.pain.RemoveStationFromBlacklistPacketData;
+import de.mrjulsen.crn.network.packets.pain.RemoveStationTagEntryPacketData;
+import de.mrjulsen.crn.network.packets.pain.RemoveTrainFromBlacklistPacketData;
+import de.mrjulsen.crn.network.packets.pain.StationTagRequestPacketData;
+import de.mrjulsen.crn.network.packets.pain.StationTagUpdatePermissionsPacketData;
+import de.mrjulsen.crn.network.packets.pain.TrainCategoryUpdatePermissionsPacketData;
+import de.mrjulsen.crn.network.packets.pain.UpdateStationTagEntryPacketData;
+import de.mrjulsen.crn.network.packets.pain.UpdateStationTagNamePacketData;
+import de.mrjulsen.crn.network.packets.pain.UpdateTrainCategoryColorPacketData;
+import de.mrjulsen.crn.network.packets.pain.UpdateTrainCategoryNamePacketData;
+import de.mrjulsen.crn.network.packets.pain.UpdateTrainLineColorPacketData;
+import de.mrjulsen.crn.network.packets.pain.UpdateTrainLineNamePacketData;
+import de.mrjulsen.crn.network.packets.pain.UpdateTrainLinePermissionsPacketData;
+import de.mrjulsen.crn.registry.ModNetworkManager;
 import de.mrjulsen.crn.util.Owner;
-import de.mrjulsen.crn.util.Lock.PermissionsUpdateData;
-import de.mrjulsen.mcdragonlib.util.accessor.DataAccessor;
+import de.mrjulsen.mcdragonlib.network.NetworkDirection;
+import de.mrjulsen.mcdragonlib.util.DLColor;
 import net.minecraft.client.Minecraft;
 
 /**
@@ -27,134 +51,126 @@ public class GlobalSettingsClient {
     }
 
     public static void getStationTags(Consumer<Collection<StationTag>> result) {
-        DataAccessor.getFromServer(null, ModAccessorTypes.GET_ALL_STATION_TAGS, result);
+        ModNetworkManager.GET_ALL_STATION_TAGS.send(NetworkDirection.toServer(), (response) -> result.accept(response.getTags()), () -> {});
     }
 
     public static void getStationTag(String name, Consumer<StationTag> result) {
-        DataAccessor.getFromServer(name, ModAccessorTypes.GET_STATION_TAG, result);
+        ModNetworkManager.GET_STATION_TAG.send(NetworkDirection.toServer(), new StationTagRequestPacketData.Request(name), (response) -> result.accept(response.getTag()), () -> {});
     }
 
-    public static record CreateStationTagData(String name, Owner owner) {}
     public static void createStationTag(String name, Owner owner, Consumer<Optional<StationTag>> result) {
-        DataAccessor.getFromServer(new CreateStationTagData(name, owner), ModAccessorTypes.CREATE_STATION_TAG, result);
+        ModNetworkManager.CREATE_STATION_TAG.send(NetworkDirection.toServer(), new CreateStationTagPacketData.Request(name, Optional.ofNullable(owner)), (response) -> result.accept(response.getTag()), () -> {});
     }
 
     public static void registerNewStationTag(StationTag tag, Runnable callback) {
-        DataAccessor.getFromServer(tag, ModAccessorTypes.REGISTER_STATION_TAG, x -> callback.run());
+        ModNetworkManager.REGISTER_STATION_TAG.send(NetworkDirection.toServer(), new RegisterStationTagPacketData(tag), (response) -> callback.run(), () -> {});
     }
 
     public static void deleteStationTag(UUID tagId, Runnable callback) {
-        DataAccessor.getFromServer(tagId, ModAccessorTypes.DELETE_STATION_TAG, x -> callback.run());
+        ModNetworkManager.DELETE_STATION_TAG.send(NetworkDirection.toServer(), new DeleteStationTagPacketData(tagId), (response) -> callback.run(), () -> {});
     }
 
-    public static void updateStationTagPermissions(PermissionsUpdateData data, Consumer<Optional<StationTag>> callback) {
-        DataAccessor.getFromServer(data, ModAccessorTypes.UPDATE_STATION_TAG_PERMISSIONS, x -> callback.accept(x));
+    public static void updateStationTagPermissions(StationTagUpdatePermissionsPacketData.Request data, Consumer<Optional<StationTag>> callback) {
+        ModNetworkManager.UPDATE_STATION_TAG_PERMISSIONS.send(NetworkDirection.toServer(), data, (response) -> callback.accept(response.getTag()), () -> {});
     }
 
-    public static record UpdateStationTagNameData(UUID tagId, String name) {}
     public static void updateStationTagNameData(UUID tagId, String name, Runnable callback) {
-        DataAccessor.getFromServer(new UpdateStationTagNameData(tagId, name), ModAccessorTypes.UPDATE_STATION_TAG_NAME, x -> callback.run());
+        ModNetworkManager.UPDATE_STATION_TAG_NAME.send(NetworkDirection.toServer(), new UpdateStationTagNamePacketData(tagId, name), (response) -> callback.run(), () -> {});
     }
 
-    public static record AddStationTagEntryData(UUID tagId, String station, StationInfo info) {}
     public static void addStationTagEntry(UUID tagId, String station, StationInfo info, Consumer<Optional<StationTag>> callback) {
-        DataAccessor.getFromServer(new AddStationTagEntryData(tagId, station, info), ModAccessorTypes.ADD_STATION_TAG_ENTRY, callback);
+        ModNetworkManager.ADD_STATION_TAG_ENTRY.send(NetworkDirection.toServer(), new AddStationTagEntryPacketData.Request(tagId, station, info), (response) -> callback.accept(response.getTag()), () -> {});
     }
 
     public static void updateStationTagEntry(UUID tagId, String station, StationInfo info, Consumer<Optional<StationTag>> callback) {
-        DataAccessor.getFromServer(new AddStationTagEntryData(tagId, station, info), ModAccessorTypes.UPDATE_STATION_TAG_ENTRY, callback);
+        ModNetworkManager.UPDATE_STATION_TAG_ENTRY.send(NetworkDirection.toServer(), new UpdateStationTagEntryPacketData.Request(tagId, station, info), (response) -> callback.accept(response.getTag()), () -> {});
     }
 
-    public static record RemoveStationTagEntryData(UUID tagId, String station) {}
     public static void removeStationTagEntry(UUID tagId, String station, Consumer<Optional<StationTag>> callback) {
-        DataAccessor.getFromServer(new RemoveStationTagEntryData(tagId, station), ModAccessorTypes.REMOVE_STATION_TAG_ENTRY, callback);
+        ModNetworkManager.REMOVE_STATION_TAG_ENTRY.send(NetworkDirection.toServer(), new RemoveStationTagEntryPacketData.Request(tagId, station), (response) -> callback.accept(response.getTag()), () -> {});
     }
 
 
     
     public static void getTrainCategories(Consumer<List<TrainCategory>> result) {
-        DataAccessor.getFromServer(null, ModAccessorTypes.GET_ALL_TRAIN_CATEGORIES, result);
+        ModNetworkManager.GET_ALL_TRAIN_CATEGORIES.send(NetworkDirection.toServer(), (response) -> result.accept(response.getCategories()), () -> {});
     }
 
     public static void deleteTrainCategory(UUID id, Runnable callback) {
-        DataAccessor.getFromServer(id, ModAccessorTypes.DELETE_TRAIN_CATEGORY, x -> callback.run());
+        ModNetworkManager.DELETE_TRAIN_CATEGORY.send(NetworkDirection.toServer(), new DeleteTrainCategoryPacketData(id), (response) -> callback.run(), () -> {});
     }
 
     public static void getTrainCategory(UUID id, Runnable callback) {
-        DataAccessor.getFromServer(id, ModAccessorTypes.GET_TRAIN_CATEGORY, x -> callback.run());
+        ModNetworkManager.GET_TRAIN_CATEGORY.send(NetworkDirection.toServer(), new GetTrainCategoryPacketData.Request(id), (response) -> callback.run(), () -> {});
     }
     
-    public static record UpdateTrainCategoryColorData(UUID id, int color) {}
-    public static void updateTrainCategoryColor(UUID id, int color, Runnable callback) {
-        DataAccessor.getFromServer(new UpdateTrainCategoryColorData(id, color), ModAccessorTypes.UPDATE_TRAIN_CATEGORY_COLOR, x -> callback.run());
+    public static void updateTrainCategoryColor(UUID id, DLColor color, Runnable callback) {
+        ModNetworkManager.UPDATE_TRAIN_CATEGORY_COLOR.send(NetworkDirection.toServer(), new UpdateTrainCategoryColorPacketData(id, color), (response) -> callback.run(), () -> {});
     }
 
     public static void createTrainCategory(String name, Consumer<Optional<TrainCategory>> result) {
-        DataAccessor.getFromServer(name, ModAccessorTypes.CREATE_TRAIN_CATEGORY, result);
+        ModNetworkManager.CREATE_TRAIN_CATEGORY.send(NetworkDirection.toServer(), new CreateTrainCategoryPacketData.Request(name), (response) -> result.accept(response.getCategory()), () -> {});
     }
 
-    public static record UpdateTrainCategoryNameData(UUID id, String name) {}
     public static void updateTrainCategoryName(UUID id, String name, Consumer<Optional<TrainCategory>> callback) {
-        DataAccessor.getFromServer(new UpdateTrainCategoryNameData(id, name), ModAccessorTypes.UPDATE_TRAIN_CATEGORY_NAME, x -> callback.accept(x));
+        ModNetworkManager.UPDATE_TRAIN_CATEGORY_NAME.send(NetworkDirection.toServer(), new UpdateTrainCategoryNamePacketData.Request(id, name), (response) -> callback.accept(response.getCategory()), () -> {});
     }
 
-    public static void updateTrainCategoryPermissions(PermissionsUpdateData data, Consumer<Optional<TrainCategory>> callback) {
-        DataAccessor.getFromServer(data, ModAccessorTypes.UPDATE_TRAIN_CATEGORY_PERMISSIONS, x -> callback.accept(x));
+    public static void updateTrainCategoryPermissions(TrainCategoryUpdatePermissionsPacketData.Request data, Consumer<Optional<TrainCategory>> callback) {
+        ModNetworkManager.UPDATE_TRAIN_CATEGORY_PERMISSIONS.send(NetworkDirection.toServer(), data, (response) -> callback.accept(response.getCategory()), () -> {});
     }
 
     
     
     public static void getBlacklistedStations(Consumer<List<String>> result) {
-        DataAccessor.getFromServer(null, ModAccessorTypes.GET_BLACKLISTED_STATIONS, result);
+        ModNetworkManager.GET_ALL_BLACKLISTED_STATIONS.send(NetworkDirection.toServer(), (response) -> result.accept(response.getNames()), () -> {});
     }
 
     public static void addStationToBlacklist(String name, Consumer<Collection<String>> result) {
-        DataAccessor.getFromServer(name, ModAccessorTypes.ADD_STATION_TO_BLACKLIST, result);
+        ModNetworkManager.ADD_STATION_TO_BLACKLIST.send(NetworkDirection.toServer(), new AddStationToBlacklistPacketData.Request(name), (response) -> result.accept(response.getNames()), () -> {});
     }
 
     public static void removeStationFromBlacklist(String name, Consumer<Collection<String>> result) {
-        DataAccessor.getFromServer(name, ModAccessorTypes.REMOVE_STATION_FROM_BLACKLIST, result);
+        ModNetworkManager.REMOVE_STATION_FROM_BLACKLIST.send(NetworkDirection.toServer(), new RemoveStationFromBlacklistPacketData.Request(name), (response) -> result.accept(response.getNames()), () -> {});
     }
     
 
 
     public static void getBlacklistedTrains(Consumer<List<String>> result) {
-        DataAccessor.getFromServer(null, ModAccessorTypes.GET_BLACKLISTED_TRAINS, result);
+        ModNetworkManager.GET_ALL_BLACKLISTED_TRAINS.send(NetworkDirection.toServer(), (response) -> result.accept(response.getNames()), () -> {});
     }
 
     public static void addTrainToBlacklist(String name, Consumer<Collection<String>> result) {
-        DataAccessor.getFromServer(name, ModAccessorTypes.ADD_TRAIN_TO_BLACKLIST, result);
+        ModNetworkManager.ADD_TRAIN_TO_BLACKLIST.send(NetworkDirection.toServer(), new AddTrainToBlacklistPacketData.Request(name), (response) -> result.accept(response.getNames()), () -> {});
     }
 
     public static void removeTrainFromBlacklist(String name, Consumer<Collection<String>> result) {
-        DataAccessor.getFromServer(name, ModAccessorTypes.REMOVE_TRAIN_FROM_BLACKLIST, result);
+        ModNetworkManager.REMOVE_TRAIN_FROM_BLACKLIST.send(NetworkDirection.toServer(), new RemoveTrainFromBlacklistPacketData.Request(name), (response) -> result.accept(response.getNames()), () -> {});
     }
 
 
     
     public static void getTrainLines(Consumer<List<TrainLine>> result) {
-        DataAccessor.getFromServer(null, ModAccessorTypes.GET_ALL_TRAIN_LINES, result);
+        ModNetworkManager.GET_ALL_TRAIN_LINES.send(NetworkDirection.toServer(), (response) -> result.accept(response.getLines()), () -> {});
     }
 
     public static void deleteTrainLine(UUID id, Runnable callback) {
-        DataAccessor.getFromServer(id, ModAccessorTypes.DELETE_TRAIN_LINE, x -> callback.run());
+        ModNetworkManager.DELETE_TRAIN_LINE.send(NetworkDirection.toServer(), new DeleteTrainLinePacketData(id), (response) -> callback.run(), () -> {});
     }
     
-    public static record UpdateTrainLineColorData(UUID id, int color) {}
-    public static void updateTrainLineColor(UUID id, int color, Runnable callback) {
-        DataAccessor.getFromServer(new UpdateTrainLineColorData(id, color), ModAccessorTypes.UPDATE_TRAIN_LINE_COLOR, x -> callback.run());
+    public static void updateTrainLineColor(UUID id, DLColor color, Runnable callback) {
+        ModNetworkManager.UPDATE_TRAIN_LINE_COLOR.send(NetworkDirection.toServer(), new UpdateTrainLineColorPacketData(id, color), (response) -> callback.run(), () -> {});
     }
 
     public static void createTrainLine(String name, Consumer<Optional<TrainLine>> result) {
-        DataAccessor.getFromServer(name, ModAccessorTypes.CREATE_TRAIN_LINE, result);
+        ModNetworkManager.CREATE_TRAIN_LINE.send(NetworkDirection.toServer(), new CreateTrainLinePacketData.Request(name), (response) -> result.accept(response.getLine()), () -> {});
     }
 
-    public static void updateTrainLinePermissions(PermissionsUpdateData data, Consumer<Optional<TrainLine>> callback) {
-        DataAccessor.getFromServer(data, ModAccessorTypes.UPDATE_TRAIN_LINE_PERMISSIONS, x -> callback.accept(x));
+    public static void updateTrainLinePermissions(UpdateTrainLinePermissionsPacketData.Request data, Consumer<Optional<TrainLine>> callback) {
+        ModNetworkManager.UPDATE_TRAIN_LINE_PERMISSIONS.send(NetworkDirection.toServer(), data, (response) -> callback.accept(response.getLine()), () -> {});
     }
 
-    public static record UpdateTrainLineNameData(UUID id, String name) {}
     public static void updateTrainLineName(UUID id, String name, Consumer<Optional<TrainLine>> callback) {
-        DataAccessor.getFromServer(new UpdateTrainLineNameData(id, name), ModAccessorTypes.UPDATE_TRAIN_LINE_NAME, x -> callback.accept(x));
+        ModNetworkManager.UPDATE_TRAIN_LINE_NAME.send(NetworkDirection.toServer(), new UpdateTrainLineNamePacketData.Request(id, name), (response) -> callback.accept(response.getLine()), () -> {});
     }
 }

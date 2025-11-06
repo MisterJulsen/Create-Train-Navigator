@@ -1,7 +1,7 @@
 package de.mrjulsen.crn.block;
 
-import de.mrjulsen.mcdragonlib.data.Pair;
-import de.mrjulsen.mcdragonlib.data.Tripple;
+import de.mrjulsen.mcdragonlib.util.Pair;
+import de.mrjulsen.mcdragonlib.util.Tripple;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;

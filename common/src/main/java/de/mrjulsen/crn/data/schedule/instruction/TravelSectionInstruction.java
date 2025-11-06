@@ -17,13 +17,15 @@ import de.mrjulsen.crn.data.TrainCategory;
 import de.mrjulsen.crn.data.TrainLine;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
 import de.mrjulsen.crn.data.train.TrainData;
+import de.mrjulsen.crn.network.packets.pain.GetTrainCategoryPacketData;
+import de.mrjulsen.crn.network.packets.pain.GetTrainLinePacketData;
 import de.mrjulsen.crn.data.train.ScheduleSection;
 import de.mrjulsen.crn.data.train.TrainListener;
-import de.mrjulsen.crn.registry.ModAccessorTypes;
 import de.mrjulsen.crn.registry.ModBlocks;
+import de.mrjulsen.crn.registry.ModNetworkManager;
+import de.mrjulsen.mcdragonlib.network.NetworkDirection;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
-import de.mrjulsen.mcdragonlib.util.accessor.DataAccessor;
 import net.createmod.catnip.data.Pair;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
@@ -93,20 +95,22 @@ public class TravelSectionInstruction extends ScheduleInstruction implements IPr
         this.lastCategoryId = null;
         this.category = null;
         if (categoryId == null) return;
-        DataAccessor.getFromServer(categoryId, ModAccessorTypes.GET_TRAIN_CATEGORY, category -> {
+        
+        ModNetworkManager.GET_TRAIN_CATEGORY.send(NetworkDirection.toServer(), new GetTrainCategoryPacketData.Request(categoryId), (response) -> {
             this.lastCategoryId = categoryId;
-            this.category = category.orElse(null);
-        });
+            this.category = response.getCategory().orElse(null);
+        }, () -> {});
     }
 
     private void requestLine(UUID lineId) {
         this.lastLineId = null;
         this.line = null;
         if (lineId == null) return;
-        DataAccessor.getFromServer(lineId, ModAccessorTypes.GET_TRAIN_LINE, line -> {
+        
+        ModNetworkManager.GET_TRAIN_LINE.send(NetworkDirection.toServer(), new GetTrainLinePacketData.Request(lineId), (response) -> {
             this.lastLineId = lineId;
-            this.line = line.orElse(null);            
-        });
+            this.line = response.getLine().orElse(null);
+        }, () -> {});
     }
 
     @Override

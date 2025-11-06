@@ -22,7 +22,7 @@ import de.mrjulsen.mcdragonlib.client.render.DynamicGuiRenderer.AreaStyle;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiAreaDefinition;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.core.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
@@ -78,9 +78,9 @@ public class StationDeparturesWidget extends DLButton implements AutoCloseable {
         }
 
         if (route.isAnyCancelled()) {
-            GuiUtils.drawString(graphics, font, (int)((x() + width() - 5) / scale), (int)((y() + 15) / scale), trainCanceled, Constants.COLOR_DELAYED, EAlignment.RIGHT, false);
+            GuiUtils.drawString(graphics, font, (int)((x() + width() - 5) / scale), (int)((y() + 15) / scale), trainCanceled, Constants.COLOR_DELAYED, ETextAlignment.RIGHT, false);
         } else if (route.getStart().isDeparted()) {
-            GuiUtils.drawString(graphics, font, (int)((x() + width() - 5) / scale), (int)((y() + 15) / scale), connectionInPast, Constants.COLOR_DELAYED, EAlignment.RIGHT, false);
+            GuiUtils.drawString(graphics, font, (int)((x() + width() - 5) / scale), (int)((y() + 15) / scale), connectionInPast, Constants.COLOR_DELAYED, ETextAlignment.RIGHT, false);
         }
 
         CreateDynamicWidgets.renderTextHighlighted(graphics, 30, 6, font, trainName, currentStop.getTrainDisplayColor());
@@ -93,13 +93,13 @@ public class StationDeparturesWidget extends DLButton implements AutoCloseable {
             stationText = TextUtils.text(font.substrByWidth(stationText, maxStationNameWidth).getString()).append(TextUtils.text("...")).withStyle(stationText.getStyle());
         }
 
-        GuiUtils.drawString(graphics, font, x() + (int)((45 + font.width(trainName)) * scale), y() + 6, stationText, 0xFFFFFF, EAlignment.LEFT, false);
-        GuiUtils.drawString(graphics, font, x() + width() - 6, y() + 20, platformText, 0xFFFFFFFF, EAlignment.RIGHT, false);
-        GuiUtils.drawString(graphics, font, x() + (int)(30 * scale), y() + 20, ModUtils.formatTime(arrival ? route.getStart().getScheduledArrivalTime() : route.getStart().getScheduledDepartureTime(), false), 0xFFFFFF, EAlignment.LEFT, false);
-        GuiUtils.drawString(graphics, font, x() + (int)(30 * scale) + 40, y() + 20, ModUtils.formatTime(arrival ? route.getStart().getRealTimeArrivalTime() : route.getStart().getRealTimeDepartureTime(), false), (arrival ? route.getStart().isArrivalDelayed() : route.getStart().isDepartureDelayed()) ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, x() + (int)((45 + font.width(trainName)) * scale), y() + 6, stationText, 0xFFFFFF, ETextAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, x() + width() - 6, y() + 20, platformText, 0xFFFFFFFF, ETextAlignment.RIGHT, false);
+        GuiUtils.drawString(graphics, font, x() + (int)(30 * scale), y() + 20, ModUtils.formatTime(arrival ? route.getStart().getScheduledArrivalTime() : route.getStart().getScheduledDepartureTime(), false), 0xFFFFFF, ETextAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, x() + (int)(30 * scale) + 40, y() + 20, ModUtils.formatTime(arrival ? route.getStart().getRealTimeArrivalTime() : route.getStart().getRealTimeDepartureTime(), false), (arrival ? route.getStart().isArrivalDelayed() : route.getStart().isDepartureDelayed()) ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME, ETextAlignment.LEFT, false);
         
         
-        //GuiUtils.drawString(graphics, font, x() + 6, y() + 5, route.getStart().getTag().getTagName().get(), 0xFFFFFFFF, EAlignment.LEFT, false);
+        //GuiUtils.drawString(graphics, font, x() + 6, y() + 5, route.getStart().getTag().getTagName().get(), 0xFFFFFFFF, ETextAlignment.LEFT, false);
 
     }
 

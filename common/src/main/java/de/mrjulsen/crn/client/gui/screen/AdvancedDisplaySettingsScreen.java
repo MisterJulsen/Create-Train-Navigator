@@ -31,7 +31,7 @@ import de.mrjulsen.crn.client.gui.widgets.IconSlotWidget;
 import de.mrjulsen.crn.client.gui.widgets.ModernVerticalScrollBar;
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
 import de.mrjulsen.crn.client.gui.widgets.modular.ModularWidgetContainer;
-import de.mrjulsen.crn.network.packets.cts.AdvancedDisplayUpdatePacket;
+import de.mrjulsen.crn.network.packets.cts.AdvancedDisplayUpdatePacketData;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.gui.DLScreen;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLAbstractImageButton.ButtonType;
@@ -44,7 +44,7 @@ import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiAreaDefinition;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import de.mrjulsen.mcdragonlib.config.ECachingPriority;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.core.ETextAlignment;
 import de.mrjulsen.mcdragonlib.data.Cache;
 import de.mrjulsen.mcdragonlib.data.Clipboard;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
@@ -139,7 +139,7 @@ public class AdvancedDisplaySettingsScreen extends DLScreen {
 
     @Override
     public void onClose() {
-        CreateRailwaysNavigator.net().CHANNEL.sendToServer(new AdvancedDisplayUpdatePacket(level, pos, contraption, typeKey, doubleSided, settings));
+        CreateRailwaysNavigator.net().CHANNEL.sendToServer(new AdvancedDisplayUpdatePacketData(level, pos, contraption, typeKey, doubleSided, settings));
         super.onClose();
     }
 
@@ -312,7 +312,7 @@ public class AdvancedDisplaySettingsScreen extends DLScreen {
             }
         ));
         expandCollapseBtn.setMessage(textAdvancedSettings(expandCollapseBtn.width() - ModGuiIcons.ICON_SIZE - 6));
-        expandCollapseBtn.setTextAlignment(EAlignment.LEFT);
+        expandCollapseBtn.setTextAlignment(ETextAlignment.LEFT);
         expandCollapseBtn.setBackColor(0);
         expandCollapseBtn.setFontColor(DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE);
         
@@ -359,7 +359,7 @@ public class AdvancedDisplaySettingsScreen extends DLScreen {
         int commonHeight = commonSettingsContainer.getHeight() + 4;
         CreateDynamicWidgets.renderContainer(graphics, workingArea.getX(), workingArea.getY() - 1, workingArea.getWidth(), commonHeight, ContainerColor.PURPLE);
         CreateDynamicWidgets.renderContainer(graphics, workingArea.getX(), workingArea.getY() - 2 + commonHeight, workingArea.getWidth(), workingArea.getHeight() - commonHeight + 3, ContainerColor.GRAY);
-        GuiUtils.drawString(graphics, shadowlessFont, guiLeft + 6, guiTop + 4, title, DragonLib.NATIVE_UI_FONT_COLOR, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, shadowlessFont, guiLeft + 6, guiTop + 4, title, DragonLib.NATIVE_UI_FONT_COLOR, ETextAlignment.LEFT, false);
 
         super.renderMainLayer(graphics, pMouseX, pMouseY, pPartialTick);
 

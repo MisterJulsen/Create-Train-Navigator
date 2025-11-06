@@ -12,7 +12,7 @@ import de.mrjulsen.crn.data.ISavableNavigatorData;
 import de.mrjulsen.crn.data.train.TrainStop;
 import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.DragonLib;
-import de.mrjulsen.mcdragonlib.data.Cache;
+import de.mrjulsen.mcdragonlib.util.Cache;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.TimeUtils;
 import net.minecraft.ChatFormatting;

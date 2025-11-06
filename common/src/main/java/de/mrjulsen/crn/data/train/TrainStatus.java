@@ -17,9 +17,10 @@ import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.exceptions.RuntimeSideException;
-import de.mrjulsen.mcdragonlib.client.util.Graphics;
+import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.data.Single;
+import de.mrjulsen.mcdragonlib.util.DLColor;
+import de.mrjulsen.mcdragonlib.util.Holder;
 import dev.architectury.platform.Platform;
 import dev.architectury.utils.Env;
 import net.minecraft.ChatFormatting;
@@ -118,15 +119,15 @@ public class TrainStatus {
         }
             */
 
-        public int render(Graphics graphics, Single<Font> font, int x, int y, int maxWidth) {
+        public int render(DLGuiGraphics graphics, Holder<Font> font, int x, int y, int maxWidth) {
             final int color = type().getColor();
             final float scale = 0.75f;
             graphics.poseStack().pushPose();
             graphics.poseStack().translate(x, y, 0);
-            GuiUtils.setTint(color);
+            GuiUtils.setTint(DLColor.fromInt(color));
             ModGuiIcons.IMPORTANT.render(graphics, -4, -3);
             graphics.poseStack().scale(scale, scale, 1);
-            int height = (int)(ClientWrapper.renderMultilineLabelSafe(graphics, (int)(10 / scale), (int)(2 / scale), font.getFirst(), text(), (int)(maxWidth / scale), color) * scale);
+            int height = (int)(ClientWrapper.renderMultilineLabelSafe(graphics, (int)(10 / scale), (int)(2 / scale), font.get(), text(), (int)(maxWidth / scale), color) * scale);
             graphics.poseStack().popPose();
             
             return Math.max(HEIGHT, height + 2);

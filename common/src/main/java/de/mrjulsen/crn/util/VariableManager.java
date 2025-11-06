@@ -5,15 +5,18 @@ import java.util.function.Supplier;
 
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.mcdragonlib.DragonLib;
-import de.mrjulsen.mcdragonlib.util.TimeUtils;
+import de.mrjulsen.mcdragonlib.util.time.ConfiguredTimeSystem;
+import de.mrjulsen.mcdragonlib.util.time.DLTime;
+import de.mrjulsen.mcdragonlib.util.time.TimeContext;
 
 public class VariableManager {
 
     private static final Map<String, Supplier<String>> variables = Map.ofEntries(
-        Map.entry("time", () -> TimeUtils.parseTime(DragonLib.getCurrentWorldTime() + DragonLib.daytimeShift(), ModClientConfig.TIME_FORMAT.get()))
+        Map.entry("time", () -> DLTime.fromTicks(DragonLib.getCurrentWorldTime(), new ConfiguredTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME))
     );
 
     public static String replacePlaceholders(String text) {
+        
         StringBuilder result = new StringBuilder();
         int length = text.length();
 

@@ -30,7 +30,7 @@ import de.mrjulsen.mcdragonlib.client.gui.widgets.DLTooltip;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiAreaDefinition;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.core.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.createmod.catnip.gui.element.GuiGameElement;
 import net.minecraft.Util;
@@ -270,7 +270,7 @@ public class TrainSeparationSettingsScreen extends DLScreen {
 
         int commonHeight = commonSettingsContainer.getHeight() + 4;
         CreateDynamicWidgets.renderContainer(graphics, workingArea.getX(), workingArea.getY() - 1, workingArea.getWidth(), commonHeight, ContainerColor.PURPLE);
-        GuiUtils.drawString(graphics, font, guiLeft + 6, guiTop + 4, title, DragonLib.NATIVE_UI_FONT_COLOR, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, guiLeft + 6, guiTop + 4, title, DragonLib.NATIVE_UI_FONT_COLOR, ETextAlignment.LEFT, false);
         
         
         GuiUtils.drawTexture(CRNGui.GUI, graphics, guiLeft + GUI_WIDTH - 3, guiTop + GUI_HEIGHT - 24, 11, 18, 0, 12, CRNGui.GUI_WIDTH, CRNGui.GUI_HEIGHT);

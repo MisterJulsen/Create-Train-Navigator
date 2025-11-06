@@ -5,7 +5,7 @@ import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.data.navigation.ClientRoute;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.core.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.ChatFormatting;
@@ -48,7 +48,7 @@ public class JourneyCompletedPage extends AbstractRouteDetailsPage {
         int y = 3;
         // Title
         ModGuiIcons.CHECK.render(graphics, 5, y);
-        GuiUtils.drawString(graphics, font, 10 + ModGuiIcons.ICON_SIZE, y + ModGuiIcons.ICON_SIZE / 2 - font.lineHeight / 2, TextUtils.translate(keyJourneyCompleted).withStyle(ChatFormatting.BOLD), Constants.COLOR_ON_TIME, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, 10 + ModGuiIcons.ICON_SIZE, y + ModGuiIcons.ICON_SIZE / 2 - font.lineHeight / 2, TextUtils.translate(keyJourneyCompleted).withStyle(ChatFormatting.BOLD), Constants.COLOR_ON_TIME, ETextAlignment.LEFT, false);
         y += 5 + ModGuiIcons.ICON_SIZE;
         
         // Details

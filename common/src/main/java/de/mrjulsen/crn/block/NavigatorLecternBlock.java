@@ -1,6 +1,5 @@
 package de.mrjulsen.crn.block;
 
-import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.api.schematic.requirement.SpecialBlockItemRequirement;
 import com.simibubi.create.content.schematics.requirement.ItemRequirement;
 import com.simibubi.create.foundation.block.IBE;

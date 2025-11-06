@@ -27,7 +27,7 @@ import de.mrjulsen.mcdragonlib.client.render.DynamicGuiRenderer.AreaStyle;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiAreaDefinition;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.core.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.TimeUtils;
 import net.minecraft.client.Minecraft;
@@ -126,7 +126,7 @@ public class RouteWidget extends DLButton implements ITickable {
         float localScale = shadowlessFont.width(summary) > WIDTH - 12 ? scale : 1;
         graphics.poseStack().pushPose();
         graphics.poseStack().scale(localScale, 1, 1);
-        GuiUtils.drawString(graphics, minecraft.font, (int)((x() + 6) / localScale), y() + 5, summary, 0xFFFFFF, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, minecraft.font, (int)((x() + 6) / localScale), y() + 5, summary, 0xFFFFFF, ETextAlignment.LEFT, false);
         graphics.poseStack().popPose();
 
         int routePartWidth = DISPLAY_WIDTH / parts.size();
@@ -147,22 +147,22 @@ public class RouteWidget extends DLButton implements ITickable {
             int color = parts.get(i).getFirstStop().getTrainDisplayColor();
             int fontColor = ModGuiUtils.useWhiteOrBlackForeColor(color) ? 0xFFFFFFFF: 0xFF000000;
             Component trainName = GuiUtils.ellipsisString(font, TextUtils.text(parts.get(i).getFirstStop().getTrainDisplayName()), (int)((routePartWidth - 10) / 0.75f));
-            GuiUtils.drawString(graphics, font, (int)((x() + 5 + (i * routePartWidth) + (routePartWidth / 2)) / 0.75f), (int)((y() + 30) / 0.75f), trainName, fontColor, EAlignment.CENTER, false);
+            GuiUtils.drawString(graphics, font, (int)((x() + 5 + (i * routePartWidth) + (routePartWidth / 2)) / 0.75f), (int)((y() + 30) / 0.75f), trainName, fontColor, ETextAlignment.CENTER, false);
         }
 
-        GuiUtils.drawString(graphics, font, (int)((x() + 6) / scale), (int)((y() + 43) / scale), TextUtils.text(route.getStart().getRealTimeStationTag().tagName()), 0xDBDBDB, EAlignment.LEFT, false);
-        GuiUtils.drawString(graphics, font, (int)((x() + WIDTH - 6) / scale) - textW, (int)((y() + 43) / scale), TextUtils.text(endStationName), 0xDBDBDB, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, (int)((x() + 6) / scale), (int)((y() + 43) / scale), TextUtils.text(route.getStart().getRealTimeStationTag().tagName()), 0xDBDBDB, ETextAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, (int)((x() + WIDTH - 6) / scale) - textW, (int)((y() + 43) / scale), TextUtils.text(endStationName), 0xDBDBDB, ETextAlignment.LEFT, false);
         if (route.getStart().shouldRenderRealTime()) {
-            GuiUtils.drawString(graphics, font, (int)((x() + 6 + font.width(timeStart) * localScale / 2.0f) / scale) - font.width(timeStart) / 2, (int)((y() + 15) / scale), TextUtils.text(TimeUtils.parseTime((int)((route.getStart().getScheduledDepartureTime() + (route.getStart().getDepartureTimeDeviation() / precision * precision)) % 24000 + DragonLib.daytimeShift()), ModClientConfig.TIME_FORMAT.get())), route.getStart().isDepartureDelayed() ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME, EAlignment.LEFT, false);
+            GuiUtils.drawString(graphics, font, (int)((x() + 6 + font.width(timeStart) * localScale / 2.0f) / scale) - font.width(timeStart) / 2, (int)((y() + 15) / scale), TextUtils.text(TimeUtils.parseTime((int)((route.getStart().getScheduledDepartureTime() + (route.getStart().getDepartureTimeDeviation() / precision * precision)) % 24000 + DragonLib.daytimeShift()), ModClientConfig.TIME_FORMAT.get())), route.getStart().isDepartureDelayed() ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME, ETextAlignment.LEFT, false);
         }
         if (route.getEnd().shouldRenderRealTime()) {
-            GuiUtils.drawString(graphics, font, (int)((x() + 6 + font.width(timeEnd) * localScale * 1.5f + (font.width(dash)) * localScale) / scale) - font.width(timeEnd) / 2, (int)((y() + 15) / scale), TextUtils.text(TimeUtils.parseTime((int)((route.getEnd().getScheduledArrivalTime() + (route.getEnd().getArrivalTimeDeviation() / precision * precision)) % 24000 + DragonLib.daytimeShift()), ModClientConfig.TIME_FORMAT.get())), route.getEnd().isArrivalDelayed() ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME, EAlignment.LEFT, false);
+            GuiUtils.drawString(graphics, font, (int)((x() + 6 + font.width(timeEnd) * localScale * 1.5f + (font.width(dash)) * localScale) / scale) - font.width(timeEnd) / 2, (int)((y() + 15) / scale), TextUtils.text(TimeUtils.parseTime((int)((route.getEnd().getScheduledArrivalTime() + (route.getEnd().getArrivalTimeDeviation() / precision * precision)) % 24000 + DragonLib.daytimeShift()), ModClientConfig.TIME_FORMAT.get())), route.getEnd().isArrivalDelayed() ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME, ETextAlignment.LEFT, false);
         }
 
         if (route.isAnyCancelled()) {
-            GuiUtils.drawString(graphics, shadowlessFont, (int)((x() + WIDTH - 5) / scale), (int)((y() + 15) / scale), trainCanceled, Constants.COLOR_DELAYED, EAlignment.RIGHT, false);
+            GuiUtils.drawString(graphics, shadowlessFont, (int)((x() + WIDTH - 5) / scale), (int)((y() + 15) / scale), trainCanceled, Constants.COLOR_DELAYED, ETextAlignment.RIGHT, false);
         } else if (route.getStart().isDeparted()) {
-            GuiUtils.drawString(graphics, shadowlessFont, (int)((x() + WIDTH - 5) / scale), (int)((y() + 15) / scale), connectionInPast, Constants.COLOR_DELAYED, EAlignment.RIGHT, false);
+            GuiUtils.drawString(graphics, shadowlessFont, (int)((x() + WIDTH - 5) / scale), (int)((y() + 15) / scale), connectionInPast, Constants.COLOR_DELAYED, ETextAlignment.RIGHT, false);
         }
 
         graphics.poseStack().popPose();

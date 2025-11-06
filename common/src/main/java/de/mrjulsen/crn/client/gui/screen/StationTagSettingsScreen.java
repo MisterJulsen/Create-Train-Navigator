@@ -44,7 +44,7 @@ import de.mrjulsen.mcdragonlib.client.gui.widgets.DLTooltip;
 import de.mrjulsen.mcdragonlib.client.render.Sprite;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiAreaDefinition;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.core.ETextAlignment;
 import de.mrjulsen.mcdragonlib.data.Pair;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.MathUtils;
@@ -167,7 +167,7 @@ public class StationTagSettingsScreen extends AbstractNavigatorScreen {
                                         dlg.open(btn);
                                     });
                                 }
-                                entryWidget.addDataSection(40, (entry) -> entry.getValue().platform(), EAlignment.RIGHT,
+                                entryWidget.addDataSection(40, (entry) -> entry.getValue().platform(), ETextAlignment.RIGHT,
                                         stationTag.getOwner().isAllowed() && GlobalSettingsClient.modificationsAllowed() ? (tg, entry, newValue, refreshAction) -> {
                                             if (!newValue.isBlank() && !entry.getValue().platform().equals(newValue)) {
                                                 GlobalSettingsClient.updateStationTagEntry(tg.getId(), entry.getKey(), new StationInfo(newValue),

@@ -7,7 +7,7 @@ import de.mrjulsen.crn.data.navigation.TransferConnection;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLRenderable;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.core.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.TimeUtils;
 import net.minecraft.ChatFormatting;
@@ -44,12 +44,12 @@ public class RouteDetailsTransferWidget extends DLRenderable {
 
         if (connection.isConnectionMissed()) {
             ModGuiIcons.CROSS.render(graphics, x() + 24, y + 4);
-            GuiUtils.drawString(graphics, Minecraft.getInstance().font, x() + 28 + ModGuiIcons.ICON_SIZE + 2, y + 8, textConnectionMissed, 0xFFFFFFFF, EAlignment.LEFT, false);
+            GuiUtils.drawString(graphics, Minecraft.getInstance().font, x() + 28 + ModGuiIcons.ICON_SIZE + 2, y + 8, textConnectionMissed, 0xFFFFFFFF, ETextAlignment.LEFT, false);
         } else if (connection.isConnectionEndangered()) {
             ModGuiIcons.WARN.render(graphics, x() + 24, y + 4);
-            GuiUtils.drawString(graphics, Minecraft.getInstance().font, x() + 28 + ModGuiIcons.ICON_SIZE + 2, y + 8, textConnectionEndangered, 0xFFFFFFFF, EAlignment.LEFT, false);
+            GuiUtils.drawString(graphics, Minecraft.getInstance().font, x() + 28 + ModGuiIcons.ICON_SIZE + 2, y + 8, textConnectionEndangered, 0xFFFFFFFF, ETextAlignment.LEFT, false);
         } else {
-            GuiUtils.drawString(graphics, Minecraft.getInstance().font, x() + 32, y + 8, TextUtils.text(transferText.getString() + " " + (time < 0 ? "" : "(" + TimeUtils.parseDuration(time) + ")")), 0xFFFFFF, EAlignment.LEFT, false);
+            GuiUtils.drawString(graphics, Minecraft.getInstance().font, x() + 32, y + 8, TextUtils.text(transferText.getString() + " " + (time < 0 ? "" : "(" + TimeUtils.parseDuration(time) + ")")), 0xFFFFFF, ETextAlignment.LEFT, false);
         }
     }    
 }

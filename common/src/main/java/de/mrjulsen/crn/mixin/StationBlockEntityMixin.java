@@ -2,8 +2,6 @@ package de.mrjulsen.crn.mixin;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import com.simibubi.create.foundation.utility.CreateLang;
 import org.spongepowered.asm.mixin.Mixin;
@@ -11,13 +9,17 @@ import org.spongepowered.asm.mixin.Mixin;
 import com.simibubi.create.content.trains.station.StationBlockEntity;
 
 import de.mrjulsen.crn.CRNPlatformSpecific;
+import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.data.train.DepartureHistory;
-import de.mrjulsen.crn.registry.ModAccessorTypes;
-import de.mrjulsen.mcdragonlib.DragonLib;
+import de.mrjulsen.crn.network.packets.pain.GetStationDepartureHistoryPacketData;
+import de.mrjulsen.crn.registry.ModNetworkManager;
+import de.mrjulsen.mcdragonlib.network.NetworkDirection;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
-import de.mrjulsen.mcdragonlib.util.TimeUtils;
-import de.mrjulsen.mcdragonlib.util.accessor.DataAccessor;
+import de.mrjulsen.mcdragonlib.util.time.DLTime;
+import de.mrjulsen.mcdragonlib.util.time.TimeContext;
+import de.mrjulsen.mcdragonlib.util.time.VanillaTimeSystem;
+import de.mrjulsen.mcdragonlib.util.time.format.TimeFormatDigitalDuration;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
@@ -41,7 +43,9 @@ public class StationBlockEntityMixin implements IHaveGoggleInformation {
         }
 
         if (Minecraft.getInstance().level.getGameTime() % 100 == 0) {
-            DataAccessor.getFromServer(CRNPlatformSpecific.getStationFromBlockEntity(self()).name, ModAccessorTypes.GET_STATION_DEPARTURE_HISTORY, x -> this.stats = x);
+            ModNetworkManager.GET_STATIONDEPARTURE_HISTORY.send(NetworkDirection.toServer(), new GetStationDepartureHistoryPacketData.Request(CRNPlatformSpecific.getStationFromBlockEntity(self()).name), (response) -> {
+                this.stats = response.getHistory();
+            }, () -> {});
         }
         
         CreateLang.builder(CreateRailwaysNavigator.MOD_ID)
@@ -149,10 +153,10 @@ public class StationBlockEntityMixin implements IHaveGoggleInformation {
     }
 
     private MutableComponent formatTime(long ticks) {
-
-        return TextUtils.text(Minecraft.getInstance().player.isShiftKeyDown() ?
-            TimeUtils.parseDurationShort(ticks) :
-            TimeUtils.formatDurationMs(TimeUnit.SECONDS.toMillis((long)(ticks / DragonLib.mcTps())))
+        DLTime time = DLTime.fromTicks(ticks, VanillaTimeSystem.INSTANCE);
+        return TextUtils.text(Minecraft.getInstance().player.isShiftKeyDown()
+            ? time.format(new TimeFormatDigitalDuration(Constants.NULL_TIME, false, false, true, true, false), TimeContext.INGAME)
+            : time.format(new TimeFormatDigitalDuration(Constants.NULL_TIME, false, true, true, true, false), TimeContext.REAL)
         ).withStyle(ChatFormatting.AQUA);
     }
 }

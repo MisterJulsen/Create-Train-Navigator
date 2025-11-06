@@ -13,7 +13,7 @@ import de.mrjulsen.mcdragonlib.client.render.DynamicGuiRenderer.AreaStyle;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiAreaDefinition;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.core.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 
 public class SimpleDataListEntry<T, S> extends AbstractDataListEntry<T, S, SimpleDataListEntry.DisplayableDataSectionDefinition<T, S>> {  
@@ -30,7 +30,7 @@ public class SimpleDataListEntry<T, S> extends AbstractDataListEntry<T, S, Simpl
      * @param displayName The display text of the section.
      * @param onEdit Called when editing this value. {@code null} if this value should not be editable.
      */
-    public void addDataSection(int width, Function<S, String> displayName, EAlignment alignment, DataListEntryEditContext<T, S> onEdit) {
+    public void addDataSection(int width, Function<S, String> displayName, ETextAlignment alignment, DataListEntryEditContext<T, S> onEdit) {
         createSection(new DisplayableDataSectionDefinition<>(getCurrentSectionsXOffset(), width, displayName.apply(data), alignment, onEdit));
     }
 
@@ -106,14 +106,14 @@ public class SimpleDataListEntry<T, S> extends AbstractDataListEntry<T, S, Simpl
         CreateDynamicWidgets.renderTextSlotOverlay(graphics, area.getX(), area.getY(), area.getWidth(), area.getHeight());
         switch (section.alignment) {
             case RIGHT:
-                GuiUtils.drawString(graphics, font, area.getX() + area.getWidth() - TEXT_OFFSET, area.getY() + area.getHeight() / 2 - font.lineHeight / 2, GuiUtils.ellipsisString(font, TextUtils.text(section.displayName), area.getWidth() - TEXT_OFFSET * 2), DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, EAlignment.RIGHT, false);
+                GuiUtils.drawString(graphics, font, area.getX() + area.getWidth() - TEXT_OFFSET, area.getY() + area.getHeight() / 2 - font.lineHeight / 2, GuiUtils.ellipsisString(font, TextUtils.text(section.displayName), area.getWidth() - TEXT_OFFSET * 2), DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, ETextAlignment.RIGHT, false);
                 break;
             case CENTER:
-                GuiUtils.drawString(graphics, font, area.getX() + TEXT_OFFSET + (area.getWidth() - TEXT_OFFSET * 2) / 2, area.getY() + area.getHeight() / 2 - font.lineHeight / 2, GuiUtils.ellipsisString(font, TextUtils.text(section.displayName), area.getWidth() - TEXT_OFFSET * 2), DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, EAlignment.CENTER, false);
+                GuiUtils.drawString(graphics, font, area.getX() + TEXT_OFFSET + (area.getWidth() - TEXT_OFFSET * 2) / 2, area.getY() + area.getHeight() / 2 - font.lineHeight / 2, GuiUtils.ellipsisString(font, TextUtils.text(section.displayName), area.getWidth() - TEXT_OFFSET * 2), DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, ETextAlignment.CENTER, false);
                 break;
             default:
             case LEFT:
-                GuiUtils.drawString(graphics, font, area.getX() + TEXT_OFFSET, area.getY() + area.getHeight() / 2 - font.lineHeight / 2, GuiUtils.ellipsisString(font, TextUtils.text(section.displayName), area.getWidth() - TEXT_OFFSET * 2), DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, EAlignment.LEFT, false);
+                GuiUtils.drawString(graphics, font, area.getX() + TEXT_OFFSET, area.getY() + area.getHeight() / 2 - font.lineHeight / 2, GuiUtils.ellipsisString(font, TextUtils.text(section.displayName), area.getWidth() - TEXT_OFFSET * 2), DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, ETextAlignment.LEFT, false);
                 break;
         }
     }
@@ -121,7 +121,7 @@ public class SimpleDataListEntry<T, S> extends AbstractDataListEntry<T, S, Simpl
     @Override
     protected void renderMainSection(Graphics graphics, int mouseX, int mouseY, float partialTicks, String text, GuiAreaDefinition area) {
         CreateDynamicWidgets.renderTextSlotOverlay(graphics, area.getX(), area.getY(), area.getWidth(), area.getHeight());
-        GuiUtils.drawString(graphics, font, area.getX() + TEXT_OFFSET, area.getY() + area.getHeight() / 2 - font.lineHeight / 2, GuiUtils.ellipsisString(font, TextUtils.text(text), area.getWidth() - TEXT_OFFSET * 2), DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, area.getX() + TEXT_OFFSET, area.getY() + area.getHeight() / 2 - font.lineHeight / 2, GuiUtils.ellipsisString(font, TextUtils.text(text), area.getWidth() - TEXT_OFFSET * 2), DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, ETextAlignment.LEFT, false);
     }
 
     
@@ -133,10 +133,10 @@ public class SimpleDataListEntry<T, S> extends AbstractDataListEntry<T, S, Simpl
 
     public static class DisplayableDataSectionDefinition<T, S> extends AbstractDataSectionDefinition<T, S> {
         private final String displayName;
-        private final EAlignment alignment;
+        private final ETextAlignment alignment;
         private final DataListEntryEditContext<T, S> onEdit;
 
-        public DisplayableDataSectionDefinition(int xOffset, int width, String displayName, EAlignment alignment, DataListEntryEditContext<T, S> onEdit) {
+        public DisplayableDataSectionDefinition(int xOffset, int width, String displayName, ETextAlignment alignment, DataListEntryEditContext<T, S> onEdit) {
             super(xOffset, width);
             this.displayName = displayName;
             this.alignment = alignment;

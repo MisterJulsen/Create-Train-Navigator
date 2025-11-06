@@ -24,7 +24,7 @@ subprojects {
 
     repositories {
         maven { url = "file://${System.getProperty('user.home')}/.m2/github/modsrepo/maven" } // Local
-        maven { url = "https://raw.githubusercontent.com/MisterJulsen/modsrepo/main/maven" } // DragonLib
+        maven { url = "https://maven.mrjulsen.net" } // DragonLib
         maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" } // Forge Config API
         maven { url = "https://maven.parchmentmc.org" } // ParchmentMC
         maven { url = "https://maven.terraformersmc.com/" } // ModMenu
@@ -38,6 +38,12 @@ subprojects {
         maven { url = "https://maven.tterrag.com" } // Registrate
         maven { url = "https://mvn.devos.one/snapshots/" } // Create, Porting Lib, Forge Tags, Milk Lib, Registrate
         maven { url = "https://mvn.devos.one/releases/" } // Porting Lib
+        maven { url = "https://maven.tterrag.com/" } // Flywheel
+        maven { url = "https://maven.blamejared.com" } // Embeddium
+        maven { url = "https://api.modrinth.com/maven" } // Modrinth
+        maven { url = "https://dvs1.progwml6.com/files/maven/" } // JEI
+        maven { url = "https://maven.blamejared.com/" } // JEI
+        maven { url = "https://modmaven.dev" } // JEI
         maven { url = "https://cursemaven.com"
             content {
                 includeGroup "curse.maven"
@@ -75,7 +81,7 @@ subprojects {
             "java_version": rootProject.java_version,
             "maven_group": rootProject.maven_group,
             "create_forge_version": rootProject.create_forge_version,
-            "create_forge_dependency_version": rootProject.create_forge_dependency_version,
+            "create_forge_version_dependency": rootProject.create_forge_version_dependency,
             "create_fabric_version": rootProject.create_fabric_version,
             "create_fabric_dependency_version": rootProject.create_fabric_dependency_version,
             "main_class_name": rootProject.main_class_name,

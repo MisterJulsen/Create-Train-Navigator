@@ -3,8 +3,8 @@ package de.mrjulsen.crn.item;
 import com.mojang.blaze3d.vertex.PoseStack;
 import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.registry.ModBlocks;
-import de.mrjulsen.mcdragonlib.client.ber.RenderGraphics;
 import de.mrjulsen.mcdragonlib.client.render.ICustomItemRenderer;
+import de.mrjulsen.mcdragonlib.client.util.DLGraphics;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
@@ -73,7 +73,7 @@ public class NavigatorItem extends Item implements ICustomItemRenderer {
     }
 
     @Override
-    public void renderAdditional(RenderGraphics graphics, ItemStack itemStack, ItemDisplayContext context, boolean leftHand, PoseStack poseStack, MultiBufferSource buffer, int combinedLight, int combinedOverlay, BakedModel model) {
+    public void renderAdditional(DLGraphics graphics, ItemStack itemStack, ItemDisplayContext context, boolean leftHand, PoseStack poseStack, MultiBufferSource buffer, int combinedLight, int combinedOverlay, BakedModel model) {
         ClientWrapper.renderNavigatorItem(graphics, itemStack, context, leftHand, poseStack, buffer, combinedLight, combinedOverlay, model);
     }
 }
