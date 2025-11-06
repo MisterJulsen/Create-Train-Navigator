@@ -5,8 +5,7 @@ import java.util.Arrays;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.block.display.properties.IDisplaySettings;
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
-import de.mrjulsen.mcdragonlib.client.ber.BERLabel.BoundsHitReaction;
-import de.mrjulsen.mcdragonlib.core.ITranslatableEnum;
+import de.mrjulsen.mcdragonlib.data.ITranslatableEnum;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 

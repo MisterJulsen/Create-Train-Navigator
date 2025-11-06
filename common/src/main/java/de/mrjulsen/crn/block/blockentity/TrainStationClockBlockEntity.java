@@ -9,7 +9,7 @@ import de.mrjulsen.crn.client.ber.TrainStationClockRenderer;
 import de.mrjulsen.mcdragonlib.block.IBERInstance;
 import de.mrjulsen.mcdragonlib.client.ber.IBlockEntityRendererInstance;
 import de.mrjulsen.mcdragonlib.config.ECachingPriority;
-import de.mrjulsen.mcdragonlib.data.Cache;
+import de.mrjulsen.mcdragonlib.util.Cache;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntityType;

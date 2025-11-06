@@ -2,8 +2,6 @@ package de.mrjulsen.crn.network.packets.cts;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.Supplier;
-
 import org.apache.commons.lang3.tuple.MutablePair;
 
 import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
@@ -18,13 +16,14 @@ import de.mrjulsen.crn.block.display.properties.IDisplaySettings;
 import de.mrjulsen.crn.block.properties.ESide;
 import de.mrjulsen.crn.client.AdvancedDisplaysRegistry;
 import de.mrjulsen.crn.client.AdvancedDisplaysRegistry.DisplayTypeResourceKey;
-import de.mrjulsen.mcdragonlib.net.IPacketBase;
-import dev.architectury.networking.NetworkManager.PacketContext;
+import de.mrjulsen.mcdragonlib.data.DLStatus;
+import de.mrjulsen.mcdragonlib.network.NetworkPacketContext;
+import de.mrjulsen.mcdragonlib.network.NetworkPacketData;
+import de.mrjulsen.mcdragonlib.util.NbtUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
@@ -32,7 +31,15 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate.StructureBlockInfo;
 
-public class AdvancedDisplayUpdatePacket implements IPacketBase<AdvancedDisplayUpdatePacket> {
+public class AdvancedDisplayUpdatePacketData extends NetworkPacketData {
+
+    private static final String NBT_POS = "Pos";
+    private static final String NBT_ENTITY_ID = "EntityId";
+    private static final String NBT_IS_ON_CONTRAPTION = "IsOnContraption";
+    private static final String NBT_KEY = "Key";
+    private static final String NBT_DOUBLE_SIDED = "DoubleSided";
+    private static final String NBT_SETTINGS = "Settings";
+
     private BlockPos pos;
     private int entityId;
     private boolean isOnContraption;
@@ -41,9 +48,12 @@ public class AdvancedDisplayUpdatePacket implements IPacketBase<AdvancedDisplayU
     private boolean doubleSided;
     private IDisplaySettings settings;
 
-    public AdvancedDisplayUpdatePacket() {}
+    public AdvancedDisplayUpdatePacketData(DLStatus status) {
+        super(status);
+    }
 
-    public AdvancedDisplayUpdatePacket(Level level, BlockPos pos, AbstractContraptionEntity contraption, DisplayTypeResourceKey key, boolean doubleSided, IDisplaySettings settings) {
+    public AdvancedDisplayUpdatePacketData(Level level, BlockPos pos, AbstractContraptionEntity contraption, DisplayTypeResourceKey key, boolean doubleSided, IDisplaySettings settings) {
+        super(DLStatus.OK);
         this.pos = pos;
         this.isOnContraption = contraption != null;
         this.entityId = isOnContraption ? contraption.getId() : 0;
@@ -58,7 +68,8 @@ public class AdvancedDisplayUpdatePacket implements IPacketBase<AdvancedDisplayU
         }
     }
 
-    protected AdvancedDisplayUpdatePacket(BlockPos pos, int entityId, boolean isOnContraption, DisplayTypeResourceKey key, boolean doubleSided, IDisplaySettings settings) {
+    protected AdvancedDisplayUpdatePacketData(BlockPos pos, int entityId, boolean isOnContraption, DisplayTypeResourceKey key, boolean doubleSided, IDisplaySettings settings) {
+        super(DLStatus.OK);
         this.pos = pos;
         this.entityId = entityId;
         this.isOnContraption = isOnContraption;
@@ -69,32 +80,51 @@ public class AdvancedDisplayUpdatePacket implements IPacketBase<AdvancedDisplayU
     }
 
     @Override
-    public void encode(AdvancedDisplayUpdatePacket packet, FriendlyByteBuf buffer) {
-        CompoundTag k = new CompoundTag();
-        packet.key.toNbt(k);
+    protected void write(CompoundTag nbt) {
+        CompoundTag tag = new CompoundTag();
+        key.toNbt(tag);
+        nbt.put(NBT_KEY, tag);
+        NbtUtils.putNbtPos(tag, NBT_POS, pos);
+        nbt.putBoolean(NBT_DOUBLE_SIDED, doubleSided);
+        nbt.putBoolean(NBT_IS_ON_CONTRAPTION, isOnContraption);
+        nbt.putInt(NBT_ENTITY_ID, entityId);
+        nbt.put(NBT_SETTINGS, settings.serializeNbt());
         
-        buffer.writeBlockPos(packet.pos);
-        buffer.writeNbt(k);
-        buffer.writeBoolean(packet.doubleSided);
-        buffer.writeBoolean(packet.isOnContraption);
-        buffer.writeInt(packet.entityId);
-        buffer.writeNbt(packet.settings.serializeNbt());
     }
 
     @Override
-    public AdvancedDisplayUpdatePacket decode(FriendlyByteBuf buffer) {
-        BlockPos pos = buffer.readBlockPos();
-        DisplayTypeResourceKey key = DisplayTypeResourceKey.fromNbt(buffer.readNbt());
-        boolean doubleSided = buffer.readBoolean();
-        boolean isOnContraption = buffer.readBoolean();
-        int entityId = buffer.readInt();
-        IDisplaySettings settings = AdvancedDisplaysRegistry.createSettings(key);
-        settings.deserializeNbt(buffer.readNbt());
+    protected void read(CompoundTag nbt) {
+        this.key = DisplayTypeResourceKey.fromNbt(nbt.getCompound(NBT_KEY));
+        this.pos = NbtUtils.getNbtBlockPos(nbt, NBT_POS);
+        this.doubleSided = nbt.getBoolean(NBT_DOUBLE_SIDED);
+        this.isOnContraption = nbt.getBoolean(NBT_IS_ON_CONTRAPTION);
+        this.entityId = nbt.getInt(NBT_ENTITY_ID);
+        this.settings = AdvancedDisplaysRegistry.createSettings(key);
+        this.settings.deserializeNbt(nbt.getCompound(NBT_SETTINGS));
+    }
+    
+    
 
-        return new AdvancedDisplayUpdatePacket(pos, entityId, isOnContraption, key, doubleSided, settings);
+    public static void handle(AdvancedDisplayUpdatePacketData packet, NetworkPacketContext context) {        
+        context.queue(() -> {
+            Player player = context.getPlayer();
+            if (player != null) {
+                Level level = player.level();
+
+                if (packet.isOnContraption) {
+                    if (level.getEntity(packet.entityId) instanceof AbstractContraptionEntity ce) {
+                        applyContraption(ce, packet);
+                    }
+                } else {
+                    apply(level, packet);
+                }
+            }
+        });
     }
 
-    private void apply(Level level, AdvancedDisplayUpdatePacket packet) {
+    
+
+    private static void apply(Level level, AdvancedDisplayUpdatePacketData packet) {
         if (level.isLoaded(packet.pos)) {
             if (level.getBlockEntity(packet.pos) instanceof AdvancedDisplayBlockEntity blockEntity) {
                 blockEntity.applyToAll(be -> {
@@ -110,7 +140,7 @@ public class AdvancedDisplayUpdatePacket implements IPacketBase<AdvancedDisplayU
         }
     }
 
-    private void applyContraption(AbstractContraptionEntity contraptionEntity, AdvancedDisplayUpdatePacket packet) {
+    private static void applyContraption(AbstractContraptionEntity contraptionEntity, AdvancedDisplayUpdatePacketData packet) {
         Contraption contraption = contraptionEntity.getContraption();
         Level level = contraption.getContraptionWorld();
         Set<BlockPos> blockEntityPositions = new HashSet<>();
@@ -182,23 +212,5 @@ public class AdvancedDisplayUpdatePacket implements IPacketBase<AdvancedDisplayU
                 be.updateControllerStatus2(getter);
             }
         }
-    }
-    
-    @Override
-    public void handle(AdvancedDisplayUpdatePacket packet, Supplier<PacketContext> contextSupplier) {        
-        contextSupplier.get().queue(() -> {
-            Player player = contextSupplier.get().getPlayer();
-            if (player != null) {
-                Level level = player.level();
-
-                if (packet.isOnContraption) {
-                    if (level.getEntity(packet.entityId) instanceof AbstractContraptionEntity ce) {
-                        applyContraption(ce, packet);
-                    }
-                } else {
-                    apply(level, packet);
-                }
-            }
-        });
     }
 }

@@ -24,7 +24,7 @@ import de.mrjulsen.crn.data.train.TrainUtils;
 import de.mrjulsen.crn.data.train.portable.StationDisplayData;
 import de.mrjulsen.crn.event.ModCommonEvents;
 import de.mrjulsen.crn.registry.ModDisplayTypes;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.data.ETextAlignment;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
@@ -135,7 +135,7 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 					int currentLine = line;
 					for (MutableComponent comp : text) {
 						StaticTextDisplaySettings.TextComponent component = new StaticTextDisplaySettings.TextComponent(Component.Serializer.toJson(comp));
-						component.setTextAlignment(EAlignment.LEFT);
+						component.setTextAlignment(ETextAlignment.LEFT);
 						component.setXScale(0.4f);
 						component.setMinXScale(0.4f);
 						component.setYScale(0.4f);

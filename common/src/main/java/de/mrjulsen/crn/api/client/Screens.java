@@ -1,7 +1,6 @@
 package de.mrjulsen.crn.api.client;
 
 import de.mrjulsen.crn.client.gui.screen.NavigatorScreen;
-import de.mrjulsen.mcdragonlib.client.gui.DLScreen;
 
 public final class Screens {    
     private Screens() {}

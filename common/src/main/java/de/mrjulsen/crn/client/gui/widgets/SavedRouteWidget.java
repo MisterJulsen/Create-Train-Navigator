@@ -21,7 +21,7 @@ import de.mrjulsen.mcdragonlib.client.render.DynamicGuiRenderer.AreaStyle;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiAreaDefinition;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.core.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.MutableComponent;
@@ -85,7 +85,7 @@ public class SavedRouteWidget extends DLButton {
             GuiUtils.fill(graphics, x(), y(), width(), height(), 0x22FFFFFF);
         }
         
-        GuiUtils.drawString(graphics, font, x() + 6, y() + 5, data.getTitle().text(), 0xFFFFFFFF, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, x() + 6, y() + 5, data.getTitle().text(), 0xFFFFFFFF, ETextAlignment.LEFT, false);
         data.getTitle().icon().render(graphics, x() + width() - data.getTitle().icon().getWidth() - 3, y() + 3);
         
         graphics.poseStack().pushPose();

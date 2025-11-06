@@ -3,6 +3,10 @@ package de.mrjulsen.crn;
 import java.util.UUID;
 
 import de.mrjulsen.mcdragonlib.util.TextUtils;
+import de.mrjulsen.mcdragonlib.util.time.DLTime;
+import de.mrjulsen.mcdragonlib.util.time.VanillaTimeSystem;
+import de.mrjulsen.mcdragonlib.util.time.format.ITimeFormatter;
+import de.mrjulsen.mcdragonlib.util.time.format.TimeFormatDigitalDuration;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
@@ -38,6 +42,10 @@ public class Constants {
     public static final int COLOR_ON_TIME = 0xFF1AEA5F;
     public static final int COLOR_DELAYED = 0xFFFF4242;
     public static final int COLOR_TRAIN_BACKGROUND = 0xFF393939;
+
+    public static final DLTime NULL_TIME = DLTime.fromTicks(0, VanillaTimeSystem.INSTANCE);
+    public static final ITimeFormatter DEFAULT_REAL_DURATION_FORMAT = new TimeFormatDigitalDuration(NULL_TIME, false, true, true, true, true);
+    public static final ITimeFormatter DEFAULT_GAME_DURATION_FORMAT = new TimeFormatDigitalDuration(NULL_TIME, false, false, true, true, true);
 
     public static final String GITHUB_WIKI = "https://github.com/MisterJulsen/Create-Train-Navigator/wiki/";
     public static final String HELP_PAGE_ADVANCED_DISPLAYS = GITHUB_WIKI + "Advanced-Displays";

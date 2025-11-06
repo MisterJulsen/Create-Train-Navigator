@@ -35,7 +35,7 @@ import de.mrjulsen.mcdragonlib.client.render.Sprite;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiAreaDefinition;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.core.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.accessor.DataAccessor;
@@ -211,16 +211,16 @@ public class RouteViewer extends DLScrollableWidgetContainer implements Closeabl
 
         if (!this.loadingRoutes) {
             if (this.hasSearched && routes.isEmpty()) {
-                GuiUtils.drawString(graphics, font, x() + width() / 2, y() + height() / 2 + 15 - font.lineHeight - 10, noConnectionsText, 0xFFFFFF, EAlignment.CENTER, false);
+                GuiUtils.drawString(graphics, font, x() + width() / 2, y() + height() / 2 + 15 - font.lineHeight - 10, noConnectionsText, 0xFFFFFF, ETextAlignment.CENTER, false);
                 AllIcons.I_ACTIVE.render(graphics.graphics(), (int)(x() + width() / 2 - 8), (int)(y() + height() / 2 - 15 - font.lineHeight - 10));
             } else if (this.shouldDisplayRecentSearchQueries && !this.hasSearched && !userSettings.recentSearchQueries.getValue().isEmpty()) {
-                GuiUtils.drawString(graphics, font, x() + 10, y() + 10, txtRecentSearchQueries, 0xFFFFFF, EAlignment.LEFT, true);
+                GuiUtils.drawString(graphics, font, x() + 10, y() + 10, txtRecentSearchQueries, 0xFFFFFF, ETextAlignment.LEFT, true);
                 if (this.userSettings == null) {
-                    GuiUtils.drawString(graphics, font, x() + width() / 2, y() + height() / 2 + 15 - font.lineHeight, Constants.TEXT_LOADING, 0xFFFFFF, EAlignment.CENTER, false);
+                    GuiUtils.drawString(graphics, font, x() + width() / 2, y() + height() / 2 + 15 - font.lineHeight, Constants.TEXT_LOADING, 0xFFFFFF, ETextAlignment.CENTER, false);
                     AllIcons.I_MTD_SCAN.render(graphics.graphics(), (int)(x() + width() / 2 - 8 + offsetX), (int)(y() + height() / 2 - 15 - font.lineHeight + offsetY));
                 }
             } else if (!this.hasSearched) {                
-                GuiUtils.drawString(graphics, font, x() + width() / 2, y() + height() / 2 + 15 - font.lineHeight, notSearchedText, 0xFFFFFF, EAlignment.CENTER, false);
+                GuiUtils.drawString(graphics, font, x() + width() / 2, y() + height() / 2 + 15 - font.lineHeight, notSearchedText, 0xFFFFFF, ETextAlignment.CENTER, false);
                 ModGuiIcons.INFO.render(graphics, (int)(x() + width() / 2 - 8), (int)(y() + height() / 2 - 15 - font.lineHeight));
             }
         } else {
@@ -231,7 +231,7 @@ public class RouteViewer extends DLScrollableWidgetContainer implements Closeabl
                 RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
                 GuiUtils.setTint(1f, 1f, 1f, animator.isRunning() ? (float)(1D - animPercentage) : 1f);
                 CreateDynamicWidgets.renderShadow(graphics, x() + width() / 2 - font.width(searchingText) / 2 - 10, (int)(y() + height() / 2 - 25 - font.lineHeight), font.width(searchingText) + 20, 55);
-                GuiUtils.drawString(graphics, font, x() + width() / 2, y() + height() / 2 + 15 - font.lineHeight, searchingText, ((int)(255F * (float)(1D - animPercentage)) << 24) | 0xFFFFFF, EAlignment.CENTER, false);
+                GuiUtils.drawString(graphics, font, x() + width() / 2, y() + height() / 2 + 15 - font.lineHeight, searchingText, ((int)(255F * (float)(1D - animPercentage)) << 24) | 0xFFFFFF, ETextAlignment.CENTER, false);
                 AllIcons.I_MTD_SCAN.render(graphics.graphics(), (int)(x() + width() / 2 - 8 + offsetX), (int)(y() + height() / 2 - 15 - font.lineHeight + offsetY));
             }
         }
@@ -311,13 +311,13 @@ public class RouteViewer extends DLScrollableWidgetContainer implements Closeabl
             graphics.poseStack().pushPose();
             graphics.poseStack().translate(x() + 3, y() + 3, 0);
             graphics.poseStack().scale(0.75f, 0.75f, 0.75f);
-            GuiUtils.drawString(graphics, font, 0, 0, text, DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, EAlignment.LEFT, false);
+            GuiUtils.drawString(graphics, font, 0, 0, text, DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, ETextAlignment.LEFT, false);
             graphics.poseStack().popPose();
             
             graphics.poseStack().pushPose();
             graphics.poseStack().translate(x() + width() - 3, y() + 3, 0);
             graphics.poseStack().scale(0.75f, 0.75f, 0.75f);
-            GuiUtils.drawString(graphics, font, 0, 0, subText, DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, EAlignment.RIGHT, false);
+            GuiUtils.drawString(graphics, font, 0, 0, subText, DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, ETextAlignment.RIGHT, false);
             graphics.poseStack().popPose();
             
         }

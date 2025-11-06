@@ -6,8 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
-import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.ImmutableSet;
@@ -18,9 +17,9 @@ import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.exceptions.RuntimeSideException;
 import de.mrjulsen.mcdragonlib.DragonLib;
-import de.mrjulsen.mcdragonlib.client.render.Sprite;
-import de.mrjulsen.mcdragonlib.core.IIterableEnum;
-import de.mrjulsen.mcdragonlib.core.ITranslatableEnum;
+import de.mrjulsen.mcdragonlib.client.util.DLSprite;
+import de.mrjulsen.mcdragonlib.data.IIterableEnum;
+import de.mrjulsen.mcdragonlib.data.ITranslatableEnum;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import dev.architectury.platform.Platform;
 import dev.architectury.utils.GameInstance;
@@ -34,52 +33,18 @@ import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
 
 public class Lock {
-    
-    public static record PermissionsUpdateData(UUID id, Owner newOwner, LockState state, Set<Owner> trusted) {
-        
-        private static final String NBT_ID = "Id";
-        private static final String NBT_STATE = "State";
-        private static final String NBT_NEW_OWNER = "NewOwner";
-        private static final String NBT_TRUSTED = "Trusted";
-
-        public CompoundTag toNbt() {
-            CompoundTag nbt = new CompoundTag();
-            nbt.putUUID(NBT_ID, id);
-            if (state != null) {
-                nbt.putByte(NBT_STATE, state.getIndex());
-            }
-            if (trusted != null) {
-                ListTag list = new ListTag();
-                for (Owner t : trusted) {
-                    list.add(t.toNbt());
-                }
-                nbt.put(NBT_TRUSTED, list);
-            }
-            if (newOwner != null) nbt.put(NBT_NEW_OWNER, newOwner.toNbt());
-            return nbt;
-        }
-
-        public static PermissionsUpdateData fromNbt(CompoundTag nbt) {
-            return new PermissionsUpdateData(
-                nbt.getUUID(NBT_ID),
-                nbt.contains(NBT_NEW_OWNER) ? Owner.fromNbt(nbt.getCompound(NBT_NEW_OWNER)) : null,
-                nbt.contains(NBT_STATE) ? LockState.getByIndex(nbt.getByte(NBT_STATE)) : null,
-                nbt.contains(NBT_TRUSTED) ? nbt.getList(NBT_TRUSTED, Tag.TAG_COMPOUND).stream().map(x -> Owner.fromNbt((CompoundTag)x)).collect(Collectors.toSet()) : null
-            );
-        }
-    }
 
     public static enum LockState implements ITranslatableEnum, IIterableEnum<LockState> {
-        UNLOCKED("unlocked", (byte)0, ModGuiIcons.UNLOCKED, (key) -> TextUtils.translate(key).withStyle(ChatFormatting.GREEN)),
+        UNLOCKED("unlocked", (byte)0, ModGuiIcons.UNLOCKED, (key) -> key.withStyle(ChatFormatting.GREEN)),
         //TRUSTED("trusted", (byte)1, ModGuiIcons.TRUSTED, (key) -> TextUtils.translate(key).withStyle(ChatFormatting.GOLD)),
-        LOCKED("locked", Byte.MAX_VALUE, ModGuiIcons.LOCKED, (key) -> TextUtils.translate(key).withStyle(ChatFormatting.RED));
+        LOCKED("locked", Byte.MAX_VALUE, ModGuiIcons.LOCKED, (key) -> key.withStyle(ChatFormatting.RED));
 
         private final String name;
         private final byte index;
         private final ModGuiIcons icon;
-        private final Function<String, Component> text;
+        private final UnaryOperator<MutableComponent> text;
 
-        private LockState(String name, byte index, ModGuiIcons icon, Function<String, Component> text) {
+        private LockState(String name, byte index, ModGuiIcons icon, UnaryOperator<MutableComponent> text) {
             this.name = name;
             this.index = index;
             this.icon = icon;
@@ -95,10 +60,10 @@ public class Lock {
         }
 
         public Component getFormattedText() {
-            return text.apply(getValueTranslationKey(CreateRailwaysNavigator.MOD_ID));
+            return text.apply(getValueTranslation());
         }
 
-        public Sprite getIcon() {
+        public DLSprite getIcon() {
             return icon.getAsSprite(16, 16);
         }
 
@@ -107,18 +72,13 @@ public class Lock {
         }
 
         @Override
-        public String getEnumName() {
-            return "lock_state";
-        }
-
-        @Override
-        public String getEnumValueName() {
-            return getName();
-        }
-
-        @Override
         public LockState[] getValues() {
             return values();
+        }
+
+        @Override
+        public Data getTranslationData() {
+            return new Data(CreateRailwaysNavigator.MOD_ID, "lock_state", name);
         }
     }
 

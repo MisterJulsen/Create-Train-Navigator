@@ -16,7 +16,7 @@ import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.render.Sprite;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.core.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.TimeUtils;
 import net.minecraft.ChatFormatting;
@@ -66,26 +66,26 @@ public class RouteOverviewPage extends AbstractRouteDetailsPage {
 
     public static void renderStation(Graphics graphics, int y, int width, Font font, TrainStop stop, RoutePathIcons icon, boolean isStart, boolean isMissed) {
         final int precision = ModClientConfig.REALTIME_PRECISION_THRESHOLD.get();
-        GuiUtils.drawString(graphics, font, 7, y + ENTRY_HEIGHT - 2 - font.lineHeight / 2, TextUtils.text(TimeUtils.parseTime((isStart ? stop.getScheduledDepartureTime() : stop.getScheduledArrivalTime()) + DragonLib.daytimeShift(), ModClientConfig.TIME_FORMAT.get())).withStyle(isMissed ? ChatFormatting.STRIKETHROUGH : ChatFormatting.RESET), isMissed ? Constants.COLOR_DELAYED : 0xFFDBDBDB, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, 7, y + ENTRY_HEIGHT - 2 - font.lineHeight / 2, TextUtils.text(TimeUtils.parseTime((isStart ? stop.getScheduledDepartureTime() : stop.getScheduledArrivalTime()) + DragonLib.daytimeShift(), ModClientConfig.TIME_FORMAT.get())).withStyle(isMissed ? ChatFormatting.STRIKETHROUGH : ChatFormatting.RESET), isMissed ? Constants.COLOR_DELAYED : 0xFFDBDBDB, ETextAlignment.LEFT, false);
         if (stop.shouldRenderRealTime() && !isMissed) {
-            GuiUtils.drawString(graphics, font, 7 + 32, y + ENTRY_HEIGHT - 2 - font.lineHeight / 2, TimeUtils.parseTime((isStart ? stop.getScheduledDepartureTime() + (stop.getDepartureTimeDeviation() / precision * precision) : stop.getScheduledArrivalTime() + (stop.getArrivalTimeDeviation() / precision * precision)) + DragonLib.daytimeShift(), ModClientConfig.TIME_FORMAT.get()), stop.isArrivalDelayed() ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME, EAlignment.LEFT, false);
+            GuiUtils.drawString(graphics, font, 7 + 32, y + ENTRY_HEIGHT - 2 - font.lineHeight / 2, TimeUtils.parseTime((isStart ? stop.getScheduledDepartureTime() + (stop.getDepartureTimeDeviation() / precision * precision) : stop.getScheduledArrivalTime() + (stop.getArrivalTimeDeviation() / precision * precision)) + DragonLib.daytimeShift(), ModClientConfig.TIME_FORMAT.get()), stop.isArrivalDelayed() ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME, ETextAlignment.LEFT, false);
         }
         icon.getAsSprite().render(graphics, 10 + 64, y);
-        GuiUtils.drawString(graphics, font, 17 + 64 + RoutePathIcons.SPRITE_WIDTH, y + ENTRY_HEIGHT - 2 - font.lineHeight / 2, GuiUtils.ellipsisString(font, TextUtils.text(stop.getRealTimeStationTag().tagName()), width - (17 + 64 + RoutePathIcons.SPRITE_WIDTH) - font.width(stop.getRealTimeStationTag().info().platform()) - 10), 0xFFDBDBDB, EAlignment.LEFT, false);
-        GuiUtils.drawString(graphics, font, width - 4, y + ENTRY_HEIGHT - 2 - font.lineHeight / 2, stop.getRealTimeStationTag().info().platform(), stop.isStationInfoChanged() ? Constants.COLOR_DELAYED : 0xFFDBDBDB, EAlignment.RIGHT, false);
+        GuiUtils.drawString(graphics, font, 17 + 64 + RoutePathIcons.SPRITE_WIDTH, y + ENTRY_HEIGHT - 2 - font.lineHeight / 2, GuiUtils.ellipsisString(font, TextUtils.text(stop.getRealTimeStationTag().tagName()), width - (17 + 64 + RoutePathIcons.SPRITE_WIDTH) - font.width(stop.getRealTimeStationTag().info().platform()) - 10), 0xFFDBDBDB, ETextAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, width - 4, y + ENTRY_HEIGHT - 2 - font.lineHeight / 2, stop.getRealTimeStationTag().info().platform(), stop.isStationInfoChanged() ? Constants.COLOR_DELAYED : 0xFFDBDBDB, ETextAlignment.RIGHT, false);
 
     }
 
     public static void renderTransfer(Graphics graphics, int y, int width, Font font, TransferConnection connection) {
         if (connection.isConnectionMissed()) {
             ModGuiIcons.CROSS.getAsSprite(16, 16).render(graphics, 5, y + ENTRY_HEIGHT - 2 - ModGuiIcons.ICON_SIZE / 2);
-            GuiUtils.drawString(graphics, font, 17 + 64 + RoutePathIcons.SPRITE_WIDTH, y + ENTRY_HEIGHT - 2 - font.lineHeight / 2, textConnectionMissed.withStyle(ChatFormatting.BOLD).withStyle(ChatFormatting.RED), 0xFFFFFFFF, EAlignment.LEFT, false);
+            GuiUtils.drawString(graphics, font, 17 + 64 + RoutePathIcons.SPRITE_WIDTH, y + ENTRY_HEIGHT - 2 - font.lineHeight / 2, textConnectionMissed.withStyle(ChatFormatting.BOLD).withStyle(ChatFormatting.RED), 0xFFFFFFFF, ETextAlignment.LEFT, false);
         } else if (connection.isConnectionEndangered()) {
             ModGuiIcons.WARN.getAsSprite(16, 16).render(graphics, 5, y + ENTRY_HEIGHT - 2 - ModGuiIcons.ICON_SIZE / 2);
-            GuiUtils.drawString(graphics, font, 17 + 64 + RoutePathIcons.SPRITE_WIDTH, y + ENTRY_HEIGHT - 2 - font.lineHeight / 2, textConnectionEndangered.withStyle(ChatFormatting.BOLD).withStyle(ChatFormatting.GOLD), 0xFFFFFFFF, EAlignment.LEFT, false);
+            GuiUtils.drawString(graphics, font, 17 + 64 + RoutePathIcons.SPRITE_WIDTH, y + ENTRY_HEIGHT - 2 - font.lineHeight / 2, textConnectionEndangered.withStyle(ChatFormatting.BOLD).withStyle(ChatFormatting.GOLD), 0xFFFFFFFF, ETextAlignment.LEFT, false);
         } else {
-            GuiUtils.drawString(graphics, font, 7, y + ENTRY_HEIGHT - 2 - font.lineHeight / 2, TextUtils.text(TimeUtils.parseDurationShort((int)connection.getRealTimeTransferTime())).withStyle(ChatFormatting.ITALIC), 0xFFDBDBDB, EAlignment.LEFT, false);
-            GuiUtils.drawString(graphics, font, 17 + 64 + RoutePathIcons.SPRITE_WIDTH, y + ENTRY_HEIGHT - 2 - font.lineHeight / 2, textTransfer.withStyle(ChatFormatting.ITALIC), 0xFFDBDBDB, EAlignment.LEFT, false);
+            GuiUtils.drawString(graphics, font, 7, y + ENTRY_HEIGHT - 2 - font.lineHeight / 2, TextUtils.text(TimeUtils.parseDurationShort((int)connection.getRealTimeTransferTime())).withStyle(ChatFormatting.ITALIC), 0xFFDBDBDB, ETextAlignment.LEFT, false);
+            GuiUtils.drawString(graphics, font, 17 + 64 + RoutePathIcons.SPRITE_WIDTH, y + ENTRY_HEIGHT - 2 - font.lineHeight / 2, textTransfer.withStyle(ChatFormatting.ITALIC), 0xFFDBDBDB, ETextAlignment.LEFT, false);
         }
         RoutePathIcons.TRANSFER.getAsSprite().render(graphics, 10 + 64, y);
     }

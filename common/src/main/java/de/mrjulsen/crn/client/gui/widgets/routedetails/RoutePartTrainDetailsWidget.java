@@ -27,7 +27,7 @@ import de.mrjulsen.mcdragonlib.client.render.Sprite;
 import de.mrjulsen.mcdragonlib.client.util.DLWidgetsCollection;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.core.ETextAlignment;
 import de.mrjulsen.mcdragonlib.data.Single;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.ChatFormatting;
@@ -126,8 +126,8 @@ public class RoutePartTrainDetailsWidget extends DLWidgetContainer implements Cl
         graphics.poseStack().scale(scale, scale, scale);
         Component trainName = TextUtils.text(part.getFirstStop().getTrainDisplayName()).withStyle(ChatFormatting.BOLD);
         CreateDynamicWidgets.renderTextHighlighted(graphics, (int)((x() + 80 + 24) / scale), (int)((y + 4) / scale), font, trainName, part.getFirstStop().getTrainDisplayColor());
-        GuiUtils.drawString(graphics, font, (int)((x() + 80 + 24) / scale) + font.width(trainName) + 10, (int)((y + 6) / scale), GuiUtils.ellipsisString(font, TextUtils.text(String.format("%s (%s)", stop.getTrainName(), stop.getTrainId().toString().split("-")[0])), (int)((maxWidth - font.width(trainName) - 25) / scale)), 0xFFDBDBDB, EAlignment.LEFT, false);
-        GuiUtils.drawString(graphics, font, (int)((x() + 80 + 24) / scale), (int)((y + 18) / scale), GuiUtils.ellipsisString(font, TextUtils.text(stop.getDisplayTitle()), (int)((maxWidth - 24) / scale)), 0xFFDBDBDB, EAlignment.LEFT, false);        
+        GuiUtils.drawString(graphics, font, (int)((x() + 80 + 24) / scale) + font.width(trainName) + 10, (int)((y + 6) / scale), GuiUtils.ellipsisString(font, TextUtils.text(String.format("%s (%s)", stop.getTrainName(), stop.getTrainId().toString().split("-")[0])), (int)((maxWidth - font.width(trainName) - 25) / scale)), 0xFFDBDBDB, ETextAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, (int)((x() + 80 + 24) / scale), (int)((y + 18) / scale), GuiUtils.ellipsisString(font, TextUtils.text(stop.getDisplayTitle()), (int)((maxWidth - 24) / scale)), 0xFFDBDBDB, ETextAlignment.LEFT, false);        
         graphics.poseStack().scale(mul, mul, mul);
         graphics.poseStack().popPose();
         

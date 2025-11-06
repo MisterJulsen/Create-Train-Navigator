@@ -26,7 +26,7 @@ import de.mrjulsen.mcdragonlib.client.gui.widgets.DLWidgetContainer;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiAreaDefinition;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.core.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.MathUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
@@ -118,7 +118,7 @@ public class TransferOwnershipWidget<T extends GuiEventListener & Renderable & N
         CreateDynamicWidgets.renderContainer(graphics, workingArea.getX(), workingArea.getY() - 1, workingArea.getWidth(), workingArea.getHeight() + 2, ContainerColor.PURPLE);
         super.renderMainLayer(graphics, mouseX, mouseY, partialTicks);
 
-        GuiUtils.drawString(graphics, font, x() + 6, y() + 4, TextUtils.translate(Lock.TRANSLATION_KEY_TRANSFER_OWNERSHIP), DragonLib.NATIVE_UI_FONT_COLOR, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, x() + 6, y() + 4, TextUtils.translate(Lock.TRANSLATION_KEY_TRANSFER_OWNERSHIP), DragonLib.NATIVE_UI_FONT_COLOR, ETextAlignment.LEFT, false);
         
         if (icon != null) {
             ModGuiIcons.WARN.render(graphics, icon.x(), icon.y() + icon.height() + 8);

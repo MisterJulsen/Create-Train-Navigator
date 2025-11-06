@@ -3,7 +3,7 @@ package de.mrjulsen.crn.block.display.properties.components;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.block.display.properties.IDisplaySettings;
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.data.ETextAlignment;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
@@ -22,7 +22,7 @@ public interface ITextPosSetting {
 
     public static final float DEFAULT_X = 0;
     public static final float DEFAULT_Y = 2.5f;
-    public static final EAlignment DEFAULT_TEXT_ALIGNMENT = EAlignment.CENTER;
+    public static final ETextAlignment DEFAULT_TEXT_ALIGNMENT = ETextAlignment.CENTER;
     
     public static final String NBT_POS_X = "PosX";
     public static final String NBT_POS_Y = "PosY";
@@ -32,8 +32,8 @@ public interface ITextPosSetting {
     void setX(float x);
     float getY();
     void setY(float y);
-    EAlignment getTextAlignment();
-    void setTextAlignment(EAlignment align);
+    ETextAlignment getTextAlignment();
+    void setTextAlignment(ETextAlignment align);
 
     @Environment(EnvType.CLIENT)
     default void buildTextPosGui(GuiBuilderContext context) {

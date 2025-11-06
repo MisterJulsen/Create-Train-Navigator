@@ -39,7 +39,7 @@ import de.mrjulsen.crn.data.schedule.condition.IDelayedWaitCondition.DelayedWait
 import de.mrjulsen.crn.data.schedule.instruction.PrioritizedDestinationInstruction;
 import de.mrjulsen.crn.util.IFrontierEntry;
 import de.mrjulsen.crn.util.PenaltyResult;
-import de.mrjulsen.mcdragonlib.data.Pair;
+import de.mrjulsen.mcdragonlib.util.Pair;
 import net.minecraft.world.level.Level;
 
 @Mixin(Navigation.class)

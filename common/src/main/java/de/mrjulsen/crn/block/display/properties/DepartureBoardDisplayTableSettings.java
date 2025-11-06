@@ -8,7 +8,7 @@ import de.mrjulsen.crn.block.display.properties.components.ITimeDisplaySetting;
 import de.mrjulsen.crn.block.display.properties.components.ITrainNameWidthSetting;
 import de.mrjulsen.crn.block.properties.ETimeDisplay;
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
-import de.mrjulsen.mcdragonlib.util.MathUtils;
+import de.mrjulsen.mcdragonlib.util.math.MathUtils;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.nbt.CompoundTag;

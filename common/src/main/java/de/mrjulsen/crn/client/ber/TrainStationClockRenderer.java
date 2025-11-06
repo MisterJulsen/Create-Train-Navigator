@@ -9,7 +9,7 @@ import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.ber.AbstractBlockEntityRenderInstance;
 import de.mrjulsen.mcdragonlib.client.ber.BERGraphics;
-import de.mrjulsen.mcdragonlib.client.util.BERUtils;
+import de.mrjulsen.mcdragonlib.client.util.RenderUtils;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
@@ -24,7 +24,7 @@ public class TrainStationClockRenderer extends AbstractBlockEntityRenderInstance
 
     @Override
     public void render(BERGraphics<TrainStationClockBlockEntity> graphics, float partialTick) {
-        BERUtils.initRenderEngine();
+        RenderUtils.initRenderEngine();
         
         graphics.poseStack().pushPose();
         renderInternal(graphics, partialTick);
@@ -45,7 +45,7 @@ public class TrainStationClockRenderer extends AbstractBlockEntityRenderInstance
         float z = graphics.blockEntity().getBlockState().getValue(TrainStationClockBlock.DOUBLE) ? 7.25f : 3.25f;
 
         graphics.poseStack().translate(8, 8, 8 + z);
-        BERUtils.renderTexture(DIAL_TEXTURE, graphics, !graphics.blockEntity().isGlowing(), -7, -7, -0.2f, 14, 14, 0, 0, 1, 1, graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING), (0xFF << 24) | (graphics.blockEntity().getColor()), graphics.blockEntity().isGlowing() ? LightTexture.FULL_BRIGHT : graphics.packedLight());
+        RenderUtils.renderTexture(DIAL_TEXTURE, graphics, !graphics.blockEntity().isGlowing(), -7, -7, -0.2f, 14, 14, 0, 0, 1, 1, graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING), (0xFF << 24) | (graphics.blockEntity().getColor()), graphics.blockEntity().isGlowing() ? LightTexture.FULL_BRIGHT : graphics.packedLight());
 
         graphics.poseStack().pushPose();
         graphics.poseStack().mulPose(Axis.ZP.rotationDegrees(-90 + ModUtils.clockHandDegrees(graphics.blockEntity().getLevel().getDayTime() + DragonLib.daytimeShift(), 12000)));

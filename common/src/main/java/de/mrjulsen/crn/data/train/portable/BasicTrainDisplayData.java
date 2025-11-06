@@ -9,7 +9,7 @@ import java.util.UUID;
 import com.simibubi.create.content.trains.entity.TrainIconType;
 
 import de.mrjulsen.crn.exceptions.RuntimeSideException;
-import de.mrjulsen.mcdragonlib.data.Cache;
+import de.mrjulsen.mcdragonlib.util.Cache;
 import de.mrjulsen.crn.data.train.TrainListener;
 import de.mrjulsen.crn.data.train.TrainStop;
 import de.mrjulsen.crn.data.train.TrainStatus.CompiledTrainStatus;

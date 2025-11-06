@@ -6,8 +6,10 @@ import org.lwjgl.opengl.GL30;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 
-import de.mrjulsen.mcdragonlib.client.util.Graphics;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.util.EAlign;
+import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
+import de.mrjulsen.mcdragonlib.util.DLColor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.ResourceLocation;
@@ -29,7 +31,7 @@ public class ModGuiUtils {
     /**
 	 * @see https://github.com/Creators-of-Create/Create/blob/mc1.18/dev/src/main/java/com/simibubi/create/content/trains/schedule/ScheduleScreen.java
 	 */
-    public static void startStencil(Graphics graphics, float x, float y, float w, float h) {
+    public static void startStencil(DLGuiGraphics graphics, float x, float y, float w, float h) {
 		RenderSystem.clear(GL30.GL_STENCIL_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
 
 		GL11.glDisable(GL11.GL_STENCIL_TEST);
@@ -43,7 +45,7 @@ public class ModGuiUtils {
 		graphics.poseStack().pushPose();
 		graphics.poseStack().translate(x, y, 0);
 		graphics.poseStack().scale(w, h, 1);
-		GuiUtils.fillGradient(graphics, 0, 0, -100, 1, 1, 0xff000000, 0xff000000);
+		GuiUtils.fillGradient(graphics, 0, 0, 1, 1, DLColor.BLACK, DLColor.BLACK, EAlign.TOP);
 		graphics.poseStack().popPose();
 
 		GL11.glEnable(GL11.GL_STENCIL_TEST);

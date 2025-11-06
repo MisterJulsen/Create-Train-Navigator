@@ -129,7 +129,7 @@ public class RoutePartWidget extends DLWidgetContainer {
     @Override
     public void renderMainLayer(Graphics graphics, int mouseX, int mouseY, float partialTicks) {
         super.renderMainLayer(graphics, mouseX, mouseY, partialTicks);
-        //GuiUtils.drawString(graphics, font, x() + 22, y(), "State: " + part.getProgressState() + ", " + part.getNextStop().getTag().getTagName().get(), 0xFFFF0000, EAlignment.LEFT, false);
+        //GuiUtils.drawString(graphics, font, x() + 22, y(), "State: " + part.getProgressState() + ", " + part.getNextStop().getTag().getTagName().get(), 0xFFFF0000, ETextAlignment.LEFT, false);
     }
 
     @Override

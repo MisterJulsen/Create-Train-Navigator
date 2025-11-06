@@ -5,7 +5,7 @@ import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.data.navigation.ClientRoute;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.core.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.components.MultiLineLabel;
@@ -32,7 +32,7 @@ public class TrainCancelledInfo extends AbstractRouteDetailsPage {
         int y = 3;
         // Title
         ModGuiIcons.CROSS.render(graphics, 5, y);
-        GuiUtils.drawString(graphics, font, 10 + ModGuiIcons.ICON_SIZE, y + ModGuiIcons.ICON_SIZE / 2 - font.lineHeight / 2, TextUtils.translate(keyTrainCancelled).withStyle(ChatFormatting.BOLD), Constants.COLOR_DELAYED, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, 10 + ModGuiIcons.ICON_SIZE, y + ModGuiIcons.ICON_SIZE / 2 - font.lineHeight / 2, TextUtils.translate(keyTrainCancelled).withStyle(ChatFormatting.BOLD), Constants.COLOR_DELAYED, ETextAlignment.LEFT, false);
         y += 5 + ModGuiIcons.ICON_SIZE;
         
         // Details

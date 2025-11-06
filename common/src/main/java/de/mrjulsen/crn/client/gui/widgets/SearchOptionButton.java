@@ -10,7 +10,7 @@ import de.mrjulsen.mcdragonlib.client.render.DynamicGuiRenderer.AreaStyle;
 import de.mrjulsen.mcdragonlib.client.render.DynamicGuiRenderer.ButtonState;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.core.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -38,8 +38,8 @@ public class SearchOptionButton extends DLButton {
         graphics.poseStack().pushPose();
         graphics.poseStack().scale(scale, scale, 1);
         graphics.poseStack().translate(x() / scale, y() / scale, 0);
-        GuiUtils.drawString(graphics, font, 5, 3, TextUtils.empty().append(getMessage()).withStyle(ChatFormatting.BOLD), j, EAlignment.LEFT, false);
-        GuiUtils.drawString(graphics, font, 5, 3 + font.lineHeight + 1, TextUtils.text(value.get()).withStyle(ChatFormatting.GRAY), j, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, 5, 3, TextUtils.empty().append(getMessage()).withStyle(ChatFormatting.BOLD), j, ETextAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, 5, 3 + font.lineHeight + 1, TextUtils.text(value.get()).withStyle(ChatFormatting.GRAY), j, ETextAlignment.LEFT, false);
         graphics.poseStack().popPose();
         //GuiIcons.ARROW_DOWN.render(graphics, x() + width() - DROP_DOWN_BUTTON_WIDTH + 3, y() + height() / 2 - GuiIcons.ICON_SIZE / 2 + 5);
     }

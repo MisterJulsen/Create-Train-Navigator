@@ -12,7 +12,7 @@ import de.mrjulsen.crn.data.navigation.ClientRoute;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiAreaDefinition;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.core.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.TimeUtils;
@@ -75,7 +75,7 @@ public class NextConnectionsPage extends AbstractRouteDetailsPage {
     
     @Override
     public void renderMainLayer(Graphics graphics, int mouseX, int mouseY, float partialTicks) {
-        GuiUtils.drawString(graphics, font, 5, 4, CustomLanguage.translate(keyNextConnections).withStyle(ChatFormatting.BOLD), 0xFFFFFFFF, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, 5, 4, CustomLanguage.translate(keyNextConnections).withStyle(ChatFormatting.BOLD), 0xFFFFFFFF, ETextAlignment.LEFT, false);
 
         int y = 16;
         final int spacing = 5;
@@ -84,11 +84,11 @@ public class NextConnectionsPage extends AbstractRouteDetailsPage {
         for (int i = connectionsSubPageIndex * CONNECTION_ENTRIES_PER_PAGE; i < (connectionsSubPageIndex + 1) * CONNECTION_ENTRIES_PER_PAGE && i < nextConnections.size(); i++) {
             TrainStop stop = nextConnections.get(i);
             String terminus = stop.getDisplayTitle();
-            GuiUtils.drawString(graphics, font, 5, y, TimeUtils.parseTime(stop.getScheduledDepartureTime(), ModClientConfig.TIME_FORMAT.get()), 0xFFDBDBDB, EAlignment.LEFT, false);
-            GuiUtils.drawString(graphics, font, 5 + timeWidth + spacing, y, GuiUtils.ellipsisString(font, TextUtils.text(stop.getTrainName()), trainNameWidth), 0xFFDBDBDB, EAlignment.LEFT, false);
-            GuiUtils.drawString(graphics, font, width() - 5, y, stop.getRealTimeStationTag().info().platform(), 0xFFDBDBDB, EAlignment.RIGHT, false);
+            GuiUtils.drawString(graphics, font, 5, y, TimeUtils.parseTime(stop.getScheduledDepartureTime(), ModClientConfig.TIME_FORMAT.get()), 0xFFDBDBDB, ETextAlignment.LEFT, false);
+            GuiUtils.drawString(graphics, font, 5 + timeWidth + spacing, y, GuiUtils.ellipsisString(font, TextUtils.text(stop.getTrainName()), trainNameWidth), 0xFFDBDBDB, ETextAlignment.LEFT, false);
+            GuiUtils.drawString(graphics, font, width() - 5, y, stop.getRealTimeStationTag().info().platform(), 0xFFDBDBDB, ETextAlignment.RIGHT, false);
             int terminusWidth = width() - 10 + timeWidth + trainNameWidth + spacing * 3 - font.width(stop.getRealTimeStationTag().info().platform());
-            GuiUtils.drawString(graphics, font, 5 + timeWidth + trainNameWidth + spacing * 2, y, GuiUtils.ellipsisString(font, TextUtils.text(terminus), terminusWidth), 0xFFDBDBDB, EAlignment.LEFT, false);
+            GuiUtils.drawString(graphics, font, 5 + timeWidth + trainNameWidth + spacing * 2, y, GuiUtils.ellipsisString(font, TextUtils.text(terminus), terminusWidth), 0xFFDBDBDB, ETextAlignment.LEFT, false);
             y += 12;
         }
 

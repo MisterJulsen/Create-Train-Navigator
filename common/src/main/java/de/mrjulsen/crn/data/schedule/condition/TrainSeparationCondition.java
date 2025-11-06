@@ -104,7 +104,7 @@ public class TrainSeparationCondition extends ScheduledDelay implements IDelayed
 	@Override
 	public boolean tickCompletion(Level level, Train train, CompoundTag context) {
 		ScheduleEntry entry = train.runtime.getSchedule().entries.get(train.runtime.currentEntry);
-		((INavigationExtension)(Object)train.navigation).addDelayedWaitCondition(de.mrjulsen.mcdragonlib.data.Pair.of(this, new DelayedWaitConditionContext(level, train, context, train.getCurrentStation(), entry)));
+		((INavigationExtension)(Object)train.navigation).addDelayedWaitCondition(de.mrjulsen.mcdragonlib.util.Pair.of(this, new DelayedWaitConditionContext(level, train, context, train.getCurrentStation(), entry)));
 		return true;
 	}
 

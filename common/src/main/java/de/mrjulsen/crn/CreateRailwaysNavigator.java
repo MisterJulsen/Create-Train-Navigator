@@ -12,25 +12,21 @@ import de.mrjulsen.crn.event.CRNClientEventsRegistryEvent;
 import de.mrjulsen.crn.event.CRNEventsManager;
 import de.mrjulsen.crn.event.ModClientEvents;
 import de.mrjulsen.crn.event.ModCommonEvents;
-import de.mrjulsen.crn.network.packets.cts.AdvancedDisplayUpdatePacket;
-import de.mrjulsen.crn.network.packets.stc.ServerErrorPacket;
-import de.mrjulsen.crn.registry.ModAccessorTypes;
 import de.mrjulsen.crn.registry.ModBlockEntities;
 import de.mrjulsen.crn.registry.ModBlocks;
 import de.mrjulsen.crn.registry.ModCreativeModeTab;
 import de.mrjulsen.crn.registry.ModDisplayTypes;
 import de.mrjulsen.crn.registry.ModExtras;
 import de.mrjulsen.crn.registry.ModItems;
+import de.mrjulsen.crn.registry.ModNetworkManager;
 import de.mrjulsen.crn.registry.ModSchedule;
 import de.mrjulsen.crn.registry.ModTrainStatusInfos;
-import de.mrjulsen.mcdragonlib.net.NetworkManagerBase;
 import dev.architectury.platform.Platform;
 import net.fabricmc.api.EnvType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 
-import java.util.List;
 import javax.annotation.Nullable;
 
 import org.slf4j.Logger;
@@ -63,9 +59,6 @@ public final class CreateRailwaysNavigator {
         }
         return null;
     }
-
-    private static NetworkManagerBase crnNet;
-
     
 
     public static void load() {}
@@ -77,18 +70,10 @@ public final class CreateRailwaysNavigator {
         ModBlockEntities.init();        
         ModExtras.init();
         ModSchedule.init();
-        ModAccessorTypes.init();
+        ModNetworkManager.init();
         ModTrainStatusInfos.init();
         ModDisplayTypes.init();
         ModCreativeModeTab.setup();
-        
-        crnNet = new NetworkManagerBase(MOD_ID, "crn_network", List.of(
-            // cts
-            AdvancedDisplayUpdatePacket.class,
-
-            // stc
-            ServerErrorPacket.class
-        ));
         
         CRNPlatformSpecific.registerConfig();
 
@@ -100,10 +85,6 @@ public final class CreateRailwaysNavigator {
         CRNEventsManager.getEvent(CRNClientEventsRegistryEvent.class).register(MOD_ID, () -> {
         });
 
-    }
-
-    public static NetworkManagerBase net() {
-        return crnNet;
     }
 
     public static boolean isDebug() {

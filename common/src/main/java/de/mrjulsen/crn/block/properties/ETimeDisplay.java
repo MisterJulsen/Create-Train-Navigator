@@ -2,10 +2,10 @@ package de.mrjulsen.crn.block.properties;
 
 import java.util.Arrays;
 
-import de.mrjulsen.mcdragonlib.core.ITranslatableEnum;
-import net.minecraft.util.StringRepresentable;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.mcdragonlib.data.ITranslatableEnum;
 
-public enum ETimeDisplay implements StringRepresentable, ITranslatableEnum {
+public enum ETimeDisplay implements ITranslatableEnum {
     ABS((byte)0, "abs"),
     ETA((byte)1, "eta");
 
@@ -30,18 +30,13 @@ public enum ETimeDisplay implements StringRepresentable, ITranslatableEnum {
     }
 
     @Override
-    public String getEnumName() {
-        return "time_display";
-    }
-
-    @Override
-    public String getEnumValueName() {
-        return getName();
-    }
-
-    @Override
     public String getSerializedName() {
         return getName();
+    }
+
+    @Override
+    public Data getTranslationData() {
+        return new Data(CreateRailwaysNavigator.MOD_ID, "time_display", name);
     }
 
 }

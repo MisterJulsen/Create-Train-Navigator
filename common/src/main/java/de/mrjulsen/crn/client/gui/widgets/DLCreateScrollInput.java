@@ -12,7 +12,7 @@ import de.mrjulsen.mcdragonlib.client.gui.widgets.DLContextMenu;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.IDragonLibWidget;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.core.ETextAlignment;
 import de.mrjulsen.mcdragonlib.data.Cache;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import net.minecraft.client.Minecraft;
@@ -73,7 +73,7 @@ public class DLCreateScrollInput extends ScrollInput implements IDragonLibWidget
     public void renderMainLayer(Graphics graphics, int mouseX, int mouseY, float partialTicks) {
         CreateDynamicWidgets.renderTextBox(graphics, x(), y(), width());
         if (shouldRenderArrow()) CreateDynamicWidgets.renderTextBoxArrow(graphics, x(), y());
-        GuiUtils.drawString(graphics, Minecraft.getInstance().font, x() + 5, y() + 5, getText(), DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, EAlignment.LEFT, true);
+        GuiUtils.drawString(graphics, Minecraft.getInstance().font, x() + 5, y() + 5, getText(), DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, ETextAlignment.LEFT, true);
 
     }
 

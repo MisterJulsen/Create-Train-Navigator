@@ -52,7 +52,7 @@ import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiAreaDefinition;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import de.mrjulsen.mcdragonlib.client.util.WidgetsCollection;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.core.ETextAlignment;
 import de.mrjulsen.mcdragonlib.data.Pair;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
@@ -269,9 +269,9 @@ public class PrioritizedDestinationInstructionSettingsScreen extends DLScreen {
 
         CreateDynamicWidgets.renderWidgetInner(graphics, workingArea.getX() + 31, workingArea.getY(), 182, workingArea.getHeight(), ColorShade.DARK);
         DynamicGuiRenderer.renderArea(graphics, new GuiAreaDefinition(workingArea.getX() + 41, workingArea.getY() + 9, 18, 18), AreaStyle.GRAY, ButtonState.DOWN);
-        GuiUtils.drawString(graphics, font, workingArea.getX() + 63, workingArea.getY() + 28, String.format("%s / %s", stationFilters.size(), PrioritizedDestinationInstruction.MAX_ENTRIES), DragonLib.NATIVE_BUTTON_FONT_COLOR_DISABLED, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, workingArea.getX() + 63, workingArea.getY() + 28, String.format("%s / %s", stationFilters.size(), PrioritizedDestinationInstruction.MAX_ENTRIES), DragonLib.NATIVE_BUTTON_FONT_COLOR_DISABLED, ETextAlignment.LEFT, false);
 
-        GuiUtils.drawString(graphics, font, guiLeft + 6, guiTop + 4, TITLE, DragonLib.NATIVE_UI_FONT_COLOR, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, guiLeft + 6, guiTop + 4, TITLE, DragonLib.NATIVE_UI_FONT_COLOR, ETextAlignment.LEFT, false);
         
         super.renderMainLayer(graphics, pMouseX, pMouseY, pPartialTick);
 
@@ -377,7 +377,7 @@ public class PrioritizedDestinationInstructionSettingsScreen extends DLScreen {
             super.renderItem(graphics, mouseX, mouseY, partialTicks);
             CreateDynamicWidgets.renderTextSlotOverlay(graphics, x + 30, y + 1, 118, 18);
             CreateDynamicWidgets.renderGrabber(graphics, x + 8, y + 2);
-            GuiUtils.drawString(graphics, font, x + 30 + 5, y + 6, getData(), DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, EAlignment.LEFT, false);
+            GuiUtils.drawString(graphics, font, x + 30 + 5, y + 6, getData(), DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, ETextAlignment.LEFT, false);
         }
         
         @Override

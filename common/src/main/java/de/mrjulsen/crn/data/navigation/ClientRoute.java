@@ -23,7 +23,7 @@ import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.crn.event.CRNEventsManager;
 import de.mrjulsen.crn.event.events.DefaultTrainDataRefreshEvent;
 import de.mrjulsen.crn.util.IListenable;
-import de.mrjulsen.mcdragonlib.data.Cache;
+import de.mrjulsen.mcdragonlib.util.Cache;
 import de.mrjulsen.mcdragonlib.util.TimeUtils;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;

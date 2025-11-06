@@ -30,7 +30,7 @@ import de.mrjulsen.mcdragonlib.client.gui.widgets.DLCheckBox;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLTooltip;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.core.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.Util;
@@ -213,7 +213,7 @@ public class TrainSectionSettingsScreen extends DLScreen {
     public void renderMainLayer(Graphics graphics, int mouseX, int mouseY, float partialTicks) {
         renderScreenBackground(graphics);
         GuiUtils.drawTexture(TEXTURE, graphics, guiLeft, guiTop, GUI_WIDTH, GUI_HEIGHT, 0, 0, 256, 256);
-        GuiUtils.drawString(graphics, font, guiLeft + 6, guiTop + 4, getTitle(), DragonLib.NATIVE_UI_FONT_COLOR, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, guiLeft + 6, guiTop + 4, getTitle(), DragonLib.NATIVE_UI_FONT_COLOR, ETextAlignment.LEFT, false);
 
         ModGuiIcons.TRAIN.render(graphics, guiLeft + 22, guiTop + 24);
         ModGuiIcons.MAP_PATH.render(graphics, guiLeft + 22, guiTop + 46);

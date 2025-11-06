@@ -36,16 +36,17 @@ import de.mrjulsen.crn.data.train.TrainUtils;
 import de.mrjulsen.crn.data.train.portable.StationDisplayData;
 import de.mrjulsen.crn.data.train.portable.TrainDisplayData;
 import de.mrjulsen.crn.data.train.portable.TrainStopDisplayData;
-import de.mrjulsen.crn.registry.ModAccessorTypes;
+import de.mrjulsen.crn.network.packets.pain.GetTrainDisplayDataPacketData;
 import de.mrjulsen.crn.registry.ModDisplayTypes;
+import de.mrjulsen.crn.registry.ModNetworkManager;
 import de.mrjulsen.mcdragonlib.block.IBERInstance;
 import de.mrjulsen.mcdragonlib.client.ber.IBlockEntityRendererInstance;
 import de.mrjulsen.mcdragonlib.config.ECachingPriority;
-import de.mrjulsen.mcdragonlib.data.Cache;
-import de.mrjulsen.mcdragonlib.data.Pair;
-import de.mrjulsen.mcdragonlib.data.Tripple;
-import de.mrjulsen.mcdragonlib.util.ListUtils;
-import de.mrjulsen.mcdragonlib.util.accessor.DataAccessor;
+import de.mrjulsen.mcdragonlib.network.NetworkDirection;
+import de.mrjulsen.mcdragonlib.util.Cache;
+import de.mrjulsen.mcdragonlib.util.DLListUtils;
+import de.mrjulsen.mcdragonlib.util.Pair;
+import de.mrjulsen.mcdragonlib.util.Tripple;
 import dev.architectury.platform.Platform;
 import net.fabricmc.api.EnvType;
 import net.minecraft.core.BlockPos;
@@ -315,7 +316,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     }
 
     public void setData(List<StationDisplayData> predictions, String stationNameFilter, StationInfo staionInfo, long lastRefreshedTime) {
-        this.dataOrderChanged = dataOrderChanged || !ListUtils.compareCollections(this.predictions, predictions, StationDisplayData::equals);
+        this.dataOrderChanged = dataOrderChanged || !DLListUtils.compareCollections(this.predictions, predictions, StationDisplayData::equals);
 
         boolean clientUpdate = Platform.getEnv() == EnvType.CLIENT && !getStationInfo().equals(staionInfo);
         
@@ -513,7 +514,9 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         syncTicks--;
         if (level.isClientSide && syncTicks <= 0) {
             syncTicks = ModClientConfig.DISPLAY_REFRESH_RATE.get();
-            DataAccessor.getFromServer(((CarriageContraptionEntity)carriage.entity).trainId, ModAccessorTypes.GET_TRAIN_DISPLAY_DATA_FROM_SERVER, (data) -> { 
+
+            ModNetworkManager.GET_TRAIN_DISPLAY_DATA.send(NetworkDirection.toServer(), new GetTrainDisplayDataPacketData.Request(((CarriageContraptionEntity)carriage.entity).trainId), (response) -> {
+                TrainDisplayData data = response.getData();
                 if (data.getState().isOutOfService() && this.trainData.getState().isOutOfService()) {
                     return;
                 }
@@ -538,7 +541,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
                 this.relativeExitDirection.clear();
                 
                 getRenderer().update(level, pos, state, this, shouldUpdate ? EUpdateReason.LAYOUT_CHANGED : EUpdateReason.DATA_CHANGED);
-            });
+            }, () -> {});
         }
     }    
 

@@ -19,7 +19,7 @@ import de.mrjulsen.crn.exceptions.RuntimeSideException;
 import de.mrjulsen.crn.mixin.ScheduleRuntimeAccessor;
 import de.mrjulsen.crn.util.PrimaryStringSelector;
 import de.mrjulsen.mcdragonlib.DragonLib;
-import de.mrjulsen.mcdragonlib.data.Cache;
+import de.mrjulsen.mcdragonlib.util.Cache;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.ChatFormatting;

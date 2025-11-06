@@ -3,7 +3,7 @@ package de.mrjulsen.crn.client.gui.widgets;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLRenderable;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.core.ETextAlignment;
 import de.mrjulsen.mcdragonlib.data.Cache;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.client.Minecraft;
@@ -17,7 +17,7 @@ public class DLLabel extends DLRenderable {
     protected boolean autoHeight;
     private Component text = TextUtils.empty();
     private int tint = 0xFFFFFFFF;
-    private EAlignment alignment = EAlignment.CENTER;
+    private ETextAlignment alignment = ETextAlignment.CENTER;
     private boolean drawShadow = true;
     
 
@@ -54,7 +54,7 @@ public class DLLabel extends DLRenderable {
         return this;
     }
 
-    public DLLabel setAlignment(EAlignment alignment) {
+    public DLLabel setAlignment(ETextAlignment alignment) {
         this.alignment = alignment;
         updateSize();
         return this;
@@ -85,7 +85,7 @@ public class DLLabel extends DLRenderable {
         return tint;
     }
 
-    public EAlignment getAlignment() {
+    public ETextAlignment getAlignment() {
         return alignment;
     }
 
@@ -105,7 +105,7 @@ public class DLLabel extends DLRenderable {
 
     @Override
     public void renderMainLayer(Graphics graphics, int mouseX, int mouseY, float partialTicks) {
-        EAlignment align = getAlignment();
+        ETextAlignment align = getAlignment();
         int x = x() + switch (align) {
             case RIGHT -> width();
             case CENTER -> width() / 2;

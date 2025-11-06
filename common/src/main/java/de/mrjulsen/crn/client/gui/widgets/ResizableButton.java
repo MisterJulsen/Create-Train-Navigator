@@ -7,7 +7,7 @@ import de.mrjulsen.mcdragonlib.client.render.DynamicGuiRenderer.ButtonState;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiAreaDefinition;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.core.ETextAlignment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -25,6 +25,6 @@ public class ResizableButton extends Button {
         Graphics graphics = new Graphics(guiGraphics, guiGraphics.pose());
         DynamicGuiRenderer.renderArea(graphics, GuiAreaDefinition.of(this), AreaStyle.NATIVE, isActive() ? (isHoveredOrFocused() ? ButtonState.SELECTED : ButtonState.BUTTON) : ButtonState.DISABLED);
         int j = isActive() ? DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE : DragonLib.NATIVE_BUTTON_FONT_COLOR_DISABLED;
-        GuiUtils.drawString(graphics, Minecraft.getInstance().font, this.getX() + this.width / 2, this.getY() + (this.height - 8) / 2, this.getMessage(), j, EAlignment.CENTER, true);
+        GuiUtils.drawString(graphics, Minecraft.getInstance().font, this.getX() + this.width / 2, this.getY() + (this.height - 8) / 2, this.getMessage(), j, ETextAlignment.CENTER, true);
     }
 }

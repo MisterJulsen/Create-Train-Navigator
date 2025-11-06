@@ -15,7 +15,7 @@ import de.mrjulsen.crn.event.ModCommonEvents;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.core.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -65,8 +65,8 @@ public class TrainJourneyScreen extends AbstractNavigatorScreen {
         
         int y = FooterSize.DEFAULT.size() - 1;
         CreateDynamicWidgets.renderContainer(graphics, guiLeft + 1, guiTop + y, GUI_WIDTH - 2, 32, ContainerColor.BLUE);
-        GuiUtils.drawString(graphics, font, guiLeft + 8, guiTop + y + 7, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".journey_info.date", (ModCommonEvents.getPhysicalLevel().dayTime() / Level.TICKS_PER_DAY)), DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, EAlignment.LEFT, false);
-        GuiUtils.drawString(graphics, font, guiLeft + 8, guiTop + y + 18, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".journey_info.train", part.getFirstStop().getTrainDisplayName(), part.getFirstStop().getTrainId().toString().split("-")[0], part.getFirstStop().getDisplayTitle()), DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, guiLeft + 8, guiTop + y + 7, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".journey_info.date", (ModCommonEvents.getPhysicalLevel().dayTime() / Level.TICKS_PER_DAY)), DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, ETextAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, guiLeft + 8, guiTop + y + 18, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".journey_info.train", part.getFirstStop().getTrainDisplayName(), part.getFirstStop().getTrainId().toString().split("-")[0], part.getFirstStop().getDisplayTitle()), DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, ETextAlignment.LEFT, false);
         y += 32 - 1;
         CreateDynamicWidgets.renderContainer(graphics, guiLeft + 1, guiTop + y, GUI_WIDTH - 2, GUI_HEIGHT - y - FooterSize.SMALL.size() + 1, ContainerColor.GOLD);
 

@@ -14,6 +14,8 @@ import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.joml.Vector3f;
+
 import com.simibubi.create.Create;
 import com.simibubi.create.content.decoration.slidingDoor.DoorControlBehaviour;
 import com.simibubi.create.content.trains.GlobalRailwayManager;
@@ -34,15 +36,14 @@ import de.mrjulsen.crn.data.storage.GlobalSettings;
 import de.mrjulsen.crn.event.ModCommonEvents;
 import de.mrjulsen.crn.data.navigation.TrainSchedule;
 import de.mrjulsen.mcdragonlib.config.ECachingPriority;
-import de.mrjulsen.mcdragonlib.data.Cache;
-import de.mrjulsen.mcdragonlib.data.MapCache;
-import de.mrjulsen.mcdragonlib.data.Single.MutableSingle;
-import de.mrjulsen.mcdragonlib.util.MathUtils;
+import de.mrjulsen.mcdragonlib.util.Cache;
+import de.mrjulsen.mcdragonlib.util.MapCache;
+import de.mrjulsen.mcdragonlib.util.Holder.MutableHolder;
+import de.mrjulsen.mcdragonlib.util.math.MathUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.Vec3;
 
 public final class TrainUtils {
 
@@ -242,9 +243,9 @@ public final class TrainUtils {
     }
 
     public static List<TrainStop> getDeparturesAt(Predicate<TrainPrediction> stationFilter, UUID selfTrain) {
-        MutableSingle<TrainSchedule> selfSchedule = new MutableSingle<TrainSchedule>(null);
+        MutableHolder<TrainSchedule> selfSchedule = new MutableHolder<TrainSchedule>(null);
         TrainUtils.getTrain(selfTrain).ifPresent(x -> {
-            selfSchedule.setFirst(new TrainSchedule(TrainListener.getTrainData(x.id).map(TrainData::getSessionId).orElse(new UUID(0, 0)), x));
+            selfSchedule.set(new TrainSchedule(TrainListener.getTrainData(x.id).map(TrainData::getSessionId).orElse(new UUID(0, 0)), x));
         });
         
         List<TrainStop> stops = new ArrayList<>();
@@ -260,13 +261,13 @@ public final class TrainUtils {
                 }
 
                 TrainStop stop = new TrainStop(pred);
-                if (selfSchedule.getFirst() == null) {
+                if (selfSchedule.get() == null) {
                     Optional<Train> train = TrainUtils.getTrain(stop.getTrainId());
                     if (!train.isPresent()) {
                         continue;
                     }
                     TrainSchedule sched = new TrainSchedule(TrainListener.getTrainData(train.get().id).map(TrainData::getSessionId).orElse(new UUID(0, 0)), train.get());
-                    if (sched.isEqual(selfSchedule.getFirst())) {
+                    if (sched.isEqual(selfSchedule.get())) {
                         continue;
                     }
                 }
@@ -371,20 +372,20 @@ public final class TrainUtils {
     
 
     public static Optional<TrackEdge> getEdge(GlobalStation station) {
-        MutableSingle<TrackEdge> edge = new MutableSingle<TrackEdge>(null);
+        MutableHolder<TrackEdge> edge = new MutableHolder<TrackEdge>(null);
         Create.RAILWAYS.trackNetworks.forEach((uuid, graph) -> {
-            if (edge.getFirst() != null) return;
+            if (edge.get() != null) return;
             TrackEdge e = graph.getConnection(Couple.create(graph.locateNode(station.edgeLocation.getFirst()), graph.locateNode(station.edgeLocation.getSecond())));
             if (e == null) return;
-            edge.setFirst(e);
+            edge.set(e);
         });        
-        return Optional.ofNullable(edge.getFirst());
+        return Optional.ofNullable(edge.get());
     }
 
     public static double angleOn(TrackEdgePoint point, TrackEdge edge) {
         double basePos = point.isPrimary(edge.node1) ? edge.getLength() - point.position : point.position;
-        Vec3 vec = edge.getDirectionAt(basePos);
-        return point.isPrimary(edge.node1) ? MathUtils.getVectorAngle(vec) : MathUtils.getVectorAngle(vec.reverse());
+        Vector3f vec = edge.getDirectionAt(basePos).toVector3f();
+        return point.isPrimary(edge.node1) ? MathUtils.getVectorAngle(vec) : MathUtils.getVectorAngle(vec.negate());
     }
 
     public static TrainExitSide getExitSide(GlobalStation station) {

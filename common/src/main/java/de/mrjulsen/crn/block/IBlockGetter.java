@@ -7,8 +7,6 @@ import com.simibubi.create.content.contraptions.Contraption;
 import com.simibubi.create.content.contraptions.behaviour.MovementContext;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 
-import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
-import de.mrjulsen.crn.block.properties.ESide;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.BlockGetter;
