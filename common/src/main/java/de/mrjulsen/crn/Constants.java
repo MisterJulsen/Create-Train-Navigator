@@ -2,16 +2,18 @@ package de.mrjulsen.crn;
 
 import java.util.UUID;
 
+import de.mrjulsen.mcdragonlib.client.util.DLTexture;
+import de.mrjulsen.mcdragonlib.util.DLColor;
+import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.time.DLTime;
 import de.mrjulsen.mcdragonlib.util.time.VanillaTimeSystem;
 import de.mrjulsen.mcdragonlib.util.time.format.ITimeFormatter;
 import de.mrjulsen.mcdragonlib.util.time.format.TimeFormatDigitalDuration;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 
 public class Constants {
-    public static final ResourceLocation GUI_WIDGETS = new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/widgets.png");
+    public static final DLTexture GUI_WIDGETS = new DLTexture(DLUtils.resourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/widgets.png"), 256, 256);
     public static final Component ELLIPSIS_STRING = TextUtils.text("...");
     public static final Component TOOLTIP_GO_BACK = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.go_back");
     public static final Component TOOLTIP_GO_TO_TOP = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.go_to_top");
@@ -39,9 +41,9 @@ public class Constants {
     public static final UUID ZERO_UUID = new UUID(0, 0);
     public static final int[] DEFAULT_TRAIN_TYPE_COLORS = new int[] { 0xFF393939, 0xFFf0f3f5, 0xFFafb4bb, 0xFF878c96, 0xFF2a7230, 0xFF814997, 0xFF1455c0, 0xFFa9455d, 0xFF55b9e6, 0xFFffd800 };
      
-    public static final int COLOR_ON_TIME = 0xFF1AEA5F;
-    public static final int COLOR_DELAYED = 0xFFFF4242;
-    public static final int COLOR_TRAIN_BACKGROUND = 0xFF393939;
+    public static final DLColor COLOR_ON_TIME = DLColor.fromInt(0xFF1AEA5F);
+    public static final DLColor COLOR_DELAYED = DLColor.fromInt(0xFFFF4242);
+    public static final DLColor COLOR_TRAIN_BACKGROUND = DLColor.fromInt(0xFF393939);
 
     public static final DLTime NULL_TIME = DLTime.fromTicks(0, VanillaTimeSystem.INSTANCE);
     public static final ITimeFormatter DEFAULT_REAL_DURATION_FORMAT = new TimeFormatDigitalDuration(NULL_TIME, false, true, true, true, true);

@@ -14,16 +14,21 @@ import de.mrjulsen.crn.data.navigation.ClientRoute;
 import de.mrjulsen.crn.data.navigation.ClientRoutePart;
 import de.mrjulsen.crn.data.navigation.RoutePart;
 import de.mrjulsen.crn.data.navigation.TransferConnection;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.DLAbstractScrollBar;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.DLScrollableWidgetContainer;
-import de.mrjulsen.mcdragonlib.client.util.Graphics;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLGuiComponent;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLScrollBar;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.util.EAlign;
+import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
+import de.mrjulsen.mcdragonlib.client.util.GuiUtils.TextureFillMode;
+import de.mrjulsen.mcdragonlib.util.DLColor;
+import de.mrjulsen.mcdragonlib.util.math.Rectangle;
+import de.mrjulsen.mcdragonlib.util.math.Size;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 
-public class RouteDetailsViewer extends DLScrollableWidgetContainer {
+public class RouteDetailsViewer extends DLGuiComponent {
 
-    private final DLAbstractScrollBar<?> scrollBar;
+    private final DLScrollBar scrollBar;
     private int contentHeight = 0;
     private Set<RoutePart> expandedParts = new HashSet<>();
     private boolean canExpandCollapse = true;
@@ -33,16 +38,18 @@ public class RouteDetailsViewer extends DLScrollableWidgetContainer {
 
     private final Screen parent;
 
-    public RouteDetailsViewer(Screen parent, int x, int y, int width, int height, DLAbstractScrollBar<?> scrollBar) {
+    public RouteDetailsViewer(Screen parent, int x, int y, int width, int height, DLScrollBar scrollBar) {
         super(x, y, width, height);
         this.scrollBar = scrollBar;
         this.parent = parent;
-        
-        scrollBar.setAutoScrollerSize(true);
-        scrollBar.setScreenSize(height());
-        scrollBar.setMaxScroll(0);
-        scrollBar.withOnValueChanged((sb) -> setYScrollOffset(sb.getScrollValue()));
-        scrollBar.setStepSize(10);
+        scrollBar.scrollerSize.set(0);
+        scrollBar.screenSize.set(height());
+        scrollBar.maxSize.set(Size.of(width(), 0));
+        scrollBar.scrollSteps.set(10);
+        scrollBar.addEventListener(DLScrollBar.ValueChangedEvent.class, (s, e) -> {
+            setScrollOffsetY(e.value());
+            return false;
+        });
     }
 
     public void displayRoute(ClientRoute route) {
@@ -54,7 +61,7 @@ public class RouteDetailsViewer extends DLScrollableWidgetContainer {
     }
 
     public void displayRouteInternal(ClientRoute route, List<ClientRoutePart> parts, boolean displayConnections) {
-        clearWidgets();
+        clearComponents();
         contentHeight = 10;
         Queue<TransferConnection> connections = new ConcurrentLinkedQueue<>(route.getConnections());
         for (int i = 0; i < parts.size(); i++) {
@@ -69,34 +76,27 @@ public class RouteDetailsViewer extends DLScrollableWidgetContainer {
                 if (w.isExpanded()) expandedParts.add(part); else expandedParts.remove(part);
                 displayRoute(route);
             });
-            addRenderableWidget(widget);
+            addComponent(widget);
             contentHeight += widget.height();
 
             if (!connections.isEmpty() && displayConnections) {
-                RouteDetailsTransferWidget transfer = addRenderableOnly(new RouteDetailsTransferWidget(x(), y() + contentHeight, width(), connections.poll()));
+                RouteDetailsTransferWidget transfer = addComponent(new RouteDetailsTransferWidget(x(), y() + contentHeight, width(), connections.poll()));
                 contentHeight += transfer.height();
             }
         }
 
         contentHeight += 10;
-        scrollBar.setMaxScroll(contentHeight);
+        scrollBar.maxSize.set(Size.of(width(), contentHeight));
     }
 
     @Override
-    public void renderMainLayer(Graphics graphics, int mouseX, int mouseY, float partialTicks) {
-        super.renderMainLayer(graphics, mouseX, mouseY, partialTicks);        
+    public void renderMainLayer(DLGuiGraphics graphics, double mouseX, double mouseY, Rectangle renderBounds) {        
+        GuiUtils.drawTexture(Constants.GUI_WIDGETS, graphics, 0, 0, 22, 10, 0, 179, 22, 1, TextureFillMode.STRETCH);
+        GuiUtils.drawTexture(Constants.GUI_WIDGETS, graphics, 0, 0 + contentHeight - 10, 22, Math.max(10, height() - contentHeight + 10), 0, 179, 22, 1, TextureFillMode.STRETCH);
 
-        GuiUtils.fillGradient(graphics, x(), y(), 0, width(), 10, 0x77000000, 0x00000000);
-        GuiUtils.fillGradient(graphics, x(), y() + height() - 10, 0, width(), 10, 0x00000000, 0x77000000);
+        GuiUtils.fillGradient(graphics, 0, 0, width(), 10, DLColor.fromInt(0x77000000), DLColor.TRANSPARENT, EAlign.TOP);
+        GuiUtils.fillGradient(graphics, 0, height() - 10, width(), 10, DLColor.fromInt(0x77000000), DLColor.TRANSPARENT, EAlign.BOTTOM);
 
-        //DLUtils.doIfNotNull(route, r -> GuiUtils.drawString(graphics, font, x(), y(), r.getState().name() + ", Running: " + !r.isClosed(), 0xFFFF0000, ETextAlignment.LEFT, false));
-    }
-    
-    @Override
-    public void renderMainLayerScrolled(Graphics graphics, int mouseX, int mouseY, float partialTicks) {
-        GuiUtils.drawTexture(Constants.GUI_WIDGETS, graphics, x(), y(), 22, 10, 0, 179, 22, 1, 256, 256);
-        GuiUtils.drawTexture(Constants.GUI_WIDGETS, graphics, x(), y() + contentHeight - 10, 22, Math.max(10, height() - contentHeight + 10), 0, 179, 22, 1, 256, 256);
-        super.renderMainLayerScrolled(graphics, mouseX, mouseY, partialTicks);
     }
 
     public boolean canExpandCollapse() {
@@ -129,19 +129,5 @@ public class RouteDetailsViewer extends DLScrollableWidgetContainer {
 
     public void setShowJourney(boolean b) {
         this.showJourney = b;
-    }
-
-    @Override
-    public NarrationPriority narrationPriority() {
-        return NarrationPriority.HOVERED;
-    }
-
-    @Override
-    public void updateNarration(NarrationElementOutput narrationElementOutput) {}
-
-    @Override
-    public boolean consumeScrolling(double mouseX, double mouseY) {
-        return false;
-    }
-    
+    }    
 }
