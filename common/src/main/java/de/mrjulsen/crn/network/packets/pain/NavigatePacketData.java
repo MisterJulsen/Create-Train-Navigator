@@ -80,6 +80,10 @@ public class NavigatePacketData {
         protected void read(CompoundTag nbt) {
             this.data = nbt.getList(NBT_DATA, Tag.TAG_COMPOUND).stream().map(x -> ClientRoute.fromNbt((CompoundTag)x, true)).toList();
         }
+
+        public List<ClientRoute> getData() {
+            return data;
+        }        
     }
 
     public static Response handle(Request packet, NetworkPacketContext context) {

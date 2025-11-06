@@ -19,34 +19,35 @@ import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.data.UserSettings;
 import de.mrjulsen.crn.data.navigation.ClientRoute;
 import de.mrjulsen.crn.data.storage.RecentSearchQueries.RecentSearchQuery;
-import de.mrjulsen.crn.registry.ModAccessorTypes;
-import de.mrjulsen.crn.registry.ModAccessorTypes.NavigationData;
+import de.mrjulsen.crn.network.packets.pain.NavigatePacketData;
+import de.mrjulsen.crn.registry.ModNetworkManager;
 import de.mrjulsen.mcdragonlib.DragonLib;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.DLAbstractScrollBar;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.DLButton;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.DLContextMenu;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.DLContextMenuItem;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.DLContextMenuItem.ContextMenuItemData;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.DLIconButton;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.DLScrollableWidgetContainer;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.DLAbstractImageButton.ButtonType;
-import de.mrjulsen.mcdragonlib.client.render.DynamicGuiRenderer.AreaStyle;
-import de.mrjulsen.mcdragonlib.client.render.Sprite;
-import de.mrjulsen.mcdragonlib.client.util.Graphics;
-import de.mrjulsen.mcdragonlib.client.util.GuiAreaDefinition;
+import de.mrjulsen.mcdragonlib.client.gui.events.DLGuiStandardEvents;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLGuiComponent;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLWindow;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLButton;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLScrollBar;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.render.FlatButtonRenderer;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.util.EAlign;
+import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.ETextAlignment;
+import de.mrjulsen.mcdragonlib.data.ETextAlignment;
+import de.mrjulsen.mcdragonlib.network.NetworkDirection;
+import de.mrjulsen.mcdragonlib.util.DLColor;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
-import de.mrjulsen.mcdragonlib.util.accessor.DataAccessor;
+import de.mrjulsen.mcdragonlib.util.math.Rectangle;
+import de.mrjulsen.mcdragonlib.util.math.Size;
+import net.fabricmc.fabric.mixin.object.builder.DefaultAttributeRegistryAccessor;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
-public class RouteViewer extends DLScrollableWidgetContainer implements Closeable {
+public class RouteViewer extends DLGuiComponent {
 
     private final MutableComponent searchingText = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.searching");
     private final MutableComponent noConnectionsText = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.no_connections");
@@ -55,7 +56,7 @@ public class RouteViewer extends DLScrollableWidgetContainer implements Closeabl
 
 
     private final Screen parent;
-    private final DLAbstractScrollBar<?> scrollBar;
+    private final DLScrollBar scrollBar;
     private boolean shouldDisplayRecentSearchQueries;
     private UserSettings userSettings;
     private int contentHeight = 0;
@@ -63,7 +64,7 @@ public class RouteViewer extends DLScrollableWidgetContainer implements Closeabl
 
     private final List<ClientRoute> routes = new ArrayList<>();
     private final Consumer<List<ClientRoute>> onUpdateRoutes;
-    private DLIconButton closeBtn;
+    private DLButton closeBtn;
 
     // flags
     private boolean loadingRoutes = false;
@@ -74,16 +75,19 @@ public class RouteViewer extends DLScrollableWidgetContainer implements Closeabl
     private double renderOffsetX = 0;
     private boolean animationStarted = false;
 
-    public RouteViewer(Screen parent, int x, int y, int width, int height, DLAbstractScrollBar<?> scrollBar, Consumer<List<ClientRoute>> onUpdateRoutes) {
+    public RouteViewer(Screen parent, int x, int y, int width, int height, DLScrollBar scrollBar, Consumer<List<ClientRoute>> onUpdateRoutes) {
         super(x, y, width, height);
         this.parent = parent;
         this.scrollBar = scrollBar;
         this.onUpdateRoutes = onUpdateRoutes;
-        scrollBar.setAutoScrollerSize(true);
-        scrollBar.setScreenSize(height());
-        scrollBar.setMaxScroll(0);
-        scrollBar.withOnValueChanged((sb) -> setYScrollOffset(sb.getScrollValue()));
-        scrollBar.setStepSize(10);
+        scrollBar.scrollerSize.set(0);
+        scrollBar.screenSize.set(height());
+        scrollBar.maxSize.set(Size.of(width, height));
+        scrollBar.scrollSteps.set(10);
+        scrollBar.addEventListener(DLScrollBar.ValueChangedEvent.class, (s, e) -> {
+            setScrollOffsetY(e.value());
+            return false;
+        });
 
         setupList();
     }
@@ -124,7 +128,9 @@ public class RouteViewer extends DLScrollableWidgetContainer implements Closeabl
                 this.renderOffsetX = -(50 * animPercentage);
             }, null, () -> {
                 this.renderOffsetX = 0;
-                DataAccessor.getFromServer(new NavigationData(from, to, Minecraft.getInstance().player.getUUID()), ModAccessorTypes.NAVIGATE, (routeList) -> {   
+
+                ModNetworkManager.NAVIGATE.send(NetworkDirection.toServer(), new NavigatePacketData.Request(from, to, Minecraft.getInstance().player.getUUID()), (response) -> {
+                    List<ClientRoute> routeList = response.getData();
                     animator.start(10, (poseStack, current, total, percentage) -> {
                         this.animPercentage = Math.pow(percentage, 4);
                         this.renderOffsetX = (50 * animPercentage);
@@ -136,24 +142,26 @@ public class RouteViewer extends DLScrollableWidgetContainer implements Closeabl
                         this.loadingRoutes = false;
                         DLUtils.doIfNotNull(andThen, x -> x.accept(this));            
                         if (this.routes.isEmpty()) {
-                            closeBtn = addRenderableWidget(new DLIconButton(ButtonType.DEFAULT, AreaStyle.FLAT, ModGuiIcons.X.getAsSprite(16, 16), x() + width() / 2 - DLIconButton.DEFAULT_BUTTON_WIDTH / 2, y() + height() / 2 + 20, TextUtils.empty(),
-                            (btn) -> {
+                            closeBtn = addComponent(new DLButton(width() / 2 - 18 / 2, height() / 2 + 20));
+                            closeBtn.icon.set(ModGuiIcons.X.getAsSprite(16, 16));
+                            closeBtn.text.set(TextUtils.empty());
+                            closeBtn.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
                                 this.hasSearched = false;
                                 refresh(userSettings);
-                            }));
-                            closeBtn.setBackColor(0);
+                                return false;
+                            });
                         }
                     });
-                });
+                }, () -> {});
             });
             this.animationStarted = true;
         });        
     }
 
     @Override
-    public void clearWidgets() {
-        super.clearWidgets();
-        closeBtn = null;;
+    public void clearComponents() {
+        super.clearComponents();
+        closeBtn = null;
     }
 
     @Override
@@ -167,17 +175,17 @@ public class RouteViewer extends DLScrollableWidgetContainer implements Closeabl
             return;
         }
         this.userSettings = settings;
-        clearWidgets();
+        clearComponents();
         setupList();
     }
 
     private void setupList() {
-        clearWidgets();
+        clearComponents();
         this.contentHeight = 0;
         if (this.shouldDisplayRecentSearchQueries && !this.hasSearched && !this.loadingRoutes && this.routes.isEmpty() && userSettings != null) {
             contentHeight = 20 + Minecraft.getInstance().font.lineHeight;
             for (RecentSearchQuery query : userSettings.recentSearchQueries.getValue().getAll()) {
-                RecentSearchQueryButton btn = addRenderableWidget(new RecentSearchQueryButton(this, x() + 10, y() + contentHeight, width() - 20, query));
+                RecentSearchQueryButton btn = addComponent(new RecentSearchQueryButton(this, x() + 10, y() + contentHeight, width() - 20, query));
                 contentHeight += btn.height();
             }
             contentHeight += 10;
@@ -185,24 +193,22 @@ public class RouteViewer extends DLScrollableWidgetContainer implements Closeabl
             contentHeight = 5;
             for (int i = 0; i < routes.size(); i++) {
                 RouteWidget widget = new RouteWidget(this, routes.get(i), x() + 10, y() + contentHeight);
-                addRenderableWidget(widget);
+                addComponent(widget);
                 contentHeight += (RouteWidget.HEIGHT + 3);
             }
             contentHeight += 2;
         }
-        scrollBar.setMaxScroll(contentHeight);
+        scrollBar.maxSize.set(Size.of(width(), contentHeight));
     }
 
     @Override
-    public void renderMainLayer(Graphics graphics, int mouseX, int mouseY, float partialTicks) {
-        animator.renderMainLayer(graphics, mouseX, mouseY, partialTicks);  
-
-        super.renderMainLayer(graphics, mouseX, mouseY, partialTicks);
+    public void renderMainLayer(DLGuiGraphics graphics, double mouseX, double mouseY, Rectangle renderBounds) {
+        animator.renderMainLayer(graphics, mouseX, mouseY, renderBounds);
         graphics.poseStack().pushPose();
         graphics.poseStack().translate(renderOffsetX, 0, 0);
         
-        partialTicks = Minecraft.getInstance().getFrameTime();
-        angle += 6 * partialTicks;
+        float frameTime = Minecraft.getInstance().getFrameTime();
+        angle += 6 * frameTime;
         if (angle > 360) {
             angle = 0;
         }
@@ -211,17 +217,17 @@ public class RouteViewer extends DLScrollableWidgetContainer implements Closeabl
 
         if (!this.loadingRoutes) {
             if (this.hasSearched && routes.isEmpty()) {
-                GuiUtils.drawString(graphics, font, x() + width() / 2, y() + height() / 2 + 15 - font.lineHeight - 10, noConnectionsText, 0xFFFFFF, ETextAlignment.CENTER, false);
-                AllIcons.I_ACTIVE.render(graphics.graphics(), (int)(x() + width() / 2 - 8), (int)(y() + height() / 2 - 15 - font.lineHeight - 10));
+                GuiUtils.drawString(graphics, graphics.defaultFont(), width() / 2, height() / 2 + 15 - graphics.defaultFont().lineHeight - 10, noConnectionsText, DLColor.WHITE, ETextAlignment.CENTER, false);
+                AllIcons.I_ACTIVE.render(graphics.graphics(), (int)(width() / 2 - 8), (int)(height() / 2 - 15 - graphics.defaultFont().lineHeight - 10));
             } else if (this.shouldDisplayRecentSearchQueries && !this.hasSearched && !userSettings.recentSearchQueries.getValue().isEmpty()) {
-                GuiUtils.drawString(graphics, font, x() + 10, y() + 10, txtRecentSearchQueries, 0xFFFFFF, ETextAlignment.LEFT, true);
+                GuiUtils.drawString(graphics, graphics.defaultFont(), 10, 10, txtRecentSearchQueries, DLColor.WHITE, ETextAlignment.LEFT, true);
                 if (this.userSettings == null) {
-                    GuiUtils.drawString(graphics, font, x() + width() / 2, y() + height() / 2 + 15 - font.lineHeight, Constants.TEXT_LOADING, 0xFFFFFF, ETextAlignment.CENTER, false);
-                    AllIcons.I_MTD_SCAN.render(graphics.graphics(), (int)(x() + width() / 2 - 8 + offsetX), (int)(y() + height() / 2 - 15 - font.lineHeight + offsetY));
+                    GuiUtils.drawString(graphics, graphics.defaultFont(), width() / 2, height() / 2 + 15 - graphics.defaultFont().lineHeight, Constants.TEXT_LOADING, DLColor.WHITE, ETextAlignment.CENTER, false);
+                    AllIcons.I_MTD_SCAN.render(graphics.graphics(), (int)(width() / 2 - 8 + offsetX), (int)(height() / 2 - 15 - graphics.defaultFont().lineHeight + offsetY));
                 }
             } else if (!this.hasSearched) {                
-                GuiUtils.drawString(graphics, font, x() + width() / 2, y() + height() / 2 + 15 - font.lineHeight, notSearchedText, 0xFFFFFF, ETextAlignment.CENTER, false);
-                ModGuiIcons.INFO.render(graphics, (int)(x() + width() / 2 - 8), (int)(y() + height() / 2 - 15 - font.lineHeight));
+                GuiUtils.drawString(graphics, graphics.defaultFont(), width() / 2, height() / 2 + 15 - graphics.defaultFont().lineHeight, notSearchedText, DLColor.WHITE, ETextAlignment.CENTER, false);
+                ModGuiIcons.INFO.render(graphics, (int)(width() / 2 - 8), (int)(height() / 2 - 15 - graphics.defaultFont().lineHeight));
             }
         } else {
             if (animationStarted) {
@@ -229,47 +235,35 @@ public class RouteViewer extends DLScrollableWidgetContainer implements Closeabl
                 RenderSystem.defaultBlendFunc();
                 RenderSystem.enableDepthTest();
                 RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
-                GuiUtils.setTint(1f, 1f, 1f, animator.isRunning() ? (float)(1D - animPercentage) : 1f);
-                CreateDynamicWidgets.renderShadow(graphics, x() + width() / 2 - font.width(searchingText) / 2 - 10, (int)(y() + height() / 2 - 25 - font.lineHeight), font.width(searchingText) + 20, 55);
-                GuiUtils.drawString(graphics, font, x() + width() / 2, y() + height() / 2 + 15 - font.lineHeight, searchingText, ((int)(255F * (float)(1D - animPercentage)) << 24) | 0xFFFFFF, ETextAlignment.CENTER, false);
-                AllIcons.I_MTD_SCAN.render(graphics.graphics(), (int)(x() + width() / 2 - 8 + offsetX), (int)(y() + height() / 2 - 15 - font.lineHeight + offsetY));
+                GuiUtils.setTint(DLColor.of(1f, 1f, 1f, animator.isRunning() ? (float)(1D - animPercentage) : 1f));
+                CreateDynamicWidgets.renderShadow(graphics, width() / 2 - graphics.defaultFont().width(searchingText) / 2 - 10, (int)(height() / 2 - 25 - graphics.defaultFont().lineHeight), graphics.defaultFont().width(searchingText) + 20, 55);
+                GuiUtils.drawString(graphics, graphics.defaultFont(), width() / 2, height() / 2 + 15 - graphics.defaultFont().lineHeight, searchingText, DLColor.of((float)(1D - animPercentage), 1f, 1f, 1f), ETextAlignment.CENTER, false);
+                AllIcons.I_MTD_SCAN.render(graphics.graphics(), (int)(width() / 2 - 8 + offsetX), (int)(height() / 2 - 15 - graphics.defaultFont().lineHeight + offsetY));
             }
         }
         
-        if (scrollBar.getScrollValue() > 0) {
-            GuiUtils.fillGradient(graphics, x(), y(), 0, width(), 10, 0x77000000, 0x00000000);
+        if (scrollBar.value.get() > 0) {
+            GuiUtils.fillGradient(graphics, 0, 0, width(), 10, DLColor.fromInt(0x77000000), DLColor.BLACK, EAlign.TOP);
         }
-        if (scrollBar.getScrollValue() < scrollBar.getMaxScroll()) {
-            GuiUtils.fillGradient(graphics, x(), y() + height() - 10, 0, width(), 10, 0x00000000, 0x77000000);
+        if (scrollBar.value.get() < scrollBar.max.get()) {
+            GuiUtils.fillGradient(graphics, 0, height() - 10, width(), 10, DLColor.fromInt(0x00000000), DLColor.WHITE, EAlign.BOTTOM);
         }
         graphics.poseStack().popPose();
     }
 
     @Override
-    public void renderFrontLayer(Graphics graphics, int mouseX, int mouseY, float partialTicks) {
-        super.renderFrontLayer(graphics, mouseX, mouseY, partialTicks);
+    public void renderFrontLayer(DLGuiGraphics graphics, double mouseX, double mouseY, Rectangle renderBounds) {        
         if (closeBtn != null) {
-            GuiUtils.renderTooltip(parent, closeBtn, List.of(DragonLib.TEXT_CLOSE), 200, graphics, mouseX, mouseY);
+            if (closeBtn.isSelected()) {
+                GuiUtils.drawTooltip(graphics, null, (int)mouseX, (int)mouseY, List.of(TextUtils.TEXT_CLOSE), 200);
+            }
         }
-    }
-
-    @Override
-    public NarrationPriority narrationPriority() {
-        return NarrationPriority.HOVERED;
-    }
-
-    @Override
-    public void updateNarration(NarrationElementOutput narrationElementOutput) {}
-
-    @Override
-    public boolean consumeScrolling(double mouseX, double mouseY) {
-        return false;
     }
 
     public void clear() {
         this.routes.forEach(ClientRoute::close);
         this.routes.clear();
-        clearWidgets();
+        clearComponents();
     }
 
 
@@ -280,16 +274,17 @@ public class RouteViewer extends DLScrollableWidgetContainer implements Closeabl
         private final Component subText;
 
         public RecentSearchQueryButton(RouteViewer viewer, int x, int y, int width, RecentSearchQuery query) {
-            super(x, y, width, 12, TextUtils.empty(),
-            (btn) -> {
+            super(x, y, width, 12);
+            addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
                 viewer.search(query.getStartStation(), query.getDestinationStation(), viewer.userSettings, null);
+                return false;
             });
-            this.subText = GuiUtils.ellipsisString(Minecraft.getInstance().font, TextUtils.text(DragonLib.DATE_FORMAT.format(query.getCreationTime())).withStyle(ChatFormatting.GRAY), (int)((float)(width - 6) / 0.75f));
-            this.text = GuiUtils.ellipsisString(Minecraft.getInstance().font, TextUtils.text(String.format("%s \u2192 %s", query.getStartStation(), query.getDestinationStation())), (int)((float)(width - 6 - Minecraft.getInstance().font.width(subText) - 5) / 0.75f));
+            this.subText = TextUtils.truncateWithEllipsis(Minecraft.getInstance().font, TextUtils.text(DragonLib.DATE_FORMAT.format(query.getCreationTime())).withStyle(ChatFormatting.GRAY), (int)((float)(width - 6) / 0.75f));
+            this.text = TextUtils.truncateWithEllipsis(Minecraft.getInstance().font, TextUtils.text(String.format("%s \u2192 %s", query.getStartStation(), query.getDestinationStation())), (int)((float)(width - 6 - Minecraft.getInstance().font.width(subText) - 5) / 0.75f));
+            componentRenderer.set(FlatButtonRenderer.INSTANCE);
+            backgroundTint.set(DLColor.TRANSPARENT);
             
-            setRenderStyle(AreaStyle.FLAT);
-            setBackColor(0);
-            
+            /*
             setMenu(new DLContextMenu(() -> GuiAreaDefinition.of(this), () -> new DLContextMenuItem.Builder()
                 .add(new ContextMenuItemData(Constants.TEXT_SEARCH, Sprite.empty(), true, (b) -> onPress.onPress(b), null))
                 .addSeparator()
@@ -303,21 +298,21 @@ public class RouteViewer extends DLScrollableWidgetContainer implements Closeabl
                     });
                 }, null))
             ));
+            */
         }
 
         @Override
-        public void renderMainLayer(Graphics graphics, int mouseX, int mouseY, float partialTick) {
-            super.renderMainLayer(graphics, mouseX, mouseY, partialTick);
+        public void renderMainLayer(DLGuiGraphics graphics, double mouseX, double mouseY, Rectangle renderBounds) {
             graphics.poseStack().pushPose();
             graphics.poseStack().translate(x() + 3, y() + 3, 0);
             graphics.poseStack().scale(0.75f, 0.75f, 0.75f);
-            GuiUtils.drawString(graphics, font, 0, 0, text, DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, ETextAlignment.LEFT, false);
+            GuiUtils.drawString(graphics, graphics.defaultFont(), 0, 0, text, DragonLib.VANILLA_BUTTON_ACTIVE_FONT_COLOR, ETextAlignment.LEFT, false);
             graphics.poseStack().popPose();
             
             graphics.poseStack().pushPose();
             graphics.poseStack().translate(x() + width() - 3, y() + 3, 0);
             graphics.poseStack().scale(0.75f, 0.75f, 0.75f);
-            GuiUtils.drawString(graphics, font, 0, 0, subText, DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, ETextAlignment.RIGHT, false);
+            GuiUtils.drawString(graphics, graphics.defaultFont(), 0, 0, subText, DragonLib.VANILLA_BUTTON_ACTIVE_FONT_COLOR, ETextAlignment.RIGHT, false);
             graphics.poseStack().popPose();
             
         }
