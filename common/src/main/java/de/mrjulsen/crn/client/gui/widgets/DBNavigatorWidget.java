@@ -5,12 +5,13 @@ import de.mrjulsen.mcdragonlib.client.gui.events.DLGuiStandardEvents;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLGuiComponent;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLButton;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.render.VanillaSimpleButtonRenderer;
+import de.mrjulsen.mcdragonlib.client.render.DefaultGuiTextures;
 import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
+import de.mrjulsen.mcdragonlib.data.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.math.Rectangle;
-import net.minecraft.client.gui.narration.NarrationElementOutput;
 
 /*
  * DB = Database, not Deutsche Bahn!
@@ -38,29 +39,13 @@ public class DBNavigatorWidget extends DLGuiComponent {
             return false;
         });
         nextBtn.componentRenderer.set(VanillaSimpleButtonRenderer.VANILLA_BUTTON_GRAY);
-        nextBtn.componentRenderer.set(VanillaSimpleButtonRenderer.VANILLA_BUTTON_GRAY);
 
         this.txt = String.format("%s/%s", currentIndex + 1, max);
     }
 
     @Override
     public void renderMainLayer(DLGuiGraphics graphics, double mouseX, double mouseY, Rectangle renderBounds) {
-        DynamicGuiRenderer.renderArea(graphics, new GuiAreaDefinition(x() + 10, y(), width() - 20, height()), AreaStyle.GRAY, ButtonState.BUTTON);
-        GuiUtils.drawString(graphics, font, x() + width() / 2, y() + height() / 2 - font.lineHeight / 2, txt, DragonLib.NATIVE_UI_FONT_COLOR, ETextAlignment.CENTER, false);
+        DefaultGuiTextures.DRAGONLIB_UI.getSprite("button_gray_down").render(graphics, 10, 0, width() - 20, height());
+        GuiUtils.drawString(graphics, graphics.defaultFont(), width() / 2, height() / 2 - graphics.defaultFont().lineHeight / 2, txt, DragonLib.VANILLA_UI_FONT_COLOR, ETextAlignment.CENTER, false);
     }
-
-    @Override
-    public NarrationPriority narrationPriority() {
-        return NarrationPriority.HOVERED;
-    }
-
-    @Override
-    public void updateNarration(NarrationElementOutput narrationElementOutput) {        
-    }
-
-    @Override
-    public boolean consumeScrolling(double mouseX, double mouseY) {
-        return false;
-    }
-    
 }
