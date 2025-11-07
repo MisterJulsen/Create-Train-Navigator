@@ -1,6 +1,6 @@
 package de.mrjulsen.crn.api.client;
 
-import de.mrjulsen.crn.client.gui.screen.NavigatorScreen;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLWindow;
 
 public final class Screens {    
     private Screens() {}
@@ -11,6 +11,6 @@ public final class Screens {
      * @param isPublic In public mode, no personal settings and data can be changed or viewed (e.g. saved routes).
      */
     public static void showNavigatorScreen(String stationName, boolean isPublic) {
-        DLScreen.setScreen(new NavigatorScreen(null, stationName, isPublic));
+        //DLWindow.openWindow((mgr) -> new NavigatorScreen(mgr, stationName, isPublic));
     }
 }

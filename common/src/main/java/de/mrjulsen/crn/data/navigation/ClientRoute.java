@@ -11,20 +11,23 @@ import java.util.function.Consumer;
 
 import java.lang.StringBuilder;
 
+import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
+import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.data.SavedRoutesManager;
 import de.mrjulsen.crn.data.train.ClientTrainStop;
 import de.mrjulsen.crn.data.train.RoutePartProgressState;
 import de.mrjulsen.crn.data.train.RouteProgressState;
-import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.crn.event.CRNEventsManager;
 import de.mrjulsen.crn.event.events.DefaultTrainDataRefreshEvent;
 import de.mrjulsen.crn.util.IListenable;
 import de.mrjulsen.mcdragonlib.util.Cache;
-import de.mrjulsen.mcdragonlib.util.TimeUtils;
+import de.mrjulsen.mcdragonlib.util.time.ConfiguredTimeSystem;
+import de.mrjulsen.mcdragonlib.util.time.DLTime;
+import de.mrjulsen.mcdragonlib.util.time.TimeContext;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
@@ -234,8 +237,8 @@ public class ClientRoute extends Route implements AutoCloseable, IListenable<Cli
             sendNotification(
                 CustomLanguage.translate(keyNotificationJourneyBeginsTitle, getEnd().getRealTimeStationTag().tagName()),
                 getStart().getRealTimeStationTag().info().isPlatformKnown() ?
-                    CustomLanguage.translate(keyNotificationJourneyBeginsWithPlatform, getStart().getTrainDisplayName(), getStart().getDisplayTitle(), ModUtils.formatTime(getStart().getScheduledDepartureTime(), false), getStart().getRealTimeStationTag().info().platform()) :
-                    CustomLanguage.translate(keyNotificationJourneyBegins, getStart().getTrainDisplayName(), getStart().getDisplayTitle(), ModUtils.formatTime(getStart().getScheduledDepartureTime(), false))
+                    CustomLanguage.translate(keyNotificationJourneyBeginsWithPlatform, getStart().getTrainDisplayName(), getStart().getDisplayTitle(), DLTime.fromTicks(getStart().getScheduledDepartureTime(), new ConfiguredTimeSystem()).format(Constants.DEFAULT_GAME_DURATION_FORMAT, TimeContext.INGAME), getStart().getRealTimeStationTag().info().platform()) :
+                    CustomLanguage.translate(keyNotificationJourneyBegins, getStart().getTrainDisplayName(), getStart().getDisplayTitle(), DLTime.fromTicks(getStart().getScheduledDepartureTime(), new ConfiguredTimeSystem()).format(Constants.DEFAULT_GAME_DURATION_FORMAT, TimeContext.INGAME))
             );
 
             queuedAnnouncements.add(new QueuedAnnouncementEvent(() -> {
@@ -497,10 +500,10 @@ public class ClientRoute extends Route implements AutoCloseable, IListenable<Cli
     private void queueDelayNotification(ClientTrainStop stop, boolean start) {
         if (shouldShowNotifications()) {
             ClientWrapper.sendCRNNotification(
-                CustomLanguage.translate(keyNotificationTrainDelayedTitle, stop.getTrainDisplayName(), TimeUtils.parseDurationShort((int)(start ? stop.getDepartureTimeDeviation() : stop.getArrivalTimeDeviation()))),
+                CustomLanguage.translate(keyNotificationTrainDelayedTitle, stop.getTrainDisplayName(), DLTime.fromTicks((int)(start ? stop.getDepartureTimeDeviation() : stop.getArrivalTimeDeviation()), new ConfiguredTimeSystem()).format(Constants.DEFAULT_GAME_DURATION_FORMAT, TimeContext.INGAME)),
                 CustomLanguage.translate(keyNotificationTrainDelayed,
-                ModUtils.formatTime(start ? stop.getRoundedRealTimeDepartureTime() : stop.getRoundedRealTimeArrivalTime(), false),
-                ModUtils.formatTime(start ? stop.getScheduledDepartureTime() : stop.getScheduledArrivalTime(), false),
+                DLTime.fromTicks(start ? stop.getRoundedRealTimeDepartureTime() : stop.getRoundedRealTimeArrivalTime(), new ConfiguredTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME),
+                DLTime.fromTicks(start ? stop.getScheduledDepartureTime() : stop.getScheduledArrivalTime(), new ConfiguredTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME),
                 stop.getRealTimeStationTag().tagName()
             ));
         }

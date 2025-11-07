@@ -3,6 +3,7 @@ package de.mrjulsen.crn.debug;
 import java.util.Arrays;
 
 import de.mrjulsen.crn.Constants;
+import de.mrjulsen.mcdragonlib.util.DLColor;
 import net.minecraft.util.StringRepresentable;
 
 public enum TrainDebugState implements StringRepresentable {
@@ -12,9 +13,9 @@ public enum TrainDebugState implements StringRepresentable {
 
     byte id;
     String name;
-    int color;
+    DLColor color;
 
-    TrainDebugState(byte id, String name, int color) {
+    TrainDebugState(byte id, String name, DLColor color) {
         this.id = id;
         this.name = name;
         this.color = color;
@@ -24,7 +25,7 @@ public enum TrainDebugState implements StringRepresentable {
         return id;
     }
 
-    public int getColor() {
+    public DLColor getColor() {
         return color;
     }
 

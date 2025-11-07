@@ -207,8 +207,8 @@ public class TrainStatus {
     public static enum TrainStatusType {
         MESSAGE_DEFAULT((byte)0, 0xFFFFFFFF),
         MESSAGE_WARN((byte)1, ChatFormatting.GOLD.getColor()),
-        MESSAGE_IMPORTANT((byte)2, Constants.COLOR_DELAYED),
-        DELAY((byte)3, Constants.COLOR_DELAYED);
+        MESSAGE_IMPORTANT((byte)2, Constants.COLOR_DELAYED.getAsARGB()),
+        DELAY((byte)3, Constants.COLOR_DELAYED.getAsARGB());
 
         private final byte index;
         private final int color;

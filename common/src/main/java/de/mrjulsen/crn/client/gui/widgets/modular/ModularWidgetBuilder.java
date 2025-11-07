@@ -4,7 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import de.mrjulsen.mcdragonlib.client.gui.widgets.DLAbstractScrollBar;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLScrollBar;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
@@ -49,19 +49,22 @@ public class ModularWidgetBuilder {
         int currentY = 0;
         for (Consumer<ModularWidgetLine> c : lineBuilders.values()) {
             ModularWidgetLine line = new ModularWidgetLine(0, 0, container.width());
-            line.set_width(container.width() - container.getPaddingLeft() - container.getPaddingRight());
+            line.setWidth(container.width() - container.getPaddingLeft() - container.getPaddingRight());
             c.accept(line);
             currentY += container.addLine(line, currentY);
         }
         
-        DLAbstractScrollBar<?> scrollBar = container.getScrollbar();
-        scrollBar.set_x(container.x() + container.width() - scrollBar.width());
-        scrollBar.set_y(container.y());
-        scrollBar.set_height(container.height());
-        scrollBar.setAutoScrollerSize(true);
-        scrollBar.setScreenSize(container.height());
-        scrollBar.setMaxScroll(currentY + container.getPaddingBottom());
-        scrollBar.withOnValueChanged((sb) -> container.setYScrollOffset(sb.getScrollValue()));
-        scrollBar.setStepSize(10);
+        DLScrollBar scrollBar = container.getScrollbar();
+        scrollBar.setX(container.x() + container.width() - scrollBar.width());
+        scrollBar.setY(container.y());
+        scrollBar.setHeight(container.height());
+        scrollBar.scrollerSize.set(0);
+        scrollBar.screenSize.set(container.height());
+        scrollBar.scrollSteps.set(10);
+        //scrollBar.maxScroll(currentY + container.getPaddingBottom());
+        scrollBar.addEventListener(DLScrollBar.ValueChangedEvent.class, (s, e) -> {
+            container.setScrollOffsetY(e.value());
+            return false;
+        });
     }
 }

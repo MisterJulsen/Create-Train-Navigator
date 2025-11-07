@@ -15,16 +15,13 @@ import de.mrjulsen.crn.mixin.ScheduleRuntimeAccessor;
 import de.mrjulsen.crn.mixin.TrainStatusAccessor;
 import de.mrjulsen.crn.util.ESpeedUnit;
 import de.mrjulsen.crn.util.ModUtils;
-import de.mrjulsen.mcdragonlib.client.OverlayManager;
-import de.mrjulsen.mcdragonlib.client.gui.DLOverlayScreen;
-import de.mrjulsen.mcdragonlib.client.util.Graphics;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLWindow;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 
-public class DebugOverlay extends DLOverlayScreen {
+public class DebugOverlay extends DLWindow {
   
     private static long debugOverlayId = -1;
 

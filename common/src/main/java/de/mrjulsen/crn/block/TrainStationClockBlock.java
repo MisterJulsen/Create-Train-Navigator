@@ -7,8 +7,10 @@ import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.blockentity.TrainStationClockBlockEntity;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.registry.ModBlockEntities;
-import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
+import de.mrjulsen.mcdragonlib.util.time.ConfiguredTimeSystem;
+import de.mrjulsen.mcdragonlib.util.time.DLTime;
+import de.mrjulsen.mcdragonlib.util.time.TimeContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
@@ -89,7 +91,7 @@ public class TrainStationClockBlock extends Block implements IWrenchable, IBE<Tr
 		}
 
 		if (!pPlayer.getItemInHand(pHand).is(this.asItem()) && pLevel.isClientSide) {
-            pPlayer.displayClientMessage(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".time", TimeUtils.parseTime((int)(pLevel.getDayTime() % DragonLib.ticksPerDay() + DragonLib.daytimeShift()), ModClientConfig.TIME_FORMAT.get())), true);
+            pPlayer.displayClientMessage(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".time", DLTime.fromLevelTime(pLevel, new ConfiguredTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME)), true);
             return InteractionResult.SUCCESS;
         }
         return InteractionResult.PASS;

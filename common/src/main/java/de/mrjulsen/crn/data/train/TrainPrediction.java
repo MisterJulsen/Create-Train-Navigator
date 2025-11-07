@@ -22,6 +22,8 @@ import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.util.Cache;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
+import de.mrjulsen.mcdragonlib.util.time.ConfiguredTimeSystem;
+import de.mrjulsen.mcdragonlib.util.time.ITimeSystem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -238,19 +240,23 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
     }
 
     public long getScheduledArrivalDay() {
-        return scheduled().arrivalTime() / DragonLib.ticksPerDay();
+        ITimeSystem system = new ConfiguredTimeSystem();
+        return scheduled().arrivalTime() / system.getTicksPerDay();
     }
     
     public long getScheduledDepartureDay() {
-        return scheduled().departureTime() / DragonLib.ticksPerDay();
+        ITimeSystem system = new ConfiguredTimeSystem();
+        return scheduled().departureTime() / system.getTicksPerDay();
     }
     
     public long getRealTimeArrivalDay() {
-        return realTime().arrivalTime() / DragonLib.ticksPerDay();
+        ITimeSystem system = new ConfiguredTimeSystem();
+        return realTime().arrivalTime() / system.getTicksPerDay();
     }
     
     public long getRealTimeDepartureDay() {
-        return realTime().departureTime() / DragonLib.ticksPerDay();
+        ITimeSystem system = new ConfiguredTimeSystem();
+        return realTime().departureTime() / system.getTicksPerDay();
     }
 
 

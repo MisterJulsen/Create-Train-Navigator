@@ -96,6 +96,11 @@ public class GetDepartureAndArrivalRoutesAtPacketData {
                 return new Pair<>(tag.getBoolean(NBT_IS_ARRIVAL), ClientRoute.fromNbt(tag.getCompound(NBT_DATA), false));
             }).toList();
         }
+
+        public List<Pair<Boolean, ClientRoute>> getData() {
+            return data;
+        }
+        
     }
 
     public static Response handle(Request packet, NetworkPacketContext context) {

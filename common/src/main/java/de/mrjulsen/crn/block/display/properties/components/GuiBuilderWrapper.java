@@ -14,13 +14,6 @@ import de.mrjulsen.crn.block.display.properties.components.ITextWidthSetting.Tex
 import de.mrjulsen.crn.block.display.properties.components.ITrainTextSetting.ETrainTextComponents;
 import de.mrjulsen.crn.block.properties.ETimeDisplay;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
-import de.mrjulsen.crn.client.gui.widgets.ColorSlotWidget;
-import de.mrjulsen.crn.client.gui.widgets.DBNavigatorWidget;
-import de.mrjulsen.crn.client.gui.widgets.DLCreateIconButton;
-import de.mrjulsen.crn.client.gui.widgets.DLCreateScrollInput;
-import de.mrjulsen.crn.client.gui.widgets.DLCreateSelectionScrollInput;
-import de.mrjulsen.crn.client.gui.widgets.DLCreateTextBox;
-import de.mrjulsen.crn.client.gui.widgets.IconSlotWidget;
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
 import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
@@ -32,6 +25,7 @@ import net.minecraft.client.Minecraft;
 public class GuiBuilderWrapper {
 
     static void buildColorGui(IColorSetting setting, GuiBuilderContext context) {
+        /*
         context.builder().addLine(IColorSetting.GUI_LINE_COLORS_NAME, (line) -> {
             line.add(new IconSlotWidget(line.getCurrentX(), line.y() + 2, ModGuiIcons.COLOR_PALETTE.getAsSprite(16, 16)));
             line.add(new ColorSlotWidget(
@@ -59,9 +53,11 @@ public class GuiBuilderWrapper {
                 (b) -> setting.setBackColor(b.getSelectedColor())
             ));
         });
+        */
     }
 
     static void buildCarriageIndexGui(ICarriageIndexSetting setting, GuiBuilderContext context) {
+        /*
         context.builder().addLine(ICarriageIndexSetting.GUI_LINE_CARRIAGE_INDEX_NAME, (line) -> {
             line.add(new IconSlotWidget(line.getCurrentX(), line.y() + 2, ModGuiIcons.CARRIAGE_NUMBER.getAsSprite(16, 16)));
             int w = 22;
@@ -87,15 +83,19 @@ public class GuiBuilderWrapper {
                 }
             });
         });
+        */
     }
 
     static void buildBasicTextWidthGui(ICustomTextWidthSetting setting, GuiBuilderContext context) {
+        /*
         context.builder().addLine(ICustomTextWidthSetting.GUI_LINE_TEXT_SIZE_NAME, (line) -> {            
             line.add(new IconSlotWidget(line.getCurrentX(), line.y() + 2, ModGuiIcons.WIDTH.getAsSprite(16, 16)));
         });
+        */
     }
 
     static void buildPlatformWidthGui(IPlatformWidthSetting setting, GuiBuilderContext context, boolean allowAuto) {
+        /*
         context.builder().addToLine(IPlatformWidthSetting.GUI_LINE_TEXT_SIZE_NAME, (line) -> {
             int w = (line.getWidth() - IPlatformWidthSetting.USED_LINE_SPACE) / 4 - 3;
             line.add(new DLCreateScrollInput(context.container().getParentScreen(), line.getCurrentX() + 4, line.y() + 2, w, 18))
@@ -115,9 +115,11 @@ public class GuiBuilderWrapper {
                 })
             ;
         });
+        */
     }
 
     static void buildShowArrivalGui(IShowArrivalSetting setting, GuiBuilderContext context) {
+        /*
         context.builder().addLine(IShowArrivalSetting.GUI_LINE_SHOW_ARRIVAL_NAME, (line) -> {            
             line.add(new IconSlotWidget(line.getCurrentX(), line.y() + 2, ModGuiIcons.TARGET.getAsSprite(16, 16)));            
             line.add(new DLCheckBox(line.getCurrentX() + 4, line.y() + line.height() / 2 - 8, line.getRemainingWidth(), IShowArrivalSetting.textShowArrival.getString(), setting.showArrival(), (cb) -> setting.setShowArrival(cb.isChecked())) {
@@ -131,9 +133,11 @@ public class GuiBuilderWrapper {
                 }
             });
         });
+        */
     }
 
     static void buildShowDoNotBoardTextGui(IShowDoNotBoardText setting, GuiBuilderContext context) {
+        /*
         context.builder().addLine(IShowDoNotBoardText.GUI_LINE_SHOW_DO_NOT_BOARD_TEXT_NAME, (line) -> {            
             line.add(new IconSlotWidget(line.getCurrentX(), line.y() + 2, ModGuiIcons.WALK.getAsSprite(16, 16)));            
             line.add(new DLCheckBox(line.getCurrentX() + 4, line.y() + line.height() / 2 - 8, line.getRemainingWidth(), IShowDoNotBoardText.textShowDoNotBoardText.getString(), setting.showDoNotBoardText(), (cb) -> setting.setShowDoNotBoardText(cb.isChecked())) {
@@ -147,16 +151,20 @@ public class GuiBuilderWrapper {
                 }
             });
         });
+        */
     }
 
     static void buildShowExitGui(IShowExitDirectionSetting settings, GuiBuilderContext context) {
+        /*
         context.builder().addLine(IShowExitDirectionSetting.GUI_LINE_SHOW_ARRIVAL_NAME, (line) -> {            
             line.add(new IconSlotWidget(line.getCurrentX(), line.y() + 2, ModGuiIcons.EXIT.getAsSprite(16, 16)));            
             line.add(new DLCheckBox(line.getCurrentX() + 4, line.y() + line.height() / 2 - 8, line.getRemainingWidth(), IShowExitDirectionSetting.textShowExit.getString(), settings.showExit(), (cb) -> settings.setShowExit(cb.isChecked())));
         });
+        */
     }
 
     static void buildShowLineColorGui(IShowLineColorSetting setting, GuiBuilderContext context) {
+        /*
         context.builder().addLine(IShowLineColorSetting.GUI_LINE_SHOW_LINE_COLOR_NAME, (line) -> {            
             line.add(new IconSlotWidget(line.getCurrentX(), line.y() + 2, ModGuiIcons.COLOR_PALETTE.getAsSprite(16, 16)));            
             line.add(new DLCheckBox(line.getCurrentX() + 4, line.y() + line.height() / 2 - 8, line.getRemainingWidth(), IShowLineColorSetting.textShowLineColor.getString(), setting.showLineColor(), (cb) -> setting.setShowLineColor(cb.isChecked())) {
@@ -170,30 +178,38 @@ public class GuiBuilderWrapper {
                 }
             });
         });
+        */
     }
 
     static void buildShowConnectionGui(IShowNextConnections setting, GuiBuilderContext context) {
+        /*
         context.builder().addLine(IShowNextConnections.GUI_LINE_SHOW_CONNECTIONS_NAME, (line) -> {            
             line.add(new IconSlotWidget(line.getCurrentX(), line.y() + 2, ModGuiIcons.CONNECTIONS.getAsSprite(16, 16)));            
             line.add(new DLCheckBox(line.getCurrentX() + 4, line.y() + line.height() / 2 - 8, line.getRemainingWidth(), IShowNextConnections.textShowConnections.getString(), setting.showConnections(), (cb) -> setting.setShowConnection(cb.isChecked())));
         });
+        */
     }
 
     static void buildShowTimeAndDateGui(IShowTimeAndDateSetting setting, GuiBuilderContext context) {
+        /*
         context.builder().addLine(IShowTimeAndDateSetting.GUI_LINE_SHOW_TIME_NAME, (line) -> {            
             line.add(new IconSlotWidget(line.getCurrentX(), line.y() + 2, ModGuiIcons.TIME.getAsSprite(16, 16)));            
             line.add(new DLCheckBox(line.getCurrentX() + 4, line.y() + line.height() / 2 - 8, line.getRemainingWidth(), IShowTimeAndDateSetting.textShowStats.getString(), setting.showTimeAndDate(), (cb) -> setting.setShowTimeAndDate(cb.isChecked())));
         });
+        */
     }
 
     static void buildShowStatsGui(IShowTrainStatsSetting setting, GuiBuilderContext context) {
+        /*
         context.builder().addLine(IShowTrainStatsSetting.GUI_LINE_SHOW_ARRIVAL_NAME, (line) -> {            
             line.add(new IconSlotWidget(line.getCurrentX(), line.y() + 2, ModGuiIcons.TRAIN_INFO.getAsSprite(16, 16)));            
             line.add(new DLCheckBox(line.getCurrentX() + 4, line.y() + line.height() / 2 - 8, line.getRemainingWidth(), IShowTrainStatsSetting.textShowStats.getString(), setting.showStats(), (cb) -> setting.setShowStats(cb.isChecked())));
         });
+        */
     }
 
     static void buildTimeDisplayGui(ITimeDisplaySetting setting, GuiBuilderContext context) {
+        /*
         context.builder().addLine(ITimeDisplaySetting.GUI_LINE_TIME_NAME, (line) -> {            
             line.add(new IconSlotWidget(line.getCurrentX(), line.y() + 2, ModGuiIcons.TIME.getAsSprite(16, 16)));            
             line.add(new DLCreateSelectionScrollInput(context.container().getParentScreen(), line.getCurrentX() + 6, line.y() + 2, 32, 18))
@@ -210,9 +226,11 @@ public class GuiBuilderWrapper {
                 })
             ;
         });
+        */
     }
 
     static void buildTrainNameGui(ITrainNameWidthSetting setting, GuiBuilderContext context, boolean allowAuto, boolean allowMax) {
+        /*
         context.builder().addToLine(ITrainNameWidthSetting.GUI_LINE_TEXT_SIZE_NAME, (line) -> {
             int w = (line.getWidth() - ITrainNameWidthSetting.USED_LINE_SPACE) / 4 - 3;
             line.add(new DLCreateScrollInput(context.container().getParentScreen(), line.getCurrentX() + 4, line.y() + 2, w, 18))
@@ -234,9 +252,11 @@ public class GuiBuilderWrapper {
                 })
             ;
         });
+        */
     }
 
     static void buildTrainTextGui(ITrainTextSetting setting, GuiBuilderContext context) {
+        /*
         context.builder().addLine(ITrainTextSetting.GUI_LINE_SHOW_ARRIVAL_NAME, (line) -> {            
             line.add(new IconSlotWidget(line.getCurrentX(), line.y() + 2, ModGuiIcons.TEXT.getAsSprite(16, 16)));
             line.add(new DLCreateSelectionScrollInput(context.container().getParentScreen(), line.getCurrentX() + 6, line.y() + 2, line.getRemainingWidth() - 6, 18))
@@ -253,9 +273,11 @@ public class GuiBuilderWrapper {
                 })
             ;
         });
+        */
     }
 
     public static void buildPlatformDisplayFocusGui(PlatformDisplayFocusSettings setting, GuiBuilderContext context) {
+        /*
         context.builder().addToLine(PlatformDisplayFocusSettings.GUI_LINE_TEXT_SIZE_NAME, (line) -> {
             int w = (line.getWidth() - PlatformDisplayFocusSettings.USED_LINE_SPACE) / 4 - 3;
             line.add(new DLCreateScrollInput(context.container().getParentScreen(), line.getCurrentX() + 4, line.y() + 2, w, 18))
@@ -338,9 +360,11 @@ public class GuiBuilderWrapper {
                 })
             ;            
         });
+        */
     }
 
     public static void buildDepartureBoardTableGui(DepartureBoardDisplayTableSettings setting, GuiBuilderContext context) {
+        /*
         MutableSingle<ScrollInput> stopovers = new MutableSingle<ScrollInput>(null);
         MutableSingle<ScrollInput> info = new MutableSingle<ScrollInput>(null);
         context.builder().addToLine(DepartureBoardDisplayTableSettings.GUI_LINE_TEXT_SIZE_NAME, (line) -> {
@@ -387,9 +411,11 @@ public class GuiBuilderWrapper {
                 info.getFirst().withRange(0, MathUtils.clamp(101 - stopovers.getFirst().getState(), 0, 101));
             }
         });
+        */
     }
 
-    public static void buildStaticTextBaseGui(StaticTextDisplaySettings setting, GuiBuilderContext context) {        
+    public static void buildStaticTextBaseGui(StaticTextDisplaySettings setting, GuiBuilderContext context) {   
+        /*     
         context.builder().addToLine(IColorSetting.GUI_LINE_COLORS_NAME, (line) -> {          
             line.addDLW(new DBNavigatorWidget(line.width() - DBNavigatorWidget.WIDTH, line.y() + line.height() / 2 - 8, 18, setting.getSelectedComponentIndex(), StaticTextDisplaySettings.MAX_COMPONENTS, () -> {
                 if (setting.getSelectedComponentIndex() >= setting.getComponentsCount() - 1) {
@@ -410,9 +436,11 @@ public class GuiBuilderWrapper {
                 context.builder().build();
             }));
         });
+        */
     }
 
     static void buildStaticTextGui(IStaticTextSetting setting, GuiBuilderContext context) {
+        /*
         context.builder().addLine(IStaticTextSetting.GUI_STATIC_TEXT_NAME, (line) -> {
             line.add(new IconSlotWidget(line.getCurrentX(), line.y() + 2, ModGuiIcons.TEXT.getAsSprite(16, 16)));            
             DLCreateTextBox editBox = line.add(new DLCreateTextBox(Minecraft.getInstance().font, line.getCurrentX() + 4, line.y() + 2, line.getRemainingWidth() - 4, TextUtils.empty()) {
@@ -434,9 +462,11 @@ public class GuiBuilderWrapper {
                 setting.setStaticText(val);
             });
         });
+        */
     }
 
     static void buildTextScaleGui(ITextScaleSetting setting, GuiBuilderContext context) {
+        /*
         MutableSingle<ScrollInput> scaleInput = new MutableSingle<ScrollInput>(null);
         MutableSingle<ScrollInput> minScaleInput = new MutableSingle<ScrollInput>(null);
         
@@ -498,9 +528,11 @@ public class GuiBuilderWrapper {
                 })
             );
         });
+        */
     }
 
     static void buildTextPosGui(ITextPosSetting setting, GuiBuilderContext context) {
+        /*
         MutableSingle<ScrollInput> posYInput = new MutableSingle<ScrollInput>(null);
         MutableSingle<ScrollInput> posXInput = new MutableSingle<ScrollInput>(null);
         MutableSingle<DLCreateIconButton> leftAlignBtn = new MutableSingle<DLCreateIconButton>(null);
@@ -595,9 +627,11 @@ public class GuiBuilderWrapper {
             centerAlignBtn.getFirst().set_active(setting.getTextAlignment() != ETextAlignment.CENTER);
             rightAlignBtn.getFirst().set_active(setting.getTextAlignment() != ETextAlignment.RIGHT);
         });
+        */
     }
 
     static void buildTextMaxWidthGui(ITextWidthSetting setting, GuiBuilderContext context) {
+        /*
         context.builder().addLine(ITextWidthSetting.GUI_LINE_TEXT_MAX_WIDTH_NAME, (line) -> {
             line.add(new IconSlotWidget(line.getCurrentX(), line.y() + 2, ModGuiIcons.WIDTH.getAsSprite(16, 16)));
             line.add(new DLCreateScrollInput(context.container().getParentScreen(), line.getCurrentX() + 4, line.y() + 2, 48, 18))
@@ -629,9 +663,11 @@ public class GuiBuilderWrapper {
                 })
             ;
         });
+        */
     }
 
     static void buildTextBackgroundColorGui(ITextBackgroundColorSetting setting, GuiBuilderContext context) {
+        /*
         context.builder().addLine(ITextBackgroundColorSetting.GUI_BG_COLOR_NAME, (line) -> {
             line.add(new IconSlotWidget(line.getCurrentX(), line.y() + 2, ModGuiIcons.COLOR_PALETTE.getAsSprite(16, 16)));
             line.add(new ColorSlotWidget(
@@ -657,6 +693,7 @@ public class GuiBuilderWrapper {
                 }
             });
         });
+        */
     }
     
 }
