@@ -44,6 +44,7 @@ public class TrainStationClockRenderer extends AbstractBlockEntityRenderInstance
     private void renderInternal(BERGraphics<TrainStationClockBlockEntity> graphics, float partialTicks) {
         float z = graphics.blockEntity().getBlockState().getValue(TrainStationClockBlock.DOUBLE) ? 7.25f : 3.25f;
 
+        /*
         graphics.poseStack().translate(8, 8, 8 + z);
         RenderUtils.renderTexture(DIAL_TEXTURE, graphics, !graphics.blockEntity().isGlowing(), -7, -7, -0.2f, 14, 14, 0, 0, 1, 1, graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING), (0xFF << 24) | (graphics.blockEntity().getColor()), graphics.blockEntity().isGlowing() ? LightTexture.FULL_BRIGHT : graphics.packedLight());
 
@@ -74,5 +75,6 @@ public class TrainStationClockRenderer extends AbstractBlockEntityRenderInstance
         graphics.poseStack().mulPose(Axis.YP.rotationDegrees(180));
         BERUtils.fillColor(graphics, -0.5f, -0.5f, 0.1f, 7, 1, 0xFF222222, graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING));
         graphics.poseStack().popPose();
+        */
     }
 }

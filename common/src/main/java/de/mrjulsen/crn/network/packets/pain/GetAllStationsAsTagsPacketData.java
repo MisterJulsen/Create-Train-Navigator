@@ -66,6 +66,10 @@ public class GetAllStationsAsTagsPacketData {
         protected void read(CompoundTag nbt) {
             this.tags = nbt.getList(NBT_DATA, Tag.TAG_COMPOUND).stream().map(x -> StationTag.fromNbt((CompoundTag)x, null)).toList();
         }
+
+        public Collection<StationTag> getTags() {
+            return tags;
+        }
     }
 
     public static Response handle(Request packet, NetworkPacketContext context) {

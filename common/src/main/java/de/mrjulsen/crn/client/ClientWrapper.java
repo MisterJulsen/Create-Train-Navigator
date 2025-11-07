@@ -21,12 +21,6 @@ import de.mrjulsen.crn.api.client.Screens;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.NavigatorToast;
-import de.mrjulsen.crn.client.gui.screen.AdvancedDisplaySettingsScreen;
-import de.mrjulsen.crn.client.gui.screen.PrioritizedDestinationInstructionSettingsScreen;
-import de.mrjulsen.crn.client.gui.screen.TrainSeparationSettingsScreen;
-import de.mrjulsen.crn.client.gui.screen.TrainDebugScreen;
-import de.mrjulsen.crn.client.gui.screen.TrainSectionSettingsScreen;
-import de.mrjulsen.crn.client.gui.widgets.ResizableButton;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.schedule.condition.DynamicDelayCondition;
@@ -40,20 +34,11 @@ import de.mrjulsen.crn.mixin.ScheduleScreenAccessor;
 import de.mrjulsen.crn.network.packets.stc.ServerErrorPacketData;
 import de.mrjulsen.crn.util.Owner;
 import de.mrjulsen.mcdragonlib.DragonLib;
-import de.mrjulsen.mcdragonlib.client.ber.RenderGraphics;
-import de.mrjulsen.mcdragonlib.client.gui.DLScreen;
-import de.mrjulsen.mcdragonlib.client.render.DynamicGuiRenderer;
-import de.mrjulsen.mcdragonlib.client.render.DynamicGuiRenderer.AreaStyle;
-import de.mrjulsen.mcdragonlib.client.render.DynamicGuiRenderer.ButtonState;
-import de.mrjulsen.mcdragonlib.client.util.BERUtils;
 import de.mrjulsen.mcdragonlib.client.util.DLGraphics;
 import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
-import de.mrjulsen.mcdragonlib.client.util.Graphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.ETextAlignment;
 import de.mrjulsen.mcdragonlib.network.NetworkPacketContext;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
-import de.mrjulsen.mcdragonlib.util.TimeUtils;
 import dev.architectury.networking.NetworkManager.PacketContext;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
@@ -97,7 +82,7 @@ public class ClientWrapper {
     }
     
     public static void showAdvancedDisplaySettingsScreen(AdvancedDisplayBlockEntity blockEntity, AbstractContraptionEntity contraption) {
-        DLScreen.setScreen(new AdvancedDisplaySettingsScreen(blockEntity, contraption));
+        //DLScreen.setScreen(new AdvancedDisplaySettingsScreen(blockEntity, contraption));
     }
 
     public static void updateLanguage(CustomLanguage lang, boolean force) {
@@ -143,7 +128,7 @@ public class ClientWrapper {
 
     public static void showTrainDebugScreen() {
         RenderSystem.recordRenderCall(() -> {
-            DLScreen.setScreen(new TrainDebugScreen(null));
+            //DLScreen.setScreen(new TrainDebugScreen(null));
         });
     }
 
@@ -151,6 +136,7 @@ public class ClientWrapper {
         
         ModularGuiLineBuilderAccessor accessor = (ModularGuiLineBuilderAccessor)builder;
 
+        /*
         ResizableButton btn = new ResizableButton(accessor.crn$getX(), accessor.crn$getY() - 4, 121, 16, TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule.instruction.configure"), 
         (b) -> {
             if (Minecraft.getInstance().screen instanceof ScheduleScreen scheduleScreen) {
@@ -168,12 +154,14 @@ public class ClientWrapper {
             }
         };
 		accessor.crn$getTarget().add(Pair.of(btn, "config_btn"));
+        */
     }
 
     public static void initScheduleSectionInstruction(TravelSectionInstruction instruction, ModularGuiLineBuilder builder) {
         
         ModularGuiLineBuilderAccessor accessor = (ModularGuiLineBuilderAccessor)builder;
 
+        /*
         ResizableButton btn = new ResizableButton(accessor.crn$getX(), accessor.crn$getY() - 4, 121, 16, TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule.instruction.configure"), 
         (b) -> {
             if (Minecraft.getInstance().screen instanceof ScheduleScreen scheduleScreen) {
@@ -191,9 +179,11 @@ public class ClientWrapper {
             }
         };
 		accessor.crn$getTarget().add(Pair.of(btn, "config_btn"));
+        */
     }
 
     public static void initResetTimingsInstruction(ResetTimingsInstruction instruction, ModularGuiLineBuilder builder) {
+        /*
         ModularGuiLineBuilderAccessor accessor = (ModularGuiLineBuilderAccessor)builder;
         ResizableButton btn = new ResizableButton(accessor.crn$getX(), accessor.crn$getY() - 4, 16, 16, TextUtils.empty(), 
         (b) -> {
@@ -207,6 +197,7 @@ public class ClientWrapper {
             }
         };
 		accessor.crn$getTarget().add(Pair.of(btn, "help_btn"));
+        */
     }
 
     public static void initDynamicDelayCondition(DynamicDelayCondition condition, ModularGuiLineBuilder builder) {
@@ -234,6 +225,7 @@ public class ClientWrapper {
 
 		
         ModularGuiLineBuilderAccessor accessor = (ModularGuiLineBuilderAccessor)builder;
+        /*
         ResizableButton btn = new ResizableButton(accessor.crn$getX() + 110, accessor.crn$getY() - 4, 16, 16, TextUtils.empty(), 
         (b) -> {
 			Util.getPlatform().openUri(Constants.HELP_PAGE_DYNAMIC_DELAYS);
@@ -246,6 +238,7 @@ public class ClientWrapper {
             }
         };
 		accessor.crn$getTarget().add(Pair.of(btn, "help_btn"));
+        */
     }
 
     @SuppressWarnings("resource")
@@ -283,6 +276,7 @@ public class ClientWrapper {
         */
 
         ModularGuiLineBuilderAccessor accessor = (ModularGuiLineBuilderAccessor)builder;
+        /*
         ResizableButton btn = new ResizableButton(accessor.crn$getX(), accessor.crn$getY() - 4, 121, 16, TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule.instruction.configure"), 
         (b) -> {
             if (Minecraft.getInstance().screen instanceof ScheduleScreen scheduleScreen) {
@@ -300,6 +294,7 @@ public class ClientWrapper {
             }
         };
 		accessor.crn$getTarget().add(Pair.of(btn, "config_btn"));
+        */
     }
 
     public static void renderNavigatorItem(DLGraphics graphics, ItemStack itemStack, ItemDisplayContext context, boolean leftHand, PoseStack poseStack, MultiBufferSource buffer, int combinedLight, int combinedOverlay, BakedModel model) {
@@ -309,6 +304,8 @@ public class ClientWrapper {
         
 
         int backgroundId = itemStack.getOrCreateTag().getInt(NavigatorItem.NBT_BACKGROUND_ID);
+
+        /*
         
         Font font = Minecraft.getInstance().font;
         poseStack.mulPose(Axis.XP.rotationDegrees(90F));
@@ -327,6 +324,7 @@ public class ClientWrapper {
         poseStack.scale(0.2f, 0.2f, 0.2f);
         BERUtils.drawString(graphics, font, 0, 0, TimeUtils.formatTime(DragonLib.getCurrentWorldTime(), ModClientConfig.TIME_FORMAT.get()), 0xFFFFFFFF, ETextAlignment.CENTER, false, LightTexture.FULL_BRIGHT);
         poseStack.popPose();
+        */
     }
 
     public static Owner getMe() {

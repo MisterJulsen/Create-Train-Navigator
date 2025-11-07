@@ -2,6 +2,7 @@ package de.mrjulsen.crn.block.display.properties.components;
 
 import java.util.Arrays;
 
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.block.display.properties.IDisplaySettings;
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
@@ -49,17 +50,15 @@ public interface ITextWidthSetting {
 
 
     public static enum TextScaleBounds implements ITranslatableEnum {
-        CUT_OFF((byte)0, "cut_off", BoundsHitReaction.CUT_OFF),
-        SCALE_SCROLL((byte)1, "scale_scroll", BoundsHitReaction.SCALE_SCROLL),
-        SCROLL((byte)2, "scroll", BoundsHitReaction.SCROLL);
+        CUT_OFF((byte)0, "cut_off"),
+        SCALE_SCROLL((byte)1, "scale_scroll"),
+        SCROLL((byte)2, "scroll");
 
         final byte index;
         final String name;
-        final BoundsHitReaction hit;
 
-        private TextScaleBounds(byte index, String name, BoundsHitReaction hit) {
+        private TextScaleBounds(byte index, String name) {
             this.index = index;
-            this.hit = hit;
             this.name = name;
         }
 
@@ -67,22 +66,13 @@ public interface ITextWidthSetting {
             return index;
         }
 
-        public BoundsHitReaction hit() {
-            return hit;
-        }
-
         public static TextScaleBounds getByIndex(int b) {
             return Arrays.stream(values()).filter(x -> x.getIndex() == b).findFirst().orElse(SCALE_SCROLL);
         }
-
+        
         @Override
-        public String getEnumName() {
-            return "text_scale_bounds";
-        }
-
-        @Override
-        public String getEnumValueName() {
-            return name;
+        public Data getTranslationData() {
+            return new Data(CreateRailwaysNavigator.MOD_ID, "text_scale_bounds", name);
         }
     }
 }

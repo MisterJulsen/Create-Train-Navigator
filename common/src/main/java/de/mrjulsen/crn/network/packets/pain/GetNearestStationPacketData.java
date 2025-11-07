@@ -63,6 +63,10 @@ public class GetNearestStationPacketData {
         protected void read(CompoundTag nbt) {
             this.result = NearestTrackStationResult.fromNbt(nbt.getCompound(NBT_DATA));
         }
+
+        public NearestTrackStationResult getResult() {
+            return result;
+        }        
     }
 
     public static Response handle(Request packet, NetworkPacketContext context) {

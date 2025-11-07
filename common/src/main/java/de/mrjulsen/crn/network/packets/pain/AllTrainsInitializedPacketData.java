@@ -30,6 +30,10 @@ public class AllTrainsInitializedPacketData extends NetworkPacketData {
     protected void read(CompoundTag nbt) {
         this.data = nbt.getBoolean(NBT_DATA);
     }
+    
+    public boolean getResult() {
+        return data;
+    }
 
     public static AllTrainsInitializedPacketData handle(NetworkPacketContext context) {
         return new AllTrainsInitializedPacketData(TrainListener.allTrainsInitialized());

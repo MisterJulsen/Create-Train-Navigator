@@ -80,6 +80,10 @@ public class GetDeparturesAtPacketData {
         protected void read(CompoundTag nbt) {
             this.data = nbt.getList(NBT_DATA, Tag.TAG_COMPOUND).stream().map(x -> (ClientTrainStop)ClientTrainStop.fromNbt((CompoundTag)x)).toList();
         }
+
+        public List<ClientTrainStop> getData() {
+            return data;
+        }
     }
 
     public static Response handle(Request packet, NetworkPacketContext context) {
