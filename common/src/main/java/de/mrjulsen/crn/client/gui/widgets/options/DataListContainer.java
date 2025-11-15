@@ -57,7 +57,7 @@ public class DataListContainer<T, S> extends DLWidgetContainer {
 
 
     /**
-     * @param parent The parent screen.
+     * @param parentEntry The parent screen.
      * @param x The x position.
      * @param y The y position.
      * @param width The width of this widget.

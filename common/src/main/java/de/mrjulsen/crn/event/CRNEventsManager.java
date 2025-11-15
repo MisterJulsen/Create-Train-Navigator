@@ -77,7 +77,6 @@ public final class CRNEventsManager {
      * Checks if the given event is registered to prevent errors.
      * @param <T> The type of the event to return.
      * @param clazz The class of the event.
-     * @return {@true} if the event is registered.
      */
     public static <T extends AbstractCRNEvent<?>> boolean isRegistered(Class<T> clazz) {
         return registeredEvents.containsKey(clazz);

@@ -7,11 +7,14 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import com.simibubi.create.api.behaviour.display.DisplayTarget;
 import com.simibubi.create.content.redstone.displayLink.DisplayLinkContext;
+import com.simibubi.create.content.redstone.displayLink.source.PercentOrProgressBarDisplaySource;
+import com.simibubi.create.content.redstone.displayLink.source.SingleLineDisplaySource;
 import com.simibubi.create.content.redstone.displayLink.target.DisplayTargetStats;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.IBlockGetter;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
+import de.mrjulsen.crn.block.display.properties.SimpleStaticTextDisplaySettings;
 import de.mrjulsen.crn.block.display.properties.StaticTextDisplaySettings;
 import de.mrjulsen.crn.block.properties.EDisplayType;
 import de.mrjulsen.crn.block.properties.EDisplayType.EDisplayTypeDataSource;
@@ -126,34 +129,57 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 							dayTime
 					);
 					ModCommonEvents.getCurrentServer().ifPresent(x -> x.executeIfPossible(controller::notifyUpdate));
+				} else if (controller.getDisplayType().equals(ModDisplayTypes.SIMPLE_TEXT)) {
+					SimpleStaticTextDisplaySettings settings = controller
+							.getSettingsAs(SimpleStaticTextDisplaySettings.class)
+							.orElse(new SimpleStaticTextDisplaySettings());
+					settings.setStaticText(Component.Serializer.toJson((text.get(0))));
+					CreateRailwaysNavigator.LOGGER.debug(settings.getStaticText());
+					ModCommonEvents.getCurrentServer()
+							.ifPresent(x -> x.executeIfPossible(() -> controller.applyToAll(a -> {
+								a.setDisplayType(ModDisplayTypes.SIMPLE_TEXT, settings);
+								a.notifyUpdate();
+							}, new IBlockGetter.WorldBlockGetter(blockEntity.getLevel()))));
 				} else {
-					if (controller.getDisplayType() != ModDisplayTypes.RICH_TEXT) {
-						if (!ModCommonConfig.AUTO_UPDATE_DISPLAY_TYPE.get()) return;
+					if (!controller.getDisplayType().equals(ModDisplayTypes.RICH_TEXT)) {
+						if (!ModCommonConfig.AUTO_UPDATE_DISPLAY_TYPE.get())
+							return;
 					}
 
-					StaticTextDisplaySettings settings = controller.getSettingsAs(StaticTextDisplaySettings.class).orElse(new StaticTextDisplaySettings());
-					int currentLine = line;
-					for (MutableComponent comp : text) {
-						StaticTextDisplaySettings.TextComponent component = new StaticTextDisplaySettings.TextComponent(Component.Serializer.toJson(comp));
+					StaticTextDisplaySettings settings = controller.getSettingsAs(StaticTextDisplaySettings.class)
+							.orElse(new StaticTextDisplaySettings());
+					// Loop through the entire available space to make sure any stragglers are taken
+					// care of.
+					for (int i = 0; i < controller.getYSize() * 3 - line - 1; i++) {
+						final int componentIndex = i + line;
+						if (i == 0)
+							reserve(componentIndex, controller, context);
+						if (i > 0 && isReserved(componentIndex, controller, context))
+							break;
+
+						while (componentIndex >= settings.getComponentsCount()) {
+							settings.addComponent(new StaticTextDisplaySettings.TextComponent("{\"text\":\"\"}"));
+						}
+						StaticTextDisplaySettings.TextComponent component = settings.getComponents()
+								.get(componentIndex);
+						if (i >= text.size()) {
+							if (context.blockEntity().activeSource instanceof SingleLineDisplaySource)
+								break;
+							component.setStaticText("{\"text\":\"\"}");
+						} else
+							component.setStaticText(Component.Serializer.toJson(text.get(i)));
 						component.setTextAlignment(EAlignment.LEFT);
 						component.setXScale(0.4f);
 						component.setMinXScale(0.4f);
 						component.setYScale(0.4f);
-						component.setY(currentLine * 5.5f);
-						if (currentLine >= settings.getComponentsCount()) {
-							settings.addComponent(component);
-						} else {
-							settings.setComponent(currentLine, component);
-						}
-						currentLine++;
-						if (currentLine >= controller.getYSize() * 3 - 1) {
-							break;
-						}
+						component.setY((componentIndex) * 5.5f);
+						settings.setComponent(componentIndex, component);
 					}
-					ModCommonEvents.getCurrentServer().ifPresent(x -> x.executeIfPossible(() -> controller.applyToAll(a -> {
-						a.setDisplayType(ModDisplayTypes.RICH_TEXT, settings);
-						a.notifyUpdate();
-					})));
+					ModCommonEvents.getCurrentServer()
+							.ifPresent(x -> x.executeIfPossible(() -> controller.applyToAll(a -> {
+								a.setDisplayType(ModDisplayTypes.RICH_TEXT, settings);
+								a.notifyUpdate();
+							})));
 				}
 			});
 
@@ -176,7 +202,15 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 
 	@Override
 	public boolean isReserved(int line, BlockEntity target, DisplayLinkContext context) {
-		return super.isReserved(line, target, context) || target instanceof AdvancedDisplayBlockEntity;
+		if (target instanceof AdvancedDisplayBlockEntity) {
+			AdvancedDisplayBlockEntity controller = (AdvancedDisplayBlockEntity) target;
+			if (controller.getDisplayType().equals(ModDisplayTypes.SIMPLE_TEXT)
+					|| controller.getDisplayType().equals(ModDisplayTypes.RICH_TEXT))
+				return super.isReserved(line, target, context);
+			else
+				return true;
+		} else
+			return super.isReserved(line, target, context);
 	}
 
 	@Override
@@ -184,8 +218,23 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 		AdvancedDisplayBlockEntity controller = getController(context);
 		if (controller == null)
 			return new DisplayTargetStats(1, 1024, this);
+		float textScale = 0.4f;
+		int maxRows = 50;
+		int maxColumns = 1024;
+		if (controller.getDisplayType().equals(ModDisplayTypes.SIMPLE_TEXT)){
+			textScale = 0.75f;
+			maxRows = 1;
+		} else if (controller.getDisplayType().equals(ModDisplayTypes.RICH_TEXT)){
+			maxColumns = controller.getYSize() * 3 - 1;
+		}
+		if (context.blockEntity().activeSource instanceof PercentOrProgressBarDisplaySource)
+			maxColumns = (int) ((controller.getXSizeScaled() * 16 - 3) / 9.0f / textScale);
+		if(context.blockEntity().activeSource instanceof AdvancedDisplaySource)
+			maxRows = 1;
 
-		return new DisplayTargetStats(context.blockEntity().activeSource instanceof AdvancedDisplaySource ? 1 : 50, 1024, this);
+		maxRows = Math.min(maxRows, 50);
+
+		return new DisplayTargetStats(maxRows, maxColumns, this);
 	}
 
 	@Override

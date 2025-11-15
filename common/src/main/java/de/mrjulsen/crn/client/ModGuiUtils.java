@@ -26,9 +26,6 @@ public class ModGuiUtils {
         return blankTextureLocation;
     }
 	
-    /**
-	 * @see https://github.com/Creators-of-Create/Create/blob/mc1.18/dev/src/main/java/com/simibubi/create/content/trains/schedule/ScheduleScreen.java
-	 */
     public static void startStencil(Graphics graphics, float x, float y, float w, float h) {
 		RenderSystem.clear(GL30.GL_STENCIL_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
 
@@ -51,9 +48,6 @@ public class ModGuiUtils {
 		RenderSystem.stencilFunc(GL11.GL_EQUAL, 1, 0xFF);
 	}
 
-	/**
-	 * @see https://github.com/Creators-of-Create/Create/blob/mc1.18/dev/src/main/java/com/simibubi/create/content/trains/schedule/ScheduleScreen.java
-	 */
 	public static void endStencil() {
 		GL11.glDisable(GL11.GL_STENCIL_TEST);
 	}
