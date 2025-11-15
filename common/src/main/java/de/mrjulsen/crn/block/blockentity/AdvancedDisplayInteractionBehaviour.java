@@ -27,8 +27,8 @@ public class AdvancedDisplayInteractionBehaviour extends MovingInteractionBehavi
     
         MovementContext ctx = actor.getRight();
         Level level = ctx.world;
-        
-        if (level.isClientSide && contraption.presentBlockEntities.containsKey(localPos) && contraption.presentBlockEntities.get(localPos) instanceof AdvancedDisplayBlockEntity be && player.getItemInHand(activeHand).is(AllItems.WRENCH.get())) {
+
+        if (contraption.getBlockEntityClientSide(localPos) instanceof AdvancedDisplayBlockEntity be && player.getItemInHand(activeHand).is(AllItems.WRENCH.get())) {
             AdvancedDisplayBlockEntity controller = be.getController(new IBlockGetter.ContraptionBlockGetter(contraptionEntity));
             if (controller != null) {
                 ClientWrapper.showAdvancedDisplaySettingsScreen(controller, contraptionEntity);

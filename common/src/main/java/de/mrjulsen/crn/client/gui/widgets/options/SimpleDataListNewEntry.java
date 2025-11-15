@@ -41,8 +41,9 @@ public class SimpleDataListNewEntry<T, S> extends AbstractDataListEntry<T, S, Si
     /**
      * Adds a new data section.
      * @param width The width of the sections
-     * @param displayName The display text of the section.
-     * @param onEdit Called when editing this value. {@code null} if this value should not be editable.
+     * @param key The key of the section.
+     * @param text The text of the section.
+     * @param onCreateEditBox Called when editing this value. {@code null} if this value should not be editable.
      */
     public void addDataSection(int width, String key, Component text, Consumer<DLEditBox> onCreateEditBox) {
         createSection(new InputDataSectionDefinition<>(getCurrentSectionsXOffset(), width, key, text, onCreateEditBox));
