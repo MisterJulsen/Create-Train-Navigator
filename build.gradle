@@ -1,5 +1,5 @@
 plugins {
-    id 'dev.architectury.loom' version '1.6-SNAPSHOT' apply false
+    id 'dev.architectury.loom' version '1.7-SNAPSHOT' apply false
     id 'architectury-plugin' version '3.4-SNAPSHOT'
     id 'com.github.johnrengelman.shadow' version '8.1.1' apply false
 }
@@ -36,6 +36,8 @@ subprojects {
         maven { url = "https://jitpack.io/" } // Mixin Extras, Fabric ASM
         maven { url = "https://maven.createmod.net" } // Create, Ponder, Flywheel
         maven { url = "https://maven.tterrag.com" } // Registrate
+        maven { url = "https://mvn.devos.one/snapshots/" } // Create, Porting Lib, Forge Tags, Milk Lib, Registrate
+        maven { url = "https://mvn.devos.one/releases/" } // Porting Lib
         maven { url = "https://cursemaven.com"
             content {
                 includeGroup "curse.maven"
@@ -74,7 +76,8 @@ subprojects {
             "maven_group": rootProject.maven_group,
             "create_forge_version": rootProject.create_forge_version,
             "create_forge_dependency_version": rootProject.create_forge_dependency_version,
-            //"create_fabric_version": rootProject.create_fabric_version,
+            "create_fabric_version": rootProject.create_fabric_version,
+            "create_fabric_dependency_version": rootProject.create_fabric_dependency_version,
             "main_class_name": rootProject.main_class_name,
         ]
         filesMatching(['pack.mcmeta', 'fabric.mod.json', 'META-INF/mods.toml', 'createrailwaysnavigator.mixins.json']) {

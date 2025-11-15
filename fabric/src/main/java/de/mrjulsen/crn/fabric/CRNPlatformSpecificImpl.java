@@ -1,12 +1,14 @@
 package de.mrjulsen.crn.fabric;
 
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.fml.config.ModConfig;
 
 import java.nio.file.Path;
 
+import com.simibubi.create.content.contraptions.Contraption;
 import com.simibubi.create.content.trains.station.GlobalStation;
 import com.simibubi.create.content.trains.station.StationBlockEntity;
 import java.util.Map;
@@ -15,6 +17,7 @@ import java.util.UUID;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.config.ModCommonConfig;
+import de.mrjulsen.crn.mixin.ContraptionAccessor;
 import dev.architectury.platform.Platform;
 import dev.architectury.utils.Env;
 import fuzs.forgeconfigapiport.impl.config.ForgeConfigRegistryImpl;
@@ -50,5 +53,13 @@ public class CRNPlatformSpecificImpl {
     
     public static Map<UUID, String> getAllKnownPlayers() {
         return UsernameCache.getMap();
+    }
+
+    public static BlockEntity getClientContraptionBlockEntity(Contraption contraption, BlockPos localPos) {
+        var maybeNullClientContraption = ((ContraptionAccessor)contraption).crn$clientContraption().getAcquire();
+        if (maybeNullClientContraption == null) {
+            return null;
+        }
+        return maybeNullClientContraption.getBlockEntity(localPos);
     }
 }

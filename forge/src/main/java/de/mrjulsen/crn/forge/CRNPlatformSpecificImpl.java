@@ -1,5 +1,6 @@
 package de.mrjulsen.crn.forge;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.UsernameCache;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -9,6 +10,8 @@ import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.server.ServerLifecycleHooks;
 
 import java.nio.file.Path;
+
+import com.simibubi.create.content.contraptions.Contraption;
 import com.simibubi.create.content.trains.station.GlobalStation;
 import com.simibubi.create.content.trains.station.StationBlockEntity;
 
@@ -50,6 +53,10 @@ public class CRNPlatformSpecificImpl {
 			return null;
 		
         return stationBe.getStation();
+    }
+
+    public static BlockEntity getClientContraptionBlockEntity(Contraption contraption, BlockPos localPos) {
+        return contraption.getBlockEntityClientSide(localPos);
     }
 }
  

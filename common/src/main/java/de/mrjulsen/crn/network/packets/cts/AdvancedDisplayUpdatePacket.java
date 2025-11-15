@@ -11,6 +11,7 @@ import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
 import com.simibubi.create.content.contraptions.Contraption;
 import com.simibubi.create.content.contraptions.behaviour.MovementContext;
 
+import de.mrjulsen.crn.CRNPlatformSpecific;
 import de.mrjulsen.crn.block.AbstractAdvancedSidedDisplayBlock;
 import de.mrjulsen.crn.block.IBlockGetter;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
@@ -147,7 +148,7 @@ public class AdvancedDisplayUpdatePacket implements IPacketBase<AdvancedDisplayU
             contraption.resetClientContraption();
         }    
 
-        if (contraption.getBlockEntityClientSide(pos) instanceof AdvancedDisplayBlockEntity be) {
+        if (CRNPlatformSpecific.getClientContraptionBlockEntity(contraption, pos) instanceof AdvancedDisplayBlockEntity be) {
             be.setDisplayType(level, packet.key, packet.settings);
             be.setBlockState(contraption.getBlocks().get(pos).state());
         }
@@ -174,7 +175,7 @@ public class AdvancedDisplayUpdatePacket implements IPacketBase<AdvancedDisplayU
                 info.nbt().put(AdvancedDisplayBlockEntity.NBT_DISPLAY_TYPE_SETTINGS, packet.settings.serializeNbt());
                 //if (updateTags.containsKey(newPos2)) updateTags.get(newPos2).put(AdvancedDisplayBlockEntity.NBT_DISPLAY_TYPE_SETTINGS, packet.settings.serializeNbt());
                 
-                if (contraption.getBlockEntityClientSide(newPos2) instanceof AdvancedDisplayBlockEntity be) {
+                if (CRNPlatformSpecific.getClientContraptionBlockEntity(contraption, newPos2) instanceof AdvancedDisplayBlockEntity be) {
                     be.setDisplayType(level, packet.key, packet.settings);
                     be.setBlockState(contraption.getBlocks().get(newPos2).state());
                 }
