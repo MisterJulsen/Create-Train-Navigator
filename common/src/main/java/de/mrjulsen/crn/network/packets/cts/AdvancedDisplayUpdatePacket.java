@@ -144,10 +144,10 @@ public class AdvancedDisplayUpdatePacket extends BaseNetworkPacket<AdvancedDispl
         if (rootInfo.state().getBlock() instanceof AbstractAdvancedSidedDisplayBlock) {
             BlockState newState = rootInfo.state().setValue(AbstractAdvancedSidedDisplayBlock.SIDE, packet.doubleSided ? ESide.BOTH : ESide.FRONT);
             contraption.getBlocks().put(pos, new StructureBlockInfo(rootInfo.pos(), newState, rootInfo.nbt()));
-            contraption.deferInvalidate = true;
+            contraption.resetClientContraption();
         }    
 
-        if (contraption.presentBlockEntities.containsKey(pos) && contraption.presentBlockEntities.get(pos) instanceof AdvancedDisplayBlockEntity be) {
+        if (contraption.getBlockEntityClientSide(pos) instanceof AdvancedDisplayBlockEntity be) {
             be.setDisplayType(level, packet.key, packet.settings);
             be.setBlockState(contraption.getBlocks().get(pos).state());
         }
@@ -174,7 +174,7 @@ public class AdvancedDisplayUpdatePacket extends BaseNetworkPacket<AdvancedDispl
                 info.nbt().put(AdvancedDisplayBlockEntity.NBT_DISPLAY_TYPE_SETTINGS, packet.settings.serializeNbt());
                 //if (updateTags.containsKey(newPos2)) updateTags.get(newPos2).put(AdvancedDisplayBlockEntity.NBT_DISPLAY_TYPE_SETTINGS, packet.settings.serializeNbt());
                 
-                if (contraption.presentBlockEntities.containsKey(newPos2) && contraption.presentBlockEntities.get(newPos2) instanceof AdvancedDisplayBlockEntity be) {
+                if (contraption.getBlockEntityClientSide(newPos2) instanceof AdvancedDisplayBlockEntity be) {
                     be.setDisplayType(level, packet.key, packet.settings);
                     be.setBlockState(contraption.getBlocks().get(newPos2).state());
                 }

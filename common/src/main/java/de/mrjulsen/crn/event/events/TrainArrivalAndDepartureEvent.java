@@ -18,7 +18,7 @@ public final class TrainArrivalAndDepartureEvent extends AbstractCRNEvent<TrainA
         /**
          * @param train The current train.
          * @param current The current station.
-         * @param departure {@code true} if the train is arriving at the current station, {@code false} when leaving.
+         * @param arrival {@code true} if the train is arriving at the current station, {@code false} when leaving.
          */
         void run(Train train, Optional<GlobalStation> current, boolean arrival);
     }
