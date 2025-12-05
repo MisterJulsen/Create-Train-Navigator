@@ -15,7 +15,7 @@ public interface ITrainNameWidthSetting extends ICustomTextWidthSetting {
 
     public static final int DEFAULT_TRAIN_NAME_WIDTH = 16;
     public static final int MIN_VALUE = 0;
-    public static final int MAX_VALUE = 100;
+    public static final int MAX_VALUE = 99;
     public static final String NBT_TRAIN_NAME_WIDTH = "TrainNameWidth";
     
     byte getTrainNameWidth();

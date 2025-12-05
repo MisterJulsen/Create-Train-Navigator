@@ -522,7 +522,7 @@ public class ClientRoute extends Route implements AutoCloseable, IListenable<Cli
     }
 
     public static ClientRoute empty(boolean realTimeTracker) {
-        return new ClientRoute(List.of(), realTimeTracker);
+        return new ClientRoute(List.of(new RoutePart(new UUID(0, 0), TrainSchedule.empty())), realTimeTracker);
     }
 
     public RouteProgressState getState() {

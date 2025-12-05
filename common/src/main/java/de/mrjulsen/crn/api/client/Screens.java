@@ -1,5 +1,6 @@
 package de.mrjulsen.crn.api.client;
 
+import de.mrjulsen.crn.client.gui.windows.NavigatorWindow;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLWindow;
 
 public final class Screens {    
@@ -12,5 +13,6 @@ public final class Screens {
      */
     public static void showNavigatorScreen(String stationName, boolean isPublic) {
         //DLWindow.openWindow((mgr) -> new NavigatorScreen(mgr, stationName, isPublic));
+        DLWindow.openWindow((mgr) -> new NavigatorWindow(mgr));
     }
 }

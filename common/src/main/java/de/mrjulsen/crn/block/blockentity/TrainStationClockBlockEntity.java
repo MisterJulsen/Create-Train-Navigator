@@ -10,6 +10,7 @@ import de.mrjulsen.mcdragonlib.block.IBERInstance;
 import de.mrjulsen.mcdragonlib.client.ber.IBlockEntityRendererInstance;
 import de.mrjulsen.mcdragonlib.config.ECachingPriority;
 import de.mrjulsen.mcdragonlib.util.Cache;
+import de.mrjulsen.mcdragonlib.util.DLColor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -22,7 +23,7 @@ public class TrainStationClockBlockEntity extends SmartBlockEntity implements IB
 
     private final Cache<IBlockEntityRendererInstance<TrainStationClockBlockEntity>> renderer = new Cache<>(() -> new TrainStationClockRenderer(this), ECachingPriority.ALWAYS);
 
-    private int color = 0xFFFFFFFF;
+    private DLColor color = DLColor.WHITE;
     private boolean glowing;
 
     public TrainStationClockBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
@@ -37,7 +38,7 @@ public class TrainStationClockBlockEntity extends SmartBlockEntity implements IB
         return renderer.get();
     }
 
-    public int getColor() {
+    public DLColor getColor() {
         return color;
     }
 
@@ -45,7 +46,7 @@ public class TrainStationClockBlockEntity extends SmartBlockEntity implements IB
         return glowing;
     }
 
-    public void setColor(int color) {
+    public void setColor(DLColor color) {
         this.color = color;
         notifyUpdate();
     }
@@ -58,14 +59,14 @@ public class TrainStationClockBlockEntity extends SmartBlockEntity implements IB
     @Override
     protected void write(CompoundTag tag, boolean clientPacket) {
         super.write(tag, clientPacket);
-        tag.putInt(NBT_COLOR, getColor());
+        tag.putInt(NBT_COLOR, getColor().withAlpha(255).getAsARGB());
         tag.putBoolean(NBT_GLOWING, isGlowing());
     }
     @Override
     protected void read(CompoundTag tag, boolean clientPacket) {
         super.read(tag, clientPacket);
         if (tag.contains(NBT_COLOR)) {
-            color = tag.getInt(NBT_COLOR);
+            color = DLColor.fromInt(tag.getInt(NBT_COLOR));
         }
         if (tag.contains(NBT_GLOWING)) {
             glowing = tag.getBoolean(NBT_GLOWING);

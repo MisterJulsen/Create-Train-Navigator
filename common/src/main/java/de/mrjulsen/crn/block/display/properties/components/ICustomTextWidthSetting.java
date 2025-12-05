@@ -11,6 +11,6 @@ public interface ICustomTextWidthSetting {
 
     @Environment(EnvType.CLIENT)
     default void buildBasicTextWidthGui(GuiBuilderContext context) {
-        GuiBuilderWrapper.buildBasicTextWidthGui(this, context);
+        GuiBuilderWrapper.buildBasicTextWidthGui(context);
     }
 }

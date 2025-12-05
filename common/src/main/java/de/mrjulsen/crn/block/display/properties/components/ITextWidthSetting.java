@@ -6,6 +6,7 @@ import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.block.display.properties.IDisplaySettings;
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
+import de.mrjulsen.mcdragonlib.client.ber.BERLabel.EScrollMode;
 import de.mrjulsen.mcdragonlib.data.ITranslatableEnum;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -53,20 +54,26 @@ public interface ITextWidthSetting {
 
 
     public static enum TextScaleBounds implements ITranslatableEnum {
-        CUT_OFF((byte)0, "cut_off"),
-        SCALE_SCROLL((byte)1, "scale_scroll"),
-        SCROLL((byte)2, "scroll");
+        CUT_OFF((byte)0, "cut_off", EScrollMode.NEVER),
+        SCALE_SCROLL((byte)1, "scale_scroll", EScrollMode.WHEN_NEEDED),
+        SCROLL((byte)2, "scroll", EScrollMode.ALWAYS);
 
         final byte index;
         final String name;
+        final EScrollMode mode;
 
-        private TextScaleBounds(byte index, String name) {
+        private TextScaleBounds(byte index, String name,EScrollMode mode) {
             this.index = index;
             this.name = name;
+            this.mode = mode;
         }
 
         public byte getIndex() {
             return index;
+        }
+
+        public EScrollMode getMode() {
+            return mode;
         }
 
         public static TextScaleBounds getByIndex(int b) {

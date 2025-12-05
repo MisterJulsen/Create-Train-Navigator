@@ -4,7 +4,8 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import com.simibubi.create.content.trains.entity.Train;
 
@@ -23,6 +24,7 @@ import de.mrjulsen.crn.event.ModCommonEvents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.server.MinecraftServer;
 
 public class TrainDisplayData {
 
@@ -171,12 +173,24 @@ public class TrainDisplayData {
 
         return TrainListener.getTrainData(train.id).map(data -> {
             MutableHolder<TrainExitSide> sideHolder = new MutableHolder<>(null); 
-            ModCommonEvents.getCurrentServer().ifPresent(x -> {
-                x.execute(() -> sideHolder.set(TrainUtils.getExitSide(train.navigation.destination)));
-                while (sideHolder.get() == null) {
-                    try { TimeUnit.MILLISECONDS.sleep(10); } catch (InterruptedException e) {}
+
+            MinecraftServer server = ModCommonEvents.getCurrentServer().orElse(null);
+            if (server != null) {
+                if (Thread.currentThread() == server.getRunningThread()) {
+                    sideHolder.set(TrainUtils.getExitSide(train.navigation.destination));
+                } else {
+                    CompletableFuture<Void> future = new CompletableFuture<>();
+                    server.execute(() -> {
+                        sideHolder.set(TrainUtils.getExitSide(train.navigation.destination));
+                        future.complete(null);
+                    });
+                    try {
+                        future.get();
+                    } catch (InterruptedException | ExecutionException e) {
+                        e.printStackTrace();
+                    }
                 }
-            });
+            }
             TrainExitSide side = sideHolder.get() == null ? TrainExitSide.UNKNOWN : sideHolder.get();
 
             final ScheduleSection section = data.getCurrentSection();

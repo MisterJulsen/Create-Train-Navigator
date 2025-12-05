@@ -10,6 +10,7 @@ import de.mrjulsen.mcdragonlib.util.time.DLTime;
 import de.mrjulsen.mcdragonlib.util.time.VanillaTimeSystem;
 import de.mrjulsen.mcdragonlib.util.time.format.ITimeFormatter;
 import de.mrjulsen.mcdragonlib.util.time.format.TimeFormatDigitalDuration;
+import de.mrjulsen.mcdragonlib.util.time.format.TimeFormaturVerboseDuration;
 import net.minecraft.network.chat.Component;
 
 public class Constants {
@@ -39,7 +40,7 @@ public class Constants {
     public static final Component TEXT_READ_ONLY = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.read_only");
     public static final Component TEXT_SERVER = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.server");
     public static final UUID ZERO_UUID = new UUID(0, 0);
-    public static final int[] DEFAULT_TRAIN_TYPE_COLORS = new int[] { 0xFF393939, 0xFFf0f3f5, 0xFFafb4bb, 0xFF878c96, 0xFF2a7230, 0xFF814997, 0xFF1455c0, 0xFFa9455d, 0xFF55b9e6, 0xFFffd800 };
+    public static final DLColor[] DEFAULT_TRAIN_TYPE_COLORS = new DLColor[] { DLColor.fromInt(0xFF393939), DLColor.fromInt(0xFFf0f3f5), DLColor.fromInt(0xFFafb4bb), DLColor.fromInt(0xFF878c96), DLColor.fromInt(0xFF2a7230), DLColor.fromInt(0xFF814997), DLColor.fromInt(0xFF1455c0), DLColor.fromInt(0xFFa9455d), DLColor.fromInt(0xFF55b9e6), DLColor.fromInt(0xFFffd800) };
      
     public static final DLColor COLOR_ON_TIME = DLColor.fromInt(0xFF1AEA5F);
     public static final DLColor COLOR_DELAYED = DLColor.fromInt(0xFFFF4242);
@@ -48,6 +49,8 @@ public class Constants {
     public static final DLTime NULL_TIME = DLTime.fromTicks(0, VanillaTimeSystem.INSTANCE);
     public static final ITimeFormatter DEFAULT_REAL_DURATION_FORMAT = new TimeFormatDigitalDuration(NULL_TIME, false, true, true, true, true);
     public static final ITimeFormatter DEFAULT_GAME_DURATION_FORMAT = new TimeFormatDigitalDuration(NULL_TIME, false, false, true, true, true);
+    public static final ITimeFormatter DEFAULT_VERBOSE_REAL_DURATION_FORMAT = new TimeFormaturVerboseDuration(NULL_TIME, false, true, true, true, true);
+    public static final ITimeFormatter DEFAULT_VERBOSE_GAME_DURATION_FORMAT = new TimeFormaturVerboseDuration(NULL_TIME, false, false, true, true, true);
 
     public static final String GITHUB_WIKI = "https://github.com/MisterJulsen/Create-Train-Navigator/wiki/";
     public static final String HELP_PAGE_ADVANCED_DISPLAYS = GITHUB_WIKI + "Advanced-Displays";

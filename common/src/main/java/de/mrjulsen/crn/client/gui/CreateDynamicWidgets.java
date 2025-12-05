@@ -8,17 +8,20 @@ import com.mojang.blaze3d.vertex.VertexFormat.Mode;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.CRNGui;
+import de.mrjulsen.mcdragonlib.client.render.DefaultGuiTextures;
 import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils.TextureFillMode;
 import de.mrjulsen.mcdragonlib.data.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.DLColor;
+import de.mrjulsen.mcdragonlib.util.DLUtils;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 public class CreateDynamicWidgets {
+    
 
     private static final int BORDER_HEIGHT = 2;
     private static final int TEXTBOX_HEIGHT = 18;
@@ -149,12 +152,23 @@ public class CreateDynamicWidgets {
     }
 
     public static void renderContainer(DLGuiGraphics graphics, int x, int y, int w, int h, ContainerColor color) {
-        renderContainerBackground(graphics, x + 2, y + 2, w - 4, h - 4, color);
-        renderNineSliced(graphics, x, y, w, h, 0, 7, CRNGui.GUI.width(), CRNGui.GUI.height(), 2, CRNGui.GUI.getTexture().get(), false);
+        switch (color) {
+            case GOLD -> CRNGui.GUI_SPRITES.getSprite("content_gold").render(graphics, x, y, w, h);
+            case PURPLE -> CRNGui.GUI_SPRITES.getSprite("content_purple").render(graphics, x, y, w, h);
+            case BLUE -> CRNGui.GUI_SPRITES.getSprite("content_blue").render(graphics, x, y, w, h);
+            default -> CRNGui.GUI_SPRITES.getSprite("content_gray").render(graphics, x, y, w, h);
+        }
+        //renderContainerBackground(graphics, x + 2, y + 2, w - 4, h - 4, color);
+        //renderNineSliced(graphics, x, y, w, h, 0, 7, CRNGui.GUI.width(), CRNGui.GUI.height(), 2, CRNGui.GUI.getTexture().get(), false);
     }
 
     public static void renderTitleBar(DLGuiGraphics graphics, int x, int y, int w, int h, BarColor color) {
-        renderNineSliced(graphics, x, y, w, h, color.u, color.v, CRNGui.GUI.width(), CRNGui.GUI.height(), 3, CRNGui.GUI.getTexture().get(), true);
+        switch (color) {
+            case GOLD -> CRNGui.GUI_SPRITES.getSprite("header_gold").render(graphics, x, y, w, h);
+            case PURPLE -> CRNGui.GUI_SPRITES.getSprite("header_purple").render(graphics, x, y, w, h);
+            default -> CRNGui.GUI_SPRITES.getSprite("header_gray").render(graphics, x, y, w, h);
+        }
+        //renderNineSliced(graphics, x, y, w, h, color.u, color.v, CRNGui.GUI.width(), CRNGui.GUI.height(), 3, CRNGui.GUI.getTexture().get(), true);
     }
 
     
@@ -185,7 +199,7 @@ public class CreateDynamicWidgets {
     }
 
     public static void renderIconSlot(DLGuiGraphics graphics, int x, int y, int w, int h) {
-        renderNineSliced(graphics, x, y, w, h, 21, 0, CRNGui.GUI.width(), CRNGui.GUI.height(), 1, CRNGui.GUI.getTexture().get(), true);
+        renderNineSliced(graphics, x, y, w, h, 0, 7, CRNGui.GUI.width(), CRNGui.GUI.height(), 1, CRNGui.GUI.getTexture().get(), true);
     }
 
     public static void renderTextBoxArrow(DLGuiGraphics graphics, int x, int y) {

@@ -56,6 +56,10 @@ public class GetNextConnectionsDisplayDataPacketData {
         protected void read(CompoundTag nbt) {
             this.data = NextConnectionsDisplayData.fromNbt(nbt.getCompound(NBT_DATA));
         }
+
+        public NextConnectionsDisplayData getData() {
+            return data;
+        }
     }
 
     public static Response handle(Request packet, NetworkPacketContext context) {

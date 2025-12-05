@@ -13,6 +13,7 @@ import de.mrjulsen.crn.data.train.TrainData.SimulationResult;
 import de.mrjulsen.crn.exceptions.RuntimeSideException;
 import de.mrjulsen.crn.data.TrainInfo;
 import de.mrjulsen.mcdragonlib.DragonLib;
+import de.mrjulsen.mcdragonlib.util.DLColor;
 import de.mrjulsen.mcdragonlib.util.time.ConfiguredTimeSystem;
 import de.mrjulsen.mcdragonlib.util.time.ITimeSystem;
 import net.minecraft.nbt.CompoundTag;
@@ -272,13 +273,13 @@ public class TrainStop implements Comparable<TrainStop> {
         return getTrainInfo() == null || getTrainInfo().line() == null || getTrainInfo().line().getLineName().isEmpty() ? getTrainName() : getTrainInfo().line().getLineName();
     }
 
-    public int getTrainDisplayColor() {
-        if (getTrainInfo() != null && getTrainInfo().line() != null && getTrainInfo().line().getColor() != 0) {
+    public DLColor getTrainDisplayColor() {
+        if (getTrainInfo() != null && getTrainInfo().line() != null && !getTrainInfo().line().getColor().isTransparent()) {
             return getTrainInfo().line().getColor();
-        } else if (getTrainInfo() != null && getTrainInfo().category() != null && getTrainInfo().category().getColor() != 0) {
+        } else if (getTrainInfo() != null && getTrainInfo().category() != null && !getTrainInfo().category().getColor().isTransparent()) {
             return getTrainInfo().category().getColor();
         }
-        return Constants.COLOR_TRAIN_BACKGROUND.getAsARGB();
+        return Constants.COLOR_TRAIN_BACKGROUND;
     }
 
     public int getStayTime() {

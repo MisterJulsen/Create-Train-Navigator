@@ -2,6 +2,7 @@ package de.mrjulsen.crn.block.display.properties;
 
 import de.mrjulsen.crn.block.display.properties.components.IColorSetting;
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
+import de.mrjulsen.mcdragonlib.util.DLColor;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.nbt.CompoundTag;
@@ -11,19 +12,19 @@ import net.minecraft.nbt.CompoundTag;
  */
 public class BasicDisplaySettings extends AbstractDisplaySettings implements IColorSetting {
 
-    protected int fontColor = 0xFFFFFFFF;
-    protected int backColor = 0;
+    protected DLColor fontColor = DLColor.WHITE;
+    protected DLColor backColor = DLColor.TRANSPARENT;
 
     @Override
     public void deserializeNbt(CompoundTag nbt) {
-        if (nbt.contains(NBT_FONT_COLOR)) this.fontColor = nbt.getInt(NBT_FONT_COLOR);
-        if (nbt.contains(NBT_BACK_COLOR)) this.backColor = nbt.getInt(NBT_BACK_COLOR);
+        if (nbt.contains(NBT_FONT_COLOR)) this.fontColor = DLColor.fromInt(nbt.getInt(NBT_FONT_COLOR));
+        if (nbt.contains(NBT_BACK_COLOR)) this.backColor = DLColor.fromInt(nbt.getInt(NBT_BACK_COLOR));
     }
 
     @Override
     public void serializeNbt(CompoundTag nbt) {
-        nbt.putInt(NBT_FONT_COLOR, fontColor);
-        nbt.putInt(NBT_BACK_COLOR, backColor);
+        nbt.putInt(NBT_FONT_COLOR, fontColor.getAsARGB());
+        nbt.putInt(NBT_BACK_COLOR, backColor.getAsARGB());
     }
 
     @Override
@@ -33,22 +34,22 @@ public class BasicDisplaySettings extends AbstractDisplaySettings implements ICo
     }
 
     @Override
-    public int getFontColor() {
+    public DLColor getFontColor() {
         return fontColor;
     }
 
     @Override
-    public void setFontColor(int fontColor) {
+    public void setFontColor(DLColor fontColor) {
         this.fontColor = fontColor;
     }
 
     @Override
-    public int getBackColor() {
+    public DLColor getBackColor() {
         return backColor;
     }
 
     @Override
-    public void setBackColor(int backColor) {
+    public void setBackColor(DLColor backColor) {
         this.backColor = backColor;
     }
 

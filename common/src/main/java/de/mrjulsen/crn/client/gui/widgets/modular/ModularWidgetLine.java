@@ -6,6 +6,10 @@ import java.util.Collection;
 import com.simibubi.create.foundation.gui.widget.ScrollInput;
 
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLGuiComponent;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
 
 public class ModularWidgetLine extends DLGuiComponent {
 
@@ -26,12 +30,12 @@ public class ModularWidgetLine extends DLGuiComponent {
         return width() - currentX;
     }
 
-    public <T extends DLGuiComponent> T add(T w) {
-        currentX += w.x() - currentX + w.width();
-        //if (w instanceof ScrollInput i) {
-        //    scrollInputs.add(i);
-        //}
-        return this.addComponent(w);
+    public <T extends AbstractWidget> T add(T w) {
+        currentX += w.getX() - currentX + w.getWidth();
+        if (w instanceof ScrollInput i) {
+            scrollInputs.add(i);
+        }
+        return null;
     }
 
     @Override
@@ -40,5 +44,6 @@ public class ModularWidgetLine extends DLGuiComponent {
         for (ScrollInput i : scrollInputs) {
             i.tick();
         }
-    }    
+    }
+    
 }

@@ -120,15 +120,16 @@ public class TrainStatus {
             */
 
         public int render(DLGuiGraphics graphics, Holder<Font> font, int x, int y, int maxWidth) {
-            final int color = type().getColor();
+            final DLColor color = DLColor.fromInt(type().getColor());
             final float scale = 0.75f;
             graphics.poseStack().pushPose();
             graphics.poseStack().translate(x, y, 0);
-            GuiUtils.setTint(DLColor.fromInt(color));
+            GuiUtils.setTint(color);
             ModGuiIcons.IMPORTANT.render(graphics, -4, -3);
             graphics.poseStack().scale(scale, scale, 1);
-            int height = (int)(ClientWrapper.renderMultilineLabelSafe(graphics, (int)(10 / scale), (int)(2 / scale), font.get(), text(), (int)(maxWidth / scale), color) * scale);
+            int height = (int)(ClientWrapper.renderMultilineLabelSafe(graphics, (int)(10 / scale), (int)(2 / scale), font.get(), text(), (int)((maxWidth - ModGuiIcons.ICON_SIZE) / scale), color) * scale);
             graphics.poseStack().popPose();
+            GuiUtils.resetTint();
             
             return Math.max(HEIGHT, height + 2);
         }

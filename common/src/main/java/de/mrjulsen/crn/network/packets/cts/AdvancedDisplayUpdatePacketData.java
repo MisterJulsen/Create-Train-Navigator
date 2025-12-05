@@ -84,7 +84,8 @@ public class AdvancedDisplayUpdatePacketData extends NetworkPacketData {
         CompoundTag tag = new CompoundTag();
         key.toNbt(tag);
         nbt.put(NBT_KEY, tag);
-        NbtUtils.putNbtPos(tag, NBT_POS, pos);
+        
+        NbtUtils.putNbtPos(nbt, NBT_POS, pos);
         nbt.putBoolean(NBT_DOUBLE_SIDED, doubleSided);
         nbt.putBoolean(NBT_IS_ON_CONTRAPTION, isOnContraption);
         nbt.putInt(NBT_ENTITY_ID, entityId);
