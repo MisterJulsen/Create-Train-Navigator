@@ -35,7 +35,6 @@ import de.mrjulsen.crn.network.packets.pain.StationTagRequestByTagPacketData;
 import de.mrjulsen.crn.network.packets.pain.StationTagUpdatePermissionsPacketData;
 import de.mrjulsen.crn.network.packets.pain.UpdateStationTagEntryPacketData;
 import de.mrjulsen.crn.network.packets.pain.UpdateStationTagNamePacketData;
-import de.mrjulsen.crn.network.packets.pain.UpdateTrainLinePermissionsPacketData;
 import de.mrjulsen.crn.registry.ModNetworkManager;
 import de.mrjulsen.crn.util.Lock;
 import de.mrjulsen.crn.util.Owner;
@@ -98,6 +97,9 @@ public class StationTagSettingsWindow extends AbstractNavigatorScreen {
         optionsView.clearEntries();
         ModNetworkManager.GET_ALL_STATION_TAGS.send(NetworkDirection.toServer(), (response) -> {
             optionsView.addEntry(new NewEntryComponent(0, 0, 100, (txt) -> {
+                if (txt.isBlank()) {
+                    return;
+                }
                 ModNetworkManager.CREATE_STATION_TAG.send(NetworkDirection.toServer(), new CreateStationTagPacketData.Request(txt, Optional.of(new Owner(Minecraft.getInstance().player))), (res) -> {
                     reloadTags();
                 }, () -> {});
@@ -150,7 +152,13 @@ public class StationTagSettingsWindow extends AbstractNavigatorScreen {
             return false;
         }));
 
-        tagRenameBox.addEventListener(DLEditableLabel.TextEditedEvent.class, (s, e) -> {
+        tagRenameBox.addEventListener(DLEditableLabel.TextEditedEvent.class, (s, e) -> {            
+            if (!tag.getOwner().isAllowed()) {
+                return false;
+            }            
+            if (tagRenameBox.text.get().isBlank()) {
+                return false;
+            }
             ModNetworkManager.UPDATE_STATION_TAG_NAME.send(NetworkDirection.toServer(), new UpdateStationTagNamePacketData(tag.getId(), tagRenameBox.text.get()), (response) -> {
                 reloadTags();
             }, () -> {});
@@ -167,16 +175,19 @@ public class StationTagSettingsWindow extends AbstractNavigatorScreen {
         layout.addColumn("dropdown", 20, ColumnSizeMode.FIXED);
         trainLinesEntry.getHeader().layout.set(layout);
 
-        trainLinesEntry.dataView.createNewItemBuilder.set(!GlobalSettingsClient.modificationsAllowed() ? null : (view) -> {
+        trainLinesEntry.dataView.createNewItemBuilder.set((!GlobalSettingsClient.modificationsAllowed() || !tag.getOwner().isAllowed()) ? null : (view) -> {
             OptionsDataView.CreateEntryItem<Pair<String, StationInfo>> item = new OptionsDataView.CreateEntryItem<>(view);
-            
+                            
             CreateTextBox nameBox = new CreateTextBox(0, 0, 0);
             nameBox.tooltip.set(new DLTooltip(List.of(textStationName), 200));
             nameBox.autocompleteManager.set(new StationsAutocomplete());
             CreateTextBox platformBox = new CreateTextBox(0, 0, 0);
             platformBox.tooltip.set(new DLTooltip(List.of(textPlatformName), 200));
             FlatIconButton addBtn = new FlatIconButton(0, 0, ModGuiIcons.ADD.getAsSprite(16, 16));            
-            addBtn.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {                
+            addBtn.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {           
+                if (nameBox.text.get().getPlainText().isBlank() || platformBox.text.get().getPlainText().isBlank()) {
+                    return false;
+                }     
                 ModNetworkManager.ADD_STATION_TAG_ENTRY.send(NetworkDirection.toServer(), new AddStationTagEntryPacketData.Request(tag.getId(), nameBox.text.get().getPlainText(), new StationInfo(platformBox.text.get().getPlainText())), (response) -> {
                     reloadTag(tag, view);
                 }, () -> {});
@@ -201,7 +212,10 @@ public class StationTagSettingsWindow extends AbstractNavigatorScreen {
             nameLabel.text.set(in.getFirst());
 
             TextOptionLabel platformLbl = new TextOptionLabel();
-            platformLbl.addEventListener(DLEditableLabel.TextEditedEvent.class, (s, e) -> {
+            platformLbl.addEventListener(DLEditableLabel.TextEditedEvent.class, (s, e) -> {                
+                if (platformLbl.text.get().isBlank()) {
+                    return false;
+                }
                 ModNetworkManager.UPDATE_STATION_TAG_ENTRY.send(NetworkDirection.toServer(), new UpdateStationTagEntryPacketData.Request(tag.getId(), in.getFirst(),new StationInfo( platformLbl.text.get())), (response) -> {
                     reloadTag(tag, trainLinesEntry.dataView);
                 }, () -> {});
@@ -234,7 +248,7 @@ public class StationTagSettingsWindow extends AbstractNavigatorScreen {
         trainLinesEntry.dataView.dataSlots.add(new DataSlot("action", TextUtils.text("Action"), 18, SizeMode.FIXED));
 
         
-        FlatIconButton btnDelete = trainLinesEntry.getHeader().addComponent(new FlatIconButton(0, 0, ModGuiIcons.DELETE.getAsSprite(16, 16)));
+        FlatIconButton btnDelete = new FlatIconButton(0, 0, ModGuiIcons.DELETE.getAsSprite(16, 16));
         btnDelete.tooltip.set(new DLTooltip(List.of(tooltipDeleteTag), 200));
         btnDelete.layoutContraint.set("delete");
         btnDelete.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
@@ -247,7 +261,10 @@ public class StationTagSettingsWindow extends AbstractNavigatorScreen {
                 });
             }));
             return false;
-        });
+        });        
+        if (tag.getOwner().isAllowed()) {
+            trainLinesEntry.getHeader().addComponent(btnDelete);
+        }
         
         FlatIconButton btnPermissions = trainLinesEntry.getHeader().addComponent(new FlatIconButton(0, 0, tag.getOwner().get().getIcon()));    
         btnPermissions.layoutContraint.set("permissions"); 
@@ -289,6 +306,9 @@ public class StationTagSettingsWindow extends AbstractNavigatorScreen {
             return false;
         });
         btnPermissions.addEventListener(DLGuiStandardEvents.RightClickEvent.class, (src, event) -> {
+            if (!tag.getOwner().isAdmin()) {
+                return false;
+            }
             permissionsMenu.open(getWindowManager(), (int)getWindowManager().mouseXOnScreen(), (int)getWindowManager().mouseYOnScreen());
             return false;
         });
