@@ -157,6 +157,9 @@ public class GlobalSettingsWindow extends AbstractNavigatorScreen {
             CreateTextBox nameBox = new CreateTextBox(0, 0, 0);
             FlatIconButton addBtn = new FlatIconButton(0, 0, ModGuiIcons.ADD.getAsSprite(16, 16));
             final Runnable addAction = () -> {
+                if (nameBox.text.get().getPlainText().isBlank()) {
+                    return;
+                }
                 ModNetworkManager.ADD_TRAIN_TO_BLACKLIST.send(NetworkDirection.toServer(), new AddTrainToBlacklistPacketData.Request(nameBox.text.get().getPlainText()), (response) -> {
                     reloadBlacklistedTrains(view);
                 }, () -> {});
@@ -244,7 +247,10 @@ public class GlobalSettingsWindow extends AbstractNavigatorScreen {
             
             CreateTextBox nameBox = new CreateTextBox(0, 0, 0);
             FlatIconButton addBtn = new FlatIconButton(0, 0, ModGuiIcons.ADD.getAsSprite(16, 16));
-            final Runnable addAction = () -> {
+            final Runnable addAction = () -> {                
+                if (nameBox.text.get().getPlainText().isBlank()) {
+                    return;
+                }
                 ModNetworkManager.ADD_STATION_TO_BLACKLIST.send(NetworkDirection.toServer(), new AddStationToBlacklistPacketData.Request(nameBox.text.get().getPlainText()), (response) -> {
                     reloadBlacklistedStations(view);
                 }, () -> {});
@@ -330,7 +336,10 @@ public class GlobalSettingsWindow extends AbstractNavigatorScreen {
             
             CreateTextBox nameBox = new CreateTextBox(0, 0, 0);
             FlatIconButton addBtn = new FlatIconButton(0, 0, ModGuiIcons.ADD.getAsSprite(16, 16));
-            final Runnable addAction = () -> {
+            final Runnable addAction = () -> {                
+                if (nameBox.text.get().getPlainText().isBlank()) {
+                    return;
+                }
                 ModNetworkManager.CREATE_TRAIN_LINE.send(NetworkDirection.toServer(), new CreateTrainLinePacketData.Request(nameBox.text.get().getPlainText()), (response) -> {
                     reloadTrainLines(view);
                 }, () -> {});
@@ -360,7 +369,10 @@ public class GlobalSettingsWindow extends AbstractNavigatorScreen {
 
             OptionsDataView.DLBasicItem<TrainLine> item = new OptionsDataView.DLBasicItem<>(trainLinesEntry.dataView, in);
             TextOptionLabel nameLabel = new TextOptionLabel();
-            nameLabel.addEventListener(DLEditableLabel.TextEditedEvent.class, (s, e) -> {
+            nameLabel.addEventListener(DLEditableLabel.TextEditedEvent.class, (s, e) -> {                
+                if (nameLabel.text.get().isBlank()) {
+                    return false;
+                }
                 ModNetworkManager.UPDATE_TRAIN_LINE_NAME.send(NetworkDirection.toServer(), new UpdateTrainLineNamePacketData.Request(in.getId(), nameLabel.text.get()), (response) -> {
                     reloadTrainLines(trainLinesEntry.dataView);
                 }, () -> {});
@@ -407,6 +419,9 @@ public class GlobalSettingsWindow extends AbstractNavigatorScreen {
                 return false;
             });
             btnPermissions.addEventListener(DLGuiStandardEvents.RightClickEvent.class, (src, event) -> {
+                if (!in.getOwner().isAdmin()) {
+                    return false;
+                }
                 permissionsMenu.open(getWindowManager(), (int)getWindowManager().mouseXOnScreen(), (int)getWindowManager().mouseYOnScreen());
                 return false;
             });
@@ -436,8 +451,8 @@ public class GlobalSettingsWindow extends AbstractNavigatorScreen {
             deleteBtn.tooltip.set(new DLTooltip(List.of(Constants.TEXT_DELETE), 200));
 
             item.subComponents.add(new DataSlotComponent("name", nameLabel));
+            item.subComponents.add(new DataSlotComponent("permissions", btnPermissions));
             if (allowed) {
-                item.subComponents.add(new DataSlotComponent("permissions", btnPermissions));
                 item.subComponents.add(new DataSlotComponent("color", colorBtn));
                 item.subComponents.add(new DataSlotComponent("action", deleteBtn));
             }
@@ -488,7 +503,10 @@ public class GlobalSettingsWindow extends AbstractNavigatorScreen {
             
             CreateTextBox nameBox = new CreateTextBox(0, 0, 0);
             FlatIconButton addBtn = new FlatIconButton(0, 0, ModGuiIcons.ADD.getAsSprite(16, 16));
-            final Runnable addAction = () -> {
+            final Runnable addAction = () -> {                
+                if (nameBox.text.get().getPlainText().isBlank()) {
+                    return;
+                }
                 ModNetworkManager.CREATE_TRAIN_CATEGORY.send(NetworkDirection.toServer(), new CreateTrainCategoryPacketData.Request(nameBox.text.get().getPlainText()), (response) -> {
                     reloadTrainCategories(view);
                 }, () -> {});
@@ -519,6 +537,9 @@ public class GlobalSettingsWindow extends AbstractNavigatorScreen {
             OptionsDataView.DLBasicItem<TrainCategory> item = new OptionsDataView.DLBasicItem<>(trainLinesEntry.dataView, in);
             TextOptionLabel nameLabel = new TextOptionLabel();
             nameLabel.addEventListener(DLEditableLabel.TextEditedEvent.class, (s, e) -> {
+                if (nameLabel.text.get().isBlank()) {
+                    return false;
+                }
                 ModNetworkManager.UPDATE_TRAIN_CATEGORY_NAME.send(NetworkDirection.toServer(), new UpdateTrainCategoryNamePacketData.Request(in.getId(), nameLabel.text.get()), (response) -> {
                     reloadTrainCategories(trainLinesEntry.dataView);
                 }, () -> {});
@@ -565,6 +586,9 @@ public class GlobalSettingsWindow extends AbstractNavigatorScreen {
                 return false;
             });
             btnPermissions.addEventListener(DLGuiStandardEvents.RightClickEvent.class, (src, event) -> {
+                if (!in.getOwner().isAdmin()) {
+                    return false;
+                }
                 permissionsMenu.open(getWindowManager(), (int)getWindowManager().mouseXOnScreen(), (int)getWindowManager().mouseYOnScreen());
                 return false;
             });
@@ -594,8 +618,9 @@ public class GlobalSettingsWindow extends AbstractNavigatorScreen {
             deleteBtn.tooltip.set(new DLTooltip(List.of(Constants.TEXT_DELETE), 200));
 
             item.subComponents.add(new DataSlotComponent("name", nameLabel));
+            
+            item.subComponents.add(new DataSlotComponent("permissions", btnPermissions));
             if (allowed) {
-                item.subComponents.add(new DataSlotComponent("permissions", btnPermissions));
                 item.subComponents.add(new DataSlotComponent("color", colorBtn));
                 item.subComponents.add(new DataSlotComponent("action", deleteBtn));
             }
