@@ -7,6 +7,7 @@ import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.blockentity.TrainStationClockBlockEntity;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.registry.ModBlockEntities;
+import de.mrjulsen.mcdragonlib.util.DLColor;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.time.ConfiguredTimeSystem;
 import de.mrjulsen.mcdragonlib.util.time.DLTime;
@@ -71,7 +72,7 @@ public class TrainStationClockBlock extends Block implements IWrenchable, IBE<Tr
 			DyeColor dye = dyeItem.getDyeColor();        
 			if (dye != null) {
 				pLevel.playSound(null, pPos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
-				blockEntity.setColor(dye == DyeColor.ORANGE ? 0xFF9900 : dye.getMapColor().col);
+				blockEntity.setColor(DLColor.fromInt(dye == DyeColor.ORANGE ? 0xFFFF9900 : dye.getMapColor().col));
 
 				if (pLevel.isClientSide) {
 					blockEntity.getRenderer().update(pLevel, pPos, pState, blockEntity, null);

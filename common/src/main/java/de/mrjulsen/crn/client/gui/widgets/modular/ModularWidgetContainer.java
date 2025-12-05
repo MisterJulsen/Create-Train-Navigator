@@ -45,11 +45,7 @@ public class ModularWidgetContainer extends DLGuiComponent {
     }
 
     int addLine(ModularWidgetLine line, int yOffset) {
-        line.setX(x() + paddingLeft);
-        line.setY(y() + paddingTop + yOffset);
-        line.setWidth(width() - paddingLeft - paddingRight);
-        addComponent(line);
-        return line.height();
+        return 0;
     }
 
     public DLScrollBar getScrollbar() {

@@ -1,0 +1,98 @@
+{
+    "dragonlib-gui": {
+        "texture_size": [ 64, 64 ],
+        "sprites": {
+            "header_gold": {
+                "type": "nine_slice",
+                "uv": [ 0, 0 ],
+                "size": [ 7, 7 ],
+                "border": [ 3, 3, 3, 3 ] 
+            },
+            "header_gray": {
+                "type": "nine_slice",
+                "uv": [ 7, 0 ],
+                "size": [ 7, 7 ],
+                "border": [ 3, 3, 3, 3 ] 
+            },
+            "header_purple": {
+                "type": "nine_slice",
+                "uv": [ 14, 0 ],
+                "size": [ 7, 7 ],
+                "border": [ 3, 3, 3, 3 ] 
+            },
+
+
+            "content_blue": {
+                "type": "nine_slice",
+                "uv": [ 21, 0 ],
+                "size": [ 6, 6 ],
+                "border": [ 2, 2, 2, 2 ],
+                "tiled_content": true
+            },
+            "content_gold": {
+                "type": "nine_slice",
+                "uv": [ 27, 0 ],
+                "size": [ 6, 6 ],
+                "border": [ 2, 2, 2, 2 ],
+                "tiled_content": true
+            },
+            "content_gray": {
+                "type": "nine_slice",
+                "uv": [ 33, 0 ],
+                "size": [ 6, 6 ],
+                "border": [ 2, 2, 2, 2 ],
+                "tiled_content": true
+            },
+            "content_purple": {
+                "type": "nine_slice",
+                "uv": [ 39, 0 ],
+                "size": [ 6, 6 ],
+                "border": [ 2, 2, 2, 2 ],
+                "tiled_content": true
+            },
+
+
+
+            "route_start": {
+                "type": "tile",
+                "uv": [ 0, 30 ],
+                "size": [ 7, 24 ]
+            },
+            "route_end": {
+                "type": "tile",
+                "uv": [ 7, 30 ],
+                "size": [ 7, 24 ]
+            },
+            "route_stopover": {
+                "type": "tile",
+                "uv": [ 14, 30 ],
+                "size": [ 7, 24 ]
+            },
+            "route_start_void": {
+                "type": "tile",
+                "uv": [ 21, 30 ],
+                "size": [ 7, 24 ]
+            },
+            "route_end_void": {
+                "type": "tile",
+                "uv": [ 28, 30 ],
+                "size": [ 7, 24 ]
+            },
+            "route_transfer_end": {
+                "type": "tile",
+                "uv": [ 35, 30 ],
+                "size": [ 7, 24 ]
+            },
+            "route_transfer": {
+                "type": "tile",
+                "uv": [ 42, 30 ],
+                "size": [ 7, 24 ]
+            },
+            "route_single_stop": {
+                "type": "tile",
+                "uv": [ 48, 30 ],
+                "size": [ 7, 24 ]
+            }
+        }
+    }
+}

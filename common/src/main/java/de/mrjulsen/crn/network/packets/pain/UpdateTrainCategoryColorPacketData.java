@@ -45,7 +45,7 @@ public class UpdateTrainCategoryColorPacketData extends NetworkPacketData {
             if (!x.getOwner().isAllowed(new Owner(context.getPlayer())) || !GlobalSettings.modificationsAllowed(context.getPlayer())) {
                 return;
             }
-            x.setColor(packet.color);
+            x.setColor(DLColor.fromInt(packet.color));
         });
         return new EmptyNetworkPacketData();
     }

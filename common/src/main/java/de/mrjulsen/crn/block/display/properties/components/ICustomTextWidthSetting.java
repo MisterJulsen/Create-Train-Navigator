@@ -8,6 +8,6 @@ public interface ICustomTextWidthSetting {
     public static final int USED_LINE_SPACE = 18 + 4;
 
     default void buildBasicTextWidthGui(GuiBuilderContext context) {
-        GuiBuilderWrapper.buildBasicTextWidthGui(this, context);
+        GuiBuilderWrapper.buildBasicTextWidthGui(context);
     }
 }

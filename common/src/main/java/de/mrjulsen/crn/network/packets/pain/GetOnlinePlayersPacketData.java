@@ -39,6 +39,9 @@ public class GetOnlinePlayersPacketData extends NetworkPacketData {
         this.players = nbt.getList(NBT_DATA, Tag.TAG_COMPOUND).stream().map(x -> Owner.fromNbt((CompoundTag)x)).sorted((a, b) -> a.name().compareToIgnoreCase(b.name())).toList();
     }
     
+    public List<Owner> getPlayers() {
+        return players;
+    }
 
     public static GetOnlinePlayersPacketData handle(NetworkPacketContext context) {
         return new GetOnlinePlayersPacketData(CRNPlatformSpecific.getAllKnownPlayers().entrySet().stream().map(e -> new Owner(e.getKey())).toList());

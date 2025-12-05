@@ -23,6 +23,7 @@ import de.mrjulsen.crn.registry.ModDisplayTypes;
 import de.mrjulsen.crn.registry.ModNetworkManager;
 import de.mrjulsen.mcdragonlib.data.ETextAlignment;
 import de.mrjulsen.mcdragonlib.network.NetworkDirection;
+import de.mrjulsen.mcdragonlib.util.DLColor;
 import de.mrjulsen.mcdragonlib.util.Pair;
 import de.mrjulsen.mcdragonlib.util.Tripple;
 import net.createmod.catnip.data.Iterate;
@@ -66,7 +67,7 @@ import org.jetbrains.annotations.Nullable;
 
 public abstract class AbstractAdvancedDisplayBlock extends Block implements IWrenchable, IBE<AdvancedDisplayBlockEntity> {
 
-	public static final int DEFAULT_DISPLAY_COLOR = 0xFF404040;
+	public static final DLColor DEFAULT_DISPLAY_COLOR = DLColor.fromInt(0xFF404040);
 
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
     
@@ -86,15 +87,15 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 	public static BlockColor getDisplayColor() {
 		return (state, world, pos, layer) -> {
 			if (world == null || state == null || pos == null) {
-				return DEFAULT_DISPLAY_COLOR;
+				return DEFAULT_DISPLAY_COLOR.getAsARGB();
 			}			
 			if (world.getBlockEntity(pos) instanceof AdvancedDisplayBlockEntity be) {
 				return be.getSettingsAs(BasicDisplaySettings.class).map(x -> {
-					int color = x.getBackColor();
-					return color == 0 ? null : color;
-				}).orElse(DEFAULT_DISPLAY_COLOR);
+					DLColor color = x.getBackColor();
+					return color.isTransparent() ? null : color;
+				}).orElse(DEFAULT_DISPLAY_COLOR).getAsARGB();
 			}
-			return DEFAULT_DISPLAY_COLOR;
+			return DEFAULT_DISPLAY_COLOR.getAsARGB();
 		};
 	}
 
@@ -336,7 +337,7 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 			DyeColor dye = dyeItem.getDyeColor();        
 			if (dye != null) {
 				pLevel.playSound(null, pPos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
-				int dyeColor = dye == DyeColor.ORANGE ? 0xFFFF9900 : dye.getTextColor();
+				DLColor dyeColor = DLColor.fromInt(dye == DyeColor.ORANGE ? 0xFFFF9900 : dye.getTextColor());
 				
 				blockEntity.applyToAll(be -> {
 					be.getSettingsAs(BasicDisplaySettings.class).ifPresent(x -> {

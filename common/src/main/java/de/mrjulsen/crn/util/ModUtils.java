@@ -16,20 +16,29 @@ import java.util.regex.Pattern;
 import com.simibubi.create.foundation.utility.CreateLang;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.config.ModClientConfig;
+import de.mrjulsen.crn.exceptions.RuntimeSideException;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.config.ECachingPriority;
 import de.mrjulsen.mcdragonlib.util.Cache;
+import de.mrjulsen.mcdragonlib.util.DLColor;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
+import de.mrjulsen.mcdragonlib.util.time.ConfiguredTimeSystem;
+import de.mrjulsen.mcdragonlib.util.time.DLTime;
+import de.mrjulsen.mcdragonlib.util.time.TimeContext;
+import dev.architectury.platform.Platform;
+import dev.architectury.utils.Env;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.DyeColor;
 
 public class ModUtils {
 
-    private static final Cache<int[]> dyeColorsCache = new Cache<>(() -> Arrays.stream(DyeColor.values()).mapToInt(x -> x == DyeColor.ORANGE ? 0xFFFF9900 : (0xFF << 24) | (x.getTextColor() & 0x00FFFFFF)).toArray(), ECachingPriority.LOW);
+    private static final Cache<DLColor[]> dyeColorsCache = new Cache<>(() -> Arrays.stream(DyeColor.values()).map(x -> DLColor.fromInt(x == DyeColor.ORANGE ? 0xFFFF9900 : (0xFF << 24) | (x.getTextColor() & 0x00FFFFFF))).toArray(DLColor[]::new), ECachingPriority.LOW);
     
-    public static float clockHandDegrees(long time, int divisor) {
-        return 360.0F / divisor * (time % divisor);
+    public static float clockHandDegrees(double time, double fac) {
+        double relTime = time - (long)time;
+        return (float)(360D * (relTime * fac));
     }
 
     public static double calcSpeed(double metersPerTick, ESpeedUnit unit) {
@@ -105,7 +114,7 @@ public class ModUtils {
         return id;
     }
     
-    public static int[] getDyeColors() {
+    public static DLColor[] getDyeColors() {
         return dyeColorsCache.get();
     }
 
@@ -172,5 +181,15 @@ public class ModUtils {
             res.put(text, out);
         }
         return res;
+    }
+
+    public static String formatTime(long time, boolean asETA) throws RuntimeSideException {
+        if (Platform.getEnvironment() != Env.CLIENT) {
+            throw new RuntimeSideException(true);
+        }
+        if (asETA) {
+            return timeRemainingString(time - DragonLib.getCurrentWorldTime());
+        }
+        return DLTime.fromTicks(time, new ConfiguredTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME);
     }
 }

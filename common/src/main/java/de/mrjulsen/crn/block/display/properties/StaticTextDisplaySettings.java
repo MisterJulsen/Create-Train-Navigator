@@ -14,6 +14,7 @@ import de.mrjulsen.crn.block.display.properties.components.ITextScaleSetting;
 import de.mrjulsen.crn.block.display.properties.components.ITextWidthSetting;
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
 import de.mrjulsen.mcdragonlib.data.ETextAlignment;
+import de.mrjulsen.mcdragonlib.util.DLColor;
 import de.mrjulsen.mcdragonlib.util.math.MathUtils;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -31,7 +32,7 @@ public class StaticTextDisplaySettings extends BasicDisplaySettings implements I
         float y = DEFAULT_Y;
         float maxWidth = DEFAULT_TEXT_MAX_WIDTH;
         ETextAlignment alignment = DEFAULT_TEXT_ALIGNMENT;
-        int backgroundColor = DEFAULT_BG_COLOR;
+        DLColor backgroundColor = DEFAULT_BG_COLOR;
         boolean fullLabelColor = DEFAULT_FULL_LABEL_COLOR;
 
         public TextComponent() {
@@ -114,11 +115,11 @@ public class StaticTextDisplaySettings extends BasicDisplaySettings implements I
             this.maxWidth = s;
         }
 
-        public int getTextBackgroundColor() {
+        public DLColor getTextBackgroundColor() {
             return this.backgroundColor;
         }
 
-        public void setTextBackgroundColor(int color) {
+        public void setTextBackgroundColor(DLColor color) {
             this.backgroundColor = color;
         }
 
@@ -141,7 +142,7 @@ public class StaticTextDisplaySettings extends BasicDisplaySettings implements I
             if (nbt.contains(NBT_POS_Y)) comp.y = nbt.getFloat(NBT_POS_Y);
             if (nbt.contains(NBT_TEXT_MAX_WIDTH)) comp.maxWidth = nbt.getFloat(NBT_TEXT_MAX_WIDTH);
             if (nbt.contains(NBT_TEXT_ALIGNMENT)) comp.alignment = ETextAlignment.getById(nbt.getInt(NBT_TEXT_ALIGNMENT));
-            if (nbt.contains(NBT_TEXT_BG_COLOR)) comp.backgroundColor = nbt.getInt(NBT_TEXT_BG_COLOR);
+            if (nbt.contains(NBT_TEXT_BG_COLOR)) comp.backgroundColor = DLColor.fromInt(nbt.getInt(NBT_TEXT_BG_COLOR));
             if (nbt.contains(NBT_FULL_LABEL_COLOR)) comp.fullLabelColor = nbt.getBoolean(NBT_FULL_LABEL_COLOR);
             return comp;
         }
@@ -157,7 +158,7 @@ public class StaticTextDisplaySettings extends BasicDisplaySettings implements I
             nbt.putFloat(NBT_POS_Y, y);
             nbt.putFloat(NBT_TEXT_MAX_WIDTH, maxWidth);
             nbt.putInt(NBT_TEXT_ALIGNMENT, alignment.getId());
-            nbt.putInt(NBT_TEXT_BG_COLOR, backgroundColor);
+            nbt.putInt(NBT_TEXT_BG_COLOR, backgroundColor.getAsARGB());
             nbt.putBoolean(NBT_FULL_LABEL_COLOR, fullLabelColor);
             return nbt;
         }
@@ -372,12 +373,12 @@ public class StaticTextDisplaySettings extends BasicDisplaySettings implements I
     }
 
     @Override
-    public int getTextBackgroundColor() {
+    public DLColor getTextBackgroundColor() {
         return getSelectedComponent().backgroundColor;
     }
 
     @Override
-    public void setTextBackgroundColor(int color) {
+    public void setTextBackgroundColor(DLColor color) {
         getSelectedComponent().backgroundColor = color;
     }
 

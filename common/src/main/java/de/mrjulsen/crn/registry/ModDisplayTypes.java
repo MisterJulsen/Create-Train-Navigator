@@ -16,54 +16,64 @@ import de.mrjulsen.crn.block.properties.EDisplayType;
 import de.mrjulsen.crn.client.AdvancedDisplaysRegistry;
 import de.mrjulsen.crn.client.AdvancedDisplaysRegistry.DisplayProperties;
 import de.mrjulsen.crn.client.AdvancedDisplaysRegistry.DisplayTypeResourceKey;
-import de.mrjulsen.crn.client.ber.variants.BERError;
+import de.mrjulsen.crn.client.ber.variants.BERDepartureBoardTable;
+import de.mrjulsen.crn.client.ber.variants.BERPassengerInfoInformative;
+import de.mrjulsen.crn.client.ber.variants.BERPassengerInfoSimple;
+import de.mrjulsen.crn.client.ber.variants.BERPlatformDetailed;
+import de.mrjulsen.crn.client.ber.variants.BERPlatformInformative;
+import de.mrjulsen.crn.client.ber.variants.BERPlatformSimple;
+import de.mrjulsen.crn.client.ber.variants.BERRichText;
+import de.mrjulsen.crn.client.ber.variants.BERStaticText;
+import de.mrjulsen.crn.client.ber.variants.BERTrainDestinationDetailed;
+import de.mrjulsen.crn.client.ber.variants.BERTrainDestinationInformative;
+import de.mrjulsen.crn.client.ber.variants.BERTrainDestinationSimple;
 
 public final class ModDisplayTypes {
 
     
     public static final DisplayTypeResourceKey PASSENGER_INFORMATION_RUNNING_TEXT = AdvancedDisplaysRegistry.register(
         EDisplayType.PASSENGER_INFORMATION, "running_text",
-        PassengerInformationScrollingTextSettings::new, BERError::new, new DisplayProperties(true, null));
+        PassengerInformationScrollingTextSettings::new, BERPassengerInfoSimple::new, new DisplayProperties(true, null));
     
     public static final DisplayTypeResourceKey PASSENGER_INFORMATION_OVERVIEW = AdvancedDisplaysRegistry.register(
         EDisplayType.PASSENGER_INFORMATION, "detailed_with_schedule",
-        PassengerInformationDetailedSettings::new, BERError::new, new DisplayProperties(false, null));
+        PassengerInformationDetailedSettings::new, BERPassengerInfoInformative::new, new DisplayProperties(false, null));
     
     public static final DisplayTypeResourceKey TRAIN_DESTINATION_SIMPLE = AdvancedDisplaysRegistry.register(
         EDisplayType.TRAIN_DESTINATION, "simple",
-        TrainDestinationCompactSettings::new, BERError::new, new DisplayProperties(true, null));
+        TrainDestinationCompactSettings::new, BERTrainDestinationSimple::new, new DisplayProperties(true, null));
     
     public static final DisplayTypeResourceKey TRAIN_DESTINATION_DETAILED = AdvancedDisplaysRegistry.register(
         EDisplayType.TRAIN_DESTINATION, "extended",
-        TrainDestinationExtendedSettings::new, BERError::new, new DisplayProperties(true, null));
+        TrainDestinationExtendedSettings::new, BERTrainDestinationDetailed::new, new DisplayProperties(true, null));
     
     public static final DisplayTypeResourceKey TRAIN_DESTINATION_OVERVIEW = AdvancedDisplaysRegistry.register(
         EDisplayType.TRAIN_DESTINATION, "detailed",
-        TrainDestinationDetailedSettings::new, BERError::new, new DisplayProperties(true, null));
+        TrainDestinationDetailedSettings::new, BERTrainDestinationInformative::new, new DisplayProperties(true, null));
     
     public static final DisplayTypeResourceKey PLATFORM_RUNNING_TEXT = AdvancedDisplaysRegistry.register(
         EDisplayType.PLATFORM, "running_text",
-        PlatformDisplayScrollingTextSettings::new, BERError::new, new DisplayProperties(true, be -> 16));
+        PlatformDisplayScrollingTextSettings::new, BERPlatformSimple::new, new DisplayProperties(true, be -> 16));
     
     public static final DisplayTypeResourceKey PLATFORM_TABLE = AdvancedDisplaysRegistry.register(
         EDisplayType.PLATFORM, "table",
-        PlatformDisplayTableSettings::new, BERError::new, new DisplayProperties(false, be -> be.getYSize() * 3 - 1));
+        PlatformDisplayTableSettings::new, BERPlatformDetailed::new, new DisplayProperties(false, be -> be.getYSize() * 3 - 1));
     
     public static final DisplayTypeResourceKey PLATFORM_FOCUS = AdvancedDisplaysRegistry.register(
         EDisplayType.PLATFORM, "focus",
-        PlatformDisplayFocusSettings::new, BERError::new, new DisplayProperties(false, be -> be.getYSize() * 3 - 2));
+        PlatformDisplayFocusSettings::new, BERPlatformInformative::new, new DisplayProperties(false, be -> be.getYSize() * 3 - 2));
         
     public static final DisplayTypeResourceKey DEPARTURE_BOARD_TABLE = AdvancedDisplaysRegistry.register(
         EDisplayType.DEPARTURE_BOARD, "table",
-        DepartureBoardDisplayTableSettings::new, BERError::new, new DisplayProperties(false, be -> be.getYSize() * 3 - 2));
+        DepartureBoardDisplayTableSettings::new, BERDepartureBoardTable::new, new DisplayProperties(false, be -> be.getYSize() * 3 - 2));
 
     public static final DisplayTypeResourceKey SIMPLE_TEXT = AdvancedDisplaysRegistry.register(
         EDisplayType.STATIC_TEXT, "simple_text",
-        SimpleStaticTextDisplaySettings::new, BERError::new, new DisplayProperties(true, null));
+        SimpleStaticTextDisplaySettings::new, BERStaticText::new, new DisplayProperties(true, null));
 
     public static final DisplayTypeResourceKey RICH_TEXT = AdvancedDisplaysRegistry.register(
         EDisplayType.STATIC_TEXT, "rich_text",
-        StaticTextDisplaySettings::new, BERError::new, new DisplayProperties(false, null));
+        StaticTextDisplaySettings::new, BERRichText::new, new DisplayProperties(false, null));
     
     @Deprecated
     public static DisplayTypeResourceKey legacy_getKeyForType(EDisplayType type, EDisplayInfo info) {

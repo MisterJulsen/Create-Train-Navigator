@@ -145,7 +145,7 @@ public class TrainSeparationCondition extends ScheduledDelay implements IDelayed
 		return worldTime + totalWaitTicks();
 	}
 
-    public static DLTime toTime(int ticks) {
+    public static DLTime toTime(long ticks) {
 		return DLTime.fromTicks(ticks, new ConfiguredTimeSystem());
     }
 

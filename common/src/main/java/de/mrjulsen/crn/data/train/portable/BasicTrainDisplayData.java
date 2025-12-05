@@ -10,6 +10,7 @@ import com.simibubi.create.content.trains.entity.TrainIconType;
 
 import de.mrjulsen.crn.exceptions.RuntimeSideException;
 import de.mrjulsen.mcdragonlib.util.Cache;
+import de.mrjulsen.mcdragonlib.util.DLColor;
 import de.mrjulsen.crn.data.train.TrainListener;
 import de.mrjulsen.crn.data.train.TrainStop;
 import de.mrjulsen.crn.data.train.TrainStatus.CompiledTrainStatus;
@@ -24,7 +25,7 @@ import net.minecraft.resources.ResourceLocation;
 public class BasicTrainDisplayData {
     private final UUID id;
     private final String name;
-    private final int color;
+    private final DLColor color;
     private final TrainIconType icon;
     private final Collection<ResourceLocation> statusLocations; // Server
     private final boolean cancelled;
@@ -41,7 +42,7 @@ public class BasicTrainDisplayData {
     private BasicTrainDisplayData(
         UUID id,
         String name,
-        int color,
+        DLColor color,
         TrainIconType icon,
         Collection<ResourceLocation> statusLocations,
         boolean cancelled
@@ -59,7 +60,7 @@ public class BasicTrainDisplayData {
     }
 
     public static BasicTrainDisplayData empty() {
-        return new BasicTrainDisplayData(new UUID(0, 0), "", 0, TrainIconType.getDefault(), List.of(), true);
+        return new BasicTrainDisplayData(new UUID(0, 0), "", DLColor.TRANSPARENT, TrainIconType.getDefault(), List.of(), true);
     }
 
     /** Server-side only! */
@@ -71,7 +72,7 @@ public class BasicTrainDisplayData {
         return TrainListener.getTrainData(train).map(data -> new BasicTrainDisplayData(
             data.getTrainId(),
             data.getTrainDisplayName(),
-            data.getCurrentSection().getTrainLine().map(x -> x.getColor()).orElse(0),
+            data.getCurrentSection().getTrainLine().map(x -> x.getColor()).orElse(DLColor.TRANSPARENT),
             data.getTrain().icon,
             new ArrayList<>(data.getStatus()),
             data.isCancelled()
@@ -87,7 +88,7 @@ public class BasicTrainDisplayData {
         return TrainListener.getTrainData(stop.getTrainId()).map(data -> new BasicTrainDisplayData(
             stop.getTrainId(),
             stop.getTrainDisplayName(),
-            data.getSectionForIndex(stop.getScheduleIndex()).getTrainLine().map(x -> x.getColor()).orElse(0),
+            data.getSectionForIndex(stop.getScheduleIndex()).getTrainLine().map(x -> x.getColor()).orElse(DLColor.TRANSPARENT),
             stop.getTrainIcon(),
             new ArrayList<>(data.getStatus()),
             data.isCancelled()
@@ -114,12 +115,12 @@ public class BasicTrainDisplayData {
         return cancelled;
     }
 
-    public int getColor() {
+    public DLColor getColor() {
         return color;
     }
 
     public boolean hasColor() {
-        return color != 0;
+        return !color.isTransparent();
     }
 
     public boolean hasStatusInfo() {
@@ -137,7 +138,7 @@ public class BasicTrainDisplayData {
         nbt.putUUID(NBT_ID, id);
         nbt.putString(NBT_NAME, name);
         nbt.putString(NBT_ICON, icon.getId().toString());
-        nbt.putInt(NBT_COLOR, color);
+        nbt.putInt(NBT_COLOR, color.getAsARGB());
         nbt.put(NBT_STATUS, statusList);
         nbt.putBoolean(NBT_CANCELLED, cancelled);
         return nbt;
@@ -147,7 +148,7 @@ public class BasicTrainDisplayData {
         return new BasicTrainDisplayData(
             nbt.getUUID(NBT_ID),
             nbt.getString(NBT_NAME),
-            nbt.getInt(NBT_COLOR),
+            DLColor.fromInt(nbt.getInt(NBT_COLOR)),
             TrainIconType.byId(new ResourceLocation(nbt.getString(NBT_ICON))),
             nbt.getList(NBT_STATUS, Tag.TAG_STRING).stream().map(x -> new ResourceLocation(((StringTag)x).getAsString())).toList(),
             nbt.getBoolean(NBT_CANCELLED)

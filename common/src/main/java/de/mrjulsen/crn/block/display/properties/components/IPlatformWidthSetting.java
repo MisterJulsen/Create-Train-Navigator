@@ -17,7 +17,6 @@ public interface IPlatformWidthSetting extends ICustomTextWidthSetting {
     void setPlatformWidth(byte b);
 
     default void buildPlatformWidthGui(GuiBuilderContext context, boolean allowAuto) {
-        buildBasicTextWidthGui(context);
         GuiBuilderWrapper.buildPlatformWidthGui(this, context, allowAuto);
     }
     

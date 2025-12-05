@@ -19,6 +19,7 @@ public enum ModGuiIcons {
     CROSS("cross", 2, 0),
     WARN("warn", 3, 0),
     IMPORTANT("important", 4, 0),
+    SEARCH("search", 5, 0),
     
     SETTINGS("settings", 0, 1),
     FILTER("filter", 1, 1),
@@ -81,8 +82,11 @@ public enum ModGuiIcons {
     TRUSTED("trusted", 7, 4),
     TEXT_LEFT_ALIGNED("text_left_aligned", 8, 4),
     TEXT_CENTERED("text_centered", 9, 4),
-    TEXT_RIGH_ALIGNED("text_right_aligned", 10, 4),
-    SPEED("speed", 11, 4);
+    TEXT_RIGHT_ALIGNED("text_right_aligned", 10, 4),
+    SPEED("speed", 11, 4),
+    SETTINGS_SMALL("settings_small", 12, 4),
+    X_SMALL("x_small", 13, 4),
+    POP_OUT("pop_out", 14, 4);
 
     private String id;
     private int u;

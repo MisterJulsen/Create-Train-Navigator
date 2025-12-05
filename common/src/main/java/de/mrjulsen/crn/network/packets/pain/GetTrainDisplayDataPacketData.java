@@ -74,7 +74,8 @@ public class GetTrainDisplayDataPacketData {
         if (!trainOpt.isPresent() || !TrainUtils.isTrainUsable(trainOpt.get()) || GlobalSettings.getInstance().isTrainBlacklisted(trainOpt.get())) {
             return new Response(TrainDisplayData.empty());
         }
-        return new Response(TrainDisplayData.of(trainOpt.get()));
+        Response r = new Response(TrainDisplayData.of(trainOpt.get()));
+        return r;
     }
     
 }
