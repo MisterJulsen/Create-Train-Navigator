@@ -1,5 +1,6 @@
 package de.mrjulsen.crn.client.gui.widgets.create;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.simibubi.create.foundation.gui.element.ScreenElement;
 
 import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLButton;
@@ -33,7 +34,11 @@ public class CreateButton extends DLButton {
             GuiUtils.drawTexture(TEXTURE, graphics, 0, 0, WIDTH, HEIGHT, 0, 0);
         }
 
+        RenderSystem.enableDepthTest();
+        RenderSystem.depthMask(true);
         icon.render(graphics.graphics(), 1, 1);
+        RenderSystem.disableDepthTest();
+        RenderSystem.depthMask(false);
     }
     
 }
