@@ -34,7 +34,7 @@ public class CreateItemPicker<T> extends DLItemPicker<T> {
     public final Property<Component> hint = new Property<Component>(TextUtils.empty());
     public final Property<Function<T, Component>> formatter = new Property<Function<T, Component>>(t -> TextUtils.text(t.toString()));
     public final Property<BiPredicate<T, String>> filter = new Property<>((i, s) -> String.valueOf(i).toLowerCase().contains(s.toLowerCase()));
-    public final BooleanProperty renderArrow = new BooleanProperty(false, false);
+    public final BooleanProperty renderArrow = new BooleanProperty(false);
 
     public CreateItemPicker(int x, int y, int w) {
         super(x, y, w, 18);

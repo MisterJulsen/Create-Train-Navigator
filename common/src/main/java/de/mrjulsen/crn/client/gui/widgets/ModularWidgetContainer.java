@@ -29,7 +29,7 @@ public class ModularWidgetContainer extends DLGuiComponent {
 
     public record ContentLayoutUpdatedEvent(LayoutResult layoutResult) implements IEvent {}
 
-    public final BooleanProperty autoHeight = new BooleanProperty(false, false);
+    public final BooleanProperty autoHeight = new BooleanProperty(false);
 
     public final DLPanel contentPanel;
     public final DLScrollBar scrollbar;
