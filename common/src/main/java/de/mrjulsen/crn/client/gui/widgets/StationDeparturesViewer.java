@@ -30,10 +30,10 @@ public class StationDeparturesViewer extends DLGuiComponent {
     private final DLPanel contentPanel;
     private final DLScrollBar scrollbar;
     
-    public final BooleanProperty expanded = new BooleanProperty(false, false);
-    public final BooleanProperty showTrainDetails = new BooleanProperty(true, false);
-    public final BooleanProperty showEntireJourney = new BooleanProperty(false, false);
-    public final BooleanProperty canExpandCollapse = new BooleanProperty(true, false);
+    public final BooleanProperty expanded = new BooleanProperty(false);
+    public final BooleanProperty showTrainDetails = new BooleanProperty(true);
+    public final BooleanProperty showEntireJourney = new BooleanProperty(false);
+    public final BooleanProperty canExpandCollapse = new BooleanProperty(true);
 
     public StationDeparturesViewer(int x, int y, int w, int h) {
         super(x, y, w, h);

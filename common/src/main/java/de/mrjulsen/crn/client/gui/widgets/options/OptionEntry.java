@@ -25,7 +25,7 @@ public class OptionEntry<T> extends DLGuiComponent {
     public final OptionsDataView<T> dataView;
     private final Padding padding = new Padding(10, 5, 10, 20);
 
-    public final BooleanProperty expanded = new BooleanProperty(false, false);
+    public final BooleanProperty expanded = new BooleanProperty(false);
 
     int requiredHeight = 0;
     

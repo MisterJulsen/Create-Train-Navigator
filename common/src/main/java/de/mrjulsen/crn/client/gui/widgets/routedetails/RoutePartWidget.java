@@ -16,10 +16,10 @@ public class RoutePartWidget extends DLGuiComponent {
     private final ClientRoutePart part;
     private final ClientRoute route;
 
-    public final BooleanProperty expanded = new BooleanProperty(false, false).withAfterPropertyChangedCallback((o, n) -> initGui());
-    public final BooleanProperty showTrainDetails = new BooleanProperty(true, false).withAfterPropertyChangedCallback((o, n) -> initGui());
-    public final BooleanProperty showEntireJourney = new BooleanProperty(false, false).withAfterPropertyChangedCallback((o, n) -> initGui());
-    public final BooleanProperty canExpandCollapse = new BooleanProperty(true, false).withAfterPropertyChangedCallback((o, n) -> initGui());
+    public final BooleanProperty expanded = new BooleanProperty(false).withAfterPropertyChangedCallback((o, n) -> initGui());
+    public final BooleanProperty showTrainDetails = new BooleanProperty(true).withAfterPropertyChangedCallback((o, n) -> initGui());
+    public final BooleanProperty showEntireJourney = new BooleanProperty(false).withAfterPropertyChangedCallback((o, n) -> initGui());
+    public final BooleanProperty canExpandCollapse = new BooleanProperty(true).withAfterPropertyChangedCallback((o, n) -> initGui());
 
 
     public RoutePartWidget(int width, ClientRoute route, ClientRoutePart part) {

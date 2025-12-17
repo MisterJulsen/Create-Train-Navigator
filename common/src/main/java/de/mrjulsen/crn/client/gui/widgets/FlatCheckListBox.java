@@ -38,7 +38,7 @@ public class FlatCheckListBox<T> extends DLItemSelectionBox<T> {
 
     public static class FlatCheckListBoxItem<T> extends DLItemSelectionBox.DLListBoxItem<T> {
 
-        public final BooleanProperty checked = new BooleanProperty(false, false);
+        public final BooleanProperty checked = new BooleanProperty(false);
 
         protected FlatCheckListBoxItem(DLItemSelectionBox<T> collectionComponentRef, T item, int w) {
             super(collectionComponentRef, item, w, 18);

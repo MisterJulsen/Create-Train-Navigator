@@ -45,7 +45,7 @@ public class RouteViewer extends DLGuiComponent {
     private final MutableComponent notSearchedText = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.not_searched");
     private final MutableComponent txtRecentSearchQueries = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.recently_searched").withStyle(ChatFormatting.BOLD);
 
-    public final BooleanProperty displayRecentSearchQueries = new BooleanProperty(false, false);
+    public final BooleanProperty displayRecentSearchQueries = new BooleanProperty(false);
 
     private final List<ClientRoute> routes = new ArrayList<>();
 
