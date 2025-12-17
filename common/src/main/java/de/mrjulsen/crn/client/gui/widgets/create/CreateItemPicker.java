@@ -6,8 +6,7 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 
 import com.simibubi.create.AllSoundEvents;
-import com.simibubi.create.foundation.gui.widget.AbstractSimiWidget;
-import com.simibubi.create.foundation.utility.Lang;
+import com.simibubi.create.foundation.utility.CreateLang;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.gui.flyout.FlyoutItemSelectionBrowser;
@@ -18,6 +17,7 @@ import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLTooltip;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.properties.BooleanProperty;
 import de.mrjulsen.mcdragonlib.util.properties.Property;
+import net.createmod.catnip.gui.widget.AbstractSimiWidget;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -26,11 +26,11 @@ import net.minecraft.network.chat.FormattedText;
 
 public class CreateItemPicker<T> extends DLItemPicker<T> {
 
-	protected final Component scrollToModify = Lang.translateDirect("gui.scrollInput.scrollToModify").withStyle(ChatFormatting.ITALIC, ChatFormatting.DARK_GRAY);
-	protected final Component shiftScrollsFaster = Lang.translateDirect("gui.scrollInput.shiftScrollsFaster").withStyle(ChatFormatting.ITALIC, ChatFormatting.DARK_GRAY);
+	protected final Component scrollToModify = CreateLang.translateDirect("gui.scrollInput.scrollToModify").withStyle(ChatFormatting.ITALIC, ChatFormatting.DARK_GRAY);
+	protected final Component shiftScrollsFaster = CreateLang.translateDirect("gui.scrollInput.shiftScrollsFaster").withStyle(ChatFormatting.ITALIC, ChatFormatting.DARK_GRAY);
 	protected final Component clickToSearch = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.click_to_search").withStyle(ChatFormatting.DARK_GRAY).withStyle(ChatFormatting.ITALIC);
 
-    public final Property<Component> title = new Property<Component>(Lang.translateDirect("gui.scrollInput.defaultTitle"));
+    public final Property<Component> title = new Property<Component>(CreateLang.translateDirect("gui.scrollInput.defaultTitle"));
     public final Property<Component> hint = new Property<Component>(TextUtils.empty());
     public final Property<Function<T, Component>> formatter = new Property<Function<T, Component>>(t -> TextUtils.text(t.toString()));
     public final Property<BiPredicate<T, String>> filter = new Property<>((i, s) -> String.valueOf(i).toLowerCase().contains(s.toLowerCase()));
@@ -77,7 +77,7 @@ public class CreateItemPicker<T> extends DLItemPicker<T> {
 
     protected void updateTooltip() {
         List<FormattedText> lines = new ArrayList<>();
-		lines.add(title.get().plainCopy().withStyle(s -> s.withColor(AbstractSimiWidget.HEADER_RGB)));
+		lines.add(title.get().plainCopy().withStyle(s -> s.withColor(AbstractSimiWidget.HEADER_RGB.getRGB())));
 
         int min = Math.max(0, Math.min(items.size(), selectedIndex.get() + 8) - 16);
         int max = Math.min(items.size(), min + 16);
@@ -97,7 +97,7 @@ public class CreateItemPicker<T> extends DLItemPicker<T> {
             lines.add(TextUtils.text("> ...").withStyle(ChatFormatting.GRAY));
         }
 
-		lines.add(hint.get().plainCopy().withStyle(s -> s.withColor(AbstractSimiWidget.HINT_RGB)));
+		lines.add(hint.get().plainCopy().withStyle(s -> s.withColor(AbstractSimiWidget.HINT_RGB.getRGB())));
 		lines.add(scrollToModify);
 		lines.add(shiftScrollsFaster);
 		lines.add(clickToSearch);

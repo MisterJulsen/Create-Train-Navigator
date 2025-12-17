@@ -5,14 +5,14 @@ import java.util.List;
 import java.util.function.Function;
 
 import com.simibubi.create.AllSoundEvents;
-import com.simibubi.create.foundation.gui.widget.AbstractSimiWidget;
-import com.simibubi.create.foundation.utility.Lang;
+import com.simibubi.create.foundation.utility.CreateLang;
 
 import de.mrjulsen.mcdragonlib.client.gui.events.DLGuiStandardEvents;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLNumberPicker;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLTooltip;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.properties.Property;
+import net.createmod.catnip.gui.widget.AbstractSimiWidget;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -21,10 +21,10 @@ import net.minecraft.network.chat.FormattedText;
 
 public class CreateScrollNumberInput extends DLNumberPicker {
 
-	protected final Component scrollToModify = Lang.translateDirect("gui.scrollInput.scrollToModify").withStyle(ChatFormatting.ITALIC, ChatFormatting.DARK_GRAY);
-	protected final Component shiftScrollsFaster = Lang.translateDirect("gui.scrollInput.shiftScrollsFaster").withStyle(ChatFormatting.ITALIC, ChatFormatting.DARK_GRAY);
+	protected final Component scrollToModify = CreateLang.translateDirect("gui.scrollInput.scrollToModify").withStyle(ChatFormatting.ITALIC, ChatFormatting.DARK_GRAY);
+	protected final Component shiftScrollsFaster = CreateLang.translateDirect("gui.scrollInput.shiftScrollsFaster").withStyle(ChatFormatting.ITALIC, ChatFormatting.DARK_GRAY);
 
-    public final Property<Component> title = new Property<Component>(Lang.translateDirect("gui.scrollInput.defaultTitle"));
+    public final Property<Component> title = new Property<Component>(CreateLang.translateDirect("gui.scrollInput.defaultTitle"));
     public final Property<Component> hint = new Property<Component>(TextUtils.empty());
     public final Property<Function<Double, Component>> formatter = new Property<>(t -> TextUtils.text(String.valueOf(t.intValue())));
 
@@ -55,8 +55,8 @@ public class CreateScrollNumberInput extends DLNumberPicker {
 
     protected void updateTooltip() {
         List<FormattedText> lines = new ArrayList<>();
-		lines.add(title.get().plainCopy().withStyle(s -> s.withColor(AbstractSimiWidget.HEADER_RGB)));
-		lines.add(hint.get().plainCopy().withStyle(s -> s.withColor(AbstractSimiWidget.HINT_RGB)));
+		lines.add(title.get().plainCopy().withStyle(s -> s.withColor(AbstractSimiWidget.HEADER_RGB.getRGB())));
+		lines.add(hint.get().plainCopy().withStyle(s -> s.withColor(AbstractSimiWidget.HINT_RGB.getRGB())));
 		lines.add(scrollToModify);
 		lines.add(shiftScrollsFaster);
 

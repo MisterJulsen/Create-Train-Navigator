@@ -6,8 +6,7 @@ import java.util.Optional;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.content.trains.schedule.condition.TimedWaitCondition.TimeUnit;
 import com.simibubi.create.foundation.gui.AllIcons;
-import com.simibubi.create.foundation.gui.element.GuiGameElement;
-import com.simibubi.create.foundation.utility.Lang;
+import com.simibubi.create.foundation.utility.CreateLang;
 
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
@@ -41,6 +40,7 @@ import de.mrjulsen.mcdragonlib.util.math.Rectangle;
 import de.mrjulsen.mcdragonlib.util.time.DLTime;
 import de.mrjulsen.mcdragonlib.util.time.VanillaTimeSystem;
 import de.mrjulsen.mcdragonlib.util.time.DLTime.TimeSnapshot;
+import net.createmod.catnip.gui.element.GuiGameElement;
 import net.minecraft.Util;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.MutableComponent;
@@ -118,7 +118,7 @@ public class TrainSeparationSettingsWindow extends DLWindow {
                 TimeSnapshot snapshot = this.currentTime.decomposeGameTime();
 
                 CreateScrollNumberInput daysBox = lineTimes.addComponent(new CreateScrollNumberInput(0, 0, 22));
-                daysBox.title.set(Lang.translateDirect("generic.unit.days"));
+                daysBox.title.set(CreateLang.translateDirect("generic.unit.days"));
                 daysBox.shiftStep.set(5D);
                 daysBox.min.set(0D);
                 daysBox.max.set(49D);
@@ -130,7 +130,7 @@ public class TrainSeparationSettingsWindow extends DLWindow {
                 });
 
                 CreateScrollNumberInput hoursBox = lineTimes.addComponent(new CreateScrollNumberInput(0, 0, 22));
-                hoursBox.title.set(Lang.translateDirect("generic.unit.hours"));
+                hoursBox.title.set(CreateLang.translateDirect("generic.unit.hours"));
                 hoursBox.shiftStep.set(8D);
                 hoursBox.min.set(0D);
                 hoursBox.max.set(23D);
@@ -142,7 +142,7 @@ public class TrainSeparationSettingsWindow extends DLWindow {
                 });
 
                 CreateScrollNumberInput minutesBox = lineTimes.addComponent(new CreateScrollNumberInput(0, 0, 22));
-                minutesBox.title.set(Lang.translateDirect("generic.unit.minutes"));
+                minutesBox.title.set(CreateLang.translateDirect("generic.unit.minutes"));
                 minutesBox.shiftStep.set(5D);
                 minutesBox.min.set(0D);
                 minutesBox.max.set(59D);
@@ -156,7 +156,7 @@ public class TrainSeparationSettingsWindow extends DLWindow {
             default -> {
                 TimeSnapshot snapshot = this.currentTime.decomposeRealTime();
                 CreateScrollNumberInput minutesBox = lineTimes.addComponent(new CreateScrollNumberInput(0, 0, 22));
-                minutesBox.title.set(Lang.translateDirect("generic.unit.minutes"));
+                minutesBox.title.set(CreateLang.translateDirect("generic.unit.minutes"));
                 minutesBox.shiftStep.set(10D);
                 minutesBox.min.set(0D);
                 minutesBox.max.set(999D);
@@ -168,7 +168,7 @@ public class TrainSeparationSettingsWindow extends DLWindow {
                 });
 
                 CreateScrollNumberInput secondsBox = lineTimes.addComponent(new CreateScrollNumberInput(0, 0, 22));
-                secondsBox.title.set(Lang.translateDirect("generic.unit.seconds"));
+                secondsBox.title.set(CreateLang.translateDirect("generic.unit.seconds"));
                 secondsBox.shiftStep.set(10D);
                 secondsBox.min.set(0D);
                 secondsBox.max.set(59D);
@@ -180,7 +180,7 @@ public class TrainSeparationSettingsWindow extends DLWindow {
                 });
 
                 CreateScrollNumberInput ticksBox = lineTimes.addComponent(new CreateScrollNumberInput(0, 0, 22));
-                ticksBox.title.set(Lang.translateDirect("generic.unit.ticks"));
+                ticksBox.title.set(CreateLang.translateDirect("generic.unit.ticks"));
                 ticksBox.shiftStep.set(5D);
                 ticksBox.min.set(0D);
                 ticksBox.max.set(19D);

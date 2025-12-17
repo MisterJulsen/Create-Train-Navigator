@@ -19,7 +19,7 @@ public class CreateIndicator extends DLGuiComponent {
         });
 
     public CreateIndicator(int x, int y) {
-        super(x, y, AllGuiTextures.INDICATOR.width, AllGuiTextures.INDICATOR.height);
+        super(x, y, AllGuiTextures.INDICATOR.getWidth(), AllGuiTextures.INDICATOR.getHeight());
     }
 
     @Override

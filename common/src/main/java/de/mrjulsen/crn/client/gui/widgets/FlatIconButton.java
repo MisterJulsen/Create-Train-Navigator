@@ -2,8 +2,6 @@ package de.mrjulsen.crn.client.gui.widgets;
 
 import org.lwjgl.glfw.GLFW;
 
-import com.simibubi.create.foundation.gui.element.ScreenElement;
-
 import de.mrjulsen.crn.client.gui.widgets.skins.CRNFlatButtonRenderer;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLButton;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.util.CursorType;
@@ -12,9 +10,8 @@ import de.mrjulsen.mcdragonlib.client.util.DLSprite;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import de.mrjulsen.mcdragonlib.util.DLColor;
 import de.mrjulsen.mcdragonlib.util.math.Rectangle;
-import de.mrjulsen.mcdragonlib.util.properties.ListProperty;
 import de.mrjulsen.mcdragonlib.util.properties.Property;
-import net.minecraft.network.chat.FormattedText;
+import net.createmod.catnip.gui.element.ScreenElement;
 
 public class FlatIconButton extends DLButton {    
 
