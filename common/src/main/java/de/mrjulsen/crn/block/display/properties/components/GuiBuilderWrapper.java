@@ -254,7 +254,7 @@ public class GuiBuilderWrapper {
         timeDisplayBox.renderArrow.set(true);
         timeDisplayBox.title.set(TextUtils.translate("enum.createrailwaysnavigator.time_display"));
         timeDisplayBox.hint.set(TextUtils.translate("enum.createrailwaysnavigator.time_display.description"));
-        timeDisplayBox.formatter.set(item -> item.getValueTranslation());
+        timeDisplayBox.formatter.set(item -> item == null ? TextUtils.empty() : item.getValueTranslation());
         timeDisplayBox.items.addAll(ETimeDisplay.values());
         timeDisplayBox.selectedItem.set(Optional.ofNullable(setting.getTimeDisplay()));
         timeDisplayBox.addEventListener(DLCycleButton.SelectedItemChanged.class, (s, e) -> {
@@ -292,7 +292,7 @@ public class GuiBuilderWrapper {
         timeDisplayBox.renderArrow.set(true);
         timeDisplayBox.title.set(TextUtils.translate("enum.createrailwaysnavigator.train_text_components"));
         timeDisplayBox.hint.set(TextUtils.translate("enum.createrailwaysnavigator.train_text_components.description"));
-        timeDisplayBox.formatter.set(item -> item.getValueTranslation());
+        timeDisplayBox.formatter.set(item -> item == null ? TextUtils.empty() : item.getValueTranslation());
         timeDisplayBox.items.addAll(ETrainTextComponents.values());
         timeDisplayBox.layoutContraint.set(FlowLayout.FlowConstraint.FILL);
         timeDisplayBox.selectedItem.set(Optional.ofNullable(setting.getTrainTextComponents()));
@@ -661,7 +661,7 @@ public class GuiBuilderWrapper {
         CreateItemPicker<TextScaleBounds> scaleBoundsBox = new CreateItemPicker<>(0, 0, 0);
         scaleBoundsBox.title.set(TextScaleBounds.CUT_OFF.getEnumTranslation());
         scaleBoundsBox.hint.set(TextScaleBounds.CUT_OFF.getEnumDescriptionTranslation());
-        scaleBoundsBox.formatter.set(item -> item.getValueTranslation());
+        scaleBoundsBox.formatter.set(item -> item == null ? TextUtils.empty() : item.getValueTranslation());
         scaleBoundsBox.items.addAll(TextScaleBounds.values());
         scaleBoundsBox.layoutContraint.set(FlowLayout.FlowConstraint.FILL);
         scaleBoundsBox.selectedItem.set(Optional.ofNullable(setting.getBoundsAction()));
