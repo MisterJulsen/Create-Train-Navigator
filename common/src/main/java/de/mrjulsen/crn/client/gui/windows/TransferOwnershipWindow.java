@@ -66,14 +66,13 @@ public class TransferOwnershipWindow extends DLWindow {
         this.selectionBox.enabled.set(false);
         this.selectionBox.renderArrow.set(true);
         this.selectionBox.filter.set((i, s) -> i.name().toLowerCase().contains(s.toLowerCase()));
-        this.selectionBox.formatter.set((i) -> TextUtils.text(i.name()));
+        this.selectionBox.formatter.set((i) -> i == null ? TextUtils.empty() : TextUtils.text(i.name()));
         
         CreateButton okBtn = addComponent(new CreateButton(width() - 17 - CreateButton.WIDTH * 2, height() - 6 - CreateButton.HEIGHT, AllIcons.I_CONFIRM));
         okBtn.enabled.set(false);
         okBtn.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
             getWindowManager().createModal((mgr) -> new FlyoutConfirmDialog(mgr, okBtn, FlyoutPointer.RIGHT, ColorShade.DARK, () -> {
                 DLUtils.doIfNotNull(okAction, x -> x.accept(playerList.get(this.selectionBox.selectedIndex.get())));
-                System.out.println(playerList.get(selectionBox.selectedIndex.get()));
                 getAssignedModal().ifPresent(m -> getWindowManager().closeModal(m));
             }));
             return false;

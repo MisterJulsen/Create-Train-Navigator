@@ -195,7 +195,7 @@ public class TrainSeparationSettingsWindow extends DLWindow {
         CreateItemPicker<ETimeSource> timeSourcePicker = lineTimes.addComponent(new CreateItemPicker<>(0, 0, 80));
         timeSourcePicker.title.set(ETimeSource.IN_GAME.getEnumTranslation());
         timeSourcePicker.hint.set(ETimeSource.IN_GAME.getEnumDescriptionTranslation());
-        timeSourcePicker.formatter.set(item -> item.getValueTranslation());
+        timeSourcePicker.formatter.set(item -> item == null ? TextUtils.empty() : item.getValueTranslation());
         timeSourcePicker.items.addAll(ETimeSource.values());
         timeSourcePicker.selectedItem.set(Optional.ofNullable(timeSource));
 
@@ -216,7 +216,7 @@ public class TrainSeparationSettingsWindow extends DLWindow {
         filterType.renderArrow.set(true);
         filterType.title.set(ETrainFilter.ANY.getEnumTranslation());
         filterType.hint.set(ETrainFilter.ANY.getEnumDescriptionTranslation());
-        filterType.formatter.set(item -> item.getValueTranslation());
+        filterType.formatter.set(item -> item == null ? TextUtils.empty() : item.getValueTranslation());
         filterType.items.addAll(ETrainFilter.values());
         filterType.selectedItem.set(Optional.ofNullable(filter));
 

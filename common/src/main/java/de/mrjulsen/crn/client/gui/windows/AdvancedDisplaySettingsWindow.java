@@ -191,7 +191,7 @@ public class AdvancedDisplaySettingsWindow extends DLWindow {
         displayTypeIcon.icon.set(type.getIcon().getAsSprite(16, 16));
 
         CreateItemPicker<EDisplayType> displayTypePicker = displayTypeLine.addComponent(new CreateItemPicker<>(0, 0, 100));
-        displayTypePicker.formatter.set(item -> item.getValueTranslation());
+        displayTypePicker.formatter.set(item -> item == null ? TextUtils.empty() : item.getValueTranslation());
         displayTypePicker.renderArrow.set(true);
         displayTypePicker.hint.set(EDisplayType.DEPARTURE_BOARD.getEnumDescriptionTranslation());
         displayTypePicker.title.set(tooltipDisplayType);
@@ -205,7 +205,7 @@ public class AdvancedDisplaySettingsWindow extends DLWindow {
         displayVariantIcon.icon.set(ModGuiIcons.VERY_DETAILED.getAsSprite(16, 16));
 
         CreateItemPicker<DisplayTypeResourceKey> displayVariantPicker = displayVariantLine.addComponent(new CreateItemPicker<>(0, 0, 100));
-        displayVariantPicker.formatter.set(item -> TextUtils.translate(item.getTranslationKey()));
+        displayVariantPicker.formatter.set(item -> item == null ? TextUtils.empty() : TextUtils.translate(item.getTranslationKey()));
         displayVariantPicker.renderArrow.set(true);
         displayVariantPicker.hint.set(EDisplayType.DEPARTURE_BOARD.getEnumDescriptionTranslation());
         displayVariantPicker.title.set(tooltipDisplayType);

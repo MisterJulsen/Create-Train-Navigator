@@ -2,7 +2,6 @@ package de.mrjulsen.crn.client.gui.windows;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -156,6 +155,7 @@ public class TrainSectionSettingsWindow extends DLWindow {
         GlobalSettingsClient.getTrainCategories((trainCategories) -> {
             List<TrainCategory> orderedCategories = trainCategories.stream().sorted((a, b) -> a.getCategoryName().compareToIgnoreCase(b.getCategoryName())).toList();
             this.categoriesById = orderedCategories.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
+
             GlobalSettingsClient.getTrainLines((trainLines) -> {
                 List<TrainLine> orderedLines = trainLines.stream().sorted((a, b) -> a.getLineName().compareToIgnoreCase(b.getLineName())).toList();
                 this.linesById = orderedLines.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
@@ -165,6 +165,7 @@ public class TrainSectionSettingsWindow extends DLWindow {
                 IconSlotWidget trainCategoryIcon = lineTrainCategory.addComponent(new IconSlotWidget(0, 0));
                 trainCategoryIcon.icon.set(ModGuiIcons.TRAIN.getAsSprite(16, 16));
 
+                /*
                 CreateItemPicker<TrainCategory> trainCategoryPicker = lineTrainCategory.addComponent(new CreateItemPicker<>(0, 0, 150));
                 trainCategoryPicker.title.set(tooltipTrainCatrgory);
                 trainCategoryPicker.formatter.set(item -> item == null ? textNone : TextUtils.text(item.getCategoryName()));
@@ -173,19 +174,33 @@ public class TrainSectionSettingsWindow extends DLWindow {
                 trainCategoryPicker.addEventListener(DLCycleButton.SelectedItemChanged.class, (s, e) -> {
                     trainCategoryPicker.selectedItem.get().ifPresent(i -> trainCategoryId = i.getId());
                     return false;
-                }); 
+                });
+                */
+                CreateItemPicker<String> trainCategoryPicker = lineTrainCategory.addComponent(new CreateItemPicker<>(0, 0, 150));
+                trainCategoryPicker.title.set(tooltipTrainCatrgory);
+                trainCategoryPicker.formatter.set(item -> item == null ? textNone : TextUtils.text(item));
+                trainCategoryPicker.items.add(textNone.getString());
+                trainCategoryPicker.items.addAll(orderedCategories.stream().map(x -> x.getCategoryName()).toList());
+                trainCategoryPicker.selectedIndex.set(trainCategoryId != null && categoriesById.containsKey(trainCategoryId) ? orderedCategories.indexOf(categoriesById.get(trainCategoryId)) + 1 : 0);
+                trainCategoryPicker.addEventListener(DLCycleButton.SelectedItemChanged.class, (s, e) -> {
+                    int idx = trainCategoryPicker.selectedIndex.get() - 1;
+                    trainCategoryId = idx >= 0 ? orderedCategories.get(idx).getId() : null;
+                    return false;
+                });
 
                 DLPanel lineTrainLine = commonSettingsContainer.addLine("line");
                 IconSlotWidget trainLineIcon = lineTrainLine.addComponent(new IconSlotWidget(0, 0));
                 trainLineIcon.icon.set(ModGuiIcons.MAP_PATH.getAsSprite(16, 16));
 
-                CreateItemPicker<TrainLine> trainLinePicker = lineTrainLine.addComponent(new CreateItemPicker<>(0, 0, 150));
+                CreateItemPicker<String> trainLinePicker = lineTrainLine.addComponent(new CreateItemPicker<>(0, 0, 150));
                 trainLinePicker.title.set(tooltipTrainLine);
-                trainLinePicker.formatter.set(item -> item == null ? textNone : TextUtils.text(item.getLineName()));
-                trainLinePicker.items.addAll(orderedLines);
-                trainLinePicker.selectedItem.set(Optional.ofNullable(linesById.get(trainLineId)));
+                trainLinePicker.formatter.set(item -> item == null ? textNone : TextUtils.text(item));
+                trainLinePicker.items.add(textNone.getString());
+                trainLinePicker.items.addAll(orderedLines.stream().map(x -> x.getLineName()).toList());
+                trainLinePicker.selectedIndex.set(trainLineId != null && linesById.containsKey(trainLineId) ? orderedLines.indexOf(linesById.get(trainLineId)) + 1 : 0);
                 trainLinePicker.addEventListener(DLCycleButton.SelectedItemChanged.class, (s, e) -> {
-                    trainLinePicker.selectedItem.get().ifPresent(i -> trainLineId = i.getId());
+                    int idx = trainLinePicker.selectedIndex.get() - 1;
+                    trainLineId = idx >= 0 ? orderedLines.get(idx).getId() : null;
                     return false;
                 });
 
