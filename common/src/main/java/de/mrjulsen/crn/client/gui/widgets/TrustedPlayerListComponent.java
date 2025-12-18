@@ -112,10 +112,8 @@ public class TrustedPlayerListComponent extends DLGuiComponent {
     private void reload() {
         ModNetworkManager.GET_ONLINE_PLAYERS.send(NetworkDirection.toServer(), (response) -> {
             playerPool.clear();
-                System.out.println("FDKJHSDG");
             for (Owner o : response.getPlayers()) {
                 playerPool.put(o.name(), o);
-                System.out.println(" - " + o.name());
             }            
         }, () -> {});
     }
