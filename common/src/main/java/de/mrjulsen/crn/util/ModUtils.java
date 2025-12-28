@@ -58,10 +58,16 @@ public class ModUtils {
             values.add(i);
         }
 
+        if (values.isEmpty()) {
+            return 0;
+        }
+
         Collections.sort(values);
         int median = 0;
         if (values.size() % 2 == 0) {
             median = (int)(((double)values.get(values.size() / 2) + (double)values.get(values.size() / 2 + 1)) / 2D);
+        } else if (values.size() == 1) {
+            median = (int)(((double)values.get(0) * 2) / 2D);
         }
         median = values.get(values.size() / 2);
 

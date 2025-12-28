@@ -28,7 +28,7 @@
     "minecraft": "~${minecraft_version}",
     "java": ">=${java_version}",
     "dragonlib": ">=${dragonlib_version}",
-    "create": "*",
+    "create": ">=${create_fabric_dependency_version}",
     "fabric-api": "*"
   },
   "custom": {

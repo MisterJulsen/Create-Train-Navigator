@@ -8,6 +8,7 @@ import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
 import com.simibubi.create.content.contraptions.Contraption;
 import com.simibubi.create.content.contraptions.behaviour.MovementContext;
 
+import de.mrjulsen.crn.CRNPlatformSpecific;
 import de.mrjulsen.crn.block.IBlockGetter;
 import de.mrjulsen.crn.client.ClientWrapper;
 import net.minecraft.core.BlockPos;
@@ -27,8 +28,8 @@ public class AdvancedDisplayInteractionBehaviour extends MovingInteractionBehavi
     
         MovementContext ctx = actor.getRight();
         Level level = ctx.world;
-        
-        if (level.isClientSide && contraption.presentBlockEntities.containsKey(localPos) && contraption.presentBlockEntities.get(localPos) instanceof AdvancedDisplayBlockEntity be && player.getItemInHand(activeHand).is(AllItems.WRENCH.get())) {
+
+        if (CRNPlatformSpecific.getClientContraptionBlockEntity(contraption, localPos) instanceof AdvancedDisplayBlockEntity be && player.getItemInHand(activeHand).is(AllItems.WRENCH.get())) {
             AdvancedDisplayBlockEntity controller = be.getController(new IBlockGetter.ContraptionBlockGetter(contraptionEntity));
             if (controller != null) {
                 ClientWrapper.showAdvancedDisplaySettingsScreen(controller, contraptionEntity);

@@ -64,7 +64,7 @@ public final class CreateRailwaysNavigator {
         
         ModBlocks.init();
         ModItems.init();
-        ModBlockEntities.init();        
+        ModBlockEntities.init();
         ModExtras.init();
         ModSchedule.init();
         ModAccessorTypes.init();
