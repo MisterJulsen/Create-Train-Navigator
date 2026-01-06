@@ -5,7 +5,7 @@ import de.mrjulsen.mcdragonlib.client.gui.events.DLGuiStandardEvents;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLGuiComponent;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLButton;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.render.VanillaSimpleButtonRenderer;
-import de.mrjulsen.mcdragonlib.client.render.DefaultGuiTextures;
+import de.mrjulsen.mcdragonlib.client.render.DLTextureSheet;
 import de.mrjulsen.mcdragonlib.client.render.GuiIcons;
 import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
@@ -47,7 +47,7 @@ public class DBNavigatorWidget extends DLGuiComponent {
 
     @Override
     public void renderMainLayer(DLGuiGraphics graphics, double mouseX, double mouseY, Rectangle renderBounds) {
-        DefaultGuiTextures.DRAGONLIB_UI.getSprite("button_gray_normal").render(graphics, 10, 0, width() - 20, height());
+        DLTextureSheet.DRAGONLIB_UI.getSprite("button_gray_normal").render(graphics, 10, 0, width() - 20, height());
         GuiUtils.drawString(graphics, graphics.defaultFont(), width() / 2, height() / 2 - graphics.defaultFont().lineHeight / 2, txt, DragonLib.VANILLA_UI_FONT_COLOR, ETextAlignment.CENTER, false);
     }
     

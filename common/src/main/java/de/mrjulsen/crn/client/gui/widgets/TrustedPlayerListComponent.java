@@ -8,7 +8,6 @@ import java.util.Set;
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
-import de.mrjulsen.crn.client.gui.widgets.SearchBox.SearchBoxRenderer;
 import de.mrjulsen.crn.client.gui.widgets.create.CreateTextBox;
 import de.mrjulsen.crn.client.gui.widgets.skins.ModernScrollbarComponentRenderer;
 import de.mrjulsen.crn.registry.ModNetworkManager;

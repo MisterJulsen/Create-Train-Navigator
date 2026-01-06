@@ -21,9 +21,9 @@ import de.mrjulsen.mcdragonlib.data.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.DLColor;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.math.Rectangle;
-import de.mrjulsen.mcdragonlib.util.time.ConfiguredTimeSystem;
 import de.mrjulsen.mcdragonlib.util.time.DLTime;
 import de.mrjulsen.mcdragonlib.util.time.TimeContext;
+import de.mrjulsen.mcdragonlib.util.time.VanillaTimeSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.Component;
@@ -73,8 +73,8 @@ public class RouteWidget extends DLButton {
         ImmutableList<RoutePart> parts = route.getParts();
         Font shadowlessFont = new NoShadowFontWrapper(minecraft.font);
 
-        String timeStart = DLTime.fromTicks(route.getStart().getScheduledDepartureTime(), new ConfiguredTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME);
-        String timeEnd = DLTime.fromTicks(route.getEnd().getScheduledArrivalTime(), new ConfiguredTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME);
+        String timeStart = new DLTime(route.getStart().getScheduledDepartureTime(), VanillaTimeSystem.INSTANCE).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, VanillaTimeSystem.INSTANCE);
+        String timeEnd = new DLTime(route.getEnd().getScheduledArrivalTime(), DLTime.defaultTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem());
         String dash = " - ";
         MutableComponent summary = TextUtils.text(String.format("%s%s%s | %s %s | %s",
             timeStart,
@@ -82,7 +82,7 @@ public class RouteWidget extends DLButton {
             timeEnd,
             route.getTransferCount(),
             transferText.getString(),
-            DLTime.fromTicks((int)route.travelTime(), new ConfiguredTimeSystem()).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME)
+            new DLTime((int)route.travelTime(), DLTime.defaultTimeSystem()).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME, DLTime.defaultTimeSystem())
         ));
 
         final float scale = 0.75f;
@@ -117,10 +117,10 @@ public class RouteWidget extends DLButton {
         GuiUtils.drawString(graphics, graphics.defaultFont(), (int)(6 / scale), (int)(43 / scale), TextUtils.text(route.getStart().getRealTimeStationTag().tagName()), DLColor.fromInt(0xFFDBDBDB), ETextAlignment.LEFT, false);
         GuiUtils.drawString(graphics, graphics.defaultFont(), (int)((WIDTH - 6) / scale) - textW, (int)(43 / scale), TextUtils.text(endStationName), DLColor.fromInt(0xFFDBDBDB), ETextAlignment.LEFT, false);
         if (route.getStart().shouldRenderRealTime()) {
-            GuiUtils.drawString(graphics, graphics.defaultFont(), (int)((6 + graphics.defaultFont().width(timeStart) * localScale / 2.0f) / scale) - graphics.defaultFont().width(timeStart) / 2, (int)(15 / scale), TextUtils.text(DLTime.fromTicks(route.getStart().getScheduledDepartureTime() + (route.getStart().getDepartureTimeDeviation() / precision * precision), new ConfiguredTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME)), route.getStart().isDepartureDelayed() ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME, ETextAlignment.LEFT, false);
+            GuiUtils.drawString(graphics, graphics.defaultFont(), (int)((6 + graphics.defaultFont().width(timeStart) * localScale / 2.0f) / scale) - graphics.defaultFont().width(timeStart) / 2, (int)(15 / scale), TextUtils.text(new DLTime(route.getStart().getScheduledDepartureTime() + (route.getStart().getDepartureTimeDeviation() / precision * precision), VanillaTimeSystem.INSTANCE).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem())), route.getStart().isDepartureDelayed() ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME, ETextAlignment.LEFT, false);
         }
         if (route.getEnd().shouldRenderRealTime()) {
-            GuiUtils.drawString(graphics, graphics.defaultFont(), (int)((6 + graphics.defaultFont().width(timeEnd) * localScale * 1.5f + (graphics.defaultFont().width(dash)) * localScale) / scale) - graphics.defaultFont().width(timeEnd) / 2, (int)(15 / scale), TextUtils.text(DLTime.fromTicks(route.getEnd().getScheduledArrivalTime() + (route.getEnd().getArrivalTimeDeviation() / precision * precision), new ConfiguredTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME)), route.getEnd().isArrivalDelayed() ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME, ETextAlignment.LEFT, false);
+            GuiUtils.drawString(graphics, graphics.defaultFont(), (int)((6 + graphics.defaultFont().width(timeEnd) * localScale * 1.5f + (graphics.defaultFont().width(dash)) * localScale) / scale) - graphics.defaultFont().width(timeEnd) / 2, (int)(15 / scale), TextUtils.text(new DLTime(route.getEnd().getScheduledArrivalTime() + (route.getEnd().getArrivalTimeDeviation() / precision * precision), VanillaTimeSystem.INSTANCE).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem())), route.getEnd().isArrivalDelayed() ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME, ETextAlignment.LEFT, false);
         }
 
         if (route.isAnyCancelled()) {

@@ -18,7 +18,6 @@ import de.mrjulsen.crn.data.schedule.instruction.PrioritizedDestinationInstructi
 import de.mrjulsen.crn.data.train.DepartureHistory;
 import de.mrjulsen.crn.data.train.DepartureHistory.ETrainFilter;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
-import de.mrjulsen.mcdragonlib.util.time.ConfiguredTimeSystem;
 import de.mrjulsen.mcdragonlib.util.time.DLTime;
 import de.mrjulsen.mcdragonlib.util.time.TimeContext;
 import dev.architectury.utils.GameInstance;
@@ -74,10 +73,10 @@ public class TrainSeparationCondition extends ScheduledDelay implements IDelayed
 
 		switch (getTimeSource()) {
 			case IN_GAME -> {
-				return TextUtils.text(toTime(remainingTicks).format(Constants.DEFAULT_GAME_DURATION_FORMAT, TimeContext.INGAME));
+				return TextUtils.text(toTime(remainingTicks).format(Constants.DEFAULT_GAME_DURATION_FORMAT, TimeContext.INGAME, DLTime.defaultTimeSystem()));
 			}
 			default -> {
-				return TextUtils.text(toTime(remainingTicks).format(Constants.DEFAULT_REAL_DURATION_FORMAT, TimeContext.REAL));
+				return TextUtils.text(toTime(remainingTicks).format(Constants.DEFAULT_REAL_DURATION_FORMAT, TimeContext.REAL, DLTime.defaultTimeSystem()));
 			}
 		}
 	}
@@ -146,7 +145,7 @@ public class TrainSeparationCondition extends ScheduledDelay implements IDelayed
 	}
 
     public static DLTime toTime(long ticks) {
-		return DLTime.fromTicks(ticks, new ConfiguredTimeSystem());
+		return new DLTime(ticks, DLTime.defaultTimeSystem());
     }
 
 }

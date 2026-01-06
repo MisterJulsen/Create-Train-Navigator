@@ -23,7 +23,6 @@ import de.mrjulsen.mcdragonlib.util.Pair;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.math.Point;
 import de.mrjulsen.mcdragonlib.util.math.Rectangle;
-import de.mrjulsen.mcdragonlib.util.time.ConfiguredTimeSystem;
 import de.mrjulsen.mcdragonlib.util.time.DLTime;
 import de.mrjulsen.mcdragonlib.util.time.TimeContext;
 import net.minecraft.core.BlockPos;
@@ -157,7 +156,7 @@ public class BERPassengerInfoSimple implements AbstractAdvancedDisplayRenderer<P
                             : "")));
                 case 1 -> label.text.set(
                             CustomLanguage.translate(keyDate, blockEntity.getLevel().getDayTime() / Level.TICKS_PER_DAY,
-                                DLTime.fromLevelTime(level, new ConfiguredTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME)));
+                                new DLTime(level, DLTime.defaultTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem())));
                 case 2 -> label.text.set(ModUtils.calcSpeedString(blockEntity.getTrainData().getSpeed(),
                         ModClientConfig.SPEED_UNIT.get()));
             }            

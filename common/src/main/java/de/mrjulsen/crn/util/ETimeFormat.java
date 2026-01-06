@@ -6,9 +6,9 @@ import de.mrjulsen.mcdragonlib.util.time.format.TimeFormat24Hours;
 import de.mrjulsen.mcdragonlib.util.time.format.TimeFormatTicks;
 
 public enum ETimeFormat {
-    HOURS_24("hours_24", new TimeFormat24Hours()),
-    HOURS_12("hours_12", new TimeFormat12Hours()),
-    TICKS("ticks", new TimeFormatTicks());
+    HOURS_24("hours_24", TimeFormat24Hours.INSTANCE),
+    HOURS_12("hours_12", TimeFormat12Hours.INSTANCE),
+    TICKS("ticks", TimeFormatTicks.INSTANCE);
 
     private final String name;
     private final ITimeFormatter format;

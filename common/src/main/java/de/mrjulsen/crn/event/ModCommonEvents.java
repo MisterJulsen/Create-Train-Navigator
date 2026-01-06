@@ -17,7 +17,6 @@ import de.mrjulsen.crn.event.events.SubmitTrainPredictionsEvent;
 import de.mrjulsen.crn.event.events.TotalDurationTimeChangedEvent;
 import de.mrjulsen.crn.event.events.TrainArrivalAndDepartureEvent;
 import de.mrjulsen.crn.event.events.TrainDestinationChangedEvent;
-import de.mrjulsen.crn.registry.ModExtras;
 import de.mrjulsen.mcdragonlib.internal.ClientWrapper;
 import dev.architectury.event.events.common.CommandRegistrationEvent;
 import dev.architectury.event.events.common.LifecycleEvent;

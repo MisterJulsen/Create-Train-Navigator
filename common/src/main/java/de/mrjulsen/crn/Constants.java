@@ -7,10 +7,11 @@ import de.mrjulsen.mcdragonlib.util.DLColor;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.time.DLTime;
+import de.mrjulsen.mcdragonlib.util.time.DLTimeUnit;
 import de.mrjulsen.mcdragonlib.util.time.VanillaTimeSystem;
 import de.mrjulsen.mcdragonlib.util.time.format.ITimeFormatter;
 import de.mrjulsen.mcdragonlib.util.time.format.TimeFormatDigitalDuration;
-import de.mrjulsen.mcdragonlib.util.time.format.TimeFormaturVerboseDuration;
+import de.mrjulsen.mcdragonlib.util.time.format.TimeFormatVerboseDuration;
 import net.minecraft.network.chat.Component;
 
 public class Constants {
@@ -46,11 +47,11 @@ public class Constants {
     public static final DLColor COLOR_DELAYED = DLColor.fromInt(0xFFFF4242);
     public static final DLColor COLOR_TRAIN_BACKGROUND = DLColor.fromInt(0xFF393939);
 
-    public static final DLTime NULL_TIME = DLTime.fromTicks(0, VanillaTimeSystem.INSTANCE);
-    public static final ITimeFormatter DEFAULT_REAL_DURATION_FORMAT = new TimeFormatDigitalDuration(NULL_TIME, false, true, true, true, true);
-    public static final ITimeFormatter DEFAULT_GAME_DURATION_FORMAT = new TimeFormatDigitalDuration(NULL_TIME, false, false, true, true, true);
-    public static final ITimeFormatter DEFAULT_VERBOSE_REAL_DURATION_FORMAT = new TimeFormaturVerboseDuration(NULL_TIME, false, true, true, true, true);
-    public static final ITimeFormatter DEFAULT_VERBOSE_GAME_DURATION_FORMAT = new TimeFormaturVerboseDuration(NULL_TIME, false, false, true, true, true);
+    public static final DLTime NULL_TIME = new DLTime(0, VanillaTimeSystem.INSTANCE);
+    public static final ITimeFormatter DEFAULT_REAL_DURATION_FORMAT = new TimeFormatDigitalDuration(DLTimeUnit.SECONDS, false);
+    public static final ITimeFormatter DEFAULT_GAME_DURATION_FORMAT = new TimeFormatDigitalDuration(DLTimeUnit.MINUTES, false);
+    public static final ITimeFormatter DEFAULT_VERBOSE_REAL_DURATION_FORMAT = new TimeFormatVerboseDuration(new TimeFormatVerboseDuration.Config().showDays(true).showHours(true).showMinutes(true).showSeconds(true));
+    public static final ITimeFormatter DEFAULT_VERBOSE_GAME_DURATION_FORMAT = new TimeFormatVerboseDuration(new TimeFormatVerboseDuration.Config().showDays(true).showHours(true).showMinutes(true).showSeconds(false));
 
     public static final String GITHUB_WIKI = "https://github.com/MisterJulsen/Create-Train-Navigator/wiki/";
     public static final String HELP_PAGE_ADVANCED_DISPLAYS = GITHUB_WIKI + "Advanced-Displays";

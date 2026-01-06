@@ -26,7 +26,6 @@ import de.mrjulsen.mcdragonlib.util.Pair;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.math.Point;
 import de.mrjulsen.mcdragonlib.util.math.Rectangle;
-import de.mrjulsen.mcdragonlib.util.time.ConfiguredTimeSystem;
 import de.mrjulsen.mcdragonlib.util.time.DLTime;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -141,7 +140,7 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
 
                 // DELAYED
                 if (x.getStationData().isDepartureDelayed()) {
-                    String delay = getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA ? ModUtils.timeRemainingString(x.getStationData().getDepartureTimeDeviation()) : String.valueOf((long)DLTime.fromTicks(x.getStationData().getDepartureTimeDeviation(), new ConfiguredTimeSystem()).toGameMinutes());
+                    String delay = getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA ? ModUtils.timeRemainingString(x.getStationData().getDepartureTimeDeviation()) : String.valueOf((long)DLTime.fromGameTicks(x.getStationData().getDepartureTimeDeviation(), DLTime.defaultTimeSystem()).toGameMinutes(DLTime.defaultTimeSystem()));
                     MutableComponent delayComponent = CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.delayed", delay);
                     if (getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ABS) {
                         delayComponent.append(" ").append(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.delay_abs_suffix"));

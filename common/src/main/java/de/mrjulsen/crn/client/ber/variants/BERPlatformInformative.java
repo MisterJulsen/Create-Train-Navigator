@@ -31,7 +31,6 @@ import de.mrjulsen.mcdragonlib.util.Pair;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.math.Point;
 import de.mrjulsen.mcdragonlib.util.math.Rectangle;
-import de.mrjulsen.mcdragonlib.util.time.ConfiguredTimeSystem;
 import de.mrjulsen.mcdragonlib.util.time.DLTime;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -176,7 +175,7 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
                 content.add(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.cancelled"));
             } else {
                 TrainStopDisplayData displayData = preds.get(0).getStationData();
-                String delay = getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA ? ModUtils.timeRemainingString(displayData.getDepartureTimeDeviation()) : String.valueOf((long)DLTime.fromTicks(displayData.getDepartureTimeDeviation(), new ConfiguredTimeSystem()).toGameMinutes());
+                String delay = getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA ? ModUtils.timeRemainingString(displayData.getDepartureTimeDeviation()) : String.valueOf((long)DLTime.fromGameTicks(displayData.getDepartureTimeDeviation(), DLTime.defaultTimeSystem()).toGameMinutes(DLTime.defaultTimeSystem()));
                 
                 // TRAIN TERMINATES
                 if (preds.get(0).isNextSectionExcluded()) {

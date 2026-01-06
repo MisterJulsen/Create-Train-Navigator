@@ -7,7 +7,7 @@ import de.mrjulsen.crn.client.gui.widgets.AbstractFlyoutWidget.FlyoutPointer;
 import de.mrjulsen.crn.client.gui.widgets.create.CreateButton;
 import de.mrjulsen.mcdragonlib.client.gui.events.DLGuiStandardEvents;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLButton;
-import de.mrjulsen.mcdragonlib.client.render.DefaultGuiTextures;
+import de.mrjulsen.mcdragonlib.client.render.DLTextureSheet;
 import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import de.mrjulsen.mcdragonlib.util.DLColor;
@@ -38,7 +38,7 @@ public class ColorSlotWidget extends DLButton {
 
     @Override
     public void renderMainLayer(DLGuiGraphics graphics, double mouseX, double mouseY, Rectangle renderBounds) {
-        DefaultGuiTextures.DRAGONLIB_UI.getSprite("slot").render(graphics, 0, 0, width(), height());
+        DLTextureSheet.DRAGONLIB_UI.getSprite("slot").render(graphics, 0, 0, width(), height());
         GuiUtils.fill(graphics, 1, 1, width() - 2, height() - 2, selectedColor);
         if (isSelected()) {
             GuiUtils.fill(graphics, 1, 1, width() - 2, height() - 2, DLColor.fromInt(0x40FFFFFF));

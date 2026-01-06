@@ -9,7 +9,6 @@ import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.registry.ModBlockEntities;
 import de.mrjulsen.mcdragonlib.util.DLColor;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
-import de.mrjulsen.mcdragonlib.util.time.ConfiguredTimeSystem;
 import de.mrjulsen.mcdragonlib.util.time.DLTime;
 import de.mrjulsen.mcdragonlib.util.time.TimeContext;
 import net.minecraft.core.BlockPos;
@@ -41,7 +40,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.jetbrains.annotations.Nullable;
 
 public class TrainStationClockBlock extends Block implements IWrenchable, IBE<TrainStationClockBlockEntity> {
 
@@ -94,7 +92,7 @@ public class TrainStationClockBlock extends Block implements IWrenchable, IBE<Tr
 		}
 
 		if (!pPlayer.getItemInHand(pHand).is(this.asItem()) && pLevel.isClientSide) {
-            pPlayer.displayClientMessage(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".time", DLTime.fromLevelTime(pLevel, new ConfiguredTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME)), true);
+            pPlayer.displayClientMessage(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".time", new DLTime(pLevel, DLTime.defaultTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem())), true);
             return InteractionResult.SUCCESS;
         }
         return InteractionResult.PASS;

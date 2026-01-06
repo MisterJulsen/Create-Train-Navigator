@@ -39,6 +39,8 @@ import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.config.ECachingPriority;
 import de.mrjulsen.mcdragonlib.util.Cache;
 import de.mrjulsen.mcdragonlib.util.math.MathUtils;
+import de.mrjulsen.mcdragonlib.util.time.DLTime;
+import de.mrjulsen.mcdragonlib.util.time.VanillaTimeSystem;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 
@@ -548,7 +550,7 @@ public class TrainData implements IListenable<TrainData> {
         Set<Integer> validPredictionEntries = new HashSet<>();
         boolean hasCycled = false;
 
-        final long now = DragonLib.getCurrentWorldTime() - waitingAtStationTicks();
+        final long now = DragonLib.getCurrentWorldTime() + waitingAtStationTicks();
         long time = now;
 
         for (int i = 0; i < entryCount; i++) {

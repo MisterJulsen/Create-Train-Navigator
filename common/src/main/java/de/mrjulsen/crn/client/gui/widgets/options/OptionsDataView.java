@@ -29,8 +29,6 @@ public class OptionsDataView<T> extends DLAbstractDataView<T, OptionsDataView.DL
             createComponents();
         });
 
-    private int requiredHeight = 0;
-
     private SearchBox searchBox;
 
     public OptionsDataView(int x, int y, int w, int h) {

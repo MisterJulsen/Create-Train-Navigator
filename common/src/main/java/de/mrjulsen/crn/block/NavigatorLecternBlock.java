@@ -93,7 +93,6 @@ public class NavigatorLecternBlock extends LecternBlock implements IBE<Navigator
                 .setValue(POWERED, state.getValue(POWERED)));
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
         return Blocks.LECTERN.getCloneItemStack(level, pos, state);

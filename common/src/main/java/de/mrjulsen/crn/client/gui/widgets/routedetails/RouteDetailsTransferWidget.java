@@ -49,7 +49,7 @@ public class RouteDetailsTransferWidget extends DLGuiComponent {
             ModGuiIcons.WARN.render(graphics, 24, 4);
             GuiUtils.drawString(graphics, graphics.defaultFont(), 28 + ModGuiIcons.ICON_SIZE + 2, 8, textConnectionEndangered, DLColor.WHITE, ETextAlignment.LEFT, false);
         } else {
-            GuiUtils.drawString(graphics, graphics.defaultFont(), 32, 8, TextUtils.text(textTransfer.getString() + " " + (time < 0 ? "" : "(" + DLTime.fromTicks(time, VanillaTimeSystem.INSTANCE).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME) + ")")), DLColor.WHITE, ETextAlignment.LEFT, false);
+            GuiUtils.drawString(graphics, graphics.defaultFont(), 32, 8, TextUtils.text(textTransfer.getString() + " " + (time < 0 ? "" : "(" + new DLTime(time, VanillaTimeSystem.INSTANCE).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME, DLTime.defaultTimeSystem()) + ")")), DLColor.WHITE, ETextAlignment.LEFT, false);
         }
     }    
 }

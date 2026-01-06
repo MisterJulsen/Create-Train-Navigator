@@ -27,9 +27,6 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 
-import java.util.List;
-import javax.annotation.Nullable;
-
 import org.slf4j.Logger;
 
 public final class CreateRailwaysNavigator {

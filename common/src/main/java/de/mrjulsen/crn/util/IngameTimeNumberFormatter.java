@@ -7,6 +7,7 @@ import de.mrjulsen.crn.Constants;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.util.INumberFormatAdapter;
 import de.mrjulsen.mcdragonlib.util.time.ConfiguredTimeSystem;
 import de.mrjulsen.mcdragonlib.util.time.DLTime;
+import de.mrjulsen.mcdragonlib.util.time.DLTimeUnit;
 import de.mrjulsen.mcdragonlib.util.time.TimeContext;
 import de.mrjulsen.mcdragonlib.util.time.format.TimeFormaturVerboseDuration;
 
@@ -16,7 +17,7 @@ public class IngameTimeNumberFormatter implements INumberFormatAdapter {
 
     @Override
     public String format(double value) {
-        return DLTime.fromTicks(value, new ConfiguredTimeSystem()).format(new TimeFormaturVerboseDuration(Constants.NULL_TIME, false, false, true, true, true), TimeContext.INGAME);
+        return new DLTime(value, DLTime.defaultTimeSystem()).format(new TimeFormaturVerboseDuration(Constants.NULL_TIME, false, false, true, true, true), TimeContext.INGAME);
     }
 
     @Override

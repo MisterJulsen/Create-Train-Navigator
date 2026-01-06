@@ -8,13 +8,11 @@ import com.mojang.blaze3d.vertex.VertexFormat.Mode;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.CRNGui;
-import de.mrjulsen.mcdragonlib.client.render.DefaultGuiTextures;
 import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils.TextureFillMode;
 import de.mrjulsen.mcdragonlib.data.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.DLColor;
-import de.mrjulsen.mcdragonlib.util.DLUtils;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;

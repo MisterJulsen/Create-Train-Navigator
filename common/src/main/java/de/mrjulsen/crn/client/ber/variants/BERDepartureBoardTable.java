@@ -32,7 +32,6 @@ import de.mrjulsen.mcdragonlib.util.Pair;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.math.Point;
 import de.mrjulsen.mcdragonlib.util.math.Rectangle;
-import de.mrjulsen.mcdragonlib.util.time.ConfiguredTimeSystem;
 import de.mrjulsen.mcdragonlib.util.time.DLTime;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -190,7 +189,7 @@ public class BERDepartureBoardTable implements AbstractAdvancedDisplayRenderer<D
         }
         // DELAYED
         if (data.getStationData().isDepartureDelayed()) {            
-            String delay = getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA ? ModUtils.timeRemainingString(data.getStationData().getDepartureTimeDeviation()) : String.valueOf((long)DLTime.fromTicks(data.getStationData().getDepartureTimeDeviation(), new ConfiguredTimeSystem()).toGameMinutes());
+            String delay = getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA ? ModUtils.timeRemainingString(data.getStationData().getDepartureTimeDeviation()) : String.valueOf((long)DLTime.fromGameTicks(data.getStationData().getDepartureTimeDeviation(), DLTime.defaultTimeSystem()).toGameMinutes(DLTime.defaultTimeSystem()));
             MutableComponent delayComponent = CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.delayed", delay);
             if (getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ABS) {
                 delayComponent.append(" ").append(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.delay_abs_suffix"));

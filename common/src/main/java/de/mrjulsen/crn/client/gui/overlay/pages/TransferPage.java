@@ -14,7 +14,6 @@ import de.mrjulsen.mcdragonlib.data.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.DLColor;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.math.Rectangle;
-import de.mrjulsen.mcdragonlib.util.time.ConfiguredTimeSystem;
 import de.mrjulsen.mcdragonlib.util.time.DLTime;
 import de.mrjulsen.mcdragonlib.util.time.TimeContext;
 import net.minecraft.ChatFormatting;
@@ -65,7 +64,7 @@ public class TransferPage extends AbstractRouteDetailsPage {
         // Title
         ModGuiIcons.WALK.render(graphics, 5, y + 3);        
         long transferTime = connection.getDepartureStation().getRealTimeDepartureTime() - DragonLib.getCurrentWorldTime();
-        Component transferTimeText = TextUtils.text(DLTime.fromTicks(transferTime, new ConfiguredTimeSystem()).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME));
+        Component transferTimeText = TextUtils.text(new DLTime(transferTime, DLTime.defaultTimeSystem()).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME, DLTime.defaultTimeSystem()));
         GuiUtils.drawString(graphics, font, 10 + ModGuiIcons.ICON_SIZE, y + 3 + ModGuiIcons.ICON_SIZE / 2 - font.lineHeight / 2, CustomLanguage.translate(keyScheduleTransfer).append(" ").append(transferTime > 0 ? transferTimeText : CustomLanguage.translate(keyTimeNow)).withStyle(ChatFormatting.BOLD), DLColor.WHITE, ETextAlignment.LEFT, false);
         y += 5 + ModGuiIcons.ICON_SIZE;
         

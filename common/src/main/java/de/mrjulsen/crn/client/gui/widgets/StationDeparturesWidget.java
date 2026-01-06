@@ -20,9 +20,9 @@ import de.mrjulsen.mcdragonlib.data.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.DLColor;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.math.Rectangle;
-import de.mrjulsen.mcdragonlib.util.time.ConfiguredTimeSystem;
 import de.mrjulsen.mcdragonlib.util.time.DLTime;
 import de.mrjulsen.mcdragonlib.util.time.TimeContext;
+import de.mrjulsen.mcdragonlib.util.time.VanillaTimeSystem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -100,8 +100,8 @@ public class StationDeparturesWidget extends DLButton {
         GuiUtils.drawString(graphics, graphics.defaultFont(), (int)((45 + graphics.defaultFont().width(trainName)) * scale), 6, stationText, DLColor.WHITE, ETextAlignment.LEFT, false);
         GuiUtils.drawString(graphics, graphics.defaultFont(), width() - 6, 20, platformText, DLColor.WHITE, ETextAlignment.RIGHT, false);
 
-        GuiUtils.drawString(graphics, graphics.defaultFont(), (int)(30 * scale), 20, DLTime.fromTicks(arrival ? route.getStart().getScheduledArrivalTime() : route.getStart().getScheduledDepartureTime(), new ConfiguredTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME), DLColor.WHITE, ETextAlignment.LEFT, false);
-        GuiUtils.drawString(graphics, graphics.defaultFont(), (int)(30 * scale) + 40, 20, DLTime.fromTicks(arrival ? route.getStart().getRealTimeArrivalTime() : route.getStart().getRealTimeDepartureTime(), new ConfiguredTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME), (arrival ? route.getStart().isArrivalDelayed() : route.getStart().isDepartureDelayed()) ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME, ETextAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, graphics.defaultFont(), (int)(30 * scale), 20, new DLTime(arrival ? route.getStart().getScheduledArrivalTime() : route.getStart().getScheduledDepartureTime(), VanillaTimeSystem.INSTANCE).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem()), DLColor.WHITE, ETextAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, graphics.defaultFont(), (int)(30 * scale) + 40, 20, new DLTime(arrival ? route.getStart().getRealTimeArrivalTime() : route.getStart().getRealTimeDepartureTime(), VanillaTimeSystem.INSTANCE).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem()), (arrival ? route.getStart().isArrivalDelayed() : route.getStart().isDepartureDelayed()) ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME, ETextAlignment.LEFT, false);
     }
 
     @Override

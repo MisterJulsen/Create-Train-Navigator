@@ -17,7 +17,6 @@ import de.mrjulsen.mcdragonlib.data.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.DLColor;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.math.Rectangle;
-import de.mrjulsen.mcdragonlib.util.time.ConfiguredTimeSystem;
 import de.mrjulsen.mcdragonlib.util.time.DLTime;
 import de.mrjulsen.mcdragonlib.util.time.TimeContext;
 import net.minecraft.client.Minecraft;
@@ -58,7 +57,7 @@ public abstract class AbstractNavigatorScreen extends DLWindow {
     public void renderMainLayer(DLGuiGraphics graphics, double mouseX, double mouseY, Rectangle renderBounds) {
         CreateDynamicWidgets.renderWindow(graphics, 0, 0, GUI_WIDTH, GUI_HEIGHT, containerColor, primaryColoring, FooterSize.DEFAULT.size(), FooterSize.SMALL.size(), true);        
         GuiUtils.drawString(graphics, graphics.defaultFont(), 6, 4, title, DLColor.fromInt(0xFF4F4F4F), ETextAlignment.LEFT, false);
-        String timeString = DLTime.fromLevelTime(Minecraft.getInstance().level, new ConfiguredTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME);
+        String timeString = new DLTime(Minecraft.getInstance().level, DLTime.defaultTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem());
         GuiUtils.drawString(graphics, graphics.defaultFont(), GUI_WIDTH - 6, 4, TextUtils.text(timeString), DLColor.fromInt(0xFF4F4F4F), ETextAlignment.RIGHT, false);
     }
 }
