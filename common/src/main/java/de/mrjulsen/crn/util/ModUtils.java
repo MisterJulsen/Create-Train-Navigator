@@ -188,9 +188,9 @@ public class ModUtils {
             throw new RuntimeSideException(true);
         }
         if (asETA) {
-            return timeRemainingString(time - DragonLib.getCurrentWorldTime());
+            return timeRemainingString(time - ModUtils.getTransformedWorldTime());
         }
-        return DLTime.fromGameTicks(time, DLTime.defaultTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem());
+        return DLTime.fromGameTicks(time, VanillaTimeSystem.INSTANCE).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem());
     }
 
     public static long getTransformedWorldTime() {

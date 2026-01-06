@@ -24,7 +24,6 @@ import de.mrjulsen.crn.network.packets.pain.GetNextConnectionsDisplayDataPacketD
 import de.mrjulsen.crn.registry.ModNetworkManager;
 import de.mrjulsen.crn.registry.data.NextConnectionsRequestData;
 import de.mrjulsen.crn.util.ModUtils;
-import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.ber.BERGraphics;
 import de.mrjulsen.mcdragonlib.client.ber.BERLabel;
 import de.mrjulsen.mcdragonlib.client.ber.BERLabel.EScrollMode;
@@ -134,7 +133,7 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
 
     @Override
     public void tick(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent) {
-        timeLabel.text.set(blockEntity.getXSizeScaled() > 1 && !nextStopAnnounced ? TextUtils.text(ModUtils.formatTime(DragonLib.getCurrentWorldTime(), false)).withStyle(ChatFormatting.BOLD) : TextUtils.empty());
+        timeLabel.text.set(blockEntity.getXSizeScaled() > 1 && !nextStopAnnounced ? TextUtils.text(ModUtils.formatTime(ModUtils.getTransformedWorldTime(), false)).withStyle(ChatFormatting.BOLD) : TextUtils.empty());
         timeLabel.horizontalAlign.set(ETextAlignment.RIGHT);
         timeLabel.color.set(getDisplaySettings(blockEntity).getFontColor());
     }
@@ -253,7 +252,7 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
             });
             nextConnectionsTitleLabel.render(graphics);
             pageIndicatorLabel.render(graphics);
-        } else if (getDisplaySettings(graphics.blockEntity()).showStats() && DragonLib.getCurrentWorldTime() % 500 < 200 && !graphics.blockEntity().getTrainData().isWaitingAtStation()) {
+        } else if (getDisplaySettings(graphics.blockEntity()).showStats() && ModUtils.getTransformedWorldTime() % 500 < 200 && !graphics.blockEntity().getTrainData().isWaitingAtStation()) {
             // render stats
             speedLabel.render(graphics, light);
             dateLabel.render(graphics, light);
@@ -331,7 +330,7 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
 
         TrainDisplayData data = blockEntity.getTrainData();
         boolean wasNextStopAnnounced = nextStopAnnounced;
-        nextStopAnnounced = !data.isWaitingAtStation() && data.getNextStop().isPresent() && data.getNextStop().get().getRealTimeArrivalTime() - DragonLib.getCurrentWorldTime() < ModClientConfig.NEXT_STOP_ANNOUNCEMENT.get();
+        nextStopAnnounced = !data.isWaitingAtStation() && data.getNextStop().isPresent() && data.getNextStop().get().getRealTimeArrivalTime() - ModUtils.getTransformedWorldTime() < ModClientConfig.NEXT_STOP_ANNOUNCEMENT.get();
         this.exitSide = (!nextStopAnnounced && !data.isWaitingAtStation()) || !getDisplaySettings(blockEntity).showExit() ? TrainExitSide.UNKNOWN : (data.isWaitingAtStation() ? exitSide : blockEntity.relativeExitDirection.get());
         
         if (oos) {
@@ -340,7 +339,7 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
         }
 
 
-        timeLabel.text.set(blockEntity.getXSizeScaled() > 1 && !nextStopAnnounced ? TextUtils.text(ModUtils.formatTime(DragonLib.getCurrentWorldTime(), false)).withStyle(ChatFormatting.BOLD) : TextUtils.empty());
+        timeLabel.text.set(blockEntity.getXSizeScaled() > 1 && !nextStopAnnounced ? TextUtils.text(ModUtils.formatTime(ModUtils.getTransformedWorldTime(), false)).withStyle(ChatFormatting.BOLD) : TextUtils.empty());
         float timeLabelW = timeLabel.getRenderedWidth();
         timeLabel.position.set(Point.of(blockEntity.getXSizeScaled() * 16 - 3 - timeLabelW - (this.exitSide != TrainExitSide.UNKNOWN ? 4 : 0), 2.5f));
         timeLabel.preferredWidth.set(timeLabelW);
@@ -437,7 +436,7 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
         speedLabel.preferredWidth.set((float)speedLabel.clippingArea.get().width());
         speedLabel.color.set(getDisplaySettings(blockEntity).getFontColor());
         
-        dateLabel.text.set(CustomLanguage.translate(keyDate, blockEntity.getLevel().getDayTime() / Level.TICKS_PER_DAY, ModUtils.formatTime(DragonLib.getCurrentWorldTime(), getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA)));
+        dateLabel.text.set(CustomLanguage.translate(keyDate, blockEntity.getLevel().getDayTime() / Level.TICKS_PER_DAY, ModUtils.formatTime(ModUtils.getTransformedWorldTime(), getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA)));
         dateLabel.preferredWidth.set((float)dateLabel.clippingArea.get().width());
         dateLabel.color.set(getDisplaySettings(blockEntity).getFontColor());
 
@@ -447,7 +446,7 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
 
         if (shouldRenderNextConnections() && !nextConnections.getConnections().isEmpty()) {
             final int pages = (int)Math.ceil((float)nextConnections.getConnections().size() / (MAX_LINES - 1));
-            final int page = (int)((DragonLib.getCurrentWorldTime() % (100 * pages)) / 100);
+            final int page = (int)((ModUtils.getTransformedWorldTime() % (100 * pages)) / 100);
 
             pageIndicatorLabel.text.set(TextUtils.text(generatePageIndexString(page, pages)));
             pageIndicatorLabel.preferredWidth.set((float)pageIndicatorLabel.clippingArea.get().width());

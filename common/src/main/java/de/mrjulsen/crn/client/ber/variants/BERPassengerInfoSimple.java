@@ -13,7 +13,6 @@ import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.TrainExitSide;
 import de.mrjulsen.crn.data.train.portable.TrainDisplayData.State;
 import de.mrjulsen.crn.util.ModUtils;
-import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.ber.BERGraphics;
 import de.mrjulsen.mcdragonlib.client.ber.BERLabel;
 import de.mrjulsen.mcdragonlib.client.ber.BERLabel.EScrollMode;
@@ -129,7 +128,7 @@ public class BERPassengerInfoSimple implements AbstractAdvancedDisplayRenderer<P
             label.text.set(settings.getTrainTextComponents().showTrainName() ? TextUtils.text(blockEntity.getTrainData().getTrainData().getName()) : TextUtils.empty());
         } else if (blockEntity.getTrainData().isWaitingAtStation()) {
             label.text.set(TextUtils.text(blockEntity.getTrainData().getNextStop().get().getRealTimeStation().tagName()));
-        } else if (blockEntity.getTrainData().getNextStop().get().getRealTimeArrivalTime() - DragonLib.getCurrentWorldTime() < ModClientConfig.NEXT_STOP_ANNOUNCEMENT.get()) {
+        } else if (blockEntity.getTrainData().getNextStop().get().getRealTimeArrivalTime() - ModUtils.getTransformedWorldTime() < ModClientConfig.NEXT_STOP_ANNOUNCEMENT.get()) {
             MutableComponent txt = CustomLanguage.translate(keyNextStop, blockEntity.getTrainData().getNextStop().get().getRealTimeStation().tagName());
             if (blockEntity.getTrainData().getState().isTerminating(getDisplaySettings(blockEntity).showDoNotBoardText())) {
                 txt = TextUtils.concatSimple(txt, textTrainTerminatesHere);
@@ -137,7 +136,7 @@ public class BERPassengerInfoSimple implements AbstractAdvancedDisplayRenderer<P
             label.text.set(txt);
         } else {
             final int slides = 3;
-            int slide = (int)(DragonLib.getCurrentWorldTime() % (TICKS_PER_SLIDE * slides)) / TICKS_PER_SLIDE;
+            int slide = (int)(ModUtils.getTransformedWorldTime() % (TICKS_PER_SLIDE * slides)) / TICKS_PER_SLIDE;
             
             if ((slide == 1 && !settings.showTimeAndDate())) {
                 slide++;

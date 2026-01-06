@@ -17,7 +17,11 @@ import de.mrjulsen.crn.event.events.SubmitTrainPredictionsEvent;
 import de.mrjulsen.crn.event.events.TotalDurationTimeChangedEvent;
 import de.mrjulsen.crn.event.events.TrainArrivalAndDepartureEvent;
 import de.mrjulsen.crn.event.events.TrainDestinationChangedEvent;
+import de.mrjulsen.crn.util.ModUtils;
+import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.internal.ClientWrapper;
+import de.mrjulsen.mcdragonlib.util.time.DLTime;
+import de.mrjulsen.mcdragonlib.util.time.VanillaTimeSystem;
 import dev.architectury.event.events.common.CommandRegistrationEvent;
 import dev.architectury.event.events.common.LifecycleEvent;
 import dev.architectury.event.events.common.TickEvent;
@@ -71,11 +75,11 @@ public class ModCommonEvents {
 
         TickEvent.SERVER_POST.register((server) -> {
             if (ModCommonEvents.hasServer()) {
-                long currentTicks = ModCommonEvents.getPhysicalLevel().dayTime();
+                long currentTicks = DragonLib.getCurrentWorldTime();
                 long diff = currentTicks - lastTicks;
                 if (Math.abs(diff) > 1) {
                     for (TrainData data : TrainListener.getAllTrainData()) {
-                        data.shiftTime(diff);
+                        data.shiftTime((long)diff);
                     }
                     if (ModCommonConfig.ADVANCED_LOGGING.get()) CreateRailwaysNavigator.LOGGER.info("All times have been corrected: " + (diff) + " Ticks");
                 }
@@ -107,6 +111,8 @@ public class ModCommonEvents {
     public static Level getPhysicalLevel() {
         return hasServer() ? getCurrentServer().get().overworld() : ClientWrapper.getClientLevel();
     }
+
+    
 }
 
 

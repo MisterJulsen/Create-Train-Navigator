@@ -15,7 +15,6 @@ import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.train.TrainStatus.CompiledTrainStatus;
 import de.mrjulsen.crn.data.train.portable.StationDisplayData;
 import de.mrjulsen.crn.util.ModUtils;
-import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.ber.BERGraphics;
 import de.mrjulsen.mcdragonlib.client.ber.BERLabel;
 import de.mrjulsen.mcdragonlib.client.ber.BERLabel.EScrollMode;
@@ -69,8 +68,8 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
     @Override
     public void tick(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent) {
         timeLabel.text.set(blockEntity.getXSize() > 1
-                ? CustomLanguage.translate(keyTime, ModUtils.formatTime(DragonLib.getCurrentWorldTime(), false))
-                : TextUtils.text(ModUtils.formatTime(DragonLib.getCurrentWorldTime(), false))
+                ? CustomLanguage.translate(keyTime, ModUtils.formatTime(ModUtils.getTransformedWorldTime(), false))
+                : TextUtils.text(ModUtils.formatTime(ModUtils.getTransformedWorldTime(), false))
             ) 
         ;
 
@@ -91,7 +90,7 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
     public void render(BERGraphics<AdvancedDisplayBlockEntity> graphics, float pPartialTicks, AdvancedDisplayRenderInstance parent, int light, boolean backSide) {
         for (int i = 0; i < lines.length && i < maxLines; i++) {
             for (int k = 0; k < lines[i].length; k++) {
-                if (getDisplaySettings(graphics.blockEntity()).showTimeAndDate() && i >= maxLines - 1 && (DragonLib.getCurrentWorldTime() % 200 > 100)) {
+                if (getDisplaySettings(graphics.blockEntity()).showTimeAndDate() && i >= maxLines - 1 && (ModUtils.getTransformedWorldTime() % 200 > 100)) {
                     timeLabel.render(graphics);
                     continue;
                 }
@@ -114,7 +113,7 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
         
         for (int i = 0; i < blockEntity.getStops().size(); i++) {
             StationDisplayData data = blockEntity.getStops().get(i);
-            if (i == 0 || (data.getStationData().getRealTimeArrivalTime() < DragonLib.getCurrentWorldTime() + ModClientConfig.DISPLAY_LEAD_TIME.get() && (!data.getTrainData().isCancelled() || DragonLib.getCurrentWorldTime() < data.getStationData().getScheduledDepartureTime() + ModClientConfig.DISPLAY_LEAD_TIME.get()))) {
+            if (i == 0 || (data.getStationData().getRealTimeArrivalTime() < ModUtils.getTransformedWorldTime() + ModClientConfig.DISPLAY_LEAD_TIME.get() && (!data.getTrainData().isCancelled() || ModUtils.getTransformedWorldTime() < data.getStationData().getScheduledDepartureTime() + ModClientConfig.DISPLAY_LEAD_TIME.get()))) {
                 preds.add(data);
             }
         }

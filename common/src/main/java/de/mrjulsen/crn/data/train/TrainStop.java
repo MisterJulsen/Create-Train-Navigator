@@ -11,6 +11,7 @@ import de.mrjulsen.crn.data.StationTag.ClientStationTag;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
 import de.mrjulsen.crn.data.train.TrainData.SimulationResult;
 import de.mrjulsen.crn.exceptions.RuntimeSideException;
+import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.crn.data.TrainInfo;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.util.DLColor;
@@ -178,7 +179,7 @@ public class TrainStop implements Comparable<TrainStop> {
             return;
         }
 
-        long scheduledTimeUntilArrival = getScheduledArrivalTime() - DragonLib.getCurrentWorldTime();
+        long scheduledTimeUntilArrival = getScheduledArrivalTime() - ModUtils.getTransformedWorldTime();
         int simulationCycles = (int)(ticks / totalDuration);
         long simulationRemaining = ticks % totalDuration;
         if (simulationRemaining > 0 && simulationRemaining >= scheduledTimeUntilArrival) {

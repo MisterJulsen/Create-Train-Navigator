@@ -73,8 +73,8 @@ public class RouteWidget extends DLButton {
         ImmutableList<RoutePart> parts = route.getParts();
         Font shadowlessFont = new NoShadowFontWrapper(minecraft.font);
 
-        String timeStart = new DLTime(route.getStart().getScheduledDepartureTime(), VanillaTimeSystem.INSTANCE).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, VanillaTimeSystem.INSTANCE);
-        String timeEnd = new DLTime(route.getEnd().getScheduledArrivalTime(), DLTime.defaultTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem());
+        String timeStart = new DLTime(route.getStart().getScheduledDepartureTime(), VanillaTimeSystem.INSTANCE).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem());
+        String timeEnd = new DLTime(route.getEnd().getScheduledArrivalTime(), VanillaTimeSystem.INSTANCE).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem());
         String dash = " - ";
         MutableComponent summary = TextUtils.text(String.format("%s%s%s | %s %s | %s",
             timeStart,
@@ -82,7 +82,7 @@ public class RouteWidget extends DLButton {
             timeEnd,
             route.getTransferCount(),
             transferText.getString(),
-            new DLTime((int)route.travelTime(), DLTime.defaultTimeSystem()).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME, DLTime.defaultTimeSystem())
+            new DLTime((int)route.travelTime(), VanillaTimeSystem.INSTANCE).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME, DLTime.defaultTimeSystem())
         ));
 
         final float scale = 0.75f;
