@@ -15,7 +15,7 @@ import de.mrjulsen.crn.client.gui.widgets.ModernVerticalScrollBar;
 import de.mrjulsen.crn.client.gui.widgets.SearchOptionButton;
 import de.mrjulsen.crn.client.gui.widgets.StationDeparturesViewer;
 import de.mrjulsen.crn.client.gui.widgets.flyouts.FlyoutDepartureInWidget;
-import de.mrjulsen.crn.client.gui.widgets.flyouts.FlyoutTrainGroupsWidget;
+import de.mrjulsen.crn.client.gui.widgets.flyouts.FlyoutTrainCategoriesWidget;
 import de.mrjulsen.crn.data.StationTag;
 import de.mrjulsen.crn.data.TagName;
 import de.mrjulsen.crn.data.UserSettings;
@@ -47,7 +47,6 @@ public class ScheduleBoardScreen extends AbstractNavigatorScreen {
 
     private StationDeparturesViewer viewer;
 
-    @SuppressWarnings("resource")
     private UserSettings userSettings = new UserSettings(Minecraft.getInstance().player.getUUID(), false);
 
     private DLEditBox stationBox;
@@ -147,7 +146,7 @@ public class ScheduleBoardScreen extends AbstractNavigatorScreen {
         }
         
         // Search Options
-        final int btnCount = 2;
+        final int btnCount = 3;
         int btnWidth = (workingArea.getWidth() - 16) / btnCount;
         addRenderableWidget(new SearchOptionButton(workingArea.getLeft(), workingArea.getTop() + 16 + FooterSize.DEFAULT.size() - 2, btnWidth, 18, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.departure_in"), () -> userSettings.searchDepartureInTicks.toString(), (b) -> {
             new FlyoutDepartureInWidget<>(this, FlyoutPointer.UP, ColorShade.DARK, this::addRenderableWidget, userSettings, () -> {
@@ -157,13 +156,19 @@ public class ScheduleBoardScreen extends AbstractNavigatorScreen {
                 reloadUserSettings(() -> this.viewer.displayRoutes(stationTagName, userSettings));
             }).open(b);
         }));
-        addRenderableWidget(new SearchOptionButton(workingArea.getLeft() + btnWidth, workingArea.getTop() + 16 + FooterSize.DEFAULT.size() - 2, btnWidth, 18, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.train_groups"), () -> userSettings.searchExcludedTrainGroups.toString(), (b) -> {
-            new FlyoutTrainGroupsWidget<>(this, FlyoutPointer.UP, ColorShade.DARK, this::addRenderableWidget, userSettings, () -> {
-                return userSettings.searchExcludedTrainGroups;
+        addRenderableWidget(new SearchOptionButton(workingArea.getLeft() + btnWidth, workingArea.getTop() + 16 + FooterSize.DEFAULT.size() - 2, btnWidth, 18, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.train_categories"), () -> userSettings.searchExcludedTrainCaegories.toString(), (b) -> {
+            new FlyoutTrainCategoriesWidget<>(this, FlyoutPointer.UP, ColorShade.DARK, this::addRenderableWidget, userSettings, () -> {
+                return userSettings.searchExcludedTrainCaegories;
             }, (w) -> {
                 removeWidget(w);
                 reloadUserSettings(() -> this.viewer.displayRoutes(stationTagName, userSettings));
             }).open(b);
+        }));
+        addRenderableWidget(new SearchOptionButton(workingArea.getLeft() + btnWidth * 2, workingArea.getTop() + 16 + FooterSize.DEFAULT.size() - 2, btnWidth, 18, TextUtils.translate(userSettings.searchTrainFilter.getValue().getEnumTranslationKey(CreateRailwaysNavigator.MOD_ID)), () -> userSettings.searchTrainFilter.toString(), (b) -> {
+            this.userSettings.searchTrainFilter.setValue(this.userSettings.searchTrainFilter.getValue().next());
+            this.userSettings.clientSave(() -> {
+                reloadUserSettings(() -> this.viewer.displayRoutes(stationTagName, userSettings));
+            });
         }));
         DLIconButton refreshBtn = addRenderableWidget(new DLIconButton(ButtonType.DEFAULT, AreaStyle.FLAT, ModGuiIcons.REFRESH.getAsSprite(16, 16), workingArea.getRight() - (workingArea.getWidth() - btnWidth * btnCount), workingArea.getTop() + 16 + FooterSize.DEFAULT.size() - 2, (workingArea.getWidth() - btnWidth * btnCount), 18, TextUtils.empty(),
         (b) -> {            
@@ -180,7 +185,6 @@ public class ScheduleBoardScreen extends AbstractNavigatorScreen {
         reloadUserSettings(() -> this.viewer.displayRoutes(stationTagName, userSettings));
     }
 
-    @SuppressWarnings("resource")
     private void reloadUserSettings(Runnable andThen) {
         DataAccessor.getFromServer(Minecraft.getInstance().player.getUUID(), ModAccessorTypes.GET_USER_SETTINGS, settings -> {
             this.userSettings = settings;

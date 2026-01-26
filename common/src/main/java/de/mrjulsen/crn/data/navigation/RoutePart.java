@@ -7,12 +7,13 @@ import java.util.List;
 import java.util.ArrayList;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+
 import de.mrjulsen.crn.data.StationTag;
 import de.mrjulsen.crn.data.UserSettings;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
 import de.mrjulsen.crn.data.train.TrainData;
 import de.mrjulsen.crn.data.train.TrainStop;
-import de.mrjulsen.crn.data.train.TrainTravelSection;
+import de.mrjulsen.crn.data.train.ScheduleSection;
 import de.mrjulsen.crn.data.train.TrainStatus.CompiledTrainStatus;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.data.Pair;
@@ -52,9 +53,9 @@ public class RoutePart implements Comparable<RoutePart> {
         }
         int startSectionIndex = part.getFirstStop().getSectionIndex();
         int endSectionIndex = part.getLastStop().getSectionIndex();
-        TrainTravelSection startSection = trainData.getSectionByIndex(startSectionIndex);
-        TrainTravelSection endSection = trainData.getSectionByIndex(endSectionIndex);
-        if (startSectionIndex != endSectionIndex && !(endSection.isFirstStop(part.getLastStop().getScheduleIndex()) && endSection.previousSection() == startSection && startSection.shouldIncludeNextStationOfNextSection() && startSection.isUsable())) {
+        ScheduleSection startSection = trainData.getSectionByIndex(startSectionIndex);
+        ScheduleSection endSection = trainData.getSectionByIndex(endSectionIndex);
+        if (startSectionIndex != endSectionIndex && !(endSection.isFirstStop(part.getLastStop().getScheduleIndex()) && endSection.previousSection().getScheduleIndex() == startSection.getScheduleIndex() && startSection.shouldIncludeNextStationOfNextSection() && startSection.isUsable())) {
             return false;
         }
         return true;
@@ -217,5 +218,10 @@ public class RoutePart implements Comparable<RoutePart> {
     @Override
     public int compareTo(RoutePart o) {
         return Long.compare(departureIn(), o.departureIn());
+    }
+
+    @Override
+    public String toString() {
+        return String.format("RoutePart[%s (%s) -> %s (%s)]", getFirstStop().getTag(), getFirstStop().getSectionIndex(), getLastStop().getTag(), getLastStop().getSectionIndex());
     }
 }

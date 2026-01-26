@@ -17,9 +17,11 @@ import java.util.stream.Collectors;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
+import de.mrjulsen.crn.data.storage.RecentSearchQueries;
 import de.mrjulsen.crn.event.ModCommonEvents;
 import de.mrjulsen.crn.exceptions.RuntimeSideException;
 import de.mrjulsen.crn.registry.ModAccessorTypes;
+import de.mrjulsen.crn.util.EDepartureBoardTrainFilter;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.TimeUtils;
@@ -41,10 +43,12 @@ public class UserSettings {
     private static final String NBT_VERSION = "Version";
     private static final String NBT_DEPARTURE_IN = "DepartureIn";
     private static final String NBT_TRANSFER_TIME = "TransferTime";
-    private static final String NBT_TRAIN_GROUPS = "ExcludedTrainGroups";
+    private static final String NBT_TRAIN_CATEGORIES = "ExcludedTrainCategories";
     private static final String NBT_SAVED_ROUTES = "SavedRoutes";
     private static final String NBT_SEARCH_DEPARTURE_TIME = "SearchDepartureIn";
-    private static final String NBT_SEARCH_TRAIN_GROUPS = "SearchExcludedTrainGroups";
+    private static final String NBT_SEARCH_TRAIN_CATEGORIES = "SearchExcludedTrainCategories";
+    private static final String NBT_RECENT_SEARCH_QUERIES = "RecentSearchQueries";
+    private static final String NBT_DEPARTURE_TRAIN_FILTER = "DepartureBoardTrainFilter";
 
     private static final Map<UUID, UserSettings> settingsInstances = new LinkedHashMap<>();
 
@@ -55,14 +59,14 @@ public class UserSettings {
     // Settings
     public final UserSetting<Integer> navigationDepartureInTicks = registerSetting(new UserSetting<>(() -> 0, NBT_DEPARTURE_IN, (nbt, val, name) -> nbt.putInt(name, val), (nbt, name) -> nbt.getInt(name), (val) -> TimeUtils.parseDurationShort(val)));
     public final UserSetting<Integer> navigationTransferTime = registerSetting(new UserSetting<>(() -> 1000, NBT_TRANSFER_TIME, (nbt, val, name) -> nbt.putInt(name, val), (nbt, name) -> nbt.getInt(name), (val) -> TimeUtils.parseDurationShort(val)));
-    public final UserSetting<Set<String>> navigationExcludedTrainGroups = registerSetting(new UserSetting<>(() -> new HashSet<>(), NBT_TRAIN_GROUPS,
+    public final UserSetting<Set<UUID>> navigationExcludedTrainCategories = registerSetting(new UserSetting<>(() -> new HashSet<>(), NBT_TRAIN_CATEGORIES,
     (nbt, val, name) -> {
         ListTag list = new ListTag();
-        list.addAll(val.stream().map(x -> StringTag.valueOf(x)).toList());
+        list.addAll(val.stream().map(x -> StringTag.valueOf(x.toString())).toList());
         nbt.put(name, list);
     }, (nbt, name) -> {
-        return nbt.getList(name, Tag.TAG_STRING).stream().filter(x -> GlobalSettings.hasInstance() ? GlobalSettings.getInstance().trainGroupExists(x.getAsString()) : true).map(x -> x.getAsString()).collect(Collectors.toSet());
-    },(val) -> val.isEmpty() ? TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.train_groups.all").getString() : TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.train_groups.excluded", val.size()).getString()));
+        return nbt.getList(name, Tag.TAG_STRING).stream().filter(x -> GlobalSettings.hasInstance() ? GlobalSettings.getInstance().trainCategoryExists(deserializeUuidString(x.getAsString())) : true).map(x -> deserializeUuidString(x.getAsString())).collect(Collectors.toSet());
+    },(val) -> val.isEmpty() ? TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.train_categories.all").getString() : TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.train_categories.excluded", val.size()).getString()));
 
     public final UserSetting<Set<CompoundTag>> savedRoutes = registerSetting(new UserSetting<>(() -> new HashSet<>(), NBT_SAVED_ROUTES, (nbt, val, name) -> {
         ListTag list = new ListTag();
@@ -73,14 +77,24 @@ public class UserSettings {
     },(val) -> TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".saved_routes.saved", val.size()).getString()));
     
     public final UserSetting<Integer> searchDepartureInTicks = registerSetting(new UserSetting<>(() -> 0, NBT_SEARCH_DEPARTURE_TIME, (nbt, val, name) -> nbt.putInt(name, val), (nbt, name) -> nbt.getInt(name), (val) -> TimeUtils.parseDurationShort(val)));
-    public final UserSetting<Set<String>> searchExcludedTrainGroups = registerSetting(new UserSetting<>(() -> new HashSet<>(), NBT_SEARCH_TRAIN_GROUPS,
+    public final UserSetting<Set<UUID>> searchExcludedTrainCaegories = registerSetting(new UserSetting<>(() -> new HashSet<>(), NBT_SEARCH_TRAIN_CATEGORIES,
     (nbt, val, name) -> {
         ListTag list = new ListTag();
-        list.addAll(val.stream().map(x -> StringTag.valueOf(x)).toList());
+        list.addAll(val.stream().map(x -> StringTag.valueOf(x.toString())).toList());
         nbt.put(name, list);
     }, (nbt, name) -> {
-        return nbt.getList(name, Tag.TAG_STRING).stream().filter(x -> GlobalSettings.hasInstance() ? GlobalSettings.getInstance().trainGroupExists(x.getAsString()) : true).map(x -> x.getAsString()).collect(Collectors.toSet());
-    },(val) -> val.isEmpty() ? TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.train_groups.all").getString() : TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.train_groups.excluded", val.size()).getString()));
+        return nbt.getList(name, Tag.TAG_STRING).stream().filter(x -> GlobalSettings.hasInstance() ? GlobalSettings.getInstance().trainCategoryExists(deserializeUuidString(x.getAsString())) : true).map(x -> deserializeUuidString(x.getAsString())).collect(Collectors.toSet());
+    },(val) -> val.isEmpty() ? TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.train_categories.all").getString() : TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.train_categories.excluded", val.size()).getString()));
+    
+    public final UserSetting<EDepartureBoardTrainFilter> searchTrainFilter = registerSetting(new UserSetting<>(() -> EDepartureBoardTrainFilter.ARRIVAL_AND_DEPARTURE, NBT_DEPARTURE_TRAIN_FILTER, (nbt, val, name) -> nbt.putByte(name, val.getIndex()), (nbt, name) -> EDepartureBoardTrainFilter.getByIndex(nbt.getByte(name)), (val) -> TextUtils.translate(val.getValueTranslationKey(CreateRailwaysNavigator.MOD_ID)).getString()));
+    
+    public final UserSetting<RecentSearchQueries> recentSearchQueries = registerSetting(new UserSetting<>(() -> new RecentSearchQueries(), NBT_RECENT_SEARCH_QUERIES,
+    (nbt, val, name) -> {;
+        nbt.put(name, val.toNbt());
+    }, (nbt, name) -> {
+        return RecentSearchQueries.fromNbt(nbt.getCompound(name));
+    },(val) -> String.valueOf(val.size())));
+
 
     public UserSettings(UUID playerId, boolean readOnly) {
         this.owner = playerId;
@@ -98,6 +112,14 @@ public class UserSettings {
     private void checkReadOnly() {              
         if (isReadOnly()) {
             throw new IllegalAccessError("This instance of the user settings is read-only!");
+        }
+    }
+
+    private static UUID deserializeUuidString(String str) {
+        try {
+            return UUID.fromString(str);
+        } catch (Exception e) {
+            return TrainCategory.genMD5Uuid(str);
         }
     }
 

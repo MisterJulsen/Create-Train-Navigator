@@ -6,6 +6,8 @@ import de.mrjulsen.crn.block.display.properties.PassengerInformationScrollingTex
 import de.mrjulsen.crn.block.display.properties.PlatformDisplayFocusSettings;
 import de.mrjulsen.crn.block.display.properties.PlatformDisplayScrollingTextSettings;
 import de.mrjulsen.crn.block.display.properties.PlatformDisplayTableSettings;
+import de.mrjulsen.crn.block.display.properties.SimpleStaticTextDisplaySettings;
+import de.mrjulsen.crn.block.display.properties.StaticTextDisplaySettings;
 import de.mrjulsen.crn.block.display.properties.TrainDestinationCompactSettings;
 import de.mrjulsen.crn.block.display.properties.TrainDestinationDetailedSettings;
 import de.mrjulsen.crn.block.display.properties.TrainDestinationExtendedSettings;
@@ -20,6 +22,8 @@ import de.mrjulsen.crn.client.ber.variants.BERPassengerInfoSimple;
 import de.mrjulsen.crn.client.ber.variants.BERPlatformDetailed;
 import de.mrjulsen.crn.client.ber.variants.BERPlatformInformative;
 import de.mrjulsen.crn.client.ber.variants.BERPlatformSimple;
+import de.mrjulsen.crn.client.ber.variants.BERRichText;
+import de.mrjulsen.crn.client.ber.variants.BERStaticText;
 import de.mrjulsen.crn.client.ber.variants.BERTrainDestinationDetailed;
 import de.mrjulsen.crn.client.ber.variants.BERTrainDestinationInformative;
 import de.mrjulsen.crn.client.ber.variants.BERTrainDestinationSimple;
@@ -60,8 +64,16 @@ public final class ModDisplayTypes {
         
     public static final DisplayTypeResourceKey DEPARTURE_BOARD_TABLE = AdvancedDisplaysRegistry.register(
         EDisplayType.DEPARTURE_BOARD, "table",
-        DepartureBoardDisplayTableSettings::new, BERDepartureBoardTable::new, new DisplayProperties(false, be -> be.getYSize() * 3 - 1));
+        DepartureBoardDisplayTableSettings::new, BERDepartureBoardTable::new, new DisplayProperties(false, be -> be.getYSize() * 3 - 2));
 
+    public static final DisplayTypeResourceKey SIMPLE_TEXT = AdvancedDisplaysRegistry.register(
+        EDisplayType.STATIC_TEXT, "simple_text",
+        SimpleStaticTextDisplaySettings::new, BERStaticText::new, new DisplayProperties(true, null));
+
+    public static final DisplayTypeResourceKey RICH_TEXT = AdvancedDisplaysRegistry.register(
+        EDisplayType.STATIC_TEXT, "rich_text",
+        StaticTextDisplaySettings::new, BERRichText::new, new DisplayProperties(false, null));
+    
     @Deprecated
     public static DisplayTypeResourceKey legacy_getKeyForType(EDisplayType type, EDisplayInfo info) {
         switch (type) {

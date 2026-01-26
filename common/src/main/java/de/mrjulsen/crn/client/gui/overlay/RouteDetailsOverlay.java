@@ -1,6 +1,5 @@
 package de.mrjulsen.crn.client.gui.overlay;
 
-import java.util.Set;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.simibubi.create.foundation.gui.UIRenderHelper;
@@ -24,7 +23,6 @@ import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.StationTag.StationInfo;
 import de.mrjulsen.crn.data.navigation.ClientRoute;
 import de.mrjulsen.crn.data.navigation.TransferConnection;
-import de.mrjulsen.crn.registry.ModItems;
 import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.gui.DLOverlayScreen;
@@ -40,7 +38,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.KeybindComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 
@@ -106,7 +103,7 @@ public class RouteDetailsOverlay extends DLOverlayScreen {
             setSlidingText(x.trainStop().getRealTimeStationTag().info().platform().isEmpty() ? CustomLanguage.translate(keyJourneyBegins) : CustomLanguage.translate(keyJourneyBeginsWithPlatform, x.trainStop().getRealTimeStationTag().info().platform()));
         });
         route.listen(ClientRoute.EVENT_ARRIVAL_AT_ANY_STOP, this, x -> {
-            setSlidingText(TextUtils.text(x.trainStop().getClientTag().tagName()));
+            setSlidingText(TextUtils.text(x.trainStop().getRealTimeStationTag().tagName()));
         });
         route.listen(ClientRoute.EVENT_ANY_STOP_ANNOUNCED, this, x -> {
             NextConnectionsPage page = new NextConnectionsPage(this.route, null);
@@ -115,17 +112,17 @@ public class RouteDetailsOverlay extends DLOverlayScreen {
             }
         });
         route.listen(ClientRoute.EVENT_ANNOUNCE_STOPOVER, this, x -> {
-            setSlidingText(CustomLanguage.translate(keyNextStop, x.trainStop().getClientTag().tagName()));
+            setSlidingText(CustomLanguage.translate(keyNextStop, x.trainStop().getRealTimeStationTag().tagName()));
         });
         route.listen(ClientRoute.EVENT_ANNOUNCE_LAST_STOP, this, x -> {
-            setSlidingText(CustomLanguage.translate(keyNextStop, x.trainStop().getClientTag().tagName()));
+            setSlidingText(CustomLanguage.translate(keyNextStop, x.trainStop().getRealTimeStationTag().tagName()));
         });
         route.listen(ClientRoute.EVENT_ANNOUNCE_TRANSFER_ARRIVAL_STATION, this, x -> {
             if (x.connection().isConnectionMissed()) {
                 connectionMissed();
                 return;
             }
-            setSlidingText(CustomLanguage.translate(keyNextStop, x.trainStop().getClientTag().tagName()).append("   ***   ").append(getTransferSlidingText(x.connection())));
+            setSlidingText(CustomLanguage.translate(keyNextStop, x.trainStop().getRealTimeStationTag().tagName()).append("   ***   ").append(getTransferSlidingText(x.connection())));
             currentPage = new TransferPage(this.route, x.connection());
         });        
         route.listen(ClientRoute.EVENT_PART_CHANGED, this, x -> {
@@ -134,11 +131,11 @@ public class RouteDetailsOverlay extends DLOverlayScreen {
             }
         });
         route.listen(ClientRoute.EVENT_DEPARTURE_FROM_TRANSFER_ARRIVAL_STATION, this, x -> {
-            setSlidingText(TextUtils.text(x.connection().getArrivalStation().getClientTag().tagName()).append("   ***   ").append(getTransferSlidingText(x.connection())));
+            setSlidingText(TextUtils.text(x.connection().getArrivalStation().getRealTimeStationTag().tagName()).append("   ***   ").append(getTransferSlidingText(x.connection())));
             currentPage = new TransferPage(this.route, x.connection());
         });
         route.listen(ClientRoute.EVENT_ARRIVAL_AT_LAST_STOP, this, x -> {
-            setSlidingText(CustomLanguage.translate(keyAfterJourney, x.trainStop().getClientTag().tagName()));
+            setSlidingText(CustomLanguage.translate(keyAfterJourney, x.trainStop().getRealTimeStationTag().tagName()));
             currentPage = new JourneyCompletedPage(this.route, () -> currentPage = new NextConnectionsPage(route, () -> {} /*InstanceManager::removeRouteOverlay*/));
             route.close();
         });
@@ -146,7 +143,7 @@ public class RouteDetailsOverlay extends DLOverlayScreen {
             if (journeyCompleted) {
                 return;
             }
-            setSlidingText(CustomLanguage.translate(keyAfterJourney, x.trainStop().getClientTag().tagName()));
+            setSlidingText(CustomLanguage.translate(keyAfterJourney, x.trainStop().getRealTimeStationTag().tagName()));
             currentPage = new JourneyCompletedPage(this.route, () -> currentPage = new NextConnectionsPage(route, () -> {} /*InstanceManager::removeRouteOverlay*/));
             route.close();
         });
@@ -187,10 +184,9 @@ public class RouteDetailsOverlay extends DLOverlayScreen {
     }
 
 
-    @SuppressWarnings("resource")
     @Override
     public void tick() {
-        if (Screen.hasControlDown() && ModKeys.KEY_OVERLAY_SETTINGS.isDown() && Minecraft.getInstance().player.getInventory().hasAnyOf(Set.of(ModItems.NAVIGATOR.get()))) {
+        if (Screen.hasControlDown() && ModKeys.KEY_OVERLAY_SETTINGS.isDown()) {
             DLScreen.setScreen(new RouteOverlaySettingsScreen(this));
         }
 
@@ -271,7 +267,7 @@ public class RouteDetailsOverlay extends DLOverlayScreen {
         GuiUtils.drawTexture(GUI, graphics, x, y, GUI_WIDTH, GUI_HEIGHT, 0, currentPage != null && currentPage.isImportant() ? 138 : 0, 256, 256);
         
         GuiUtils.drawString(graphics, font, x + 6, y + 4, title, 0x4F4F4F, EAlignment.LEFT, false);
-        GuiUtils.drawString(graphics, font, x + 6, y + GUI_HEIGHT - 2 - font.lineHeight, TextUtils.translate(keyOptionsText, TextUtils.translate(InputConstants.getKey(Minecraft.ON_OSX ? InputConstants.KEY_LWIN : InputConstants.KEY_LCONTROL, 0).getName()).append(" + ").append(new KeybindComponent(keyKeybindOptions)).withStyle(ChatFormatting.BOLD)), 0x4F4F4F, EAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, x + 6, y + GUI_HEIGHT - 2 - font.lineHeight, TextUtils.translate(keyOptionsText, TextUtils.translate(InputConstants.getKey(Minecraft.ON_OSX ? InputConstants.KEY_LWIN : InputConstants.KEY_LCONTROL, 0).getName()).append(" + ").append(TextUtils.keybind(keyKeybindOptions)).withStyle(ChatFormatting.BOLD)), 0x4F4F4F, EAlignment.LEFT, false);
         
         String timeString = TimeUtils.parseTime((int)((level.getDayTime() + DragonLib.daytimeShift()) % DragonLib.ticksPerDay()), ModClientConfig.TIME_FORMAT.get());
         GuiUtils.drawString(graphics, font, x + GUI_WIDTH - 4 - font.width(timeString), y + 4, timeString, 0x4F4F4F, EAlignment.LEFT, false);
@@ -288,7 +284,7 @@ public class RouteDetailsOverlay extends DLOverlayScreen {
         graphics.poseStack().popPose();
         endStencil();
         DLUtils.doIfNotNull(currentPage, a -> a.renderFrontLayer(graphics, 0, 0, partialTicks));
-        if (CreateRailwaysNavigator.isDebug()) GuiUtils.drawString(graphics, font, 5, GUI_HEIGHT + 10, "State: " + route.getState() + ", " + route.getCurrentPartIndex() + ", " + route.getCurrentPart().getNextStop().getClientTag().tagName(), 0xFFFF0000, EAlignment.LEFT, false);
+        if (CreateRailwaysNavigator.isDebug()) GuiUtils.drawString(graphics, font, 5, GUI_HEIGHT + 10, "State: " + route.getState() + ", " + route.getCurrentPartIndex() + ", " + route.getCurrentPart().getNextStop().getRealTimeStationTag().tagName(), 0xFFFF0000, EAlignment.LEFT, false);
         graphics.poseStack().popPose();
     }
 

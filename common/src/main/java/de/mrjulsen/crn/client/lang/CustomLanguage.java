@@ -25,8 +25,15 @@ public enum CustomLanguage implements StringRepresentable {
     BASQUE("basque", "eu_es"),
     ITALIAN("italian", "it_it"),
     JAPANESE("japanese", "ja_jp"),
-    PORTUGUESE_brazilian("portuguese_brazilian", "pt_br"),
-    UKRAINIAN("ukrainian", "uk_ua");
+    PORTUGUESE_BRAZILIAN("portuguese_brazilian", "pt_br"),
+    UKRAINIAN("ukrainian", "uk_ua"),
+    ARABIC("arabic", "ar_sa"),
+    CZECH("czech", "cs_cz"),
+    GERMAN_SWITZERLAND("german_switzerland", "de_ch"),
+    ROMANIAN("romanian", "ro_ro"),
+    TURKISH("turkish", "tr_tr"),
+    HUNGARIAN("hungarian", "hu_hu"),
+    HEBREW("hebrew", "he_il");
 
     private String name;
     private String code;

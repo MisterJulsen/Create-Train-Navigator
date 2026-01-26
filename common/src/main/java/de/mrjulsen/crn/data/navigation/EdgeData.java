@@ -21,7 +21,7 @@ public class EdgeData implements Comparable<EdgeData> {
     }
 
     public EdgeData(Node node1, Node node2, TrainPrediction prediction) {
-        this(node1, node2, prediction, prediction.getLastTransitTime());
+        this(node1, node2, prediction, prediction.transitTime().value());
     }
 
     public Node getFirstNode() {

@@ -2,12 +2,15 @@ package de.mrjulsen.crn.client.gui.screen;
 
 import java.util.Arrays;
 
+import com.simibubi.create.AllItems;
 import com.simibubi.create.content.trains.schedule.condition.TimedWaitCondition.TimeUnit;
 import com.simibubi.create.foundation.gui.AllIcons;
+import com.simibubi.create.foundation.gui.element.GuiGameElement;
 import com.simibubi.create.foundation.utility.Lang;
 
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.client.CRNGui;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.BarColor;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.ContainerColor;
@@ -19,8 +22,9 @@ import de.mrjulsen.crn.client.gui.widgets.DLCreateSelectionScrollInput;
 import de.mrjulsen.crn.client.gui.widgets.IconSlotWidget;
 import de.mrjulsen.crn.client.gui.widgets.ModernVerticalScrollBar;
 import de.mrjulsen.crn.client.gui.widgets.modular.ModularWidgetContainer;
+import de.mrjulsen.crn.data.ETimeSource;
 import de.mrjulsen.crn.data.schedule.condition.TrainSeparationCondition;
-import de.mrjulsen.crn.data.train.StationDepartureHistory.ETrainFilter;
+import de.mrjulsen.crn.data.train.DepartureHistory.ETrainFilter;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.gui.DLScreen;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLTooltip;
@@ -34,10 +38,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.world.item.ItemStack;
 
 public class TrainSeparationSettingsScreen extends DLScreen {
 
     private static final MutableComponent title = TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule.condition.train_separation.settings");
+	private static final ItemStack DISPLAY_ITEM = new ItemStack(AllItems.SCHEDULE.get());
     private static final int GUI_WIDTH = 212;
     private static final int DEFAULT_ICON_BUTTON_WIDTH = 18;
     private static final int DEFAULT_ICON_BUTTON_HEIGHT = 18;
@@ -56,30 +62,24 @@ public class TrainSeparationSettingsScreen extends DLScreen {
     private final CompoundTag nbt;
 
     //private String stationFilter;
-    private int minutes = 0;
-    private int seconds = 5;
     private int ticks = 0;
     private ETrainFilter filter = ETrainFilter.ANY;
+    private ETimeSource timeSource = ETimeSource.REAL_LIFE;
     
     public TrainSeparationSettingsScreen(Screen lastScreen, CompoundTag nbt) {
         super(title);
         this.lastScreen = lastScreen;
         this.nbt = nbt;
-        @SuppressWarnings("deprecation")
-        int t = nbt.contains(TrainSeparationCondition.NBT_TICKS) ? nbt.getInt(TrainSeparationCondition.NBT_TICKS) : nbt.getInt(TrainSeparationCondition.NBT_TIME) * TimeUnit.values()[nbt.getInt(TrainSeparationCondition.NBT_TIME_UNIT)].ticksPer;
-        ticks = t;
-        minutes = ticks / 1200;
-        ticks %= 1200;
-        seconds = ticks / 20;
-        ticks %= 20;
-
+        this.ticks = nbt.contains(TrainSeparationCondition.NBT_TICKS) ? nbt.getInt(TrainSeparationCondition.NBT_TICKS) : nbt.getInt(TrainSeparationCondition.NBT_TIME) * TimeUnit.values()[nbt.getInt(TrainSeparationCondition.NBT_TIME_UNIT)].ticksPer;
         this.filter = ETrainFilter.getByIndex(nbt.getByte(TrainSeparationCondition.NBT_TRAIN_FILTER));
+        this.timeSource = ETimeSource.getByIndex(nbt.getByte(TrainSeparationCondition.NBT_TIME_SOURCE));
     }
 
     @Override
     public void onClose() {
         super.onClose();
-        nbt.putInt(TrainSeparationCondition.NBT_TICKS, minutes * TimeUnit.MINUTES.ticksPer + seconds * TimeUnit.SECONDS.ticksPer + ticks);
+        nbt.putInt(TrainSeparationCondition.NBT_TICKS, ticks);
+        nbt.putByte(TrainSeparationCondition.NBT_TIME_SOURCE, timeSource.getIndex());
         nbt.putByte(TrainSeparationCondition.NBT_TRAIN_FILTER, filter.getIndex());
         Minecraft.getInstance().setScreen(lastScreen);
     }
@@ -105,50 +105,94 @@ public class TrainSeparationSettingsScreen extends DLScreen {
                     });
             });
             */
-
-            /*
-            builder.addLine("time_src", (line) -> {
+            
+            builder.addLine("times", (line) -> {
                 line.add(new IconSlotWidget(line.getCurrentX(), line.y() + 2, ModGuiIcons.TIME.getAsSprite(16, 16)));
+                
+                switch (timeSource) {
+                    case IN_GAME -> {
+                        int[] times = TrainSeparationCondition.toInGameTime(this.ticks);
+                        line.add(new DLCreateScrollInput(this, line.getCurrentX() + 6, line.getY() + 2, 22, 18)
+                            .setRenderArrow(true)
+                            .titled(Lang.translateDirect("generic.unit.days"))
+                            .withShiftStep(5)
+                            .withRange(0, 50)
+                            .setState(times[2])
+                            .calling(x -> {
+                                int[] t = TrainSeparationCondition.toInGameTime(this.ticks);
+                                t[2] = x;
+                                this.ticks = TrainSeparationCondition.toTicksFromInGame(t);
+                            })
+                        );
+                        line.add(new DLCreateScrollInput(this, line.getCurrentX() + 2, line.getY() + 2, 22, 18)
+                            .titled(Lang.translateDirect("generic.unit.hours"))
+                            .withShiftStep(8)
+                            .withRange(0, 24)
+                            .setState(times[1])
+                            .calling(x -> {
+                                int[] t = TrainSeparationCondition.toInGameTime(this.ticks);
+                                t[1] = x;
+                                this.ticks = TrainSeparationCondition.toTicksFromInGame(t);
+                            })
+                        );
+                        line.add(new DLCreateScrollInput(this, line.getCurrentX() + 2, line.getY() + 2, 22, 18)
+                            .titled(Lang.translateDirect("generic.unit.minutes"))
+                            .withShiftStep(5)
+                            .withRange(0, 60)
+                            .setState(times[0])
+                            .calling(x -> {
+                                int[] t = TrainSeparationCondition.toInGameTime(this.ticks);
+                                t[0] = x;
+                                this.ticks = TrainSeparationCondition.toTicksFromInGame(t);
+                            })
+                        );
+                    }
+                    default -> {
+                        int[] times = TrainSeparationCondition.toRealLifeTime(this.ticks);
+                        line.add(new DLCreateScrollInput(this, line.getCurrentX() + 6, line.getY() + 2, 28, 18)
+                            .setRenderArrow(true)
+                            .titled(Lang.translateDirect("generic.unit.minutes"))
+                            .withShiftStep(10)
+                            .withRange(0, 1000)
+                            .setState(times[2])
+                            .calling(x -> {
+                                int[] t = TrainSeparationCondition.toRealLifeTime(this.ticks);
+                                t[2] = x;
+                                this.ticks = TrainSeparationCondition.toTicksFromRealLife(t);
+                            })
+                        );
+                        line.add(new DLCreateScrollInput(this, line.getCurrentX() + 2, line.getY() + 2, 22, 18)
+                            .titled(Lang.translateDirect("generic.unit.seconds"))
+                            .withShiftStep(10)
+                            .withRange(0, 60)
+                            .setState(times[1])
+                            .calling(x -> {
+                                int[] t = TrainSeparationCondition.toRealLifeTime(this.ticks);
+                                t[1] = x;
+                                this.ticks = TrainSeparationCondition.toTicksFromRealLife(t);
+                            })
+                        );
+                        line.add(new DLCreateScrollInput(this, line.getCurrentX() + 2, line.getY() + 2, 22, 18)
+                            .titled(Lang.translateDirect("generic.unit.ticks"))
+                            .withShiftStep(5)
+                            .withRange(0, 20)
+                            .setState(times[0])
+                            .calling(x -> {
+                                int[] t = TrainSeparationCondition.toRealLifeTime(this.ticks);
+                                t[0] = x;
+                                this.ticks = TrainSeparationCondition.toTicksFromRealLife(t);
+                            })
+                        );
+                    }
+                }
                 line.add(new DLCreateSelectionScrollInput(this, line.getCurrentX() + 6, line.getY() + 2, line.getRemainingWidth() - 6, 18)
-                    .setRenderArrow(true)
                     .forOptions(Arrays.stream(ETimeSource.values()).map(x -> TextUtils.translate(x.getValueTranslationKey(CreateRailwaysNavigator.MOD_ID))).toList())
                     .titled(TextUtils.translate(timeSource.getEnumTranslationKey(CreateRailwaysNavigator.MOD_ID)))
                     .setState(timeSource.getIndex())
                     .calling((i) -> {
                         timeSource = ETimeSource.getByIndex(i);
-                    })
-                );
-            });
-            */
-            
-            builder.addLine("times", (line) -> {
-                line.add(new IconSlotWidget(line.getCurrentX(), line.y() + 2, ModGuiIcons.TIME.getAsSprite(16, 16)));
-                line.add(new DLCreateScrollInput(this, line.getCurrentX() + 6, line.getY() + 2, 30, 18)
-                    .setRenderArrow(true)
-                    .titled(Lang.translateDirect("generic.unit.minutes"))
-                    .withShiftStep(10)
-                    .withRange(0, 901)
-                    .setState(minutes)
-                    .calling(x -> {
-                        minutes = x;
-                    })
-                );
-                line.add(new DLCreateScrollInput(this, line.getCurrentX() + 2, line.getY() + 2, 30, 18)
-                    .titled(Lang.translateDirect("generic.unit.seconds"))
-                    .withShiftStep(10)
-                    .withRange(0, 60)
-                    .setState(seconds)
-                    .calling(x -> {
-                        seconds = x;
-                    })
-                );
-                line.add(new DLCreateScrollInput(this, line.getCurrentX() + 2, line.getY() + 2, 30, 18)
-                    .titled(Lang.translateDirect("generic.unit.ticks"))
-                    .withShiftStep(5)
-                    .withRange(0, 20)
-                    .setState(ticks)
-                    .calling(x -> {
-                        ticks = x;
+                        clearWidgets();
+                        init();
                     })
                 );
             });
@@ -189,7 +233,7 @@ public class TrainSeparationSettingsScreen extends DLScreen {
                     .addHint(TextUtils.translate(ETrainFilter.ANY.getEnumDescriptionTranslationKey(CreateRailwaysNavigator.MOD_ID)))
                     .setState(filter.getIndex())
                     .calling((i) -> {
-                        filter = ETrainFilter.getByIndex(i);
+                        filter = ETrainFilter.getByIndex(i.byteValue());
                     })
                 );
             });
@@ -227,6 +271,13 @@ public class TrainSeparationSettingsScreen extends DLScreen {
         int commonHeight = commonSettingsContainer.getHeight() + 4;
         CreateDynamicWidgets.renderContainer(graphics, workingArea.getX(), workingArea.getY() - 1, workingArea.getWidth(), commonHeight, ContainerColor.PURPLE);
         GuiUtils.drawString(graphics, font, guiLeft + 6, guiTop + 4, title, DragonLib.NATIVE_UI_FONT_COLOR, EAlignment.LEFT, false);
+        
+        
+        GuiUtils.drawTexture(CRNGui.GUI, graphics, guiLeft + GUI_WIDTH - 3, guiTop + GUI_HEIGHT - 24, 11, 18, 0, 12, CRNGui.GUI_WIDTH, CRNGui.GUI_HEIGHT);
+        GuiGameElement.of(DISPLAY_ITEM).<GuiGameElement
+			.GuiRenderBuilder>at(guiLeft + GUI_WIDTH + 11, guiTop + GUI_HEIGHT - 48, -200)
+			.scale(4f)
+			.render(graphics.poseStack());
 
         super.renderMainLayer(graphics, pMouseX, pMouseY, pPartialTick);
     }

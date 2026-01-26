@@ -1,5 +1,6 @@
 package de.mrjulsen.crn.block.display.properties;
 
+import de.mrjulsen.crn.block.display.properties.components.IShowDoNotBoardText;
 import de.mrjulsen.crn.block.display.properties.components.IShowExitDirectionSetting;
 import de.mrjulsen.crn.block.display.properties.components.IShowTimeAndDateSetting;
 import de.mrjulsen.crn.block.display.properties.components.IShowTrainStatsSetting;
@@ -7,12 +8,13 @@ import de.mrjulsen.crn.block.display.properties.components.ITrainTextSetting;
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
 import net.minecraft.nbt.CompoundTag;
 
-public class PassengerInformationScrollingTextSettings extends BasicDisplaySettings implements IShowTrainStatsSetting, IShowExitDirectionSetting, IShowTimeAndDateSetting, ITrainTextSetting {
+public class PassengerInformationScrollingTextSettings extends BasicDisplaySettings implements IShowTrainStatsSetting, IShowExitDirectionSetting, IShowTimeAndDateSetting, ITrainTextSetting, IShowDoNotBoardText {
 
     protected boolean showStats = true;
     protected boolean showExit = true;
     protected boolean showTimeAndDate = true;
     protected ETrainTextComponents trainTextComponents = ETrainTextComponents.ALL;
+    protected boolean showDoNotBoardText = true;
 
     @Override
     public void deserializeNbt(CompoundTag nbt) {
@@ -21,6 +23,7 @@ public class PassengerInformationScrollingTextSettings extends BasicDisplaySetti
         if (nbt.contains(NBT_SHOW_EXIT)) this.showExit = nbt.getBoolean(NBT_SHOW_EXIT);
         if (nbt.contains(NBT_SHOW_TIME_AND_DATE)) this.showTimeAndDate = nbt.getBoolean(NBT_SHOW_TIME_AND_DATE);
         if (nbt.contains(NBT_TRAIN_TEXT)) this.trainTextComponents = ETrainTextComponents.getById(nbt.getByte(NBT_TRAIN_TEXT));
+        if (nbt.contains(NBT_SHOW_DO_NOT_BOARD_TEXT)) this.showDoNotBoardText = nbt.getBoolean(NBT_SHOW_DO_NOT_BOARD_TEXT);
     }
 
     @Override
@@ -30,6 +33,7 @@ public class PassengerInformationScrollingTextSettings extends BasicDisplaySetti
         nbt.putBoolean(NBT_SHOW_EXIT, showExit);
         nbt.putBoolean(NBT_SHOW_TIME_AND_DATE, showTimeAndDate);
         nbt.putByte(NBT_TRAIN_TEXT, trainTextComponents.getId());
+        nbt.putBoolean(NBT_SHOW_DO_NOT_BOARD_TEXT, showDoNotBoardText);
     }
 
     @Override
@@ -38,6 +42,7 @@ public class PassengerInformationScrollingTextSettings extends BasicDisplaySetti
         this.buildShowStatsGui(context);
         this.buildShowExitGui(context);
         this.buildShowTimeAndDateGui(context);
+        this.buildShowDoNotBoardTextGui(context);
         this.buildTrainTextGui(context);
     }
 
@@ -47,6 +52,8 @@ public class PassengerInformationScrollingTextSettings extends BasicDisplaySetti
         copyShowExitSetting(oldSettings);
         copyShowStatsSetting(oldSettings);
         copyShowTimeAndDateSetting(oldSettings);
+        copyTrainTextSetting(oldSettings);
+        copyShowDoNotBoardTextSetting(oldSettings);
     }
 
     @Override
@@ -87,5 +94,15 @@ public class PassengerInformationScrollingTextSettings extends BasicDisplaySetti
     @Override
     public void setShowTimeAndDate(boolean b) {
         this.showTimeAndDate = b;
+    }
+
+    @Override
+    public boolean showDoNotBoardText() {
+        return showDoNotBoardText;
+    }
+
+    @Override
+    public void setShowDoNotBoardText(boolean b) {
+        this.showDoNotBoardText = b;
     }
 }

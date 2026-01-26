@@ -17,7 +17,10 @@ public interface ScheduleRuntimeAccessor {
     Train crn$getTrain();
 
     @Accessor("ticksInTransit")
-    int crn$getTicksInTransit();
+    int crn$getTicksInPreviousTransit();
+
+    @Accessor("predictionTicks")
+    List<Integer> crn$getTransitTicks();
 
     @Invoker("estimateStayDuration")
     int crn$runEstimateStayDuration(int index);
@@ -30,4 +33,13 @@ public interface ScheduleRuntimeAccessor {
     
 	@Accessor("predictionTicks")
 	List<Integer> crn$predictionTicks();
+
+    @Accessor("cooldown")
+    int crn$getCooldown();
+
+    @Accessor("cooldown")
+    void crn$setCooldown(int i);
+
+    @Accessor("INTERVAL")
+    int crn$getInterval();
 }

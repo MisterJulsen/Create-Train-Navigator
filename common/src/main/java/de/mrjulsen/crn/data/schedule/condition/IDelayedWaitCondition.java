@@ -9,10 +9,9 @@ import net.minecraft.world.level.Level;
 
 @FunctionalInterface
 public interface IDelayedWaitCondition {
-    
 
-    public static final String NBT_DELAY = "Delay";
+    String NBT_DELAY = "Delay";
 
     boolean runDelayed(DelayedWaitConditionContext context);
-    public static record DelayedWaitConditionContext(Level level, Train train, CompoundTag nbt, GlobalStation station, ScheduleEntry scheduleEntry) {}
+    record DelayedWaitConditionContext(Level level, Train train, CompoundTag nbt, GlobalStation station, ScheduleEntry scheduleEntry) {}
 }
