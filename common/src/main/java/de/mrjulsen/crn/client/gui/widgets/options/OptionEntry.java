@@ -1,7 +1,9 @@
 package de.mrjulsen.crn.client.gui.widgets.options;
 
+import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -9,6 +11,7 @@ import java.util.function.Function;
 import com.mojang.blaze3d.systems.RenderSystem;
 
 import java.util.List;
+import java.util.Map;
 
 import de.mrjulsen.crn.client.gui.Animator;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
@@ -19,6 +22,7 @@ import de.mrjulsen.mcdragonlib.client.gui.widgets.DLEditBox;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLIconButton;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLTooltip;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLWidgetContainer;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.IDragonLibWidget;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLAbstractImageButton.ButtonType;
 import de.mrjulsen.mcdragonlib.client.render.Sprite;
 import de.mrjulsen.mcdragonlib.client.render.DynamicGuiRenderer.AreaStyle;
@@ -33,7 +37,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
 
-public class OptionEntry<T extends DLWidgetContainer> extends DLWidgetContainer {
+public class OptionEntry<T extends DLWidgetContainer> extends DLWidgetContainer implements Closeable {
 
     public static void expandOrCollapse(OptionEntry<?> entry) {
         if (entry.isExpanded())
@@ -44,7 +48,7 @@ public class OptionEntry<T extends DLWidgetContainer> extends DLWidgetContainer 
 
     private int btnX = 0;
     private final Collection<DLButton> additionalButtons = new ArrayList<>();
-    private final Collection<DLTooltip> tooltips = new ArrayList<>();
+    private final Map<DLIconButton, DLTooltip> tooltips = new HashMap<>();
     private List<FormattedText> descriptionTooltips;
 
     private final int initialHeight = OptionEntryHeader.DEFAULT_HEIGHT;
@@ -59,7 +63,10 @@ public class OptionEntry<T extends DLWidgetContainer> extends DLWidgetContainer 
     private DLEditBox editBox;
     private final Animator animator = addRenderableOnly(new Animator());
 
+    // flag
     private boolean expanded;
+    private boolean closing;
+    
 
     public OptionEntry(Screen parent, DLOptionsList parentList, int x, int y, int width, Function<OptionEntry<T>, T> contentContainer, Component text, Component description, Consumer<OptionEntry<T>> onSizeChanged, BiConsumer<OptionEntry<T>, OptionEntryHeader> onHeaderClick, Function<String, Boolean> onTitleEdited) {
         super(x, y, width, OptionEntryHeader.DEFAULT_HEIGHT);
@@ -83,7 +90,7 @@ public class OptionEntry<T extends DLWidgetContainer> extends DLWidgetContainer 
                 public void setMouseSelected(boolean selected) {
                     super.setMouseSelected(selected);
                     if (selected) {
-                        header.setMouseSelected(true);
+                        header.setCustomMouseSelected(true);
                     }
                 }
             });
@@ -92,7 +99,7 @@ public class OptionEntry<T extends DLWidgetContainer> extends DLWidgetContainer 
             editBox.setMaxLength(StationTag.MAX_NAME_LENGTH);
             editBox.set_visible(false);
             editBox.withOnFocusChanged((box, focus) -> {
-                if (!focus) {
+                if (!focus && !closing) {
                     if (onTitleEdited.apply(box.getValue())) {
                         this.text = TextUtils.text(box.getValue());
                         header.setMessage(this.text);
@@ -102,26 +109,37 @@ public class OptionEntry<T extends DLWidgetContainer> extends DLWidgetContainer 
 
         }
 
-        animator.start(4, null, null, null);
+        animator.start(10, null, null, null);
     }
 
-    public void addAdditionalButton(Sprite icon, Component text, BiConsumer<OptionEntry<T>, DLIconButton> onClick) {
+    @Override
+    public void close() {
+        super.close();
+        this.closing = true;
+    }
+
+    public DLIconButton addAdditionalButton(Sprite icon, List<FormattedText> text, BiConsumer<OptionEntry<T>, DLIconButton> onClick) {
         DLIconButton btn = new DLIconButton(ButtonType.DEFAULT, AreaStyle.FLAT, icon, x() + width() - 2 - 18 - btnX - 16, y() + 2, 16, OptionEntryHeader.DEFAULT_HEIGHT - 4, TextUtils.empty(), x -> onClick.accept(this, x)) {
             @Override
             public void setMouseSelected(boolean selected) {
                 super.setMouseSelected(selected);
-                if (selected) {
-                    header.setMouseSelected(true);
-                }
+                header.setCustomMouseSelected(selected);
             }
         };
         btn.setBackColor(0x00000000);
         DLTooltip tooltip = DLTooltip.of(text).assignedTo(btn);
         tooltip.setDynamicOffset(() -> (int)parentList.getXScrollOffset(), () -> (int)parentList.getYScrollOffset());
-        tooltips.add(tooltip);
+        tooltips.put(btn, tooltip);
         btnX += btn.width();
         addRenderableWidget(btn);
         additionalButtons.add(btn);
+        return btn;
+    }
+
+    public void updateTooltipOf(DLIconButton widget, List<FormattedText> text) {
+        DLTooltip tooltip = DLTooltip.of(text).assignedTo(widget);
+        tooltip.setDynamicOffset(() -> (int)parentList.getXScrollOffset(), () -> (int)parentList.getYScrollOffset());
+        tooltips.put(widget, tooltip);
     }
 
     public OptionEntry(Screen parent, DLOptionsList parentList, int x, int y, int width, Function<OptionEntry<T>, T> contentContainer, Component text, Component description, Consumer<OptionEntry<T>> onExpandedChanged, BiConsumer<OptionEntry<T>, OptionEntryHeader> onHeaderClick) {
@@ -217,8 +235,7 @@ public class OptionEntry<T extends DLWidgetContainer> extends DLWidgetContainer 
         RenderSystem.enableDepthTest();
 
         if (animator.isRunning()) {
-            graphics.poseStack().translate(-animator.getTotalTicks() * 5 + animator.getCurrentTicksSmooth() * 5, 0, 0);
-            GuiUtils.setTint(1, 1, 1, animator.getPercentage());
+            graphics.poseStack().translate(-(50 * Math.pow(1D - animator.getPercentage(), 4)), 0, 0);
         }
 
         CreateDynamicWidgets.renderSingleShadeWidget(graphics, x() + 1, y(), width() - 2, height(), ColorShade.LIGHT);
@@ -239,7 +256,10 @@ public class OptionEntry<T extends DLWidgetContainer> extends DLWidgetContainer 
     @Override
     public void renderFrontLayer(Graphics graphics, int mouseX, int mouseY, float partialTicks) {
         super.renderFrontLayer(graphics, mouseX, mouseY, partialTicks);
-        tooltips.stream().forEach(x -> x.render(parent, graphics, mouseX, mouseY));
-
+        tooltips.values().stream().forEach(x -> {
+            if (x.getAssignedWidget() instanceof IDragonLibWidget dlw && dlw.isMouseSelected()) {
+                x.render(parent, graphics, mouseX, mouseY);
+            }
+        });
     }
 }

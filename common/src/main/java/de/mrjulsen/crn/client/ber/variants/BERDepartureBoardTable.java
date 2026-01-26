@@ -3,6 +3,9 @@ package de.mrjulsen.crn.client.ber.variants;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
+
+import org.apache.commons.lang3.mutable.MutableBoolean;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
@@ -34,6 +37,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class BERDepartureBoardTable implements AbstractAdvancedDisplayRenderer<DepartureBoardDisplayTableSettings> {
 
+    private final MutableComponent textTrainTerminates = CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.train_terminates");
     private static final String keyDeparture = "gui.createrailwaysnavigator.departure";
     private static final String keyTrain = "gui.createrailwaysnavigator.line";
     private static final String keyDestination = "gui.createrailwaysnavigator.destination";
@@ -168,25 +172,47 @@ public class BERDepartureBoardTable implements AbstractAdvancedDisplayRenderer<D
         }
     }
 
-    private Collection<Component> getStatusInfo(AdvancedDisplayBlockEntity blockEntity, StationDisplayData data) {
-        if (!data.getTrainData().hasStatusInfo() && !data.getStationData().isDepartureDelayed()) {
-            return List.of();
+    private Optional<Component> getStatusInfo(AdvancedDisplayBlockEntity blockEntity, StationDisplayData data, boolean singleTrain) {
+        if (!((data.getTrainData().hasStatusInfo() && data.getStationData().isDepartureDelayed()) || data.getStationData().isStationChanged() || data.isNextSectionExcluded())) {
+            return Optional.empty();
         }
         Collection<Component> content = new ArrayList<>();
         if (data.getTrainData().isCancelled()) {
-            content.add(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.information_about_cancelled", data.getTrainData().getName()));
-            return content;
+            content.add(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.cancelled"));
         }
-        String delay = getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA ? ModUtils.timeRemainingString(data.getStationData().getDepartureTimeDeviation()) : String.valueOf(TimeUtils.formatToMinutes(data.getStationData().getDepartureTimeDeviation()));
-        MutableComponent delayComponent = CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.information_about_delayed", data.getTrainData().getName(), delay);
-        if (getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ABS) {
-            delayComponent.append(" ").append(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.delay_abs_suffix"));
+        // TRAIN TERMINATES
+        if (data.isNextSectionExcluded()) {
+            content.add(textTrainTerminates);
         }
-        content.add(delayComponent);
+        // DELAYED
+        if (data.getStationData().isDepartureDelayed()) {            
+            String delay = getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA ? ModUtils.timeRemainingString(data.getStationData().getDepartureTimeDeviation()) : String.valueOf(TimeUtils.formatToMinutes(data.getStationData().getDepartureTimeDeviation()));
+            MutableComponent delayComponent = CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.delayed", delay);
+            if (getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ABS) {
+                delayComponent.append(" ").append(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.delay_abs_suffix"));
+            }
+            content.add(delayComponent);
+        }       
+        // PLATFORM CHANGED
+        if (data.getStationData().isStationChanged()) {
+            if (!data.getStationData().getScheduledStation().tagId().equals(data.getStationData().getRealTimeStation().tagId())) {
+                content.add(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.platform_and_station_changed", data.getStationData().getRealTimeStation().tagName(), data.getStationData().getRealTimeStation().info().platform()));
+            } else {
+                content.add(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.platform_changed", data.getStationData().getRealTimeStation().info().platform()));
+            }
+        }
+        // STATUS
         for (CompiledTrainStatus status : data.getTrainData().getStatus()) {
             content.add(status.text());
         }
-        return content;
+        if (singleTrain) {
+            return Optional.ofNullable(TextUtils.concat(content));
+        } else {            
+            return Optional.ofNullable(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.information_about_train", data.getTrainData().getName())
+                .append(": ")
+                .append(TextUtils.concat(TextUtils.text(" - "), content))
+            );
+        }
     }
 
     @Override
@@ -195,13 +221,16 @@ public class BERDepartureBoardTable implements AbstractAdvancedDisplayRenderer<D
             return (!x.isNextSectionExcluded() || getDisplaySettings(blockEntity).showArrival()) && (!x.getTrainData().isCancelled() || DragonLib.getCurrentWorldTime() < x.getStationData().getScheduledDepartureTime() + ModClientConfig.DISPLAY_LEAD_TIME.get());
         }).toList();
         
-        showInfoLine = !preds.isEmpty() && preds.get(0).getStationData().isDepartureDelayed() && preds.get(0).getTrainData().hasStatusInfo();
-        if (showInfoLine) {
-            // Update status label
-            this.infoLineText = TextUtils.concat(TextUtils.text("  +++  "), preds.stream().limit(maxLines).filter(x -> x.getTrainData().hasStatusInfo() && x.getStationData().isDepartureDelayed()).flatMap(x -> {
-                return getStatusInfo(blockEntity, x).stream();
-            }).toArray(Component[]::new));
-        } else {
+        MutableBoolean shouldShowLine = new MutableBoolean(false);
+        this.infoLineText = TextUtils.concat(TextUtils.text("  +++  "), preds.stream().limit(maxLines).filter(x -> 
+            (x.getTrainData().hasStatusInfo() && x.getStationData().isDepartureDelayed()) ||
+            x.getStationData().isStationChanged()
+        ).flatMap(x -> {
+            shouldShowLine.setTrue();
+            return getStatusInfo(blockEntity, x, false).stream();
+        }).toArray(Component[]::new));
+        this.showInfoLine = shouldShowLine.isTrue();
+        if (!showInfoLine) {
             infoLineText = TextUtils.empty();
         }
 
@@ -302,8 +331,8 @@ public class BERDepartureBoardTable implements AbstractAdvancedDisplayRenderer<D
 
     private void updateContent(AdvancedDisplayBlockEntity blockEntity, StationDisplayData stop, int index, boolean layoutUpdate, float stopoversSize, float infoLineWidth, float destinationWidth) {
         DepartureBoardDisplayTableSettings settings = getDisplaySettings(blockEntity);
-        boolean isLast = settings.showArrival() && stop.isLastStop();
-        boolean showInfoLine = stop.getStationData().isDepartureDelayed() && stop.getTrainData().hasStatusInfo();
+        boolean isLast = (settings.showArrival() && stop.shouldShowArrivalOfTrain()) || stop.isNextSectionExcluded();
+        boolean showInfoLine = (stop.getStationData().isDepartureDelayed() && stop.getTrainData().hasStatusInfo()) || stop.getStationData().isStationChanged() || stop.isNextSectionExcluded();
 
         BERLabel[] components = lines[index];
 
@@ -318,7 +347,10 @@ public class BERDepartureBoardTable implements AbstractAdvancedDisplayRenderer<D
                     (stop.getStationData().isDepartureDelayed() ?
                         (ModUtils.formatTime(stop.getRealTime(), settings.getTimeDisplay() == ETimeDisplay.ETA)) : 
                         ""))) // Nothing (not delayed)
-            .setColor(ColorUtils.brightnessDependingFontColor(settings.getFontColor(), LIGHT_FONT_COLOR, DARK_FONT_COLOR))
+            .setColor(isSmall(blockEntity) ? 
+                (0xFF << 24) | (settings.getFontColor() & 0x00FFFFFF) :            
+                ColorUtils.brightnessDependingFontColor(settings.getFontColor(), LIGHT_FONT_COLOR, DARK_FONT_COLOR)
+            )
         ;
         BERLabel trainLabel = components[LineComponent.TRAIN_NAME.i()]
             .setText(TextUtils.text(stop.getTrainData().getName()))
@@ -354,22 +386,38 @@ public class BERDepartureBoardTable implements AbstractAdvancedDisplayRenderer<D
             ;
         }
         if (hasInfo) {
-            infoLabel
-                .setText(showInfoLine ? TextUtils.concat(TextUtils.text("  +++  "), getStatusInfo(blockEntity, stop)) : TextUtils.empty())
-                .setColor(ColorUtils.brightnessDependingFontColor(settings.getFontColor(), LIGHT_FONT_COLOR, DARK_FONT_COLOR))
+            if (showInfoLine) {
+                infoLabel
+                    .setText(getStatusInfo(blockEntity, stop, true).orElse(TextUtils.empty()))
+                    .setColor(ColorUtils.brightnessDependingFontColor(settings.getFontColor(), LIGHT_FONT_COLOR, DARK_FONT_COLOR))
+                ;
+            } else {
+                infoLabel
+                    .setText(TextUtils.empty())
+                ;
+            }
+            
+        }
+        BERLabel platformLabel = components[LineComponent.PLATFORM.i()];
+        platformLabel
+            .setText(TextUtils.text(stop.getStationData().getRealTimeStation().info().platform()))    
+            .setMaxWidth(settings.getPlatformWidth(), BoundsHitReaction.SCALE_SCROLL)
+            .setPos(blockEntity.getXSizeScaled() * 16 - 3 - platformLabel.getTextWidth(), Y_OFFSET + 3 + index * LINE_HEIGHT)
+        ;
+        if (stop.getStationData().isStationChanged()) {
+            platformLabel                
+                .setBackground((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF), false)
+                .setColor(0xFF111111)
+            ;
+        } else {
+            platformLabel
+                .setBackground(0, false)
+                .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
             ;
         }
-        BERLabel platformLabel = components[LineComponent.PLATFORM.i()]
-            .setText(blockEntity.isPlatformFixed() ?
-                TextUtils.empty() :
-                TextUtils.text(stop.getStationData().getStationInfo().platform()))
-        ;
 
 
         if (layoutUpdate) {
-            platformLabel
-                .setMaxWidth(settings.getPlatformWidth(), BoundsHitReaction.SCALE_SCROLL)
-            ;        
             timeLabel
                 .setPos(headlines[LineComponent.TIME.i()].getX(), Y_OFFSET + 3 + index * LINE_HEIGHT)
             ;            
@@ -382,9 +430,6 @@ public class BERDepartureBoardTable implements AbstractAdvancedDisplayRenderer<D
             destinationLabel
                 .setPos(headlines[LineComponent.DESTINATION.i()].getX(), Y_OFFSET + 3 + index * LINE_HEIGHT)
                 .setMaxWidth(destinationWidth, BoundsHitReaction.SCALE_SCROLL)
-            ;
-            platformLabel
-                .setPos(blockEntity.getXSizeScaled() * 16 - 3 - platformLabel.getTextWidth(), Y_OFFSET + 3 + index * LINE_HEIGHT)
             ;
             if (hasTransfers) {                
                 stopoversLabel

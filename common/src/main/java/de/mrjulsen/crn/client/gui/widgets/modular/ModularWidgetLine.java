@@ -7,7 +7,10 @@ import com.simibubi.create.foundation.gui.widget.ScrollInput;
 
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLRenderable;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.DLWidgetContainer;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.IDragonLibWidget;
 import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Widget;
+import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 
 public class ModularWidgetLine extends DLWidgetContainer {
@@ -31,6 +34,14 @@ public class ModularWidgetLine extends DLWidgetContainer {
 
     public <T extends AbstractWidget> T add(T w) {
         currentX += w.x - currentX + w.getWidth();
+        if (w instanceof ScrollInput i) {
+            scrollInputs.add(i);
+        }
+        return this.addRenderableWidget(w);
+    }
+
+    public <T extends IDragonLibWidget & Widget & GuiEventListener> T addDLW(T w) {
+        currentX += w.x() - currentX + w.width();
         if (w instanceof ScrollInput i) {
             scrollInputs.add(i);
         }

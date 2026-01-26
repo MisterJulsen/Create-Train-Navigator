@@ -53,9 +53,9 @@ public record TrainDebugData(
             train.getTrainId(),
             train.getTrainName(),
             train.getTotalDuration(),
-            train.getPredictionsRaw().size(),
+            train.getPredictionsMap().size(),
             train.debug_initializedStationsCount(),
-            train.isPreparing() ? TrainDebugState.PREPARING : (train.isInitialized() ? TrainDebugState.READY : TrainDebugState.INITIALIZING)
+            train.isPreInitializationPhase() ? TrainDebugState.PREPARING : (train.isInitialized() ? TrainDebugState.READY : TrainDebugState.INITIALIZING)
         );
     }
 }

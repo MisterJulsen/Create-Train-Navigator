@@ -12,7 +12,7 @@ import com.simibubi.create.foundation.utility.Lang;
 
 import de.mrjulsen.crn.CRNPlatformSpecific;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
-import de.mrjulsen.crn.data.train.StationDepartureHistory.StationStats;
+import de.mrjulsen.crn.data.train.DepartureHistory;
 import de.mrjulsen.crn.registry.ModAccessorTypes;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
@@ -29,13 +29,14 @@ import net.minecraft.network.chat.MutableComponent;
 @Mixin(StationBlockEntity.class)
 public class StationBlockEntityMixin implements IHaveGoggleInformation {
 
+    private static final int MAX_ENTRIES = 5;
+
     private StationBlockEntity self() {
         return (StationBlockEntity)(Object)this;
     }
 
-    private StationStats stats;
+    private DepartureHistory.Stats stats;
 
-    @SuppressWarnings("resource")
     @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         if (CRNPlatformSpecific.getStationFromBlockEntity(self()) == null) {
@@ -48,9 +49,11 @@ public class StationBlockEntityMixin implements IHaveGoggleInformation {
         
         Lang.builder(CreateRailwaysNavigator.MOD_ID)
             .add(TextUtils.translate("goggles." + CreateRailwaysNavigator.MOD_ID + ".train_listener.departures.title"))
-            .forGoggles(tooltip);        
+            .forGoggles(tooltip);
 
-        if (this.stats == null || this.stats.isEmpty()) {            
+        
+
+        if (this.stats == null || this.stats.isEmpty()) {
             Lang.builder(CreateRailwaysNavigator.MOD_ID)
                 .add(TextUtils.translate("goggles." + CreateRailwaysNavigator.MOD_ID + ".train_listener.departures.nothing").withStyle(ChatFormatting.RED))
                 .forGoggles(tooltip);
@@ -61,49 +64,98 @@ public class StationBlockEntityMixin implements IHaveGoggleInformation {
             .add(TextUtils.translate("goggles." + CreateRailwaysNavigator.MOD_ID + ".train_listener.departures.any").withStyle(ChatFormatting.GRAY))
             .forGoggles(tooltip);
         Lang.builder(CreateRailwaysNavigator.MOD_ID)
-            .add(formatTime(Minecraft.getInstance().level.getGameTime() - stats.getLastDepartureTime()))
+            .add(formatTime(Minecraft.getInstance().level.getGameTime() - stats.getLastDeparture()))
             .forGoggles(tooltip, 1);
           
-        if (stats.hasDeparturesByLine()) {
+        if (!stats.getDeparturesByCategory().isEmpty()) {
             Lang.builder(CreateRailwaysNavigator.MOD_ID)
-                .add(TextUtils.translate("goggles." + CreateRailwaysNavigator.MOD_ID + ".train_listener.departures.line").withStyle(ChatFormatting.GRAY))
-                .forGoggles(tooltip);   
+                .add(TextUtils.translate("goggles." + CreateRailwaysNavigator.MOD_ID + ".train_listener.departures.category").withStyle(ChatFormatting.GRAY))
+                .forGoggles(tooltip);
                              
-            List<Map.Entry<String, Long>> data = stats.getDeparturesByLine();
-            for (Map.Entry<String, Long> d : data) {            
+            Map<String, Long> data = stats.getDeparturesByCategory();
+            int i = 0;
+            for (Map.Entry<String, Long> d : data.entrySet()) {            
                 Lang.builder(CreateRailwaysNavigator.MOD_ID)
                     .add(TextUtils.empty().append(TextUtils.text(d.getKey() + ": ").withStyle(ChatFormatting.DARK_AQUA)).append(formatTime(Minecraft.getInstance().level.getGameTime() - d.getValue())))
                     .forGoggles(tooltip, 1);
+
+                i++;
+                if (i >= MAX_ENTRIES) {
+                    break;
+                }
             }
-            if (stats.getDeparturesByLineTotalCount() > data.size()) {                    
+            if (data.size() > MAX_ENTRIES) {                    
                 Lang.builder(CreateRailwaysNavigator.MOD_ID)
-                    .add(TextUtils.translate("goggles." + CreateRailwaysNavigator.MOD_ID + ".train_listener.departures.has_more", stats.getDeparturesByLineTotalCount() - data.size()).withStyle(ChatFormatting.GRAY))
+                    .add(TextUtils.translate("goggles." + CreateRailwaysNavigator.MOD_ID + ".train_listener.departures.has_more", data.size() - MAX_ENTRIES).withStyle(ChatFormatting.GRAY))
                     .forGoggles(tooltip);
             }
         }
         
-        if (stats.hasDeparturesByGroup()) {
+        if (!stats.getDeparturesByLine().isEmpty()) {
             Lang.builder(CreateRailwaysNavigator.MOD_ID)
-                .add(TextUtils.translate("goggles." + CreateRailwaysNavigator.MOD_ID + ".train_listener.departures.group").withStyle(ChatFormatting.GRAY))
-                .forGoggles(tooltip);
-
-            List<Map.Entry<String, Long>> data = stats.getDeparturesByGroup();
-            for (Map.Entry<String, Long> d : data) {            
+                .add(TextUtils.translate("goggles." + CreateRailwaysNavigator.MOD_ID + ".train_listener.departures.line").withStyle(ChatFormatting.GRAY))
+                .forGoggles(tooltip);   
+                             
+            Map<String, Long> data = stats.getDeparturesByLine();
+            int i = 0;
+            for (Map.Entry<String, Long> d : data.entrySet()) {            
                 Lang.builder(CreateRailwaysNavigator.MOD_ID)
                     .add(TextUtils.empty().append(TextUtils.text(d.getKey() + ": ").withStyle(ChatFormatting.DARK_AQUA)).append(formatTime(Minecraft.getInstance().level.getGameTime() - d.getValue())))
                     .forGoggles(tooltip, 1);
+
+                i++;
+                if (i >= MAX_ENTRIES) {
+                    break;
+                }
             }
-            if (stats.getDeparturesByGroupTotalCount() > data.size()) {                    
+            if (data.size() > MAX_ENTRIES) {                    
                 Lang.builder(CreateRailwaysNavigator.MOD_ID)
-                    .add(TextUtils.translate("goggles." + CreateRailwaysNavigator.MOD_ID + ".train_listener.departures.has_more", stats.getDeparturesByGroupTotalCount() - data.size()).withStyle(ChatFormatting.GRAY))
+                    .add(TextUtils.translate("goggles." + CreateRailwaysNavigator.MOD_ID + ".train_listener.departures.has_more", data.size() - MAX_ENTRIES).withStyle(ChatFormatting.GRAY))
                     .forGoggles(tooltip);
             }
         }
+        
+        if (!stats.getDeparturesByName().isEmpty()) {
+            Lang.builder(CreateRailwaysNavigator.MOD_ID)
+                .add(TextUtils.translate("goggles." + CreateRailwaysNavigator.MOD_ID + ".train_listener.departures.name").withStyle(ChatFormatting.GRAY))
+                .forGoggles(tooltip);   
+                             
+            Map<String, Long> data = stats.getDeparturesByName();
+            int i = 0;
+            for (Map.Entry<String, Long> d : data.entrySet()) {            
+                Lang.builder(CreateRailwaysNavigator.MOD_ID)
+                    .add(TextUtils.empty().append(TextUtils.text(d.getKey() + ": ").withStyle(ChatFormatting.DARK_AQUA)).append(formatTime(Minecraft.getInstance().level.getGameTime() - d.getValue())))
+                    .forGoggles(tooltip, 1);
+
+                i++;
+                if (i >= MAX_ENTRIES) {
+                    break;
+                }
+            }
+            if (data.size() > MAX_ENTRIES) {                    
+                Lang.builder(CreateRailwaysNavigator.MOD_ID)
+                    .add(TextUtils.translate("goggles." + CreateRailwaysNavigator.MOD_ID + ".train_listener.departures.has_more", data.size() - MAX_ENTRIES).withStyle(ChatFormatting.GRAY))
+                    .forGoggles(tooltip);
+            }
+        }
+        
+        
+        Lang.builder(CreateRailwaysNavigator.MOD_ID)
+            .add(TextUtils.text(" "))
+            .forGoggles(tooltip);
+
+        Lang.builder(CreateRailwaysNavigator.MOD_ID)
+            .add(TextUtils.translate("goggles." + CreateRailwaysNavigator.MOD_ID + ".train_listener.departures.press_shift_for_in_game_time").withStyle(ChatFormatting.DARK_GRAY).withStyle(ChatFormatting.ITALIC))
+            .forGoggles(tooltip);
 
         return true;
     }
 
     private MutableComponent formatTime(long ticks) {
-        return TextUtils.text(TimeUtils.formatDurationMs(TimeUnit.SECONDS.toMillis((long)(ticks / DragonLib.tps())))).withStyle(ChatFormatting.AQUA);
+
+        return TextUtils.text(Minecraft.getInstance().player.isShiftKeyDown() ?
+            TimeUtils.parseDurationShort(ticks) :
+            TimeUtils.formatDurationMs(TimeUnit.SECONDS.toMillis((long)(ticks / DragonLib.mcTps())))
+        ).withStyle(ChatFormatting.AQUA);
     }
 }

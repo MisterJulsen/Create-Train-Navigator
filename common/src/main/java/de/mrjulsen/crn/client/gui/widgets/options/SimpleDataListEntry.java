@@ -16,7 +16,9 @@ import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import de.mrjulsen.mcdragonlib.core.EAlignment;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 
-public class SimpleDataListEntry<T, S> extends AbstractDataListEntry<T, S, SimpleDataListEntry.DisplayableDataSectionDefinition<T, S>> {    
+public class SimpleDataListEntry<T, S> extends AbstractDataListEntry<T, S, SimpleDataListEntry.DisplayableDataSectionDefinition<T, S>> {  
+    
+    private DataListEntryEditContext<T, S> onEdit;
 
     public SimpleDataListEntry(DataListContainer<T, S> parent, int x, int y, int width, S data) {
         super(parent, x, y, width, data);
@@ -30,6 +32,10 @@ public class SimpleDataListEntry<T, S> extends AbstractDataListEntry<T, S, Simpl
      */
     public void addDataSection(int width, Function<S, String> displayName, EAlignment alignment, DataListEntryEditContext<T, S> onEdit) {
         createSection(new DisplayableDataSectionDefinition<>(getCurrentSectionsXOffset(), width, displayName.apply(data), alignment, onEdit));
+    }
+
+    public void setOnEditName(DataListEntryEditContext<T, S> onEdit) {
+        this.onEdit = onEdit;
     }
 
     @Override
@@ -62,6 +68,33 @@ public class SimpleDataListEntry<T, S> extends AbstractDataListEntry<T, S, Simpl
                 }
             });
         }
+
+
+        if (onEdit == null) {
+            return;
+        }
+
+        int xCoord = x() + CONTENT_POS_LEFT;
+        DLEditBox modifyPlatformInput = addRenderableWidget(new DLEditBox(font, xCoord + 1, y() + 2, width() - getCurrentSectionsXOffset() - getCurrentButtonsXOffset() - CONTENT_SPACING - 2, height() - 4, TextUtils.empty()));
+        DLButton modifyPlatformBtn = addRenderableWidget(new DLButton(xCoord, y() + 1, width() - getCurrentSectionsXOffset() - getCurrentButtonsXOffset() - CONTENT_SPACING, height() - 2, TextUtils.empty(),
+        (b) -> {
+            b.set_visible(false);
+            modifyPlatformInput.setValue(getText());
+            modifyPlatformInput.set_visible(true);
+        }));
+        modifyPlatformBtn.setRenderStyle(AreaStyle.FLAT);
+        modifyPlatformBtn.setBackColor(0x00000000);
+
+        modifyPlatformInput.setValue("");
+        modifyPlatformInput.set_visible(false);
+        modifyPlatformInput.withOnFocusChanged((box, focus) -> {
+            if (box.visible() && !focus) {
+                onEdit.run(parent.getData(), data, box.getValue(), (newData) -> newData.ifPresent(a -> this.parent.displayData(a)));
+                modifyPlatformInput.setValue("");
+                modifyPlatformInput.set_visible(false);
+                modifyPlatformBtn.set_visible(true);
+            }
+        });
     }
 
     @Override

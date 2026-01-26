@@ -9,12 +9,12 @@ import java.util.Optional;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.data.StationTag;
-import de.mrjulsen.crn.data.TrainGroup;
+import de.mrjulsen.crn.data.TrainCategory;
 import de.mrjulsen.crn.data.TrainLine;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
 import de.mrjulsen.mcdragonlib.data.Cache;
 
-public class TrainTravelSection {
+public class ScheduleSection {
 
     private static final int INVALID = -1;
     
@@ -24,7 +24,7 @@ public class TrainTravelSection {
 
     private final boolean includeLastStationOfLastSection;
     private final boolean usable;
-    private final TrainGroup trainGroup;
+    private final TrainCategory trainCategory;
     private final TrainLine trainLine;
 
     private final Cache<List<TrainPrediction>> predictions = new Cache<>(() -> getPredictions(INVALID, false));
@@ -36,18 +36,18 @@ public class TrainTravelSection {
         }
         return result;
     });
-    private final Cache<TrainTravelSection> nextSection;
-    private final Cache<TrainTravelSection> previousSection;
+    private final Cache<ScheduleSection> nextSection;
+    private final Cache<ScheduleSection> previousSection;
 
-    public TrainTravelSection(TrainData data, int indexInSchedule, TrainGroup group, TrainLine line, boolean includePreviousStation, boolean usable) {
-        this(false, data, indexInSchedule, group, line, includePreviousStation, usable);
+    public ScheduleSection(TrainData data, int indexInSchedule, TrainCategory category, TrainLine line, boolean includePreviousStation, boolean usable) {
+        this(false, data, indexInSchedule, category, line, includePreviousStation, usable);
     }
     
-    private TrainTravelSection(boolean isDefault, TrainData data, int indexInSchedule, TrainGroup group, TrainLine line, boolean includePreviousStation, boolean usable) {
+    private ScheduleSection(boolean isDefault, TrainData data, int indexInSchedule, TrainCategory category, TrainLine line, boolean includePreviousStation, boolean usable) {
         this.data = data;
         this.scheduleIndex = indexInSchedule;
         this.isDefault = isDefault;
-        this.trainGroup = group;
+        this.trainCategory = category;
         this.trainLine = line;
         this.includeLastStationOfLastSection = includePreviousStation;
         this.usable = usable;
@@ -57,8 +57,8 @@ public class TrainTravelSection {
                 return this;
             }
     
-            List<TrainTravelSection> sections = data.getSections();
-            if (sections.isEmpty()) {
+            List<ScheduleSection> sections = data.getSections();
+            if (sections.size() <= 1) {
                 return this;
             }
             int selfIndex = sections.indexOf(this);
@@ -74,8 +74,8 @@ public class TrainTravelSection {
                 return this;
             }
     
-            List<TrainTravelSection> sections = data.getSections();
-            if (sections.isEmpty()) {
+            List<ScheduleSection> sections = data.getSections();
+            if (sections.size() <= 1) {
                 return this;
             }
             int selfIndex = sections.indexOf(this);
@@ -87,8 +87,8 @@ public class TrainTravelSection {
         });
     }
 
-    public static final TrainTravelSection def(TrainData data) {
-        return new TrainTravelSection(true, data, 0, null, null, true, true);
+    public static final ScheduleSection def(TrainData data) {
+        return new ScheduleSection(true, data, 0, null, null, true, true);
     }
 
     public boolean isDefault() {
@@ -111,38 +111,41 @@ public class TrainTravelSection {
         return usable;
     }
 
-    public Optional<TrainGroup> getTrainGroup() {
-        return Optional.ofNullable(trainGroup);
+    public Optional<TrainCategory> getTrainCategory() {
+        return Optional.ofNullable(trainCategory);
     }
 
     public Optional<TrainLine> getTrainLine() {
         return Optional.ofNullable(trainLine);
     }
 
-    public TrainTravelSection nextSection() {
+    public ScheduleSection nextSection() {
         return nextSection.get();
     }
 
-    public TrainTravelSection previousSection() {
+    public ScheduleSection previousSection() {
         return previousSection.get();
     }
 
     /**
      * Creates a list of all stops assigned to this section.
      * @param startingAtIndex The schedule index from which found stops should be added, or {@code < 0} to get all elements of the section.
-     * @return A list of all stops assigned to this section.
+     * @param ignoreIncludeLastStationRule Whether the first station of the next section should be included when the option Include start of next station is enabled or not.
+     * @return A list of all predictions that belong to this section.
      */
+
+    
     public List<TrainPrediction> getPredictions(int startingAtIndex, boolean ignoreIncludeLastStationRule) {
         if (data.getTrain() == null || data.getTrain().runtime == null || data.getTrain().runtime.getSchedule() == null) {
             return List.of();
         }
         List<TrainPrediction> result = new ArrayList<>();
-        TrainTravelSection nextSection = nextSection();
+        ScheduleSection nextSection = nextSection();
         
-        Map<Integer, TrainPrediction> predictionsSrc = data.getPredictionsRaw();
+        Map<Integer, TrainPrediction> predictionsSrc = data.getPredictionsMap();
         Map<Integer, TrainPrediction> predictions = new HashMap<>(predictionsSrc.size());
         for (Map.Entry<Integer, TrainPrediction> prediction : predictionsSrc.entrySet()) {
-            if (GlobalSettings.getInstance().isStationBlacklisted(prediction.getValue().getStationName())) {
+            if (GlobalSettings.getInstance().isStationBlacklisted(prediction.getValue().getTargetedStationName())) {
                 continue;
             }
             predictions.put(prediction.getKey(), prediction.getValue());
@@ -154,22 +157,21 @@ public class TrainTravelSection {
 
         boolean customStartFound = false;
         boolean endReached = false;
-        TrainPrediction pred = null;
-        for (int i = 0; i < count * 2; i++) {
+        for (int i = 0; i <= count * 2; i++) {
             final int j = (startIndex + i) % count;
             if (i != 0 && j == stopIndex) {
                 if (!ignoreIncludeLastStationRule && shouldIncludeNextStationOfNextSection()) {
                     endReached = true;
-                } else return result;
+                } else break;
             }
             customStartFound = customStartFound || startingAtIndex < 0 || j == startingAtIndex;
             if (!predictions.containsKey(j) || !customStartFound) continue;
-            pred = predictions.get(j);
-            result.add(pred);
+            result.add(predictions.get(j));
             if (endReached) break;
         }
         return result;
     }
+
 
     public int getFirstIndexFor(StationTag tag) {
         List<TrainPrediction> predictions = getPredictions(INVALID, false);
@@ -191,11 +193,11 @@ public class TrainTravelSection {
         List<TrainStop> result = new ArrayList<>();
         List<TrainPrediction> predictions = getPredictions(INVALID, false);
 
-        TrainStop lastStop = null;
+        TrainStop previousStop = null;
         for (TrainPrediction prediction : predictions) {
             TrainStop stop = new TrainStop(prediction);
             stop.simulateTicks(simulationTime);
-            if (lastStop != null && lastStop.getScheduledArrivalTime() > stop.getScheduledArrivalTime()) {
+            if (previousStop != null && previousStop.getScheduledArrivalTime() > stop.getScheduledArrivalTime()) {
                 if (prediction.getEntryIndex() == currentIndex) {
                     result.forEach(x -> x.simulateCycles(-1));
                 } else {
@@ -203,7 +205,7 @@ public class TrainTravelSection {
                 }
             }
             result.add(stop);
-            lastStop = stop;
+            previousStop = stop;
         }
         return result;
     }
@@ -214,12 +216,14 @@ public class TrainTravelSection {
 
     public List<String> getStopoversFrom(int startIndex) {
         List<String> predictions = new ArrayList<>();
+        List<TrainPrediction> predictionsSrc = this.predictions.get();
         boolean startFound = false;
-        for (int i = 0; i < this.predictions.get().size() - 1; i++) {
-            TrainPrediction prediction = this.predictions.get().get(i);
+        for (int i = 0; i < predictionsSrc.size() - 1; i++) {
+            TrainPrediction prediction = predictionsSrc.get(i);
             boolean wasStartFound = startFound;
             if (prediction.getEntryIndex() == startIndex) startFound = true;
             if (!wasStartFound) continue;
+            if (GlobalSettings.getInstance().isStationBlacklisted(prediction.getStationFilter())) continue;
             predictions.add(prediction.getStationTag().getTagName().get());
         }
         return predictions;
@@ -264,23 +268,31 @@ public class TrainTravelSection {
         if (!isUsable()) {
             return CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.not_in_service").getString();
         }        
-        return getFinalStop().map(x -> GlobalSettings.getInstance().getOrCreateStationTagFor(x.getStationName()).getTagName().get()).orElse("?");
+        return getFinalStop().map(x -> GlobalSettings.getInstance().getOrCreateStationTagFor(x.getTargetedStationName()).getTagName().get()).orElse("?");
     }
 
     public String getDisplayTextStart() {
-        return !isUsable() ? CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.not_in_service").getString() : getFirstStop().map(x -> GlobalSettings.getInstance().getOrCreateStationTagFor(x.getStationName()).getTagName().get()).orElse("?");
+        return !isUsable() ? CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.not_in_service").getString() : getFirstStop().map(x -> GlobalSettings.getInstance().getOrCreateStationTagFor(x.getTargetedStationName()).getTagName().get()).orElse("?");
     }
 
     public String getStartStationName() {
-        return getFirstStop().map(x -> x.getStationName()).orElse("?");
+        return getFirstStop().map(x -> x.getTargetedStationName()).orElse("?");
     }
 
     public String getDestinationStationName() {
-        return getFinalStop().map(x -> x.getStationName()).orElse("?");
+        return getFinalStop().map(x -> x.getTargetedStationName()).orElse("?");
     }
 
     @Override
     public String toString() {
         return getDisplayText();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof ScheduleSection o) {
+            return getScheduleIndex() == o.getScheduleIndex();
+        }
+        return false;
     }
 }

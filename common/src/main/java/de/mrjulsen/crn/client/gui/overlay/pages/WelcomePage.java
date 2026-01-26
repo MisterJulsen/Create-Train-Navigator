@@ -51,7 +51,7 @@ public class WelcomePage extends AbstractRouteDetailsPage {
         Component platformText = TextUtils.text(endStation.getRealTimeStationTag().info().platform());
         int platformTextWidth = font.width(platformText);
         final int maxStationNameWidth = width() - platformTextWidth - 10 - 5;
-        MutableComponent stationText = TextUtils.text(ModUtils.formatTime(endStation.getRoundedRealTimeArrivalTime(), false)).append(TextUtils.text(" " + endStation.getClientTag().tagName()));
+        MutableComponent stationText = TextUtils.text(ModUtils.formatTime(endStation.getRoundedRealTimeArrivalTime(), false)).append(TextUtils.text(" " + endStation.getRealTimeStationTag().tagName()));
         if (font.width(stationText) > maxStationNameWidth) {
             stationText = TextUtils.text(font.substrByWidth(stationText, maxStationNameWidth).getString()).append(TextUtils.text("...")).withStyle(stationText.getStyle());
         }

@@ -7,10 +7,9 @@ import de.mrjulsen.crn.block.display.AdvancedDisplayTarget;
 import de.mrjulsen.crn.cmd.DebugCommand;
 import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
-import de.mrjulsen.crn.data.train.StationDepartureHistory;
+import de.mrjulsen.crn.data.train.DepartureHistory;
 import de.mrjulsen.crn.data.train.TrainData;
 import de.mrjulsen.crn.data.train.TrainListener;
-import de.mrjulsen.crn.event.events.CreateTrainPredictionEvent;
 import de.mrjulsen.crn.event.events.GlobalTrainDisplayDataRefreshEventPost;
 import de.mrjulsen.crn.event.events.GlobalTrainDisplayDataRefreshEventPre;
 import de.mrjulsen.crn.event.events.ScheduleResetEvent;
@@ -50,7 +49,6 @@ public class ModCommonEvents {
             CRNEventsManager.registerEvent(TrainDestinationChangedEvent::new);
             CRNEventsManager.registerEvent(TrainArrivalAndDepartureEvent::new);
             CRNEventsManager.registerEvent(SubmitTrainPredictionsEvent::new);
-            CRNEventsManager.registerEvent(CreateTrainPredictionEvent::new);
             CRNEventsManager.registerEvent(ScheduleResetEvent::new);
             CRNEventsManager.registerEvent(TotalDurationTimeChangedEvent::new);
 
@@ -66,7 +64,7 @@ public class ModCommonEvents {
             TrainListener.stop();
             AdvancedDisplayTarget.stop();
             CRNEventsManager.clearEvents();
-            StationDepartureHistory.clearAll();
+            DepartureHistory.clear();
         });
 
         LifecycleEvent.SERVER_STOPPED.register((server) -> {
@@ -81,15 +79,13 @@ public class ModCommonEvents {
                 long currentTicks = ModCommonEvents.getPhysicalLevel().dayTime();
                 long diff = currentTicks - lastTicks;
                 if (Math.abs(diff) > 1) {
-                    for (TrainData data : TrainListener.data.values()) {
+                    for (TrainData data : TrainListener.getAllTrainData()) {
                         data.shiftTime(diff);
                     }
                     if (ModCommonConfig.ADVANCED_LOGGING.get()) CreateRailwaysNavigator.LOGGER.info("All times have been corrected: " + (diff) + " Ticks");
                 }
                 lastTicks = currentTicks;
             }
-
-            TrainListener.tick();
         });
 
         CommandRegistrationEvent.EVENT.register((dispatcher, context, selection) -> {

@@ -3,6 +3,7 @@ package de.mrjulsen.crn.client.gui.screen;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.simibubi.create.AllItems;
@@ -19,8 +20,7 @@ import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.widgets.DLCreateIconButton;
 import de.mrjulsen.crn.client.gui.widgets.DLCreateLabel;
 import de.mrjulsen.crn.client.gui.widgets.DLCreateSelectionScrollInput;
-import de.mrjulsen.crn.config.ModCommonConfig;
-import de.mrjulsen.crn.data.TrainGroup;
+import de.mrjulsen.crn.data.TrainCategory;
 import de.mrjulsen.crn.data.TrainLine;
 import de.mrjulsen.crn.data.schedule.instruction.TravelSectionInstruction;
 import de.mrjulsen.crn.data.storage.GlobalSettingsClient;
@@ -38,6 +38,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Widget;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -58,11 +59,11 @@ public class TrainSectionSettingsScreen extends DLScreen {
     // Settings
     private boolean includePreviousStation = false;
     private boolean usable = true;
-    private String trainGroupId;
-    private String trainLineId;
+    private UUID trainCategoryId;
+    private UUID trainLineId;
 
-    private Map<String, TrainGroup> groupsById;
-    private Map<String, TrainLine> linesById;
+    private Map<UUID, TrainCategory> categoriesById;
+    private Map<UUID, TrainLine> linesById;
 
     // GUI
     private int guiLeft;
@@ -76,12 +77,13 @@ public class TrainSectionSettingsScreen extends DLScreen {
     private DLCreateIconButton globalSettingsButton;
 
     private final MutableComponent tooltipGlobalSettings = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.global_settings.tooltip");
-    private final MutableComponent tooltipTrainGroup = TextUtils.translate("gui.createrailwaysnavigator.section_settings.train_groups");
+    private final MutableComponent tooltipTrainCatrgory = TextUtils.translate("gui.createrailwaysnavigator.section_settings.train_categories");
     private final MutableComponent tooltipTrainLine = TextUtils.translate("gui.createrailwaysnavigator.section_settings.train_lines");
     private final MutableComponent textIncludePreviousStation = TextUtils.translate("gui.createrailwaysnavigator.section_settings.include_previous_station");
     private final MutableComponent textUsable = TextUtils.translate("gui.createrailwaysnavigator.section_settings.usable");
     private final MutableComponent textNone = TextUtils.translate("gui.createrailwaysnavigator.section_settings.none");
 
+    @SuppressWarnings("deprecation")
     public TrainSectionSettingsScreen(Screen lastScreen, CompoundTag nbt) {
         super(TextUtils.translate("gui.createrailwaysnavigator.section_settings.title"));
         this.lastScreen = lastScreen;
@@ -89,8 +91,16 @@ public class TrainSectionSettingsScreen extends DLScreen {
 
         this.includePreviousStation = nbt.contains(TravelSectionInstruction.NBT_INCLUDE_PREVIOUS_STATION) ? nbt.getBoolean(TravelSectionInstruction.NBT_INCLUDE_PREVIOUS_STATION) : false;
         this.usable = nbt.contains(TravelSectionInstruction.NBT_USABLE) ? nbt.getBoolean(TravelSectionInstruction.NBT_USABLE) : true;
-        this.trainGroupId = nbt.contains(TravelSectionInstruction.NBT_TRAIN_GROUP) ? nbt.getString(TravelSectionInstruction.NBT_TRAIN_GROUP) : null;
-        this.trainLineId = nbt.contains(TravelSectionInstruction.NBT_TRAIN_LINE) ? nbt.getString(TravelSectionInstruction.NBT_TRAIN_LINE) : null;
+        
+        if (nbt.contains(TravelSectionInstruction.LEGACY_NBT_TRAIN_CATEGORY)) {
+            this.trainCategoryId = nbt.getTagType(TravelSectionInstruction.LEGACY_NBT_TRAIN_CATEGORY) == Tag.TAG_STRING ? TrainCategory.genMD5Uuid(nbt.getString(TravelSectionInstruction.LEGACY_NBT_TRAIN_CATEGORY)) : nbt.getUUID(TravelSectionInstruction.LEGACY_NBT_TRAIN_CATEGORY);
+        } else if (nbt.contains(TravelSectionInstruction.NBT_TRAIN_CATEGORY)) {
+            this.trainCategoryId = nbt.getTagType(TravelSectionInstruction.NBT_TRAIN_CATEGORY) == Tag.TAG_STRING ? TrainCategory.genMD5Uuid(nbt.getString(TravelSectionInstruction.NBT_TRAIN_CATEGORY)) : nbt.getUUID(TravelSectionInstruction.NBT_TRAIN_CATEGORY);
+        }
+        
+        if (nbt.contains(TravelSectionInstruction.NBT_TRAIN_LINE)) {
+            this.trainLineId = nbt.getTagType(TravelSectionInstruction.NBT_TRAIN_LINE) == Tag.TAG_STRING ? TrainLine.genMD5Uuid(nbt.getString(TravelSectionInstruction.NBT_TRAIN_LINE)) : nbt.getUUID(TravelSectionInstruction.NBT_TRAIN_LINE);
+        }
     }    
 
     @Override
@@ -100,8 +110,16 @@ public class TrainSectionSettingsScreen extends DLScreen {
 
     @Override
     public void onClose() {
-        nbt.putString(TravelSectionInstruction.NBT_TRAIN_GROUP, trainGroupId == null ? "" : trainGroupId);
-        nbt.putString(TravelSectionInstruction.NBT_TRAIN_LINE, trainLineId == null ? "" : trainLineId);
+        if (trainCategoryId != null) {
+            nbt.putUUID(TravelSectionInstruction.NBT_TRAIN_CATEGORY, trainCategoryId);
+        } else {
+            nbt.remove(TravelSectionInstruction.NBT_TRAIN_CATEGORY);
+        }
+        if (trainLineId != null) {
+            nbt.putUUID(TravelSectionInstruction.NBT_TRAIN_LINE, trainLineId);
+        } else {
+            nbt.remove(TravelSectionInstruction.NBT_TRAIN_LINE);
+        }
         nbt.putBoolean(TravelSectionInstruction.NBT_INCLUDE_PREVIOUS_STATION, includePreviousStation);
         nbt.putBoolean(TravelSectionInstruction.NBT_USABLE, usable);
         Minecraft.getInstance().setScreen(lastScreen);
@@ -128,38 +146,38 @@ public class TrainSectionSettingsScreen extends DLScreen {
         addTooltip(DLTooltip.of(Constants.TEXT_HELP).assignedTo(helpButton));
 
         // Global Options Button
-        if (minecraft.player.hasPermissions(ModCommonConfig.GLOBAL_SETTINGS_PERMISSION_LEVEL.get())) {
-            final Screen instance = this;
-            globalSettingsButton = this.addRenderableWidget(new DLCreateIconButton(guiLeft + 7, guiTop + 119, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, ModGuiIcons.SETTINGS.getAsCreateIcon()) {
-                @Override
-                public void onClick(double mouseX, double mouseY) {
-                    super.onClick(mouseX, mouseY);
-                    DLScreen.setScreen(new GlobalSettingsScreen(instance));
-                }
-            });
-            addTooltip(DLTooltip.of(tooltipGlobalSettings).assignedTo(globalSettingsButton));
-        }
+        final Screen instance = this;
+        globalSettingsButton = this.addRenderableWidget(new DLCreateIconButton(guiLeft + 7, guiTop + 119, DEFAULT_ICON_BUTTON_WIDTH, DEFAULT_ICON_BUTTON_HEIGHT, ModGuiIcons.SETTINGS.getAsCreateIcon()) {
+            @Override
+            public void onClick(double mouseX, double mouseY) {
+                super.onClick(mouseX, mouseY);
+                DLScreen.setScreen(new GlobalSettingsScreen(instance));
+            }
+        });
+        addTooltip(DLTooltip.of(tooltipGlobalSettings).assignedTo(globalSettingsButton));
 
-        GlobalSettingsClient.getTrainGroups((trainGroups) -> {
-            this.groupsById = trainGroups.stream().collect(Collectors.toMap(x -> x.getGroupName(), x -> x));
+        GlobalSettingsClient.getTrainCategories((trainCategories) -> {
+            List<TrainCategory> orderedCategories = trainCategories.stream().sorted((a, b) -> a.getCategoryName().compareToIgnoreCase(b.getCategoryName())).toList();
+            this.categoriesById = orderedCategories.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
             GlobalSettingsClient.getTrainLines((trainLines) -> {
-                this.linesById = trainLines.stream().collect(Collectors.toMap(x -> x.getLineName(), x -> x));
+                List<TrainLine> orderedLines = trainLines.stream().sorted((a, b) -> a.getLineName().compareToIgnoreCase(b.getLineName())).toList();
+                this.linesById = orderedLines.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
 
-                List<MutableComponent> groupsList = new ArrayList<>(trainGroups.stream().map(x -> TextUtils.text(x.getGroupName())).toList());
-                groupsList.add(0, textNone);
+                List<MutableComponent> categoriesList = new ArrayList<>(orderedCategories.stream().map(x -> TextUtils.text(x.getCategoryName())).toList());
+                categoriesList.add(0, textNone);
                 displayTypeLabel = addRenderableWidget(new DLCreateLabel(guiLeft + 45 + 5, guiTop + 23 + 5, Components.immutableEmpty()).withShadow());
                 displayTypeInput = addRenderableWidget(new DLCreateSelectionScrollInput(this, guiLeft + 45, guiTop + 23, 138, 18)
-                    .forOptions(groupsList)
-                    .titled(tooltipTrainGroup)
+                    .forOptions(categoriesList)
+                    .titled(tooltipTrainCatrgory)
                     .writingTo(displayTypeLabel)
                     .calling((i) -> {
-                        this.trainGroupId = i <= 0 ? null : trainGroups.get(i - 1).getGroupName();
+                        this.trainCategoryId = i <= 0 ? null : orderedCategories.get(i - 1).getId();
                     })
-                    .setState(trainGroupId != null && groupsById.containsKey(trainGroupId) ? trainGroups.indexOf(groupsById.get(trainGroupId)) + 1 : 0)
+                    .setState(trainCategoryId != null && categoriesById.containsKey(trainCategoryId) ? orderedCategories.indexOf(categoriesById.get(trainCategoryId)) + 1 : 0)
                 );
                 displayTypeInput.onChanged();
 
-                List<MutableComponent> linesList = new ArrayList<>(trainLines.stream().map(x -> TextUtils.text(x.getLineName())).toList());
+                List<MutableComponent> linesList = new ArrayList<>(orderedLines.stream().map(x -> TextUtils.text(x.getLineName())).toList());
                 linesList.add(0, textNone);
                 infoTypeLabel = addRenderableWidget(new DLCreateLabel(guiLeft + 45 + 5, guiTop + 45 + 5, Components.immutableEmpty()).withShadow());
                 infoTypeInput = addRenderableWidget(new DLCreateSelectionScrollInput(this, guiLeft + 45, guiTop + 45, 138, 18)
@@ -167,9 +185,9 @@ public class TrainSectionSettingsScreen extends DLScreen {
                     .titled(tooltipTrainLine)
                     .writingTo(infoTypeLabel)
                     .calling((i) -> {
-                        this.trainLineId = i <= 0 ? null : trainLines.get(i - 1).getLineName();
+                        this.trainLineId = i <= 0 ? null : orderedLines.get(i - 1).getId();
                     })
-                    .setState(trainLineId != null && linesById.containsKey(trainLineId) ? trainLines.indexOf(linesById.get(trainLineId)) + 1 : 0)
+                    .setState(trainLineId != null && linesById.containsKey(trainLineId) ? orderedLines.indexOf(linesById.get(trainLineId)) + 1 : 0)
                 );
                 infoTypeInput.onChanged();  
 

@@ -3,18 +3,25 @@ package de.mrjulsen.crn.data;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import de.mrjulsen.crn.data.train.TrainUtils;
+import de.mrjulsen.crn.util.Lock;
+import de.mrjulsen.crn.util.ModUtils;
+import de.mrjulsen.crn.util.Owner;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.world.entity.player.Player;
 
 public class StationTag {
 
@@ -23,6 +30,10 @@ public class StationTag {
         public static final String NBT_STATION_NAME = "StationName";
         public static final String NBT_STATION_INFO = "StationInfo";
         public static final String NBT_TAG_ID = "Id";
+
+        public static ClientStationTag empty() {
+            return new ClientStationTag("", "", StationInfo.empty(), new UUID(0, 0));
+        }
 
         public CompoundTag toNbt() {
             CompoundTag nbt = new CompoundTag();
@@ -34,12 +45,28 @@ public class StationTag {
         }
 
         public static ClientStationTag fromNbt(CompoundTag nbt) {
+            if (nbt == null) {
+                return empty();
+            }
             return new ClientStationTag(
                 nbt.getString(NBT_TAG_NAME),
                 nbt.getString(NBT_STATION_NAME),
                 StationInfo.fromNbt(nbt.getCompound(NBT_STATION_INFO)),
                 nbt.getUUID(NBT_TAG_ID)
             );
+        }
+
+        @Override
+        public final boolean equals(Object other) {
+            if (other instanceof ClientStationTag o) {
+                return o.tagName().equals(tagName()) && o.stationName().equals(stationName()) && o.info().equals(info());
+            }
+            return false;
+        }
+
+        @Override
+        public final int hashCode() {
+            return 31 * Objects.hash(tagName, stationName, info);
         }
     }
     
@@ -53,6 +80,7 @@ public class StationTag {
     private static final String NBT_STATION_MAP = "StationData";
     private static final String NBT_LAST_EDITOR = "LastEditor";
     private static final String NBT_LAST_EDITED_TIME = "LastEditedTimestamp";
+    private static final String NBT_OWNER = "Owner";
    
     private static final String NBT_STATION_ENTRY_NAME = "Name";
 
@@ -60,25 +88,38 @@ public class StationTag {
     protected TagName tagName;
     protected Map<String /*Station Name*/, StationInfo> stations = new HashMap<>();
 
-    // History
-    protected String lastEditorName = null;
+    protected Lock owner;
+    protected Owner lastEditor;
     protected long lastEditedTime = 0;
 
-    protected StationTag(UUID id, TagName tagName, Map<String, StationInfo> initialValues, String lastEditorName, long lastEditedTime) {
-        this(id, tagName, initialValues);
-        this.lastEditorName = lastEditorName;
+    protected StationTag(UUID id, TagName tagName, Lock owner, Map<String, StationInfo> initialValues, Owner lastEditor, long lastEditedTime) {
+        this(id, tagName, owner, initialValues);
+        this.lastEditor = lastEditor;
         this.lastEditedTime = lastEditedTime;
     }
 
-    public StationTag(UUID id, TagName tagName, Map<String, StationInfo> initialValues) {
-        this(id, tagName);
+    public StationTag(UUID id, TagName tagName, Owner owner, Map<String, StationInfo> initialValues) {
+        this(id, tagName, new Lock(owner), initialValues);
+    }
+    
+    public StationTag(UUID id, TagName tagName, Lock owner, Map<String, StationInfo> initialValues) {
+        this(id, tagName, owner);
         stations.putAll(initialValues);
     }
 
-    public StationTag(UUID id, TagName tagName) {
+    public StationTag(UUID id, TagName tagName, Owner owner) {
+        this(id, tagName, new Lock(owner));
+    }
+
+    public StationTag(UUID id, TagName tagName, Lock owner) {
         this.id = id;
         this.tagName = tagName;
-        updateLastEdited("Server");
+        this.owner = owner;
+        updateLastEdited(owner.getOwner().orElse(null));
+    }
+
+    public StationTag(UUID id, TagName tagName, Player owner, Map<String, StationInfo> initialValues) {
+        this(id, tagName, new Owner(owner), initialValues);
     }
 
     /**
@@ -93,8 +134,12 @@ public class StationTag {
         this.id = id;
     }
 
+    public Lock getOwner() {
+        return owner;
+    }
+
     public StationTag copy() {
-        return new StationTag(null, new TagName(getTagName().get()), new HashMap<>(getAllStations()));
+        return new StationTag(null, new TagName(getTagName().get()), getOwner(), new HashMap<>(getAllStations()));
     }
 
     public CompoundTag toNbt() {
@@ -105,10 +150,9 @@ public class StationTag {
 
         DLUtils.doIfNotNull(id, (i) -> nbt.putUUID(NBT_ID, i));
         nbt.put(NBT_TAG_NAME, getTagName().toNbt());
-        if (lastEditorName != null) {
-            nbt.putString(NBT_LAST_EDITOR, getLastEditorName());
-        }
+        getLastEditor().ifPresent(x -> nbt.put(NBT_LAST_EDITOR, x.toNbt()));
         nbt.putLong(NBT_LAST_EDITED_TIME, lastEditedTime);
+        nbt.put(NBT_OWNER, owner.toNbt());
         
         ListTag stationsList = new ListTag();
         stations.forEach((key, value) -> {
@@ -125,8 +169,9 @@ public class StationTag {
     public static StationTag fromNbt(CompoundTag nbt, UUID overwriteId) {
         UUID id = overwriteId == null ? (nbt.contains(NBT_ID) ? nbt.getUUID(NBT_ID) : null) : overwriteId;
         TagName name = TagName.fromNbt(nbt.getCompound(!nbt.contains(NBT_TAG_NAME) ? LEGACY_NBT_TAG_NAME : NBT_TAG_NAME));
-        String lastEditorName = nbt.contains(NBT_LAST_EDITOR) ? nbt.getString(NBT_LAST_EDITOR) : null;
+        Owner lastEditor = nbt.contains(NBT_LAST_EDITOR) && nbt.getTagType(NBT_LAST_EDITOR) == Tag.TAG_COMPOUND ? Owner.fromNbt(nbt.getCompound(NBT_LAST_EDITOR)) : null;
         long lastEditedTime = nbt.getLong(NBT_LAST_EDITED_TIME);
+        Lock owner = nbt.contains(NBT_OWNER) && nbt.getTagType(NBT_OWNER) == Tag.TAG_COMPOUND ? Lock.fromNbt(nbt.getCompound(NBT_OWNER)) : new Lock(new Owner((UUID)null));
         Map<String, StationInfo> stations;
         if (nbt.contains(NBT_STATION_LIST)) {
             stations = new HashMap<>(nbt.getList(NBT_STATION_LIST, Tag.TAG_STRING).stream().map(x -> ((StringTag)x).getAsString()).collect(Collectors.toMap(x -> x, x -> StationInfo.empty())));
@@ -140,16 +185,20 @@ public class StationTag {
             stations = new IdentityHashMap<>();
         }
 
-        return new StationTag(id, name, stations, lastEditorName, lastEditedTime);
+        return new StationTag(id, name, owner, stations, lastEditor, lastEditedTime);
     }
 
-    public String getLastEditorName() {
-        return lastEditorName;
+    public Optional<Owner> getLastEditor() {
+        return Optional.ofNullable(lastEditor);
     }
 
-    public void updateLastEdited(String name) {
-        this.lastEditorName = name;
+    private void updateLastEdited(Owner editor) {
+        this.lastEditor = editor;
         this.lastEditedTime = new Date().getTime();
+    }
+
+    public void updateLastEdited(Player player) {
+        this.updateLastEdited(new Owner(player));
     }
 
     public Date getLastEditedTime() {
@@ -172,6 +221,21 @@ public class StationTag {
     }
 
     public void add(String station, StationInfo info) {
+        if (station.contains("*")) {
+            Set<String> stationNames = TrainUtils.getAllStations().stream().map(x -> x.name).collect(Collectors.toSet());
+            for (Map.Entry<String, List<String>> entry : ModUtils.mapWildcards(station, List.of(info.platform()), stationNames).entrySet()) {
+                if (stations.containsKey(entry.getKey())) {
+                    continue;
+                }
+                String platformString = "";
+                if (!entry.getValue().isEmpty()) {
+                    platformString = entry.getValue().get(0);
+                }
+                stations.put(entry.getKey(), new StationInfo(platformString));
+            }
+            return;
+        }
+
         if (!stations.containsKey(station)) {
             stations.put(station, info);
         }
@@ -197,6 +261,10 @@ public class StationTag {
             }
         }
         return false;
+    }
+
+    public boolean containsLiteral(String stationName) {
+        return stations.containsKey(stationName);
     }
 
     public Set<String> getAllStationNames() {
@@ -256,7 +324,8 @@ public class StationTag {
         this.stations.clear();
         this.stations.putAll(newData.stations);
         this.lastEditedTime = newData.lastEditedTime;
-        this.lastEditorName = newData.lastEditorName;
+        this.lastEditor = newData.lastEditor;
+        this.owner = newData.owner;
     }
 
     /**

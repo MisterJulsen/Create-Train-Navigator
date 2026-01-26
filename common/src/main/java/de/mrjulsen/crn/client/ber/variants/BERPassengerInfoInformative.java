@@ -14,6 +14,7 @@ import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.TrainExitSide;
 import de.mrjulsen.crn.data.train.portable.NextConnectionsDisplayData;
 import de.mrjulsen.crn.data.train.portable.TrainDisplayData;
+import de.mrjulsen.crn.data.train.portable.TrainDisplayData.State;
 import de.mrjulsen.crn.data.train.portable.TrainStopDisplayData;
 import de.mrjulsen.crn.registry.ModAccessorTypes;
 import de.mrjulsen.crn.registry.data.NextConnectionsRequestData;
@@ -23,11 +24,13 @@ import de.mrjulsen.mcdragonlib.client.ber.BERGraphics;
 import de.mrjulsen.mcdragonlib.client.ber.BERLabel;
 import de.mrjulsen.mcdragonlib.client.ber.BERLabel.BoundsHitReaction;
 import de.mrjulsen.mcdragonlib.client.util.BERUtils;
+import de.mrjulsen.mcdragonlib.util.ColorUtils;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.accessor.DataAccessor;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
@@ -35,6 +38,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRenderer<PassengerInformationDetailedSettings> {
 
+    private final MutableComponent textTrainTerminates = CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.train_terminates");
     private static final ResourceLocation CARRIAGE_ICON = new ResourceLocation("create:textures/gui/assemble.png");  
     private static final ResourceLocation ICONS = new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/icons.png");  
     private static final String keyDate = "gui.createrailwaysnavigator.route_overview.date";
@@ -91,6 +95,8 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
 
     private BERLabel[][] scheduleLines;
     private BERLabel[][] nextConnectionsLines = new BERLabel[MAX_LINES - 1][];
+
+    private float listDestinationLabelX = 0;
 
 
     private boolean shouldRenderNextConnections() {
@@ -181,13 +187,13 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
             );
         }
 
-        if (graphics.blockEntity().getTrainData() == null || graphics.blockEntity().getTrainData().isEmpty()) {
+        if (graphics.blockEntity().getTrainData() == null || graphics.blockEntity().getTrainData().getState().isOutOfService()) {
             graphics.poseStack().popPose();
             return;
         }
 
         trainLineLabel.render(graphics, light);
-
+                
         // Carriage label
         if (graphics.blockEntity().getXSizeScaled() > 2 && !nextStopAnnounced) {            
             carriageLabel.render(graphics, light);
@@ -263,7 +269,7 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
         renderHeader(graphics, partialTick, parent, light, backSide);
         BERUtils.fillColor(graphics, 2.5f, 5.0f, 0.01f, graphics.blockEntity().getXSizeScaled() * 16 - 5, 0.25f, (0xFF << 24) | (getDisplaySettings(graphics.blockEntity()).getFontColor() & 0x00FFFFFF), graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING), light);
 
-        if (graphics.blockEntity().getTrainData() == null || graphics.blockEntity().getTrainData().isEmpty()) {
+        if (graphics.blockEntity().getTrainData() == null || graphics.blockEntity().getTrainData().getState().isOutOfService()) {
             return;
         }
 
@@ -312,59 +318,60 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
                         }
 
                         final float uv32 = 1f / CRNGui.GUI_WIDTH;
+
                         if (idx == 0 && scheduleLines.length > 1) {
                             BERUtils.renderTexture(
-                                CRNGui.GUI,
-                                graphics,
-                                false,
-                                (a[LineComponent.REAL_TIME.i()] == null ? a[LineComponent.SCHEDULED_TIME.i()].getX() + a[LineComponent.SCHEDULED_TIME.i()].getMaxWidth() : a[LineComponent.REAL_TIME.i()].getX() + a[LineComponent.REAL_TIME.i()].getMaxWidth()) - 1,
-                                a[LineComponent.SCHEDULED_TIME.i()].getY() - 1,
-                                0.0f,
-                                1,
-                                2,
-                                uv32 * 21,
-                                uv32 * 30,
-                                uv32 * (21 + 7),
-                                uv32 * (30 + 14),
-                                graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING),
-                                (0xFF << 24) | (getDisplaySettings(graphics.blockEntity()).getFontColor() & 0x00FFFFFF),
-                                light
+                                    CRNGui.GUI,
+                                    graphics,
+                                    false,
+                                    listDestinationLabelX - 2,
+                                    a[LineComponent.SCHEDULED_TIME.i()].getY() - 1,
+                                    0.0f,
+                                    1,
+                                    2,
+                                    uv32 * 21,
+                                    uv32 * 30,
+                                    uv32 * (21 + 7),
+                                    uv32 * (30 + 14),
+                                    graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING),
+                                    (0xFF << 24) | (getDisplaySettings(graphics.blockEntity()).getFontColor() & 0x00FFFFFF),
+                                    light
                             );
                         } else if (idx >= MAX_LINES - 1) {
                             BERUtils.renderTexture(
-                                CRNGui.GUI,
-                                graphics,
-                                false,
-                                (a[LineComponent.REAL_TIME.i()] == null ? a[LineComponent.SCHEDULED_TIME.i()].getX() + a[LineComponent.SCHEDULED_TIME.i()].getMaxWidth() : a[LineComponent.REAL_TIME.i()].getX() + a[LineComponent.REAL_TIME.i()].getMaxWidth()) - 1,
-                                a[LineComponent.SCHEDULED_TIME.i()].getY() - 1,
-                                0.0f,
-                                1,
-                                2,
-                                uv32 * 35,
-                                uv32 * 30,
-                                uv32 * (35 + 7),
-                                uv32 * (30 + 14),
-                                graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING),
-                                (0xFF << 24) | (getDisplaySettings(graphics.blockEntity()).getFontColor() & 0x00FFFFFF),
-                                light
+                                    CRNGui.GUI,
+                                    graphics,
+                                    false,
+                                    listDestinationLabelX - 2,
+                                    a[LineComponent.SCHEDULED_TIME.i()].getY() - 1,
+                                    0.0f,
+                                    1,
+                                    2,
+                                    uv32 * 35,
+                                    uv32 * 30,
+                                    uv32 * (35 + 7),
+                                    uv32 * (30 + 14),
+                                    graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING),
+                                    (0xFF << 24) | (getDisplaySettings(graphics.blockEntity()).getFontColor() & 0x00FFFFFF),
+                                    light
                             );
                         } else {
                             BERUtils.renderTexture(
-                                CRNGui.GUI,
-                                graphics,
-                                false,
-                                (a[LineComponent.REAL_TIME.i()] == null ? a[LineComponent.SCHEDULED_TIME.i()].getX() + a[LineComponent.SCHEDULED_TIME.i()].getMaxWidth() : a[LineComponent.REAL_TIME.i()].getX() + a[LineComponent.REAL_TIME.i()].getMaxWidth()) - 1,
-                                a[LineComponent.SCHEDULED_TIME.i()].getY() - 1,
-                                0.0f,
-                                1,
-                                2,
-                                uv32 * 28,
-                                uv32 * 30,
-                                uv32 * (28 + 7),
-                                uv32 * (30 + 14),
-                                graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING),
-                                (0xFF << 24) | (getDisplaySettings(graphics.blockEntity()).getFontColor() & 0x00FFFFFF),
-                                light
+                                    CRNGui.GUI,
+                                    graphics,
+                                    false,
+                                    listDestinationLabelX - 2,
+                                    a[LineComponent.SCHEDULED_TIME.i()].getY() - 1,
+                                    0.0f,
+                                    1,
+                                    2,
+                                    uv32 * 28,
+                                    uv32 * 30,
+                                    uv32 * (28 + 7),
+                                    uv32 * (30 + 14),
+                                    graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING),
+                                    (0xFF << 24) | (getDisplaySettings(graphics.blockEntity()).getFontColor() & 0x00FFFFFF),
+                                    light
                             );
                         }
                     });
@@ -375,17 +382,31 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
     }
 
     @Override
-    public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason) {
-        if (blockEntity.getTrainData() == null || blockEntity.getTrainData().isEmpty()) {
-            return;
-        }
+    public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason) {        
+        boolean oos = blockEntity.getTrainData() == null || blockEntity.getTrainData().getState().isOutOfService();
+
         TrainDisplayData data = blockEntity.getTrainData();
         boolean wasNextStopAnnounced = nextStopAnnounced;
         nextStopAnnounced = !data.isWaitingAtStation() && data.getNextStop().isPresent() && data.getNextStop().get().getRealTimeArrivalTime() - DragonLib.getCurrentWorldTime() < ModClientConfig.NEXT_STOP_ANNOUNCEMENT.get();
         this.exitSide = (!nextStopAnnounced && !data.isWaitingAtStation()) || !getDisplaySettings(blockEntity).showExit() ? TrainExitSide.UNKNOWN : (data.isWaitingAtStation() ? exitSide : blockEntity.relativeExitDirection.get());
+        
+        if (oos) {
+            this.nextStopAnnounced = false;
+            this.exitSide = TrainExitSide.UNKNOWN;
+        }
+
+        timeLabel
+            .setText(blockEntity.getXSizeScaled() > 1 && !nextStopAnnounced ? TextUtils.text(ModUtils.formatTime(DragonLib.getCurrentWorldTime(), false)).withStyle(ChatFormatting.BOLD) : TextUtils.empty())
+            .setPos(blockEntity.getXSizeScaled() * 16 - 3 - timeLabel.getTextWidth() - (this.exitSide != TrainExitSide.UNKNOWN ? 4 : 0), 2.5f)
+            .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
+        ;
+
+        if (oos) {
+            return;
+        }
 
         if (getDisplaySettings(blockEntity).showConnections() && blockEntity.getXSizeScaled() > 1 && nextStopAnnounced && !wasNextStopAnnounced && data.getNextStop().isPresent()) {
-            DataAccessor.getFromServer(new NextConnectionsRequestData(data.getNextStop().get().getName(), data.getTrainData().getId()), ModAccessorTypes.GET_NEXT_CONNECTIONS_DISPLAY_DATA, (res) -> {
+            DataAccessor.getFromServer(new NextConnectionsRequestData(data.getNextStop().get().getRealTimeStation().stationName(), data.getTrainData().getId()), ModAccessorTypes.GET_NEXT_CONNECTIONS_DISPLAY_DATA, (res) -> {
                 nextConnections = res;
                 updateLayout(blockEntity, data);
                 updateContent(blockEntity, data);
@@ -404,26 +425,43 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
         return (settings.shouldOverwriteCarriageIndex() ? 0 : blockEntity.getCarriageData().index() + 1) + settings.getCarriageIndex();
     }
 
-    private void updateContent(AdvancedDisplayBlockEntity blockEntity, TrainDisplayData data) {
+    private void updateContent(AdvancedDisplayBlockEntity blockEntity, TrainDisplayData displayData) {
         PassengerInformationDetailedSettings settings = getDisplaySettings(blockEntity);
         int carriageIndex = getCarriageIndex(blockEntity);
-        timeLabel
-            .setText(blockEntity.getXSizeScaled() > 1 && !nextStopAnnounced ? TextUtils.text(ModUtils.formatTime(DragonLib.getCurrentWorldTime(), getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA)).withStyle(ChatFormatting.BOLD) : TextUtils.empty())
-            .setPos(blockEntity.getXSizeScaled() * 16 - 3 - timeLabel.getTextWidth() - (this.exitSide != TrainExitSide.UNKNOWN ? 4 : 0), 2.5f)
-            .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
-        ;
         carriageLabel
             .setText(blockEntity.getXSizeScaled() > 1 && !nextStopAnnounced ? TextUtils.text(String.format("%02d", carriageIndex)).withStyle(ChatFormatting.BOLD) : TextUtils.empty())
             .setPos(timeLabel.getX() - 4 - carriageLabel.getTextWidth(), 2.5f)
             .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
         ;
+        boolean atTerminus = blockEntity.getTrainData().getState() == State.AT_TERMINUS;
+        MutableComponent labelText = TextUtils.empty();
+        if (atTerminus) {
+            labelText = textTrainTerminates;
+        } else if (nextStopAnnounced) {
+            labelText = CustomLanguage.translate(keyNextStop, displayData.getNextStop().get().getRealTimeStation().tagName());
+        } else {
+            labelText = TextUtils.text((settings.getTrainTextComponents().showTrainName() ? displayData.getTrainData().getName() + " " : "") + (settings.getTrainTextComponents().showDestination() ? displayData.getNextStop().get().getDestination() : "")).withStyle(ChatFormatting.BOLD);
+        }
+
         trainLineLabel
-            .setText(nextStopAnnounced ? CustomLanguage.translate(keyNextStop, data.getNextStop().get().getName()) : TextUtils.text((settings.getTrainTextComponents().showTrainName() ? data.getTrainData().getName() + " " : "") + (settings.getTrainTextComponents().showDestination() ? data.getNextStop().get().getDestination() : "")).withStyle(ChatFormatting.BOLD))
-            .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 6 - (blockEntity.getXSizeScaled() > 1 && !nextStopAnnounced ? timeLabel.getTextWidth() - 4 : 0) - (blockEntity.getXSizeScaled() > 1 && !nextStopAnnounced ? carriageLabel.getTextWidth() - 5 : 0) - (this.exitSide != TrainExitSide.UNKNOWN ? 4 : 0), BoundsHitReaction.SCALE_SCROLL)
-            .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
+            .setText(labelText)
+            .setMaxWidth((nextStopAnnounced ? blockEntity.getXSizeScaled() * 16 - 6 - (this.exitSide != TrainExitSide.UNKNOWN ? 4 : 0) : (blockEntity.getXSizeScaled() > 2 ? carriageLabel.getX() - 9 : timeLabel.getX() - 7)), BoundsHitReaction.SCALE_SCROLL)
         ;
+        
+        if (settings.showLineColor() && blockEntity.getTrainData().getTrainData().hasColor() && !nextStopAnnounced && !atTerminus) {
+            trainLineLabel
+                .setBackground((0xFF << 24) | (blockEntity.getTrainData().getTrainData().getColor() & 0x00FFFFFF), false)
+                .setColor(ColorUtils.brightnessDependingFontColor(blockEntity.getTrainData().getTrainData().getColor(), LIGHT_FONT_COLOR, DARK_FONT_COLOR))
+            ;
+        } else {
+            trainLineLabel
+                .setBackground(0, false)
+                .setColor((0xFF << 24) | (settings.getFontColor() & 0x00FFFFFF))
+            ;
+        }
+
         speedLabel
-            .setText(ModUtils.calcSpeedString(data.getSpeed(), ModClientConfig.SPEED_UNIT.get()).withStyle(ChatFormatting.BOLD))
+            .setText(ModUtils.calcSpeedString(displayData.getSpeed(), ModClientConfig.SPEED_UNIT.get()).withStyle(ChatFormatting.BOLD))
             .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 6, BoundsHitReaction.CUT_OFF)
             .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
         ;
@@ -468,7 +506,7 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
 
                         TrainStopDisplayData stop = nextConnections.getConnections().get(connectionIdx);
                         a[LineComponent.PLATFORM.i()]
-                            .setText(TextUtils.text(stop.getStationInfo().platform()))
+                            .setText(TextUtils.text(stop.getRealTimeStation().info().platform()))
                             .setPos(blockEntity.getXSizeScaled() * 16 - 3 - a[LineComponent.PLATFORM.i()].getTextWidth(), 7.5f + k * 1.7f)
                             .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
                         ;
@@ -506,23 +544,26 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
                     });
                 }
             });
-        } else {            
+        } else {
             DLUtils.doIfNotNull(scheduleLines, x -> {
-                int totalStationsCount = data.getStopsFromCurrentStation().size();
+                int totalStationsCount = displayData.getStopsFromCurrentStation().size();
                 int linesCount = Math.min(scheduleLines.length, totalStationsCount);
+                listDestinationLabelX = 0;
                 for (int i = 0; i < linesCount; i++) {
                     final int j = i;
                     int k = i >= linesCount - 1 ? totalStationsCount - 1 : i;
                     DLUtils.doIfNotNull(scheduleLines[i], a -> {
-                        TrainStopDisplayData stop = data.getStopsFromCurrentStation().get(k);
-                        if (a[LineComponent.REAL_TIME.i()] != null) {                            
+                        TrainStopDisplayData stop = displayData.getStopsFromCurrentStation().get(k);
+                        boolean showDeparture = displayData.isWaitingAtStation() && displayData.getCurrentScheduleIndex() == stop.getStationEntryIndex();
+                        
+                        if (a[LineComponent.REAL_TIME.i()] != null) {
                             a[LineComponent.SCHEDULED_TIME.i()]
-                                .setText(TextUtils.text(ModUtils.formatTime(stop.getScheduledArrivalTime(), getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA)))
+                                .setText(TextUtils.text(ModUtils.formatTime(showDeparture ? stop.getScheduledDepartureTime() : stop.getScheduledArrivalTime(), getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA)))
                                 .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
                             ;
                             a[LineComponent.REAL_TIME.i()]
                                 .setPos(a[LineComponent.SCHEDULED_TIME.i()].getX() + a[LineComponent.SCHEDULED_TIME.i()].getTextWidth() + 1, 6 + j * 2)
-                                .setText(TextUtils.text(ModUtils.formatTime(stop.getRealTimeArrivalTime(), getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA)))
+                                .setText(TextUtils.text(ModUtils.formatTime(showDeparture ? stop.getRealTimeDepartureTime() : stop.getRealTimeArrivalTime(), getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA)))
                                 .setColor(stop.isArrivalDelayed() ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME)
                             ;
                         } else {
@@ -531,12 +572,20 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
                                 .setColor(stop.isArrivalDelayed() ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME)
                             ;
                         }
-                        float pX = a[LineComponent.SCHEDULED_TIME.i()].getX() + a[LineComponent.SCHEDULED_TIME.i()].getTextWidth() + 3 + (a[LineComponent.REAL_TIME.i()] == null ? 0 : a[LineComponent.REAL_TIME.i()].getTextWidth() + 1);
+                        listDestinationLabelX = Math.max(listDestinationLabelX, a[LineComponent.SCHEDULED_TIME.i()].getX() + a[LineComponent.SCHEDULED_TIME.i()].getTextWidth() + 3 + (a[LineComponent.REAL_TIME.i()] == null ? 0 : a[LineComponent.REAL_TIME.i()].getTextWidth() + 1));
+                    });
+                }
+
+                for (int i = 0; i < linesCount; i++) {
+                    final int j = i;
+                    int k = i >= linesCount - 1 ? totalStationsCount - 1 : i;
+                    DLUtils.doIfNotNull(scheduleLines[i], a -> {
+                        TrainStopDisplayData stop = displayData.getStopsFromCurrentStation().get(k);
                         a[LineComponent.DESTINATION.i()]
-                            .setPos(pX, 6 + j * 2)
-                            .setText(TextUtils.text(stop.getName()).withStyle(j >= linesCount - 1 ? ChatFormatting.BOLD : ChatFormatting.RESET))
-                            .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 3 - pX, BoundsHitReaction.SCALE_SCROLL)
-                            .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
+                                .setPos(listDestinationLabelX, 6 + j * 2)
+                                .setText(TextUtils.text(stop.getRealTimeStation().tagName()).withStyle(j >= linesCount - 1 ? ChatFormatting.BOLD : ChatFormatting.RESET))
+                                .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 3 - listDestinationLabelX, BoundsHitReaction.SCALE_SCROLL)
+                                .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
                         ;
                     });
                 }

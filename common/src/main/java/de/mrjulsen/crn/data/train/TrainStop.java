@@ -9,6 +9,8 @@ import de.mrjulsen.crn.data.StationTag;
 import de.mrjulsen.crn.data.TagName;
 import de.mrjulsen.crn.data.StationTag.ClientStationTag;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
+import de.mrjulsen.crn.data.train.TrainData.SimulationResult;
+import de.mrjulsen.crn.exceptions.RuntimeSideException;
 import de.mrjulsen.crn.data.TrainInfo;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import net.minecraft.nbt.CompoundTag;
@@ -66,8 +68,6 @@ public class TrainStop implements Comparable<TrainStop> {
     protected int realTimeCycle = -1;
     protected ClientStationTag realTimeTag;
 
-    protected long arrivalTimeDeviation;
-    protected long departureTimeDeviation;
     protected int realTimeTicksUntilArrival = -1;
 
 
@@ -78,8 +78,8 @@ public class TrainStop implements Comparable<TrainStop> {
     public TrainStop(int scheduleIndex, int sectionIndex, UUID trainId, String trainName, TrainIconType trainIcon, TrainInfo trainInfo,
             String scheduleTitle, boolean isCustomTitle, String terminusText, int stayDuration, boolean simulated,
             long scheduledDepartureTime, long scheduledArrivalTime, int cycle, ClientStationTag tag, long realTimeArrivalTime,
-            long realTimeDepartureTime, int realTimeCycle, ClientStationTag realTimeTag, long arrivalTimeDeviation,
-            long departureTimeDeviation, int realTimeTicksUntilArrival, TrainState trainPosition) {
+            long realTimeDepartureTime, int realTimeCycle, ClientStationTag realTimeTag,
+            int realTimeTicksUntilArrival, TrainState trainPosition) {
         this.scheduleIndex = scheduleIndex;
         this.sectionIndex = sectionIndex;
         this.trainId = trainId;
@@ -99,8 +99,6 @@ public class TrainStop implements Comparable<TrainStop> {
         this.realTimeDepartureTime = realTimeDepartureTime;
         this.realTimeCycle = realTimeCycle;
         this.realTimeTag = realTimeTag;
-        this.arrivalTimeDeviation = arrivalTimeDeviation;
-        this.departureTimeDeviation = departureTimeDeviation;
         this.realTimeTicksUntilArrival = realTimeTicksUntilArrival;
         this.trainState = trainPosition;
     }
@@ -120,19 +118,17 @@ public class TrainStop implements Comparable<TrainStop> {
             prediction.getTitle(),
             prediction.hasCustomTitle(),
             prediction.getSectionDestinationText(), 
-            prediction.getStayDuration(), 
+            (int)prediction.scheduled().stayDuration(), 
             false,
-            lastCycle ? prediction.getPreviousScheduledDepartureTime() : prediction.getScheduledDepartureTime(), 
-            lastCycle ? prediction.getPreviousScheduledArrivalTime() : prediction.getScheduledArrivalTime(), 
+            lastCycle ? prediction.getPreviousScheduledDepartureTime() : prediction.scheduled().departureTime(), 
+            lastCycle ? prediction.getPreviousScheduledArrivalTime() : prediction.scheduled().arrivalTime(), 
             prediction.getCurrentCycle() - (lastCycle ? 1 : 0), 
-            prediction.getStationTag().getClientTag(prediction.getStationName()), 
-            lastCycle ? prediction.getPreviousRealTimeArrivalTime() : prediction.getRealTimeArrivalTime(), 
-            lastCycle ? prediction.getPreviousRealTimeDepartureTime() : prediction.getRealTimeDepartureTime(),
+            GlobalSettings.getInstance().getOrCreateStationTagFor(prediction.getScheduledStationName()).getClientTag(prediction.getScheduledStationName()),
+            lastCycle ? prediction.getPreviousRealTimeArrivalTime() : prediction.realTime().arrivalTime(), 
+            lastCycle ? prediction.getPreviousRealTimeDepartureTime() : prediction.realTime().departureTime(),
             prediction.getCurrentCycle() - (lastCycle ? 1 : 0), 
-            prediction.getStationTag().getClientTag(prediction.getStationName()),
-            prediction.getArrivalTimeDeviation(), 
-            prediction.getDepartureTimeDeviation(), 
-            prediction.getRealTimeArrivalTicks(), 
+            GlobalSettings.getInstance().getOrCreateStationTagFor(prediction.getRealTimeStationName()).getClientTag(prediction.getRealTimeStationName()),
+            (int)prediction.realTime().arrivalIn(), 
             TrainState.BEFORE
         );
         //updateRealTime(prediction);
@@ -159,16 +155,26 @@ public class TrainStop implements Comparable<TrainStop> {
             this.realTimeDepartureTime,
             this.realTimeCycle,
             this.realTimeTag,
-            this.arrivalTimeDeviation,
-            this.departureTimeDeviation,
             this.realTimeTicksUntilArrival,
             this.trainState
         );
     }
 
     public void simulateTicks(long ticks) {
+        if (ModCommonConfig.EXPERIMENT_SIMULATION_ALGORITHM.get()) {
+            simulateTicksNew(ticks);
+        } else {
+            simulateTicksLegacy(ticks);
+        }
+    }
+
+    private void simulateTicksLegacy(long ticks) {
         this.simulated = true;
-        int totalDuration = TrainListener.data.get(getTrainId()).getTotalDuration();
+        int totalDuration = TrainListener.getTrainData(getTrainId()).map(TrainData::getTotalDuration).orElse(-1);
+        if (totalDuration <= 0) {
+            return;
+        }
+
         long scheduledTimeUntilArrival = getScheduledArrivalTime() - DragonLib.getCurrentWorldTime();
         int simulationCycles = (int)(ticks / totalDuration);
         long simulationRemaining = ticks % totalDuration;
@@ -186,11 +192,25 @@ public class TrainStop implements Comparable<TrainStop> {
         this.simulationTime += ticks;
     }
 
+    private void simulateTicksNew(long ticks) {
+        this.simulated = true;
+        SimulationResult res = TrainListener.getTrainData(getTrainId()).get().simulate(scheduleIndex, ticks);
+        
+        this.cycle += res.cycles();
+        this.scheduledArrivalTime = res.arrivalTime();
+        this.scheduledDepartureTime = res.departureTime();
+        
+        this.realTimeArrivalTime = res.arrivalTime();
+        this.realTimeDepartureTime = res.departureTime();
+        this.realTimeTicksUntilArrival = -1;
+        this.simulationTime += ticks;
+    }
+
     public void simulateCycles(int cycles) {
         if (cycles == 0) {
             return;
         }
-        simulateTicks(cycles * TrainListener.data.get(getTrainId()).getTotalDuration());
+        TrainListener.getTrainData(getTrainId()).ifPresent(x -> simulateTicks(cycles * x.getTotalDuration()));
     }
 
     
@@ -253,8 +273,8 @@ public class TrainStop implements Comparable<TrainStop> {
     public int getTrainDisplayColor() {
         if (getTrainInfo() != null && getTrainInfo().line() != null && getTrainInfo().line().getColor() != 0) {
             return getTrainInfo().line().getColor();
-        } else if (getTrainInfo() != null && getTrainInfo().group() != null && getTrainInfo().group().getColor() != 0) {
-            return getTrainInfo().group().getColor();
+        } else if (getTrainInfo() != null && getTrainInfo().category() != null && getTrainInfo().category().getColor() != 0) {
+            return getTrainInfo().category().getColor();
         }
         return Constants.COLOR_TRAIN_BACKGROUND;
     }
@@ -263,11 +283,14 @@ public class TrainStop implements Comparable<TrainStop> {
         return stayDuration;
     }
 
-    public StationTag getTag() {
-        return GlobalSettings.getInstance().getStationTag(getClientTag().tagId()).orElse(GlobalSettings.getInstance().getOrCreateStationTagFor(TagName.of(getClientTag().tagName())));
+    public StationTag getTag() throws RuntimeSideException {
+        if (!DragonLib.hasServer()) {
+            throw new RuntimeSideException(false);
+        }
+        return GlobalSettings.getInstance().getStationTag(getRealTimeStationTag().tagId()).orElse(GlobalSettings.getInstance().getOrCreateStationTagFor(TagName.of(getRealTimeStationTag().tagName())));
     }
 
-    public ClientStationTag getClientTag() {
+    public ClientStationTag getScheduledStationTag() {
         return tag;
     }
 
@@ -300,11 +323,11 @@ public class TrainStop implements Comparable<TrainStop> {
     }
 
     public long getArrivalTimeDeviation() {
-        return arrivalTimeDeviation;
+        return getRealTimeArrivalTime() - getScheduledArrivalTime();
     }
 
     public long getDepartureTimeDeviation() {
-        return departureTimeDeviation;
+        return getRealTimeDepartureTime() - getScheduledDepartureTime();
     }
 
     public int getTicksUntilArrival() {
@@ -346,12 +369,16 @@ public class TrainStop implements Comparable<TrainStop> {
         return isArrivalDelayed() || isDepartureDelayed();
     }
 
+    public boolean hasTrackChanged() {
+        return !realTimeTag.info().equals(tag.info());
+    }
+
     public boolean shouldRenderRealTime() {
         return getRealTimeCycle() >= getScheduledCycle();
     }
 
     public boolean isStationInfoChanged() {
-        return !getClientTag().info().equals(getRealTimeStationTag().info());
+        return !getScheduledStationTag().info().equals(getRealTimeStationTag().info());
     }
 
     public boolean isDeparted() {
@@ -408,8 +435,6 @@ public class TrainStop implements Comparable<TrainStop> {
             nbt.getLong(NBT_REAL_TIME_DEPARTURE_TIME),
             nbt.getInt(NBT_REAL_CYCLE),
             ClientStationTag.fromNbt(nbt.getCompound(NBT_REAL_TIME_TAG)),
-            nbt.contains(NBT_REAL_TIME_ARRIVAL_TIME) ? nbt.getLong(NBT_REAL_TIME_ARRIVAL_TIME) - nbt.getLong(NBT_SCHEDULED_ARRIVAL_TIME) : 0,
-            nbt.contains(NBT_REAL_TIME_DEPARTURE_TIME) ? nbt.getLong(NBT_REAL_TIME_DEPARTURE_TIME) - nbt.getLong(NBT_SCHEDULED_DEPARTURE_TIME) : 0,
             0,
             TrainState.BEFORE
         );

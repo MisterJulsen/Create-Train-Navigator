@@ -162,7 +162,7 @@ public class RouteDetailsScreen extends AbstractNavigatorScreen {
 
     @Override
     public void renderMainLayer(Graphics graphics, int mouseX, int mouseY, float partialTicks) {
-        renderNavigatorBackground(graphics, mouseX, mouseY, partialTicks);        
+        renderNavigatorBackground(graphics, mouseX, mouseY, partialTicks);      
         
         int y = FooterSize.DEFAULT.size() - 1;
         CreateDynamicWidgets.renderContainer(graphics, guiLeft + 1, guiTop + y, GUI_WIDTH - 2, 38, ContainerColor.BLUE);

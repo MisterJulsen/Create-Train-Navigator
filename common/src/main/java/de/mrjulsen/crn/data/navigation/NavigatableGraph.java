@@ -25,7 +25,7 @@ import de.mrjulsen.crn.data.storage.GlobalSettings;
 import de.mrjulsen.crn.data.train.TrainData;
 import de.mrjulsen.crn.data.train.TrainListener;
 import de.mrjulsen.crn.data.train.TrainPrediction;
-import de.mrjulsen.crn.data.train.TrainTravelSection;
+import de.mrjulsen.crn.data.train.ScheduleSection;
 import de.mrjulsen.crn.data.train.TrainUtils;
 import de.mrjulsen.crn.event.ModCommonEvents;
 import de.mrjulsen.crn.data.navigation.Node.EdgeConnection;
@@ -62,7 +62,7 @@ public class NavigatableGraph {
             TrainUtils.isTrainUsable(x)
         ).collect(Collectors.toSet());
         for (Train train : trains) {
-            addTrain(train, TrainListener.data.get(train.id));
+            TrainListener.getTrainData(train).ifPresent(x -> addTrain(train, x));
         }
 
         if (ModCommonConfig.ADVANCED_LOGGING.get()) {
@@ -94,8 +94,8 @@ public class NavigatableGraph {
         boolean stationsRemoved = false;
         while (!predictions.isEmpty()) {
             TrainPrediction prediction = predictions.peekLast();
-            TrainTravelSection section = prediction.getSection();
-            if ((globalSettings().isStationBlacklisted(prediction.getStationName())) ||
+            ScheduleSection section = prediction.getSection();
+            if ((globalSettings().isStationBlacklisted(prediction.getTargetedStationName())) ||
                 (!section.isUsable() && (!section.isFirstStop(prediction) || !section.previousSection().isUsable() || !section.previousSection().shouldIncludeNextStationOfNextSection()))
             ) {
                 predictions.removeLast();
@@ -138,9 +138,9 @@ public class NavigatableGraph {
     }
 
     protected boolean isPredictionAllowed(TrainPrediction prediction) {
-        TrainTravelSection section = prediction.getSection();
+        ScheduleSection section = prediction.getSection();
         boolean usable = section.isUsable() || (section.isFirstStop(prediction) && section.previousSection().isUsable() && section.previousSection().shouldIncludeNextStationOfNextSection());
-        return !globalSettings().isStationBlacklisted(prediction.getStationName()) && (prediction.getSection().getTrainGroup().map(x -> !userSettings.navigationExcludedTrainGroups.getValue().contains(x.getGroupName())).orElse(true)) && usable;
+        return !globalSettings().isStationBlacklisted(prediction.getTargetedStationName()) && (prediction.getSection().getTrainCategory().map(x -> !userSettings.navigationExcludedTrainCategories.getValue().contains(x.getId())).orElse(true)) && usable;
     }
 
     protected Node addNode(TrainPrediction prediction) {
@@ -265,13 +265,13 @@ public class NavigatableGraph {
     public ImmutableMap<UUID, TrainSchedule> createTrainSchedules() {
         return ImmutableMap.copyOf(TrainUtils.getTrains(true).stream()
             .filter(x -> {
-                return  TrainListener.data.containsKey(x.id) &&
+                return  TrainListener.hasTrainData(x.id) &&
                         TrainUtils.isTrainUsable(x) &&
                         !globalSettings().isTrainBlacklisted(x) && 
                         !globalSettings().isTrainExcludedByUser(x, userSettings)
                     ;
             })
-            .map(x -> new TrainSchedule(TrainListener.data.get(x.id).getSessionId(), x))
+            .map(x -> new TrainSchedule(TrainListener.getTrainData(x.id).map(TrainData::getSessionId).orElse(new UUID(0, 0)), x))
             .collect(Collectors.toMap(x -> x.getTrain().id, x -> x)));
     }
 
@@ -293,7 +293,7 @@ public class NavigatableGraph {
 
         Set<UUID> excludedTrainIds = new HashSet<>();
         List<Train> departingTrains = TrainUtils.getDepartingTrainsAt(start.getStationTag()).stream().filter(train -> 
-            TrainListener.data.containsKey(train.id) &&
+            TrainListener.hasTrainData(train.id) &&
             TrainUtils.isTrainUsable(train) &&
             !excludedTrainIds.contains(train.id) &&
             !globalSettings().isTrainBlacklisted(train) &&
@@ -301,31 +301,35 @@ public class NavigatableGraph {
             schedules.get(train.id).stopsAt(start.getStationTag()) &&
             schedules.get(train.id).stopsAt(end.getStationTag())
         ).toList();
+        if (CreateRailwaysNavigator.isDebug()) CreateRailwaysNavigator.LOGGER.info(String.format("Found %s trains at station %s! Stations are: %s, %s", departingTrains.size(), start.getStationTag(), start.getStationTag(), end.getStationTag()));
         
         List<Route> routes = new ArrayList<>();
 
         for (Train train : departingTrains) {
-            TrainData trainData = TrainListener.data.get(train.id);
+            TrainData trainData = TrainListener.getTrainData(train.id).get();
             int simulationTime = userSettings.navigationDepartureInTicks.getValue();
             Queue<Node> tempTransferNodes = new ConcurrentLinkedQueue<>(transferNodes);
             Node tempEnd = end;
 
             RoutePart part = RoutePart.get(schedules.get(train.id).getSessionId(), schedules.get(train.id).simulate(simulationTime), start.getStationTag(), end.getStationTag(), userSettings);  
             if (!RoutePart.validate(part, trainData)) {
+                if (CreateRailwaysNavigator.isDebug()) CreateRailwaysNavigator.LOGGER.info(String.format("Cannot use train %s at station %s: %s", train.id, start.getStationTag(), part));
                 continue;
             }
             
             while (!tempTransferNodes.isEmpty()) {
                 RoutePart tempPart = RoutePart.get(schedules.get(train.id).getSessionId(), schedules.get(train.id).simulate(simulationTime), start.getStationTag(), tempTransferNodes.peek().getStationTag(), userSettings);  
+                                
                 if (!RoutePart.validate(tempPart, trainData)) {
                     break;
                 }
-                part = tempPart;
                 tempEnd = tempTransferNodes.poll();
+                part = tempPart;
             }
 
 
             if (ModCommonConfig.EXCLUDE_TRAINS.get()) excludedTrainIds.add(train.id);
+            
 
             // Step 2
             List<RoutePart> parts = new ArrayList<>();
@@ -334,7 +338,9 @@ public class NavigatableGraph {
                 Set<UUID> exclTrns = new HashSet<>(excludedTrainIds);
                 if (ModCommonConfig.EXCLUDE_TRAINS.get()) exclTrns.add(part.getTrainId());
                 List<RoutePart> res = searchForTrainsInternal(tempEnd, schedules, new ConcurrentLinkedQueue<>(tempTransferNodes), exclTrns, part);
-                if (res == null) continue;                
+                if (res == null) {
+                    continue;
+                }
                 parts.addAll(res);
             }
             routes.add(new Route(parts, false));
@@ -347,7 +353,7 @@ public class NavigatableGraph {
         Node end = transferNodes.poll();
 
         List<Train> departingTrains = TrainUtils.getDepartingTrainsAt(start.getStationTag()).stream().filter(train ->
-            TrainListener.data.containsKey(train.id) && 
+            TrainListener.hasTrainData(train.id) && 
             TrainUtils.isTrainUsable(train) &&
             !excludedTrainIds.contains(train.id) &&
             !globalSettings().isTrainBlacklisted(train) &&
@@ -361,7 +367,7 @@ public class NavigatableGraph {
         Queue<Node> bestPartRemainingTransfers = null;
 
         for (Train train : departingTrains) {
-            TrainData trainData = TrainListener.data.get(train.id);
+            TrainData trainData = TrainListener.getTrainData(train.id).get();
             long simulationTime = previousPart.timeUntilEnd() - 1 + userSettings.navigationTransferTime.getValue();  
             Queue<Node> tempTransferNodes = new ConcurrentLinkedQueue<>(transferNodes);
             Node tempEnd = end;
@@ -387,7 +393,7 @@ public class NavigatableGraph {
             }
         }
         
-        if (bestPart == null || bestPart.isEmpty()) {
+        if (bestPart == null || bestPart.isEmpty()) {            
             return null;
         }
 

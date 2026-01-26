@@ -7,7 +7,7 @@ import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.data.SavedRoutesManager;
 import de.mrjulsen.crn.data.navigation.ClientTrainListener;
-import de.mrjulsen.crn.data.train.StationDepartureHistory;
+import de.mrjulsen.crn.data.train.DepartureHistory;
 import de.mrjulsen.crn.event.events.DefaultTrainDataRefreshEvent;
 import de.mrjulsen.crn.event.events.RouteDetailsActionsEvent;
 import de.mrjulsen.crn.network.InstanceManager;
@@ -81,9 +81,9 @@ public class ModClientEvents {
 
         ClientGuiEvent.DEBUG_TEXT_LEFT.register((texts) -> {
             if (ModCommonConfig.ADVANCED_LOGGING.get()) {
-                texts.add(String.format("CRN | RL: %s, %s",
+                texts.add(String.format("CRN | RL: %s, DH: %s",
                     ClientTrainListener.debug_registeredListenersCount(),
-                    StationDepartureHistory.debug_departureHistory()
+                    DepartureHistory.debug_dataCount()
                 ));
             }
         });

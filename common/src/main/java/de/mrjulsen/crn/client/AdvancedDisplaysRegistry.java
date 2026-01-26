@@ -21,6 +21,8 @@ import net.fabricmc.api.Environment;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 
+import javax.annotation.Nullable;
+
 public final class AdvancedDisplaysRegistry {
 
     public static record DisplayTypeResourceKey(EDisplayType category, String name) {
@@ -77,7 +79,7 @@ public final class AdvancedDisplaysRegistry {
      * @param singleLined Whether the display can be connected vertically or not.
      * @param platformDisplayTrainsCount For Platform Displays only! Specifies how many trains can be shown on the display, depending on the properties of the display. If used correctly, this reduces network traffic, as data about trains that do not fit on the display are not transferred from the server.
      */
-    public static record DisplayProperties(boolean singleLined, Function<AdvancedDisplayBlockEntity, Integer> platformDisplayTrainsCount) {}
+    public static record DisplayProperties(boolean singleLined, @Nullable Function<AdvancedDisplayBlockEntity, Integer> platformDisplayTrainsCount) {}
 
     //private static final Map<EDisplayType, Map<ResourceLocation, Pair<Supplier<AbstractAdvancedDisplayRenderer<?>>, DisplayProperties>>> displayTypes = new HashMap<>();
     private static final Map<EDisplayType, Map<String, DisplayRegistrationData<?, ?>>> newDisplayTypes = new HashMap<>();
