@@ -2,6 +2,7 @@ plugins {
     id 'dev.architectury.loom' version '1.7-SNAPSHOT' apply false
     id 'architectury-plugin' version '3.4-SNAPSHOT'
     id 'com.github.johnrengelman.shadow' version '8.1.1' apply false
+    id "net.mrjulsen.mod-build-tools" version "1.0.4"
 }
 
 architectury {
@@ -24,7 +25,6 @@ subprojects {
 
     repositories {
         maven { url = "file://${System.getProperty('user.home')}/.m2/github/modsrepo/maven" } // Local
-        maven { url = "https://maven.mrjulsen.net" } // DragonLib
         maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" } // Forge Config API
         maven { url = "https://maven.parchmentmc.org" } // ParchmentMC
         maven { url = "https://maven.terraformersmc.com/" } // ModMenu
@@ -49,6 +49,7 @@ subprojects {
                 includeGroup "curse.maven"
             }
         }
+        maven { url = "https://maven.mrjulsen.net" } // DragonLib
     }
 
     dependencies {
@@ -119,20 +120,34 @@ subprojects {
         }
     }
 
-    // Configure Maven publishing.
     publishing {
         publications {
             mavenJava(MavenPublication) {
-                artifactId = rootProject.archives_name + "-" + project.name             
+                artifactId = base.archivesName.get()
                 from components.java
             }
         }
+    }
+}
 
-        repositories {
-            maven {
-                name "GitHub"
-                url "file://${System.getProperty('user.home')}/.m2/github/modsrepo/maven"
-            }
-        }
+modBuildTools {
+    publish {
+        localRepoDir = "${System.getProperty('user.home')}/.m2/github/modsrepo/maven"
+        s3Bucket = "maven"
+        endpointEnv = "MAVEN_ENDPOINT"
+        accessKeyEnv = "MAVEN_ACCESS_KEY"
+        secretKeyEnv = "MAVEN_SECRET_KEY"
+        publishCommon = false
+    }
+    javadoc {
+        title = "Create Railways Navigator ${release_channel}-${mod_version}"
+        tags = [
+                "apiNote:a:API Note:",
+                "implNote:a:Impl Note:",
+                "implSpec:a:Impl Spec:",
+                "related:a:Related:",
+                "example:a:Examples:",
+                "side:a:Valid on side:"
+        ]
     }
 }

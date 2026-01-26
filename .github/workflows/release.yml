@@ -1,0 +1,176 @@
+name: Create Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish_maven:
+        description: "Publish Maven (S3)"
+        required: false
+        type: boolean
+        default: true
+      trigger_mod_publish:
+        description: "Publish Mods on CurseForge/Modrinth"
+        required: false
+        type: boolean
+        default: true
+
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        java: [21]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Cache Gradle & Loom
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            **/.gradle/loom-cache
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle.properties', '**/libs.versions.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-home-cache-cleanup: true
+          gradle-version: wrapper
+
+      - name: Build
+        env:
+          MAVEN_ENDPOINT: ${{ secrets.MAVEN_ENDPOINT }}
+          MAVEN_ACCESS_KEY: ${{ secrets.MAVEN_ACCESS_KEY }}
+          MAVEN_SECRET_KEY: ${{ secrets.MAVEN_SECRET_KEY }}
+        run: |
+          chmod +x gradlew
+          
+          if [ "${{ github.event.inputs.publish_maven }}" = "true" ]; then
+            echo "Publishing to Maven (S3)…"
+            ./gradlew publishS3
+          else
+            echo "Publishing locally…"
+            ./gradlew publishLocal
+          fi
+      - name: Read metadata
+        run: |
+          MOD_ID=$(jq -r '.mod_id' metadata.json)
+          MOD_NAME=$(jq -r '.display_name' metadata.json)
+          MC_VERSION=$(jq -r '.minecraft_version' metadata.json)
+          MOD_VERSION=$(jq -r '.mod_version' metadata.json)
+          FULL_VERSION=$(jq -r '.full_version' metadata.json)
+          RELEASE_CHANNEL=$(jq -r '.release_channel' metadata.json)
+          
+          PLATFORM_STRING=$(jq -r '
+            if has("artifacts") and (.artifacts | length > 0) then
+              "[" + (.artifacts | keys | map(ascii_upcase) | join("/")) + "]"
+            else
+              "[]"
+            end
+          ' metadata.json)
+          
+          TITLE_FORMAT=$(jq -r '.github_release_title_format' .mod-build-config.json)
+          
+          RELEASE_TITLE=$TITLE_FORMAT
+          RELEASE_TITLE=${RELEASE_TITLE//\{MOD_ID\}/$MOD_ID}
+          RELEASE_TITLE=${RELEASE_TITLE//\{MOD_NAME\}/$MOD_NAME}
+          RELEASE_TITLE=${RELEASE_TITLE//\{MOD_VERSION\}/$MOD_VERSION}
+          RELEASE_TITLE=${RELEASE_TITLE//\{FULL_VERSION\}/$FULL_VERSION}
+          RELEASE_TITLE=${RELEASE_TITLE//\{MC_VERSION\}/$MC_VERSION}
+          RELEASE_TITLE=${RELEASE_TITLE//\{RELEASE_CHANNEL\}/$RELEASE_CHANNEL}
+          RELEASE_TITLE=${RELEASE_TITLE//\{PLATFORMS\}/$PLATFORM_STRING}
+          
+          echo "MOD_ID=$MOD_ID" >> $GITHUB_ENV
+          echo "MOD_NAME=$MOD_NAME" >> $GITHUB_ENV
+          echo "MC_VERSION=$MC_VERSION" >> $GITHUB_ENV
+          echo "MOD_VERSION=$MOD_VERSION" >> $GITHUB_ENV
+          echo "FULL_VERSION=$FULL_VERSION" >> $GITHUB_ENV
+          echo "RELEASE_CHANNEL=$RELEASE_CHANNEL" >> $GITHUB_ENV
+          echo "PLATFORMS=$PLATFORM_STRING" >> $GITHUB_ENV
+          echo "RELEASE_TITLE=$RELEASE_TITLE" >> $GITHUB_ENV
+
+      - name: Generate changelog
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+          curl -fsSL \
+            https://files.mrjulsen.net/scripts/java/generate_changelog.sh \
+            -o generate_changelog.sh
+          chmod +x generate_changelog.sh
+          ./generate_changelog.sh "${{ env.FULL_VERSION }}" "${{ env.MOD_NAME }}"
+
+      - name: Collect release files
+        id: collect
+        run: |
+          FILES=""
+          for MAIN in $(jq -r '.artifacts[].filename' metadata.json); do
+            echo "Processing $MAIN"
+            MAIN_PATH=$(find . -type f -name "${MAIN}.jar" | head -n 1)
+            if [ -z "$MAIN_PATH" ]; then
+              echo "ERROR: Could not find artifact: $MAIN"
+              exit 1
+            fi
+            DIR=$(dirname "$MAIN_PATH")
+            FILES="$FILES $MAIN_PATH"
+            for f in "$DIR"/*sources.jar; do
+              [ -e "$f" ] && FILES="$FILES $f"
+            done
+            for f in "$DIR"/*javadoc.jar; do
+              [ -e "$f" ] && FILES="$FILES $f"
+            done
+          done
+          echo "FILES<<EOF" >> $GITHUB_ENV
+          for f in $FILES; do
+            echo "$f" >> $GITHUB_ENV
+          done
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Load changelog
+        id: changelog
+        run: |
+          CONTENT=$(cat CHANGELOG.md)
+          echo "content<<EOF" >> $GITHUB_OUTPUT
+          echo "$CONTENT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+      - name: Upload Release Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ env.FULL_VERSION }}
+          path: |
+            ${{ env.FILES }}
+            metadata.json
+            CHANGELOG.md
+      - name: Create GitHub Release Draft
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.FULL_VERSION }}
+          name: ${{ env.RELEASE_TITLE }}
+          target_commitish: ${{ github.ref_name }}
+          draft: true
+          prerelease: ${{ env.RELEASE_CHANNEL != 'release' }}
+          body: |
+            ${{ github.event.inputs.trigger_mod_publish == 'false' && '[skip-mod-publish]' || '' }}
+            ${{ steps.changelog.outputs.content }}
+          files: |
+            ${{ env.FILES }}
+            metadata.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
