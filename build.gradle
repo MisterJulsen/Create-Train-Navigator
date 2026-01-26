@@ -68,13 +68,15 @@ subprojects {
             "discord": rootProject.discord,
             "next_unsupported_minecraft_version": rootProject.next_unsupported_minecraft_version,
             "dragonlib_version": "$rootProject.minecraft_version-$rootProject.dragonlib_version",
-            "forge_version_int": rootProject.forge_version_int,
+            "forge_dependency_version": rootProject.forge_dependency_version,
+            "forge_loader_version": rootProject.forge_loader_version,
             "fabric_loader_version": rootProject.fabric_loader_version,
             "java_version": rootProject.java_version,
             "maven_group": rootProject.maven_group,
             "create_forge_version": rootProject.create_forge_version,
+            "create_forge_dependency_version": rootProject.create_forge_dependency_version,
+            "create_fabric_version": rootProject.create_fabric_version,
             "main_class_name": rootProject.main_class_name,
-            "create_forge_version_dependency": rootProject.create_forge_version_dependency,
         ]
         filesMatching(['pack.mcmeta', 'fabric.mod.json', 'META-INF/mods.toml', 'createrailwaysnavigator.mixins.json']) {
             expand expandProps
@@ -93,6 +95,20 @@ subprojects {
 
     tasks.withType(JavaCompile).configureEach {
         it.options.release = 17
+    }
+
+    jar {
+        manifest {
+            attributes([
+                    "Specification-Title"     : "${rootProject.display_name}",
+                    "Specification-Vendor"    : "${rootProject.authors}",
+                    "Specification-Version"   : "1",
+                    "Implementation-Title"    : project.name,
+                    "Implementation-Version"  : project.jar.archiveVersion,
+                    "Implementation-Vendor"   : "${rootProject.authors}",
+                    "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+            ])
+        }
     }
 
     // Configure Maven publishing.

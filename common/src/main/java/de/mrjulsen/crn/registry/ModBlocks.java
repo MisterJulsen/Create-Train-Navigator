@@ -2,6 +2,8 @@ package de.mrjulsen.crn.registry;
 
 import java.util.function.Supplier;
 
+import com.simibubi.create.AllInteractionBehaviours;
+import com.simibubi.create.AllMovementBehaviours;
 import com.simibubi.create.content.redstone.displayLink.AllDisplayBehaviours;
 import com.simibubi.create.foundation.block.connected.ConnectedTextureBehaviour;
 import com.simibubi.create.foundation.data.SharedProperties;
@@ -10,15 +12,9 @@ import com.tterrag.registrate.util.entry.BlockEntry;
 import com.tterrag.registrate.util.nullness.NonNullConsumer;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
-import de.mrjulsen.crn.block.AbstractAdvancedDisplayBlock;
-import de.mrjulsen.crn.block.AdvancedDisplayBlock;
-import de.mrjulsen.crn.block.AdvancedDisplayBoardBlock;
-import de.mrjulsen.crn.block.AdvancedDisplayHalfPanelBlock;
-import de.mrjulsen.crn.block.AdvancedDisplayPanelBlock;
-import de.mrjulsen.crn.block.AdvancedDisplaySlabBlock;
-import de.mrjulsen.crn.block.AdvancedDisplaySlopedBlock;
-import de.mrjulsen.crn.block.AdvancedDisplaySmallBlock;
-import de.mrjulsen.crn.block.TrainStationClockBlock;
+import de.mrjulsen.crn.block.*;
+import de.mrjulsen.crn.block.blockentity.AdvancedDisplayInteractionBehaviour;
+import de.mrjulsen.crn.block.blockentity.AdvancedDisplayMovementBehaviour;
 import de.mrjulsen.crn.block.connected.AdvancedDisplayCTBehaviour;
 import de.mrjulsen.crn.block.connected.AdvancedDisplaySmallCTBehaviour;
 import de.mrjulsen.crn.block.display.AdvancedDisplayTarget;
@@ -26,6 +22,7 @@ import dev.architectury.utils.EnvExecutor;
 import net.fabricmc.api.EnvType;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 
 public class ModBlocks {	
 
@@ -41,6 +38,8 @@ public class ModBlocks {
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
 		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
+		.onRegister(AllMovementBehaviours.movementBehaviour(new AdvancedDisplayMovementBehaviour()))
+		.onRegister(AllInteractionBehaviours.interactionBehaviour(new AdvancedDisplayInteractionBehaviour()))
 		.item()
 		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
@@ -53,6 +52,8 @@ public class ModBlocks {
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
 		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
+		.onRegister(AllMovementBehaviours.movementBehaviour(new AdvancedDisplayMovementBehaviour()))
+		.onRegister(AllInteractionBehaviours.interactionBehaviour(new AdvancedDisplayInteractionBehaviour()))
 		.item()
 		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
@@ -66,6 +67,8 @@ public class ModBlocks {
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
 		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
+		.onRegister(AllMovementBehaviours.movementBehaviour(new AdvancedDisplayMovementBehaviour()))
+		.onRegister(AllInteractionBehaviours.interactionBehaviour(new AdvancedDisplayInteractionBehaviour()))
 		.item()
 		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
@@ -79,6 +82,8 @@ public class ModBlocks {
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
 		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
+		.onRegister(AllMovementBehaviours.movementBehaviour(new AdvancedDisplayMovementBehaviour()))
+		.onRegister(AllInteractionBehaviours.interactionBehaviour(new AdvancedDisplayInteractionBehaviour()))
 		.item()
 		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
@@ -92,6 +97,8 @@ public class ModBlocks {
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
 		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
+		.onRegister(AllMovementBehaviours.movementBehaviour(new AdvancedDisplayMovementBehaviour()))
+		.onRegister(AllInteractionBehaviours.interactionBehaviour(new AdvancedDisplayInteractionBehaviour()))
 		.item()
 		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
@@ -105,6 +112,8 @@ public class ModBlocks {
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
 		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
+		.onRegister(AllMovementBehaviours.movementBehaviour(new AdvancedDisplayMovementBehaviour()))
+		.onRegister(AllInteractionBehaviours.interactionBehaviour(new AdvancedDisplayInteractionBehaviour()))
 		.item()
 		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
@@ -118,6 +127,8 @@ public class ModBlocks {
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
 		.onRegister(AllDisplayBehaviours.assignDataBehaviour(new AdvancedDisplayTarget()))
+		.onRegister(AllMovementBehaviours.movementBehaviour(new AdvancedDisplayMovementBehaviour()))
+		.onRegister(AllInteractionBehaviours.interactionBehaviour(new AdvancedDisplayInteractionBehaviour()))
 		.item()
 		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
@@ -131,6 +142,12 @@ public class ModBlocks {
 		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
 		.register();
+
+	public static final BlockEntry<NavigatorLecternBlock> NAVIGATOR_LECTERN = CreateRailwaysNavigator.REGISTRATE.block("navigator_lectern", NavigatorLecternBlock::new)
+			.initialProperties(() -> Blocks.LECTERN)
+			.transform(TagGen.axeOnly())
+			.loot((lt, block) -> lt.dropOther(block, Blocks.LECTERN))
+			.register();
 
 	public static <T extends Block> NonNullConsumer<? super T> connectedTextures(
 		Supplier<ConnectedTextureBehaviour> behavior) {

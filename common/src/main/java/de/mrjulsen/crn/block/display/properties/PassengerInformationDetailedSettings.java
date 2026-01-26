@@ -1,7 +1,9 @@
 package de.mrjulsen.crn.block.display.properties;
 
 import de.mrjulsen.crn.block.display.properties.components.ICarriageIndexSetting;
+import de.mrjulsen.crn.block.display.properties.components.IShowDoNotBoardText;
 import de.mrjulsen.crn.block.display.properties.components.IShowExitDirectionSetting;
+import de.mrjulsen.crn.block.display.properties.components.IShowLineColorSetting;
 import de.mrjulsen.crn.block.display.properties.components.IShowNextConnections;
 import de.mrjulsen.crn.block.display.properties.components.IShowTrainStatsSetting;
 import de.mrjulsen.crn.block.display.properties.components.ITimeDisplaySetting;
@@ -18,7 +20,9 @@ public class PassengerInformationDetailedSettings extends BasicDisplaySettings i
     IShowExitDirectionSetting,
     ICarriageIndexSetting,
     IShowNextConnections,
-    ITrainTextSetting
+    ITrainTextSetting,
+    IShowLineColorSetting,
+    IShowDoNotBoardText
 {
 
     protected ETimeDisplay timeDisplay = ETimeDisplay.ABS;
@@ -28,6 +32,8 @@ public class PassengerInformationDetailedSettings extends BasicDisplaySettings i
     protected byte carriageIndexOffset = 0;
     protected boolean overwriteCarriageIndex = false;
     protected ETrainTextComponents trainTextComponents = ETrainTextComponents.TRAIN_NAME;
+    protected boolean showLineColor = false;
+    protected boolean showDoNotBoardText = true;
 
     @Override
     public void deserializeNbt(CompoundTag nbt) {
@@ -39,6 +45,9 @@ public class PassengerInformationDetailedSettings extends BasicDisplaySettings i
         if (nbt.contains(NBT_CARRIAGE_INDEX)) this.carriageIndexOffset = nbt.getByte(NBT_CARRIAGE_INDEX);
         if (nbt.contains(NBT_OVERWRITE_CARRIAGE_INDEX)) this.overwriteCarriageIndex = nbt.getBoolean(NBT_OVERWRITE_CARRIAGE_INDEX);
         if (nbt.contains(NBT_TRAIN_TEXT)) this.trainTextComponents = ETrainTextComponents.getById(nbt.getByte(NBT_TRAIN_TEXT));
+        if (nbt.contains(NBT_SHOW_LINE_COLOR)) this.showLineColor = nbt.getBoolean(NBT_SHOW_LINE_COLOR);
+        if (nbt.contains(NBT_SHOW_DO_NOT_BOARD_TEXT)) this.showDoNotBoardText = nbt.getBoolean(NBT_SHOW_DO_NOT_BOARD_TEXT);
+
     }
 
     @Override
@@ -51,6 +60,8 @@ public class PassengerInformationDetailedSettings extends BasicDisplaySettings i
         nbt.putByte(NBT_CARRIAGE_INDEX, carriageIndexOffset);
         nbt.putBoolean(NBT_OVERWRITE_CARRIAGE_INDEX, overwriteCarriageIndex);
         nbt.putByte(NBT_TRAIN_TEXT, trainTextComponents.getId());
+        nbt.putBoolean(NBT_SHOW_LINE_COLOR, showLineColor);
+        nbt.putBoolean(NBT_SHOW_DO_NOT_BOARD_TEXT, showDoNotBoardText);
     }
 
     @Override
@@ -61,6 +72,8 @@ public class PassengerInformationDetailedSettings extends BasicDisplaySettings i
         this.buildShowStatsGui(context);
         this.buildShowExitGui(context);
         this.buildShowConnectionGui(context);
+        this.buildShowLineColorGui(context);
+        this.buildShowDoNotBoardTextGui(context);
         this.buildCarriageIndexGui(context);
         this.buildTrainTextGui(context);
     }
@@ -73,6 +86,9 @@ public class PassengerInformationDetailedSettings extends BasicDisplaySettings i
         copyShowStatsSetting(oldSettings);
         copyShowConnectionSetting(oldSettings);
         copyCarriageIndexSetting(oldSettings);
+        copyTrainTextSetting(oldSettings);
+        copyShowLineColorSetting(oldSettings);
+        copyShowDoNotBoardTextSetting(oldSettings);
     }
 
     @Override
@@ -116,6 +132,16 @@ public class PassengerInformationDetailedSettings extends BasicDisplaySettings i
     }
 
     @Override
+    public boolean showLineColor() {
+        return showLineColor;
+    }
+
+    @Override
+    public void setShowLineColor(boolean b) {
+        this.showLineColor = b;
+    }
+
+    @Override
     public void setCarriageIndex(byte b) {
         this.carriageIndexOffset = b;
     }
@@ -143,5 +169,15 @@ public class PassengerInformationDetailedSettings extends BasicDisplaySettings i
     @Override
     public void setTrainTextComponents(ETrainTextComponents v) {
         this.trainTextComponents = v;
+    }
+
+    @Override
+    public boolean showDoNotBoardText() {
+        return showDoNotBoardText;
+    }
+
+    @Override
+    public void setShowDoNotBoardText(boolean b) {
+        this.showDoNotBoardText = b;
     }
 }

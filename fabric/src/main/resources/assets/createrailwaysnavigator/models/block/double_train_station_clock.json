@@ -1,0 +1,11 @@
+{
+	"porting_lib:loader": "porting_lib:obj",
+	"flip_v": true,
+	"model": "createrailwaysnavigator:models/block/double_train_station_clock.obj",
+	"textures": {
+		"texture0": "createrailwaysnavigator:block/train_station_clock",
+		"texture1": "block/black_concrete",
+		"texture2": "createrailwaysnavigator:block/dark_metal",
+		"particle": "createrailwaysnavigator:block/dark_metal"
+	}
+}

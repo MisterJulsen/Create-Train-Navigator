@@ -1,14 +1,22 @@
 package de.mrjulsen.crn.util;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import com.simibubi.create.foundation.utility.Components;
 import com.simibubi.create.foundation.utility.Lang;
 
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.exceptions.RuntimeSideException;
 import de.mrjulsen.mcdragonlib.DragonLib;
@@ -110,5 +118,70 @@ public class ModUtils {
     
     public static int[] getDyeColors() {
         return dyeColorsCache.get();
+    }
+
+    public static long convertToTimeTicks(int hours, int minutes) {
+        return (long)((double)hours * 1000D + (1000D / 60D * (double)minutes));
+    }
+
+    private static Pattern buildPattern(String src) {
+        String escaped = "\\Q" + src.replace("*", "\\E(.*)\\Q") + "\\E";
+        return Pattern.compile(escaped);
+    }
+
+    public static boolean hasWildcards(String text) {
+        return text.contains("*");
+    }
+
+    public static Collection<String> wildcardMatches(String src, Collection<String> pool) {
+        try {
+            Pattern p = buildPattern(src);
+            List<String> res = new LinkedList<>();
+            for (String text : pool) {
+                Matcher m = p.matcher(text);
+                if (!m.matches()) continue;
+                res.add(text);
+            }
+            return res;
+        } catch (Exception e) {
+            CreateRailwaysNavigator.LOGGER.warn("Error while checking regex: " + e);
+            return List.of();
+        }
+    }
+
+    public static Map<String, List<String>> mapWildcards(String src, List<String> targets, Collection<String> pool) {
+        Pattern p = buildPattern(src);
+        Map<String, List<String>> res = new LinkedHashMap<>();
+        for (String text : pool) {
+            Matcher m = p.matcher(text);
+            if (!m.matches()) continue;
+            int g = m.groupCount();
+            List<String> groups = new ArrayList<>(g);
+            for (int i = 1; i <= g; i++) groups.add(m.group(i));
+
+            List<String> out = new ArrayList<>();
+            for (String target : targets) {
+                String[] part = target.split("\\*", -1);
+                int S = part.length - 1;
+                StringBuilder sb = new StringBuilder(part[0]);
+                if (S == 1) {
+                    sb.append(String.join("", groups)).append(part[1]);
+                } else if (S > 1) {
+                    for (int i = 0; i < S; i++) {
+                        String fill;
+                        if (i < S - 1) {
+                            fill = i < g ? groups.get(i) : "";
+                        } else {
+                            int start = Math.min(i, g);
+                            fill = String.join("", groups.subList(start, g));
+                        }
+                        sb.append(fill).append(part[i + 1]);
+                    }
+                }
+                out.add(sb.toString().replace("*", ""));
+            }
+            res.put(text, out);
+        }
+        return res;
     }
 }

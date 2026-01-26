@@ -3,6 +3,7 @@ package de.mrjulsen.crn.block;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.foundation.block.IBE;
 
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.blockentity.TrainStationClockBlockEntity;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.registry.ModBlockEntities;
@@ -31,23 +32,29 @@ import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition.Builder;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class TrainStationClockBlock extends Block implements IWrenchable, IBE<TrainStationClockBlockEntity> {
 
 	public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
+    public static final BooleanProperty DOUBLE = BooleanProperty.create("double");
 	
     private static final VoxelShape SHAPE_SN = Block.box(0, 0, 4, 16, 16, 12);
     private static final VoxelShape SHAPE_EW = Block.box(4, 0, 0, 12, 16, 16);
 
     public TrainStationClockBlock(Properties properties) {
-        super(properties);
+        super(properties
+            .noOcclusion()
+        );
 
         this.registerDefaultState(this.stateDefinition.any()
             .setValue(FACING, Direction.NORTH)
+            .setValue(DOUBLE, false)
         );
     }
 
@@ -82,14 +89,18 @@ public class TrainStationClockBlock extends Block implements IWrenchable, IBE<Tr
             return InteractionResult.SUCCESS;
 		}
 
-		if (pLevel.isClientSide) {
-            pPlayer.displayClientMessage(TextUtils.translate("gui.createrailwaysnavigator.time", TimeUtils.parseTime((int)(pLevel.getDayTime() % DragonLib.ticksPerDay() + DragonLib.daytimeShift()), ModClientConfig.TIME_FORMAT.get())), true);
+		if (!pPlayer.getItemInHand(pHand).is(this.asItem()) && pLevel.isClientSide) {
+            pPlayer.displayClientMessage(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".time", TimeUtils.parseTime((int)(pLevel.getDayTime() % DragonLib.ticksPerDay() + DragonLib.daytimeShift()), ModClientConfig.TIME_FORMAT.get())), true);
+            return InteractionResult.SUCCESS;
         }
-        return InteractionResult.SUCCESS;
+        return InteractionResult.PASS;
     }
 
 	@Override
     public VoxelShape getShape(BlockState pState, BlockGetter pLevel, BlockPos pPos, CollisionContext pContext) {
+        if (pState.getValue(DOUBLE)) {
+            return Shapes.block();
+        }
         return pState.getValue(FACING) == Direction.NORTH || pState.getValue(FACING) == Direction.SOUTH ? SHAPE_SN : SHAPE_EW;
     }
 
@@ -106,12 +117,23 @@ public class TrainStationClockBlock extends Block implements IWrenchable, IBE<Tr
     @Override
     protected void createBlockStateDefinition(Builder<Block, BlockState> pBuilder) {
         super.createBlockStateDefinition(pBuilder);
-        pBuilder.add(FACING);
+        pBuilder.add(FACING, DOUBLE);
     }
 
     @Override
 	public BlockState getStateForPlacement(BlockPlaceContext context) {
+        BlockState blockState = context.getLevel().getBlockState(context.getClickedPos());
+		if (blockState.is(this)) {
+			return blockState.setValue(DOUBLE, true);
+		}
 		return this.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+	}
+
+    public boolean canBeReplaced(BlockState state, BlockPlaceContext useContext) {
+		if (useContext.getItemInHand().is(this.asItem()) && !state.getValue(DOUBLE)) {
+            return true;
+		} 
+        return false;
 	}
 
     @Override

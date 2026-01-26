@@ -4,6 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.data.train.DepartureHistory;
 import de.mrjulsen.crn.data.train.TrainListener;
 import de.mrjulsen.crn.debug.DebugOverlay;
 import de.mrjulsen.crn.registry.ModAccessorTypes;
@@ -28,7 +29,7 @@ public class DebugCommand {
     private static final String SUB_HARD_RESET = "hardResetTrainPredictions";
     private static final String SUB_TRAIN_DEBUG_OVERLAY = "trainDebugOverlay";
     private static final String SUB_TRAIN_OVERVIEW = "trainOverview";
-    private static final String SUB_TEST = "test";
+    private static final String SUB_CLEAR_DEPARTURE_HISTORY = "clearDepartureHistory";
     
     @SuppressWarnings("all")
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandSelection selection) {        
@@ -48,8 +49,8 @@ public class DebugCommand {
                 .then(Commands.literal(SUB_TRAIN_OVERVIEW)
                     .executes(x -> showTrainDebugScreen(x.getSource()))
                 )
-                .then(Commands.literal(SUB_TEST)
-                    .executes(x -> printAllSignals(x.getSource()))
+                .then(Commands.literal(SUB_CLEAR_DEPARTURE_HISTORY)
+                    .executes(x -> clearDepartureHistory(x.getSource()))
                 )
             )
             .then(Commands.literal(SUB_DISCORD)
@@ -77,14 +78,13 @@ public class DebugCommand {
 
     private static int hardReset(CommandSourceStack cmd) throws CommandSyntaxException {
         cmd.sendSuccess(() -> TextUtils.text("All train predictions have been deleted."), false);
-        TrainListener.data.clear();
-        TrainListener.data.values().forEach(x -> x.hardResetPredictions());
+        TrainListener.resetTrainData();
         return 1;
     }
 
     private static int reset(CommandSourceStack cmd) throws CommandSyntaxException {
         cmd.sendSuccess(() -> TextUtils.text("All train predictions have been reset."), false);
-        TrainListener.data.values().forEach(x -> x.resetPredictions());
+        TrainListener.getAllTrainData().forEach(x -> x.softResetPredictions());
         return 1;
     }
 
@@ -105,8 +105,9 @@ public class DebugCommand {
         return 1;
     }
 
-    private static int printAllSignals(CommandSourceStack cmd) throws CommandSyntaxException {
-        cmd.sendSuccess(() -> TextUtils.empty(), false);
+    private static int clearDepartureHistory(CommandSourceStack cmd) throws CommandSyntaxException {
+        cmd.sendSuccess(() -> TextUtils.text("The departure history has been deleted."), false);
+        DepartureHistory.clear();
         return 1;
     }
 }
