@@ -115,7 +115,9 @@ public class TrainSeparationCondition extends ScheduledDelay implements IDelayed
 		}
 
 		if (GameInstance.getServer() != null && lastDepartureTimestamp + delayValue < GameInstance.getServer().overworld().getGameTime()) {
-			DepartureHistory.updateDepartures(context.station().name, context.train());
+			if (context.station() != null && context.station().name != null && context.train() != null) { // TODO what's going on here? Why can station().name be null???
+				DepartureHistory.updateDepartures(context.station().name, context.train());
+			}
 			return true;
 		}
 		return false;
