@@ -9,6 +9,7 @@ import com.simibubi.create.content.trains.schedule.destination.DestinationInstru
 import com.simibubi.create.foundation.gui.ModularGuiLineBuilder;
 import com.simibubi.create.foundation.utility.Pair;
 
+import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.api.IPredictableWaitCondition;
 import de.mrjulsen.crn.client.ClientWrapper;
@@ -17,8 +18,10 @@ import de.mrjulsen.crn.data.schedule.INavigationExtension;
 import de.mrjulsen.crn.data.schedule.instruction.PrioritizedDestinationInstruction;
 import de.mrjulsen.crn.data.train.DepartureHistory;
 import de.mrjulsen.crn.data.train.DepartureHistory.ETrainFilter;
-import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
+import de.mrjulsen.mcdragonlib.util.time.ConfiguredTimeSystem;
+import de.mrjulsen.mcdragonlib.util.time.DLTime;
+import de.mrjulsen.mcdragonlib.util.time.TimeContext;
 import dev.architectury.utils.GameInstance;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -73,18 +76,10 @@ public class TrainSeparationCondition extends ScheduledDelay implements IDelayed
 
 		switch (getTimeSource()) {
 			case IN_GAME -> {
-				int[] t = toInGameTime(remainingTicks);
-				if (compact) {
-					return TextUtils.text(String.format("%d:%02d:%02d", t[2], t[1], t[0]));
-				}
-				return TextUtils.text(String.format("%dd %dh %dm", t[2], t[1], t[0]));
+				return TextUtils.text(toTime(remainingTicks).format(Constants.DEFAULT_GAME_DURATION_FORMAT, TimeContext.INGAME));
 			}
 			default -> {
-				int[] t = toRealLifeTime(remainingTicks);
-				if (compact) {
-					return TextUtils.text(String.format("%d:%02d,%02d", t[2], t[1], t[0]));
-				}
-				return TextUtils.text(String.format("%dm %ds %dt", t[2], t[1], t[0]));
+				return TextUtils.text(toTime(remainingTicks).format(Constants.DEFAULT_REAL_DURATION_FORMAT, TimeContext.REAL));
 			}
 		}
 	}
@@ -95,9 +90,9 @@ public class TrainSeparationCondition extends ScheduledDelay implements IDelayed
 			TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule." + type + "." + getId().getPath()),
 			TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule." + type + "." + getId().getPath() + ".description",
 				formatTime(false),
-				TextUtils.translate(getTimeSource().getValueTranslationKey(CreateRailwaysNavigator.MOD_ID)).getString()
+				getTimeSource().getValueTranslation().getString()
 			).withStyle(ChatFormatting.DARK_AQUA),
-			TextUtils.translate(getTrainFilter().getValueTranslationKey(CreateRailwaysNavigator.MOD_ID)).withStyle(ChatFormatting.AQUA)
+			getTrainFilter().getValueTranslation().withStyle(ChatFormatting.AQUA)
         );
 	}
 
@@ -153,32 +148,8 @@ public class TrainSeparationCondition extends ScheduledDelay implements IDelayed
 		return worldTime + totalWaitTicks();
 	}
 
-
-	public static int[] toRealLifeTime(int ticks) {
-        int t = ticks;
-        int m = t / 1200;
-        t %= 1200;
-        int s = t / 20;
-        t %= 20;
-        return new int[] { t, s, m };
-    }
-
-    public static int[] toInGameTime(int ticks) {
-        int t = ticks;
-        int d = (int)(t / DragonLib.ticksPerDay());
-        t %= DragonLib.ticksPerDay();
-        int h = (int)(t / DragonLib.ticksPerIngameHour());
-        t %= DragonLib.ticksPerIngameHour();
-        int m = (int)(t / (DragonLib.ticksPerIngameHour() / 60));
-        return new int[] { m, h, d };
-    }
-
-    public static int toTicksFromRealLife(int[] t) {
-        return t[2] * TimeUnit.MINUTES.ticksPer + t[1] * TimeUnit.SECONDS.ticksPer + t[0];
-    }
-
-    public static int toTicksFromInGame(int[] t) {
-        return (int)(t[2] * DragonLib.ticksPerDay() + t[1] * DragonLib.ticksPerIngameHour() + t[0] * (DragonLib.ticksPerIngameHour() / 60));
+    public static DLTime toTime(long ticks) {
+		return DLTime.fromTicks(ticks, new ConfiguredTimeSystem());
     }
 
 }

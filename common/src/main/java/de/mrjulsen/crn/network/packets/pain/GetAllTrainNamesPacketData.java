@@ -1,6 +1,7 @@
 package de.mrjulsen.crn.network.packets.pain;
 
-import java.util.Collection;
+import java.util.List;
+
 import de.mrjulsen.crn.data.train.TrainUtils;
 import de.mrjulsen.mcdragonlib.data.DLStatus;
 import de.mrjulsen.mcdragonlib.network.NetworkPacketContext;
@@ -13,13 +14,13 @@ import net.minecraft.nbt.Tag;
 public class GetAllTrainNamesPacketData extends NetworkPacketData {
 
     private static final String NBT_DATA = "Data";
-    private Collection<String> names;
+    private List<String> names;
 
     public GetAllTrainNamesPacketData(DLStatus status) {
         super(status);
     }
 
-    public GetAllTrainNamesPacketData(Collection<String> names) {
+    public GetAllTrainNamesPacketData(List<String> names) {
         super(DLStatus.OK);
         this.names = names;
     }
@@ -36,6 +37,10 @@ public class GetAllTrainNamesPacketData extends NetworkPacketData {
     @Override
     protected void read(CompoundTag nbt) {
         this.names = nbt.getList(NBT_DATA, Tag.TAG_STRING).stream().map(x -> ((StringTag)x).getAsString()).toList();
+    }
+
+    public List<String> getTrainsNames() {
+        return names;
     }
     
 

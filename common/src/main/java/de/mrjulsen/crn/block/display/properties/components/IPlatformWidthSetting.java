@@ -20,7 +20,6 @@ public interface IPlatformWidthSetting extends ICustomTextWidthSetting {
 
     @Environment(EnvType.CLIENT)
     default void buildPlatformWidthGui(GuiBuilderContext context, boolean allowAuto) {
-        buildBasicTextWidthGui(context);
         GuiBuilderWrapper.buildPlatformWidthGui(this, context, allowAuto);
     }
     

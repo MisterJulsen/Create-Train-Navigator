@@ -56,6 +56,10 @@ public class StationTagRequestByTagPacketData {
         protected void read(CompoundTag nbt) {
             this.tag = StationTag.fromNbt(nbt.getCompound(NBT_DATA), null);
         }
+
+        public StationTag getTag() {
+            return tag;
+        }
     }
 
     public static Response handle(Request packet, NetworkPacketContext context) {

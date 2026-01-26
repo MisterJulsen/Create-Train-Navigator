@@ -44,6 +44,7 @@ import de.mrjulsen.mcdragonlib.client.ber.IBlockEntityRendererInstance;
 import de.mrjulsen.mcdragonlib.config.ECachingPriority;
 import de.mrjulsen.mcdragonlib.network.NetworkDirection;
 import de.mrjulsen.mcdragonlib.util.Cache;
+import de.mrjulsen.mcdragonlib.util.DLColor;
 import de.mrjulsen.mcdragonlib.util.DLListUtils;
 import de.mrjulsen.mcdragonlib.util.Pair;
 import de.mrjulsen.mcdragonlib.util.Tripple;
@@ -616,7 +617,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         }
         
         if (pTag.contains(LEGACY_NBT_COLOR)) {
-            getSettingsAs(BasicDisplaySettings.class).ifPresent(x -> x.setFontColor(pTag.getInt(LEGACY_NBT_COLOR)));
+            getSettingsAs(BasicDisplaySettings.class).ifPresent(x -> x.setFontColor(DLColor.fromInt(pTag.getInt(LEGACY_NBT_COLOR))));
         }
         if (displayTypeId.category().getSource() == EDisplayTypeDataSource.PLATFORM) {            
             if (pTag.contains(LEGACY_NBT_PLATFORM_WIDTH)) {

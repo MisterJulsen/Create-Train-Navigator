@@ -20,7 +20,7 @@ public class Animator extends DLGuiComponent {
     private Runnable onCompleted;
 
     public Animator() {
-        super(0, 0, 0, 0);
+        super(0, 0, 1, 1);
     }
 
     public boolean isRunning() {
@@ -41,6 +41,11 @@ public class Animator extends DLGuiComponent {
 
     public float getPercentage() {
         return 1F / (float)maxTicks * currentTicksSmooth;
+    }
+
+    @Override
+    public Rectangle getRenderBounds() {
+        return Rectangle.INFINITE;
     }
 
     @Override

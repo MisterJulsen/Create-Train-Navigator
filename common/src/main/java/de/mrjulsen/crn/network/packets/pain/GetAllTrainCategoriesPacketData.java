@@ -1,5 +1,6 @@
 package de.mrjulsen.crn.network.packets.pain;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import de.mrjulsen.crn.data.TrainCategory;
@@ -15,7 +16,7 @@ public class GetAllTrainCategoriesPacketData extends NetworkPacketData {
     
     private static final String NBT_DATA = "Data";
 
-    private List<TrainCategory> categories;
+    private List<TrainCategory> categories = new ArrayList<>();
 
     public GetAllTrainCategoriesPacketData(DLStatus status) {
         super(status);

@@ -2,20 +2,18 @@ package de.mrjulsen.crn.client.ber.variants;
 
 import java.util.List;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity.EUpdateReason;
 import de.mrjulsen.crn.block.display.properties.StaticTextDisplaySettings;
 import de.mrjulsen.crn.block.display.properties.StaticTextDisplaySettings.TextComponent;
-import de.mrjulsen.crn.block.display.properties.components.ITextWidthSetting.TextScaleBounds;
 import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
 import de.mrjulsen.crn.util.VariableManager;
 import de.mrjulsen.mcdragonlib.client.ber.BERGraphics;
 import de.mrjulsen.mcdragonlib.client.ber.BERLabel;
-import de.mrjulsen.mcdragonlib.core.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
-import net.minecraft.client.Minecraft;
+import de.mrjulsen.mcdragonlib.util.math.Point;
+import de.mrjulsen.mcdragonlib.util.math.Rectangle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -24,29 +22,21 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class BERRichText implements AbstractAdvancedDisplayRenderer<StaticTextDisplaySettings> {
 
-
     private BERLabel[] labels = new BERLabel[0];
-
-    @Override
-    public void renderTick(float deltaTime) {
-        for (int i = 0; i < labels.length; i++) {
-            labels[i].renderTick();
-        }
-    }
 
     @Override
     public void tick(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent) {
         for (int i = 0; i < labels.length && i < getDisplaySettings(blockEntity).getComponents().size(); i++) {
             TextComponent component = getDisplaySettings(blockEntity).getComponents().get(i);
             MutableComponent text = getText(component.getStaticText());    
-            labels[i].setText(text);
+            labels[i].text.set(text);
         }
     }
     
     @Override
     public void render(BERGraphics<AdvancedDisplayBlockEntity> graphics, float pPartialTicks, AdvancedDisplayRenderInstance parent, int light, boolean backSide) {
         for (int i = 0; i < labels.length; i++) {
-            labels[i].render(graphics, light);
+            labels[i].render(graphics);
         }
     }
 
@@ -55,7 +45,7 @@ public class BERRichText implements AbstractAdvancedDisplayRenderer<StaticTextDi
         MutableComponent text = TextUtils.empty();
         if (staticText != null) {
             try {
-                JsonElement elem = JsonParser.parseString(staticText);
+                JsonParser.parseString(staticText);
                 text = Component.Serializer.fromJsonLenient(staticText);
             } catch (Exception e) {
                 text = TextUtils.text(staticText);
@@ -82,29 +72,22 @@ public class BERRichText implements AbstractAdvancedDisplayRenderer<StaticTextDi
             BERLabel label = new BERLabel();
 
             MutableComponent text = getText(component.getStaticText());
-    
-            label
-                .setScrollingSpeed(2)
-                .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
-                .setText(text)
-                .setYScale(component.getYScale())
-                .setForceScrolling(component.getBoundsAction() == TextScaleBounds.SCROLL)
-                .setScale(component.getXScale(), component.getMinXScale())
-                .setPos(3 + component.getX(), 3 + component.getY())
-                .setCentered(component.getTextAlignment() == ETextAlignment.CENTER)
-            ;
-            label
-                .setMaxWidth(Math.min(blockEntity.getXSizeScaled() * 16 - 3 - label.getX(), component.getTextMaxWidth() > StaticTextDisplaySettings.DEFAULT_TEXT_MAX_WIDTH ? Float.MAX_VALUE : component.getTextMaxWidth()), component.getBoundsAction().hit())
-            ;
-            if (component.getTextAlignment() == ETextAlignment.RIGHT && !label.isForceScrolling()) {
-                label
-                    .setPos(label.getX() + label.getMaxWidth() - Math.min(label.getTextWidth(), label.getMaxWidth()), label.getY())
-                ;
-            }
-            label
-                .setPos(label.getX(), Math.min(label.getY(), blockEntity.getYSize() * 16 - 2 - label.getYScale() * Minecraft.getInstance().font.lineHeight))
-                .setBackground(component.getTextBackgroundColor(), label.isForceScrolling() || (component.isFullLabelBackgroundColor() && component.getTextAlignment() != ETextAlignment.RIGHT))
-            ;
+
+            label.clippingArea.set(Rectangle.withSize(3, 3, blockEntity.getXSizeScaled() * 16 - 6, blockEntity.getYSizeScaled() * 16 - 6));
+            label.horizontalScrollingSpeed.set(SCROLLING_SPEED);
+            label.horizontalScrollMode.set(component.getBoundsAction().getMode());
+            label.horizontalMinScale.set(component.getMinXScale());
+            label.horizontalMaxScale.set(component.getXScale());
+            label.verticalMinScale.set(component.getYScale());
+            label.verticalMaxScale.set(component.getYScale());
+            label.text.set(text);
+            label.color.set(getDisplaySettings(blockEntity).getFontColor());
+            label.position.set(Point.of(3 + component.getX(), 3 + component.getY()));
+            label.horizontalAlign.set(component.getTextAlignment());
+            label.preferredWidth.set((float)(component.getTextMaxWidth() >= StaticTextDisplaySettings.DEFAULT_TEXT_MAX_WIDTH ? Math.min(Float.MAX_VALUE, label.clippingArea.get().width()) : component.getTextMaxWidth()));
+            label.backgroundColor.set(component.getTextBackgroundColor());
+            label.fullBackground.set(component.isFullLabelBackgroundColor());
+            label.glowing.set(blockEntity.isGlowing());
 
             this.labels[i] = label;
         }

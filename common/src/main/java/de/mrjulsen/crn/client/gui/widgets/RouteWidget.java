@@ -1,25 +1,20 @@
 package de.mrjulsen.crn.client.gui.widgets;
 
 import com.google.common.collect.ImmutableList;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
-import de.mrjulsen.crn.client.ModGuiUtils;
-import de.mrjulsen.crn.client.gui.Animator;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.ColorShade;
-import de.mrjulsen.crn.client.gui.screen.RouteDetailsScreen;
+import de.mrjulsen.crn.client.gui.windows.RouteDetailsWindow;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
-import de.mrjulsen.crn.data.SavedRoutesManager;
 import de.mrjulsen.crn.data.navigation.ClientRoute;
 import de.mrjulsen.crn.data.navigation.RoutePart;
-import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.gui.events.DLGuiStandardEvents;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLButton;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.render.FlatButtonRenderer;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.util.CursorType;
 import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import de.mrjulsen.mcdragonlib.data.ETextAlignment;
@@ -34,12 +29,13 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
-public class RouteWidget extends DLButton {    
-
+public class RouteWidget extends DLButton {
+    
     public static final int WIDTH = 214;
     public static final int HEIGHT = 54;
 
     private static final int DISPLAY_WIDTH = WIDTH - 10;
+    
     
     private final ClientRoute route;
 
@@ -51,55 +47,19 @@ public class RouteWidget extends DLButton {
     private final MutableComponent textShare = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".route_widget.share");
     private final MutableComponent textRemove = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".route_widget.remove");
 
-    private final Animator animator = new Animator();
-
-    public RouteWidget(RouteViewer parent, ClientRoute route, int x, int y) {
+    public RouteWidget(int x, int y, ClientRoute route) {
         super(x, y, WIDTH, HEIGHT);
-        this.text.set(TextUtils.empty());
+        this.cursor.set(CursorType.HAND);
         this.route = route;
 
-        this.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
-            route.addListener();
-            Minecraft.getInstance().setScreen(new RouteDetailsScreen(parent.getParent(), route));
-            route.close();
+        addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
+            getWindowManager().createModal(mgr -> new RouteDetailsWindow(mgr, route));
             return false;
         });
-        this.componentRenderer.set(FlatButtonRenderer.INSTANCE);
-        /*
-        setMenu(new DLContextMenu(() -> GuiAreaDefinition.of(this), () -> new DLContextMenuItem.Builder()
-            .add(new ContextMenuItemData(textShowDetails, Sprite.empty(), true, (b) -> onPress.onPress(b), null))
-            .addSeparator()
-            .add(new ContextMenuItemData(SavedRoutesManager.isSaved(route) ? textRemove : textSave, Sprite.empty(), true, (b) -> {
-                if (SavedRoutesManager.isSaved(route)) {
-                    SavedRoutesManager.removeRoute(route);
-                } else {
-                    SavedRoutesManager.saveRoute(route);
-                }
-            }, null))
-            //.add(new ContextMenuItemData(textShare, Sprite.empty(), true, (b) -> {}, null))
-        ));
-        */
-        animator.start(10, null, null, null);
     }
-
-    @Override
-    public void tick() {
-        animator.tick();
-    }
-    
 
     @Override
     public void renderMainLayer(DLGuiGraphics graphics, double mouseX, double mouseY, Rectangle renderBounds) {
-        animator.renderMainLayer(graphics, mouseX, mouseX, renderBounds);
-
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.enableDepthTest();
-        graphics.poseStack().pushPose();
-        if (animator.isRunning()) {
-            graphics.poseStack().translate(-(50 * Math.pow(1D - animator.getPercentage(), 4)), 0, 0);
-        }
-
         final int precision = ModClientConfig.REALTIME_PRECISION_THRESHOLD.get();
         
         CreateDynamicWidgets.renderSingleShadeWidget(graphics, 0, 0, WIDTH, HEIGHT, ColorShade.DARK.getColor());
@@ -114,7 +74,7 @@ public class RouteWidget extends DLButton {
         Font shadowlessFont = new NoShadowFontWrapper(minecraft.font);
 
         String timeStart = DLTime.fromTicks(route.getStart().getScheduledDepartureTime(), new ConfiguredTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME);
-        String timeEnd = DLTime.fromTicks(route.getStart().getScheduledArrivalTime(), new ConfiguredTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME);
+        String timeEnd = DLTime.fromTicks(route.getEnd().getScheduledArrivalTime(), new ConfiguredTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME);
         String dash = " - ";
         MutableComponent summary = TextUtils.text(String.format("%s%s%s | %s %s | %s",
             timeStart,
@@ -122,7 +82,7 @@ public class RouteWidget extends DLButton {
             timeEnd,
             route.getTransferCount(),
             transferText.getString(),
-            DLTime.fromTicks((int)route.travelTime(), new ConfiguredTimeSystem()).format(Constants.DEFAULT_GAME_DURATION_FORMAT, TimeContext.INGAME)
+            DLTime.fromTicks((int)route.travelTime(), new ConfiguredTimeSystem()).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME)
         ));
 
         final float scale = 0.75f;
@@ -138,7 +98,7 @@ public class RouteWidget extends DLButton {
         int textW = shadowlessFont.width(endStationName);
         
         for (int i = 0; i < parts.size(); i++) {
-            DLColor color = DLColor.fromInt(parts.get(i).getFirstStop().getTrainDisplayColor());
+            DLColor color = parts.get(i).getFirstStop().getTrainDisplayColor();
             GuiUtils.fill(graphics, 6 + (i * routePartWidth) + 1, 27, routePartWidth - 4, 1, color); 
             GuiUtils.fill(graphics, 5 + (i * routePartWidth) + 1, 28, routePartWidth - 2, 9, color);
             GuiUtils.fill(graphics, 6 + (i * routePartWidth) + 1, 37, routePartWidth - 4, 1, color);
@@ -148,7 +108,7 @@ public class RouteWidget extends DLButton {
         graphics.poseStack().scale(scale, scale, scale);
         
         for (int i = 0; i < parts.size(); i++) {
-            DLColor color = DLColor.fromInt(parts.get(i).getFirstStop().getTrainDisplayColor());
+            DLColor color = parts.get(i).getFirstStop().getTrainDisplayColor();
             DLColor fontColor = DLColor.pickBasedOnBrightness(color, DLColor.WHITE, DLColor.BLACK, 0.5f);
             Component trainName = TextUtils.truncateWithEllipsis(graphics.defaultFont(), TextUtils.text(parts.get(i).getFirstStop().getTrainDisplayName()), (int)((routePartWidth - 10) / 0.75f));
             GuiUtils.drawString(graphics, graphics.defaultFont(), (int)((5 + (i * routePartWidth) + (routePartWidth / 2)) / 0.75f), (int)(30 / 0.75f), trainName, fontColor, ETextAlignment.CENTER, false);
@@ -170,6 +130,6 @@ public class RouteWidget extends DLButton {
         }
 
         graphics.poseStack().popPose();
-        graphics.poseStack().popPose();
-    }    
+    }
+    
 }

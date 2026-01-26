@@ -13,6 +13,9 @@ import de.mrjulsen.crn.data.train.TrainData.SimulationResult;
 import de.mrjulsen.crn.exceptions.RuntimeSideException;
 import de.mrjulsen.crn.data.TrainInfo;
 import de.mrjulsen.mcdragonlib.DragonLib;
+import de.mrjulsen.mcdragonlib.util.DLColor;
+import de.mrjulsen.mcdragonlib.util.time.ConfiguredTimeSystem;
+import de.mrjulsen.mcdragonlib.util.time.ITimeSystem;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 
@@ -270,10 +273,10 @@ public class TrainStop implements Comparable<TrainStop> {
         return getTrainInfo() == null || getTrainInfo().line() == null || getTrainInfo().line().getLineName().isEmpty() ? getTrainName() : getTrainInfo().line().getLineName();
     }
 
-    public int getTrainDisplayColor() {
-        if (getTrainInfo() != null && getTrainInfo().line() != null && getTrainInfo().line().getColor() != 0) {
+    public DLColor getTrainDisplayColor() {
+        if (getTrainInfo() != null && getTrainInfo().line() != null && !getTrainInfo().line().getColor().isTransparent()) {
             return getTrainInfo().line().getColor();
-        } else if (getTrainInfo() != null && getTrainInfo().category() != null && getTrainInfo().category().getColor() != 0) {
+        } else if (getTrainInfo() != null && getTrainInfo().category() != null && !getTrainInfo().category().getColor().isTransparent()) {
             return getTrainInfo().category().getColor();
         }
         return Constants.COLOR_TRAIN_BACKGROUND;
@@ -335,19 +338,23 @@ public class TrainStop implements Comparable<TrainStop> {
     }    
 
     public long getScheduledArrivalDay() {
-        return getScheduledArrivalTime() / DragonLib.ticksPerDay();
+        ITimeSystem system = new ConfiguredTimeSystem();
+        return getScheduledArrivalTime() / system.getTicksPerDay();
     }
     
     public long getScheduledDepartureDay() {
-        return getScheduledDepartureDay() / DragonLib.ticksPerDay();
+        ITimeSystem system = new ConfiguredTimeSystem();
+        return getScheduledDepartureDay() / system.getTicksPerDay();
     }
     
     public long getRealTimeArrivalDay() {
-        return getRealTimeArrivalTime() / DragonLib.ticksPerDay();
+        ITimeSystem system = new ConfiguredTimeSystem();
+        return getRealTimeArrivalTime() / system.getTicksPerDay();
     }
     
     public long getRealTimeDepartureDay() {
-        return getRealTimeDepartureTime() / DragonLib.ticksPerDay();
+        ITimeSystem system = new ConfiguredTimeSystem();
+        return getRealTimeDepartureTime() / system.getTicksPerDay();
     }
 
     /**

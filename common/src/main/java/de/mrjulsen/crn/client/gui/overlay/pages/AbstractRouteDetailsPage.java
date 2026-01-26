@@ -1,11 +1,11 @@
 package de.mrjulsen.crn.client.gui.overlay.pages;
 
 import de.mrjulsen.crn.data.navigation.ClientRoute;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.DLRenderable;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLGuiComponent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 
-public abstract class AbstractRouteDetailsPage extends DLRenderable {
+public abstract class AbstractRouteDetailsPage extends DLGuiComponent {
 
     protected final Font font = Minecraft.getInstance().font;
     protected final ClientRoute route;

@@ -9,11 +9,9 @@ import de.mrjulsen.crn.data.SavedRoutesManager;
 import de.mrjulsen.crn.data.navigation.ClientTrainListener;
 import de.mrjulsen.crn.data.train.DepartureHistory;
 import de.mrjulsen.crn.event.events.DefaultTrainDataRefreshEvent;
-import de.mrjulsen.crn.event.events.RouteDetailsActionsEvent;
 import de.mrjulsen.crn.network.InstanceManager;
 import de.mrjulsen.crn.registry.ModDisplayTags;
 import de.mrjulsen.crn.registry.ModExtras;
-import de.mrjulsen.mcdragonlib.client.OverlayManager;
 import de.mrjulsen.mcdragonlib.util.Holder.MutableHolder;
 import dev.architectury.event.events.client.ClientGuiEvent;
 import dev.architectury.event.events.client.ClientLifecycleEvent;
@@ -60,7 +58,7 @@ public class ModClientEvents {
 
             // Register Events
             CRNEventsManager.registerEvent(DefaultTrainDataRefreshEvent::new);
-            CRNEventsManager.registerEvent(RouteDetailsActionsEvent::new);
+            //CRNEventsManager.registerEvent(RouteDetailsActionsEvent::new);
             
             CRNEventsManager.getEvent(CRNClientEventsRegistryEvent.class).run();
 
@@ -71,7 +69,6 @@ public class ModClientEvents {
 
         ClientPlayerEvent.CLIENT_PLAYER_QUIT.register((player) -> {
             inGame.set(false);
-            OverlayManager.clear();
             CreateRailwaysNavigator.LOGGER.info("Removed all overlays.");
             SavedRoutesManager.removeAllRoutes();
             CRNEventsManager.clearEvents();

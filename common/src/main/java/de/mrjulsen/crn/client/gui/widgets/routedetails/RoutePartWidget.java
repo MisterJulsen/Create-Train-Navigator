@@ -1,156 +1,63 @@
 package de.mrjulsen.crn.client.gui.widgets.routedetails;
 
 import java.util.List;
-import java.util.function.Consumer;
-
 import de.mrjulsen.crn.client.gui.widgets.routedetails.RoutePartEntryWidget.TrainStopType;
 import de.mrjulsen.crn.data.train.ClientTrainStop;
 import de.mrjulsen.crn.data.navigation.ClientRoute;
 import de.mrjulsen.crn.data.navigation.ClientRoutePart;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.DLIconButton;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.DLWidgetContainer;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.IDragonLibWidget;
-import de.mrjulsen.mcdragonlib.client.render.Sprite;
-import de.mrjulsen.mcdragonlib.client.util.DLWidgetsCollection;
-import de.mrjulsen.mcdragonlib.client.util.Graphics;
-import de.mrjulsen.mcdragonlib.util.DLUtils;
-import net.minecraft.client.gui.components.Renderable;
-import net.minecraft.client.gui.components.events.GuiEventListener;
-import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.Component;
+import de.mrjulsen.mcdragonlib.client.gui.events.DLGuiStandardEvents;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLGuiComponent;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.layout.FlowLayout;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.layout.FlowLayout.Direction;
+import de.mrjulsen.mcdragonlib.util.properties.BooleanProperty;
 
-public class RoutePartWidget extends DLWidgetContainer {
+public class RoutePartWidget extends DLGuiComponent {
 
     private final ClientRoutePart part;
     private final ClientRoute route;
-    private int stackLayoutY;
 
-    private boolean expanded;
-    private boolean canExpandCollapse = true;
-    private boolean showTrainDetails = true;
-    private boolean showJourney = false;
-    private Consumer<RoutePartWidget> onGuiChanged;
-    private final DLWidgetsCollection stationWidgets = new DLWidgetsCollection();
+    public final BooleanProperty expanded = new BooleanProperty(false).withAfterPropertyChangedCallback((o, n) -> initGui());
+    public final BooleanProperty showTrainDetails = new BooleanProperty(true).withAfterPropertyChangedCallback((o, n) -> initGui());
+    public final BooleanProperty showEntireJourney = new BooleanProperty(false).withAfterPropertyChangedCallback((o, n) -> initGui());
+    public final BooleanProperty canExpandCollapse = new BooleanProperty(true).withAfterPropertyChangedCallback((o, n) -> initGui());
 
-    private final Screen parent;
 
-    public static final int ACTION_BTN_WIDTH = 140;
-    public static final int ACTION_BTN_HEIGHT = 14;
-
-    public RoutePartWidget(Screen parent, int x, int y, int width, ClientRoute route, ClientRoutePart part) {
-        super(x, y, width, 1);
+    public RoutePartWidget(int width, ClientRoute route, ClientRoutePart part) {
+        super(0, 0, width, 1);
         this.part = part;
         this.route = route;
-        this.parent = parent;
-        initGui();
+        
+        FlowLayout layout = new FlowLayout();
+        layout.fillCrossAxis.set(true);
+        layout.flowDirection.set(Direction.VERTICAL);
+        layout.wrap.set(false);
+        this.layout.set(layout);
+
+        addEventListener(DLGuiStandardEvents.ComponentLayoutUpdatedEvent.class, (s, e) -> {
+            this.setHeight(e.layoutResult().contentHeight());
+            return false;
+        });
+
     }
 
     public void initGui() {
-        clearWidgets();
-        stackLayoutY = 0;
-        stationWidgets.clear();
+        clearComponents();
         boolean valid = route.isPartReachable(part);
+        List<ClientTrainStop> stops = showEntireJourney.get() ? part.getAllJourneyClientStops() : part.getAllClientStops();
 
-        List<ClientTrainStop> stops = showJourney ? part.getAllJourneyClientStops() : part.getAllClientStops();
-
-        addToStackLayout(new RoutePartEntryWidget(parent, part, stops.get(0), x(), y() + stackLayoutY, width(), TrainStopType.START, valid)); 
-        if (showTrainDetails()) {
-            RoutePartTrainDetailsWidget details = new RoutePartTrainDetailsWidget(parent, this, route, part, stops.get(0), x(), y() + stackLayoutY, width());
-            addToStackLayout(details);
+        addComponent(new RoutePartEntryWidget(part, route, stops.get(0), TrainStopType.START, valid)); 
+        if (showTrainDetails.get()) {
+            addComponent(new TrainDetailsWidget(this, route, part, stops.get(0)));
+            //RoutePartTrainDetailsWidget details = new RoutePartTrainDetailsWidget(this, route, part, stops.get(0), x(), y() + stackLayoutY, width());
+            //addToStackLayout(details);
         }
         
-        if (this.expanded) {
+        if (this.expanded.get()) {
             for (int i = 1; i < stops.size() - 1; i++) {
                 ClientTrainStop stop = stops.get(i);
-                addToStackLayout(new RoutePartEntryWidget(parent, part, stop, x(), y() + stackLayoutY, width(), TrainStopType.TRANSIT, valid));
+                addComponent(new RoutePartEntryWidget(part, route, stop, TrainStopType.TRANSIT, valid));
             }
         }  
-        addToStackLayout(new RoutePartEntryWidget(parent, part, stops.get(stops.size() - 1), x(), y() + stackLayoutY, width(), TrainStopType.END, valid)); 
-
-        set_height(stackLayoutY);
-
-        DLUtils.doIfNotNull(onGuiChanged, x -> x.accept(this));
+        addComponent(new RoutePartEntryWidget(part, route, stops.get(stops.size() - 1), TrainStopType.END, valid)); 
     }
-
-    public RoutePartWidget withOnGuiChangedEvent(Consumer<RoutePartWidget> onGuiChanged) {
-        this.onGuiChanged = onGuiChanged;
-        return this;
-    }
-
-    public void updateHeight() {
-        stackLayoutY = 0;
-        for (IDragonLibWidget c : stationWidgets.components) {
-            c.set_y(y() + stackLayoutY);
-            stackLayoutY += c.height();
-        }
-    }
-
-
-    private <T extends GuiEventListener & Renderable & IDragonLibWidget> void addToStackLayout(T widget) {
-        addRenderableWidget(widget);
-        stationWidgets.add(widget);
-        stackLayoutY += widget.height();
-    }
-
-    public boolean isExpanded() {
-        return expanded;
-    }
-
-    public void setExpanded(boolean b) {
-        this.expanded = b;
-        initGui();
-    }
-
-    public boolean canExpandCollapse() {
-        return canExpandCollapse;
-    }
-
-    public void setCanExpandCollapse(boolean canExpandCollapse) {
-        this.canExpandCollapse = canExpandCollapse;
-    }
-
-    public boolean showTrainDetails() {
-        return showTrainDetails;
-    }
-
-    public void setShowTrainDetails(boolean showTrainDetails) {
-        this.showTrainDetails = showTrainDetails;
-    }
-
-    public boolean isShowingJourney() {
-        return showJourney;
-    }
-
-    public void setShowJourney(boolean showJourney) {
-        this.showJourney = showJourney;
-    }
-
-    @Override
-    public void renderMainLayer(Graphics graphics, int mouseX, int mouseY, float partialTicks) {
-        super.renderMainLayer(graphics, mouseX, mouseY, partialTicks);
-        //GuiUtils.drawString(graphics, font, x() + 22, y(), "State: " + part.getProgressState() + ", " + part.getNextStop().getTag().getTagName().get(), 0xFFFF0000, ETextAlignment.LEFT, false);
-    }
-
-    @Override
-    public void tick() {
-        super.tick();
-        boolean valid = route.isPartReachable(part);
-        stationWidgets.performForEach(x -> x instanceof RoutePartEntryWidget, x -> ((RoutePartEntryWidget)x).setValid(valid));
-    }
-
-    @Override
-    public NarrationPriority narrationPriority() {
-        return NarrationPriority.HOVERED;
-    }
-
-    @Override
-    public void updateNarration(NarrationElementOutput narrationElementOutput) {}
-
-    @Override
-    public boolean consumeScrolling(double mouseX, double mouseY) {
-        return false;
-    }
-
-    public static record RoutePartDetailsActionBuilder(Component text, Sprite icon, Consumer<DLIconButton> onClick) {}    
 }
