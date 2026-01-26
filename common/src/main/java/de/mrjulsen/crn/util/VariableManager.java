@@ -20,6 +20,7 @@ public class VariableManager {
         for (int i = 0; i < length; i++) {
             char c = text.charAt(i);
 
+            // escaped placeholder \%
             if (c == '\\' && i + 1 < length && text.charAt(i + 1) == '%') {
                 result.append('%');
                 i++;
@@ -30,10 +31,12 @@ public class VariableManager {
                 int end = text.indexOf('%', i + 1);
                 if (end > i + 1) {
                     String key = text.substring(i + 1, end);
-                    String replacement = variables.get(key).get();
-                    if (replacement != null) {
+                    Supplier<String> supplier = variables.get(key);
+                    if (supplier != null) {
+                        String replacement = supplier.get();
                         result.append(replacement);
                     } else {
+                        // Key nicht gefunden: lasse Platzhalter unverändert
                         result.append('%').append(key).append('%');
                     }
                     i = end;
@@ -45,6 +48,7 @@ public class VariableManager {
 
         return result.toString();
     }
+
 
     public static boolean hasValidPlaceholders(String text) {
         int length = text.length();

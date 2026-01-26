@@ -17,6 +17,7 @@ public class ModCommonConfig {
     public static final ModConfigSpec.ConfigValue<Boolean> CUSTOM_TRANSIT_TIME_CALCULATION;
     public static final ModConfigSpec.ConfigValue<Boolean> USE_CREATE_TRANSIT_TIMES_ON_INIT;
     public static final ModConfigSpec.ConfigValue<Boolean> EXCLUDE_TRAINS;
+    public static final ModConfigSpec.ConfigValue<Boolean> AUTO_UPDATE_DISPLAY_TYPE;
     public static final ModConfigSpec.ConfigValue<Boolean> ADVANCED_LOGGING;
 
     public static final ModConfigSpec.ConfigValue<Boolean> EXPERIMENT_SIMULATION_ALGORITHM;
@@ -55,6 +56,9 @@ public class ModCommonConfig {
 
         EXPERIMENT_SIMULATION_ALGORITHM = BUILDER.comment("The new simulation algorithm calculates the times step by step for the respective stations and pays attention to the schedule conditions instead of adding up the total journey time until the desired time is reached. This should lead to more precise results, especially when using time based departure times. (Default: OFF)")
             .define("experimental.use_new_simulation_algorithm", false);
+
+        AUTO_UPDATE_DISPLAY_TYPE = BUILDER.comment("Automatically changes the display type when a display link is connected, depending on what should be displayed. (Default: ON)")
+                .define("advanced_display.auto_change_display_type", true);
 
         BUILDER.pop();
         SPEC = BUILDER.build();

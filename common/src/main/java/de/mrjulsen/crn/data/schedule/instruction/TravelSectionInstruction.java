@@ -18,6 +18,7 @@ import de.mrjulsen.crn.data.TrainLine;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
 import de.mrjulsen.crn.data.train.TrainData;
 import de.mrjulsen.crn.data.train.ScheduleSection;
+import de.mrjulsen.crn.data.train.TrainListener;
 import de.mrjulsen.crn.registry.ModAccessorTypes;
 import de.mrjulsen.crn.registry.ModBlocks;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
@@ -35,7 +36,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
-public class TravelSectionInstruction extends ScheduleInstruction implements IStationTagInstruction, IPredictableInstruction {
+public class TravelSectionInstruction extends ScheduleInstruction implements IPredictableInstruction {
     
     @Deprecated
     public static final String LEGACY_NBT_TRAIN_CATEGORY = "TrainGroup";
@@ -80,6 +81,10 @@ public class TravelSectionInstruction extends ScheduleInstruction implements ISt
 
     @Override
     public DiscoveredPath start(ScheduleRuntime runtime, Level level) {
+        TrainListener.getTrainData(runtime.train.id).ifPresent(x -> {
+            x.addScheduleSection(getSectionData(x, runtime.currentEntry));
+            x.changeCurrentSection(runtime.currentEntry);
+        });
         runtime.state = ScheduleRuntime.State.PRE_TRANSIT;
         runtime.currentEntry++;
         return null;
@@ -155,14 +160,6 @@ public class TravelSectionInstruction extends ScheduleInstruction implements ISt
         ClientWrapper.initScheduleSectionInstruction(this, builder);
 	}
 
-    @Override
-    public void run(ScheduleRuntime runtime, TrainData data, Train train, int index) {
-        DLUtils.doIfNotNull(data, x -> {
-            x.addScheduleSection(getSectionData(x, index));
-            x.changeCurrentSection(index);
-        });
-    }
-
     private ScheduleSection getSectionData(TrainData data, int index) {
         String categoryNbtKey = null;
         if (this.data.contains(LEGACY_NBT_TRAIN_CATEGORY))
@@ -174,8 +171,22 @@ public class TravelSectionInstruction extends ScheduleInstruction implements ISt
         return new ScheduleSection(
             data,
             index,
-            !this.data.contains(categoryNbtKey) ? null : GlobalSettings.getInstance().getTrainCategory(this.data.getTagType(categoryNbtKey) == Tag.TAG_STRING ? TrainCategory.genMD5Uuid(this.data.getString(categoryNbtKey)) : this.data.getUUID(categoryNbtKey)).orElse(null),
-            !this.data.contains(NBT_TRAIN_LINE) ? null : GlobalSettings.getInstance().getTrainLine(this.data.getTagType(NBT_TRAIN_LINE) == Tag.TAG_STRING ? TrainCategory.genMD5Uuid(this.data.getString(NBT_TRAIN_LINE)) : this.data.getUUID(NBT_TRAIN_LINE)).orElse(null),
+            !this.data.contains(categoryNbtKey) || (this.data.getTagType(categoryNbtKey) != Tag.TAG_STRING && this.data.getTagType(categoryNbtKey) != Tag.TAG_INT_ARRAY)
+                ? null
+                : GlobalSettings.getInstance().getTrainCategory(
+                    this.data.getTagType(categoryNbtKey) == Tag.TAG_STRING
+                        ? TrainCategory.genMD5Uuid(this.data.getString(categoryNbtKey))
+                        : this.data.getUUID(categoryNbtKey)
+                    ).orElse(null),
+
+            !this.data.contains(NBT_TRAIN_LINE) || (this.data.getTagType(NBT_TRAIN_LINE) != Tag.TAG_STRING && this.data.getTagType(NBT_TRAIN_LINE) != Tag.TAG_INT_ARRAY)
+                ? null
+                : GlobalSettings.getInstance().getTrainLine(
+                    this.data.getTagType(NBT_TRAIN_LINE) == Tag.TAG_STRING
+                        ? TrainCategory.genMD5Uuid(this.data.getString(NBT_TRAIN_LINE))
+                        : this.data.getUUID(NBT_TRAIN_LINE)
+                    ).orElse(null),
+                    
             this.data.getBoolean(NBT_INCLUDE_PREVIOUS_STATION),
             this.data.getBoolean(NBT_USABLE)
         );

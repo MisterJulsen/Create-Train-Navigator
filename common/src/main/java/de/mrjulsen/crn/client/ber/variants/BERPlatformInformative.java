@@ -36,6 +36,7 @@ import net.minecraft.world.level.block.state.BlockState;
 public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<PlatformDisplayFocusSettings> {
    
     private static final String keyFollowingTrains = "gui.createrailwaysnavigator.following_trains";
+    private final MutableComponent textTrainTerminatesHere = CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.train_terminates");
 
     private static final float LINE_HEIGHT = 5.4f;
 
@@ -164,7 +165,7 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
         }
 
         // STATUS
-        showInfoLine = (preds.get(0).getStationData().isDepartureDelayed() && preds.get(0).getTrainData().hasStatusInfo()) || preds.get(0).getStationData().isStationChanged();
+        showInfoLine = (preds.get(0).getStationData().isDepartureDelayed() && preds.get(0).getTrainData().hasStatusInfo()) || preds.get(0).getStationData().isStationChanged() || preds.get(0).isNextSectionExcluded();
         if (showInfoLine) {
             // Update status label
             Collection<Component> content = new ArrayList<>();
@@ -173,6 +174,11 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
             } else {
                 TrainStopDisplayData displayData = preds.get(0).getStationData();
                 String delay = getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA ? ModUtils.timeRemainingString(displayData.getDepartureTimeDeviation()) : String.valueOf(TimeUtils.formatToMinutes(displayData.getDepartureTimeDeviation()));
+                
+                // TRAIN TERMINATES
+                if (preds.get(0).isNextSectionExcluded()) {
+                    content.add(textTrainTerminatesHere);
+                }
                 // DELAYED
                 if (displayData.isDepartureDelayed()) {
                     MutableComponent delayComponent = CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.delayed", delay);
@@ -324,7 +330,7 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
 
     private void updateFocusContent(AdvancedDisplayBlockEntity blockEntity, StationDisplayData stop) {
         PlatformDisplayFocusSettings settings = getDisplaySettings(blockEntity);
-        boolean isLast = settings.showArrival() && stop.isLastStop();
+        boolean isLast = (settings.showArrival() && stop.shouldShowArrivalOfTrain()) || stop.isNextSectionExcluded();
 
         followingTrainsLabel
             .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
@@ -362,7 +368,7 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
         this.platformLabel
             .setText(TextUtils.text(blockEntity.isPlatformFixed() ?
                 blockEntity.getStationInfo().platform() :
-                stop.getStationData().getScheduledStation().info().platform()).withStyle(ChatFormatting.BOLD)
+                stop.getStationData().getRealTimeStation().info().platform()).withStyle(ChatFormatting.BOLD)
             )
         ;
         
@@ -401,7 +407,7 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
 
     private void updateTableContent(AdvancedDisplayBlockEntity blockEntity, StationDisplayData stop, int index) {
         PlatformDisplayFocusSettings settings = getDisplaySettings(blockEntity);
-        boolean isLast = (settings.showArrival() && stop.isLastStop()) || stop.isNextSectionExcluded();
+        boolean isLast = (settings.showArrival() && stop.shouldShowArrivalOfTrain()) || stop.isNextSectionExcluded();
 
         BERLabel[] components = lines[index];
         components[LineComponent.TIME.i()]
@@ -433,7 +439,7 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
         components[LineComponent.PLATFORM.i()]
             .setText(blockEntity.isPlatformFixed() ?
                 TextUtils.empty() :
-                TextUtils.text(stop.getStationData().getScheduledStation().info().platform()))
+                TextUtils.text(stop.getStationData().getRealTimeStation().info().platform()))
         ;
         components[LineComponent.DESTINATION.i()]
             .setText(isLast ?

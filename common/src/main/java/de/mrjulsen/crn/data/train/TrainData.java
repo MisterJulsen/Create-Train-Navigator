@@ -2,9 +2,11 @@ package de.mrjulsen.crn.data.train;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.Map.Entry;
@@ -24,6 +26,7 @@ import com.simibubi.create.content.trains.station.GlobalStation;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.config.ModCommonConfig;
+import de.mrjulsen.crn.data.schedule.instruction.IPredictableInstruction;
 import de.mrjulsen.crn.event.CRNEventsManager;
 import de.mrjulsen.crn.event.events.TotalDurationTimeChangedEvent;
 import de.mrjulsen.crn.mixin.ScheduleRuntimeAccessor;
@@ -80,6 +83,7 @@ public class TrainData implements IListenable<TrainData> {
     public transient int transitTime = 0;
     public transient int waitingAtStationTime = 0;
     private transient boolean wasAtStation = false;
+    private transient int wasAtStationIndex = -1;
     private transient boolean wasWaitingForSignal = false;
     public transient UUID waitingForSignalId;
     public transient final Set<Train> occupyingTrains = new HashSet<>();
@@ -362,6 +366,7 @@ public class TrainData implements IListenable<TrainData> {
         }
         lastSectionDelayOffset = 0;
         refreshTimingsCounter = 0;
+        wasAtStationIndex = -1;
         resetStatus(true);
         isDynamic.clear();
         if (CreateRailwaysNavigator.isDebug() || ModCommonConfig.ADVANCED_LOGGING.get()) CreateRailwaysNavigator.LOGGER.info(getTrainName() + " has reset their scheduled times.");
@@ -490,11 +495,14 @@ public class TrainData implements IListenable<TrainData> {
         sectionsCache.clear();
         lastScheduleIndex = INVALID;
         totalDuration = INVALID;
+        wasAtStationIndex = INVALID;
 
         resetCaches();
     } 
 
     public int ticksToNextStop = 0;
+    
+    public int waitingAtStationIndex = INVALID;
 
     /** Called every ~5 seconds */
     public synchronized void refreshPre() {
@@ -511,7 +519,7 @@ public class TrainData implements IListenable<TrainData> {
         this.scheduleIndexChanged = lastScheduleIndex != getCurrentScheduleIndex();
 
         if (this.scheduleIndexChanged && lastScheduleIndex >= 0 && predictionsByIndex.containsKey(lastScheduleIndex)) {
-            predictionsByIndex.get(lastScheduleIndex).nextCycle();
+            predictionsByIndex.get(lastScheduleIndex).nextCycle();            
         }
         if (!hasCustomScheduleSections() && lastScheduleIndex > getCurrentScheduleIndex()) { // Manually call section change event atthe end of the schedule if there are no sections defined.
             changeCurrentSection(currentTravelSectionIndex);
@@ -527,6 +535,15 @@ public class TrainData implements IListenable<TrainData> {
         Schedule schedule = train.runtime.getSchedule();
         int entryCount = train.runtime.getSchedule().entries.size();
         AtomicReference<String> currentTitle = new AtomicReference<>("");
+
+        // ##### PRE-ITERATION #####
+        for (int i = 0; i < entryCount; i++) {
+            final int cyclicIndex = (i + getCurrentScheduleIndex()) % entryCount;
+            final ScheduleEntry entry = schedule.entries.get(cyclicIndex);
+            if (entry.instruction instanceof ChangeTitleInstruction instruction) {
+                currentTitle.set(instruction.getScheduleTitle());
+            }
+        }
         
         Set<Integer> validPredictionEntries = new HashSet<>();
         boolean hasCycled = false;
@@ -538,7 +555,10 @@ public class TrainData implements IListenable<TrainData> {
             final int cyclicIndex = (i + getCurrentScheduleIndex()) % entryCount;
             final ScheduleEntry entry = schedule.entries.get(cyclicIndex);
 
-            if (entry.instruction instanceof ChangeTitleInstruction instruction) {
+            if (entry.instruction instanceof IPredictableInstruction instruction) {
+                instruction.predict(this, train.runtime, cyclicIndex, train);
+                continue;
+            } else if (entry.instruction instanceof ChangeTitleInstruction instruction) {
                 currentTitle.set(instruction.getScheduleTitle());
                 continue;
             } else if (!(entry.instruction instanceof DestinationInstruction)) {
@@ -565,7 +585,7 @@ public class TrainData implements IListenable<TrainData> {
                 pred.preInit();
             }
             predictionsChronologically.add(pred);
-            pred.updateRealTime(destination.getFilter(), name.get(), now, time);
+            pred.updateRealTime(destination.getFilter(), name.get(), now, time, currentTitle.get());
             time = pred.realTime().departureTime();
         }
 
@@ -640,6 +660,7 @@ public class TrainData implements IListenable<TrainData> {
 
         // Finish
         this.scheduleIndexChanged = false;
+        this.waitingAtStationIndex = isAtStation() ? getCurrentScheduleIndex() : INVALID;
     }
 
     private void resetCaches() {
@@ -648,21 +669,41 @@ public class TrainData implements IListenable<TrainData> {
         isInitializedCache.clear();
     }
 
+    private final Queue<Runnable> deferredTickQueue = new ConcurrentLinkedQueue<>();
+
     /** Called every tick */
     public void tick() {       
         if (train.runtime.paused) {
             return;
         }
 
+        while (!deferredTickQueue.isEmpty()) {
+            deferredTickQueue.poll().run();
+        }
+
         boolean isAtStation = isAtStation();
-        if (wasAtStation != isAtStation) {
+        int isAtStationIndex = train.runtime.currentEntry;
+        boolean stationChanged = wasAtStation != isAtStation;
+        boolean stationIndexChanged = wasAtStationIndex != isAtStationIndex;
+        if (stationChanged) {
             if (isAtStation) {
                 onReachDestination();
             } else {
                 onLeaveDestination();
             }
             this.wasAtStation = isAtStation;
+        } else if (wasAtStationIndex > INVALID && isAtStation && stationIndexChanged && predictionsByIndex.containsKey(getCurrentScheduleIndex())) {
+            deferredTickQueue.add(() -> {
+                if (!isAtStation() || !predictionsByIndex.containsKey(getCurrentScheduleIndex())) return;
+                this.transitTime = 0;
+                this.waitingAtStationTime = 0;
+                this.waitingForSignalTicks = 0;
+                this.waitingForSignalId = null;
+                this.delaysBySignal.clear();
+                onReachDestination();
+            });
         }
+        this.wasAtStationIndex = isAtStationIndex;
 
         if (isAtStation) {
             waitingAtStationTime++;
@@ -707,10 +748,8 @@ public class TrainData implements IListenable<TrainData> {
 
     /**
      * Called when the train reaches a station.
-     * @param destinationReachTime The time when the train reached this station.
-     * @param createTicksInTransit Ticks measured by Create.
      */
-    public void onReachDestination() {        
+    public void onReachDestination() {
         if (!isPreInitializationPhase()) {
             this.getPredictionByIndex(getCurrentScheduleIndex()).ifPresent(x -> {
                 x.transitTime().add(transitTime, false);

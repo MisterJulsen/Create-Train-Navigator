@@ -42,9 +42,14 @@
     "block.createrailwaysnavigator.train_station_clock.tooltip.condition1": "When R-Clicked",
 	"block.createrailwaysnavigator.train_station_clock.tooltip.behaviour1": "Displays the _current time_ above the _hotbar_.",
     "block.createrailwaysnavigator.train_station_clock.tooltip.condition2": "When R-Clicked on another Train Station Clock",
-	"block.createrailwaysnavigator.train_station_clock.tooltip.behaviour2": "Changes the clock to display the time on _all four sides_.", 
+	"block.createrailwaysnavigator.train_station_clock.tooltip.behaviour2": "Changes the clock to display the time on _all four sides_.",
+    "block.createrailwaysnavigator.navigator_lectern": "Lectern with Navigator",
 
     "block.createrailwaysnavigator.advanced_display.ber.not_in_service": "Out of service!",
+    "block.createrailwaysnavigator.advanced_display.ber.do_not_board": "Do not board!",
+    "block.createrailwaysnavigator.advanced_display.ber.this_train_terminates_there": "This train terminates there!",
+    "block.createrailwaysnavigator.advanced_display.ber.train_terminates": "Train terminates here!",
+    "block.createrailwaysnavigator.advanced_display.ber.passengers_leave_train": "Please all change here.",
 
     "category.createrailwaysnavigator.crn": "Create Railways Navigator",
     "key.createrailwaysnavigator.route_overlay_options": "Show Route Overlay Options",
@@ -243,7 +248,9 @@
     "gui.createrailwaysnavigator.advanced_display_settings.font_color": "Font color",
     "gui.createrailwaysnavigator.advanced_display_settings.back_color": "Background color",
     "gui.createrailwaysnavigator.advanced_display_settings.show_arrival": "Show arrival of trains",
-    "gui.createrailwaysnavigator.advanced_display_settings.show_arrival.description": "If activated or the train will go in an excluded section (regardless of this setting), the arrival of the train will be displayed.",
+    "gui.createrailwaysnavigator.advanced_display_settings.show_arrival.description": "If activated, the arrival of a train that changes the Schedule Section here, is displayed. If the train then continues into a non-navigable section or the option 'Include start of next section' is deactivated, this option is ignored.",
+    "gui.createrailwaysnavigator.advanced_display_settings.show_do_not_board_text": "Show 'Do not board' text",
+    "gui.createrailwaysnavigator.advanced_display_settings.show_do_not_board_text.description": "If activated, the text 'Do not board' is displayed if the trains changes the schedule section. If the train then continues into a non-navigable section or the option 'Include start of next section' is deactivated, this option is ignored.",
     "gui.createrailwaysnavigator.advanced_display_settings.carriage_index": "Carriage Index Offset",
     "gui.createrailwaysnavigator.advanced_display_settings.carriage_index.description": "The number that is added to the current carriage index. (e.g. Index = 3, Offset = 5, Result = 08)",
     "gui.createrailwaysnavigator.advanced_display_settings.overwrite_carriage_index": "Overwrite index",
@@ -366,6 +373,7 @@
     "enum.createrailwaysnavigator.departure_board_train_filter.departure_only": "Departures only",
     
     "createrailwaysnavigator.display_source.advanced_display": "Advanced Displays",
+    "createrailwaysnavigator.display_target.advanced_display.component": "Component %s",
 
     "gui.createrailwaysnavigator.section_settings.title": "Section Settings",
     "gui.createrailwaysnavigator.section_settings.train_categories": "Assign Train Category",

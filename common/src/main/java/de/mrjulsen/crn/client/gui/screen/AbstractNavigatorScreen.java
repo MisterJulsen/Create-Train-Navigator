@@ -58,7 +58,8 @@ public abstract class AbstractNavigatorScreen extends DLScreen {
 
     @SuppressWarnings("resource")
     public void renderNavigatorBackground(Graphics graphics, int mouseX, int mouseY, float partialTicks) {
-        renderBlurredBackground(partialTicks);
+        this.renderBlurredBackground(partialTicks);
+        this.renderMenuBackground(graphics.graphics());
         CreateDynamicWidgets.renderWindow(graphics, guiLeft, guiTop, GUI_WIDTH, GUI_HEIGHT, ContainerColor.GRAY, primaryColoring, FooterSize.DEFAULT.size(), FooterSize.SMALL.size(), false);
         GuiUtils.drawString(graphics, font, guiLeft + 6, guiTop + 4, getTitle(), 0x4F4F4F, EAlignment.LEFT, false);
         String timeString = TimeUtils.parseTime((int)((Minecraft.getInstance().level.getDayTime() + DragonLib.daytimeShift()) % DragonLib.ticksPerDay()), ModClientConfig.TIME_FORMAT.get());

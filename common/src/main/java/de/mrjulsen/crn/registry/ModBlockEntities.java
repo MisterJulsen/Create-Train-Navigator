@@ -4,7 +4,10 @@ import com.tterrag.registrate.util.entry.BlockEntityEntry;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
+import de.mrjulsen.crn.block.blockentity.NavigatorLecternBlockEntity;
 import de.mrjulsen.crn.block.blockentity.TrainStationClockBlockEntity;
+import de.mrjulsen.crn.client.ClientWrapper;
+import de.mrjulsen.crn.client.ber.NavigatorLecternBlockEntityRenderer;
 import de.mrjulsen.mcdragonlib.client.ber.StaticBlockEntityRenderer;
 
 public class ModBlockEntities {
@@ -20,7 +23,7 @@ public class ModBlockEntities {
 			ModBlocks.ADVANCED_DISPLAY_SLOPED,
 			ModBlocks.ADVANCED_DISPLAY_SLAB
 		)
-		.renderer(() -> StaticBlockEntityRenderer::new)
+		.renderer(() -> ClientWrapper::createAdvancedDisplayBlockEntityRenderer)
 		.register();
 
 	public static final BlockEntityEntry<TrainStationClockBlockEntity> TRAIN_STATION_CLOCK_BLOCK_ENTITY = CreateRailwaysNavigator.REGISTRATE
@@ -30,6 +33,14 @@ public class ModBlockEntities {
 		)
 		.renderer(() -> StaticBlockEntityRenderer::new)
 		.register();
+
+	public static final BlockEntityEntry<NavigatorLecternBlockEntity> NAVIGATOR_LECTERN_BLOCK_ENTITY = CreateRailwaysNavigator.REGISTRATE
+			.blockEntity("navigator_lectern_block_entity", NavigatorLecternBlockEntity::new)
+			.validBlocks(
+					ModBlocks.NAVIGATOR_LECTERN
+			)
+			.renderer(() -> NavigatorLecternBlockEntityRenderer::new)
+			.register();
 
     public static void init() {
     } 

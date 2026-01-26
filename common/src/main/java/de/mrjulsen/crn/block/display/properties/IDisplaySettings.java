@@ -26,7 +26,6 @@ public interface IDisplaySettings extends INBTSerializable {
 
     /**
      * Called when building the "Advanced Settings" section in the Advanced Display Settings Screen.
-     * @param container The container of the settings.
-     * @param builder The builder to build the settings lines.
+     * @param context The container of the settings.
      */ void buildGui(GuiBuilderContext context);
 }

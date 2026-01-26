@@ -31,6 +31,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<PlatformDisplayTableSettings> {
 
+    private final MutableComponent textTrainTerminatesHere = CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.train_terminates");
     private static final String keyTime = "gui.createrailwaysnavigator.time";
 
     private static final float LINE_HEIGHT = 5.4f;
@@ -71,7 +72,10 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
     @Override
     public void tick(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent) {
         timeLabel
-            .setText(CustomLanguage.translate(keyTime, ModUtils.formatTime(DragonLib.getCurrentWorldTime(), false)))
+            .setText(blockEntity.getXSize() > 1
+                ? CustomLanguage.translate(keyTime, ModUtils.formatTime(DragonLib.getCurrentWorldTime(), false))
+                : TextUtils.text(ModUtils.formatTime(DragonLib.getCurrentWorldTime(), false))
+            ) 
         ;
     }
     
@@ -79,7 +83,7 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
     public void render(BERGraphics<AdvancedDisplayBlockEntity> graphics, float pPartialTicks, AdvancedDisplayRenderInstance parent, int light, boolean backSide) {
         for (int i = 0; i < lines.length && i < maxLines; i++) {
             for (int k = 0; k < lines[i].length; k++) {
-                if (i >= maxLines - 1 && (DragonLib.getCurrentWorldTime() % 200 > 100)) {
+                if (getDisplaySettings(graphics.blockEntity()).showTimeAndDate() && i >= maxLines - 1 && (DragonLib.getCurrentWorldTime() % 200 > 100)) {
                     timeLabel.render(graphics, light);
                     continue;
                 }
@@ -87,7 +91,7 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
             }
         }
 
-        if (lines.length < maxLines) {            
+        if (getDisplaySettings(graphics.blockEntity()).showTimeAndDate() && lines.length < maxLines) {            
             timeLabel.render(graphics, light);
         }
 
@@ -98,20 +102,32 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
 
     @Override
     public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason) {
-        List<StationDisplayData> preds = blockEntity.getStops().stream().filter(x -> x.getStationData().getRealTimeArrivalTime() < DragonLib.getCurrentWorldTime() + ModClientConfig.DISPLAY_LEAD_TIME.get() && (!x.getTrainData().isCancelled() || DragonLib.getCurrentWorldTime() < x.getStationData().getScheduledDepartureTime() + ModClientConfig.DISPLAY_LEAD_TIME.get())).toList();
+        List<StationDisplayData> preds = new ArrayList<>();
         
-        showInfoLine = !preds.isEmpty() && ((preds.get(0).getStationData().isDepartureDelayed() && preds.get(0).getTrainData().hasStatusInfo()) || preds.get(0).getStationData().isStationChanged());
+        for (int i = 0; i < blockEntity.getStops().size(); i++) {
+            StationDisplayData data = blockEntity.getStops().get(i);
+            if (i == 0 || (data.getStationData().getRealTimeArrivalTime() < DragonLib.getCurrentWorldTime() + ModClientConfig.DISPLAY_LEAD_TIME.get() && (!data.getTrainData().isCancelled() || DragonLib.getCurrentWorldTime() < data.getStationData().getScheduledDepartureTime() + ModClientConfig.DISPLAY_LEAD_TIME.get()))) {
+                preds.add(data);
+            }
+        }
+
+        showInfoLine = !preds.isEmpty() && ((preds.get(0).getStationData().isDepartureDelayed() && preds.get(0).getTrainData().hasStatusInfo()) || preds.get(0).getStationData().isStationChanged() || preds.get(0).isNextSectionExcluded());
         if (showInfoLine) {
             // Update status label
             this.infoLineText = TextUtils.concat(TextUtils.text("  +++  "), preds.stream().limit(maxLines).filter(x -> 
                 (x.getTrainData().hasStatusInfo() &&
                 x.getStationData().isDepartureDelayed()) ||
-                x.getStationData().isStationChanged()
+                x.getStationData().isStationChanged() || 
+                x.isNextSectionExcluded()
             ).map(x -> {
                 Collection<Component> content = new ArrayList<>();
                 if (x.getTrainData().isCancelled()) {
-                    content.add(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.cancelled"));
-                    return content.stream();
+                    return CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.cancelled");
+                }
+
+                // TRAIN TERMINATES
+                if (x.isNextSectionExcluded()) {
+                    content.add(textTrainTerminatesHere);
                 }
 
                 // DELAYED
@@ -138,7 +154,7 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
                     content.add(status.text());
                 }
                 return CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.information_about_train", x.getTrainData().getName())
-                    .append(": ")
+                    .append(TextUtils.text(": "))
                     .append(TextUtils.concat(TextUtils.text(" - "), content));
             }).toArray(Component[]::new));
         } else {
@@ -184,7 +200,7 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
 
     private void updateContent(AdvancedDisplayBlockEntity blockEntity, StationDisplayData stop, int index) {
         PlatformDisplayTableSettings settings = getDisplaySettings(blockEntity);
-        boolean isLast = (settings.showArrival() && stop.isLastStop()) || stop.isNextSectionExcluded();
+        boolean isLast = (settings.showArrival() && stop.shouldShowArrivalOfTrain()) || stop.isNextSectionExcluded();
         
         BERLabel[] components = lines[index];
         components[LineComponent.TIME.i()]
@@ -227,10 +243,11 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
         x += components[LineComponent.TIME.i()].getTextWidth() + 2;
         components[LineComponent.REAL_TIME.i()].setPos(x, 3 + index * LINE_HEIGHT);
         x += components[LineComponent.REAL_TIME.i()].getTextWidth() + 2 + (!components[LineComponent.REAL_TIME.i()].getText().getString().isEmpty() ? 2 : 0);
-              
-        float trainNameWidth = settings.isAutoTrainNameWidth() ? trainNameLabel.getTextWidth() : settings.getTrainNameWidth();
         trainNameLabel
             .setPos(x, 3 + index * LINE_HEIGHT)
+        ;
+        float trainNameWidth = Math.min(settings.isAutoTrainNameWidth() ? trainNameLabel.getTextWidth() : settings.getTrainNameWidth(), (int)blockEntity.getXSizeScaled() * 16 - 3 - trainNameLabel.getX());
+        trainNameLabel
             .setMaxWidth(trainNameWidth, BoundsHitReaction.SCALE_SCROLL)
         ;
         x += trainNameLabel.getMaxWidth() + 2;

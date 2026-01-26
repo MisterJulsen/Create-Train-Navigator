@@ -207,7 +207,8 @@ public class RouteOverlaySettingsScreen extends DLScreen {
     
     @Override
     public void renderMainLayer(Graphics graphics, int pMouseX, int pMouseY, float pPartialTick) {
-        renderBlurredBackground(pPartialTick);
+        this.renderBlurredBackground(pPartialTick);
+        this.renderMenuBackground(graphics.graphics());
         GuiUtils.drawTexture(GUI, graphics, guiLeft, guiTop, 0, 0, GUI_WIDTH, GUI_HEIGHT);
         GuiUtils.drawString(graphics, shadowlessFont, guiLeft + 6, guiTop + 4, title, DragonLib.NATIVE_UI_FONT_COLOR, EAlignment.LEFT, false);
 

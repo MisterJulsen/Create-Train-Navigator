@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
 
@@ -13,8 +15,6 @@ import com.simibubi.create.content.trains.entity.Train;
 import com.simibubi.create.content.trains.station.GlobalStation;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
@@ -63,11 +63,11 @@ public class GlobalSettings implements INBTSerializable {
 
     private final MinecraftServer server;
 
-    private final Map<UUID, StationTag> stationTags = new HashMap<>();
-    private final Map<UUID, TrainCategory> trainCategories = new HashMap<>();
-    private final Map<UUID, TrainLine> trainLines = new HashMap<>();
-    private final Set<String> stationBlacklist = new HashSet<>();
-    private final Set<String> trainBlacklist = new HashSet<>();
+    private final Map<UUID, StationTag> stationTags = new ConcurrentHashMap<>();
+    private final Map<UUID, TrainCategory> trainCategories = new ConcurrentHashMap<>();
+    private final Map<UUID, TrainLine> trainLines = new ConcurrentHashMap<>();
+    private final Set<String> stationBlacklist = new ConcurrentSkipListSet<>();
+    private final Set<String> trainBlacklist = new ConcurrentSkipListSet<>();
 
     private static GlobalSettings instance;
 
@@ -84,7 +84,7 @@ public class GlobalSettings implements INBTSerializable {
         if (instance == null) {
             try {
                 instance = GlobalSettings.open(ModCommonEvents.getCurrentServer().get());
-            } catch (IOException e) {
+            } catch (Exception e) {
                 CreateRailwaysNavigator.LOGGER.error("Unable to open settings file.", e);
                 instance = new GlobalSettings(ModCommonEvents.getCurrentServer().get());
             }
@@ -114,7 +114,7 @@ public class GlobalSettings implements INBTSerializable {
         }    
     }
     
-    public synchronized static GlobalSettings open(MinecraftServer server) throws IOException {   
+    public synchronized static GlobalSettings open(MinecraftServer server) throws Exception {   
         Path legacyPath = server.getWorldPath(new LevelResource("data/" + LEGACY_FILENAME));
         Path settingsPath = server.getWorldPath(new LevelResource("data/" + FILENAME));
 
@@ -252,6 +252,9 @@ public class GlobalSettings implements INBTSerializable {
     }
 
     public boolean stationTagExists(UUID id) {
+        if (id == null) {
+            return false;
+        }
         return stationTags.containsKey(id);
     }
         
@@ -379,6 +382,9 @@ public class GlobalSettings implements INBTSerializable {
 //#region +++ TRAIN CATEGORIES +++
 
     public boolean trainCategoryExists(UUID id) {
+        if (id == null) {
+            return false;
+        }
         return trainCategories.containsKey(id);
     }
 
@@ -548,6 +554,9 @@ public class GlobalSettings implements INBTSerializable {
 //#region +++ TRAIN LINES +++
 
     public boolean trainLineExists(UUID id) {
+        if (id == null) {
+            return false;
+        }
         return trainLines.containsKey(id);
     }
 

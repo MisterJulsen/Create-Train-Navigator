@@ -6,11 +6,10 @@ import java.util.function.Supplier;
 import com.simibubi.create.foundation.utility.CreateLang;
 import de.mrjulsen.crn.registry.ModDataComponents;
 import net.createmod.catnip.data.Pair;
-import org.joml.Vector3f;
-
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
 import com.simibubi.create.content.trains.schedule.ScheduleScreen;
 import com.simibubi.create.content.trains.schedule.condition.TimedWaitCondition.TimeUnit;
 import com.simibubi.create.foundation.gui.ModularGuiLineBuilder;
@@ -34,13 +33,13 @@ import de.mrjulsen.crn.data.schedule.condition.TrainSeparationCondition;
 import de.mrjulsen.crn.data.schedule.instruction.PrioritizedDestinationInstruction;
 import de.mrjulsen.crn.data.schedule.instruction.ResetTimingsInstruction;
 import de.mrjulsen.crn.data.schedule.instruction.TravelSectionInstruction;
-import de.mrjulsen.crn.item.NavigatorItem;
 import de.mrjulsen.crn.mixin.ModularGuiLineBuilderAccessor;
 import de.mrjulsen.crn.mixin.ScheduleScreenAccessor;
 import de.mrjulsen.crn.network.packets.stc.ServerErrorPacket;
 import de.mrjulsen.crn.util.Owner;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.ber.RenderGraphics;
+import de.mrjulsen.mcdragonlib.client.ber.StaticBlockEntityRenderer;
 import de.mrjulsen.mcdragonlib.client.gui.DLScreen;
 import de.mrjulsen.mcdragonlib.client.render.DynamicGuiRenderer;
 import de.mrjulsen.mcdragonlib.client.render.DynamicGuiRenderer.AreaStyle;
@@ -60,6 +59,7 @@ import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.resources.language.ClientLanguage;
 import net.minecraft.client.resources.language.LanguageInfo;
 import net.minecraft.client.resources.model.BakedModel;
@@ -72,6 +72,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 
 public class ClientWrapper {
     
@@ -92,8 +93,8 @@ public class ClientWrapper {
         Minecraft.getInstance().getToasts().addToast(new SystemToast(SystemToast.SystemToastId.PERIODIC_NOTIFICATION, Constants.TEXT_SERVER_ERROR, TextUtils.text(packet.message)));
     }
     
-    public static void showAdvancedDisplaySettingsScreen(AdvancedDisplayBlockEntity blockEntity) {
-        DLScreen.setScreen(new AdvancedDisplaySettingsScreen(blockEntity));
+    public static void showAdvancedDisplaySettingsScreen(AdvancedDisplayBlockEntity blockEntity, AbstractContraptionEntity contraption) {
+        DLScreen.setScreen(new AdvancedDisplaySettingsScreen(blockEntity, contraption));
     }
 
     public static void updateLanguage(CustomLanguage lang, boolean force) {
@@ -299,7 +300,7 @@ public class ClientWrapper {
     }
 
     public static void renderNavigatorItem(RenderGraphics graphics, ItemStack itemStack, ItemDisplayContext context, boolean leftHand, PoseStack poseStack, MultiBufferSource buffer, int combinedLight, int combinedOverlay, BakedModel model) {
-        if (context != ItemDisplayContext.FIRST_PERSON_LEFT_HAND && context != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND) {
+        if (context != ItemDisplayContext.FIRST_PERSON_LEFT_HAND && context != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND && context != ItemDisplayContext.FIXED) {
             return;
         }
 
@@ -334,5 +335,17 @@ public class ClientWrapper {
 
     public static Player getClientPlayer() {
         return Minecraft.getInstance().player;
+    }
+
+    public static StaticBlockEntityRenderer<AdvancedDisplayBlockEntity> createAdvancedDisplayBlockEntityRenderer(BlockEntityRendererProvider.Context context) {
+        return new StaticBlockEntityRenderer<>(context) {
+			public boolean shouldRenderOffScreen(AdvancedDisplayBlockEntity blockEntity) {
+				return blockEntity.isController();
+			}
+			public AABB getRenderBoundingBox(AdvancedDisplayBlockEntity blockEntity) {
+				return blockEntity.getRenderBoundingBox();
+			}
+
+		};
     }
 }

@@ -14,6 +14,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.simibubi.create.foundation.utility.CreateLang;
+
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.exceptions.RuntimeSideException;
 import de.mrjulsen.mcdragonlib.DragonLib;
@@ -56,10 +58,16 @@ public class ModUtils {
             values.add(i);
         }
 
+        if (values.isEmpty()) {
+            return 0;
+        }
+
         Collections.sort(values);
         int median = 0;
         if (values.size() % 2 == 0) {
             median = (int)(((double)values.get(values.size() / 2) + (double)values.get(values.size() / 2 + 1)) / 2D);
+        } else if (values.size() == 1) {
+            median = (int)(((double)values.get(0) * 2) / 2D);
         }
         median = values.get(values.size() / 2);
 
@@ -131,14 +139,19 @@ public class ModUtils {
     }
 
     public static Collection<String> wildcardMatches(String src, Collection<String> pool) {
-        Pattern p = buildPattern(src);
-        List<String> res = new LinkedList<>();
-        for (String text : pool) {
-            Matcher m = p.matcher(text);
-            if (!m.matches()) continue;
-            res.add(text);
+        try {
+            Pattern p = buildPattern(src);
+            List<String> res = new LinkedList<>();
+            for (String text : pool) {
+                Matcher m = p.matcher(text);
+                if (!m.matches()) continue;
+                res.add(text);
+            }
+            return res;
+        } catch (Exception e) {
+            CreateRailwaysNavigator.LOGGER.warn("Error while checking regex: " + e);
+            return List.of();
         }
-        return res;
     }
 
     public static Map<String, List<String>> mapWildcards(String src, List<String> targets, Collection<String> pool) {

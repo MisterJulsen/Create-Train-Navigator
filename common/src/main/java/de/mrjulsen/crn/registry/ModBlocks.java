@@ -2,7 +2,9 @@ package de.mrjulsen.crn.registry;
 
 import java.util.function.Supplier;
 
-import com.simibubi.create.AllCreativeModeTabs;
+import com.simibubi.create.api.behaviour.display.DisplayTarget;
+import com.simibubi.create.api.behaviour.interaction.MovingInteractionBehaviour;
+import com.simibubi.create.api.behaviour.movement.MovementBehaviour;
 import com.simibubi.create.foundation.block.connected.ConnectedTextureBehaviour;
 import com.simibubi.create.foundation.data.SharedProperties;
 import com.simibubi.create.foundation.data.TagGen;
@@ -10,23 +12,16 @@ import com.tterrag.registrate.util.entry.BlockEntry;
 import com.tterrag.registrate.util.nullness.NonNullConsumer;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
-import de.mrjulsen.crn.block.AbstractAdvancedDisplayBlock;
-import de.mrjulsen.crn.block.AdvancedDisplayBlock;
-import de.mrjulsen.crn.block.AdvancedDisplayBoardBlock;
-import de.mrjulsen.crn.block.AdvancedDisplayHalfPanelBlock;
-import de.mrjulsen.crn.block.AdvancedDisplayPanelBlock;
-import de.mrjulsen.crn.block.AdvancedDisplaySlabBlock;
-import de.mrjulsen.crn.block.AdvancedDisplaySlopedBlock;
-import de.mrjulsen.crn.block.AdvancedDisplaySmallBlock;
-import de.mrjulsen.crn.block.TrainStationClockBlock;
+import de.mrjulsen.crn.block.*;
+import de.mrjulsen.crn.block.blockentity.AdvancedDisplayInteractionBehaviour;
+import de.mrjulsen.crn.block.blockentity.AdvancedDisplayMovementBehaviour;
 import de.mrjulsen.crn.block.connected.AdvancedDisplayCTBehaviour;
 import de.mrjulsen.crn.block.connected.AdvancedDisplaySmallCTBehaviour;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.level.block.Block;
-
-import static com.simibubi.create.api.behaviour.display.DisplayTarget.displayTarget;
+import net.minecraft.world.level.block.Blocks;
 
 public class ModBlocks {	
 
@@ -38,7 +33,9 @@ public class ModBlocks {
 		.color(() -> AbstractAdvancedDisplayBlock::getDisplayColor)
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
-		.transform(displayTarget(ModExtras.ADVANCED_DISPLAY_BOARD_TARGET))
+		.transform(DisplayTarget.displayTarget(ModExtras.ADVANCED_DISPLAY_BOARD_TARGET))
+		.onRegister(MovementBehaviour.movementBehaviour(new AdvancedDisplayMovementBehaviour()))
+		.onRegister(MovingInteractionBehaviour.interactionBehaviour(new AdvancedDisplayInteractionBehaviour()))
 		.item()
 		.build()
 		.register();
@@ -49,7 +46,9 @@ public class ModBlocks {
 		.color(() -> AbstractAdvancedDisplayBlock::getDisplayColor)
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
-		.transform(displayTarget(ModExtras.ADVANCED_DISPLAY_BOARD_TARGET))
+		.transform(DisplayTarget.displayTarget(ModExtras.ADVANCED_DISPLAY_BOARD_TARGET))
+		.onRegister(MovementBehaviour.movementBehaviour(new AdvancedDisplayMovementBehaviour()))
+		.onRegister(MovingInteractionBehaviour.interactionBehaviour(new AdvancedDisplayInteractionBehaviour()))
 		.item()
 		.build()
 		.register();
@@ -61,7 +60,9 @@ public class ModBlocks {
 		.color(() -> AbstractAdvancedDisplayBlock::getDisplayColor)
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
-		.transform(displayTarget(ModExtras.ADVANCED_DISPLAY_BOARD_TARGET))
+		.transform(DisplayTarget.displayTarget(ModExtras.ADVANCED_DISPLAY_BOARD_TARGET))
+		.onRegister(MovementBehaviour.movementBehaviour(new AdvancedDisplayMovementBehaviour()))
+		.onRegister(MovingInteractionBehaviour.interactionBehaviour(new AdvancedDisplayInteractionBehaviour()))
 		.item()
 		.build()
 		.register();
@@ -73,7 +74,9 @@ public class ModBlocks {
 		.color(() -> AbstractAdvancedDisplayBlock::getDisplayColor)
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
-		.transform(displayTarget(ModExtras.ADVANCED_DISPLAY_BOARD_TARGET))
+		.transform(DisplayTarget.displayTarget(ModExtras.ADVANCED_DISPLAY_BOARD_TARGET))
+		.onRegister(MovementBehaviour.movementBehaviour(new AdvancedDisplayMovementBehaviour()))
+		.onRegister(MovingInteractionBehaviour.interactionBehaviour(new AdvancedDisplayInteractionBehaviour()))
 		.item()
 		.build()
 		.register();
@@ -85,31 +88,37 @@ public class ModBlocks {
 		.color(() -> AbstractAdvancedDisplayBlock::getDisplayColor)
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
-		.transform(displayTarget(ModExtras.ADVANCED_DISPLAY_BOARD_TARGET))
+		.transform(DisplayTarget.displayTarget(ModExtras.ADVANCED_DISPLAY_BOARD_TARGET))
+		.onRegister(MovementBehaviour.movementBehaviour(new AdvancedDisplayMovementBehaviour()))
+		.onRegister(MovingInteractionBehaviour.interactionBehaviour(new AdvancedDisplayInteractionBehaviour()))
 		.item()
 		.build()
 		.register();
 
 	public static final BlockEntry<AdvancedDisplayHalfPanelBlock> ADVANCED_DISPLAY_HALF_PANEL = CreateRailwaysNavigator.REGISTRATE.block("advanced_display_half_panel", AdvancedDisplayHalfPanelBlock::new)
-	.onRegister(connectedTextures(() -> new AdvancedDisplaySmallCTBehaviour(ClientWrapper.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL, ClientWrapper.CT_ADVANCED_DISPLAY_SMALL)))
-	.onRegister(connectedTextures(() -> new AdvancedDisplaySmallCTBehaviour(ClientWrapper.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL_BORDER, ClientWrapper.CT_ADVANCED_DISPLAY_SMALL_BORDER)))
+		.onRegister(connectedTextures(() -> new AdvancedDisplaySmallCTBehaviour(ClientWrapper.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL, ClientWrapper.CT_ADVANCED_DISPLAY_SMALL)))
+		.onRegister(connectedTextures(() -> new AdvancedDisplaySmallCTBehaviour(ClientWrapper.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL_BORDER, ClientWrapper.CT_ADVANCED_DISPLAY_SMALL_BORDER)))
 		.addLayer(() -> RenderType::cutout)
 		.color(() -> AbstractAdvancedDisplayBlock::getDisplayColor)
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
-		.transform(displayTarget(ModExtras.ADVANCED_DISPLAY_BOARD_TARGET))
+		.transform(DisplayTarget.displayTarget(ModExtras.ADVANCED_DISPLAY_BOARD_TARGET))
+		.onRegister(MovementBehaviour.movementBehaviour(new AdvancedDisplayMovementBehaviour()))
+		.onRegister(MovingInteractionBehaviour.interactionBehaviour(new AdvancedDisplayInteractionBehaviour()))
 		.item()
 		.build()
 		.register();
 
 	public static final BlockEntry<AdvancedDisplaySlopedBlock> ADVANCED_DISPLAY_SLOPED = CreateRailwaysNavigator.REGISTRATE.block("advanced_display_sloped", AdvancedDisplaySlopedBlock::new)
-	.onRegister(connectedTextures(() -> new AdvancedDisplaySmallCTBehaviour(ClientWrapper.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL, ClientWrapper.CT_ADVANCED_DISPLAY_SMALL)))
-	.onRegister(connectedTextures(() -> new AdvancedDisplaySmallCTBehaviour(ClientWrapper.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL_BORDER, ClientWrapper.CT_ADVANCED_DISPLAY_SMALL_BORDER)))
+		.onRegister(connectedTextures(() -> new AdvancedDisplaySmallCTBehaviour(ClientWrapper.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL, ClientWrapper.CT_ADVANCED_DISPLAY_SMALL)))
+		.onRegister(connectedTextures(() -> new AdvancedDisplaySmallCTBehaviour(ClientWrapper.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL_BORDER, ClientWrapper.CT_ADVANCED_DISPLAY_SMALL_BORDER)))
 		.addLayer(() -> RenderType::cutout)
 		.color(() -> AbstractAdvancedDisplayBlock::getDisplayColor)
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
-		.transform(displayTarget(ModExtras.ADVANCED_DISPLAY_BOARD_TARGET))
+		.transform(DisplayTarget.displayTarget(ModExtras.ADVANCED_DISPLAY_BOARD_TARGET))
+		.onRegister(MovementBehaviour.movementBehaviour(new AdvancedDisplayMovementBehaviour()))
+		.onRegister(MovingInteractionBehaviour.interactionBehaviour(new AdvancedDisplayInteractionBehaviour()))
 		.item()
 		.build()
 		.register();	
@@ -121,6 +130,12 @@ public class ModBlocks {
 		.item()
 		.build()
 		.register();
+
+	public static final BlockEntry<NavigatorLecternBlock> NAVIGATOR_LECTERN = CreateRailwaysNavigator.REGISTRATE.block("navigator_lectern", NavigatorLecternBlock::new)
+			.initialProperties(() -> Blocks.LECTERN)
+			.transform(TagGen.axeOnly())
+			.loot((lt, block) -> lt.dropOther(block, Blocks.LECTERN))
+			.register();
 
 	public static <T extends Block> NonNullConsumer<? super T> connectedTextures(
 		Supplier<ConnectedTextureBehaviour> behavior) {

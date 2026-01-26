@@ -10,8 +10,8 @@ import com.simibubi.create.content.trains.entity.CarriageContraptionEntity;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 
-import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.block.AbstractAdvancedDisplayBlock;
+import de.mrjulsen.crn.block.IBlockGetter;
 import de.mrjulsen.crn.block.properties.ETimeDisplay;
 import de.mrjulsen.crn.block.display.properties.BasicDisplaySettings;
 import de.mrjulsen.crn.block.display.properties.IDisplaySettings;
@@ -25,6 +25,7 @@ import de.mrjulsen.crn.client.AdvancedDisplaysRegistry;
 import de.mrjulsen.crn.client.AdvancedDisplaysRegistry.DisplayProperties;
 import de.mrjulsen.crn.client.AdvancedDisplaysRegistry.DisplayTypeResourceKey;
 import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
+import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.CarriageData;
 import de.mrjulsen.crn.data.TrainExitSide;
 import de.mrjulsen.crn.data.StationTag.ClientStationTag;
@@ -55,7 +56,6 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -68,13 +68,13 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     IContraptionBlockEntity<AdvancedDisplayBlockEntity>,
     IBERInstance<AdvancedDisplayBlockEntity>
 {
-    private static final String NBT_DISPLAY_TYPE_SETTINGS = "DisplaySettings";
+    public static final String NBT_DISPLAY_TYPE_SETTINGS = "DisplaySettings";
 
     private static final String NBT_FILTER = "Filter";
 
-    private static final String NBT_XSIZE = "XSize";
-    private static final String NBT_YSIZE = "YSize";
-    private static final String NBT_CONTROLLER = "IsController";
+    public static final String NBT_XSIZE = "XSize";
+    public static final String NBT_YSIZE = "YSize";
+    public static final String NBT_CONTROLLER = "IsController";
     private static final String NBT_GLOWING = "Glowing";
     
     private static final String NBT_LAST_REFRESH_TIME = "LastRefreshed";
@@ -90,8 +90,6 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 
     public static final byte MAX_XSIZE = 16;
     public static final byte MAX_YSIZE = 16;
-
-    private static final int REFRESH_FREQUENCY = 100;
 
     // DATA
     private DisplayTypeResourceKey displayTypeId = ModDisplayTypes.TRAIN_DESTINATION_SIMPLE;
@@ -111,7 +109,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     private CarriageData carriageData = new CarriageData(0, Direction.NORTH, false);
     
     // OTHER
-    private int syncTicks = REFRESH_FREQUENCY - 1;
+    private int syncTicks = 0;
     private final Cache<IBlockEntityRendererInstance<AdvancedDisplayBlockEntity>> renderer = new Cache<>(() -> new AdvancedDisplayRenderInstance(this), ECachingPriority.ALWAYS);
 
     public final Cache<TrainExitSide> relativeExitDirection = new Cache<>(() -> {        
@@ -304,8 +302,12 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
      * @param settings Custom display settings or {@code null} for default settings.
      */
     public void setDisplayType(DisplayTypeResourceKey key,  IDisplaySettings settings) {
+        setDisplayType(getLevel(), key, settings);
+    }
+
+    public void setDisplayType(Level level, DisplayTypeResourceKey key, IDisplaySettings settings) {
         this.displayTypeId = key;
-        this.displayTypeSettings = settings;
+        this.displayTypeSettings = settings == null ? AdvancedDisplaysRegistry.createSettings(key) : settings;
         if (level.isClientSide) {
             getRenderer().update(level, worldPosition, getBlockState(), this, EUpdateReason.LAYOUT_CHANGED);
         }
@@ -327,7 +329,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     }
     
     @Override
-    public boolean connectable(BlockGetter getter, BlockPos a, BlockPos b) {
+    public boolean connectable(IBlockGetter getter, BlockPos a, BlockPos b) {
         if (getter == null || a == null || b == null) {
             return false;
         }
@@ -341,13 +343,13 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
             ;
         }
         return false;
-    }
+    }    
 
-    public AdvancedDisplayBlockEntity getController() {
+    public AdvancedDisplayBlockEntity getController(IBlockGetter getter) {
 		if (isController())
 			return this;
 
-		BlockState blockState = getBlockState();
+		BlockState blockState = getter.getBlockState(worldPosition);
 		if (!(blockState.getBlock() instanceof AbstractAdvancedDisplayBlock))
 			return null;
 
@@ -355,12 +357,12 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 		Direction side = blockState.getValue(AbstractAdvancedDisplayBlock.FACING).getClockWise();
 
         for (int i = 0; i < getMaxWidth(); i++) {
-			if (connectable(level, pos, pos.relative(side))) {
+			if (connectable(getter, pos, pos.relative(side))) {
 				pos.move(side);
 				continue;
 			}
 
-			BlockEntity found = level.getBlockEntity(pos);
+			BlockEntity found = getter.getBlockEntity(pos);
 			if (found instanceof AdvancedDisplayBlockEntity flap && flap.isController())
 				return flap;
 
@@ -368,12 +370,12 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 		}
 
 		for (int i = 0; i < getMaxHeight(); i++) {
-            if (connectable(level, pos, pos.relative(Direction.UP))) {
+            if (connectable(getter, pos, pos.relative(Direction.UP))) {
 				pos.move(Direction.UP);
 				continue;
 			}
 
-			BlockEntity found = level.getBlockEntity(pos);
+			BlockEntity found = getter.getBlockEntity(pos);
 			if (found instanceof AdvancedDisplayBlockEntity flap && flap.isController())
 				return flap;
 
@@ -408,18 +410,14 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         stationInfo = StationInfo.empty();
     }
 
-    public void updateControllerStatus() {
-
-        if (level.isClientSide) {
-            return;
-        }
-
-		BlockState blockState = getBlockState();
+    public void updateControllerStatus2(IBlockGetter getter) {
+		BlockState blockState = getter.getBlockState(worldPosition);
 		if (!(blockState.getBlock() instanceof AbstractAdvancedDisplayBlock))
 			return;
 
 		Direction leftDirection = blockState.getValue(AbstractAdvancedDisplayBlock.FACING).getClockWise();
-        boolean shouldBeController = !connectable(level, worldPosition, worldPosition.relative(leftDirection)) && !connectable(level, worldPosition, worldPosition.above());
+        boolean shouldBeController = !connectable(getter, worldPosition, worldPosition.relative(leftDirection)) && !connectable(getter, worldPosition, worldPosition.above());
+        
 
 		byte newXSize = 1;
 		byte newYSize = 1;
@@ -427,7 +425,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 		if (shouldBeController) {
 			for (int xOffset = 1; xOffset < getMaxWidth(); xOffset++) {
                 BlockPos relPos = worldPosition.relative(leftDirection.getOpposite(), xOffset);
-				if (level.getBlockState(relPos) != blockState) {
+				if (getter.getBlockState(relPos) != blockState) {
                     break;
                 }
 
@@ -440,12 +438,13 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
                     
                     for (int i = 0; i < newXSize; i++) {
                         BlockPos relPos = downPos.relative(leftDirection.getOpposite(), i);
-                        if (level.getBlockEntity(relPos) instanceof AdvancedDisplayBlockEntity be && be != this) {
+                        if (getter.getBlockEntity(relPos) instanceof AdvancedDisplayBlockEntity be && be != this) {
                             be.copyFrom(this);
+                            getter.updateBlockEntity(be, be.worldPosition);
                         }
                     }
 
-                    if (!connectable(level, downPos, downPos.below())) {
+                    if (!connectable(getter, downPos, downPos.below())) {
                         break;
                     }    
                     newYSize++;
@@ -463,7 +462,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         if (!isController) {
             reset();
         }
-
+        getter.updateBlockEntity(this, worldPosition);
         notifyUpdate();
 	}    
 
@@ -479,14 +478,13 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
             return;
         }
 
-        syncTicks++;
-        if ((syncTicks %= REFRESH_FREQUENCY) == 0) {
-            if (level.isClientSide) {
-                boolean shouldUpdate = getStops().size() > 0 || dataOrderChanged;
-                if (shouldUpdate) {
-                    getRenderer().update(level, getBlockPos(), getBlockState(), this, dataOrderChanged ? EUpdateReason.LAYOUT_CHANGED : EUpdateReason.DATA_CHANGED);
-                    dataOrderChanged = false;
-                }
+        syncTicks--;
+        if (level.isClientSide && syncTicks <= 0) {
+            syncTicks = ModClientConfig.DISPLAY_REFRESH_RATE.get();
+            boolean shouldUpdate = getStops().size() > 0 || dataOrderChanged;
+            if (shouldUpdate) {
+                getRenderer().update(level, getBlockPos(), getBlockState(), this, dataOrderChanged ? EUpdateReason.LAYOUT_CHANGED : EUpdateReason.DATA_CHANGED);
+                dataOrderChanged = false;
             }
         }
     }
@@ -494,7 +492,9 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     @Override
     public void lazyTick() {
         super.lazyTick();
-        updateControllerStatus();
+        if (!level.isClientSide()) {
+            updateControllerStatus2(new IBlockGetter.WorldBlockGetter(getLevel()));
+        }
     }
 
     @Override
@@ -509,10 +509,11 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
             return;
         }
 
-        syncTicks++;       
-        if ((syncTicks %= 100) == 0 && level.isClientSide) {
+        syncTicks--;
+        if (level.isClientSide && syncTicks <= 0) {
+            syncTicks = ModClientConfig.DISPLAY_REFRESH_RATE.get();
             DataAccessor.getFromServer(((CarriageContraptionEntity)carriage.entity).trainId, ModAccessorTypes.GET_TRAIN_DISPLAY_DATA_FROM_SERVER, (data) -> { 
-                if (data.isEmpty() && this.trainData.isEmpty()) {
+                if (data.getState().isOutOfService() && this.trainData.getState().isOutOfService()) {
                     return;
                 }
 
@@ -527,7 +528,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
                         this.trainData.isWaitingAtStation() != data.isWaitingAtStation()
                     ;
                 }
-                boolean outOfService = this.trainData != null && !this.trainData.getTrainData().getId().equals(Constants.ZERO_UUID) && !data.getNextStop().isPresent();
+                boolean outOfService = data.getState().isOutOfService();
                 if (outOfService) {
                     shouldUpdate = true;
                 }
@@ -688,7 +689,9 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        return this.saveWithFullMetadata(registries);
+        CompoundTag nbt = new CompoundTag();
+        this.write(nbt, registries, true);
+        return nbt;
     }
 
     @Override

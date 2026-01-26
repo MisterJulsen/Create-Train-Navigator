@@ -43,7 +43,7 @@ public class ValueWatcher {
      */
     public void add(int value, boolean initializeOnly) {
         // If no transit time was known, initialize first
-        if (this.value <= 0) {
+        if (this.value < 0) {
             forceValue(value); // Set initial reference transit time
             DLUtils.doIfNotNull(updateValue, Runnable::run);
         }
@@ -99,6 +99,6 @@ public class ValueWatcher {
     }
 
     public boolean isInitialized() {
-        return history().length > 0 && value() > 0 && measuredValue() >= 0;
+        return history().length > 0 && value() >= 0 && measuredValue() >= 0;
     }
 }
