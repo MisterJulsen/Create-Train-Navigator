@@ -184,11 +184,7 @@ public class TrainDisplayData {
                         sideHolder.set(TrainUtils.getExitSide(train.navigation.destination));
                         future.complete(null);
                     });
-                    try {
-                        future.get();
-                    } catch (InterruptedException | ExecutionException e) {
-                        e.printStackTrace();
-                    }
+                    future.join();
                 }
             }
             TrainExitSide side = sideHolder.get() == null ? TrainExitSide.UNKNOWN : sideHolder.get();
@@ -210,7 +206,7 @@ public class TrainDisplayData {
                 selectedSection = prevSection;
             }
 
-            List<TrainStopDisplayData> displayData = new ArrayList<>();
+            List<TrainStopDisplayData> stopsOfSection = new ArrayList<>();
             if (selectedSection.isUsable()) {
                 List<TrainPrediction> predictions = selectedSection.getPredictions(-1, false);
                 for (int i = 0; i < predictions.size(); i++) {
@@ -219,7 +215,7 @@ public class TrainDisplayData {
                     if (i == predictions.size() - 1 && predictions.get(0) == prediction) {
                         stop.simulateCycles(1);
                     }
-                    displayData.add(TrainStopDisplayData.of(stop));
+                    stopsOfSection.add(TrainStopDisplayData.of(stop));
                 }
             }
             boolean preStart = isFirstStationInSection && (!prevSection.shouldIncludeNextStationOfNextSection() || !prevSection.isUsable()) && !isAtStation;
@@ -249,7 +245,7 @@ public class TrainDisplayData {
 
             return new TrainDisplayData(
                 BasicTrainDisplayData.of(train.id),
-                displayData,
+                stopsOfSection,
                 data.getCurrentScheduleIndex(),
                 side,
                 train.speed,
@@ -302,11 +298,12 @@ public class TrainDisplayData {
 
     public int getCurrentScheduleIndex() {
         return currentScheduleIndex;
+
     }
 
     public Optional<TrainStopDisplayData> getCurrentStop() {
         int idx = getCurrentStopIndex();
-        if (isWaitingAtStation()) {
+        if (!isWaitingAtStation()) {
             idx -= 1;
             if (idx < 0) {
                 idx = getAllStops().size() - 1;
