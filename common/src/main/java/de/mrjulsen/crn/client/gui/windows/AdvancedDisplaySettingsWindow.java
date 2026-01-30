@@ -147,6 +147,7 @@ public class AdvancedDisplaySettingsWindow extends DLWindow {
         setHeight(headerSize.size() + footerSize.size() + commonSettingsContainer.height() + 2 + advancedSettingsPanel.height() + 3 + (advancedSettingsExpanded ? advancedSettingsContainer.height() : 0));
         setPosition(getWindowManager().getScreenWidth() / 2 - width() / 2, getWindowManager().getScreenHeight() / 2 - height() / 2);
         advancedSettingsContainer.clearLines();
+        advancedSettingsContainer.visible.set(advancedSettingsExpanded);
         if (advancedSettingsExpanded) {
             settings.buildGui(new GuiBuilderContext(advancedSettingsContainer));
         }
