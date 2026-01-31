@@ -16,6 +16,7 @@ import de.mrjulsen.crn.block.IBlockGetter;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.block.display.properties.SimpleStaticTextDisplaySettings;
 import de.mrjulsen.crn.block.display.properties.StaticTextDisplaySettings;
+import de.mrjulsen.crn.block.display.properties.components.IShowTrainMultipleTimes;
 import de.mrjulsen.crn.block.properties.EDisplayType;
 import de.mrjulsen.crn.block.properties.EDisplayType.EDisplayTypeDataSource;
 import de.mrjulsen.crn.client.AdvancedDisplaysRegistry;
@@ -121,7 +122,7 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 						}
 					}
 
-					List<StationDisplayData> preds = prepare(filter, controller.getDisplayProperties().platformDisplayTrainsCount().apply(controller));
+					List<StationDisplayData> preds = prepare(filter, controller.getDisplayProperties().platformDisplayTrainsCount().apply(controller), controller.getSettingsAs(IShowTrainMultipleTimes.class).map(IShowTrainMultipleTimes::showTrainMultipleTimes).orElse(false));
 					controller.setData(
 							preds,
 							filter,
@@ -186,11 +187,11 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 		}
 	}
 
-	public static List<StationDisplayData> prepare(String filter, int maxLines) {
+	public static List<StationDisplayData> prepare(String filter, int maxLines, boolean allowDuplicates) {
 		List<StationDisplayData> result = new ArrayList<>(maxLines);
 
 		int i = 0;
-		for (TrainStop stop : TrainUtils.getDeparturesAtStationName(filter, null, false)) {
+		for (TrainStop stop : TrainUtils.getDeparturesAtStationName(filter, null, false, allowDuplicates)) {
 			i++;
 			result.add(StationDisplayData.of(stop));
 			if (i >= maxLines) {

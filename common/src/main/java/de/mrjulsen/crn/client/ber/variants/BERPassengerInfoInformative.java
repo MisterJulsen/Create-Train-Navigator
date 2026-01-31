@@ -351,7 +351,7 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
         }
 
         if (getDisplaySettings(blockEntity).showConnections() && blockEntity.getXSizeScaled() > 1 && nextStopAnnounced && !wasNextStopAnnounced && data.getNextStop().isPresent()) {
-            ModNetworkManager.GET_NEXT_CONNECTIONS_DISPLAY_DATA.send(NetworkDirection.toServer(), new GetNextConnectionsDisplayDataPacketData.Request(new NextConnectionsRequestData(data.getNextStop().get().getRealTimeStation().stationName(), data.getTrainData().getId())), (response) -> {
+            ModNetworkManager.GET_NEXT_CONNECTIONS_DISPLAY_DATA.send(NetworkDirection.toServer(), new GetNextConnectionsDisplayDataPacketData.Request(new NextConnectionsRequestData(data.getNextStop().get().getRealTimeStation().stationName(), data.getTrainData().getId(), getDisplaySettings(blockEntity).showTrainMultipleTimes())), (response) -> {
                 nextConnections = response.getData();
                 updateLayout(blockEntity, data);
                 updateContent(blockEntity, data);

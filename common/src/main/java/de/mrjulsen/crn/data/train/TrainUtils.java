@@ -101,32 +101,24 @@ public final class TrainUtils {
         return trains;
     }, String::hashCode, ECachingPriority.LOWEST);
     
-    private static record DeparturesFromTagContext(StationTag station, UUID selfTrain, boolean realTimeOnly) {
-        @Override
-        public final int hashCode() {
-            return Objects.hash(station, selfTrain);
-        }
-    }    
+    private static record DeparturesFromTagContext(StationTag station, UUID selfTrain, boolean realTimeOnly, boolean allowDuplicates) {}
+
     private static final MapCache<List<TrainStop>, DeparturesFromTagContext, DeparturesFromTagContext> departuresAtTagCache = new MapCache<>((context) -> {
         return getDeparturesAt(x -> 
             !GlobalSettings.getInstance().isStationBlacklisted(x.getStationFilter()) && (
             x.getStationTag().equals(context.station()) ||
             (!context.realTimeOnly() && x.getEstimatedStationTag().equals(context.station())
-        )), context.selfTrain());
+        )), context.selfTrain(), context.allowDuplicates());
     }, DeparturesFromTagContext::hashCode, ECachingPriority.LOWEST);
     
-    private static record DeparturesFromStationContext(String station, UUID selfTrain, boolean realTimeOnly) {
-        @Override
-        public final int hashCode() {
-            return Objects.hash(station, selfTrain);
-        }
-    }    
+    private static record DeparturesFromStationContext(String station, UUID selfTrain, boolean realTimeOnly, boolean allowDuplicates) {}
+
     private static final MapCache<List<TrainStop>, DeparturesFromStationContext, DeparturesFromStationContext> departuresAtStationCache = new MapCache<>((context) -> {
         return getDeparturesAt(x ->
             !GlobalSettings.getInstance().isStationBlacklisted(x.getStationFilter()) && (
             TrainUtils.stationMatches(x.getTargetedStationName(), context.station()) ||
             (!context.realTimeOnly() && TrainUtils.stationMatches(x.getScheduledStationName(), context.station())
-        )), context.selfTrain());
+        )), context.selfTrain(), context.allowDuplicates());
     }, DeparturesFromStationContext::hashCode, ECachingPriority.LOWEST);
 
     public static void refreshCache() {
@@ -226,8 +218,8 @@ public final class TrainUtils {
      * @param realTimeOnly Whether only currently valid departures at this station should be returned or also trains that were intended to stop here but the track has changed.
      * @return A list of stops at this stations.
      */
-    public static List<TrainStop> getDeparturesAt(StationTag station, UUID selfTrain, boolean realTimeOnly) {
-        DeparturesFromTagContext context = new DeparturesFromTagContext(station, selfTrain, realTimeOnly);
+    public static List<TrainStop> getDeparturesAt(StationTag station, UUID selfTrain, boolean realTimeOnly, boolean allowDuplicates) {
+        DeparturesFromTagContext context = new DeparturesFromTagContext(station, selfTrain, realTimeOnly, allowDuplicates);
         return departuresAtTagCache.get(context, context);
     }
     /**
@@ -237,12 +229,12 @@ public final class TrainUtils {
      * @param realTimeOnly Whether only currently valid departures at this station should be returned or also trains that were intended to stop here but the track has changed.
      * @return A list of stops at this stations.
      */
-    public static List<TrainStop> getDeparturesAtStationName(String stationName, UUID selfTrain, boolean realTimeOnly) {
-        DeparturesFromStationContext context = new DeparturesFromStationContext(stationName, selfTrain, realTimeOnly);
+    public static List<TrainStop> getDeparturesAtStationName(String stationName, UUID selfTrain, boolean realTimeOnly, boolean allowDuplicates) {
+        DeparturesFromStationContext context = new DeparturesFromStationContext(stationName, selfTrain, realTimeOnly, allowDuplicates);
         return departuresAtStationCache.get(context, context);
     }
 
-    public static List<TrainStop> getDeparturesAt(Predicate<TrainPrediction> stationFilter, UUID selfTrain) {
+    public static List<TrainStop> getDeparturesAt(Predicate<TrainPrediction> stationFilter, UUID selfTrain, boolean allowDuplicates) {
         MutableHolder<TrainSchedule> selfSchedule = new MutableHolder<TrainSchedule>(null);
         TrainUtils.getTrain(selfTrain).ifPresent(x -> {
             selfSchedule.set(new TrainSchedule(TrainListener.getTrainData(x.id).map(TrainData::getSessionId).orElse(new UUID(0, 0)), x));
@@ -288,7 +280,7 @@ public final class TrainUtils {
                 continue;
             }
             
-            if (!usedTrains.contains(stop.getTrainId())) {
+            if (!usedTrains.contains(stop.getTrainId()) || allowDuplicates) {
                 usedTrains.add(stop.getTrainId());
                 results.add(stop);
             }

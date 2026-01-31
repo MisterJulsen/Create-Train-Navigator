@@ -244,6 +244,24 @@ public class GuiBuilderWrapper {
         line.addComponent(showBuildTimeAndDateBox);
     }
 
+    static void buildShowTrainMultipleTimesGui(IShowTrainMultipleTimes setting, GuiBuilderContext context) {
+        DLPanel line = context.container().addLine(IShowTrainMultipleTimes.GUI_LINE_SHOW_TRAIN_MULTIPLE_TIMES_NAME);
+
+        IconSlotWidget icon = line.addComponent(new IconSlotWidget(0, 0));
+        icon.icon.set(ModGuiIcons.COPY.getAsSprite(16, 16));
+
+        DLCheckBox showTrainMultipleTimesBox = new DLCheckBox(0, 0, 0, CreateButton.HEIGHT);
+        showTrainMultipleTimesBox.text.set(IShowTrainMultipleTimes.textShowTrainMultipleTimes);
+        showTrainMultipleTimesBox.checked.set(setting.showTrainMultipleTimes());
+        showTrainMultipleTimesBox.layoutContraint.set(FlowLayout.FlowConstraint.FILL);
+        showTrainMultipleTimesBox.addEventListener(DLToggleButton.CheckedChangedEvent.class, (s, e) -> {
+            setting.setShowTrainMultipleTimes(e.checked());
+            return false;
+        });
+        showTrainMultipleTimesBox.tooltip.set(new DLTooltip(List.of(IShowTrainMultipleTimes.textShowTrainMultipleTimesDescription), 200));
+        line.addComponent(showTrainMultipleTimesBox);
+    }
+
     static void buildTimeDisplayGui(ITimeDisplaySetting setting, GuiBuilderContext context) {
         DLPanel line = context.container().addLine(ITimeDisplaySetting.GUI_LINE_TIME_NAME);
 
@@ -297,7 +315,7 @@ public class GuiBuilderWrapper {
         timeDisplayBox.layoutContraint.set(FlowLayout.FlowConstraint.FILL);
         timeDisplayBox.selectedItem.set(Optional.ofNullable(setting.getTrainTextComponents()));
         timeDisplayBox.addEventListener(DLCycleButton.SelectedItemChanged.class, (s, e) -> {
-            timeDisplayBox.selectedItem.get().ifPresent(item -> setting.setTrainTextComponents(item));
+            timeDisplayBox.selectedItem.get().ifPresent(setting::setTrainTextComponents);
             return false;
         });
         line.addComponent(timeDisplayBox);

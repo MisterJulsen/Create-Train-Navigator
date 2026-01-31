@@ -1,13 +1,6 @@
 package de.mrjulsen.crn.block.display.properties;
 
-import de.mrjulsen.crn.block.display.properties.components.ICarriageIndexSetting;
-import de.mrjulsen.crn.block.display.properties.components.IShowDoNotBoardText;
-import de.mrjulsen.crn.block.display.properties.components.IShowExitDirectionSetting;
-import de.mrjulsen.crn.block.display.properties.components.IShowLineColorSetting;
-import de.mrjulsen.crn.block.display.properties.components.IShowNextConnections;
-import de.mrjulsen.crn.block.display.properties.components.IShowTrainStatsSetting;
-import de.mrjulsen.crn.block.display.properties.components.ITimeDisplaySetting;
-import de.mrjulsen.crn.block.display.properties.components.ITrainTextSetting;
+import de.mrjulsen.crn.block.display.properties.components.*;
 import de.mrjulsen.crn.block.properties.ETimeDisplay;
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
 import net.minecraft.nbt.CompoundTag;
@@ -20,7 +13,8 @@ public class PassengerInformationDetailedSettings extends BasicDisplaySettings i
     IShowNextConnections,
     ITrainTextSetting,
     IShowLineColorSetting,
-    IShowDoNotBoardText
+    IShowDoNotBoardText,
+    IShowTrainMultipleTimes
 {
 
     protected ETimeDisplay timeDisplay = ETimeDisplay.ABS;
@@ -32,6 +26,7 @@ public class PassengerInformationDetailedSettings extends BasicDisplaySettings i
     protected ETrainTextComponents trainTextComponents = ETrainTextComponents.TRAIN_NAME;
     protected boolean showLineColor = false;
     protected boolean showDoNotBoardText = true;
+    protected boolean showTrainMultipleTimes = true;
 
     @Override
     public void deserializeNbt(CompoundTag nbt) {
@@ -45,6 +40,7 @@ public class PassengerInformationDetailedSettings extends BasicDisplaySettings i
         if (nbt.contains(NBT_TRAIN_TEXT)) this.trainTextComponents = ETrainTextComponents.getById(nbt.getByte(NBT_TRAIN_TEXT));
         if (nbt.contains(NBT_SHOW_LINE_COLOR)) this.showLineColor = nbt.getBoolean(NBT_SHOW_LINE_COLOR);
         if (nbt.contains(NBT_SHOW_DO_NOT_BOARD_TEXT)) this.showDoNotBoardText = nbt.getBoolean(NBT_SHOW_DO_NOT_BOARD_TEXT);
+        if (nbt.contains(NBT_SHOW_TRAIN_MULTIPLE_TIMES)) this.showDoNotBoardText = nbt.getBoolean(NBT_SHOW_TRAIN_MULTIPLE_TIMES);
 
     }
 
@@ -60,6 +56,7 @@ public class PassengerInformationDetailedSettings extends BasicDisplaySettings i
         nbt.putByte(NBT_TRAIN_TEXT, trainTextComponents.getId());
         nbt.putBoolean(NBT_SHOW_LINE_COLOR, showLineColor);
         nbt.putBoolean(NBT_SHOW_DO_NOT_BOARD_TEXT, showDoNotBoardText);
+        nbt.putBoolean(NBT_SHOW_TRAIN_MULTIPLE_TIMES, showTrainMultipleTimes);
     }
 
     @Override
@@ -71,6 +68,7 @@ public class PassengerInformationDetailedSettings extends BasicDisplaySettings i
         this.buildShowConnectionGui(context);
         this.buildShowLineColorGui(context);
         this.buildShowDoNotBoardTextGui(context);
+        this.buildShowTrainMultipleTimesGui(context);
         this.buildCarriageIndexGui(context);
         this.buildTrainTextGui(context);
     }
@@ -86,6 +84,7 @@ public class PassengerInformationDetailedSettings extends BasicDisplaySettings i
         copyTrainTextSetting(oldSettings);
         copyShowLineColorSetting(oldSettings);
         copyShowDoNotBoardTextSetting(oldSettings);
+        copyShowTrainMultipleTimesSetting(oldSettings);
     }
 
     @Override
@@ -116,6 +115,16 @@ public class PassengerInformationDetailedSettings extends BasicDisplaySettings i
     @Override
     public void setShowConnection(boolean b) {
         this.showConnections = b;
+    }
+
+    @Override
+    public boolean showTrainMultipleTimes() {
+        return showTrainMultipleTimes;
+    }
+
+    @Override
+    public void setShowTrainMultipleTimes(boolean b) {
+        this.showTrainMultipleTimes = b;
     }
 
     @Override

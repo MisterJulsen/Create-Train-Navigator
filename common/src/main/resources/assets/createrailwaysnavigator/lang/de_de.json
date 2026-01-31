@@ -263,6 +263,8 @@
     "gui.createrailwaysnavigator.advanced_display_settings.show_connections": "Zeige Anschlüsse",
     "gui.createrailwaysnavigator.advanced_display_settings.show_line_color": "Zeige Linienfarbe",
     "gui.createrailwaysnavigator.advanced_display_settings.show_line_color.description": "Hebt den Zugname mit der Farbe der aktuellen Linie hervor.",
+    "gui.createrailwaysnavigator.advanced_display_settings.show_train_multiple_times": "Zeige Züge mehrfach",
+    "gui.createrailwaysnavigator.advanced_display_settings.show_train_multiple_times.description": "Wenn ein Zug mehrfach an diesem Bahnhof hält (z.B. in die eine und in die andere Richtung), wird jede Ankunft auf der Anzeige dargestellt. Falls diese Option aus ist, wird nur die nächste Ankunft des Zuges angezeigt, oder nichts, je nach Anzeigenkonfiguration.",
     "gui.createrailwaysnavigator.advanced_display_settings.static_text": "Angezeigter Text",
     "gui.createrailwaysnavigator.advanced_display_settings.static_text.description": "normaler Text oder das Text Component Format können genutzt werden.",
     "gui.createrailwaysnavigator.advanced_display_settings.text_pos_x": "X Position",

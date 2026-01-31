@@ -20,6 +20,7 @@ public class GetDeparturesAtPacketData {
     private static final String NBT_STATION_TAG_ID = "StationTagId";
     private static final String NBT_TRAIN_ID = "TrainId";
     private static final String NBT_REAL_TIME_ONLY = "RealTimeOnly";
+    private static final String NBT_ALLOW_DUPLICATES = "AllowDuplicates";
     private static final String NBT_DATA = "Data";
 
     public static class Request extends NetworkPacketData {
@@ -27,16 +28,18 @@ public class GetDeparturesAtPacketData {
         private UUID stationTagId;
         private UUID trainId;
         private boolean realTimeOnly;
+        private boolean allowDuplicates;
 
         public Request(DLStatus status) {
             super(status);
         }
 
-        public Request(UUID stationTagId, UUID trainId, boolean realTimeOnly) {
+        public Request(UUID stationTagId, UUID trainId, boolean realTimeOnly, boolean allowDuplicates) {
             super(DLStatus.OK);
             this.stationTagId = stationTagId;
             this.trainId = trainId;
             this.realTimeOnly = realTimeOnly;
+            this.allowDuplicates = allowDuplicates;
         }
 
         @Override
@@ -44,6 +47,7 @@ public class GetDeparturesAtPacketData {
             nbt.putUUID(NBT_STATION_TAG_ID, stationTagId);
             nbt.putUUID(NBT_TRAIN_ID, trainId);
             nbt.putBoolean(NBT_REAL_TIME_ONLY, realTimeOnly);
+            nbt.putBoolean(NBT_ALLOW_DUPLICATES, allowDuplicates);
         }
 
         @Override
@@ -51,6 +55,7 @@ public class GetDeparturesAtPacketData {
             this.stationTagId = nbt.getUUID(NBT_STATION_TAG_ID);
             this.trainId = nbt.getUUID(NBT_TRAIN_ID);
             this.realTimeOnly = nbt.getBoolean(NBT_REAL_TIME_ONLY);
+            this.allowDuplicates = nbt.getBoolean(NBT_ALLOW_DUPLICATES);
         }
     }
 
@@ -92,7 +97,7 @@ public class GetDeparturesAtPacketData {
                 return new Response(List.of());
             }
             StationTag tag = GlobalSettings.getInstance().getStationTag(packet.stationTagId).get();
-            return new Response(TrainUtils.getDeparturesAt(tag, packet.trainId, packet.realTimeOnly));
+            return new Response(TrainUtils.getDeparturesAt(tag, packet.trainId, packet.realTimeOnly, packet.allowDuplicates));
         } catch (Exception e) {
             CreateRailwaysNavigator.LOGGER.error("Next connections error.", e);
         }

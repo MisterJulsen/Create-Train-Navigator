@@ -1,17 +1,12 @@
 package de.mrjulsen.crn.block.display.properties;
 
-import de.mrjulsen.crn.block.display.properties.components.GuiBuilderWrapper;
-import de.mrjulsen.crn.block.display.properties.components.IPlatformWidthSetting;
-import de.mrjulsen.crn.block.display.properties.components.IShowArrivalSetting;
-import de.mrjulsen.crn.block.display.properties.components.IShowLineColorSetting;
-import de.mrjulsen.crn.block.display.properties.components.ITimeDisplaySetting;
-import de.mrjulsen.crn.block.display.properties.components.ITrainNameWidthSetting;
+import de.mrjulsen.crn.block.display.properties.components.*;
 import de.mrjulsen.crn.block.properties.ETimeDisplay;
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
 import de.mrjulsen.mcdragonlib.util.math.MathUtils;
 import net.minecraft.nbt.CompoundTag;
 
-public class DepartureBoardDisplayTableSettings extends BasicDisplaySettings implements ITimeDisplaySetting, ITrainNameWidthSetting, IPlatformWidthSetting, IShowArrivalSetting, IShowLineColorSetting {
+public class DepartureBoardDisplayTableSettings extends BasicDisplaySettings implements ITimeDisplaySetting, ITrainNameWidthSetting, IPlatformWidthSetting, IShowArrivalSetting, IShowLineColorSetting, IShowTrainMultipleTimes {
 
     protected static final String NBT_INFO_WIDTH = "InfoWidth";
     protected static final String NBT_STOPOVERS_WIDTH = "StopoversWidth";
@@ -23,6 +18,7 @@ public class DepartureBoardDisplayTableSettings extends BasicDisplaySettings imp
     protected boolean showLineColor = false;
     protected float infoWidthPercentage = 0.25f;
     protected float stopoversWidthPercentage = 0.33f;
+    protected boolean showTrainMultipleTimes = true;
 
     @Override
     public void deserializeNbt(CompoundTag nbt) {
@@ -34,6 +30,7 @@ public class DepartureBoardDisplayTableSettings extends BasicDisplaySettings imp
         if (nbt.contains(NBT_SHOW_LINE_COLOR)) this.showLineColor = nbt.getBoolean(NBT_SHOW_LINE_COLOR);
         if (nbt.contains(NBT_INFO_WIDTH)) this.infoWidthPercentage = MathUtils.clamp(nbt.getFloat(NBT_INFO_WIDTH), 0, 1);
         if (nbt.contains(NBT_STOPOVERS_WIDTH)) this.stopoversWidthPercentage = MathUtils.clamp(nbt.getFloat(NBT_STOPOVERS_WIDTH), 0, 1);
+        if (nbt.contains(NBT_SHOW_TRAIN_MULTIPLE_TIMES)) this.showTrainMultipleTimes = nbt.getBoolean(NBT_SHOW_TRAIN_MULTIPLE_TIMES);
     }
 
     @Override
@@ -44,6 +41,7 @@ public class DepartureBoardDisplayTableSettings extends BasicDisplaySettings imp
         nbt.putByte(NBT_PLATFORM_WIDTH, platformWidth);
         nbt.putBoolean(NBT_SHOW_ARRIVAL, showArrival);
         nbt.putBoolean(NBT_SHOW_LINE_COLOR, showLineColor);
+        nbt.putBoolean(NBT_SHOW_TRAIN_MULTIPLE_TIMES, showTrainMultipleTimes);
         nbt.putFloat(NBT_INFO_WIDTH, infoWidthPercentage);
         nbt.putFloat(NBT_STOPOVERS_WIDTH, stopoversWidthPercentage);
     }
@@ -54,6 +52,7 @@ public class DepartureBoardDisplayTableSettings extends BasicDisplaySettings imp
         this.buildTimeDisplayGui(context);
         this.buildTrainNameGui(context, false, false);
         this.buildPlatformWidthGui(context, false);
+        this.buildShowTrainMultipleTimesGui(context);
         GuiBuilderWrapper.buildDepartureBoardTableGui(this, context);
         this.buildShowArrivalGui(context);
         this.buildShowLineColorGui(context);
@@ -67,6 +66,7 @@ public class DepartureBoardDisplayTableSettings extends BasicDisplaySettings imp
         copyPlatformWidthSetting(oldSettings);
         copyShowArrivalSetting(oldSettings);
         copyShowLineColorSetting(oldSettings);
+        copyShowTrainMultipleTimesSetting(oldSettings);
     }
 
     @Override
@@ -141,5 +141,15 @@ public class DepartureBoardDisplayTableSettings extends BasicDisplaySettings imp
     @Override
     public void setShowLineColor(boolean b) {
         this.showLineColor = b;
+    }
+
+    @Override
+    public boolean showTrainMultipleTimes() {
+        return showTrainMultipleTimes;
+    }
+
+    @Override
+    public void setShowTrainMultipleTimes(boolean b) {
+        this.showTrainMultipleTimes = b;
     }
 }

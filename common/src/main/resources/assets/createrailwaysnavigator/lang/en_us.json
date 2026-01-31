@@ -261,6 +261,8 @@
     "gui.createrailwaysnavigator.advanced_display_settings.show_connections": "Show next connections",
     "gui.createrailwaysnavigator.advanced_display_settings.show_line_color": "Show train line color",
     "gui.createrailwaysnavigator.advanced_display_settings.show_line_color.description": "Highlights the train name text with the color of the current train line.",
+    "gui.createrailwaysnavigator.advanced_display_settings.show_train_multiple_times": "Show train multiple times",
+    "gui.createrailwaysnavigator.advanced_display_settings.show_train_multiple_times.description": "If a train stops multiple times at a station (e.g. once in one direction and then in the other), all arrivals are shown on the displays. If this setting is turned off, only the next arrival of a train is shown, or nothing at all, depending on the display configuration.",
     "gui.createrailwaysnavigator.advanced_display_settings.train_name_width": "Train Name Width",
     "gui.createrailwaysnavigator.advanced_display_settings.train_name_width_next": "Train Name Width (Next departure)",
     "gui.createrailwaysnavigator.advanced_display_settings.train_name_width_table": "Train Name Width (Following trains)",

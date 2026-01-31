@@ -63,7 +63,7 @@ public class GetNextConnectionsDisplayDataPacketData {
     }
 
     public static Response handle(Request packet, NetworkPacketContext context) {
-        return new Response(NextConnectionsDisplayData.at(packet.data.stationName(), packet.data.selfTrainId()));
+        return new Response(NextConnectionsDisplayData.at(packet.data.stationName(), packet.data.selfTrainId(), packet.data.allowDuplicates()));
     }
     
 }

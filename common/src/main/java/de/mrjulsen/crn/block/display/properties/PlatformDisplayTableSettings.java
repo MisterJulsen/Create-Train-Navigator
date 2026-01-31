@@ -1,16 +1,11 @@
 package de.mrjulsen.crn.block.display.properties;
 
-import de.mrjulsen.crn.block.display.properties.components.IPlatformWidthSetting;
-import de.mrjulsen.crn.block.display.properties.components.IShowArrivalSetting;
-import de.mrjulsen.crn.block.display.properties.components.IShowLineColorSetting;
-import de.mrjulsen.crn.block.display.properties.components.IShowTimeAndDateSetting;
-import de.mrjulsen.crn.block.display.properties.components.ITimeDisplaySetting;
-import de.mrjulsen.crn.block.display.properties.components.ITrainNameWidthSetting;
+import de.mrjulsen.crn.block.display.properties.components.*;
 import de.mrjulsen.crn.block.properties.ETimeDisplay;
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
 import net.minecraft.nbt.CompoundTag;
 
-public class PlatformDisplayTableSettings extends BasicDisplaySettings implements ITimeDisplaySetting, ITrainNameWidthSetting, IPlatformWidthSetting, IShowArrivalSetting, IShowLineColorSetting, IShowTimeAndDateSetting {
+public class PlatformDisplayTableSettings extends BasicDisplaySettings implements ITimeDisplaySetting, ITrainNameWidthSetting, IPlatformWidthSetting, IShowArrivalSetting, IShowLineColorSetting, IShowTimeAndDateSetting, IShowTrainMultipleTimes {
     
     protected ETimeDisplay timeDisplay = ETimeDisplay.ABS;
     protected byte trainNameWidth = ITrainNameWidthSetting.DEFAULT_TRAIN_NAME_WIDTH;
@@ -18,6 +13,7 @@ public class PlatformDisplayTableSettings extends BasicDisplaySettings implement
     protected boolean showArrival = true;
     protected boolean showLineColor = false;
     protected boolean showTimeAndDate = true;
+    protected boolean showTrainMultipleTimes = true;
 
     @Override
     public void deserializeNbt(CompoundTag nbt) {
@@ -28,6 +24,7 @@ public class PlatformDisplayTableSettings extends BasicDisplaySettings implement
         if (nbt.contains(NBT_SHOW_ARRIVAL)) this.showArrival = nbt.getBoolean(NBT_SHOW_ARRIVAL);
         if (nbt.contains(NBT_SHOW_LINE_COLOR)) this.showLineColor = nbt.getBoolean(NBT_SHOW_LINE_COLOR);
         if (nbt.contains(NBT_SHOW_TIME_AND_DATE)) this.showTimeAndDate = nbt.getBoolean(NBT_SHOW_TIME_AND_DATE);
+        if (nbt.contains(NBT_SHOW_TRAIN_MULTIPLE_TIMES)) this.showTrainMultipleTimes = nbt.getBoolean(NBT_SHOW_TRAIN_MULTIPLE_TIMES);
     }
 
     @Override
@@ -39,6 +36,7 @@ public class PlatformDisplayTableSettings extends BasicDisplaySettings implement
         nbt.putBoolean(NBT_SHOW_ARRIVAL, showArrival);
         nbt.putBoolean(NBT_SHOW_LINE_COLOR, showLineColor);
         nbt.putBoolean(NBT_SHOW_TIME_AND_DATE, showTimeAndDate);
+        nbt.putBoolean(NBT_SHOW_TRAIN_MULTIPLE_TIMES, showTrainMultipleTimes);
     }
 
     @Override
@@ -50,6 +48,7 @@ public class PlatformDisplayTableSettings extends BasicDisplaySettings implement
         this.buildShowArrivalGui(context);
         this.buildShowLineColorGui(context);
         this.buildShowTimeAndDateGui(context);
+        this.buildShowTrainMultipleTimesGui(context);
     }
 
     @Override
@@ -61,6 +60,7 @@ public class PlatformDisplayTableSettings extends BasicDisplaySettings implement
         copyShowArrivalSetting(oldSettings);
         copyShowLineColorSetting(oldSettings);
         copyShowTimeAndDateSetting(oldSettings);
+        copyShowTrainMultipleTimesSetting(oldSettings);
     }
 
     @Override
@@ -121,5 +121,16 @@ public class PlatformDisplayTableSettings extends BasicDisplaySettings implement
     @Override
     public boolean showTimeAndDate() {
         return showTimeAndDate;
-    }    
+    }
+
+
+    @Override
+    public void setShowTrainMultipleTimes(boolean b) {
+        this.showTrainMultipleTimes = b;
+    }
+
+    @Override
+    public boolean showTrainMultipleTimes() {
+        return showTrainMultipleTimes;
+    }
 }

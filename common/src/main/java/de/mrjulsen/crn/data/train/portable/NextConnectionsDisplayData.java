@@ -31,12 +31,12 @@ public class NextConnectionsDisplayData {
     }
 
     /** Server-side only! */
-    public static NextConnectionsDisplayData at(String stationName, UUID selfTrainId) throws RuntimeSideException {
+    public static NextConnectionsDisplayData at(String stationName, UUID selfTrainId, boolean allowDuplicated) throws RuntimeSideException {
         if (!ModCommonEvents.hasServer()) {
             throw new RuntimeSideException(false);
         }
 
-        List<TrainStop> departures = TrainUtils.getDeparturesAt(GlobalSettings.getInstance().getOrCreateStationTagFor(TagName.of(stationName)), selfTrainId, true);
+        List<TrainStop> departures = TrainUtils.getDeparturesAt(GlobalSettings.getInstance().getOrCreateStationTagFor(TagName.of(stationName)), selfTrainId, true, allowDuplicated);
         List<TrainStopDisplayData> displayData = new ArrayList<>(departures.size());
         for (TrainStop stop : departures) {
             displayData.add(TrainStopDisplayData.of(stop));

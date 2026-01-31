@@ -41,7 +41,7 @@ public class NextConnectionsPage extends AbstractRouteDetailsPage {
         super(route);
         this.afterFirstCycle = afterFirstCycle;
 
-        ModNetworkManager.GET_DEPARTURES_AT.send(NetworkDirection.toServer(), new GetDeparturesAtPacketData.Request(route.getCurrentPart().getNextStop().getRealTimeStationTag().tagId(), route.getCurrentPart().getNextStop().getTrainId(), true), (response) -> {
+        ModNetworkManager.GET_DEPARTURES_AT.send(NetworkDirection.toServer(), new GetDeparturesAtPacketData.Request(route.getCurrentPart().getNextStop().getRealTimeStationTag().tagId(), route.getCurrentPart().getNextStop().getTrainId(), true, false /* TODO CUSTOM SETTINGS */), (response) -> {
             List<ClientTrainStop> stops = response.getData();
             
             if (stops.isEmpty()) {

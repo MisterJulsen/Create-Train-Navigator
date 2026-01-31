@@ -1,16 +1,11 @@
 package de.mrjulsen.crn.block.display.properties;
 
-import de.mrjulsen.crn.block.display.properties.components.GuiBuilderWrapper;
-import de.mrjulsen.crn.block.display.properties.components.IPlatformWidthSetting;
-import de.mrjulsen.crn.block.display.properties.components.IShowArrivalSetting;
-import de.mrjulsen.crn.block.display.properties.components.IShowLineColorSetting;
-import de.mrjulsen.crn.block.display.properties.components.ITimeDisplaySetting;
-import de.mrjulsen.crn.block.display.properties.components.ITrainNameWidthSetting;
+import de.mrjulsen.crn.block.display.properties.components.*;
 import de.mrjulsen.crn.block.properties.ETimeDisplay;
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
 import net.minecraft.nbt.CompoundTag;
 
-public class PlatformDisplayFocusSettings extends BasicDisplaySettings implements ITimeDisplaySetting, ITrainNameWidthSetting, IPlatformWidthSetting, IShowArrivalSetting, IShowLineColorSetting {
+public class PlatformDisplayFocusSettings extends BasicDisplaySettings implements ITimeDisplaySetting, ITrainNameWidthSetting, IPlatformWidthSetting, IShowArrivalSetting, IShowLineColorSetting, IShowTrainMultipleTimes {
 
     public static final String NBT_TRAIN_NAME_WIDTH_NEXT_STOP = "TrainNameWidthNextStop";
     public static final String NBT_PLATFORM_WIDTH_NEXT_STOP = "PlatformWidthNextStop";
@@ -22,6 +17,7 @@ public class PlatformDisplayFocusSettings extends BasicDisplaySettings implement
     protected byte platformWidthNextStop = -1;
     protected boolean showArrival = true;
     protected boolean showTrainLineColor = false;
+    protected boolean showTrainMultipleTimes = true;
 
     @Override
     public void deserializeNbt(CompoundTag nbt) {
@@ -33,6 +29,7 @@ public class PlatformDisplayFocusSettings extends BasicDisplaySettings implement
         if (nbt.contains(NBT_PLATFORM_WIDTH_NEXT_STOP)) this.platformWidthNextStop = nbt.getByte(NBT_PLATFORM_WIDTH_NEXT_STOP);
         if (nbt.contains(NBT_SHOW_ARRIVAL)) this.showArrival = nbt.getBoolean(NBT_SHOW_ARRIVAL);
         if (nbt.contains(NBT_SHOW_LINE_COLOR)) this.showTrainLineColor = nbt.getBoolean(NBT_SHOW_LINE_COLOR);
+        if (nbt.contains(NBT_SHOW_TRAIN_MULTIPLE_TIMES)) this.showTrainMultipleTimes = nbt.getBoolean(NBT_SHOW_TRAIN_MULTIPLE_TIMES);
     }
 
     @Override
@@ -45,6 +42,7 @@ public class PlatformDisplayFocusSettings extends BasicDisplaySettings implement
         nbt.putByte(NBT_PLATFORM_WIDTH_NEXT_STOP, platformWidthNextStop);
         nbt.putBoolean(NBT_SHOW_ARRIVAL, showArrival);
         nbt.putBoolean(NBT_SHOW_LINE_COLOR, showTrainLineColor);
+        nbt.putBoolean(NBT_SHOW_TRAIN_MULTIPLE_TIMES, showTrainMultipleTimes);
 
     }
 
@@ -56,6 +54,7 @@ public class PlatformDisplayFocusSettings extends BasicDisplaySettings implement
         GuiBuilderWrapper.buildPlatformDisplayFocusGui(this, context);
         this.buildShowArrivalGui(context);
         this.buildShowLineColorGui(context);
+        this.buildShowTrainMultipleTimesGui(context);
     }
 
     @Override
@@ -66,7 +65,8 @@ public class PlatformDisplayFocusSettings extends BasicDisplaySettings implement
         copyPlatformWidthSetting(oldSettings);
         copyShowArrivalSetting(oldSettings);
         copyShowLineColorSetting(oldSettings);
-        
+        copyShowTrainMultipleTimesSetting(oldSettings);
+
         if (oldSettings instanceof PlatformDisplayFocusSettings o) {
             setTrainNameWidthNextStop(o.getTrainNameWidthNextStop());
         }
@@ -126,7 +126,17 @@ public class PlatformDisplayFocusSettings extends BasicDisplaySettings implement
     @Override
     public void setShowArrival(boolean b) {
         this.showArrival = b;
-    }    
+    }
+
+    @Override
+    public boolean showTrainMultipleTimes() {
+        return showTrainMultipleTimes;
+    }
+
+    @Override
+    public void setShowTrainMultipleTimes(boolean b) {
+        this.showTrainMultipleTimes = b;
+    }
 
     public boolean isAutoTrainNameWidthNextStop() {
         return getTrainNameWidthNextStop() < 0;
