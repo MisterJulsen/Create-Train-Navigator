@@ -1,14 +1,7 @@
 package de.mrjulsen.crn.util;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
+import java.util.*;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,6 +21,7 @@ import de.mrjulsen.mcdragonlib.util.time.DLTime;
 import de.mrjulsen.mcdragonlib.util.time.TimeContext;
 import dev.architectury.platform.Platform;
 import dev.architectury.utils.Env;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.DyeColor;
@@ -191,5 +185,24 @@ public class ModUtils {
             return timeRemainingString(time - DragonLib.getCurrentWorldTime());
         }
         return DLTime.fromTicks(time, new ConfiguredTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME);
+    }
+
+
+
+    public static <K, V> void putMap(CompoundTag nbt, String key, Map<K, V> map, Function<K, String> keySerializer, Function<V, CompoundTag> valueSerializer) {
+        CompoundTag mapNbt = new CompoundTag();
+        for (Map.Entry<K, V> entry : map.entrySet()) {
+            mapNbt.put(keySerializer.apply(entry.getKey()), valueSerializer.apply(entry.getValue()));
+        }
+        nbt.put(key, mapNbt);
+    }
+
+    public static <K, V> Map<K, V> getMap(CompoundTag nbt, String key, Function<String, K> keyDeserializer, Function<CompoundTag, V> valueDeserializer) {
+        CompoundTag mapNbt = nbt.getCompound(key);
+        Map<K, V> map = new HashMap<>(mapNbt.size());
+        for (String k : mapNbt.getAllKeys()) {
+            map.put(keyDeserializer.apply(k), valueDeserializer.apply(mapNbt.getCompound(k)));
+        }
+        return map;
     }
 }

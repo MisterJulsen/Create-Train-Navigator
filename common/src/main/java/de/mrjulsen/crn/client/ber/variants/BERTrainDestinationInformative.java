@@ -1,5 +1,6 @@
 package de.mrjulsen.crn.client.ber.variants;
 
+import de.mrjulsen.crn.data.train.ETrainStopState;
 import org.joml.Vector3f;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
@@ -129,6 +130,8 @@ public class BERTrainDestinationInformative implements AbstractAdvancedDisplayRe
 
     private void updateContent(AdvancedDisplayBlockEntity blockEntity) {
         TrainDestinationDetailedSettings settings = getDisplaySettings(blockEntity);
+        ETrainStopState stopState = ETrainStopState.beforeArrival(!blockEntity.getTrainData().isWaitingAtStation());
+
         int index = (settings.shouldOverwriteCarriageIndex() ? 0 : blockEntity.getCarriageData().index() + 1) + settings.getCarriageIndex();
 
         carriageIndexLabel.text.set(TextUtils.text(String.format("%02d", index)).withStyle(ChatFormatting.BOLD));
@@ -144,11 +147,11 @@ public class BERTrainDestinationInformative implements AbstractAdvancedDisplayRe
         trainLineLabel.position.set(Point.of(3, 2.5f));
         trainLineLabel.preferredWidth.set(carriageIndexLabel.x.get() - 9);
         trainLineLabel.horizontalScrollMode.set(EScrollMode.WHEN_NEEDED);
-        trainLineLabel.text.set(TextUtils.text(blockEntity.getTrainData().getTrainData().getName()).withStyle(ChatFormatting.BOLD));
+        trainLineLabel.text.set(TextUtils.text(blockEntity.getTrainData().getTrainData().getName(stopState)).withStyle(ChatFormatting.BOLD));
         
-        if (settings.showLineColor() && blockEntity.getTrainData().getTrainData().hasColor()) {
-            trainLineLabel.backgroundColor.set(blockEntity.getTrainData().getTrainData().getColor());
-            trainLineLabel.color.set(DLColor.pickBasedOnBrightness(blockEntity.getTrainData().getTrainData().getColor(), LIGHT_FONT_COLOR, DARK_FONT_COLOR, 0.5f));
+        if (settings.showLineColor() && blockEntity.getTrainData().getTrainData().hasColor(stopState)) {
+            trainLineLabel.backgroundColor.set(blockEntity.getTrainData().getTrainData().getColor(stopState));
+            trainLineLabel.color.set(DLColor.pickBasedOnBrightness(blockEntity.getTrainData().getTrainData().getColor(stopState), LIGHT_FONT_COLOR, DARK_FONT_COLOR, 0.5f));
         } else {
             trainLineLabel.backgroundColor.set(DLColor.TRANSPARENT);
             trainLineLabel.color.set(settings.getFontColor());

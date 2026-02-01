@@ -199,7 +199,19 @@ public class TrainData implements IListenable<TrainData> {
     }
 
     public TrainInfo getTrainInfo(int scheduleIndex) {
-        return new TrainInfo(getSectionForIndex(scheduleIndex).getTrainLine().orElse(null), getSectionForIndex(scheduleIndex).getTrainCategory().orElse(null));
+        ScheduleSection currentSection = getSectionForIndex(scheduleIndex);
+        return new TrainInfo(currentSection.getTrainLine().orElse(null), currentSection.getTrainCategory().orElse(null));
+    }
+
+    public TrainInfo getTrainInfoWithArrivalContext(int scheduleIndex, boolean beforeArrival) {
+        ScheduleSection currentSection = getSectionForIndex(scheduleIndex);
+        ScheduleSection prevSection = currentSection.previousSection();
+        ScheduleSection selectedSection = currentSection;
+        boolean isFirstStationInSection = currentSection.getFirstStop().map(x -> x.getEntryIndex() == getCurrentScheduleIndex()).orElse(false);
+        if (isFirstStationInSection && ((beforeArrival && prevSection.shouldIncludeNextStationOfNextSection()) || !currentSection.isUsable())) {
+            selectedSection = prevSection;
+        }
+        return new TrainInfo(selectedSection.getTrainLine().orElse(null), selectedSection.getTrainCategory().orElse(null));
     }
 
     /**
@@ -270,9 +282,25 @@ public class TrainData implements IListenable<TrainData> {
     public String getTrainName() {
         return train.name.getString();
     }
+
+    public String resolveTrainDisplayName() {
+        return resolveTrainDisplayName(getCurrentSection());
+    }
     
-    public String getTrainDisplayName() {        
-        return getCurrentSection() == null || getCurrentSection().getTrainLine().map(x -> x.getLineName().isEmpty()).orElse(true) ? getTrainName() : getCurrentSection().getTrainLine().get().getLineName();
+    public String resolveTrainDisplayName(ScheduleSection section) {
+        if (section == null) {
+            return getTrainName();
+        }
+
+        String lineName;
+        if (section.getTrainLine().map(x -> x.getLineName().isEmpty()).orElse(true)) {
+            lineName = getTrainName();
+        } else {
+            lineName = section.getTrainLine().get().getLineName();
+        }
+        return lineName;
+
+        //return getCurrentSection() == null || getCurrentSection().getTrainLine().map(x -> x.getLineName().isEmpty()).orElse(true) ? getTrainName() : getCurrentSection().getTrainLine().get().getLineName();
     }
 
     public int getCurrentScheduleIndex() {

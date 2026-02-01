@@ -6,6 +6,7 @@ import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity.EUpdateReaso
 import de.mrjulsen.crn.block.display.properties.TrainDestinationCompactSettings;
 import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
+import de.mrjulsen.crn.data.train.ETrainStopState;
 import de.mrjulsen.mcdragonlib.client.ber.BERGraphics;
 import de.mrjulsen.mcdragonlib.client.ber.BERLabel;
 import de.mrjulsen.mcdragonlib.client.ber.BERLabel.EScrollMode;
@@ -75,12 +76,13 @@ public class BERTrainDestinationSimple implements AbstractAdvancedDisplayRendere
     }
 
     private void updateContent(AdvancedDisplayBlockEntity blockEntity) {
-        TrainDestinationCompactSettings settings = getDisplaySettings(blockEntity);  
+        TrainDestinationCompactSettings settings = getDisplaySettings(blockEntity);
+        ETrainStopState stopState = ETrainStopState.beforeArrival(!blockEntity.getTrainData().isWaitingAtStation());
         
         int width = settings.getTrainNameWidth();
 
         trainLineLabel.position.set(Point.of(3, 5));
-        trainLineLabel.text.set(width == 0 ? TextUtils.empty() : TextUtils.text(blockEntity.getTrainData().getTrainData().getName()).withStyle(ChatFormatting.BOLD));
+        trainLineLabel.text.set(width == 0 ? TextUtils.empty() : TextUtils.text(blockEntity.getTrainData().getTrainData().getName(stopState)).withStyle(ChatFormatting.BOLD));
         trainLineLabel.preferredWidth.set((float)(settings.isFullTrainNameWidth() ?
             trainLineLabel.clippingArea.get().width() :
             (settings.isAutoTrainNameWidth() ?
@@ -93,9 +95,9 @@ public class BERTrainDestinationSimple implements AbstractAdvancedDisplayRendere
         trainLineLabel.horizontalScrollMode.set(settings.isAutoTrainNameWidth() ? EScrollMode.FLEX_FIT : EScrollMode.WHEN_NEEDED);
         trainLineLabel.horizontalAlign.set(settings.isFullTrainNameWidth() ? ETextAlignment.CENTER : ETextAlignment.LEFT);
 
-        if (settings.showLineColor() && blockEntity.getTrainData().getTrainData().hasColor()) {
-            trainLineLabel.backgroundColor.set(blockEntity.getTrainData().getTrainData().getColor());
-            trainLineLabel.color.set(DLColor.pickBasedOnBrightness(blockEntity.getTrainData().getTrainData().getColor(), LIGHT_FONT_COLOR, DARK_FONT_COLOR, 0.5f));
+        if (settings.showLineColor() && blockEntity.getTrainData().getTrainData().hasColor(stopState)) {
+            trainLineLabel.backgroundColor.set(blockEntity.getTrainData().getTrainData().getColor(stopState));
+            trainLineLabel.color.set(DLColor.pickBasedOnBrightness(blockEntity.getTrainData().getTrainData().getColor(stopState), LIGHT_FONT_COLOR, DARK_FONT_COLOR, 0.5f));
         } else {
             trainLineLabel.backgroundColor.set(DLColor.TRANSPARENT);
             trainLineLabel.color.set(settings.getFontColor());

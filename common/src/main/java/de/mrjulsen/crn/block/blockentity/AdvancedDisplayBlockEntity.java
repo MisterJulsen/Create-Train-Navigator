@@ -30,6 +30,7 @@ import de.mrjulsen.crn.data.CarriageData;
 import de.mrjulsen.crn.data.TrainExitSide;
 import de.mrjulsen.crn.data.StationTag.ClientStationTag;
 import de.mrjulsen.crn.data.StationTag.StationInfo;
+import de.mrjulsen.crn.data.train.ETrainStopState;
 import de.mrjulsen.crn.data.train.TrainUtils;
 import de.mrjulsen.crn.data.train.portable.StationDisplayData;
 import de.mrjulsen.crn.data.train.portable.TrainDisplayData;
@@ -523,8 +524,9 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
                 boolean shouldUpdate = false;
                 if (this.trainData != null && this.trainData.getNextStop().isPresent() && data.getNextStop().isPresent()) {
                     TrainStopDisplayData prediction = this.trainData.getNextStop().get();
+                    ETrainStopState stopState = ETrainStopState.beforeArrival(data.isWaitingAtStation());
 
-                    shouldUpdate = !this.trainData.getTrainData().getName().equals(data.getTrainData().getName()) ||
+                    shouldUpdate = !this.trainData.getTrainData().getName(stopState).equals(data.getTrainData().getName(stopState)) ||
                         !prediction.getDestination().equals(data.getNextStop().get().getDestination()) ||
                         prediction.getStationEntryIndex() != data.getNextStop().get().getStationEntryIndex() ||
                         this.trainData.getNextStopExitSide() != data.getNextStopExitSide() ||

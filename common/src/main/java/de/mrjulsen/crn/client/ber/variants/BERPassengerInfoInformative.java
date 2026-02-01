@@ -2,6 +2,7 @@ package de.mrjulsen.crn.client.ber.variants;
 
 import java.util.List;
 
+import de.mrjulsen.crn.data.train.ETrainStopState;
 import org.joml.Vector3f;
 
 import de.mrjulsen.crn.Constants;
@@ -411,13 +412,14 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
         carriageLabel.color.set(getDisplaySettings(blockEntity).getFontColor());
         
         boolean atTerminus = blockEntity.getTrainData().getState() == State.AT_TERMINUS;
-        MutableComponent labelText = TextUtils.empty();
+        ETrainStopState stopState = ETrainStopState.beforeArrival(!blockEntity.getTrainData().isWaitingAtStation());
+        MutableComponent labelText;
         if (atTerminus) {
             labelText = textTrainTerminates;
         } else if (nextStopAnnounced) {
             labelText = CustomLanguage.translate(keyNextStop, displayData.getNextStop().get().getRealTimeStation().tagName());
         } else {
-            labelText = TextUtils.text((settings.getTrainTextComponents().showTrainName() ? displayData.getTrainData().getName() + " " : "") + (settings.getTrainTextComponents().showDestination() ? displayData.getNextStop().get().getDestination() : "")).withStyle(ChatFormatting.BOLD);
+            labelText = TextUtils.text((settings.getTrainTextComponents().showTrainName() ? displayData.getTrainData().getName(stopState) + " " : "") + (settings.getTrainTextComponents().showDestination() ? displayData.getNextStop().get().getDestination() : "")).withStyle(ChatFormatting.BOLD);
         }
 
         trainLineLabel.text.set(labelText);
@@ -425,9 +427,9 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
         trainLineLabel.horizontalScrollMode.set(EScrollMode.WHEN_NEEDED);
         trainLineLabel.horizontalScrollingSpeed.set(SCROLLING_SPEED);
         
-        if (settings.showLineColor() && blockEntity.getTrainData().getTrainData().hasColor() && !nextStopAnnounced && !atTerminus) {
-            trainLineLabel.backgroundColor.set(blockEntity.getTrainData().getTrainData().getColor());
-            trainLineLabel.color.set(DLColor.pickBasedOnBrightness(blockEntity.getTrainData().getTrainData().getColor(), LIGHT_FONT_COLOR, DARK_FONT_COLOR, 0.5f));
+        if (settings.showLineColor() && blockEntity.getTrainData().getTrainData().hasColor(stopState) && !nextStopAnnounced && !atTerminus) {
+            trainLineLabel.backgroundColor.set(blockEntity.getTrainData().getTrainData().getColor(stopState));
+            trainLineLabel.color.set(DLColor.pickBasedOnBrightness(blockEntity.getTrainData().getTrainData().getColor(stopState), LIGHT_FONT_COLOR, DARK_FONT_COLOR, 0.5f));
         } else {            
             trainLineLabel.backgroundColor.set(DLColor.TRANSPARENT);
             trainLineLabel.color.set(settings.getFontColor());

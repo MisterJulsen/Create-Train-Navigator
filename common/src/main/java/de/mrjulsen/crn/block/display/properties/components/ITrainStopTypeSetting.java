@@ -3,6 +3,8 @@ package de.mrjulsen.crn.block.display.properties.components;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.display.properties.IDisplaySettings;
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
+import de.mrjulsen.crn.data.train.ETrainStopState;
+import de.mrjulsen.crn.data.train.portable.StationDisplayData;
 import de.mrjulsen.mcdragonlib.data.ITranslatableEnum;
 
 import java.util.Arrays;
@@ -67,5 +69,21 @@ public interface ITrainStopTypeSetting {
         if (oldSettings instanceof ITrainStopTypeSetting o) {
             setTrainStopType(o.getTrainStopType());
         }
+    }
+
+
+    public static ETrainStopState resolveStopState(StationDisplayData stop, ITrainStopTypeSetting settings) {
+        ITrainStopTypeSetting.ETrainStopType stopType = settings.getTrainStopType();
+        boolean start = stop.isFirstStop();
+        boolean terminus = stop.isLastStop();
+        return resolveStopState(stop, stopType.showDepartures(start), stopType.showArrivals(terminus));
+    }
+
+    public static ETrainStopState resolveStopState(StationDisplayData stop, boolean allowDepartures, boolean allowArrivals) {
+        StationDisplayData.State state = stop.getState();
+        boolean showDeparture = allowDepartures && !stop.isNextSectionExcluded();
+        boolean showArrival = allowArrivals && !stop.isPrevSectionExcluded();
+        boolean showAsArrival = showArrival && (!showDeparture || !state.isWaiting());
+        return showAsArrival ? ETrainStopState.ARRIVAL : ETrainStopState.DEPARTURE;
     }
 }

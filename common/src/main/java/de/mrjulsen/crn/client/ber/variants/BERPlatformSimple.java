@@ -11,6 +11,7 @@ import de.mrjulsen.crn.block.display.properties.PlatformDisplayScrollingTextSett
 import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
+import de.mrjulsen.crn.data.train.ETrainStopState;
 import de.mrjulsen.crn.data.train.portable.StationDisplayData;
 import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.DragonLib;
@@ -84,9 +85,9 @@ public class BERPlatformSimple implements AbstractAdvancedDisplayRenderer<Platfo
             String timeString = ModUtils.formatTime(x.getStationData().getScheduledDepartureTime(), getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA);
             MutableComponent text = TextUtils.empty();
             if (x.getStationData().getRealTimeStation().info().platform() == null || x.getStationData().getRealTimeStation().info().platform().isBlank()) {
-                text.append(CustomLanguage.translate(keyTrainDeparture, x.getTrainData().getName(), x.getStationData().getDestination(), timeString));
+                text.append(CustomLanguage.translate(keyTrainDeparture, x.getTrainData().getName(ETrainStopState.DEPARTURE), x.getStationData().getDestination(), timeString));
             } else {
-                text.append(CustomLanguage.translate(keyTrainDepartureWithPlatform, x.getTrainData().getName(), x.getStationData().getDestination(), timeString, x.getStationData().getRealTimeStation().info().platform()));
+                text.append(CustomLanguage.translate(keyTrainDepartureWithPlatform, x.getTrainData().getName(ETrainStopState.DEPARTURE), x.getStationData().getDestination(), timeString, x.getStationData().getRealTimeStation().info().platform()));
             }
 
             if (x.getTrainData().isCancelled()) {

@@ -117,7 +117,7 @@ public class TrainStop implements Comparable<TrainStop> {
             prediction.getData().getTrainId(), 
             prediction.getData().getTrain().name.getString(),             
             prediction.getData().getTrain().icon,
-            prediction.getData().getTrainInfo(prediction.getEntryIndex()),
+            prediction.getData().getTrainInfoWithArrivalContext(prediction.getEntryIndex(), true),//!prediction.getData().isAtStation()),
             prediction.getTitle(),
             prediction.hasCustomTitle(),
             prediction.getSectionDestinationText(), 

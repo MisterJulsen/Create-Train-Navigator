@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 
 import de.mrjulsen.crn.block.display.properties.components.ITrainStopTypeSetting;
+import de.mrjulsen.crn.data.train.ETrainStopState;
 import org.joml.Vector3f;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
@@ -372,14 +373,7 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
 
     private void updateFocusContent(AdvancedDisplayBlockEntity blockEntity, StationDisplayData stop) {
         PlatformDisplayFocusSettings settings = getDisplaySettings(blockEntity);
-        //boolean isLast = (/* TODO settings.showArrival() && */stop.shouldShowArrivalOfTrain()) || stop.isNextSectionExcluded();
-        ITrainStopTypeSetting.ETrainStopType stopType = settings.getTrainStopType();
-        StationDisplayData.State state = stop.getState();
-        boolean start = stop.isFirstStop();
-        boolean terminus = stop.isLastStop();
-        boolean showDeparture = stopType.showDepartures(start) && !stop.isNextSectionExcluded();
-        boolean showArrival = stopType.showArrivals(terminus) && !stop.isPrevSectionExcluded();
-        boolean showAsArrival = showArrival && (!showDeparture || !state.isWaiting());
+        ETrainStopState stopState = ITrainStopTypeSetting.resolveStopState(stop, settings);
 
         followingTrainsLabel.color.set(getDisplaySettings(blockEntity).getFontColor());
 
@@ -392,14 +386,14 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
 
         int trainNameWidth = settings.getTrainNameWidthNextStop();
         BERLabel trainNameLabel = focusArea[LineComponent.TRAIN_NAME.i()];
-        trainNameLabel.text.set(TextUtils.text(stop.getTrainData().getName()));
+        trainNameLabel.text.set(TextUtils.text(stop.getTrainData().getName(stopState)));
         trainNameLabel.position.set(Point.of(3, 7 + (stop.isDelayed() ? 4.5f : 0)));
         trainNameLabel.preferredWidth.set(settings.isAutoTrainNameWidthNextStop() ? (float)trainNameLabel.clippingArea.get().width() : trainNameWidth);
         trainNameLabel.horizontalScrollMode.set(EScrollMode.WHEN_NEEDED);
         
-        if (settings.showLineColor() && stop.getTrainData().hasColor()) {
-            trainNameLabel.backgroundColor.set(stop.getTrainData().getColor());
-            trainNameLabel.color.set(DLColor.pickBasedOnBrightness(stop.getTrainData().getColor(), LIGHT_FONT_COLOR, DARK_FONT_COLOR, 0.5f));
+        if (settings.showLineColor() && stop.getTrainData().hasColor(stopState)) {
+            trainNameLabel.backgroundColor.set(stop.getTrainData().getColor(stopState));
+            trainNameLabel.color.set(DLColor.pickBasedOnBrightness(stop.getTrainData().getColor(stopState), LIGHT_FONT_COLOR, DARK_FONT_COLOR, 0.5f));
         } else {
             trainNameLabel.backgroundColor.set(DLColor.TRANSPARENT);
             trainNameLabel.color.set(getDisplaySettings(blockEntity).getFontColor());
@@ -423,7 +417,7 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
         float w = blockEntity.getXSizeScaled() * 16 - 5 - platformLabel.getRenderedWidth() - x;
         BERLabel destinationLabel = focusArea[LineComponent.DESTINATION.i()];
         destinationLabel.text.set(
-                showAsArrival ?
+                stopState == ETrainStopState.ARRIVAL ?
                 CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.arrival") :
                 TextUtils.text(stop.getStationData().getDestination())
         );
@@ -433,7 +427,7 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
 
         BERLabel stopoversLabel = focusArea[LineComponent.STOPOVERS.i()];
         stopoversLabel.text.set(
-                showAsArrival ?
+                stopState == ETrainStopState.ARRIVAL ?
                 CustomLanguage.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".schedule_board.train_from", stop.getFirstStopName()) :
                 TextUtils.concat(TextUtils.text(" \u25CF "), stop.getStopovers().stream().map(a -> (Component)TextUtils.text(a)).toList())
         );
@@ -450,24 +444,17 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
 
     private void updateTableContent(AdvancedDisplayBlockEntity blockEntity, StationDisplayData stop, int index) {
         PlatformDisplayFocusSettings settings = getDisplaySettings(blockEntity);
-        //boolean isLast = (/* TODO settings.showArrival() && */ stop.shouldShowArrivalOfTrain()) || stop.isNextSectionExcluded();
-        ITrainStopTypeSetting.ETrainStopType stopType = settings.getTrainStopType();
-        StationDisplayData.State state = stop.getState();
-        boolean start = stop.isFirstStop();
-        boolean terminus = stop.isLastStop();
-        boolean showDeparture = stopType.showDepartures(start) && !stop.isNextSectionExcluded();
-        boolean showArrival = stopType.showArrivals(terminus) && !stop.isPrevSectionExcluded();
-        boolean showAsArrival = showArrival && (!showDeparture || !state.isWaiting());
+        ETrainStopState stopState = ITrainStopTypeSetting.resolveStopState(stop, settings);
 
         BERLabel[] components = lines[index];
         Component scheduledTimeFormatted = TextUtils.text(ModUtils.formatTime(
-                showAsArrival ?
+                stopState ==  ETrainStopState.ARRIVAL ?
                         stop.getStationData().getScheduledArrivalTime() :
                         stop.getStationData().getScheduledDepartureTime(),
                 settings.getTimeDisplay() == ETimeDisplay.ETA
         ));
         Component realTimeFormatted = TextUtils.text(ModUtils.formatTime(
-                showAsArrival ?
+                stopState ==  ETrainStopState.ARRIVAL ?
                         stop.getStationData().getRealTimeArrivalTime() :
                         stop.getStationData().getRealTimeDepartureTime(),
                 settings.getTimeDisplay() == ETimeDisplay.ETA
@@ -496,11 +483,11 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
         realTimeLabel.color.set(DLColor.pickBasedOnBrightness(getDisplaySettings(blockEntity).getFontColor(), LIGHT_FONT_COLOR, DARK_FONT_COLOR, 0.5f));
         
         BERLabel trainNameLabel = components[LineComponent.TRAIN_NAME.i()];
-        trainNameLabel.text.set(TextUtils.text(stop.getTrainData().getName()));
+        trainNameLabel.text.set(TextUtils.text(stop.getTrainData().getName(stopState)));
 
-        if (settings.showLineColor() && stop.getTrainData().hasColor()) {
-            trainNameLabel.backgroundColor.set(stop.getTrainData().getColor());
-            trainNameLabel.color.set(DLColor.pickBasedOnBrightness(stop.getTrainData().getColor(), LIGHT_FONT_COLOR, DARK_FONT_COLOR, 0.5f));
+        if (settings.showLineColor() && stop.getTrainData().hasColor(stopState)) {
+            trainNameLabel.backgroundColor.set(stop.getTrainData().getColor(stopState));
+            trainNameLabel.color.set(DLColor.pickBasedOnBrightness(stop.getTrainData().getColor(stopState), LIGHT_FONT_COLOR, DARK_FONT_COLOR, 0.5f));
         } else {
             trainNameLabel.backgroundColor.set(DLColor.TRANSPARENT);
             trainNameLabel.color.set(getDisplaySettings(blockEntity).getFontColor());
@@ -515,7 +502,7 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
         
         BERLabel destinationLabel = components[LineComponent.DESTINATION.i()];
         destinationLabel.text.set(
-            showAsArrival ?
+                stopState ==  ETrainStopState.ARRIVAL ?
                 CustomLanguage.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".schedule_board.train_from", stop.getFirstStopName()) :
                 TextUtils.text(stop.getStationData().getDestination())
         );

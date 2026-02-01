@@ -1,5 +1,6 @@
 package de.mrjulsen.crn.client.ber.variants;
 
+import de.mrjulsen.crn.data.train.ETrainStopState;
 import org.joml.Vector3f;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
@@ -122,12 +123,13 @@ public class BERPassengerInfoSimple implements AbstractAdvancedDisplayRenderer<P
 
         PassengerInformationScrollingTextSettings settings = getDisplaySettings(blockEntity);
         this.exitSide = settings.showExit() ? (blockEntity.getTrainData().isWaitingAtStation() ? exitSide : blockEntity.relativeExitDirection.get()) : TrainExitSide.UNKNOWN;
+        ETrainStopState stopState = ETrainStopState.beforeArrival(!blockEntity.getTrainData().isWaitingAtStation());
 
         
         if (blockEntity.getTrainData().getState() == State.AT_TERMINUS) {
             label.text.set(textTrainTerminated);
         } else if (!blockEntity.getTrainData().getNextStop().isPresent()) {
-            label.text.set(settings.getTrainTextComponents().showTrainName() ? TextUtils.text(blockEntity.getTrainData().getTrainData().getName()) : TextUtils.empty());
+            label.text.set(settings.getTrainTextComponents().showTrainName() ? TextUtils.text(blockEntity.getTrainData().getTrainData().getName(stopState)) : TextUtils.empty());
         } else if (blockEntity.getTrainData().isWaitingAtStation()) {
             label.text.set(TextUtils.text(blockEntity.getTrainData().getNextStop().get().getRealTimeStation().tagName()));
         } else if (blockEntity.getTrainData().getNextStop().get().getRealTimeArrivalTime() - DragonLib.getCurrentWorldTime() < ModClientConfig.NEXT_STOP_ANNOUNCEMENT.get()) {
@@ -150,7 +152,7 @@ public class BERPassengerInfoSimple implements AbstractAdvancedDisplayRenderer<P
             slide %= slides;
             switch (slide) {
                 case 0 -> label.text.set(TextUtils.text((settings.getTrainTextComponents().showTrainName()
-                        ? blockEntity.getTrainData().getTrainData().getName() + " "
+                        ? blockEntity.getTrainData().getTrainData().getName(stopState) + " "
                         : "")
                         + ((settings.getTrainTextComponents().showDestination() && blockEntity.getTrainData().getCurrentStop().isPresent())
                             ? (blockEntity.getTrainData().getCurrentStop().get().getDestination())//blockEntity.getTrainData().isWaitingAtStation() ? blockEntity.getTrainData().getNextStop().get().getDestination() : blockEntity.getTrainData().getFinalStop().get().getDestination())
