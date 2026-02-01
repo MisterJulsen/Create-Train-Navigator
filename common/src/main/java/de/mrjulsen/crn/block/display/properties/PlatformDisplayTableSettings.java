@@ -5,15 +5,23 @@ import de.mrjulsen.crn.block.properties.ETimeDisplay;
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
 import net.minecraft.nbt.CompoundTag;
 
-public class PlatformDisplayTableSettings extends BasicDisplaySettings implements ITimeDisplaySetting, ITrainNameWidthSetting, IPlatformWidthSetting, IShowArrivalSetting, IShowLineColorSetting, IShowTimeAndDateSetting, IShowTrainMultipleTimes {
+public class PlatformDisplayTableSettings extends BasicDisplaySettings implements
+        ITimeDisplaySetting,
+        ITrainNameWidthSetting,
+        IPlatformWidthSetting,
+        ITrainStopTypeSetting,
+        IShowLineColorSetting,
+        IShowTimeAndDateSetting,
+        IShowTrainMultipleTimes
+{
     
     protected ETimeDisplay timeDisplay = ETimeDisplay.ABS;
     protected byte trainNameWidth = ITrainNameWidthSetting.DEFAULT_TRAIN_NAME_WIDTH;
     protected byte platformWidth = -1;
-    protected boolean showArrival = true;
     protected boolean showLineColor = false;
     protected boolean showTimeAndDate = true;
     protected boolean showTrainMultipleTimes = true;
+    protected ETrainStopType trainStopType = ETrainStopType.DEPARTURES_PREFERRED;
 
     @Override
     public void deserializeNbt(CompoundTag nbt) {
@@ -21,10 +29,12 @@ public class PlatformDisplayTableSettings extends BasicDisplaySettings implement
         if (nbt.contains(NBT_TIME_DISPLAY)) this.timeDisplay = ETimeDisplay.getById(nbt.getByte(NBT_TIME_DISPLAY));
         if (nbt.contains(NBT_TRAIN_NAME_WIDTH)) this.trainNameWidth = nbt.getByte(NBT_TRAIN_NAME_WIDTH);
         if (nbt.contains(NBT_PLATFORM_WIDTH)) this.platformWidth = nbt.getByte(NBT_PLATFORM_WIDTH);
-        if (nbt.contains(NBT_SHOW_ARRIVAL)) this.showArrival = nbt.getBoolean(NBT_SHOW_ARRIVAL);
         if (nbt.contains(NBT_SHOW_LINE_COLOR)) this.showLineColor = nbt.getBoolean(NBT_SHOW_LINE_COLOR);
         if (nbt.contains(NBT_SHOW_TIME_AND_DATE)) this.showTimeAndDate = nbt.getBoolean(NBT_SHOW_TIME_AND_DATE);
         if (nbt.contains(NBT_SHOW_TRAIN_MULTIPLE_TIMES)) this.showTrainMultipleTimes = nbt.getBoolean(NBT_SHOW_TRAIN_MULTIPLE_TIMES);
+        if (nbt.contains(NBT_TRAIN_STOP_TYPE)) this.trainStopType = ETrainStopType.getById(nbt.getByte(NBT_TRAIN_STOP_TYPE));
+
+        if (nbt.contains(LEGACY_NBT_SHOW_ARRIVAL)) this.trainStopType = nbt.getBoolean(LEGACY_NBT_SHOW_ARRIVAL) ? ETrainStopType.ALL : ETrainStopType.DEPARTURES_ONLY;
     }
 
     @Override
@@ -33,7 +43,7 @@ public class PlatformDisplayTableSettings extends BasicDisplaySettings implement
         nbt.putByte(NBT_TIME_DISPLAY, timeDisplay.getId());
         nbt.putByte(NBT_TRAIN_NAME_WIDTH, trainNameWidth);
         nbt.putByte(NBT_PLATFORM_WIDTH, platformWidth);
-        nbt.putBoolean(NBT_SHOW_ARRIVAL, showArrival);
+        nbt.putByte(NBT_TRAIN_STOP_TYPE, trainStopType.getId());
         nbt.putBoolean(NBT_SHOW_LINE_COLOR, showLineColor);
         nbt.putBoolean(NBT_SHOW_TIME_AND_DATE, showTimeAndDate);
         nbt.putBoolean(NBT_SHOW_TRAIN_MULTIPLE_TIMES, showTrainMultipleTimes);
@@ -45,7 +55,7 @@ public class PlatformDisplayTableSettings extends BasicDisplaySettings implement
         this.buildTimeDisplayGui(context);
         this.buildTrainNameGui(context, true, false);
         this.buildPlatformWidthGui(context, true);
-        this.buildShowArrivalGui(context);
+        this.buildTrainStopTypeGui(context);
         this.buildShowLineColorGui(context);
         this.buildShowTimeAndDateGui(context);
         this.buildShowTrainMultipleTimesGui(context);
@@ -57,7 +67,7 @@ public class PlatformDisplayTableSettings extends BasicDisplaySettings implement
         copyTimeDisplaySetting(oldSettings);
         copyTrainNameSetting(oldSettings);
         copyPlatformWidthSetting(oldSettings);
-        copyShowArrivalSetting(oldSettings);
+        copyTrainStopTypeSetting(oldSettings);
         copyShowLineColorSetting(oldSettings);
         copyShowTimeAndDateSetting(oldSettings);
         copyShowTrainMultipleTimesSetting(oldSettings);
@@ -94,13 +104,13 @@ public class PlatformDisplayTableSettings extends BasicDisplaySettings implement
     }
 
     @Override
-    public boolean showArrival() {
-        return showArrival;
+    public ETrainStopType getTrainStopType() {
+        return trainStopType;
     }
 
     @Override
-    public void setShowArrival(boolean b) {
-        this.showArrival = b;
+    public void setTrainStopType(ETrainStopType b) {
+        this.trainStopType = b;
     }    
 
     @Override

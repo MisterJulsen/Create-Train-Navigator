@@ -17,9 +17,11 @@ import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.block.display.properties.SimpleStaticTextDisplaySettings;
 import de.mrjulsen.crn.block.display.properties.StaticTextDisplaySettings;
 import de.mrjulsen.crn.block.display.properties.components.IShowTrainMultipleTimes;
+import de.mrjulsen.crn.block.display.properties.components.ITrainStopTypeSetting;
 import de.mrjulsen.crn.block.properties.EDisplayType;
 import de.mrjulsen.crn.block.properties.EDisplayType.EDisplayTypeDataSource;
 import de.mrjulsen.crn.client.AdvancedDisplaysRegistry;
+import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
 import de.mrjulsen.crn.data.train.TrainStop;
@@ -27,6 +29,7 @@ import de.mrjulsen.crn.data.train.TrainUtils;
 import de.mrjulsen.crn.data.train.portable.StationDisplayData;
 import de.mrjulsen.crn.event.ModCommonEvents;
 import de.mrjulsen.crn.registry.ModDisplayTypes;
+import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.data.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.core.BlockPos;
@@ -122,7 +125,7 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 						}
 					}
 
-					List<StationDisplayData> preds = prepare(filter, controller.getDisplayProperties().platformDisplayTrainsCount().apply(controller), controller.getSettingsAs(IShowTrainMultipleTimes.class).map(IShowTrainMultipleTimes::showTrainMultipleTimes).orElse(false));
+					List<StationDisplayData> preds = prepare(filter, controller.getDisplayProperties().platformDisplayTrainsCount().apply(controller), controller);
 					controller.setData(
 							preds,
 							filter,
@@ -187,14 +190,28 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 		}
 	}
 
-	public static List<StationDisplayData> prepare(String filter, int maxLines, boolean allowDuplicates) {
+	public static List<StationDisplayData> prepare(String filter, int maxLines, AdvancedDisplayBlockEntity controller) {
 		List<StationDisplayData> result = new ArrayList<>(maxLines);
 
 		int i = 0;
-		for (TrainStop stop : TrainUtils.getDeparturesAtStationName(filter, null, false, allowDuplicates)) {
-			i++;
+		for (TrainStop stop : TrainUtils.getDeparturesAtStationName(filter, null, false, controller.getSettingsAs(IShowTrainMultipleTimes.class).map(IShowTrainMultipleTimes::showTrainMultipleTimes).orElse(false))) {
+			StationDisplayData data = StationDisplayData.of(stop);
+			boolean cancelled = data.getTrainData().isCancelled();
+			boolean isStillValid = DragonLib.getCurrentWorldTime() < data.getStationData().getScheduledDepartureTime() + ModClientConfig.DISPLAY_LEAD_TIME.get();
+			boolean terminus = data.isNextSectionExcluded();
+			boolean start = data.isPrevSectionExcluded();
+
+			ITrainStopTypeSetting.ETrainStopType type = controller.getSettingsAs(ITrainStopTypeSetting.class).map(ITrainStopTypeSetting::getTrainStopType).orElse(ITrainStopTypeSetting.ETrainStopType.ALL);
+			boolean showArrival = type.showArrivals(terminus) && !start;
+			boolean showDeparture = type.showDepartures(start) && !terminus;
+
+			boolean allowed = showArrival || showDeparture;
+			if (!allowed && (!cancelled || isStillValid)) {
+				continue;
+			}
+
 			result.add(StationDisplayData.of(stop));
-			if (i >= maxLines) {
+			if ((i++) >= maxLines) {
 				break;
 			}
 		}

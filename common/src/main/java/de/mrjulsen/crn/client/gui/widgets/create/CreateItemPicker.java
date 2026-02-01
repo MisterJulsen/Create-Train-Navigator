@@ -31,7 +31,7 @@ public class CreateItemPicker<T> extends DLItemPicker<T> {
 	protected final Component clickToSearch = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.click_to_search").withStyle(ChatFormatting.DARK_GRAY).withStyle(ChatFormatting.ITALIC);
 
     public final Property<Component> title = new Property<Component>(CreateLang.translateDirect("gui.scrollInput.defaultTitle"));
-    public final Property<Component> hint = new Property<Component>(TextUtils.empty());
+    public final Property<Component> hint = new Property<Component>(TextUtils.empty()).withAfterPropertyChangedCallback((o, n) -> updateTooltip());
     public final Property<Function<T, Component>> formatter = new Property<Function<T, Component>>(t -> TextUtils.text(t.toString()));
     public final Property<BiPredicate<T, String>> filter = new Property<>((i, s) -> String.valueOf(i).toLowerCase().contains(s.toLowerCase()));
     public final BooleanProperty renderArrow = new BooleanProperty(false);

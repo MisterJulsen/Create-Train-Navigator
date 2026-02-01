@@ -32,11 +32,13 @@ import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLTooltip;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.layout.FlowLayout;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.layout.FlowLayout.Direction;
 import de.mrjulsen.mcdragonlib.data.ETextAlignment;
+import de.mrjulsen.mcdragonlib.data.ITranslatableEnum;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.Holder.MutableHolder;
 import de.mrjulsen.mcdragonlib.util.math.MathUtils;
 import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 
 public class GuiBuilderWrapper {
 
@@ -122,6 +124,7 @@ public class GuiBuilderWrapper {
         line.addComponent(platformWidthBox);
     }
 
+    /*
     static void buildShowArrivalGui(IShowArrivalSetting setting, GuiBuilderContext context) {
         DLPanel line = context.container().addLine(IShowArrivalSetting.GUI_LINE_SHOW_ARRIVAL_NAME);
 
@@ -139,6 +142,8 @@ public class GuiBuilderWrapper {
         showArrivalsBox.tooltip.set(new DLTooltip(List.of(IShowArrivalSetting.textShowArrivalDescription), 200));
         line.addComponent(showArrivalsBox);
     }
+
+     */
 
     static void buildShowDoNotBoardTextGui(IShowDoNotBoardText setting, GuiBuilderContext context) {
         DLPanel line = context.container().addLine(IShowDoNotBoardText.GUI_LINE_SHOW_DO_NOT_BOARD_TEXT_NAME);
@@ -319,6 +324,28 @@ public class GuiBuilderWrapper {
             return false;
         });
         line.addComponent(timeDisplayBox);
+    }
+
+    static void buildTrainStopTypeGui(ITrainStopTypeSetting setting, GuiBuilderContext context) {
+        DLPanel line = context.container().addLine(ITrainStopTypeSetting.GUI_LINE_TRAIN_STOP_TYPE_NAME);
+
+        IconSlotWidget icon = line.addComponent(new IconSlotWidget(0, 0));
+        icon.icon.set(ModGuiIcons.EXIT.getAsSprite(16, 16));
+
+        CreateItemPicker<ITrainStopTypeSetting.ETrainStopType> trainStopTypeBox = new CreateItemPicker<>(0, 0, 0);
+        trainStopTypeBox.renderArrow.set(true);
+        trainStopTypeBox.title.set(ITrainStopTypeSetting.ETrainStopType.ALL.getEnumTranslation());
+        trainStopTypeBox.hint.set(setting.getTrainStopType().getValueDescriptionTranslation());
+        trainStopTypeBox.formatter.set(item -> item == null ? TextUtils.empty() : item.getValueTranslation());
+        trainStopTypeBox.items.addAll(ITrainStopTypeSetting.ETrainStopType.values());
+        trainStopTypeBox.layoutContraint.set(FlowLayout.FlowConstraint.FILL);
+        trainStopTypeBox.selectedItem.set(Optional.ofNullable(setting.getTrainStopType()));
+        trainStopTypeBox.addEventListener(DLCycleButton.SelectedItemChanged.class, (s, e) -> {
+            trainStopTypeBox.selectedItem.get().ifPresent(setting::setTrainStopType);
+            trainStopTypeBox.hint.set((Component)e.item().map(x -> ((ITrainStopTypeSetting.ETrainStopType)x).getValueDescriptionTranslation()).orElse(TextUtils.empty()));
+            return false;
+        });
+        line.addComponent(trainStopTypeBox);
     }
 
     public static void buildPlatformDisplayFocusGui(PlatformDisplayFocusSettings setting, GuiBuilderContext context) {

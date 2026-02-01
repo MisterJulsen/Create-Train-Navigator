@@ -7,6 +7,7 @@ import java.util.List;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity.EUpdateReason;
+import de.mrjulsen.crn.block.display.properties.components.ITrainStopTypeSetting;
 import de.mrjulsen.crn.block.properties.ETimeDisplay;
 import de.mrjulsen.crn.block.display.properties.PlatformDisplayTableSettings;
 import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
@@ -115,7 +116,18 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
         
         for (int i = 0; i < blockEntity.getStops().size(); i++) {
             StationDisplayData data = blockEntity.getStops().get(i);
-            if (i == 0 || (data.getStationData().getRealTimeArrivalTime() < DragonLib.getCurrentWorldTime() + ModClientConfig.DISPLAY_LEAD_TIME.get() && (!data.getTrainData().isCancelled() || DragonLib.getCurrentWorldTime() < data.getStationData().getScheduledDepartureTime() + ModClientConfig.DISPLAY_LEAD_TIME.get()))) {
+            boolean shouldShow = i == 0 || data.getStationData().getRealTimeArrivalTime() < DragonLib.getCurrentWorldTime() + ModClientConfig.DISPLAY_LEAD_TIME.get();
+            boolean cancelled = data.getTrainData().isCancelled();
+            boolean isStillValid = DragonLib.getCurrentWorldTime() < data.getStationData().getScheduledDepartureTime() + ModClientConfig.DISPLAY_LEAD_TIME.get();
+            boolean terminus = data.isNextSectionExcluded();
+            boolean start = data.isPrevSectionExcluded();
+
+            ITrainStopTypeSetting.ETrainStopType type = getDisplaySettings(blockEntity).getTrainStopType();
+            boolean showArrival = type.showArrivals(terminus) && !start;
+            boolean showDeparture = type.showDepartures(start) && !terminus;
+            boolean allowed = showArrival || showDeparture;
+
+            if (allowed && shouldShow && (!cancelled || isStillValid)) {
                 preds.add(data);
             }
         }
@@ -208,19 +220,41 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
 
     private void updateContent(AdvancedDisplayBlockEntity blockEntity, StationDisplayData stop, int index) {
         PlatformDisplayTableSettings settings = getDisplaySettings(blockEntity);
-        boolean isLast = (settings.showArrival() && stop.shouldShowArrivalOfTrain()) || stop.isNextSectionExcluded();
+        ITrainStopTypeSetting.ETrainStopType stopType = settings.getTrainStopType();
+        StationDisplayData.State state = stop.getState();
+        boolean start = stop.isFirstStop();
+        boolean terminus = stop.isLastStop();
+        boolean showDeparture = stopType.showDepartures(start) && !stop.isNextSectionExcluded();
+        boolean showArrival = stopType.showArrivals(terminus) && !stop.isPrevSectionExcluded();
+        boolean showAsArrival = showArrival && (!showDeparture || !state.isWaiting());
+
+        //boolean isLast = (/*TODO settings.showArrival() && */stop.shouldShowArrivalOfTrain()) || stop.isNextSectionExcluded();
         
         BERLabel[] components = lines[index];
+        Component scheduledTimeFormatted = TextUtils.text(ModUtils.formatTime(
+                showAsArrival ?
+                        stop.getStationData().getScheduledArrivalTime() :
+                        stop.getStationData().getScheduledDepartureTime(),
+                settings.getTimeDisplay() == ETimeDisplay.ETA
+        ));
+        Component realTimeFormatted = TextUtils.text(ModUtils.formatTime(
+                showAsArrival ?
+                        stop.getStationData().getRealTimeArrivalTime() :
+                        stop.getStationData().getRealTimeDepartureTime(),
+                settings.getTimeDisplay() == ETimeDisplay.ETA
+        ));
 
         BERLabel timeComponent = components[LineComponent.TIME.i()];
-        timeComponent.text.set(TextUtils.text(ModUtils.formatTime(stop.getScheduledTime(), getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA)));
+        timeComponent.text.set(scheduledTimeFormatted);
 
         BERLabel realTimeComponent = components[LineComponent.REAL_TIME.i()];
-        realTimeComponent.text.set(TextUtils.text(stop.getTrainData().isCancelled() ?
-                " \u274C " : // X
-                (stop.getStationData().isDepartureDelayed() ?
-                    (ModUtils.formatTime(stop.getRealTime(), getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA)) : 
-                    ""))); // Nothing (not delayed)
+        if (stop.getTrainData().isCancelled()) {
+            realTimeComponent.text.set(TextUtils.text(" \u274C ")); // X
+        } else if (stop.getStationData().isDepartureDelayed()) {
+            realTimeComponent.text.set(realTimeFormatted);
+        } else {
+            realTimeComponent.text.set(TextUtils.empty());
+        }
         realTimeComponent.color.set(DLColor.pickBasedOnBrightness(getDisplaySettings(blockEntity).getFontColor(), LIGHT_FONT_COLOR, DARK_FONT_COLOR, 0.5f));
         
         BERLabel trainNameComponent = components[LineComponent.TRAIN_NAME.i()];
@@ -238,7 +272,7 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
         platformComponent.text.set(TextUtils.text(stop.getStationData().getRealTimeStation().info().platform()));
         
         BERLabel destinationComponent = components[LineComponent.DESTINATION.i()];
-        destinationComponent.text.set(isLast ?
+        destinationComponent.text.set(showAsArrival ?
             CustomLanguage.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".schedule_board.train_from", stop.getFirstStopName()) :
             TextUtils.text(stop.getStationData().getDestination())
         );

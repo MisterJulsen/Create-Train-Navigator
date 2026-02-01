@@ -373,7 +373,19 @@
     "enum.createrailwaysnavigator.departure_board_train_filter.arrival_and_departure": "All",
     "enum.createrailwaysnavigator.departure_board_train_filter.arrival_only": "Arrivals only",
     "enum.createrailwaysnavigator.departure_board_train_filter.departure_only": "Departures only",
-    
+
+    "enum.createrailwaysnavigator.train_stop_type": "Train Stop Display Type",
+    "enum.createrailwaysnavigator.train_stop_type.all": "All",
+    "enum.createrailwaysnavigator.train_stop_type.description.all": "Shows the arrivals and departures of each train.",
+    "enum.createrailwaysnavigator.train_stop_type.arrivals_only": "Arrivals only",
+    "enum.createrailwaysnavigator.train_stop_type.description.arrivals_only": "Shows only the arrivals of each train. If the train leaves an unnavigable section, nothing will be displayed.",
+    "enum.createrailwaysnavigator.train_stop_type.arrivals_preferred": "Arrivals preferred",
+    "enum.createrailwaysnavigator.train_stop_type.description.arrivals_preferred": "Shows only train arrivals, unless the train starts a new station at this station. In that case, the departure is shown as well.",
+    "enum.createrailwaysnavigator.train_stop_type.departures_only": "Departures only",
+    "enum.createrailwaysnavigator.train_stop_type.description.departures_only": "Shows only the departures of each train. If the train then enters an unnavigable section, nothing will be displayed.",
+    "enum.createrailwaysnavigator.train_stop_type.departures_preferred": "Departures preferred",
+    "enum.createrailwaysnavigator.train_stop_type.description.departures_preferred": "Shows only train departures, unless the train terminates at this station. In that case, the arrival is shown as well.",
+
     "createrailwaysnavigator.display_source.advanced_display": "Advanced Displays",
     "createrailwaysnavigator.display_target.advanced_display.component": "Component %s",
 

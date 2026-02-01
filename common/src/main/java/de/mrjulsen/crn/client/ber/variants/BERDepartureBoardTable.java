@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+import de.mrjulsen.crn.block.display.properties.components.ITrainStopTypeSetting;
+import de.mrjulsen.mcdragonlib.util.math.Size;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.joml.Vector3f;
 
@@ -212,7 +214,7 @@ public class BERDepartureBoardTable implements AbstractAdvancedDisplayRenderer<D
         if (singleTrain) {
             return Optional.ofNullable(TextUtils.concat(content));
         } else {            
-            return Optional.ofNullable(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.information_about_train", data.getTrainData().getName())
+            return Optional.of(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.information_about_train", data.getTrainData().getName())
                 .append(": ")
                 .append(TextUtils.concat(TextUtils.text(" - "), content))
             );
@@ -222,7 +224,17 @@ public class BERDepartureBoardTable implements AbstractAdvancedDisplayRenderer<D
     @Override
     public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason) {
         List<StationDisplayData> preds = blockEntity.getStops().stream().filter(x -> {
-            return (!x.isNextSectionExcluded() || getDisplaySettings(blockEntity).showArrival()) && (!x.getTrainData().isCancelled() || DragonLib.getCurrentWorldTime() < x.getStationData().getScheduledDepartureTime() + ModClientConfig.DISPLAY_LEAD_TIME.get());
+            boolean cancelled = x.getTrainData().isCancelled();
+            boolean isStillValid = DragonLib.getCurrentWorldTime() < x.getStationData().getScheduledDepartureTime() + ModClientConfig.DISPLAY_LEAD_TIME.get();
+            boolean terminus = x.isNextSectionExcluded();
+            boolean start = x.isPrevSectionExcluded();
+
+            ITrainStopTypeSetting.ETrainStopType type = getDisplaySettings(blockEntity).getTrainStopType();
+            boolean showArrival = type.showArrivals(terminus) && !start;
+            boolean showDeparture = type.showDepartures(start) && !terminus;
+
+            boolean allowed = showArrival || showDeparture;
+            return allowed && (!cancelled || isStillValid);
         }).toList();
         
         MutableBoolean shouldShowLine = new MutableBoolean(false);
@@ -348,22 +360,52 @@ public class BERDepartureBoardTable implements AbstractAdvancedDisplayRenderer<D
 
     private void updateContent(AdvancedDisplayBlockEntity blockEntity, StationDisplayData stop, int index, boolean layoutUpdate) {
         DepartureBoardDisplayTableSettings settings = getDisplaySettings(blockEntity);
-        boolean isLast = (settings.showArrival() && stop.shouldShowArrivalOfTrain()) || stop.isNextSectionExcluded();
+
+        ITrainStopTypeSetting.ETrainStopType stopType = settings.getTrainStopType();
+        StationDisplayData.State state = stop.getState();
+        boolean start = stop.isFirstStop();
+        boolean terminus = stop.isLastStop();
+        boolean showDeparture = stopType.showDepartures(start) && !stop.isNextSectionExcluded();
+        boolean showArrival = stopType.showArrivals(terminus) && !stop.isPrevSectionExcluded();
+        boolean showAsArrival = showArrival && (!showDeparture || !state.isWaiting());
+
         boolean showInfoLine = (stop.getStationData().isDepartureDelayed() && stop.getTrainData().hasStatusInfo()) || stop.getStationData().isStationChanged() || stop.isNextSectionExcluded();
         BERLabel[] components = lines[index];
 
+        Component scheduledTimeFormatted = TextUtils.text(ModUtils.formatTime(
+                showAsArrival ?
+                        stop.getStationData().getScheduledArrivalTime() :
+                        stop.getStationData().getScheduledDepartureTime(),
+                settings.getTimeDisplay() == ETimeDisplay.ETA
+        ));
+        Component realTimeFormatted = TextUtils.text(ModUtils.formatTime(
+                showAsArrival ?
+                        stop.getStationData().getRealTimeArrivalTime() :
+                        stop.getStationData().getRealTimeDepartureTime(),
+                settings.getTimeDisplay() == ETimeDisplay.ETA
+        ));
+
         BERLabel timeLabel = components[LineComponent.TIME.i()];
-        timeLabel.text.set(TextUtils.text(ModUtils.formatTime(stop.getScheduledTime(), settings.getTimeDisplay() == ETimeDisplay.ETA)));
+        timeLabel.text.set(scheduledTimeFormatted);
         
         BERLabel realTimeLabel = components[LineComponent.REAL_TIME.i()];
-        realTimeLabel.text.set(isSmall(blockEntity) ? 
-            TextUtils.text(ModUtils.formatTime(stop.getScheduledTime(), settings.getTimeDisplay() == ETimeDisplay.ETA)) :
+        if (stop.getTrainData().isCancelled()) {
+            realTimeLabel.text.set(TextUtils.text(" \u274C ")); // X
+        } else if (stop.getStationData().isDepartureDelayed()) {
+            realTimeLabel.text.set(realTimeFormatted);
+        } else {
+            realTimeLabel.text.set(TextUtils.empty());
+        }
+        /*
+        realTimeLabel.text.set(isSmall(blockEntity) ? realTimeFormatted :
             TextUtils.text(stop.getTrainData().isCancelled() ?
                 " \u274C " : // X
                 (stop.getStationData().isDepartureDelayed() ?
                     (ModUtils.formatTime(stop.getRealTime(), settings.getTimeDisplay() == ETimeDisplay.ETA)) : 
                     "")) // Nothing (not delayed)
         );
+
+         */
         realTimeLabel.color.set(
             isSmall(blockEntity) ? 
                 settings.getFontColor() :            
@@ -372,7 +414,6 @@ public class BERDepartureBoardTable implements AbstractAdvancedDisplayRenderer<D
 
         BERLabel trainLabel = components[LineComponent.TRAIN_NAME.i()];
         trainLabel.text.set(TextUtils.text(stop.getTrainData().getName()));
-
         if (settings.showLineColor() && stop.getTrainData().hasColor()) {
             trainLabel.backgroundColor.set(stop.getTrainData().getColor());
             trainLabel.color.set(DLColor.pickBasedOnBrightness(stop.getTrainData().getColor(), LIGHT_FONT_COLOR, DARK_FONT_COLOR, 0.5f));
@@ -382,8 +423,7 @@ public class BERDepartureBoardTable implements AbstractAdvancedDisplayRenderer<D
         }
 
         BERLabel destinationLabel = components[LineComponent.DESTINATION.i()];
-        destinationLabel.text.set(
-            isLast ?
+        destinationLabel.text.set(showAsArrival ?
                 CustomLanguage.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".schedule_board.train_from", stop.getFirstStopName()) :
                 TextUtils.text(stop.getStationData().getDestination())
         );
@@ -395,7 +435,7 @@ public class BERDepartureBoardTable implements AbstractAdvancedDisplayRenderer<D
 
         if (hasTransfers) {
             stopoversLabel.text.set(
-                isLast ?
+                showAsArrival ?
                     TextUtils.empty() :
                     TextUtils.concat(TextUtils.text(" \u25CF "), stop.getStopovers().stream().map(a -> (Component)TextUtils.text(a)).toList())
             );
@@ -438,11 +478,11 @@ public class BERDepartureBoardTable implements AbstractAdvancedDisplayRenderer<D
             }
             if (hasInfo) {
                 infoLabel.position.set(Point.of(headlines[LineComponent.INFO.i()].x.get(), Y_OFFSET + 3 + index * LINE_HEIGHT));
-                infoLabel.preferredWidth.set(headlines[LineComponent.INFO.i()].preferredWidth.get());
-                infoLabel.preferredHeight.set(Minecraft.getInstance().font.lineHeight * infoLabel.verticalMaxScale.get());
+                infoLabel.preferredSize.set(Size.of(headlines[LineComponent.INFO.i()].preferredWidth.get(), Minecraft.getInstance().font.lineHeight * infoLabel.verticalMaxScale.get()));
             }
         }
-    }    
+    }
+
 
     private BERLabel[] createLine(AdvancedDisplayBlockEntity blockEntity, StationDisplayData stop, int index, boolean withStopovers, boolean withInfo) {
         BERLabel[] components = new BERLabel[LineComponent.values().length];
