@@ -154,37 +154,38 @@ public class AdvancedDisplayUpdatePacketData extends NetworkPacketData {
         if (rootActor == null || rootActor.right == null)
             return;
 
-        // This code is so cursed and ugly, I don't know how it even works and why it has to be so weird. PLS HELP! I'M CRYING!
-
-        MovementContext rootCtx = rootActor.getRight();    
-        StructureBlockInfo rootInfo = contraption.getBlocks().get(pos);        
-		Direction side = rootCtx.state.getValue(HorizontalDirectionalBlock.FACING).getCounterClockWise();
+        MovementContext rootCtx = rootActor.getRight();
+        StructureBlockInfo rootInfo = contraption.getBlocks().get(pos);
+        Direction side = rootCtx.state.getValue(HorizontalDirectionalBlock.FACING).getCounterClockWise();
         byte width = rootCtx.blockEntityData.getByte(AdvancedDisplayBlockEntity.NBT_XSIZE);
-        byte height = rootCtx.blockEntityData.getByte(AdvancedDisplayBlockEntity.NBT_YSIZE);        
-        Map<BlockPos, CompoundTag> updateTags = ((ContraptionAccessor)contraption).crn$updateTags();
+        byte height = rootCtx.blockEntityData.getByte(AdvancedDisplayBlockEntity.NBT_YSIZE);
+        Map<BlockPos, CompoundTag> updateTags = ((ContraptionAccessor) contraption).crn$updateTags();
 
+        // update root contexts / nbt
         packet.key.toNbt(rootCtx.blockEntityData);
         packet.key.toNbt(rootCtx.data);
         packet.key.toNbt(rootInfo.nbt());
-        //if (updateTags.containsKey(pos)) packet.key.toNbt(updateTags.get(pos));
         rootCtx.blockEntityData.put(AdvancedDisplayBlockEntity.NBT_DISPLAY_TYPE_SETTINGS, packet.settings.serializeNbt());
         rootCtx.data.put(AdvancedDisplayBlockEntity.NBT_DISPLAY_TYPE_SETTINGS, packet.settings.serializeNbt());
         rootInfo.nbt().put(AdvancedDisplayBlockEntity.NBT_DISPLAY_TYPE_SETTINGS, packet.settings.serializeNbt());
-        //if (updateTags.containsKey(pos)) updateTags.get(pos).put(AdvancedDisplayBlockEntity.NBT_DISPLAY_TYPE_SETTINGS, packet.settings.serializeNbt());
-        blockEntityPositions.add(new BlockPos(pos.getX(), pos.getY(), pos.getZ()));
+
+        // persist root updateTag (use an immutable BlockPos and a copy of the tag)
+        BlockPos immutableRootPos = new BlockPos(pos.getX(), pos.getY(), pos.getZ());
+        updateTags.put(immutableRootPos, rootInfo.nbt().copy());
+        blockEntityPositions.add(immutableRootPos);
 
         if (rootInfo.state().getBlock() instanceof AbstractAdvancedSidedDisplayBlock) {
             BlockState newState = rootInfo.state().setValue(AbstractAdvancedSidedDisplayBlock.SIDE, packet.doubleSided ? ESide.BOTH : ESide.FRONT);
             contraption.getBlocks().put(pos, new StructureBlockInfo(rootInfo.pos(), newState, rootInfo.nbt()));
             contraption.resetClientContraption();
-        }    
+        }
 
         if (CRNPlatformSpecific.getClientContraptionBlockEntity(contraption, pos) instanceof AdvancedDisplayBlockEntity be) {
             be.setDisplayType(level, packet.key, packet.settings);
             be.setBlockState(contraption.getBlocks().get(pos).state());
         }
 
-		for (int i = 0; i < width && i < AdvancedDisplayBlockEntity.MAX_XSIZE; i++) {
+        for (int i = 0; i < width && i < AdvancedDisplayBlockEntity.MAX_XSIZE; i++) {
             BlockPos newPos = pos.relative(side, i);
             for (int j = 0; j < height && j < AdvancedDisplayBlockEntity.MAX_YSIZE; j++) {
                 BlockPos newPos2 = newPos.relative(Direction.DOWN, j);
@@ -200,12 +201,14 @@ public class AdvancedDisplayUpdatePacketData extends NetworkPacketData {
                 packet.key.toNbt(ctx.blockEntityData);
                 packet.key.toNbt(ctx.data);
                 packet.key.toNbt(info.nbt());
-                //if (updateTags.containsKey(newPos2)) packet.key.toNbt(updateTags.get(newPos2));
                 ctx.blockEntityData.put(AdvancedDisplayBlockEntity.NBT_DISPLAY_TYPE_SETTINGS, packet.settings.serializeNbt());
                 ctx.data.put(AdvancedDisplayBlockEntity.NBT_DISPLAY_TYPE_SETTINGS, packet.settings.serializeNbt());
                 info.nbt().put(AdvancedDisplayBlockEntity.NBT_DISPLAY_TYPE_SETTINGS, packet.settings.serializeNbt());
-                //if (updateTags.containsKey(newPos2)) updateTags.get(newPos2).put(AdvancedDisplayBlockEntity.NBT_DISPLAY_TYPE_SETTINGS, packet.settings.serializeNbt());
-                
+
+                // persist child updateTag (immutable key + copy)
+                BlockPos immutablePos = new BlockPos(newPos2.getX(), newPos2.getY(), newPos2.getZ());
+                updateTags.put(immutablePos, info.nbt().copy());
+
                 if (CRNPlatformSpecific.getClientContraptionBlockEntity(contraption, newPos2) instanceof AdvancedDisplayBlockEntity be) {
                     be.setDisplayType(level, packet.key, packet.settings);
                     be.setBlockState(contraption.getBlocks().get(newPos2).state());
@@ -216,17 +219,18 @@ public class AdvancedDisplayUpdatePacketData extends NetworkPacketData {
                     contraption.getBlocks().put(newPos2, new StructureBlockInfo(newPos2, newState, info.nbt()));
                 }
             }
-		}
+        }
 
         IBlockGetter getter = new IBlockGetter.ContraptionBlockGetter(contraptionEntity);
         for (MutablePair<StructureBlockInfo, MovementContext> a : contraption.getActors()) {
             BlockEntity blockEntity = getter.getBlockEntity(a.getLeft().pos());
             if (blockEntity instanceof AdvancedDisplayBlockEntity be) {
                 be.updateControllerStatus2(getter);
-                if (level.isClientSide()) {                
+                if (level.isClientSide()) {
                     be.getRenderer().update(level, a.getLeft().pos(), be.getBlockState(), be, EUpdateReason.LAYOUT_CHANGED);
                 }
-                if (updateTags.containsKey(a.getLeft().pos())) be.writeClient(updateTags.get(a.getLeft().pos()));        
+                if (updateTags.containsKey(a.getLeft().pos()))
+                    be.writeClient(updateTags.get(a.getLeft().pos()));
             }
         }
     }
