@@ -69,7 +69,7 @@ public class BERTrainDestinationInformative implements AbstractAdvancedDisplayRe
         RenderUtils.renderTexture(
             CARRIAGE_ICON,
             graphics,
-            new Vector3f(graphics.blockEntity().getXSizeScaled() * 16 - 7 - carriageIndexLabel.getRenderedWidth(), 2.5f, 0),
+            new Vector3f(graphics.blockEntity().getXSizeScaled() * 16 - 6 - carriageIndexLabel.getRenderedWidth(), 2.5f, 0),
             3, 2,
             uv * 22, uv * 231,
             uv * 13, uv * 5,
@@ -137,7 +137,8 @@ public class BERTrainDestinationInformative implements AbstractAdvancedDisplayRe
         carriageIndexLabel.text.set(TextUtils.text(String.format("%02d", index)).withStyle(ChatFormatting.BOLD));
         carriageIndexLabel.horizontalAlign.set(ETextAlignment.RIGHT);
         carriageIndexLabel.position.set(Point.of(blockEntity.getXSizeScaled() * 16 - 6, 2.5f));
-        carriageIndexLabel.preferredWidth.set(3f);
+        float carriageLabelW = carriageIndexLabel.getRenderedWidth();
+        carriageIndexLabel.preferredWidth.set(carriageLabelW);
         carriageIndexLabel.color.set(getDisplaySettings(blockEntity).getFontColor());
         
         if (blockEntity.getTrainData() == null || blockEntity.getTrainData().getState().isOutOfService()) {
