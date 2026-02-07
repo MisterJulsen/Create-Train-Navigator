@@ -79,10 +79,12 @@ public class AdvancedDisplayPanelBlock extends AbstractAdvancedSidedDisplayBlock
             xzPos = context.getClickLocation().z - context.getClickedPos().getZ();
         }
 
-        EBlockAlignment zAlign = EBlockAlignment.POSITIVE;
+        EBlockAlignment zAlign = EBlockAlignment.CENTER;
 
-        if (direction == context.getPlayer().getDirection() || (axisDirection == AxisDirection.POSITIVE ? xzPos < 0.5D : xzPos > 0.5D)) {
-			zAlign = EBlockAlignment.NEGATIVE;
+        if (direction == context.getPlayer().getDirection().getOpposite() || (axisDirection == AxisDirection.POSITIVE ? xzPos > 0.66666666D : xzPos < 0.33333333D)) {
+            zAlign = EBlockAlignment.POSITIVE;
+        } else if (direction == context.getPlayer().getDirection() || (axisDirection == AxisDirection.POSITIVE ? xzPos < 0.33333333D : xzPos > 0.66666666D)) {
+            zAlign = EBlockAlignment.NEGATIVE;
         }
 
 		return stateForPlacement
