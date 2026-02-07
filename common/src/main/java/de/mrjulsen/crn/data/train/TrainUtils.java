@@ -1,16 +1,6 @@
 package de.mrjulsen.crn.data.train;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -266,7 +256,7 @@ public final class TrainUtils {
                 stops.add(stop);
             }
 
-            Collections.sort(stops, (a, b) -> Long.compare(a.getScheduledDepartureTime(), b.getScheduledDepartureTime()));
+            Collections.sort(stops, Comparator.comparingLong(TrainStop::getRealTimeDepartureTime));
         }
 
         List<TrainStop> results = new ArrayList<>();
