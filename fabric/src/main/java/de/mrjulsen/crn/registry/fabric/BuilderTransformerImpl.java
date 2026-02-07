@@ -16,7 +16,6 @@ public class BuilderTransformerImpl {
                 .addLayer(() -> RenderType::solid)
                 .addLayer(() -> RenderType::cutout)
                 .addLayer(() -> RenderType::cutoutMipped)
-                .addLayer(() -> RenderType::translucent)
                 .color(() -> AbstractAdvancedDisplayBlock::getDisplayColor)
                 .onRegister(CreateRegistrate.blockModel(() -> (model) -> new CopycatDisplayModel(model, ctDisplay, ctFrame)))
                 ;
