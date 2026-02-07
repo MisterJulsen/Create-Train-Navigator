@@ -421,7 +421,7 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
         platformLabel.text.set(TextUtils.text(
             blockEntity.isPlatformFixed() ?
                 blockEntity.getStationInfo().platform() :
-                stop.getStationData().getRealTimeStation().info().platform()).withStyle(ChatFormatting.BOLD)
+                    ((stop.getStationData().isStationChanged() && !blockEntity.isAllowedOnDisplay(stop.getStationData().getRealTimeStation())) ? stop.getStationData().getScheduledStation() : stop.getStationData().getRealTimeStation()).info().platform()).withStyle(ChatFormatting.BOLD)
         );
         
 
