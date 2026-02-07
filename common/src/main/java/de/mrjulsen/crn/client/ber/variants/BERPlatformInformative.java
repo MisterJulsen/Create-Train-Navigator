@@ -377,11 +377,30 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
 
         followingTrainsLabel.color.set(getDisplaySettings(blockEntity).getFontColor());
 
+        Component scheduledTimeFormatted = TextUtils.text(ModUtils.formatTime(
+                stopState == ETrainStopState.ARRIVAL ?
+                        stop.getStationData().getScheduledArrivalTime() :
+                        stop.getStationData().getScheduledDepartureTime(),
+                settings.getTimeDisplay() == ETimeDisplay.ETA
+        ));
+        Component realTimeFormatted = TextUtils.text(ModUtils.formatTime(
+                stopState == ETrainStopState.ARRIVAL ?
+                        stop.getStationData().getRealTimeArrivalTime() :
+                        stop.getStationData().getRealTimeDepartureTime(),
+                settings.getTimeDisplay() == ETimeDisplay.ETA
+        ));
+
         BERLabel timeLabel = focusArea[LineComponent.TIME.i()];
-        timeLabel.text.set(TextUtils.text(ModUtils.formatTime(stop.getScheduledTime(), getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA)));
+        timeLabel.text.set(scheduledTimeFormatted);
 
         BERLabel realTimeLabel = focusArea[LineComponent.REAL_TIME.i()];
-        realTimeLabel.text.set(TextUtils.text(stop.isDelayed() ? ModUtils.formatTime(stop.getRealTime(), getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA) : ""));
+        if (stop.getTrainData().isCancelled()) {
+            realTimeLabel.text.set(TextUtils.text(" \u274C ")); // X
+        } else if (stop.getStationData().isDepartureDelayed()) {
+            realTimeLabel.text.set(realTimeFormatted);
+        } else {
+            realTimeLabel.text.set(TextUtils.empty());
+        }
         realTimeLabel.color.set(DLColor.pickBasedOnBrightness(getDisplaySettings(blockEntity).getFontColor(), LIGHT_FONT_COLOR, DARK_FONT_COLOR, 0.5f));
 
         int trainNameWidth = settings.getTrainNameWidthNextStop();
