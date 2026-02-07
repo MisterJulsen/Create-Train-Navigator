@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.simibubi.create.content.decoration.copycat.CopycatBlockEntity;
 import com.simibubi.create.content.trains.display.FlapDisplayBlock;
 import com.simibubi.create.content.trains.entity.CarriageContraption;
 import com.simibubi.create.content.trains.entity.CarriageContraptionEntity;
@@ -24,6 +25,7 @@ import de.mrjulsen.crn.block.properties.EDisplayType.EDisplayTypeDataSource;
 import de.mrjulsen.crn.client.AdvancedDisplaysRegistry;
 import de.mrjulsen.crn.client.AdvancedDisplaysRegistry.DisplayProperties;
 import de.mrjulsen.crn.client.AdvancedDisplaysRegistry.DisplayTypeResourceKey;
+import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.CarriageData;
@@ -40,6 +42,8 @@ import de.mrjulsen.crn.registry.ModDisplayTypes;
 import de.mrjulsen.crn.registry.ModNetworkManager;
 import de.mrjulsen.mcdragonlib.block.IBERInstance;
 import de.mrjulsen.mcdragonlib.client.ber.IBlockEntityRendererInstance;
+import de.mrjulsen.mcdragonlib.client.model.ICustomModelBlockEntity;
+import de.mrjulsen.mcdragonlib.client.model.ModelContext;
 import de.mrjulsen.mcdragonlib.config.ECachingPriority;
 import de.mrjulsen.mcdragonlib.network.NetworkDirection;
 import de.mrjulsen.mcdragonlib.util.Cache;
@@ -52,6 +56,7 @@ import dev.architectury.utils.Env;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.SectionPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -65,7 +70,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 
-public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
+public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
     IMultiblockBlockEntity<AdvancedDisplayBlockEntity, AbstractAdvancedDisplayBlock>,
     IContraptionBlockEntity<AdvancedDisplayBlockEntity>,
     IBERInstance<AdvancedDisplayBlockEntity>
@@ -297,6 +302,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         }
 
     }
+
     
     /**
      * Updates the display type.
@@ -645,6 +651,10 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
 
         if (updateClient) {
             getRenderer().update(level, worldPosition, getBlockState(), this, EUpdateReason.LAYOUT_CHANGED);
+        }
+
+        if (level != null) {
+            System.out.println(level.getBlockEntity(worldPosition));
         }
     }
 

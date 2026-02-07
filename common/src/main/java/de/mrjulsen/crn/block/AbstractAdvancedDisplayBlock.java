@@ -4,11 +4,16 @@ import java.util.Collection;
 import java.util.List;
 
 import com.simibubi.create.AllBlocks;
+import com.simibubi.create.content.decoration.copycat.CopycatBlock;
+import com.simibubi.create.content.decoration.copycat.CopycatBlockEntity;
 import com.simibubi.create.content.equipment.clipboard.ClipboardEntry;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.foundation.block.IBE;
 
+import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
+import com.simibubi.create.foundation.blockEntity.SmartBlockEntityTicker;
+import com.simibubi.create.foundation.utility.AdventureUtil;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity.EUpdateReason;
 import de.mrjulsen.crn.block.display.properties.BasicDisplaySettings;
@@ -27,6 +32,7 @@ import de.mrjulsen.mcdragonlib.util.DLColor;
 import de.mrjulsen.mcdragonlib.util.Pair;
 import de.mrjulsen.mcdragonlib.util.Tripple;
 import net.createmod.catnip.data.Iterate;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
@@ -40,20 +46,13 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.DyeItem;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.HorizontalDirectionalBlock;
-import net.minecraft.world.level.block.Mirror;
-import net.minecraft.world.level.block.RenderShape;
-import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.*;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition.Builder;
@@ -65,7 +64,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.ticks.LevelTickAccess;
 import org.jetbrains.annotations.Nullable;
 
-public abstract class AbstractAdvancedDisplayBlock extends Block implements IWrenchable, IBE<AdvancedDisplayBlockEntity> {
+public abstract class AbstractAdvancedDisplayBlock extends CopycatBlock implements IWrenchable {
 
 	public static final DLColor DEFAULT_DISPLAY_COLOR = DLColor.fromInt(0xFF404040);
 
@@ -83,21 +82,66 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
             .setValue(FACING, Direction.NORTH)
         );
     }
-	
+
+	@Override
+	public @Nullable BlockState getAcceptedBlockState(Level pLevel, BlockPos pPos, ItemStack item, Direction face) {
+		if (!(item.getItem() instanceof BlockItem bi))
+			return null;
+
+		Block block = bi.getBlock();
+		if (block instanceof CopycatBlock)
+			return null;
+
+		BlockState appliedState = block.defaultBlockState();
+		if (block instanceof HalfTransparentBlock || !appliedState.canOcclude()) {
+			return null;
+		}
+		return super.getAcceptedBlockState(pLevel, pPos, item, face);
+	}
+
+	@Override
+	public boolean canConnectTexturesToward(BlockAndTintGetter reader, BlockPos fromPos, BlockPos toPos, BlockState state) {
+		return true;
+	}
+
+	@Override
+	public @Nullable CopycatBlockEntity getBlockEntity(BlockGetter worldIn, BlockPos pos) {
+		BlockEntity blockEntity = worldIn.getBlockEntity(pos);
+
+		if (blockEntity == null)
+			return null;
+		if (!(blockEntity instanceof CopycatBlockEntity))
+			return null;
+
+		return (CopycatBlockEntity)blockEntity;
+	}
+
+	@Override
+	public @Nullable <S extends BlockEntity> BlockEntityTicker<S> getTicker(Level p_153212_, BlockState p_153213_, BlockEntityType<S> p_153214_) {
+		return new SmartBlockEntityTicker<>();
+	}
+
 	public static BlockColor getDisplayColor() {
-		return (state, world, pos, layer) -> {
-			if (world == null || state == null || pos == null) {
+		return (state, world, pos, tintIndex) -> {
+			if (tintIndex == 1) {
+				if (world == null || pos == null) {
+					return DEFAULT_DISPLAY_COLOR.getAsARGB();
+				}
+				if (world.getBlockEntity(pos) instanceof AdvancedDisplayBlockEntity be) {
+					return be.getSettingsAs(BasicDisplaySettings.class).map(x -> {
+						DLColor color = x.getBackColor();
+						return color.isTransparent() ? null : color;
+					}).orElse(DEFAULT_DISPLAY_COLOR).getAsARGB();
+				}
 				return DEFAULT_DISPLAY_COLOR.getAsARGB();
-			}			
-			if (world.getBlockEntity(pos) instanceof AdvancedDisplayBlockEntity be) {
-				return be.getSettingsAs(BasicDisplaySettings.class).map(x -> {
-					DLColor color = x.getBackColor();
-					return color.isTransparent() ? null : color;
-				}).orElse(DEFAULT_DISPLAY_COLOR).getAsARGB();
 			}
-			return DEFAULT_DISPLAY_COLOR.getAsARGB();
+			if (world == null || pos == null) {
+				return GrassColor.get(0.5D, 1.0D);
+			}
+			return Minecraft.getInstance().getBlockColors().getColor(getMaterial(world, pos), world, pos, tintIndex);
 		};
 	}
+
 
     @Override
     public BlockState rotate(BlockState pState, Rotation pRotation) {
@@ -190,7 +234,11 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 		updateNeighbours(pState, pLevel, pPos);
 
 		if (pLevel.isClientSide) {
-			withBlockEntityDo(pLevel, pPos, be -> be.getController(new IBlockGetter.WorldBlockGetter(pLevel)).getRenderer().update(pLevel, pPos, pState, be, EUpdateReason.LAYOUT_CHANGED));			
+			withBlockEntityDo(pLevel, pPos, be -> {
+				if (be instanceof AdvancedDisplayBlockEntity dbe) {
+					dbe.getController(new IBlockGetter.WorldBlockGetter(pLevel)).getRenderer().update(pLevel, pPos, pState, dbe, EUpdateReason.LAYOUT_CHANGED);
+				}
+			});
 		}
 	}
 
@@ -416,8 +464,46 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
             }
 		}
 
-		return InteractionResult.FAIL;
+		return useCopycat(pState, pLevel, pPos, pPlayer, pHand, pHit);
     }
+
+	public InteractionResult useCopycat(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHit) {
+		if (pPlayer == null || AdventureUtil.isAdventure(pPlayer))
+			return InteractionResult.PASS;
+
+		Direction face = pHit.getDirection();
+		ItemStack itemInHand = pPlayer.getItemInHand(pHand);
+		BlockState materialIn = getAcceptedBlockState(pLevel, pPos, itemInHand, face);
+
+		if (materialIn != null)
+			materialIn = prepareMaterial(pLevel, pPos, pState, pPlayer, pHand, pHit, materialIn);
+		if (materialIn == null)
+			return InteractionResult.PASS;
+
+		BlockState material = materialIn;
+		return onBlockEntityUse(pLevel, pPos, ufte -> {
+			if (ufte.getMaterial().is(material.getBlock())) {
+				if (!ufte.cycleMaterial())
+					return InteractionResult.PASS;
+				ufte.getLevel().playSound(null, ufte.getBlockPos(), SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, .75f, .95f);
+				return InteractionResult.SUCCESS;
+			}
+			if (ufte.hasCustomMaterial())
+				return InteractionResult.PASS;
+
+			ufte.setMaterial(material);
+			ufte.setConsumedItem(itemInHand);
+			ufte.getLevel().playSound(null, ufte.getBlockPos(), material.getSoundType().getPlaceSound(), SoundSource.BLOCKS, 1, .75f);
+
+			if (pPlayer.isCreative())
+				return InteractionResult.SUCCESS;
+
+			itemInHand.shrink(1);
+			if (itemInHand.isEmpty())
+				pPlayer.setItemInHand(pHand, ItemStack.EMPTY);
+			return InteractionResult.SUCCESS;
+		});
+	}
 	
     protected boolean updateNeighbour(BlockState pState, Level pLevel, BlockPos pPos, BlockPos neighbourPos) {
         if (pLevel.getBlockState(neighbourPos).is(this) && pLevel.getBlockEntity(neighbourPos) instanceof AdvancedDisplayBlockEntity otherBe && pLevel.getBlockEntity(pPos) instanceof AdvancedDisplayBlockEntity be) {
@@ -427,28 +513,35 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 		return false;
     }
 
-    @Override
-    public InteractionResult onWrenched(BlockState state, UseOnContext context) {
-        Level level = context.getLevel();
-        if (level.isClientSide && level.getBlockEntity(context.getClickedPos()) instanceof AdvancedDisplayBlockEntity be) {
-            AdvancedDisplayBlockEntity controller = be.getController(new IBlockGetter.WorldBlockGetter(context.getLevel()));
-            if (controller != null) {
-                ClientWrapper.showAdvancedDisplaySettingsScreen(controller, null);
-                return InteractionResult.SUCCESS;
-            }
-        }
-        return InteractionResult.FAIL;
-    }
+	@Override
+	public InteractionResult onWrenched(BlockState state, UseOnContext context) {
+		Level level = context.getLevel();
+		if (!context.getPlayer().isShiftKeyDown() && level.getBlockEntity(context.getClickedPos()) instanceof AdvancedDisplayBlockEntity be) {
+			AdvancedDisplayBlockEntity controller = be.getController(new IBlockGetter.WorldBlockGetter(context.getLevel()));
+			if (controller != null) {
+				if (level.isClientSide) {
+					ClientWrapper.showAdvancedDisplaySettingsScreen(controller, null);
+				}
+				return InteractionResult.SUCCESS;
+			}
+		}
+		return super.onWrenched(state, context);
+	}
+
+	@Override
+	public InteractionResult onSneakWrenched(BlockState state, UseOnContext context) {
+		InteractionResult res = super.onWrenched(state, context);
+		if (res.consumesAction()) {
+			return res;
+		}
+		return super.onSneakWrenched(state, context);
+	}
 
     @Override
     public RenderShape getRenderShape(BlockState pState) {
         return RenderShape.MODEL;
     }
 
-    @Override
-    public Class<AdvancedDisplayBlockEntity> getBlockEntityClass() {
-        return AdvancedDisplayBlockEntity.class;
-    }
 
     @Override
     public BlockEntityType<? extends AdvancedDisplayBlockEntity> getBlockEntityType() {

@@ -5,6 +5,7 @@ import java.util.function.Supplier;
 
 import com.simibubi.create.foundation.utility.CreateLang;
 import net.createmod.catnip.data.Pair;
+import net.minecraft.core.SectionPos;
 import org.joml.Vector3f;
 
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -84,6 +85,13 @@ public class ClientWrapper {
     
     public static void showNavigatorGui() {
         Screens.showNavigatorScreen(null, false);
+    }
+
+
+    public static void setSectionDirty(SectionPos pos) {
+        Minecraft.getInstance().execute(() -> {
+            Minecraft.getInstance().levelRenderer.setSectionDirty(pos.getX(), pos.getY(), pos.getZ());
+        });
     }
 
     public static Level getClientLevel() {

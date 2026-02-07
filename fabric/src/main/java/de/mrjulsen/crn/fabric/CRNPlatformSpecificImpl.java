@@ -72,7 +72,7 @@ public class CRNPlatformSpecificImpl {
     public static final RegistryEntry<AdvancedDisplaySource> registerDisplaySource() {
         return CreateRailwaysNavigator.REGISTRATE.displaySource("advanced_display", AdvancedDisplaySource::new)
         .onRegisterAfter(Registries.BLOCK_ENTITY_TYPE, (src) -> {            
-            DisplaySource.BY_BLOCK_ENTITY.add(AllBlockEntityTypes.TRACK_STATION.get(), src);
+            //DisplaySource.BY_BLOCK_ENTITY.add(AllBlockEntityTypes.TRACK_STATION.get(), src);
         })
         .register();
     }
