@@ -1,14 +1,8 @@
 package de.mrjulsen.crn.data;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import de.mrjulsen.crn.data.train.TrainUtils;
@@ -249,14 +243,19 @@ public class StationTag {
         });
     }
 
-    /**
-     * @param stationName The name of the train station.
-     * @return {@code true} if the station is part of this tag.
-     */
+
     public boolean contains(String stationName) {
-        String regex = stationName.isBlank() ? stationName : "\\Q" + stationName.replace("*", "\\E.*\\Q");
+        if (stationName.isBlank()) return false;
+
+        if (stations.keySet().contains(stationName)) {
+            return true;
+        }
+
+        String regex = "\\Q" + stationName.replace("*", "\\E.*\\Q") + "\\E";
+        Pattern pattern = Pattern.compile(regex);
+
         for (String name : stations.keySet()) {
-            if (name.matches(regex)) {
+            if (pattern.matcher(name).matches()) {
                 return true;
             }
         }
