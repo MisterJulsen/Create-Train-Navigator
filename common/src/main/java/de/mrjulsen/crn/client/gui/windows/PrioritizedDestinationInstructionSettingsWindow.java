@@ -342,6 +342,12 @@ public class PrioritizedDestinationInstructionSettingsWindow extends DLWindow {
     }
 
 
+    @Override
+    public Rectangle getRenderBounds() {
+        return Rectangle.withSize(0, 0, 1000, 1000);
+    }
+
+
 
     private static class Entry extends DLGuiComponent {
         

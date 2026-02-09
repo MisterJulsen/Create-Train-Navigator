@@ -269,7 +269,12 @@ public class TrainSeparationSettingsWindow extends DLWindow {
         nbt.putByte(TrainSeparationCondition.NBT_TIME_SOURCE, timeSource.getIndex());
         nbt.putByte(TrainSeparationCondition.NBT_TRAIN_FILTER, filter.getIndex());
     }
-    
+
+    @Override
+    public Rectangle getRenderBounds() {
+        return Rectangle.withSize(0, 0, 1000, 1000);
+    }
+
     @Override
     public void renderMainLayer(DLGuiGraphics graphics, double mouseX, double mouseY, Rectangle renderBounds) {
         CreateDynamicWidgets.renderWindow(graphics, 0, 0, width(), height(), ContainerColor.PURPLE, BarColor.GOLD, BarColor.GRAY, headerSize.size(), footerSize.size(), true);

@@ -238,4 +238,9 @@ public class TrainSectionSettingsWindow extends DLWindow {
 			.scale(4f)
 			.render(graphics.graphics());
     }
+
+    @Override
+    public Rectangle getRenderBounds() {
+        return Rectangle.withSize(0, 0, 1000, 1000);
+    }
 }

@@ -174,4 +174,9 @@ public class ScheduleBoardWindow extends AbstractNavigatorScreen {
             CreateDynamicWidgets.renderTextBox(graphics, 32, 20, 154);
         }
     }
+
+    @Override
+    public Rectangle getRenderBounds() {
+        return Rectangle.withSize(0, 0, 1000, 1000);
+    }
 }
