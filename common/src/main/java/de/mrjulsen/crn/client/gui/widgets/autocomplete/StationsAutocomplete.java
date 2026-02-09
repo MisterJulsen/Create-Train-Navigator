@@ -2,6 +2,7 @@ package de.mrjulsen.crn.client.gui.widgets.autocomplete;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 import de.mrjulsen.crn.registry.ModNetworkManager;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLWindowManager;
@@ -14,14 +15,25 @@ import net.minecraft.client.Minecraft;
 public class StationsAutocomplete implements IAutocompletionManager<String> {
 
     private final List<String> names = new ArrayList<>();
+    private final Supplier<List<String>> ignoreList;
+
+    public StationsAutocomplete(Supplier<List<String>> ignoreList) {
+        this.ignoreList = ignoreList;
+    }
 
     @Override
     public DLAutocompleteWindow<String> createWindow(DLWindowManager windowManager, DLRichTextEditBox textBox) {
         DLAutocompleteWindow<String> window = IAutocompletionManager.super.createWindow(windowManager, textBox);
-        ModNetworkManager.GET_ALL_STATION_NAMES.send(NetworkDirection.toServer(), (result) -> {            
+        ModNetworkManager.GET_ALL_STATION_NAMES.send(NetworkDirection.toServer(), (result) -> {
             Minecraft.getInstance().execute(() -> {
+                List<String> filteredNames = new ArrayList<>(result.getStations());
+                filteredNames.removeAll(ignoreList.get());
                 names.clear();
-                names.addAll(result.getStations().stream().sorted((a, b) -> a.compareToIgnoreCase(b)).toList());
+                names.addAll(filteredNames
+                        .stream()
+                        .distinct()
+                        .sorted(String::compareToIgnoreCase)
+                        .toList());
                 configureWindow(window, textBox);
             });
         }, () -> {});

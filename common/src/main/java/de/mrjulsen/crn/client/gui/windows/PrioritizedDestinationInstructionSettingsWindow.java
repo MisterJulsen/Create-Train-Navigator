@@ -130,7 +130,7 @@ public class PrioritizedDestinationInstructionSettingsWindow extends DLWindow {
         //listBox = addRenderableWidget(new DLNewListBox<>(this, workingArea.getX() + 33, workingArea.getY() + 40, 178, workingArea.getHeight() - 40, scrollBar));
 
         addTextBox = addComponent(new CreateTextBox((int)workingArea.x() + 63, (int)workingArea.y() + 9, 118));
-        addTextBox.autocompleteManager.set(new StationsAutocomplete());
+        addTextBox.autocompleteManager.set(new StationsAutocomplete(List::of));
         addTextBox.addEventListener(DLRichTextLabel.TextChangedEvent.class, (s, e) -> {
             addBtn.enabled.set(canAddMore() && e.text().getPlainText() != null && !e.text().getPlainText().isBlank());
             return false;

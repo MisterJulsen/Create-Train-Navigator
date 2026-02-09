@@ -167,7 +167,7 @@ public class GlobalSettingsWindow extends AbstractNavigatorScreen {
             };
 
             nameBox.acceptAndCancelKeysEnabled.set(true);
-            nameBox.autocompleteManager.set(new TrainAutocomplete());
+            nameBox.autocompleteManager.set(new TrainAutocomplete(trainLinesEntry.dataView.items::get));
             nameBox.addEventListener(DLAbstractRichTextInputField.TextAcceptKeyPressedEvent.class, (s, e) -> {
                 addAction.run();
                 return false;
@@ -258,7 +258,7 @@ public class GlobalSettingsWindow extends AbstractNavigatorScreen {
             };
 
             nameBox.acceptAndCancelKeysEnabled.set(true);
-            nameBox.autocompleteManager.set(new StationsAutocomplete());
+            nameBox.autocompleteManager.set(new StationsAutocomplete(trainLinesEntry.dataView.items::get));
             nameBox.addEventListener(DLAbstractRichTextInputField.TextAcceptKeyPressedEvent.class, (s, e) -> {
                 addAction.run();
                 return false;

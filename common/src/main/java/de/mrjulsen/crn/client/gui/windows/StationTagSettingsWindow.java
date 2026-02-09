@@ -180,7 +180,13 @@ public class StationTagSettingsWindow extends AbstractNavigatorScreen {
                             
             CreateTextBox nameBox = new CreateTextBox(0, 0, 0);
             nameBox.tooltip.set(new DLTooltip(List.of(textStationName), 200));
-            nameBox.autocompleteManager.set(new StationsAutocomplete());
+            nameBox.autocompleteManager.set(new StationsAutocomplete(() -> {
+                List<String> ignored = new ArrayList<>(trainLinesEntry.dataView.items.get().size());
+                for (Pair<String, StationInfo> entry : trainLinesEntry.dataView.items.get()) {
+                    ignored.add(entry.getFirst());
+                }
+                return ignored;
+            }));
             CreateTextBox platformBox = new CreateTextBox(0, 0, 0);
             platformBox.tooltip.set(new DLTooltip(List.of(textPlatformName), 200));
             FlatIconButton addBtn = new FlatIconButton(0, 0, ModGuiIcons.ADD.getAsSprite(16, 16));            
