@@ -10,6 +10,7 @@ import com.simibubi.create.foundation.utility.CreateLang;
 import de.mrjulsen.mcdragonlib.client.gui.events.DLGuiStandardEvents;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLNumberPicker;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLTooltip;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.richtext.TextStyle;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.properties.Property;
 import net.createmod.catnip.gui.widget.AbstractSimiWidget;
@@ -51,6 +52,14 @@ public class CreateScrollNumberInput extends DLNumberPicker {
     
     public void addToValue(double fac) {
         super.addToValue(fac * -1);
+    }
+
+    @Override
+    protected void updateTextboxValue() {
+        valueUpdateLoopFix = true;
+        String formatted = format.get().format(value.get());
+        textBox.text.get().set(formatted, new TextStyle.Builder().shadow(true).build());
+        valueUpdateLoopFix = false;
     }
 
     protected void updateTooltip() {
