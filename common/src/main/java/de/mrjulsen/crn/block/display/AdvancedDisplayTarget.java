@@ -105,6 +105,7 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 				if (advancedDisplaySource) {
 					String filter = context.sourceConfig().getString("Filter");
 
+					/*
 					if (controller.getDisplayType().category().getSource() != EDisplayTypeDataSource.PLATFORM) {
 						if (!ModCommonConfig.AUTO_UPDATE_DISPLAY_TYPE.get()) return;
 						if (controller.getDisplayType().category() != EDisplayType.PLATFORM) {
@@ -124,6 +125,7 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 							}));
 						}
 					}
+					 */
 
 					List<StationDisplayData> preds = prepare(filter, controller.getDisplayProperties().platformDisplayTrainsCount().apply(controller), controller);
 					controller.setData(
@@ -146,8 +148,7 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 							}, new IBlockGetter.WorldBlockGetter(blockEntity.getLevel()))));
 				} else {
 					if (!controller.getDisplayType().equals(ModDisplayTypes.RICH_TEXT)) {
-						if (!ModCommonConfig.AUTO_UPDATE_DISPLAY_TYPE.get())
-							return;
+						return;
 					}
 
 					StaticTextDisplaySettings settings = controller.getSettingsAs(StaticTextDisplaySettings.class)
