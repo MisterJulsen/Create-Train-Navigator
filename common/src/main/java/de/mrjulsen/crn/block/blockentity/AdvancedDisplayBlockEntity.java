@@ -38,6 +38,7 @@ import de.mrjulsen.crn.data.train.portable.TrainStopDisplayData;
 import de.mrjulsen.crn.network.packets.pain.GetTrainDisplayDataPacketData;
 import de.mrjulsen.crn.registry.ModDisplayTypes;
 import de.mrjulsen.crn.registry.ModNetworkManager;
+import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.block.IBERInstance;
 import de.mrjulsen.mcdragonlib.client.ber.IBlockEntityRendererInstance;
 import de.mrjulsen.mcdragonlib.config.ECachingPriority;
@@ -249,7 +250,7 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
     }
 
     public boolean isPlatformFixed() {
-        return !stationNameFilter.contains("*");
+        return !ModUtils.isGlobPattern(stationNameFilter);
     }
 
     /**

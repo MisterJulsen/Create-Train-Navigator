@@ -2,8 +2,10 @@ package de.mrjulsen.crn.data.train;
 
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import de.mrjulsen.crn.util.ModUtils;
 import org.joml.Vector3f;
 
 import com.simibubi.create.Create;
@@ -386,8 +388,10 @@ public final class TrainUtils {
 
     
     public static boolean stationMatches(String stationName, String filter) {
-        String regex = filter.isBlank() ? filter : "\\Q" + filter.replace("*", "\\E.*\\Q");
-        return stationName.matches(regex);
+        Pattern pattern = ModUtils.buildPattern(filter);
+        return pattern.matcher(stationName).matches();
+        //String regex = filter.isBlank() ? filter : "\\Q" + filter.replace("*", "\\E.*\\Q");
+        //return stationName.matches(regex);
     }
 
     public static boolean isTrainValid(Train train) {

@@ -215,23 +215,16 @@ public class StationTag {
     }
 
     public void add(String station, StationInfo info) {
-        if (station.contains("*")) {
-            Set<String> stationNames = TrainUtils.getAllStations().stream().map(x -> x.name).collect(Collectors.toSet());
-            for (Map.Entry<String, List<String>> entry : ModUtils.mapWildcards(station, List.of(info.platform()), stationNames).entrySet()) {
-                if (stations.containsKey(entry.getKey())) {
-                    continue;
-                }
-                String platformString = "";
-                if (!entry.getValue().isEmpty()) {
-                    platformString = entry.getValue().get(0);
-                }
-                stations.put(entry.getKey(), new StationInfo(platformString));
+        Set<String> stationNames = TrainUtils.getAllStations().stream().map(x -> x.name).collect(Collectors.toSet());
+        for (Map.Entry<String, List<String>> entry : ModUtils.mapWildcards2(station, List.of(info.platform()), stationNames).entrySet()) {
+            if (stations.containsKey(entry.getKey())) {
+                continue;
             }
-            return;
-        }
-
-        if (!stations.containsKey(station)) {
-            stations.put(station, info);
+            String platformString = "";
+            if (!entry.getValue().isEmpty()) {
+                platformString = entry.getValue().get(0);
+            }
+            stations.put(entry.getKey(), new StationInfo(platformString));
         }
     }
 
@@ -251,8 +244,8 @@ public class StationTag {
             return true;
         }
 
-        String regex = "\\Q" + stationName.replace("*", "\\E.*\\Q") + "\\E";
-        Pattern pattern = Pattern.compile(regex);
+        //String regex = "\\Q" + stationName.replace("*", "\\E.*\\Q") + "\\E";
+        Pattern pattern = ModUtils.buildPattern(stationName);
 
         for (String name : stations.keySet()) {
             if (pattern.matcher(name).matches()) {

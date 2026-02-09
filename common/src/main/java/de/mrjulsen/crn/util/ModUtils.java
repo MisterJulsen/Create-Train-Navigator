@@ -5,6 +5,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import com.simibubi.create.foundation.utility.CreateLang;
 
@@ -21,6 +22,7 @@ import de.mrjulsen.mcdragonlib.util.time.DLTime;
 import de.mrjulsen.mcdragonlib.util.time.TimeContext;
 import dev.architectury.platform.Platform;
 import dev.architectury.utils.Env;
+import net.createmod.catnip.data.Glob;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.Mth;
@@ -116,13 +118,38 @@ public class ModUtils {
         return (long)((double)hours * 1000D + (1000D / 60D * (double)minutes));
     }
 
-    private static Pattern buildPattern(String src) {
-        String escaped = "\\Q" + src.replace("*", "\\E(.*)\\Q") + "\\E";
-        return Pattern.compile(escaped);
+    public static Pattern buildPattern(String src) {
+        return Pattern.compile(Glob.toRegexPattern(src));
+        //String escaped = "\\Q" + src.replace("*", "\\E(.*)\\Q") + "\\E";
+        //return Pattern.compile(escaped);
     }
 
+    /*
     public static boolean hasWildcards(String text) {
         return text.contains("*");
+    }
+     */
+
+    public static boolean isGlobPattern(String text) {
+        if (text == null) {
+            return false;
+        }
+
+        final int len = text.length();
+
+        for (int i = 0; i < len; i++) {
+            char c = text.charAt(i);
+
+            if (c == '\\') {
+                i++;
+            } else {
+                if (c == '*' || c == '?' || c == '[' || c == '{') {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     public static Collection<String> wildcardMatches(String src, Collection<String> pool) {
@@ -176,6 +203,183 @@ public class ModUtils {
         }
         return res;
     }
+
+
+
+
+    private static final String REGEX_META_CHARS = ".^$+{[]|()";
+    private static final String GLOB_META_CHARS = "\\*?[{";
+
+    private static boolean isRegexMeta(char c) {
+        return REGEX_META_CHARS.indexOf(c) != -1;
+    }
+    private static boolean isGlobMeta(char c) {
+        return GLOB_META_CHARS.indexOf(c) != -1;
+    }
+    private static char next(String glob, int i) {
+        return i < glob.length() ? glob.charAt(i) : 0;
+    }
+
+    public static Map<String, List<String>> mapWildcards2(String src, List<String> targets, Collection<String> pool) {
+        Pattern p;
+        try {
+            String regex = createCapturingRegex(src);
+            p = Pattern.compile(regex);
+        } catch (PatternSyntaxException e) {
+            e.printStackTrace();
+            return new LinkedHashMap<>();
+        }
+
+        Map<String, List<String>> res = new LinkedHashMap<>();
+        for (String text : pool) {
+            Matcher m = p.matcher(text);
+            if (!m.matches()) continue;
+
+            int g = m.groupCount();
+            List<String> groups = new ArrayList<>(g);
+            for (int i = 1; i <= g; i++) groups.add(m.group(i));
+
+            List<String> out = new ArrayList<>();
+            for (String target : targets) {
+                String[] part = target.split("\\*", -1);
+                int S = part.length - 1;
+                StringBuilder sb = new StringBuilder(part[0]);
+
+                if (S >= 1) {
+                    for (int i = 0; i < S; i++) {
+                        String fill;
+                        if (i < g) {
+                            fill = groups.get(i);
+                        } else {
+                            fill = "";
+                        }
+                        sb.append(fill).append(part[i + 1]);
+                    }
+                }
+                out.add(sb.toString());
+            }
+            res.put(text, out);
+        }
+        return res;
+    }
+
+    private static String createCapturingRegex(String globPattern) {
+        boolean inGroup = false;
+        StringBuilder regex = new StringBuilder("^");
+        int i = 0;
+        boolean isNegativeLookaround = false;
+        boolean isAnchored = true;
+
+        while (i < globPattern.length()) {
+            char c = globPattern.charAt(i++);
+
+            switch (c) {
+                case '*' -> {
+                    regex.append("(.*)");
+                    if (!inGroup) isAnchored = false;
+                }
+                case '?' -> {
+                    regex.append("(.)");
+                    if (!inGroup) isAnchored = true;
+                }
+                case ',' -> {
+                    if (inGroup) {
+                        regex.append("|");
+                    } else {
+                        regex.append(',');
+                        isAnchored = true;
+                    }
+                }
+                case '[' -> {
+                    if (next(globPattern, i) == ']' || (next(globPattern, i) == '!' && next(globPattern, i + 1) == ']')) {
+                        throw new PatternSyntaxException("Cannot have set with no entries", globPattern, i);
+                    }
+
+                    regex.append("([");
+
+                    if (next(globPattern, i) == '^') {
+                        regex.append("\\^"); ++i;
+                    } else if (next(globPattern, i) == '!') {
+                        regex.append('^'); ++i;
+                    }
+                    if (next(globPattern, i) == '-') {
+                        regex.append('-'); ++i;
+                    }
+
+                    boolean hasRangeStart = false;
+                    char last = 0;
+                    while (i < globPattern.length()) {
+                        c = globPattern.charAt(i++);
+                        if (c == ']') break;
+                        if (c == '\\') {
+                            if (i == globPattern.length()) throw new PatternSyntaxException("No character to escape", globPattern, i - 1);
+                            if (next(globPattern, i) == ']' || next(globPattern, i) == '-' || next(globPattern, i) == '\\') regex.append('\\');
+                            regex.append(next(globPattern, i++));
+                            continue;
+                        }
+                        regex.append(c);
+                        if (c == '-') {
+                            if (!hasRangeStart) throw new PatternSyntaxException("Invalid range", globPattern, i - 1);
+                            if ((c = next(globPattern, i++)) == 0 || c == ']') break;
+                            if (c < last) throw new PatternSyntaxException("Invalid range", globPattern, i - 3);
+                            regex.append(c);
+                            hasRangeStart = false;
+                        } else {
+                            hasRangeStart = true;
+                            last = c;
+                        }
+                    }
+                    if (c != ']') throw new PatternSyntaxException("Missing ']'", globPattern, i - 1);
+
+                    regex.append("])");
+                    if (!inGroup) isAnchored = true;
+                }
+                case '\\' -> {
+                    if (i == globPattern.length()) throw new PatternSyntaxException("No character to escape", globPattern, i - 1);
+                    char next = globPattern.charAt(i++);
+                    if (isGlobMeta(next) || isRegexMeta(next)) regex.append('\\');
+                    regex.append(next);
+                    if (!inGroup) isAnchored = true;
+                }
+                case '{' -> {
+                    if (inGroup) throw new PatternSyntaxException("Cannot nest groups", globPattern, i - 1);
+                    if (next(globPattern, i) == '!') {
+                        regex.append("(?!");
+                        isNegativeLookaround = true;
+                        if (!isAnchored) regex.append('<');
+                        ++i;
+                    } else {
+                        regex.append("(");
+                        isNegativeLookaround = false;
+                    }
+                    inGroup = true;
+                }
+                case '}' -> {
+                    if (inGroup) {
+                        regex.append(")");
+                        if (isAnchored && isNegativeLookaround) {
+                            regex.append(".*");
+                            isAnchored = false;
+                        }
+                        inGroup = false;
+                    } else {
+                        regex.append('}');
+                        isAnchored = true;
+                    }
+                }
+                default -> {
+                    if (isRegexMeta(c)) regex.append('\\');
+                    regex.append(c);
+                    if (!inGroup) isAnchored = true;
+                }
+            }
+        }
+        if (inGroup) throw new PatternSyntaxException("Missing '}'", globPattern, i - 1);
+        return regex.append('$').toString();
+    }
+
+
+
 
     public static String formatTime(long time, boolean asETA) throws RuntimeSideException {
         if (Platform.getEnvironment() != Env.CLIENT) {
