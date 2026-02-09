@@ -38,6 +38,8 @@ import de.mrjulsen.mcdragonlib.data.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.math.Rectangle;
 import de.mrjulsen.mcdragonlib.util.time.DLTime;
+import de.mrjulsen.mcdragonlib.util.time.DLTimeUnit;
+import de.mrjulsen.mcdragonlib.util.time.TimePool;
 import de.mrjulsen.mcdragonlib.util.time.VanillaTimeSystem;
 import de.mrjulsen.mcdragonlib.util.time.DLTime.TimeSnapshot;
 import net.createmod.catnip.gui.element.GuiGameElement;
@@ -115,17 +117,24 @@ public class TrainSeparationSettingsWindow extends DLWindow {
 
         switch (timeSource) {
             case IN_GAME -> {
-                TimeSnapshot snapshot = this.currentTime.decomposeGameTime();
+                TimePool pool = this.currentTime.asPool();
 
                 CreateScrollNumberInput daysBox = lineTimes.addComponent(new CreateScrollNumberInput(0, 0, 22));
                 daysBox.title.set(CreateLang.translateDirect("generic.unit.days"));
                 daysBox.shiftStep.set(5D);
                 daysBox.min.set(0D);
                 daysBox.max.set(49D);
-                daysBox.value.set((double)snapshot.days());
+                daysBox.value.set((double)pool.extractGameDays(VanillaTimeSystem.INSTANCE));
                 daysBox.addEventListener(DLNumberPicker.ValueChangedEvent.class, (s, e) -> {
-                    TimeSnapshot ts = this.currentTime.decomposeGameTime();
-                    this.currentTime = DLTime.fromIngame((long)e.value(), ts.hours(), ts.minutes(), ts.seconds(), VanillaTimeSystem.INSTANCE);
+                    TimePool p = this.currentTime.asPool();
+                    int days = (int)p.extractGameDays(VanillaTimeSystem.INSTANCE);
+                    int hours = (int)p.extractGameHours(VanillaTimeSystem.INSTANCE);
+                    int minutes = (int)p.extractGameMinutes(VanillaTimeSystem.INSTANCE);
+                    this.currentTime = DLTime.builder()
+                            .gameDays((int)e.value(), VanillaTimeSystem.INSTANCE)
+                            .gameHours(hours, VanillaTimeSystem.INSTANCE)
+                            .gameMinutes(minutes, VanillaTimeSystem.INSTANCE)
+                            .build();
                     return false;
                 });
 
@@ -134,10 +143,17 @@ public class TrainSeparationSettingsWindow extends DLWindow {
                 hoursBox.shiftStep.set(8D);
                 hoursBox.min.set(0D);
                 hoursBox.max.set(23D);
-                hoursBox.value.set((double)snapshot.hours());
+                hoursBox.value.set((double)pool.extractGameHours(VanillaTimeSystem.INSTANCE));
                 hoursBox.addEventListener(DLNumberPicker.ValueChangedEvent.class, (s, e) -> {
-                    TimeSnapshot ts = this.currentTime.decomposeGameTime();
-                    this.currentTime = DLTime.fromIngame(ts.days(), (int)e.value(), ts.minutes(), ts.seconds(), VanillaTimeSystem.INSTANCE);
+                    TimePool p = this.currentTime.asPool();
+                    int days = (int)p.extractGameDays(VanillaTimeSystem.INSTANCE);
+                    int hours = (int)p.extractGameHours(VanillaTimeSystem.INSTANCE);
+                    int minutes = (int)p.extractGameMinutes(VanillaTimeSystem.INSTANCE);
+                    this.currentTime = DLTime.builder()
+                            .gameDays(days, VanillaTimeSystem.INSTANCE)
+                            .gameHours((int)e.value(), VanillaTimeSystem.INSTANCE)
+                            .gameMinutes(minutes, VanillaTimeSystem.INSTANCE)
+                            .build();
                     return false;
                 });
 
@@ -146,49 +162,70 @@ public class TrainSeparationSettingsWindow extends DLWindow {
                 minutesBox.shiftStep.set(5D);
                 minutesBox.min.set(0D);
                 minutesBox.max.set(59D);
-                minutesBox.value.set((double)snapshot.minutes());
+                minutesBox.value.set((double)pool.extractGameMinutes(VanillaTimeSystem.INSTANCE));
                 minutesBox.addEventListener(DLNumberPicker.ValueChangedEvent.class, (s, e) -> {
-                    TimeSnapshot ts = this.currentTime.decomposeGameTime();
-                    this.currentTime = DLTime.fromIngame(ts.days(), ts.hours(), (int)e.value(), 0, VanillaTimeSystem.INSTANCE);
+                    TimePool p = this.currentTime.asPool();
+                    int days = (int)p.extractGameDays(VanillaTimeSystem.INSTANCE);
+                    int hours = (int)p.extractGameHours(VanillaTimeSystem.INSTANCE);
+                    int minutes = (int)p.extractGameMinutes(VanillaTimeSystem.INSTANCE);
+                    this.currentTime = DLTime.builder()
+                            .gameDays(days, VanillaTimeSystem.INSTANCE)
+                            .gameHours(hours, VanillaTimeSystem.INSTANCE)
+                            .gameMinutes((int)e.value(), VanillaTimeSystem.INSTANCE)
+                            .build();
                     return false;
                 });
             }
             default -> {
-                TimeSnapshot snapshot = this.currentTime.decomposeRealTime();
-                CreateScrollNumberInput minutesBox = lineTimes.addComponent(new CreateScrollNumberInput(0, 0, 22));
+                TimePool pool = this.currentTime.asPool();
+
+                CreateScrollNumberInput minutesBox = lineTimes.addComponent(new CreateScrollNumberInput(0, 0, 30));
                 minutesBox.title.set(CreateLang.translateDirect("generic.unit.minutes"));
                 minutesBox.shiftStep.set(10D);
                 minutesBox.min.set(0D);
                 minutesBox.max.set(999D);
-                minutesBox.value.set((double)(snapshot.minutes() + (snapshot.hours() + snapshot.days() * 24) * 60));
+                minutesBox.value.set((double)pool.extractMinutes());
                 minutesBox.addEventListener(DLNumberPicker.ValueChangedEvent.class, (s, e) -> {
-                    TimeSnapshot ts = this.currentTime.decomposeRealTime();
-                    this.currentTime = DLTime.fromReal(ts.days(), ts.hours(), (int)e.value(), ts.seconds(), ts.millis(), VanillaTimeSystem.INSTANCE);
+                    TimePool p = this.currentTime.asPool();
+                    int minutes = (int)p.extractMinutes();
+                    int seconds = (int)p.extractSeconds();
+                    this.currentTime = DLTime.builder()
+                            .real((int)e.value(), DLTimeUnit.MINUTES)
+                            .real(seconds, DLTimeUnit.SECONDS)
+                            .build();
                     return false;
                 });
 
-                CreateScrollNumberInput secondsBox = lineTimes.addComponent(new CreateScrollNumberInput(0, 0, 22));
+                CreateScrollNumberInput secondsBox = lineTimes.addComponent(new CreateScrollNumberInput(0, 0, 30));
                 secondsBox.title.set(CreateLang.translateDirect("generic.unit.seconds"));
                 secondsBox.shiftStep.set(10D);
                 secondsBox.min.set(0D);
                 secondsBox.max.set(59D);
-                secondsBox.value.set((double)snapshot.seconds());
+                secondsBox.value.set((double)pool.extractSeconds());
                 secondsBox.addEventListener(DLNumberPicker.ValueChangedEvent.class, (s, e) -> {
-                    TimeSnapshot ts = this.currentTime.decomposeRealTime();
-                    this.currentTime = DLTime.fromReal(ts.days(), ts.hours(), ts.minutes(), (int)e.value(), ts.millis(), VanillaTimeSystem.INSTANCE);
+                    TimePool p = this.currentTime.asPool();
+                    int minutes = (int)p.extractMinutes();
+                    int seconds = (int)p.extractSeconds();
+                    this.currentTime = DLTime.builder()
+                            .real(minutes, DLTimeUnit.MINUTES)
+                            .real((int)e.value(), DLTimeUnit.SECONDS)
+                            .build();
                     return false;
                 });
 
+                /*
                 CreateScrollNumberInput ticksBox = lineTimes.addComponent(new CreateScrollNumberInput(0, 0, 22));
                 ticksBox.title.set(CreateLang.translateDirect("generic.unit.ticks"));
                 ticksBox.shiftStep.set(5D);
                 ticksBox.min.set(0D);
                 ticksBox.max.set(19D);
-                ticksBox.value.set((double)snapshot.millis());
+                ticksBox.value.set((double)pool.e);
                 ticksBox.addEventListener(DLNumberPicker.ValueChangedEvent.class, (s, e) -> {
 
                     return false;
                 });
+
+                 */
             }
         }
         
@@ -231,11 +268,6 @@ public class TrainSeparationSettingsWindow extends DLWindow {
         nbt.putInt(TrainSeparationCondition.NBT_TICKS, (int)currentTime.getTicks());
         nbt.putByte(TrainSeparationCondition.NBT_TIME_SOURCE, timeSource.getIndex());
         nbt.putByte(TrainSeparationCondition.NBT_TRAIN_FILTER, filter.getIndex());
-    }
-    
-    @Override
-    public Rectangle getRenderBounds() {
-        return Rectangle.INFINITE;
     }
     
     @Override
