@@ -153,10 +153,10 @@ public class StationBlockEntityMixin implements IHaveGoggleInformation {
     }
 
     private MutableComponent formatTime(long ticks) {
-        DLTime time = DLTime.fromTicks(ticks, VanillaTimeSystem.INSTANCE);
+        DLTime time = new DLTime(ticks, VanillaTimeSystem.INSTANCE);
         return TextUtils.text(Minecraft.getInstance().player.isShiftKeyDown()
-            ? time.format(new TimeFormatDigitalDuration(Constants.NULL_TIME, false, false, true, true, false), TimeContext.INGAME)
-            : time.format(new TimeFormatDigitalDuration(Constants.NULL_TIME, false, true, true, true, false), TimeContext.REAL)
+                ? time.format(TimeFormatDigitalDuration.DEFAULT_GAME_INSTANCE, TimeContext.INGAME, VanillaTimeSystem.INSTANCE)
+                : time.format(TimeFormatDigitalDuration.DEFAULT_REAL_INSTANCE, TimeContext.REAL, VanillaTimeSystem.INSTANCE)
         ).withStyle(ChatFormatting.AQUA);
     }
 }

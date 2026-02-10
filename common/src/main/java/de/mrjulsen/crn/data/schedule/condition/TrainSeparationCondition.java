@@ -21,6 +21,7 @@ import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.time.ConfiguredTimeSystem;
 import de.mrjulsen.mcdragonlib.util.time.DLTime;
 import de.mrjulsen.mcdragonlib.util.time.TimeContext;
+import de.mrjulsen.mcdragonlib.util.time.VanillaTimeSystem;
 import dev.architectury.utils.GameInstance;
 import net.createmod.catnip.data.Pair;
 import net.minecraft.ChatFormatting;
@@ -74,10 +75,10 @@ public class TrainSeparationCondition extends ScheduledDelay implements IDelayed
 
 		switch (getTimeSource()) {
 			case IN_GAME -> {
-				return TextUtils.text(toTime(remainingTicks).format(Constants.DEFAULT_GAME_DURATION_FORMAT, TimeContext.INGAME));
+				return TextUtils.text(toTime(remainingTicks).format(compact ? Constants.DEFAULT_GAME_DURATION_FORMAT : Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME, VanillaTimeSystem.INSTANCE));
 			}
 			default -> {
-				return TextUtils.text(toTime(remainingTicks).format(Constants.DEFAULT_REAL_DURATION_FORMAT, TimeContext.REAL));
+				return TextUtils.text(toTime(remainingTicks).format(compact ? Constants.DEFAULT_REAL_DURATION_FORMAT : Constants.DEFAULT_VERBOSE_REAL_DURATION_FORMAT, TimeContext.REAL, VanillaTimeSystem.INSTANCE));
 			}
 		}
 	}

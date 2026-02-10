@@ -61,8 +61,8 @@ public class UserSettings {
     private final boolean readOnly;
 
     // Settings
-    public final UserSetting<Integer> navigationDepartureInTicks = registerSetting(new UserSetting<>(() -> 0, NBT_DEPARTURE_IN, (nbt, val, name) -> nbt.putInt(name, val), (nbt, name) -> nbt.getInt(name), (val) -> DLTime.fromTicks(val, VanillaTimeSystem.INSTANCE).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME)));
-    public final UserSetting<Integer> navigationTransferTime = registerSetting(new UserSetting<>(() -> 1000, NBT_TRANSFER_TIME, (nbt, val, name) -> nbt.putInt(name, val), (nbt, name) -> nbt.getInt(name), (val) -> DLTime.fromTicks(val, VanillaTimeSystem.INSTANCE).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME)));
+    public final UserSetting<Integer> navigationDepartureInTicks = registerSetting(new UserSetting<>(() -> 0, NBT_DEPARTURE_IN, (nbt, val, name) -> nbt.putInt(name, val), (nbt, name) -> nbt.getInt(name), (val) -> new DLTime(val, VanillaTimeSystem.INSTANCE).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME, VanillaTimeSystem.INSTANCE)));
+    public final UserSetting<Integer> navigationTransferTime = registerSetting(new UserSetting<>(() -> 1000, NBT_TRANSFER_TIME, (nbt, val, name) -> nbt.putInt(name, val), (nbt, name) -> nbt.getInt(name), (val) -> new DLTime(val, VanillaTimeSystem.INSTANCE).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME, VanillaTimeSystem.INSTANCE)));
     public final UserSetting<Set<UUID>> navigationExcludedTrainCategories = registerSetting(new UserSetting<>(() -> new HashSet<>(), NBT_TRAIN_CATEGORIES,
     (nbt, val, name) -> {
         ListTag list = new ListTag();
@@ -80,7 +80,7 @@ public class UserSettings {
         return nbt.getList(name, Tag.TAG_COMPOUND).stream().map(x -> (CompoundTag)x).collect(Collectors.toSet());
     },(val) -> TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".saved_routes.saved", val.size()).getString()));
     
-    public final UserSetting<Integer> searchDepartureInTicks = registerSetting(new UserSetting<>(() -> 0, NBT_SEARCH_DEPARTURE_TIME, (nbt, val, name) -> nbt.putInt(name, val), (nbt, name) -> nbt.getInt(name), (val) -> DLTime.fromTicks(val, VanillaTimeSystem.INSTANCE).format(Constants.DEFAULT_GAME_DURATION_FORMAT, TimeContext.INGAME)));
+    public final UserSetting<Integer> searchDepartureInTicks = registerSetting(new UserSetting<>(() -> 0, NBT_SEARCH_DEPARTURE_TIME, (nbt, val, name) -> nbt.putInt(name, val), (nbt, name) -> nbt.getInt(name), (val) -> new DLTime(val, VanillaTimeSystem.INSTANCE).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME, VanillaTimeSystem.INSTANCE)));
     public final UserSetting<Set<UUID>> searchExcludedTrainCaegories = registerSetting(new UserSetting<>(() -> new HashSet<>(), NBT_SEARCH_TRAIN_CATEGORIES,
     (nbt, val, name) -> {
         ListTag list = new ListTag();
