@@ -406,7 +406,9 @@
     "createrailwaysnavigator.schedule.condition.train_separation": "Train Separation",
     "createrailwaysnavigator.schedule.condition.train_separation.title": "Separation: %s",
     "createrailwaysnavigator.schedule.condition.train_separation.description": "Departure %s (%s) after:",
-    
+    "createrailwaysnavigator.schedule.condition.train_separation.custom_station_filter": "Custom Station Filter",
+    "createrailwaysnavigator.schedule.condition.train_separation.custom_station_filter.description": "This filter text is used to determine which stations should be used for train separation. If left empty, the filter from the instruction is used.",
+
     "createrailwaysnavigator.schedule.instruction.configure": "Configure...",
     "createrailwaysnavigator.schedule.instruction.travel_section": "New Schedule Section",
     "createrailwaysnavigator.schedule.instruction.travel_section.description": "Beginning of a new schedule section.",

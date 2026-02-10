@@ -39,12 +39,14 @@ public class TrainSeparationCondition extends ScheduledDelay implements IDelayed
     public static final String NBT_TICKS = "Ticks";
     public static final String NBT_TRAIN_FILTER = "TrainFilter";
     public static final String NBT_TIME_SOURCE = "TimeSource";
-    
+    public static final String NBT_STATION_FILTER = "StationFilter";
+
     public TrainSeparationCondition() {
         super();
 		data.putByte(NBT_TRAIN_FILTER, ETrainFilter.ANY.getIndex());
 		data.putInt(NBT_TICKS, 100);
 		data.putByte(NBT_TIME_SOURCE, ETimeSource.REAL_LIFE.getIndex());
+		data.putString(NBT_STATION_FILTER, "");
     }
 
 	@Override
@@ -67,6 +69,13 @@ public class TrainSeparationCondition extends ScheduledDelay implements IDelayed
 			return data.getInt(NBT_TICKS);
 		}
 		return 0;
+	}
+
+	private String getCustomStationFilter() {
+		if (data.contains(NBT_STATION_FILTER)) {
+			return data.getString(NBT_STATION_FILTER);
+		}
+		return "";
 	}
 
 	@Override
@@ -108,7 +117,10 @@ public class TrainSeparationCondition extends ScheduledDelay implements IDelayed
 		int delayValue = getSeparationTime();
 		long lastDepartureTimestamp = Long.MIN_VALUE;
 		ScheduleEntry entry = context.scheduleEntry();
-		if (entry.instruction instanceof PrioritizedDestinationInstruction instruction) {
+		String customStationFilter = getCustomStationFilter();
+		if (customStationFilter != null && !customStationFilter.isBlank()) {
+			lastDepartureTimestamp = DepartureHistory.getLatestDepartureFor(getTrainFilter(), context.train(), customStationFilter);
+		} else if (entry.instruction instanceof PrioritizedDestinationInstruction instruction) {
 			List<String> stationName = instruction.getFilters();
 			lastDepartureTimestamp = stationName.stream().mapToLong(x -> DepartureHistory.getLatestDepartureFor(getTrainFilter(), context.train(), x)).max().orElse(0);
 		} else if (entry.instruction instanceof DestinationInstruction instruction) {

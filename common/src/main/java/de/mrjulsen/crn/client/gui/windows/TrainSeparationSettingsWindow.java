@@ -18,9 +18,11 @@ import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.FooterSize;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.widgets.IconSlotWidget;
 import de.mrjulsen.crn.client.gui.widgets.ModularWidgetContainer;
+import de.mrjulsen.crn.client.gui.widgets.autocomplete.StationsAutocomplete;
 import de.mrjulsen.crn.client.gui.widgets.create.CreateButton;
 import de.mrjulsen.crn.client.gui.widgets.create.CreateItemPicker;
 import de.mrjulsen.crn.client.gui.widgets.create.CreateScrollNumberInput;
+import de.mrjulsen.crn.client.gui.widgets.create.CreateTextBox;
 import de.mrjulsen.crn.data.ETimeSource;
 import de.mrjulsen.crn.data.schedule.condition.TrainSeparationCondition;
 import de.mrjulsen.crn.data.train.DepartureHistory.ETrainFilter;
@@ -28,10 +30,8 @@ import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.gui.events.DLGuiStandardEvents;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLWindow;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLWindowManager;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLCycleButton;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLNumberPicker;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLPanel;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLTooltip;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.components.*;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.layout.FlowLayout;
 import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import de.mrjulsen.mcdragonlib.data.ETextAlignment;
@@ -41,8 +41,9 @@ import de.mrjulsen.mcdragonlib.util.time.DLTime;
 import de.mrjulsen.mcdragonlib.util.time.DLTimeUnit;
 import de.mrjulsen.mcdragonlib.util.time.TimePool;
 import de.mrjulsen.mcdragonlib.util.time.VanillaTimeSystem;
-import de.mrjulsen.mcdragonlib.util.time.DLTime.TimeSnapshot;
 import net.createmod.catnip.gui.element.GuiGameElement;
+import net.createmod.catnip.gui.widget.AbstractSimiWidget;
+import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.MutableComponent;
@@ -51,6 +52,8 @@ import net.minecraft.world.item.ItemStack;
 public class TrainSeparationSettingsWindow extends DLWindow {
 
     private static final MutableComponent title = TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule.condition.train_separation.settings");
+    private static final MutableComponent txtCustomStationFilter = TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule.condition.train_separation.custom_station_filter").withStyle(s -> s.withColor(AbstractSimiWidget.HEADER_RGB.getRGB()));
+    private static final MutableComponent txtCustomStationFilterDescription = TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule.condition.train_separation.custom_station_filter.description").withStyle(ChatFormatting.GRAY);
 
 	private static final ItemStack DISPLAY_ITEM = new ItemStack(AllItems.SCHEDULE.get());
     private static final int GUI_WIDTH = 212;
@@ -64,6 +67,7 @@ public class TrainSeparationSettingsWindow extends DLWindow {
     private DLTime currentTime = Constants.NULL_TIME;
     private ETrainFilter filter = ETrainFilter.ANY;
     private ETimeSource timeSource = ETimeSource.REAL_LIFE;
+    private String stationFilterText = "";
 
     
     public TrainSeparationSettingsWindow(DLWindowManager manager, CompoundTag nbt) {
@@ -75,6 +79,7 @@ public class TrainSeparationSettingsWindow extends DLWindow {
         this.currentTime = DLTime.fromTicks(nbt.contains(TrainSeparationCondition.NBT_TICKS) ? nbt.getInt(TrainSeparationCondition.NBT_TICKS) : nbt.getInt(TrainSeparationCondition.NBT_TIME) * TimeUnit.values()[nbt.getInt(TrainSeparationCondition.NBT_TIME_UNIT)].ticksPer, VanillaTimeSystem.INSTANCE);
         this.filter = ETrainFilter.getByIndex(nbt.getByte(TrainSeparationCondition.NBT_TRAIN_FILTER));
         this.timeSource = ETimeSource.getByIndex(nbt.getByte(TrainSeparationCondition.NBT_TIME_SOURCE));
+        this.stationFilterText = nbt.getString(TrainSeparationCondition.NBT_STATION_FILTER);
 
 
         // Content
@@ -261,13 +266,28 @@ public class TrainSeparationSettingsWindow extends DLWindow {
             filterType.selectedItem.get().ifPresent(i -> filter = i);
             return false;
         });
+
+        DLPanel lineStationFilter = commonSettingsContainer.addLine("stationFilter");
+        IconSlotWidget textIcon = lineStationFilter.addComponent(new IconSlotWidget(0, 0));
+        textIcon.icon.set(ModGuiIcons.TEXT.getAsSprite(16, 16));
+
+        CreateTextBox stationText = lineStationFilter.addComponent(new CreateTextBox(0, 0, 120));
+        stationText.text.get().set(stationFilterText);
+        stationText.autocompleteManager.set(new StationsAutocomplete(List::of));
+        stationText.layoutContraint.set(FlowLayout.FlowConstraint.FILL);
+        stationText.tooltip.set(new DLTooltip(List.of(txtCustomStationFilter, txtCustomStationFilterDescription), 200));
+        stationText.addEventListener(DLRichTextLabel.TextChangedEvent.class, (s, e) -> {
+            this.stationFilterText = e.text().getPlainText();
+            return false;
+        });
     }
 
     @Override
     public void close() {
-        nbt.putInt(TrainSeparationCondition.NBT_TICKS, (int)currentTime.getTicks());
+        nbt.putInt(TrainSeparationCondition.NBT_TICKS, (int)currentTime.toTicks(VanillaTimeSystem.INSTANCE));
         nbt.putByte(TrainSeparationCondition.NBT_TIME_SOURCE, timeSource.getIndex());
         nbt.putByte(TrainSeparationCondition.NBT_TRAIN_FILTER, filter.getIndex());
+        nbt.putString(TrainSeparationCondition.NBT_STATION_FILTER, stationFilterText);
     }
 
     @Override
