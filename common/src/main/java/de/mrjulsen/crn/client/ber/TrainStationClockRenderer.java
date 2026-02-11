@@ -12,8 +12,8 @@ import de.mrjulsen.mcdragonlib.client.ber.AbstractBlockEntityRenderInstance;
 import de.mrjulsen.mcdragonlib.client.ber.BERGraphics;
 import de.mrjulsen.mcdragonlib.client.util.RenderUtils;
 import de.mrjulsen.mcdragonlib.util.DLColor;
-import de.mrjulsen.mcdragonlib.util.time.ConfiguredTimeSystem;
 import de.mrjulsen.mcdragonlib.util.time.DLTime;
+import de.mrjulsen.mcdragonlib.util.time.DLTimeOfDay;
 import de.mrjulsen.mcdragonlib.util.time.ITimeSystem;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.resources.ResourceLocation;
@@ -62,16 +62,17 @@ public class TrainStationClockRenderer extends AbstractBlockEntityRenderInstance
             !graphics.blockEntity().isGlowing()
         );
 
-        ITimeSystem timeSystem = new ConfiguredTimeSystem();
-        DLTime time = DLTime.fromTicks(graphics.blockEntity().getLevel().getDayTime() + timeSystem.getDaytimeOffset(), timeSystem);
+        ITimeSystem timeSystem = DLTime.defaultTimeSystem();
+        DLTime time = new DLTime(graphics.blockEntity().getLevel(), timeSystem);
+        DLTimeOfDay timeOfDay = new DLTimeOfDay(time, timeSystem);
 
         graphics.poseStack().pushPose();
-        graphics.poseStack().mulPose(Axis.ZP.rotationDegrees(-90 + ModUtils.clockHandDegrees(time.toGameDays(), 2)));
+        graphics.poseStack().mulPose(Axis.ZP.rotationDegrees(-90 + ModUtils.clockHandDegrees(timeOfDay.getHourOfDay(timeSystem), 12)));
         RenderUtils.fillColor(graphics, new Vector3f(-0.5f, -0.5f, 0), 6, 1, DLColor.fromInt(0xFF191919), graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING));
         graphics.poseStack().popPose();
 
         graphics.poseStack().pushPose();
-        graphics.poseStack().mulPose(Axis.ZP.rotationDegrees(-90 + ModUtils.clockHandDegrees(time.toGameHours(), 1)));
+        graphics.poseStack().mulPose(Axis.ZP.rotationDegrees(-90 + ModUtils.clockHandDegrees(timeOfDay.getMinuteOfHour(timeSystem), 60)));
         RenderUtils.fillColor(graphics, new Vector3f(-0.5f, -0.5f, 0.1f), 7, 1, DLColor.fromInt(0xFF222222), graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING));
         graphics.poseStack().popPose();
 
@@ -82,13 +83,13 @@ public class TrainStationClockRenderer extends AbstractBlockEntityRenderInstance
         graphics.poseStack().popPose();
 
         graphics.poseStack().pushPose();
-        graphics.poseStack().mulPose(Axis.ZN.rotationDegrees(-90 + ModUtils.clockHandDegrees(time.toGameDays(), 2)));
+        graphics.poseStack().mulPose(Axis.ZN.rotationDegrees(-90 + ModUtils.clockHandDegrees(timeOfDay.getHourOfDay(timeSystem), 12)));
         graphics.poseStack().mulPose(Axis.YP.rotationDegrees(180));
         RenderUtils.fillColor(graphics, new Vector3f(-0.5f, -0.5f, 0), 6, 1, DLColor.fromInt(0xFF191919), graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING));
         graphics.poseStack().popPose();
 
         graphics.poseStack().pushPose();
-        graphics.poseStack().mulPose(Axis.ZN.rotationDegrees(-90 + ModUtils.clockHandDegrees(time.toGameHours(), 1)));
+        graphics.poseStack().mulPose(Axis.ZN.rotationDegrees(-90 + ModUtils.clockHandDegrees(timeOfDay.getMinuteOfHour(timeSystem), 60)));
         graphics.poseStack().mulPose(Axis.YP.rotationDegrees(180));
         RenderUtils.fillColor(graphics, new Vector3f(-0.5f, -0.5f, 0.1f), 7, 1, DLColor.fromInt(0xFF222222), graphics.blockEntity().getBlockState().getValue(HorizontalDirectionalBlock.FACING));
         graphics.poseStack().popPose();

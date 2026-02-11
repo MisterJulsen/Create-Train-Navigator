@@ -19,7 +19,6 @@ import de.mrjulsen.mcdragonlib.data.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.DLColor;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.math.Rectangle;
-import de.mrjulsen.mcdragonlib.util.time.ConfiguredTimeSystem;
 import de.mrjulsen.mcdragonlib.util.time.DLTime;
 import de.mrjulsen.mcdragonlib.util.time.TimeContext;
 import net.minecraft.ChatFormatting;
@@ -71,9 +70,9 @@ public class RouteOverviewPage extends AbstractRouteDetailsPage {
         final int precision = ModClientConfig.REALTIME_PRECISION_THRESHOLD.get();
 
         long scheduledTime = isStart ? stop.getScheduledDepartureTime() : stop.getScheduledArrivalTime();
-        String scheduledTimeText = DLTime.fromTicks(scheduledTime, new ConfiguredTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME);
+        String scheduledTimeText = new DLTime(scheduledTime, DLTime.defaultTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem());
         long currentTime = isStart ? stop.getScheduledDepartureTime() + (stop.getDepartureTimeDeviation() / precision * precision) : stop.getScheduledArrivalTime() + (stop.getArrivalTimeDeviation() / precision * precision);
-        String currentTimeText = DLTime.fromTicks(currentTime, new ConfiguredTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME);
+        String currentTimeText = new DLTime(currentTime, DLTime.defaultTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem());
 
         GuiUtils.drawString(graphics, font, 7, y + ENTRY_HEIGHT - 2 - font.lineHeight / 2, TextUtils.text(scheduledTimeText).withStyle(isMissed ? ChatFormatting.STRIKETHROUGH : ChatFormatting.RESET), isMissed ? Constants.COLOR_DELAYED : DLColor.fromInt(0xFFDBDBDB), ETextAlignment.LEFT, false);
         if (stop.shouldRenderRealTime() && !isMissed) {
@@ -94,7 +93,7 @@ public class RouteOverviewPage extends AbstractRouteDetailsPage {
             GuiUtils.drawString(graphics, font, 17 + 64 + RoutePathIcons.SPRITE_WIDTH, y + ENTRY_HEIGHT - 2 - font.lineHeight / 2, textConnectionEndangered.withStyle(ChatFormatting.BOLD).withStyle(ChatFormatting.GOLD), DLColor.WHITE, ETextAlignment.LEFT, false);
         } else {
             long transferTime = connection.getRealTimeTransferTime();
-            String transferTimeText = DLTime.fromTicks(transferTime, new ConfiguredTimeSystem()).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME);
+            String transferTimeText = new DLTime(transferTime, DLTime.defaultTimeSystem()).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME, DLTime.defaultTimeSystem());
             GuiUtils.drawString(graphics, font, 7, y + ENTRY_HEIGHT - 2 - font.lineHeight / 2, TextUtils.text(transferTimeText).withStyle(ChatFormatting.ITALIC), DLColor.fromInt(0xFFDBDBDB), ETextAlignment.LEFT, false);
             GuiUtils.drawString(graphics, font, 17 + 64 + RoutePathIcons.SPRITE_WIDTH, y + ENTRY_HEIGHT - 2 - font.lineHeight / 2, textTransfer.withStyle(ChatFormatting.ITALIC), DLColor.fromInt(0xFFDBDBDB), ETextAlignment.LEFT, false);
         }

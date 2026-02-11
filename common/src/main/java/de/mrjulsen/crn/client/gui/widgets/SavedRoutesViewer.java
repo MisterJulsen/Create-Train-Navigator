@@ -23,7 +23,6 @@ import de.mrjulsen.mcdragonlib.data.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.DLColor;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.math.Rectangle;
-import de.mrjulsen.mcdragonlib.util.time.ConfiguredTimeSystem;
 import de.mrjulsen.mcdragonlib.util.time.DLTime;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -94,10 +93,10 @@ public class SavedRoutesViewer extends DLGuiComponent {
             }
             if (lastData == null || lastData.dayOrderValue() != d.dayOrderValue()) {
                 Component text;
-                DLTime worldTime = DLTime.fromLevelTime(Minecraft.getInstance().level, new ConfiguredTimeSystem());
-                long dayDiff = d.dayOrderValue() - (long)worldTime.toGameDays();
+                DLTime worldTime = new DLTime(Minecraft.getInstance().level, DLTime.defaultTimeSystem());
+                long dayDiff = d.dayOrderValue() - (long)worldTime.toGameDays(DLTime.defaultTimeSystem());
 
-                if (d.timeOrderValue() < (long)worldTime.getTicks()) text = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".saved_routes.in_the_past");
+                if (d.timeOrderValue() < (long)worldTime.toTicks(DLTime.defaultTimeSystem())) text = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".saved_routes.in_the_past");
                 else if (dayDiff == 0) text = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".saved_routes.today");
                 else if (dayDiff == 1) text = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".saved_routes.tomorrow");
                 else text = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".saved_routes.in_days", dayDiff);

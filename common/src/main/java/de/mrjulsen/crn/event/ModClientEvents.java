@@ -10,7 +10,6 @@ import de.mrjulsen.crn.data.navigation.ClientTrainListener;
 import de.mrjulsen.crn.data.train.DepartureHistory;
 import de.mrjulsen.crn.event.events.DefaultTrainDataRefreshEvent;
 import de.mrjulsen.crn.network.InstanceManager;
-import de.mrjulsen.crn.registry.ModExtras;
 import de.mrjulsen.mcdragonlib.util.Holder.MutableHolder;
 import dev.architectury.event.events.client.ClientGuiEvent;
 import dev.architectury.event.events.client.ClientLifecycleEvent;

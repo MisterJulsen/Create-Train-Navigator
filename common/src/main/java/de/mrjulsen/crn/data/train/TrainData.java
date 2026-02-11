@@ -35,10 +35,13 @@ import de.mrjulsen.crn.data.schedule.condition.DynamicDelayCondition;
 import de.mrjulsen.crn.data.train.TrainStatus.TrainStatusType;
 import de.mrjulsen.crn.util.IListenable;
 import de.mrjulsen.crn.util.LockedList;
+import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.config.ECachingPriority;
 import de.mrjulsen.mcdragonlib.util.Cache;
 import de.mrjulsen.mcdragonlib.util.math.MathUtils;
+import de.mrjulsen.mcdragonlib.util.time.DLTime;
+import de.mrjulsen.mcdragonlib.util.time.VanillaTimeSystem;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 
@@ -576,7 +579,7 @@ public class TrainData implements IListenable<TrainData> {
         Set<Integer> validPredictionEntries = new HashSet<>();
         boolean hasCycled = false;
 
-        final long now = DragonLib.getCurrentWorldTime() - waitingAtStationTicks();
+        final long now = ModUtils.getTransformedWorldTime() + waitingAtStationTicks();
         long time = now;
 
         for (int i = 0; i < entryCount; i++) {
@@ -632,7 +635,7 @@ public class TrainData implements IListenable<TrainData> {
         SimulationResult result = new SimulationResult(entryIndex, 0, now, now);
 
         int iteration = 0;
-        while (duration - (now - DragonLib.getCurrentWorldTime()) > 0) {
+        while (duration - (now - ModUtils.getTransformedWorldTime()) > 0) {
             long arrival = 0;
             long departure = 0;
             for (int i = 0; i < entryCount; i++) {

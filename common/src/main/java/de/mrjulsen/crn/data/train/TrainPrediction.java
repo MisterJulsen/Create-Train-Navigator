@@ -17,8 +17,8 @@ import de.mrjulsen.crn.data.train.PredictionTimes.DepartureTime;
 import de.mrjulsen.crn.event.ModCommonEvents;
 import de.mrjulsen.crn.exceptions.RuntimeSideException;
 import de.mrjulsen.crn.mixin.ScheduleRuntimeAccessor;
+import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.crn.util.PrimaryStringSelector;
-import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.util.Cache;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
@@ -315,7 +315,7 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
 
     /** Time since start of recording. */
     public long getRuntime() {
-        return DragonLib.getCurrentWorldTime() - scheduled().refreshTime();
+        return ModUtils.getTransformedWorldTime() - scheduled().refreshTime();
     }
 
     public boolean hasDepartedOnce() {
@@ -484,7 +484,7 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
         return TextUtils.text("[ " + entryIndex + " ]: ").withStyle(ChatFormatting.WHITE)
             .append(TextUtils.text(getTargetedStationName()).withStyle(ChatFormatting.WHITE))
             .append(TextUtils.text(", ").withStyle(ChatFormatting.WHITE))
-            .append(TextUtils.text("*" + getCurrentCycle()).withStyle(ChatFormatting.YELLOW))
+            .append(TextUtils.text("*" + getCurrentCycle()).withStyle(ChatFormatting.YELLOW))            
             .append(TextUtils.text(", ").withStyle(ChatFormatting.WHITE))
             .append(TextUtils.text("sA: " + (scheduled().arrivalTime())).withStyle(ChatFormatting.BLUE))
             .append(TextUtils.text(", ").withStyle(ChatFormatting.WHITE))

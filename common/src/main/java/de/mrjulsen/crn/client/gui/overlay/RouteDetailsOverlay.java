@@ -41,7 +41,6 @@ import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import de.mrjulsen.mcdragonlib.data.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.math.Rectangle;
-import de.mrjulsen.mcdragonlib.util.time.ConfiguredTimeSystem;
 import de.mrjulsen.mcdragonlib.util.time.DLTime;
 import de.mrjulsen.mcdragonlib.util.time.TimeContext;
 import net.createmod.catnip.animation.LerpedFloat;
@@ -167,7 +166,7 @@ public class RouteDetailsOverlay extends DLWindow {
             setPage(new WelcomePage(this.route));
             String terminus = route.getStart().getDisplayTitle();
             StationInfo info = route.getStart().getRealTimeStationTag().info();
-            String departureTimeText = DLTime.fromTicks(route.getStart().getScheduledDepartureTime(), new ConfiguredTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME);
+            String departureTimeText = new DLTime(route.getStart().getScheduledDepartureTime(), DLTime.defaultTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem());
             setSlidingText(info.platform().isEmpty() ? CustomLanguage.translate(keyJourneyBegins, route.getStart().getTrainDisplayName(), terminus, departureTimeText) : CustomLanguage.translate(keyJourneyBeginsWithPlatform, route.getStart().getTrainDisplayName(), terminus, departureTimeText, info.platform()));
         }
 
@@ -316,7 +315,7 @@ public class RouteDetailsOverlay extends DLWindow {
         int dy = FooterSize.DEFAULT.size() + SCROLL_AREA_HEIGHT - 2;
         CreateDynamicWidgets.renderContainer(graphics, 1, dy, width() - 2, height() - dy - FooterSize.DEFAULT.size() + 1, currentPage.isImportant() ? ContainerColor.GOLD : ContainerColor.BLUE);
         GuiUtils.drawString(graphics, font, 6, 4, title, DragonLib.VANILLA_UI_FONT_COLOR, ETextAlignment.LEFT, false);
-        Component timeText = TextUtils.text(DLTime.fromLevelTime(Minecraft.getInstance().level, new ConfiguredTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME));
+        Component timeText = TextUtils.text(new DLTime(Minecraft.getInstance().level, DLTime.defaultTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem()));
         GuiUtils.drawString(graphics, font, width() - 6, 4, timeText, DragonLib.VANILLA_UI_FONT_COLOR, ETextAlignment.RIGHT, false);
 
         GuiUtils.drawString(graphics, graphics.defaultFont(), 6, height() - 2 - graphics.defaultFont().lineHeight, TextUtils.truncateWithEllipsis(graphics.defaultFont(), TextUtils.translate(keyOptionsText, TextUtils.translate(InputConstants.getKey(Minecraft.ON_OSX ? InputConstants.KEY_LWIN : InputConstants.KEY_LCONTROL, 0).getName()).append(" + ").append(TextUtils.keybind(keyKeybindOptions)).withStyle(ChatFormatting.BOLD)), width() - 50), DragonLib.VANILLA_UI_FONT_COLOR, ETextAlignment.LEFT, false);

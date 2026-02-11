@@ -6,6 +6,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.data.train.DepartureHistory;
 import de.mrjulsen.crn.data.train.TrainListener;
+import de.mrjulsen.crn.debug.DebugOverlay;
 import de.mrjulsen.crn.network.packets.pain.ShowTrainDebugScreenPacketData;
 import de.mrjulsen.crn.registry.ModNetworkManager;
 import de.mrjulsen.mcdragonlib.network.NetworkDirection;
@@ -91,7 +92,7 @@ public class DebugCommand {
     private static int showTrainObservationOverlay(CommandSourceStack cmd) throws CommandSyntaxException {
         if (Platform.getEnvironment() == Env.CLIENT) {            
             cmd.sendSuccess(() -> TextUtils.text("Visibility of the train debug overlay has been toggled."), false);
-            //DebugOverlay.toggle();
+            DebugOverlay.toggle();
             return 1;
         } else {            
             cmd.sendFailure(TextUtils.text("Cannot open the train debug overlay in multiplayer."));  

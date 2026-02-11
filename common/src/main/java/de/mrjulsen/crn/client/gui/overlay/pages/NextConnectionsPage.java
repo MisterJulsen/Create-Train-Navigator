@@ -18,7 +18,6 @@ import de.mrjulsen.mcdragonlib.util.DLColor;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.math.Rectangle;
-import de.mrjulsen.mcdragonlib.util.time.ConfiguredTimeSystem;
 import de.mrjulsen.mcdragonlib.util.time.DLTime;
 import de.mrjulsen.mcdragonlib.util.time.TimeContext;
 import net.minecraft.ChatFormatting;
@@ -91,7 +90,7 @@ public class NextConnectionsPage extends AbstractRouteDetailsPage {
         for (int i = connectionsSubPageIndex * CONNECTION_ENTRIES_PER_PAGE; i < (connectionsSubPageIndex + 1) * CONNECTION_ENTRIES_PER_PAGE && i < nextConnections.size(); i++) {
             TrainStop stop = nextConnections.get(i);
             String terminus = stop.getDisplayTitle();
-            Component departureTimeText = TextUtils.text(DLTime.fromTicks(stop.getScheduledDepartureTime(), new ConfiguredTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME));
+            Component departureTimeText = TextUtils.text(new DLTime(stop.getScheduledDepartureTime(), DLTime.defaultTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem()));
 
             GuiUtils.drawString(graphics, font, 5, y, departureTimeText, DLColor.fromInt(0xFFDBDBDB), ETextAlignment.LEFT, false);
             GuiUtils.drawString(graphics, font, 5 + timeWidth + spacing, y, TextUtils.truncateWithEllipsis(font, TextUtils.text(stop.getTrainName()), trainNameWidth), DLColor.fromInt(0xFFDBDBDB), ETextAlignment.LEFT, false);

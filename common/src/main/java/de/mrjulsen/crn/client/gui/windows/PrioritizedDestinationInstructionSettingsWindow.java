@@ -41,7 +41,7 @@ import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLTooltip;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLScrollBar.Orientation;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.util.CursorType;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.util.EAlign;
-import de.mrjulsen.mcdragonlib.client.render.DefaultGuiTextures;
+import de.mrjulsen.mcdragonlib.client.render.DLTextureSheet;
 import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import de.mrjulsen.mcdragonlib.data.ETextAlignment;
@@ -230,7 +230,7 @@ public class PrioritizedDestinationInstructionSettingsWindow extends DLWindow {
         CreateDynamicWidgets.renderVerticalSeparator(graphics, GUI_WIDTH - 31, GUI_HEIGHT - footerSize.size() + 2, footerSize.size() - 4, BarColor.GRAY);
 
         CreateDynamicWidgets.renderWidgetInner(graphics, (int)workingArea.x() + 31, (int)workingArea.y(), 182, (int)workingArea.height(), ColorShade.DARK);
-        DefaultGuiTextures.DRAGONLIB_UI.getSprite("slot").render(graphics, (int)workingArea.x() + 41, (int)workingArea.y() + 9, 18, 18);
+        DLTextureSheet.DRAGONLIB_UI.getSprite("slot").render(graphics, (int)workingArea.x() + 41, (int)workingArea.y() + 9, 18, 18);
         GuiUtils.drawString(graphics, graphics.defaultFont(), (int)workingArea.x() + 63, (int)workingArea.y() + 28, String.format("%s / %s", stationFilters.size(), PrioritizedDestinationInstruction.MAX_ENTRIES), DragonLib.VANILLA_BUTTON_DISABLED_FONT_COLOR, ETextAlignment.LEFT, false);
         GuiUtils.drawString(graphics, graphics.defaultFont(), 6, 4, TITLE, DragonLib.VANILLA_UI_FONT_COLOR, ETextAlignment.LEFT, false);
                 

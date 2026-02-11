@@ -17,9 +17,9 @@ import de.mrjulsen.mcdragonlib.config.ECachingPriority;
 import de.mrjulsen.mcdragonlib.util.Cache;
 import de.mrjulsen.mcdragonlib.util.DLColor;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
-import de.mrjulsen.mcdragonlib.util.time.ConfiguredTimeSystem;
 import de.mrjulsen.mcdragonlib.util.time.DLTime;
 import de.mrjulsen.mcdragonlib.util.time.TimeContext;
+import de.mrjulsen.mcdragonlib.util.time.VanillaTimeSystem;
 import dev.architectury.platform.Platform;
 import dev.architectury.utils.Env;
 import net.createmod.catnip.data.Glob;
@@ -32,9 +32,9 @@ public class ModUtils {
 
     private static final Cache<DLColor[]> dyeColorsCache = new Cache<>(() -> Arrays.stream(DyeColor.values()).map(x -> DLColor.fromInt(x == DyeColor.ORANGE ? 0xFFFF9900 : (0xFF << 24) | (x.getTextColor() & 0x00FFFFFF))).toArray(DLColor[]::new), ECachingPriority.LOW);
     
-    public static float clockHandDegrees(double time, double fac) {
-        double relTime = time - (long)time;
-        return (float)(360D * (relTime * fac));
+    public static float clockHandDegrees(double value, double unitsPerRevolution) {
+        double normalized = value % unitsPerRevolution;
+        return (float) (normalized / unitsPerRevolution * 360.0);
     }
 
     public static double calcSpeed(double metersPerTick, ESpeedUnit unit) {
@@ -386,9 +386,13 @@ public class ModUtils {
             throw new RuntimeSideException(true);
         }
         if (asETA) {
-            return timeRemainingString(time - DragonLib.getCurrentWorldTime());
+            return timeRemainingString(time - ModUtils.getTransformedWorldTime());
         }
-        return DLTime.fromTicks(time, new ConfiguredTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME);
+        return DLTime.fromGameTicks(time, VanillaTimeSystem.INSTANCE).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem());
+    }
+
+    public static long getTransformedWorldTime() {
+        return Math.round(DLTime.fromGameTicks(DragonLib.getCurrentWorldTime(), DLTime.defaultTimeSystem()).toTicks(VanillaTimeSystem.INSTANCE));
     }
 
 

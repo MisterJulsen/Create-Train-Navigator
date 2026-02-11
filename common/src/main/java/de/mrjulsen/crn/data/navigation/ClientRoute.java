@@ -25,9 +25,9 @@ import de.mrjulsen.crn.event.CRNEventsManager;
 import de.mrjulsen.crn.event.events.DefaultTrainDataRefreshEvent;
 import de.mrjulsen.crn.util.IListenable;
 import de.mrjulsen.mcdragonlib.util.Cache;
-import de.mrjulsen.mcdragonlib.util.time.ConfiguredTimeSystem;
 import de.mrjulsen.mcdragonlib.util.time.DLTime;
 import de.mrjulsen.mcdragonlib.util.time.TimeContext;
+import de.mrjulsen.mcdragonlib.util.time.VanillaTimeSystem;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
@@ -237,8 +237,8 @@ public class ClientRoute extends Route implements AutoCloseable, IListenable<Cli
             sendNotification(
                 CustomLanguage.translate(keyNotificationJourneyBeginsTitle, getEnd().getRealTimeStationTag().tagName()),
                 getStart().getRealTimeStationTag().info().isPlatformKnown() ?
-                    CustomLanguage.translate(keyNotificationJourneyBeginsWithPlatform, getStart().getTrainDisplayName(), getStart().getDisplayTitle(), DLTime.fromTicks(getStart().getScheduledDepartureTime(), new ConfiguredTimeSystem()).format(Constants.DEFAULT_GAME_DURATION_FORMAT, TimeContext.INGAME), getStart().getRealTimeStationTag().info().platform()) :
-                    CustomLanguage.translate(keyNotificationJourneyBegins, getStart().getTrainDisplayName(), getStart().getDisplayTitle(), DLTime.fromTicks(getStart().getScheduledDepartureTime(), new ConfiguredTimeSystem()).format(Constants.DEFAULT_GAME_DURATION_FORMAT, TimeContext.INGAME))
+                    CustomLanguage.translate(keyNotificationJourneyBeginsWithPlatform, getStart().getTrainDisplayName(), getStart().getDisplayTitle(), new DLTime(getStart().getScheduledDepartureTime(), VanillaTimeSystem.INSTANCE).format(Constants.DEFAULT_GAME_DURATION_FORMAT, TimeContext.INGAME, DLTime.defaultTimeSystem()), getStart().getRealTimeStationTag().info().platform()) :
+                    CustomLanguage.translate(keyNotificationJourneyBegins, getStart().getTrainDisplayName(), getStart().getDisplayTitle(), new DLTime(getStart().getScheduledDepartureTime(), VanillaTimeSystem.INSTANCE).format(Constants.DEFAULT_GAME_DURATION_FORMAT, TimeContext.INGAME, DLTime.defaultTimeSystem()))
             );
 
             queuedAnnouncements.add(new QueuedAnnouncementEvent(() -> {
@@ -500,10 +500,10 @@ public class ClientRoute extends Route implements AutoCloseable, IListenable<Cli
     private void queueDelayNotification(ClientTrainStop stop, boolean start) {
         if (shouldShowNotifications()) {
             ClientWrapper.sendCRNNotification(
-                CustomLanguage.translate(keyNotificationTrainDelayedTitle, stop.getTrainDisplayName(), DLTime.fromTicks((int)(start ? stop.getDepartureTimeDeviation() : stop.getArrivalTimeDeviation()), new ConfiguredTimeSystem()).format(Constants.DEFAULT_GAME_DURATION_FORMAT, TimeContext.INGAME)),
+                CustomLanguage.translate(keyNotificationTrainDelayedTitle, stop.getTrainDisplayName(), new DLTime((int)(start ? stop.getDepartureTimeDeviation() : stop.getArrivalTimeDeviation()), VanillaTimeSystem.INSTANCE).format(Constants.DEFAULT_GAME_DURATION_FORMAT, TimeContext.INGAME, DLTime.defaultTimeSystem())),
                 CustomLanguage.translate(keyNotificationTrainDelayed,
-                DLTime.fromTicks(start ? stop.getRoundedRealTimeDepartureTime() : stop.getRoundedRealTimeArrivalTime(), new ConfiguredTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME),
-                DLTime.fromTicks(start ? stop.getScheduledDepartureTime() : stop.getScheduledArrivalTime(), new ConfiguredTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME),
+                new DLTime(start ? stop.getRoundedRealTimeDepartureTime() : stop.getRoundedRealTimeArrivalTime(), VanillaTimeSystem.INSTANCE).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem()),
+                new DLTime(start ? stop.getScheduledDepartureTime() : stop.getScheduledArrivalTime(), VanillaTimeSystem.INSTANCE).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem()),
                 stop.getRealTimeStationTag().tagName()
             ));
         }

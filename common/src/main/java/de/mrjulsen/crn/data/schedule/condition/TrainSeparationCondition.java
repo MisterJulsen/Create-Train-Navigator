@@ -19,7 +19,6 @@ import de.mrjulsen.crn.data.schedule.instruction.PrioritizedDestinationInstructi
 import de.mrjulsen.crn.data.train.DepartureHistory;
 import de.mrjulsen.crn.data.train.DepartureHistory.ETrainFilter;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
-import de.mrjulsen.mcdragonlib.util.time.ConfiguredTimeSystem;
 import de.mrjulsen.mcdragonlib.util.time.DLTime;
 import de.mrjulsen.mcdragonlib.util.time.TimeContext;
 import de.mrjulsen.mcdragonlib.util.time.VanillaTimeSystem;
@@ -85,10 +84,10 @@ public class TrainSeparationCondition extends ScheduledDelay implements IDelayed
 
 		switch (getTimeSource()) {
 			case IN_GAME -> {
-				return TextUtils.text(toTime(remainingTicks).format(compact ? Constants.DEFAULT_GAME_DURATION_FORMAT : Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME, VanillaTimeSystem.INSTANCE));
+				return TextUtils.text(toTime(remainingTicks).format(compact ? Constants.DEFAULT_GAME_DURATION_FORMAT : Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME, DLTime.defaultTimeSystem()));
 			}
 			default -> {
-				return TextUtils.text(toTime(remainingTicks).format(compact ? Constants.DEFAULT_REAL_DURATION_FORMAT : Constants.DEFAULT_VERBOSE_REAL_DURATION_FORMAT, TimeContext.REAL, VanillaTimeSystem.INSTANCE));
+				return TextUtils.text(toTime(remainingTicks).format(compact ? Constants.DEFAULT_REAL_DURATION_FORMAT : Constants.DEFAULT_VERBOSE_REAL_DURATION_FORMAT, TimeContext.REAL, DLTime.defaultTimeSystem()));
 			}
 		}
 	}
@@ -136,7 +135,9 @@ public class TrainSeparationCondition extends ScheduledDelay implements IDelayed
 		}
 
 		if (GameInstance.getServer() != null && lastDepartureTimestamp + delayValue < GameInstance.getServer().overworld().getGameTime()) {
-			DepartureHistory.updateDepartures(context.station().name, context.train());
+			if (context.station() != null && context.station().name != null && context.train() != null) { // TODO what's going on here? Why can station().name be null???
+				DepartureHistory.updateDepartures(context.station().name, context.train());
+			}
 			return true;
 		}
 		return false;
@@ -166,7 +167,7 @@ public class TrainSeparationCondition extends ScheduledDelay implements IDelayed
 	}
 
     public static DLTime toTime(long ticks) {
-		return DLTime.fromTicks(ticks, new ConfiguredTimeSystem());
+		return new DLTime(ticks, DLTime.defaultTimeSystem());
     }
 
 }

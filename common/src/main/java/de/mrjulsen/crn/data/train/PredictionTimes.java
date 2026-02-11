@@ -32,7 +32,8 @@ public class PredictionTimes {
         this.minDepartureTime = Math.max(this.arrivalTime, minDepartureTime);
     }
 
-    void shift(long amount, boolean updateRefreshTime) {            
+    void shift(long amount, boolean updateRefreshTime) {     
+               
         if (updateRefreshTime) {
             this.refreshTime += amount;
         }

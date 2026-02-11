@@ -14,7 +14,6 @@ import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.train.ETrainStopState;
 import de.mrjulsen.crn.data.train.portable.StationDisplayData;
 import de.mrjulsen.crn.util.ModUtils;
-import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.ber.BERGraphics;
 import de.mrjulsen.mcdragonlib.client.ber.BERLabel;
 import de.mrjulsen.mcdragonlib.client.ber.BERLabel.EScrollMode;
@@ -23,7 +22,6 @@ import de.mrjulsen.mcdragonlib.util.Pair;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.math.Point;
 import de.mrjulsen.mcdragonlib.util.math.Rectangle;
-import de.mrjulsen.mcdragonlib.util.time.ConfiguredTimeSystem;
 import de.mrjulsen.mcdragonlib.util.time.DLTime;
 import de.mrjulsen.mcdragonlib.util.time.TimeContext;
 import net.minecraft.core.BlockPos;
@@ -54,10 +52,11 @@ public class BERPlatformSimple implements AbstractAdvancedDisplayRenderer<Platfo
     @Override
     public void tick(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent) {
         List<Component> textContent = new ArrayList<>(texts);
+        String formattedTime = new DLTime(blockEntity.getLevel(), DLTime.defaultTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem());
         if (blockEntity.getXSize() > 2) {
-            textContent.add(0, CustomLanguage.translate(keyTime, DLTime.fromLevelTime(blockEntity.getLevel(), new ConfiguredTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME)));
+            textContent.add(0, CustomLanguage.translate(keyTime, formattedTime));
         } else {
-            textContent.add(0, TextUtils.text(DLTime.fromLevelTime(blockEntity.getLevel(), new ConfiguredTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME)));
+            textContent.add(0, TextUtils.text(formattedTime));
         }
         MutableComponent txt = TextUtils.concat(textContent);
         label.text.set(txt);
@@ -70,7 +69,7 @@ public class BERPlatformSimple implements AbstractAdvancedDisplayRenderer<Platfo
 
     @Override
     public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason) {
-        List<StationDisplayData> preds = blockEntity.getStops().stream().filter(x -> x.getStationData().getRealTimeArrivalTime() < DragonLib.getCurrentWorldTime() + ModClientConfig.DISPLAY_LEAD_TIME.get() && (!x.getTrainData().isCancelled() || DragonLib.getCurrentWorldTime() < x.getStationData().getScheduledDepartureTime() + ModClientConfig.DISPLAY_LEAD_TIME.get())).toList();
+        List<StationDisplayData> preds = blockEntity.getStops().stream().filter(x -> x.getStationData().getRealTimeArrivalTime() < ModUtils.getTransformedWorldTime() + ModClientConfig.DISPLAY_LEAD_TIME.get() && (!x.getTrainData().isCancelled() || ModUtils.getTransformedWorldTime() < x.getStationData().getScheduledDepartureTime() + ModClientConfig.DISPLAY_LEAD_TIME.get())).toList();
 
         label.clippingArea.set(Rectangle.withSize(3, 3, blockEntity.getXSizeScaled() * 16 - 6, blockEntity.getYSizeScaled() * 16 - 6));   
         label.glowing.set(blockEntity.isGlowing());
@@ -93,7 +92,7 @@ public class BERPlatformSimple implements AbstractAdvancedDisplayRenderer<Platfo
             if (x.getTrainData().isCancelled()) {
                 text.append(", ").append(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.cancelled2").getString());
             } else if (x.getStationData().isDepartureDelayed()) {
-                String delay = getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA ? ModUtils.timeRemainingString(x.getStationData().getDepartureTimeDeviation()) : String.valueOf((long)DLTime.fromTicks(x.getStationData().getDepartureTimeDeviation(), new ConfiguredTimeSystem()).toGameMinutes());
+                String delay = getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA ? ModUtils.timeRemainingString(x.getStationData().getDepartureTimeDeviation()) : String.valueOf((long)DLTime.fromGameTicks(x.getStationData().getDepartureTimeDeviation(), DLTime.defaultTimeSystem()).toGameMinutes(DLTime.defaultTimeSystem()));
                 String timeUnitSuffix = getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ABS ?
                     " " + CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.delay_abs_suffix").getString() :
                     "";

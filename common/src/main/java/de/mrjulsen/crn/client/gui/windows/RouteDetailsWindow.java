@@ -16,6 +16,7 @@ import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.data.SavedRoutesManager;
 import de.mrjulsen.crn.data.navigation.ClientRoute;
 import de.mrjulsen.crn.event.ModCommonEvents;
+import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.DLOverlayManager;
 import de.mrjulsen.mcdragonlib.client.gui.events.DLGuiStandardEvents;
@@ -102,11 +103,11 @@ public class RouteDetailsWindow extends AbstractNavigatorScreen {
             graphics.poseStack().scale(2, 2, 2);
             long time = 0;
             if (route.getStart().isDeparted()) {
-                time = route.getEnd().getRealTimeArrivalTime() - DragonLib.getCurrentWorldTime();
-                GuiUtils.drawString(graphics, graphics.defaultFont(), (GUI_WIDTH / 2) / 2, (31) / 2, time < 0 ? timeNowText : TextUtils.text(DLTime.fromTicks(time, VanillaTimeSystem.INSTANCE).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME)), DLColor.WHITE, ETextAlignment.CENTER, false);
+                time = route.getEnd().getRealTimeArrivalTime() - ModUtils.getTransformedWorldTime();
+                GuiUtils.drawString(graphics, graphics.defaultFont(), (GUI_WIDTH / 2) / 2, (31) / 2, time < 0 ? timeNowText : TextUtils.text(new DLTime(time, VanillaTimeSystem.INSTANCE).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME, DLTime.defaultTimeSystem())), DLColor.WHITE, ETextAlignment.CENTER, false);
             } else {
-                time = route.getStart().getRealTimeDepartureTime() - DragonLib.getCurrentWorldTime();
-                GuiUtils.drawString(graphics, graphics.defaultFont(), (GUI_WIDTH / 2) / 2, (31) / 2, time < 0 ? timeNowText : TextUtils.text(DLTime.fromTicks(time, VanillaTimeSystem.INSTANCE).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME)), DLColor.WHITE, ETextAlignment.CENTER, false);
+                time = route.getStart().getRealTimeDepartureTime() - ModUtils.getTransformedWorldTime();
+                GuiUtils.drawString(graphics, graphics.defaultFont(), (GUI_WIDTH / 2) / 2, (31) / 2, time < 0 ? timeNowText : TextUtils.text(new DLTime(time, VanillaTimeSystem.INSTANCE).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME, DLTime.defaultTimeSystem())), DLColor.WHITE, ETextAlignment.CENTER, false);
             }
             graphics.poseStack().popPose();
         }

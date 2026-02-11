@@ -13,7 +13,6 @@ import de.mrjulsen.mcdragonlib.data.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.DLColor;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.math.Rectangle;
-import de.mrjulsen.mcdragonlib.util.time.ConfiguredTimeSystem;
 import de.mrjulsen.mcdragonlib.util.time.DLTime;
 import de.mrjulsen.mcdragonlib.util.time.TimeContext;
 import net.minecraft.ChatFormatting;
@@ -44,7 +43,7 @@ public class WelcomePage extends AbstractRouteDetailsPage {
         // Title
         ModGuiIcons.TIME.render(graphics, 5, y + 3);
         long departureTicks = route.getCurrentPart().departureIn();
-        Component time = TextUtils.text(DLTime.fromTicks(departureTicks, new ConfiguredTimeSystem()).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME));
+        Component time = TextUtils.text(new DLTime(departureTicks, DLTime.defaultTimeSystem()).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME, DLTime.defaultTimeSystem()));
         
         GuiUtils.drawString(graphics, font, 10 + ModGuiIcons.ICON_SIZE, y + 3 + ModGuiIcons.ICON_SIZE / 2 - font.lineHeight / 2, CustomLanguage.translate(keyDepartureIn).append(" ").append(departureTicks > 0 ? time : CustomLanguage.translate(keyTimeNow)).withStyle(ChatFormatting.BOLD), DLColor.WHITE, ETextAlignment.LEFT, false);
         y += 5 + ModGuiIcons.ICON_SIZE;
@@ -57,7 +56,7 @@ public class WelcomePage extends AbstractRouteDetailsPage {
         Component platformText = TextUtils.text(endStation.getRealTimeStationTag().info().platform());
         int platformTextWidth = font.width(platformText);
         final int maxStationNameWidth = width() - platformTextWidth - 10 - 5;
-        String timeText = DLTime.fromTicks(endStation.getRoundedRealTimeArrivalTime(), new ConfiguredTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME);
+        String timeText = new DLTime(endStation.getRoundedRealTimeArrivalTime(), DLTime.defaultTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem());
         MutableComponent stationText = TextUtils.text(timeText).append(TextUtils.text(" " + endStation.getRealTimeStationTag().tagName()));
         if (font.width(stationText) > maxStationNameWidth) {
             stationText = TextUtils.text(font.substrByWidth(stationText, maxStationNameWidth).getString()).append(TextUtils.text("...")).withStyle(stationText.getStyle());
@@ -70,7 +69,7 @@ public class WelcomePage extends AbstractRouteDetailsPage {
         GuiUtils.drawString(graphics, font, 10 + ModGuiIcons.ICON_SIZE, y + detailsLineHeight, TextUtils.text(String.format("%s %s | %s",
             route.getTransferCount(),
             CustomLanguage.translate(keyTransferCount).getString(),
-            DLTime.fromTicks(route.travelTime(), new ConfiguredTimeSystem()).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME)
+            new DLTime(route.travelTime(), DLTime.defaultTimeSystem()).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME, DLTime.defaultTimeSystem())
         )), DLColor.fromInt(0xFFDBDBDB), ETextAlignment.LEFT, false);
     }
 }

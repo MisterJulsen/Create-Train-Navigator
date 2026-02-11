@@ -7,9 +7,6 @@ import com.simibubi.create.foundation.gui.widget.ScrollInput;
 
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLGuiComponent;
 import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.components.Renderable;
-import net.minecraft.client.gui.components.events.GuiEventListener;
-import net.minecraft.client.gui.narration.NarrationElementOutput;
 
 public class ModularWidgetLine extends DLGuiComponent {
 

@@ -17,7 +17,6 @@ import de.mrjulsen.crn.data.train.ETrainStopState;
 import de.mrjulsen.crn.data.train.TrainStatus.CompiledTrainStatus;
 import de.mrjulsen.crn.data.train.portable.StationDisplayData;
 import de.mrjulsen.crn.util.ModUtils;
-import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.ber.BERGraphics;
 import de.mrjulsen.mcdragonlib.client.ber.BERLabel;
 import de.mrjulsen.mcdragonlib.client.ber.BERLabel.EScrollMode;
@@ -28,7 +27,6 @@ import de.mrjulsen.mcdragonlib.util.Pair;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.math.Point;
 import de.mrjulsen.mcdragonlib.util.math.Rectangle;
-import de.mrjulsen.mcdragonlib.util.time.ConfiguredTimeSystem;
 import de.mrjulsen.mcdragonlib.util.time.DLTime;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -72,8 +70,8 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
     @Override
     public void tick(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent) {
         timeLabel.text.set(blockEntity.getXSize() > 1
-                ? CustomLanguage.translate(keyTime, ModUtils.formatTime(DragonLib.getCurrentWorldTime(), false))
-                : TextUtils.text(ModUtils.formatTime(DragonLib.getCurrentWorldTime(), false))
+                ? CustomLanguage.translate(keyTime, ModUtils.formatTime(ModUtils.getTransformedWorldTime(), false))
+                : TextUtils.text(ModUtils.formatTime(ModUtils.getTransformedWorldTime(), false))
             ) 
         ;
 
@@ -94,7 +92,7 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
     public void render(BERGraphics<AdvancedDisplayBlockEntity> graphics, float pPartialTicks, AdvancedDisplayRenderInstance parent, int light, boolean backSide) {
         for (int i = 0; i < lines.length && i < maxLines; i++) {
             for (int k = 0; k < lines[i].length; k++) {
-                if (getDisplaySettings(graphics.blockEntity()).showTimeAndDate() && i >= maxLines - 1 && (DragonLib.getCurrentWorldTime() % 200 > 100)) {
+                if (getDisplaySettings(graphics.blockEntity()).showTimeAndDate() && i >= maxLines - 1 && (ModUtils.getTransformedWorldTime() % 200 > 100)) {
                     timeLabel.render(graphics);
                     continue;
                 }
@@ -117,9 +115,9 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
         
         for (int i = 0; i < blockEntity.getStops().size(); i++) {
             StationDisplayData data = blockEntity.getStops().get(i);
-            boolean shouldShow = i == 0 || data.getStationData().getRealTimeArrivalTime() < DragonLib.getCurrentWorldTime() + ModClientConfig.DISPLAY_LEAD_TIME.get();
+            boolean shouldShow = i == 0 || data.getStationData().getRealTimeArrivalTime() < ModUtils.getTransformedWorldTime() + ModClientConfig.DISPLAY_LEAD_TIME.get();
             boolean cancelled = data.getTrainData().isCancelled();
-            boolean isStillValid = DragonLib.getCurrentWorldTime() < data.getStationData().getScheduledDepartureTime() + ModClientConfig.DISPLAY_LEAD_TIME.get();
+            boolean isStillValid = ModUtils.getTransformedWorldTime() < data.getStationData().getScheduledDepartureTime() + ModClientConfig.DISPLAY_LEAD_TIME.get();
             boolean terminus = data.isNextSectionExcluded();
             boolean start = data.isPrevSectionExcluded();
 
@@ -154,7 +152,7 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
 
                 // DELAYED
                 if (x.getStationData().isDepartureDelayed()) {
-                    String delay = getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA ? ModUtils.timeRemainingString(x.getStationData().getDepartureTimeDeviation()) : String.valueOf((long)DLTime.fromTicks(x.getStationData().getDepartureTimeDeviation(), new ConfiguredTimeSystem()).toGameMinutes());
+                    String delay = getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA ? ModUtils.timeRemainingString(x.getStationData().getDepartureTimeDeviation()) : String.valueOf((long)DLTime.fromGameTicks(x.getStationData().getDepartureTimeDeviation(), DLTime.defaultTimeSystem()).toGameMinutes(DLTime.defaultTimeSystem()));
                     MutableComponent delayComponent = CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.delayed", delay);
                     if (getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ABS) {
                         delayComponent.append(" ").append(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.delay_abs_suffix"));

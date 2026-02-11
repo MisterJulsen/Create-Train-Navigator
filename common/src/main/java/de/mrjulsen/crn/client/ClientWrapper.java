@@ -1,8 +1,6 @@
 package de.mrjulsen.crn.client;
 
 import java.util.List;
-import java.util.function.Supplier;
-
 import com.simibubi.create.foundation.utility.CreateLang;
 import net.createmod.catnip.data.Pair;
 import net.minecraft.core.SectionPos;
@@ -20,7 +18,6 @@ import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.api.client.Screens;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
-import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.NavigatorToast;
 import de.mrjulsen.crn.client.gui.widgets.vanilla.ResizableButton;
 import de.mrjulsen.crn.client.gui.windows.AdvancedDisplaySettingsWindow;
@@ -39,25 +36,18 @@ import de.mrjulsen.crn.mixin.ModularGuiLineBuilderAccessor;
 import de.mrjulsen.crn.mixin.ScheduleScreenAccessor;
 import de.mrjulsen.crn.network.packets.stc.ServerErrorPacketData;
 import de.mrjulsen.crn.util.Owner;
-import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLWindow;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLWindowManager;
 import de.mrjulsen.mcdragonlib.client.util.DLGraphics;
 import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
-import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import de.mrjulsen.mcdragonlib.client.util.RenderUtils;
 import de.mrjulsen.mcdragonlib.data.ETextAlignment;
 import de.mrjulsen.mcdragonlib.network.NetworkPacketContext;
 import de.mrjulsen.mcdragonlib.util.DLColor;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
-import de.mrjulsen.mcdragonlib.util.time.ConfiguredTimeSystem;
 import de.mrjulsen.mcdragonlib.util.time.DLTime;
 import de.mrjulsen.mcdragonlib.util.time.TimeContext;
-import dev.architectury.networking.NetworkManager.PacketContext;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.components.toasts.SystemToast.SystemToastIds;
@@ -273,7 +263,7 @@ public class ClientWrapper {
         
 
         int backgroundId = itemStack.getOrCreateTag().getInt(NavigatorItem.NBT_BACKGROUND_ID);
-        DLTime time = DLTime.fromLevelTime(Minecraft.getInstance().level, new ConfiguredTimeSystem());
+        DLTime time = new DLTime(Minecraft.getInstance().level, DLTime.defaultTimeSystem());
 
         Font font = Minecraft.getInstance().font;
         poseStack.mulPose(Axis.XP.rotationDegrees(90F));
@@ -284,13 +274,13 @@ public class ClientWrapper {
         poseStack.pushPose();
         poseStack.translate(4, 0.8f, 0);
         poseStack.scale(0.075f, 0.075f, 0.075f);
-        RenderUtils.drawString(graphics, font, 0, 0, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".journey_info.date", (long)time.toGameDays()), DLColor.WHITE, ETextAlignment.CENTER, false, LightTexture.FULL_BRIGHT);
+        RenderUtils.drawString(graphics, font, 0, 0, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".journey_info.date", (long)time.toGameDays(DLTime.defaultTimeSystem())), DLColor.WHITE, ETextAlignment.CENTER, false, LightTexture.FULL_BRIGHT);
         poseStack.popPose();
         
         poseStack.pushPose();
         poseStack.translate(4, 2, 0);
         poseStack.scale(0.2f, 0.2f, 0.2f);
-        RenderUtils.drawString(graphics, font, 0, 0, time.format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME), DLColor.WHITE, ETextAlignment.CENTER, false, LightTexture.FULL_BRIGHT);
+        RenderUtils.drawString(graphics, font, 0, 0, time.format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem()), DLColor.WHITE, ETextAlignment.CENTER, false, LightTexture.FULL_BRIGHT);
         poseStack.popPose();
     }
 
