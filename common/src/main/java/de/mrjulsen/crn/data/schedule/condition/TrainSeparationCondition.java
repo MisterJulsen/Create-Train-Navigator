@@ -1,5 +1,6 @@
 package de.mrjulsen.crn.data.schedule.condition;
 
+import java.util.ArrayList;
 import java.util.List;
 import com.google.common.collect.ImmutableList;
 import com.simibubi.create.content.trains.entity.Train;
@@ -94,14 +95,20 @@ public class TrainSeparationCondition extends ScheduledDelay implements IDelayed
 
     @Override
 	public List<Component> getTitleAs(String type) {
-		return ImmutableList.of(
-			TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule." + type + "." + getId().getPath()),
-			TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule." + type + "." + getId().getPath() + ".description",
+		List<Component> components = new ArrayList<>();
+		components.add(TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule." + type + "." + getId().getPath()));
+		components.add(TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule." + type + "." + getId().getPath() + ".description",
 				formatTime(false),
 				getTimeSource().getValueTranslation().getString()
-			).withStyle(ChatFormatting.DARK_AQUA),
-			getTrainFilter().getValueTranslation().withStyle(ChatFormatting.AQUA)
-        );
+		).withStyle(ChatFormatting.DARK_AQUA));
+		components.add(getTrainFilter().getValueTranslation().withStyle(ChatFormatting.AQUA));
+
+		String customStationFilter = getCustomStationFilter();
+		if (customStationFilter != null && !customStationFilter.isBlank()) {
+			components.add(TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule." + type + "." + getId().getPath() + ".custom_filter").withStyle(ChatFormatting.DARK_AQUA));
+			components.add(TextUtils.text(customStationFilter).withStyle(ChatFormatting.AQUA));
+		}
+		return components;
 	}
 
 	@Override

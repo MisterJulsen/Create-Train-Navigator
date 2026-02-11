@@ -397,6 +397,7 @@
     "createrailwaysnavigator.schedule.condition.train_separation": "Zugverteilung",
     "createrailwaysnavigator.schedule.condition.train_separation.title": "Abstand: %s",
     "createrailwaysnavigator.schedule.condition.train_separation.description": "Abfahrt %s (%s) nach:",
+    "createrailwaysnavigator.schedule.condition.train_separation.custom_filter": "mit benutzerdefiniertem Filter:",
     "createrailwaysnavigator.schedule.condition.train_separation.custom_station_filter": "Benutzerdefinierter Stationsfilter",
     "createrailwaysnavigator.schedule.condition.train_separation.custom_station_filter.description": "Dieser Filtertext wird verwendet, um zu bestimmen, welche Stationen für die Verteilung einbezogen werden sollen. Wenn leer, wird der Filtertext der entsprechenden Anweisung im Fahrplan verwendet.",
 
