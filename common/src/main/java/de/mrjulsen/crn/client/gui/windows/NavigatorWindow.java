@@ -14,6 +14,7 @@ import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.FooterSize;
 import de.mrjulsen.crn.client.gui.flyout.FlyoutDepartureInWidget;
 import de.mrjulsen.crn.client.gui.flyout.FlyoutTrainCategoriesWidget;
 import de.mrjulsen.crn.client.gui.flyout.FlyoutTransferTimeWidget;
+import de.mrjulsen.crn.client.gui.widgets.FlatIconButton;
 import de.mrjulsen.crn.client.gui.widgets.RouteViewer;
 import de.mrjulsen.crn.client.gui.widgets.SearchOptionButton;
 import de.mrjulsen.crn.client.gui.widgets.AbstractFlyoutWidget.FlyoutPointer;
@@ -26,14 +27,18 @@ import de.mrjulsen.crn.network.packets.pain.GetUserSettingsPacketData;
 import de.mrjulsen.crn.registry.ModNetworkManager;
 import de.mrjulsen.mcdragonlib.client.gui.events.DLGuiStandardEvents;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLWindowManager;
+import de.mrjulsen.mcdragonlib.client.render.DLTextureSheet;
 import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
+import de.mrjulsen.mcdragonlib.client.util.DLSprite;
 import de.mrjulsen.mcdragonlib.network.NetworkDirection;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.math.Rectangle;
 import net.minecraft.client.Minecraft;
+import net.minecraft.resources.ResourceLocation;
 
 public class NavigatorWindow extends AbstractNavigatorScreen {
 
+    private static final DLTextureSheet GUI_SHEET = new DLTextureSheet(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/gui.png"));
     
     private UserSettings userSettings = new UserSettings(Minecraft.getInstance().player.getUUID(), false);
 
@@ -48,6 +53,22 @@ public class NavigatorWindow extends AbstractNavigatorScreen {
         
         CreateTextBox toBox = addComponent(new CreateTextBox(40, fromBox.y() + fromBox.height() + 4, 150));
         toBox.autocompleteManager.set(new StationTagsAutocomplete());
+
+        FlatIconButton swapInputs = addComponent(new FlatIconButton(fromBox.x() + fromBox.width() - 20, fromBox.y() + ((toBox.y() + toBox.height()) - fromBox.y()) / 2 - 8, ModGuiIcons.EMPTY.getAsSprite(16, 16)) {
+            @Override
+            public void renderMainLayer(DLGuiGraphics graphics, double mouseX, double mouseY, Rectangle renderBounds) {
+                super.renderMainLayer(graphics, mouseX, mouseY, renderBounds);
+                CRNGui.GUI_SPRITES.getSprite("swap_arrows").render(graphics, 4, 2, 9, 12);
+            }
+        });
+        swapInputs.setSize(16, 16);
+        swapInputs.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
+            String fromTxt = fromBox.text.get().getPlainText();
+            String toTxt = toBox.text.get().getPlainText();
+            fromBox.text.get().set(toTxt);
+            toBox.text.get().set(fromTxt);
+            return false;
+        });
 
         routeViewer = addComponent(new RouteViewer(3, 88, width() - 6, 128));
         routeViewer.displayRecentSearchQueries.set(true);
