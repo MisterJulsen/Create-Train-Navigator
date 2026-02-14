@@ -36,7 +36,7 @@ public class GetAllTrainsDebugPacketData extends NetworkPacketData {
 
     @Override
     protected void read(CompoundTag nbt) {
-        this.data = nbt.getList(NBT_DATA, Tag.TAG_STRING).stream().map(x -> TrainDebugData.fromNbt((CompoundTag)x)).toList();
+        this.data = nbt.getList(NBT_DATA, Tag.TAG_COMPOUND).stream().map(x -> TrainDebugData.fromNbt((CompoundTag)x)).toList();
     }
 
     public List<TrainDebugData> getData() {
@@ -44,6 +44,6 @@ public class GetAllTrainsDebugPacketData extends NetworkPacketData {
     }
 
     public static GetAllTrainsDebugPacketData handle(NetworkPacketContext context) {
-        return new GetAllTrainsDebugPacketData(TrainListener.getAllTrainData().stream().map(x -> TrainDebugData.fromTrain(x)).toList());
+        return new GetAllTrainsDebugPacketData(TrainListener.getAllTrainData().stream().map(TrainDebugData::fromTrain).toList());
     }
 }

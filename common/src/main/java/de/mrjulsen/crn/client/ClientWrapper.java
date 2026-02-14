@@ -2,6 +2,8 @@ package de.mrjulsen.crn.client;
 
 import java.util.List;
 import com.simibubi.create.foundation.utility.CreateLang;
+import de.mrjulsen.crn.client.gui.windows.*;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLScreen;
 import net.createmod.catnip.data.Pair;
 import net.minecraft.core.SectionPos;
 import org.joml.Vector3f;
@@ -20,10 +22,6 @@ import de.mrjulsen.crn.api.client.Screens;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.client.gui.NavigatorToast;
 import de.mrjulsen.crn.client.gui.widgets.vanilla.ResizableButton;
-import de.mrjulsen.crn.client.gui.windows.AdvancedDisplaySettingsWindow;
-import de.mrjulsen.crn.client.gui.windows.PrioritizedDestinationInstructionSettingsWindow;
-import de.mrjulsen.crn.client.gui.windows.TrainSectionSettingsWindow;
-import de.mrjulsen.crn.client.gui.windows.TrainSeparationSettingsWindow;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.schedule.condition.DynamicDelayCondition;
@@ -139,7 +137,7 @@ public class ClientWrapper {
 
     public static void showTrainDebugScreen() {
         RenderSystem.recordRenderCall(() -> {
-            //DLScreen.setScreen(new TrainDebugScreen(null));
+            DLWindow.openWindow(TrainStatsWindow::new);
         });
     }
 
