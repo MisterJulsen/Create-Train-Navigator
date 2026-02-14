@@ -1,5 +1,6 @@
 package de.mrjulsen.crn.debug;
 
+import de.mrjulsen.mcdragonlib.events.EventListenerId;
 import org.lwjgl.glfw.GLFW;
 
 import com.simibubi.create.content.trains.entity.Carriage;
@@ -31,26 +32,25 @@ import net.minecraft.network.chat.Component;
 public class DebugOverlay extends DLWindow {  
 
     private static DebugOverlay instance;
+    private final EventListenerId event;
     
     public DebugOverlay(DLWindowManager manager) {
         super(manager);
         fullscreen.set(true);
 
-        addEventListener(DLGuiStandardEvents.KeyPressEvent.class, (s, e) -> {
-            if (lastKey != e.keyCode()) {
-                lastKey = e.keyCode();
-            } else if (lastKey == e.keyCode()){        
-                lastKey = GLFW.GLFW_KEY_UNKNOWN;    
-                if (e.keyCode() == GLFW.GLFW_KEY_K) {
-                    trainIndex++;
-                    return true;
-                }
-            }
-            if (e.keyCode() == GLFW.GLFW_KEY_P) {
-                return false;
+        event = getWindowManager().addEventListener(DLGuiStandardEvents.KeyPressEvent.class, (s, e) -> {
+            if (e.keyCode() == GLFW.GLFW_KEY_K) {
+                trainIndex++;
+                return true;
             }
             return false;
         });
+    }
+
+    @Override
+    public void close() throws Exception {
+        getWindowManager().removeEventListener(DLGuiStandardEvents.KeyPressEvent.class, event);
+        super.close();
     }
 
     public static void toggle() {
