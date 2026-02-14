@@ -75,12 +75,14 @@ public class TrainStatsViewer extends DLGuiComponent {
 
     public void displayTrains() {
         contentPanel.clearComponents();
+        contentPanel.suspendLayout();
         ModNetworkManager.GET_ALL_TRAINS_DEBUG_DATA.send(NetworkDirection.toServer(), (response) -> {
             contentPanel.addComponent(new TrainStatsSummary(response.getData().size()));
             for (TrainDebugData data : response.getData()) {
                 contentPanel.addComponent(new TrainStatsEntry(data));
             }
         }, () -> {});
+        contentPanel.resumeLayout();
     }
 
     @Override
