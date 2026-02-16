@@ -7,9 +7,10 @@ import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.blockentity.TrainStationClockBlockEntity;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.registry.ModBlockEntities;
-import de.mrjulsen.mcdragonlib.DragonLib;
+import de.mrjulsen.mcdragonlib.util.DLColor;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
-import de.mrjulsen.mcdragonlib.util.TimeUtils;
+import de.mrjulsen.mcdragonlib.util.time.DLTime;
+import de.mrjulsen.mcdragonlib.util.time.TimeContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
@@ -40,7 +41,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.jetbrains.annotations.Nullable;
 
 public class TrainStationClockBlock extends Block implements IWrenchable, IBE<TrainStationClockBlockEntity> {
 
@@ -64,7 +64,7 @@ public class TrainStationClockBlock extends Block implements IWrenchable, IBE<Tr
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
         if (level.isClientSide()) {
-            player.displayClientMessage(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".time", TimeUtils.parseTime((int)(level.getDayTime() % DragonLib.ticksPerDay() + DragonLib.daytimeShift()), ModClientConfig.TIME_FORMAT.get())), true);
+            player.displayClientMessage(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".time", new DLTime(level, DLTime.defaultTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem())), true);
         }
         return InteractionResult.SUCCESS;
     }
@@ -76,7 +76,7 @@ public class TrainStationClockBlock extends Block implements IWrenchable, IBE<Tr
             DyeColor dye = dyeItem.getDyeColor();
             if (dye != null) {
                 level.playSound(null, pos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
-                blockEntity.setColor(dye == DyeColor.ORANGE ? 0xFF9900 : dye.getMapColor().col);
+                blockEntity.setColor(DLColor.fromInt(dye == DyeColor.ORANGE ? 0xFFFF9900 : dye.getMapColor().col));
 
                 if (level.isClientSide) {
                     blockEntity.getRenderer().update(level, pos, state, blockEntity, null);
@@ -95,8 +95,8 @@ public class TrainStationClockBlock extends Block implements IWrenchable, IBE<Tr
             }
 
             return ItemInteractionResult.SUCCESS;
-        }
-        return super.useItemOn(stack, state, level, pos, player, hand, hitResult);
+		}
+        return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
 
 	@Override

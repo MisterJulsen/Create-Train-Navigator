@@ -35,10 +35,13 @@ import de.mrjulsen.crn.data.schedule.condition.DynamicDelayCondition;
 import de.mrjulsen.crn.data.train.TrainStatus.TrainStatusType;
 import de.mrjulsen.crn.util.IListenable;
 import de.mrjulsen.crn.util.LockedList;
+import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.config.ECachingPriority;
-import de.mrjulsen.mcdragonlib.data.Cache;
-import de.mrjulsen.mcdragonlib.util.MathUtils;
+import de.mrjulsen.mcdragonlib.util.Cache;
+import de.mrjulsen.mcdragonlib.util.math.MathUtils;
+import de.mrjulsen.mcdragonlib.util.time.DLTime;
+import de.mrjulsen.mcdragonlib.util.time.VanillaTimeSystem;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 
@@ -199,7 +202,19 @@ public class TrainData implements IListenable<TrainData> {
     }
 
     public TrainInfo getTrainInfo(int scheduleIndex) {
-        return new TrainInfo(getSectionForIndex(scheduleIndex).getTrainLine().orElse(null), getSectionForIndex(scheduleIndex).getTrainCategory().orElse(null));
+        ScheduleSection currentSection = getSectionForIndex(scheduleIndex);
+        return new TrainInfo(currentSection.getTrainLine().orElse(null), currentSection.getTrainCategory().orElse(null));
+    }
+
+    public TrainInfo getTrainInfoWithArrivalContext(int scheduleIndex, boolean beforeArrival) {
+        ScheduleSection currentSection = getSectionForIndex(scheduleIndex);
+        ScheduleSection prevSection = currentSection.previousSection();
+        ScheduleSection selectedSection = currentSection;
+        boolean isFirstStationInSection = currentSection.getFirstStop().map(x -> x.getEntryIndex() == getCurrentScheduleIndex()).orElse(false);
+        if (isFirstStationInSection && ((beforeArrival && prevSection.shouldIncludeNextStationOfNextSection()) || !currentSection.isUsable())) {
+            selectedSection = prevSection;
+        }
+        return new TrainInfo(selectedSection.getTrainLine().orElse(null), selectedSection.getTrainCategory().orElse(null));
     }
 
     /**
@@ -270,9 +285,25 @@ public class TrainData implements IListenable<TrainData> {
     public String getTrainName() {
         return train.name.getString();
     }
+
+    public String resolveTrainDisplayName() {
+        return resolveTrainDisplayName(getCurrentSection());
+    }
     
-    public String getTrainDisplayName() {        
-        return getCurrentSection() == null || getCurrentSection().getTrainLine().map(x -> x.getLineName().isEmpty()).orElse(true) ? getTrainName() : getCurrentSection().getTrainLine().get().getLineName();
+    public String resolveTrainDisplayName(ScheduleSection section) {
+        if (section == null) {
+            return getTrainName();
+        }
+
+        String lineName;
+        if (section.getTrainLine().map(x -> x.getLineName().isEmpty()).orElse(true)) {
+            lineName = getTrainName();
+        } else {
+            lineName = section.getTrainLine().get().getLineName();
+        }
+        return lineName;
+
+        //return getCurrentSection() == null || getCurrentSection().getTrainLine().map(x -> x.getLineName().isEmpty()).orElse(true) ? getTrainName() : getCurrentSection().getTrainLine().get().getLineName();
     }
 
     public int getCurrentScheduleIndex() {
@@ -548,7 +579,7 @@ public class TrainData implements IListenable<TrainData> {
         Set<Integer> validPredictionEntries = new HashSet<>();
         boolean hasCycled = false;
 
-        final long now = DragonLib.getCurrentWorldTime() - waitingAtStationTicks();
+        final long now = ModUtils.getTransformedWorldTime() + waitingAtStationTicks();
         long time = now;
 
         for (int i = 0; i < entryCount; i++) {
@@ -604,7 +635,7 @@ public class TrainData implements IListenable<TrainData> {
         SimulationResult result = new SimulationResult(entryIndex, 0, now, now);
 
         int iteration = 0;
-        while (duration - (now - DragonLib.getCurrentWorldTime()) > 0) {
+        while (duration - (now - ModUtils.getTransformedWorldTime()) > 0) {
             long arrival = 0;
             long departure = 0;
             for (int i = 0; i < entryCount; i++) {

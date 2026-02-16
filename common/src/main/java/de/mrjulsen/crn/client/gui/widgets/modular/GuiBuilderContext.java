@@ -1,16 +1,12 @@
 package de.mrjulsen.crn.client.gui.widgets.modular;
 
+import de.mrjulsen.crn.client.gui.widgets.ModularWidgetContainer;
+
 public class GuiBuilderContext {
-    private final ModularWidgetBuilder builder;
     private final ModularWidgetContainer container;
 
-    public GuiBuilderContext(ModularWidgetBuilder builder, ModularWidgetContainer container) {
-        this.builder = builder;
+    public GuiBuilderContext(ModularWidgetContainer container) {
         this.container = container;
-    }
-
-    public ModularWidgetBuilder builder() {
-        return builder;
     }
 
     public ModularWidgetContainer container() {

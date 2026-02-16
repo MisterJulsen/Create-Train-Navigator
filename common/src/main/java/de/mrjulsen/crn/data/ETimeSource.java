@@ -1,7 +1,9 @@
 package de.mrjulsen.crn.data;
 
 import java.util.Arrays;
-import de.mrjulsen.mcdragonlib.core.ITranslatableEnum;
+
+import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.mcdragonlib.data.ITranslatableEnum;
 
 public enum ETimeSource implements ITranslatableEnum {
     REAL_LIFE((byte)0, "real_life"),
@@ -28,12 +30,7 @@ public enum ETimeSource implements ITranslatableEnum {
     }
 
     @Override
-    public String getEnumName() {
-        return "time_source";
-    }
-
-    @Override
-    public String getEnumValueName() {
-        return name;
+    public Data getTranslationData() {
+        return new Data(CreateRailwaysNavigator.MOD_ID, "time_source", name);
     }
 }

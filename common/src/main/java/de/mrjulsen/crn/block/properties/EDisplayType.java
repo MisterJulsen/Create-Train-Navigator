@@ -2,11 +2,11 @@ package de.mrjulsen.crn.block.properties;
 
 import java.util.Arrays;
 
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
-import de.mrjulsen.mcdragonlib.core.ITranslatableEnum;
-import net.minecraft.util.StringRepresentable;
+import de.mrjulsen.mcdragonlib.data.ITranslatableEnum;
 
-public enum EDisplayType implements StringRepresentable, ITranslatableEnum {
+public enum EDisplayType implements ITranslatableEnum {
 	TRAIN_DESTINATION((byte)0, "train_destination", ModGuiIcons.TRAIN_DESTINATION, EDisplayTypeDataSource.TRAIN_INFORMATION),
     PASSENGER_INFORMATION((byte)1, "passenger_information", ModGuiIcons.PASSENGER_INFORMATION, EDisplayTypeDataSource.TRAIN_INFORMATION),
 	PLATFORM((byte)2, "platform", ModGuiIcons.PLATFORM_INFORMATION, EDisplayTypeDataSource.PLATFORM),
@@ -55,14 +55,9 @@ public enum EDisplayType implements StringRepresentable, ITranslatableEnum {
     }
 
 	@Override
-	public String getEnumName() {
-		return "display_type";
-	}
-
-	@Override
-	public String getEnumValueName() {
-		return this.name;
-	}
+	public Data getTranslationData() {
+		return new Data(CreateRailwaysNavigator.MOD_ID, "display_type", name);
+	} 
 
 	public static enum EDisplayTypeDataSource {
 		TRAIN_INFORMATION(0),
@@ -82,5 +77,5 @@ public enum EDisplayType implements StringRepresentable, ITranslatableEnum {
 		public static EDisplayTypeDataSource getByIndex(int index) {
 			return Arrays.stream(EDisplayTypeDataSource.values()).filter(x -> x.getIndex() == index).findFirst().orElse(PLATFORM);
 		}
-	} 
+	}
 }

@@ -9,6 +9,7 @@ import java.util.UUID;
 import de.mrjulsen.crn.util.Lock;
 import de.mrjulsen.crn.util.Owner;
 import de.mrjulsen.mcdragonlib.DragonLib;
+import de.mrjulsen.mcdragonlib.util.DLColor;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.entity.player.Player;
@@ -26,7 +27,7 @@ public class TrainLine {
 
     private final UUID id;
     private String name;
-    private int lineColor = 0;
+    private DLColor lineColor = DLColor.TRANSPARENT;
     
     protected final Lock owner;
     protected Owner lastEditor;
@@ -61,11 +62,11 @@ public class TrainLine {
         return id;
     }
 
-    public int getColor() {
+    public DLColor getColor() {
         return lineColor;
     }
 
-    public void setColor(int color) {
+    public void setColor(DLColor color) {
         this.lineColor = color;
     }
 
@@ -119,7 +120,7 @@ public class TrainLine {
         nbt.putLong(NBT_LAST_EDITED_TIME, lastEditedTime);
         nbt.put(NBT_OWNER, owner.toNbt());
         nbt.putString(NBT_NAME, getLineName());
-        nbt.putInt(NBT_COLOR, getColor());
+        nbt.putInt(NBT_COLOR, getColor().getAsARGB());
 
         return nbt;
     }
@@ -133,7 +134,7 @@ public class TrainLine {
         Lock owner = nbt.contains(NBT_OWNER) && nbt.getTagType(NBT_OWNER) == Tag.TAG_COMPOUND ? Lock.fromNbt(nbt.getCompound(NBT_OWNER)) : new Lock(new Owner((UUID)null));
 
         TrainLine line = new TrainLine(id, name, owner);
-        line.setColor(nbt.getInt(NBT_COLOR));
+        line.setColor(DLColor.fromInt(nbt.getInt(NBT_COLOR)));
         line.lastEditor = lastEditor;
         line.lastEditedTime = lastEditedTime;
         return line;

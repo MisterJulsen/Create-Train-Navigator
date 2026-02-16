@@ -6,9 +6,12 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.systems.RenderSystem;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
-import de.mrjulsen.mcdragonlib.client.util.Graphics;
+import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
+import de.mrjulsen.mcdragonlib.client.util.DLTexture;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.data.ETextAlignment;
+import de.mrjulsen.mcdragonlib.util.DLColor;
+import de.mrjulsen.mcdragonlib.util.DLUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -24,11 +27,11 @@ public class NavigatorToast implements Toast {
     private static final long DISPLAY_TIME = 5000L;
     private static final int MAX_LINE_SIZE = 200;
 
-    private static final ResourceLocation MOD_ICON = ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "textures/mod_icon.png");
+    private static final DLTexture MOD_ICON = new DLTexture(DLUtils.resourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/mod_icon.png"), 64, 64);
 
-    private static final int COLOR_BORDER = 0xFF000000;
-    private static final int COLOR_INNER_BORDER = 0xFF286485;
-    private static final int COLOR_CANVAS = 0xFF082C4C;
+    private static final DLColor COLOR_BORDER = DLColor.BLACK;
+    private static final DLColor COLOR_INNER_BORDER = DLColor.fromInt(0xFF286485);
+    private static final DLColor COLOR_CANVAS = DLColor.fromInt(0xFF082C4C);
 
     private Component title;
     private List<FormattedCharSequence> messageLines;
@@ -74,7 +77,7 @@ public class NavigatorToast implements Toast {
             this.changed = false;
         }
 
-        Graphics graphics = new Graphics(guiGraphics, guiGraphics.pose());
+        DLGuiGraphics graphics = new DLGuiGraphics(guiGraphics, guiGraphics.pose(), Minecraft.getInstance().font, 0);
 
         RenderSystem.setShaderTexture(0, BACKGROUND_SPRITE);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
@@ -86,19 +89,16 @@ public class NavigatorToast implements Toast {
         GuiUtils.fill(graphics, 1, 1, lineWidth - 2, toastHeight - 2, COLOR_INNER_BORDER);
         GuiUtils.fill(graphics, 3, 3, lineWidth - 6, toastHeight - 6, COLOR_CANVAS);
 
-        GuiUtils.drawTexture(MOD_ICON, graphics, 4, this.messageLines == null || this.messageLines.size() <= 1 ? 0 : 4, 32, 32, 0, 0, 64, 64, 64, 64);
+        GuiUtils.drawTexture(MOD_ICON, graphics, 4, this.messageLines == null || this.messageLines.size() <= 1 ? 0 : 4, 32, 32, 0, 0);
 
         if (this.messageLines == null) {
-            GuiUtils.drawString(graphics, pToastComponent.getMinecraft().font, 40, lineHeight, title, -256, EAlignment.LEFT, false);
-            //.draw(pPoseStack, this.title, 40, lineHeight, -256);
+            GuiUtils.drawString(graphics, pToastComponent.getMinecraft().font, 40, lineHeight, title, DLColor.fromInt(-256), ETextAlignment.LEFT, false);
         } else {
-            GuiUtils.drawString(graphics, pToastComponent.getMinecraft().font, 40, 7, title, -256, EAlignment.LEFT, false);
-            //pToastComponent.getMinecraft().font.draw(pPoseStack, this.title, 40, 7.0F, -256);
+            GuiUtils.drawString(graphics, pToastComponent.getMinecraft().font, 40, 7, title, DLColor.fromInt(-256), ETextAlignment.LEFT, false);
 
             for (int i = 0; i < this.messageLines.size(); ++i) {
-                //GuiUtils.drawString(graphics, pToastComponent.getMinecraft().font, 40, 7, title, -256, EAlignment.LEFT, false);
-                    graphics.graphics().drawString(Minecraft.getInstance().font, this.messageLines.get(i), 40, (20 + i * lineHeight), -1, false);
-                }
+                graphics.graphics().drawString(Minecraft.getInstance().font, this.messageLines.get(i), 40, (20 + i * lineHeight), -1, false);
+            }
         }
 
         return pTimeSinceLastVisible - this.lastChanged < DISPLAY_TIME ? Toast.Visibility.SHOW : Toast.Visibility.HIDE;

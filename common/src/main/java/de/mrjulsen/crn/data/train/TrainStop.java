@@ -11,8 +11,12 @@ import de.mrjulsen.crn.data.StationTag.ClientStationTag;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
 import de.mrjulsen.crn.data.train.TrainData.SimulationResult;
 import de.mrjulsen.crn.exceptions.RuntimeSideException;
+import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.crn.data.TrainInfo;
 import de.mrjulsen.mcdragonlib.DragonLib;
+import de.mrjulsen.mcdragonlib.util.DLColor;
+import de.mrjulsen.mcdragonlib.util.time.ConfiguredTimeSystem;
+import de.mrjulsen.mcdragonlib.util.time.ITimeSystem;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 
@@ -114,7 +118,7 @@ public class TrainStop implements Comparable<TrainStop> {
             prediction.getData().getTrainId(), 
             prediction.getData().getTrain().name.getString(),             
             prediction.getData().getTrain().icon,
-            prediction.getData().getTrainInfo(prediction.getEntryIndex()),
+            prediction.getData().getTrainInfoWithArrivalContext(prediction.getEntryIndex(), true),//!prediction.getData().isAtStation()),
             prediction.getTitle(),
             prediction.hasCustomTitle(),
             prediction.getSectionDestinationText(), 
@@ -175,7 +179,7 @@ public class TrainStop implements Comparable<TrainStop> {
             return;
         }
 
-        long scheduledTimeUntilArrival = getScheduledArrivalTime() - DragonLib.getCurrentWorldTime();
+        long scheduledTimeUntilArrival = getScheduledArrivalTime() - ModUtils.getTransformedWorldTime();
         int simulationCycles = (int)(ticks / totalDuration);
         long simulationRemaining = ticks % totalDuration;
         if (simulationRemaining > 0 && simulationRemaining >= scheduledTimeUntilArrival) {
@@ -270,10 +274,10 @@ public class TrainStop implements Comparable<TrainStop> {
         return getTrainInfo() == null || getTrainInfo().line() == null || getTrainInfo().line().getLineName().isEmpty() ? getTrainName() : getTrainInfo().line().getLineName();
     }
 
-    public int getTrainDisplayColor() {
-        if (getTrainInfo() != null && getTrainInfo().line() != null && getTrainInfo().line().getColor() != 0) {
+    public DLColor getTrainDisplayColor() {
+        if (getTrainInfo() != null && getTrainInfo().line() != null && !getTrainInfo().line().getColor().isTransparent()) {
             return getTrainInfo().line().getColor();
-        } else if (getTrainInfo() != null && getTrainInfo().category() != null && getTrainInfo().category().getColor() != 0) {
+        } else if (getTrainInfo() != null && getTrainInfo().category() != null && !getTrainInfo().category().getColor().isTransparent()) {
             return getTrainInfo().category().getColor();
         }
         return Constants.COLOR_TRAIN_BACKGROUND;
@@ -335,19 +339,23 @@ public class TrainStop implements Comparable<TrainStop> {
     }    
 
     public long getScheduledArrivalDay() {
-        return getScheduledArrivalTime() / DragonLib.ticksPerDay();
+        ITimeSystem system = new ConfiguredTimeSystem();
+        return getScheduledArrivalTime() / system.getTicksPerDay();
     }
     
     public long getScheduledDepartureDay() {
-        return getScheduledDepartureDay() / DragonLib.ticksPerDay();
+        ITimeSystem system = new ConfiguredTimeSystem();
+        return getScheduledDepartureDay() / system.getTicksPerDay();
     }
     
     public long getRealTimeArrivalDay() {
-        return getRealTimeArrivalTime() / DragonLib.ticksPerDay();
+        ITimeSystem system = new ConfiguredTimeSystem();
+        return getRealTimeArrivalTime() / system.getTicksPerDay();
     }
     
     public long getRealTimeDepartureDay() {
-        return getRealTimeDepartureTime() / DragonLib.ticksPerDay();
+        ITimeSystem system = new ConfiguredTimeSystem();
+        return getRealTimeDepartureTime() / system.getTicksPerDay();
     }
 
     /**

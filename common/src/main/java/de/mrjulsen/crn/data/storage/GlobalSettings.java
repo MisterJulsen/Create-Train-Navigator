@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
 
@@ -276,7 +277,7 @@ public class GlobalSettings implements INBTSerializable {
      * @return Returns the station tag for the given train station.
      */
     public StationTag getOrCreateStationTagFor(String stationName, Owner owner) {
-        if (stationName.contains("*")) {
+        if (ModUtils.isGlobPattern(stationName)) {
             return getOrCreateTagForWildcard(stationName, owner);
         }
 
@@ -289,10 +290,10 @@ public class GlobalSettings implements INBTSerializable {
     }
 
     private StationTag getOrCreateTagForWildcard(String stationName, Owner owner) {
-		String regex = stationName.isBlank() ? stationName : "\\Q" + stationName.replace("*", "\\E.*\\Q") + "\\E";
+        Pattern pattern = ModUtils.buildPattern(stationName);
         for (StationTag tag : stationTags.values()) {
             for (String name : tag.getAllStationNames()) {
-                if (name.matches(regex)) {
+                if (pattern.matcher(name).matches()) {
                     return tag;
                 }
             }
@@ -481,11 +482,13 @@ public class GlobalSettings implements INBTSerializable {
     }
 
     public void blacklistStation(String stationName) {
+        /*
         if (ModUtils.hasWildcards(stationName)) {
-            stationBlacklist.addAll(ModUtils.wildcardMatches(stationName, TrainUtils.getAllStationNames()));
             return;
         }
         stationBlacklist.add(stationName);
+         */
+        stationBlacklist.addAll(ModUtils.wildcardMatches(stationName, TrainUtils.getAllStationNames()));
     }
     
     public boolean removeStationFromBlacklist(GlobalStation station) {
@@ -530,11 +533,13 @@ public class GlobalSettings implements INBTSerializable {
     }
     
     public void blacklistTrain(String trainName) {
+        /*
         if (ModUtils.hasWildcards(trainName)) {
-            trainBlacklist.addAll(ModUtils.wildcardMatches(trainName, TrainUtils.getTrainNames()));
             return;
         }
         trainBlacklist.add(trainName);
+         */
+        trainBlacklist.addAll(ModUtils.wildcardMatches(trainName, TrainUtils.getTrainNames()));
     }
 
     public boolean removeTrainFromBlacklist(Train train) {

@@ -4,10 +4,16 @@ import java.util.Collection;
 import java.util.List;
 
 import com.simibubi.create.AllBlocks;
+import com.simibubi.create.content.decoration.copycat.CopycatBlock;
+import com.simibubi.create.content.decoration.copycat.CopycatBlockEntity;
 import com.simibubi.create.content.equipment.clipboard.ClipboardEntry;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.foundation.block.IBE;
+
+import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
+import com.simibubi.create.foundation.blockEntity.SmartBlockEntityTicker;
+import com.simibubi.create.foundation.utility.AdventureUtil;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
@@ -18,14 +24,17 @@ import de.mrjulsen.crn.block.display.properties.StaticTextDisplaySettings;
 import de.mrjulsen.crn.block.display.properties.StaticTextDisplaySettings.TextComponent;
 import de.mrjulsen.crn.block.properties.ESide;
 import de.mrjulsen.crn.client.ClientWrapper;
-import de.mrjulsen.crn.network.packets.cts.AdvancedDisplayUpdatePacket;
+import de.mrjulsen.crn.network.packets.cts.AdvancedDisplayUpdatePacketData;
 import de.mrjulsen.crn.registry.ModBlockEntities;
 import de.mrjulsen.crn.registry.ModDisplayTypes;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
-import de.mrjulsen.mcdragonlib.data.Pair;
-import de.mrjulsen.mcdragonlib.data.Tripple;
-import de.mrjulsen.mcdragonlib.net.DLNetworkManager;
+import de.mrjulsen.crn.registry.ModNetworkManager;
+import de.mrjulsen.mcdragonlib.data.ETextAlignment;
+import de.mrjulsen.mcdragonlib.network.NetworkDirection;
+import de.mrjulsen.mcdragonlib.util.DLColor;
+import de.mrjulsen.mcdragonlib.util.Pair;
+import de.mrjulsen.mcdragonlib.util.Tripple;
 import net.createmod.catnip.data.Iterate;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
@@ -46,14 +55,10 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.HorizontalDirectionalBlock;
-import net.minecraft.world.level.block.Mirror;
-import net.minecraft.world.level.block.RenderShape;
-import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.*;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition.Builder;
@@ -65,9 +70,9 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.ticks.LevelTickAccess;
 import org.jetbrains.annotations.Nullable;
 
-public abstract class AbstractAdvancedDisplayBlock extends Block implements IWrenchable, IBE<AdvancedDisplayBlockEntity> {
+public abstract class AbstractAdvancedDisplayBlock extends CopycatBlock implements IWrenchable {
 
-	public static final int DEFAULT_DISPLAY_COLOR = 0xFF404040;
+	public static final DLColor DEFAULT_DISPLAY_COLOR = DLColor.fromInt(0xFF404040);
 
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
     
@@ -83,21 +88,66 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
             .setValue(FACING, Direction.NORTH)
         );
     }
-	
+
+	@Override
+	public @Nullable BlockState getAcceptedBlockState(Level pLevel, BlockPos pPos, ItemStack item, Direction face) {
+		if (!(item.getItem() instanceof BlockItem bi))
+			return null;
+
+		Block block = bi.getBlock();
+		if (block instanceof CopycatBlock)
+			return null;
+
+		BlockState appliedState = block.defaultBlockState();
+		if (block instanceof HalfTransparentBlock || !appliedState.canOcclude()) {
+			return null;
+		}
+		return super.getAcceptedBlockState(pLevel, pPos, item, face);
+	}
+
+	@Override
+	public boolean canConnectTexturesToward(BlockAndTintGetter reader, BlockPos fromPos, BlockPos toPos, BlockState state) {
+		return true;
+	}
+
+	@Override
+	public @Nullable CopycatBlockEntity getBlockEntity(BlockGetter worldIn, BlockPos pos) {
+		BlockEntity blockEntity = worldIn.getBlockEntity(pos);
+
+		if (blockEntity == null)
+			return null;
+		if (!(blockEntity instanceof CopycatBlockEntity))
+			return null;
+
+		return (CopycatBlockEntity)blockEntity;
+	}
+
+	@Override
+	public @Nullable <S extends BlockEntity> BlockEntityTicker<S> getTicker(Level p_153212_, BlockState p_153213_, BlockEntityType<S> p_153214_) {
+		return new SmartBlockEntityTicker<>();
+	}
+
 	public static BlockColor getDisplayColor() {
-		return (state, world, pos, layer) -> {
-			if (world == null || state == null || pos == null) {
-				return DEFAULT_DISPLAY_COLOR;
-			}			
-			if (world.getBlockEntity(pos) instanceof AdvancedDisplayBlockEntity be) {
-				return be.getSettingsAs(BasicDisplaySettings.class).map(x -> {
-					int color = x.getBackColor();
-					return color == 0 ? null : color;
-				}).orElse(DEFAULT_DISPLAY_COLOR);
+		return (state, world, pos, tintIndex) -> {
+			if (tintIndex == 1) {
+				if (world == null || pos == null) {
+					return DEFAULT_DISPLAY_COLOR.getAsARGB();
+				}
+				if (world.getBlockEntity(pos) instanceof AdvancedDisplayBlockEntity be) {
+					return be.getSettingsAs(BasicDisplaySettings.class).map(x -> {
+						DLColor color = x.getBackColor();
+						return color.isTransparent() ? null : color;
+					}).orElse(DEFAULT_DISPLAY_COLOR).getAsARGB();
+				}
+				return DEFAULT_DISPLAY_COLOR.getAsARGB();
 			}
-			return DEFAULT_DISPLAY_COLOR;
+			if (world == null || pos == null) {
+				return GrassColor.get(0.5D, 1.0D);
+			}
+			return Minecraft.getInstance().getBlockColors().getColor(getMaterial(world, pos), world, pos, tintIndex);
 		};
 	}
+
 
     @Override
     public BlockState rotate(BlockState pState, Rotation pRotation) {
@@ -190,7 +240,11 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 		updateNeighbours(pState, pLevel, pPos);
 
 		if (pLevel.isClientSide) {
-			withBlockEntityDo(pLevel, pPos, be -> be.getController(new IBlockGetter.WorldBlockGetter(pLevel)).getRenderer().update(pLevel, pPos, pState, be, EUpdateReason.LAYOUT_CHANGED));			
+			withBlockEntityDo(pLevel, pPos, be -> {
+				if (be instanceof AdvancedDisplayBlockEntity dbe) {
+					dbe.getController(new IBlockGetter.WorldBlockGetter(pLevel)).getRenderer().update(pLevel, pPos, pState, dbe, EUpdateReason.LAYOUT_CHANGED);
+				}
+			});
 		}
 	}
 
@@ -328,10 +382,36 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 		}
 	}
 
-	@Override
+@Override
     public ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
-		AdvancedDisplayBlockEntity blockEntity = ((AdvancedDisplayBlockEntity)level.getBlockEntity(pos)).getController(new IBlockGetter.WorldBlockGetter(level));
-		if (stack.is(Items.GLOW_INK_SAC)) {
+
+        ItemStack heldItem = player.getItemInHand(hand);
+        AdvancedDisplayBlockEntity blockEntity = ((AdvancedDisplayBlockEntity)level.getBlockEntity(pos)).getController(new IBlockGetter.WorldBlockGetter(level));
+
+		if (heldItem.getItem() instanceof DyeItem dyeItem) {
+			DyeColor dye = dyeItem.getDyeColor();        
+			if (dye != null) {
+				level.playSound(null, pos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
+				DLColor dyeColor = DLColor.fromInt(dye == DyeColor.ORANGE ? 0xFFFF9900 : dye.getTextColor());
+				
+				blockEntity.applyToAll(be -> {
+					be.getSettingsAs(BasicDisplaySettings.class).ifPresent(x -> {
+						if (player.isShiftKeyDown()) {
+							x.setBackColor(dyeColor);
+						} else {
+							x.setFontColor(dyeColor);
+						}
+						be.notifyUpdate();
+					});
+				});
+
+				if (level.isClientSide) {
+					blockEntity.getRenderer().update(level, pos, state, blockEntity, EUpdateReason.LAYOUT_CHANGED);
+				}
+
+				return ItemInteractionResult.SUCCESS;
+			}
+		} else if (heldItem.is(Items.GLOW_INK_SAC)) {
 			level.playSound(null, pos, SoundEvents.GLOW_INK_SAC_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
 			blockEntity.applyToAll(be -> {
 				be.setGlowing(true);
@@ -342,29 +422,30 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 				blockEntity.getRenderer().update(level, pos, state, blockEntity, EUpdateReason.LAYOUT_CHANGED);
 			}
 
-			return ItemInteractionResult.SUCCESS;
-		} else if (stack.getItem() == Items.NAME_TAG && stack.has(DataComponents.CUSTOM_NAME) && level.isClientSide) {
+            return ItemInteractionResult.SUCCESS;
+		} else if (heldItem.getItem() == Items.NAME_TAG && stack.has(DataComponents.CUSTOM_NAME) && level.isClientSide) {
 			AdvancedDisplayBlockEntity controller = blockEntity.getController(new IBlockGetter.WorldBlockGetter(level));
-			if (controller != null) {
-				SimpleStaticTextDisplaySettings settings = new SimpleStaticTextDisplaySettings();
-				settings.setStaticText(Component.Serializer.toJson(stack.get(DataComponents.CUSTOM_NAME), RegistryAccess.EMPTY));
+            if (controller != null) {
+				SimpleStaticTextDisplaySettings settings = new SimpleStaticTextDisplaySettings();				
+				settings.setStaticText(heldItem.getHoverName().getString());
 				boolean doubleSided = false;
 				if (controller.getBlockState().getBlock() instanceof AbstractAdvancedSidedDisplayBlock) {
 					doubleSided = controller.getBlockState().getValue(AbstractAdvancedSidedDisplayBlock.SIDE) == ESide.BOTH;
 				}
-				DLNetworkManager.sendToServer(new AdvancedDisplayUpdatePacket(controller.getLevel(), controller.getBlockPos(), null, ModDisplayTypes.SIMPLE_TEXT, doubleSided, settings));
+				
+				ModNetworkManager.ADVANCED_DISPLAY_UPDATE_PACKET.send(NetworkDirection.toServer(), new AdvancedDisplayUpdatePacketData(controller.getLevel(), controller.getBlockPos(), null, ModDisplayTypes.SIMPLE_TEXT, doubleSided, settings));
 				return ItemInteractionResult.SUCCESS;
-			}
-		} else if (AllBlocks.CLIPBOARD.isIn(stack) && level.isClientSide) {
+            }
+		} else if (AllBlocks.CLIPBOARD.isIn(heldItem) && level.isClientSide) {
 			AdvancedDisplayBlockEntity controller = blockEntity.getController(new IBlockGetter.WorldBlockGetter(level));
-			if (controller != null) {
-				StaticTextDisplaySettings settings = new StaticTextDisplaySettings();
-				List<ClipboardEntry> entries = ClipboardEntry.getLastViewedEntries(stack);
+            if (controller != null) {
+				StaticTextDisplaySettings settings = new StaticTextDisplaySettings();			
+				List<ClipboardEntry> entries = ClipboardEntry.getLastViewedEntries(heldItem);
 				int line = 0;
 				entryLoop: for (ClipboardEntry entry : entries) {
 					for (String string : entry.text.getString().split("\n")) {
 						TextComponent component = new TextComponent(string);
-						component.setTextAlignment(EAlignment.LEFT);
+						component.setTextAlignment(ETextAlignment.LEFT);
 						component.setXScale(0.4f);
 						component.setMinXScale(0.4f);
 						component.setYScale(0.4f);
@@ -384,14 +465,54 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 				if (controller.getBlockState().getBlock() instanceof AbstractAdvancedSidedDisplayBlock) {
 					doubleSided = controller.getBlockState().getValue(AbstractAdvancedSidedDisplayBlock.SIDE) == ESide.BOTH;
 				}
-				DLNetworkManager.sendToServer(new AdvancedDisplayUpdatePacket(controller.getLevel(), controller.getBlockPos(), null, ModDisplayTypes.RICH_TEXT, doubleSided, settings));
+
+				ModNetworkManager.ADVANCED_DISPLAY_UPDATE_PACKET.send(NetworkDirection.toServer(), new AdvancedDisplayUpdatePacketData(controller.getLevel(), controller.getBlockPos(), null, ModDisplayTypes.RICH_TEXT, doubleSided, settings));
 				return ItemInteractionResult.SUCCESS;
-			}
+            }
 		}
 
-		return super.useItemOn(stack, state, level, pos, player, hand, hitResult);
-	}
+		return useCopycat(state, level, pos, player, hand, hitResult);
+    }
 
+	public ItemInteractionResult useCopycat(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHit) {
+		if (pPlayer == null || AdventureUtil.isAdventure(pPlayer))
+			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+
+		Direction face = pHit.getDirection();
+		ItemStack itemInHand = pPlayer.getItemInHand(pHand);
+		BlockState materialIn = getAcceptedBlockState(pLevel, pPos, itemInHand, face);
+
+		if (materialIn != null)
+			materialIn = prepareMaterial(pLevel, pPos, pState, pPlayer, pHand, pHit, materialIn);
+		if (materialIn == null)
+			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+
+		BlockState material = materialIn;
+		InteractionResult res = onBlockEntityUse(pLevel, pPos, ufte -> {
+			if (ufte.getMaterial().is(material.getBlock())) {
+				if (!ufte.cycleMaterial())
+					return InteractionResult.PASS;
+				ufte.getLevel().playSound(null, ufte.getBlockPos(), SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, .75f, .95f);
+				return InteractionResult.SUCCESS;
+			}
+			if (ufte.hasCustomMaterial())
+				return InteractionResult.PASS;
+
+			ufte.setMaterial(material);
+			ufte.setConsumedItem(itemInHand);
+			ufte.getLevel().playSound(null, ufte.getBlockPos(), material.getSoundType().getPlaceSound(), SoundSource.BLOCKS, 1, .75f);
+
+			if (pPlayer.isCreative())
+				return InteractionResult.SUCCESS;
+
+			itemInHand.shrink(1);
+			if (itemInHand.isEmpty())
+				pPlayer.setItemInHand(pHand, ItemStack.EMPTY);
+			return InteractionResult.SUCCESS;
+		});
+		return ItemInteractionResult.SUCCESS;
+	}
+	
     protected boolean updateNeighbour(BlockState pState, Level pLevel, BlockPos pPos, BlockPos neighbourPos) {
         if (pLevel.getBlockState(neighbourPos).is(this) && pLevel.getBlockEntity(neighbourPos) instanceof AdvancedDisplayBlockEntity otherBe && pLevel.getBlockEntity(pPos) instanceof AdvancedDisplayBlockEntity be) {
 	    	be.copyFrom(otherBe);
@@ -400,28 +521,35 @@ public abstract class AbstractAdvancedDisplayBlock extends Block implements IWre
 		return false;
     }
 
-    @Override
-    public InteractionResult onWrenched(BlockState state, UseOnContext context) {
-        Level level = context.getLevel();
-        if (level.isClientSide && level.getBlockEntity(context.getClickedPos()) instanceof AdvancedDisplayBlockEntity be) {
-            AdvancedDisplayBlockEntity controller = be.getController(new IBlockGetter.WorldBlockGetter(context.getLevel()));
-            if (controller != null) {
-                ClientWrapper.showAdvancedDisplaySettingsScreen(controller, null);
-                return InteractionResult.SUCCESS;
-            }
-        }
-        return InteractionResult.FAIL;
-    }
+	@Override
+	public InteractionResult onWrenched(BlockState state, UseOnContext context) {
+		Level level = context.getLevel();
+		if (!context.getPlayer().isShiftKeyDown() && level.getBlockEntity(context.getClickedPos()) instanceof AdvancedDisplayBlockEntity be) {
+			AdvancedDisplayBlockEntity controller = be.getController(new IBlockGetter.WorldBlockGetter(context.getLevel()));
+			if (controller != null) {
+				if (level.isClientSide) {
+					ClientWrapper.showAdvancedDisplaySettingsScreen(controller, null);
+				}
+				return InteractionResult.SUCCESS;
+			}
+		}
+		return super.onWrenched(state, context);
+	}
+
+	@Override
+	public InteractionResult onSneakWrenched(BlockState state, UseOnContext context) {
+		InteractionResult res = super.onWrenched(state, context);
+		if (res.consumesAction()) {
+			return res;
+		}
+		return super.onSneakWrenched(state, context);
+	}
 
     @Override
     public RenderShape getRenderShape(BlockState pState) {
         return RenderShape.MODEL;
     }
 
-    @Override
-    public Class<AdvancedDisplayBlockEntity> getBlockEntityClass() {
-        return AdvancedDisplayBlockEntity.class;
-    }
 
     @Override
     public BlockEntityType<? extends AdvancedDisplayBlockEntity> getBlockEntityType() {

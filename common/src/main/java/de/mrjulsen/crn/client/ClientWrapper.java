@@ -1,11 +1,14 @@
 package de.mrjulsen.crn.client;
 
 import java.util.List;
-import java.util.function.Supplier;
-
 import com.simibubi.create.foundation.utility.CreateLang;
-import de.mrjulsen.crn.registry.ModDataComponents;
+import de.mrjulsen.crn.client.gui.windows.*;
+import de.mrjulsen.mcdragonlib.client.ber.StaticBlockEntityRenderer;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLScreen;
 import net.createmod.catnip.data.Pair;
+import net.minecraft.core.SectionPos;
+import org.joml.Vector3f;
+
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
@@ -18,14 +21,8 @@ import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.api.client.Screens;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
-import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.NavigatorToast;
-import de.mrjulsen.crn.client.gui.screen.AdvancedDisplaySettingsScreen;
-import de.mrjulsen.crn.client.gui.screen.PrioritizedDestinationInstructionSettingsScreen;
-import de.mrjulsen.crn.client.gui.screen.TrainSeparationSettingsScreen;
-import de.mrjulsen.crn.client.gui.screen.TrainDebugScreen;
-import de.mrjulsen.crn.client.gui.screen.TrainSectionSettingsScreen;
-import de.mrjulsen.crn.client.gui.widgets.ResizableButton;
+import de.mrjulsen.crn.client.gui.widgets.vanilla.ResizableButton;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.schedule.condition.DynamicDelayCondition;
@@ -33,28 +30,25 @@ import de.mrjulsen.crn.data.schedule.condition.TrainSeparationCondition;
 import de.mrjulsen.crn.data.schedule.instruction.PrioritizedDestinationInstruction;
 import de.mrjulsen.crn.data.schedule.instruction.ResetTimingsInstruction;
 import de.mrjulsen.crn.data.schedule.instruction.TravelSectionInstruction;
+import de.mrjulsen.crn.item.NavigatorItem;
 import de.mrjulsen.crn.mixin.ModularGuiLineBuilderAccessor;
 import de.mrjulsen.crn.mixin.ScheduleScreenAccessor;
-import de.mrjulsen.crn.network.packets.stc.ServerErrorPacket;
+import de.mrjulsen.crn.network.packets.stc.ServerErrorPacketData;
+import de.mrjulsen.crn.registry.ModDataComponents;
 import de.mrjulsen.crn.util.Owner;
-import de.mrjulsen.mcdragonlib.DragonLib;
-import de.mrjulsen.mcdragonlib.client.ber.RenderGraphics;
-import de.mrjulsen.mcdragonlib.client.ber.StaticBlockEntityRenderer;
-import de.mrjulsen.mcdragonlib.client.gui.DLScreen;
-import de.mrjulsen.mcdragonlib.client.render.DynamicGuiRenderer;
-import de.mrjulsen.mcdragonlib.client.render.DynamicGuiRenderer.AreaStyle;
-import de.mrjulsen.mcdragonlib.client.render.DynamicGuiRenderer.ButtonState;
-import de.mrjulsen.mcdragonlib.client.util.BERUtils;
-import de.mrjulsen.mcdragonlib.client.util.Graphics;
-import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLWindow;
+import de.mrjulsen.mcdragonlib.client.util.DLGraphics;
+import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
+import de.mrjulsen.mcdragonlib.client.util.RenderUtils;
+import de.mrjulsen.mcdragonlib.data.ETextAlignment;
+import de.mrjulsen.mcdragonlib.network.NetworkPacketContext;
+import de.mrjulsen.mcdragonlib.util.DLColor;
+import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
-import de.mrjulsen.mcdragonlib.util.TimeUtils;
-import dev.architectury.networking.NetworkManager.PacketContext;
-import net.minecraft.Util;
+import de.mrjulsen.mcdragonlib.util.time.DLTime;
+import de.mrjulsen.mcdragonlib.util.time.TimeContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.renderer.LightTexture;
@@ -85,16 +79,23 @@ public class ClientWrapper {
         Screens.showNavigatorScreen(null, false);
     }
 
+
+    public static void setSectionDirty(SectionPos pos) {
+        Minecraft.getInstance().execute(() -> {
+            Minecraft.getInstance().levelRenderer.setSectionDirty(pos.getX(), pos.getY(), pos.getZ());
+        });
+    }
+
     public static Level getClientLevel() {
         return Minecraft.getInstance().level;
     }
 
-    public static void handleErrorMessagePacket(ServerErrorPacket packet, Supplier<PacketContext> ctx) {        
+    public static void handleErrorMessagePacket(ServerErrorPacketData packet, NetworkPacketContext ctx) {        
         Minecraft.getInstance().getToasts().addToast(new SystemToast(SystemToast.SystemToastId.PERIODIC_NOTIFICATION, Constants.TEXT_SERVER_ERROR, TextUtils.text(packet.message)));
     }
     
     public static void showAdvancedDisplaySettingsScreen(AdvancedDisplayBlockEntity blockEntity, AbstractContraptionEntity contraption) {
-        DLScreen.setScreen(new AdvancedDisplaySettingsScreen(blockEntity, contraption));
+        DLWindow.openWindow(mgr -> new AdvancedDisplaySettingsWindow(mgr, blockEntity, contraption));
     }
 
     public static void updateLanguage(CustomLanguage lang, boolean force) {
@@ -127,9 +128,9 @@ public class ClientWrapper {
         }
     }
 
-    public static int renderMultilineLabelSafe(Graphics graphics, int x, int y, Font font, Component text, int maxWidth, int color) {
+    public static int renderMultilineLabelSafe(DLGuiGraphics graphics, int x, int y, Font font, Component text, int maxWidth, DLColor color) {
         MultiLineLabel label = MultiLineLabel.create(font, text, maxWidth);
-        label.renderLeftAlignedNoShadow(graphics.graphics(), x, y, font.lineHeight, color);
+        label.renderLeftAlignedNoShadow(graphics.graphics(), x, y, font.lineHeight, color.getAsARGB());
         return font.lineHeight * label.getLineCount();
     }
 
@@ -140,7 +141,7 @@ public class ClientWrapper {
 
     public static void showTrainDebugScreen() {
         RenderSystem.recordRenderCall(() -> {
-            DLScreen.setScreen(new TrainDebugScreen(null));
+            DLWindow.openWindow(TrainStatsWindow::new);
         });
     }
 
@@ -153,16 +154,18 @@ public class ClientWrapper {
             if (Minecraft.getInstance().screen instanceof ScheduleScreen scheduleScreen) {
                 ((ScheduleScreenAccessor)scheduleScreen).crn$getOnEditorClose().accept(true);
                 builder.customArea(0, 0).speechBubble();
-                Minecraft.getInstance().setScreen(new PrioritizedDestinationInstructionSettingsScreen(scheduleScreen, instruction, instruction.getData()));
+                DLWindow.openWindow(mgr -> new PrioritizedDestinationInstructionSettingsWindow(mgr, instruction, instruction.getData()));
             }
         }) {
+            /*
             @Override
             public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
                 Graphics graphics = new Graphics(guiGraphics, guiGraphics.pose());
 				DynamicGuiRenderer.renderArea(graphics, getX(), getY(), width, height, AreaStyle.GRAY, isActive() ? (isFocused() || isMouseOver(mouseX, mouseY) ? ButtonState.SELECTED : ButtonState.BUTTON) : ButtonState.DISABLED);
                 int j = isActive() ? DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE : DragonLib.NATIVE_BUTTON_FONT_COLOR_DISABLED;
-                GuiUtils.drawString(graphics, Minecraft.getInstance().font, getX() + width / 2, getY() + (height - 8) / 2, this.getMessage(), j, EAlignment.CENTER, true);
+                GuiUtils.drawString(graphics, Minecraft.getInstance().font, getX() + width / 2, getY() + (height - 8) / 2, this.getMessage(), j, ETextAlignment.CENTER, true);
             }
+                */
         };
 		accessor.crn$getTarget().add(Pair.of(btn, "config_btn"));
     }
@@ -170,27 +173,19 @@ public class ClientWrapper {
     public static void initScheduleSectionInstruction(TravelSectionInstruction instruction, ModularGuiLineBuilder builder) {
         
         ModularGuiLineBuilderAccessor accessor = (ModularGuiLineBuilderAccessor)builder;
-
         ResizableButton btn = new ResizableButton(accessor.crn$getX(), accessor.crn$getY() - 4, 121, 16, TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule.instruction.configure"), 
         (b) -> {
             if (Minecraft.getInstance().screen instanceof ScheduleScreen scheduleScreen) {
                 ((ScheduleScreenAccessor)scheduleScreen).crn$getOnEditorClose().accept(true);
                 builder.customArea(0, 0).speechBubble();
-                Minecraft.getInstance().setScreen(new TrainSectionSettingsScreen(scheduleScreen, instruction.getData()));
+                DLWindow.openWindow(mgr -> new TrainSectionSettingsWindow(mgr, instruction.getData()));
             }
-        }) {
-            @Override
-            public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-                Graphics graphics = new Graphics(guiGraphics, guiGraphics.pose());
-				DynamicGuiRenderer.renderArea(graphics, getX(), getY(), width, height, AreaStyle.GRAY, isActive() ? (isFocused() || isMouseOver(mouseX, mouseY) ? ButtonState.SELECTED : ButtonState.BUTTON) : ButtonState.DISABLED);
-                int j = isActive() ? DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE : DragonLib.NATIVE_BUTTON_FONT_COLOR_DISABLED;
-                GuiUtils.drawString(graphics, Minecraft.getInstance().font, getX() + width / 2, getY() + (height - 8) / 2, this.getMessage(), j, EAlignment.CENTER, true);
-            }
-        };
+        });
 		accessor.crn$getTarget().add(Pair.of(btn, "config_btn"));
     }
 
     public static void initResetTimingsInstruction(ResetTimingsInstruction instruction, ModularGuiLineBuilder builder) {
+        /*
         ModularGuiLineBuilderAccessor accessor = (ModularGuiLineBuilderAccessor)builder;
         ResizableButton btn = new ResizableButton(accessor.crn$getX(), accessor.crn$getY() - 4, 16, 16, TextUtils.empty(), 
         (b) -> {
@@ -204,6 +199,7 @@ public class ClientWrapper {
             }
         };
 		accessor.crn$getTarget().add(Pair.of(btn, "help_btn"));
+        */
     }
 
     public static void initDynamicDelayCondition(DynamicDelayCondition condition, ModularGuiLineBuilder builder) {
@@ -231,6 +227,7 @@ public class ClientWrapper {
 
 		
         ModularGuiLineBuilderAccessor accessor = (ModularGuiLineBuilderAccessor)builder;
+        /*
         ResizableButton btn = new ResizableButton(accessor.crn$getX() + 110, accessor.crn$getY() - 4, 16, 16, TextUtils.empty(), 
         (b) -> {
 			Util.getPlatform().openUri(Constants.HELP_PAGE_DYNAMIC_DELAYS);
@@ -243,41 +240,11 @@ public class ClientWrapper {
             }
         };
 		accessor.crn$getTarget().add(Pair.of(btn, "help_btn"));
+        */
     }
 
     @SuppressWarnings("resource")
     public static void initTimingAdjustmentGui(TrainSeparationCondition condition, ModularGuiLineBuilder builder) {
-        
-        /*
-		builder.addScrollInput(0, 26, (i, l) -> {
-			i.titled(Lang.translateDirect("generic.duration"))
-				.withShiftStep(15)
-				.withRange(0, 121);
-			i.lockedTooltipX = -15;
-			i.lockedTooltipY = 35;
-		}, "Value");		
-
-		builder.addSelectionScrollInput(26, 15, (i, l) -> {
-			i.forOptions(TimeUnit.translatedOptions())
-				.titled(Lang.translateDirect("generic.timeUnit"))
-                .format((idx) -> {
-                    return TextUtils.text(switch (TimeUnit.values()[idx]) {
-                        case MINUTES -> "m";
-                        case SECONDS -> "s";
-                        default -> "t";
-                    });
-                })
-            ;
-		}, "TimeUnit");
-
-		builder.addSelectionScrollInput(41, 80, (i, l) -> {
-			i.forOptions(Arrays.stream(ETrainFilter.values()).map(x -> TextUtils.translate(x.getValueTranslationKey(CreateRailwaysNavigator.MOD_ID))).toList())
-			    .titled(TextUtils.translate(ETrainFilter.ANY.getEnumTranslationKey(CreateRailwaysNavigator.MOD_ID)))
-                .addHint(TextUtils.translate(ETrainFilter.ANY.getEnumDescriptionTranslationKey(CreateRailwaysNavigator.MOD_ID)))
-                
-            ;
-		}, "TrainFilter");
-        */
 
         ModularGuiLineBuilderAccessor accessor = (ModularGuiLineBuilderAccessor)builder;
         ResizableButton btn = new ResizableButton(accessor.crn$getX(), accessor.crn$getY() - 4, 121, 16, TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule.instruction.configure"), 
@@ -285,47 +252,39 @@ public class ClientWrapper {
             if (Minecraft.getInstance().screen instanceof ScheduleScreen scheduleScreen) {
                 ((ScheduleScreenAccessor)scheduleScreen).crn$getOnEditorClose().accept(true);
                 builder.customArea(0, 0).speechBubble();
-                Minecraft.getInstance().setScreen(new TrainSeparationSettingsScreen(scheduleScreen, condition.getData()));
+                DLWindow.openWindow(mgr -> new TrainSeparationSettingsWindow(mgr, condition.getData()));
             }
-        }) {
-            @Override
-            public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-                Graphics graphics = new Graphics(guiGraphics, guiGraphics.pose());
-				DynamicGuiRenderer.renderArea(graphics, getX(), getY(), width, height, AreaStyle.GRAY, isActive() ? (isFocused() || isMouseOver(mouseX, mouseY) ? ButtonState.SELECTED : ButtonState.BUTTON) : ButtonState.DISABLED);
-                int j = isActive() ? DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE : DragonLib.NATIVE_BUTTON_FONT_COLOR_DISABLED;
-                GuiUtils.drawString(graphics, Minecraft.getInstance().font, getX() + width / 2, getY() + (height - 8) / 2, this.getMessage(), j, EAlignment.CENTER, true);
-            }
-        };
+        });
 		accessor.crn$getTarget().add(Pair.of(btn, "config_btn"));
     }
 
-    public static void renderNavigatorItem(RenderGraphics graphics, ItemStack itemStack, ItemDisplayContext context, boolean leftHand, PoseStack poseStack, MultiBufferSource buffer, int combinedLight, int combinedOverlay, BakedModel model) {
+    public static void renderNavigatorItem(DLGraphics graphics, ItemStack itemStack, ItemDisplayContext context, boolean leftHand, PoseStack poseStack, MultiBufferSource buffer, int combinedLight, int combinedOverlay, BakedModel model) {
         if (context != ItemDisplayContext.FIRST_PERSON_LEFT_HAND && context != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND && context != ItemDisplayContext.FIXED) {
             return;
         }
-
 
         int backgroundId = 0;
         if (itemStack.has(ModDataComponents.NAVIGATOR_BACKGROUND_COMPONENT)) {
             backgroundId = itemStack.get(ModDataComponents.NAVIGATOR_BACKGROUND_COMPONENT).backgroundId();
         }
-        
+        DLTime time = new DLTime(Minecraft.getInstance().level, DLTime.defaultTimeSystem());
+
         Font font = Minecraft.getInstance().font;
         poseStack.mulPose(Axis.XP.rotationDegrees(90F));
         poseStack.translate(4, 2, -1.26f);
-        BERUtils.renderTexture(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, String.format("textures/item/navigator_backgrounds/%s.png", backgroundId)), graphics, false, 0, 0, 0, 8, 12, 0, 0, 1F / 12F * 8, 1F, Direction.UP, 0xFFFFFFFF, LightTexture.FULL_BRIGHT);
+        RenderUtils.renderTexture(DLUtils.resourceLocation(CreateRailwaysNavigator.MOD_ID, String.format("textures/item/navigator_backgrounds/%s.png", backgroundId)), graphics, new Vector3f(0), 8, 12, 0, 0, 1F / 12F * 8, 1F, Direction.UP, DLColor.WHITE, LightTexture.FULL_BRIGHT, false);
         
         poseStack.translate(0, 0, -0.01f);
         poseStack.pushPose();
         poseStack.translate(4, 0.8f, 0);
         poseStack.scale(0.075f, 0.075f, 0.075f);
-        BERUtils.drawString(graphics, font, 0, 0, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".journey_info.date", (DragonLib.getCurrentWorldTime() + DragonLib.daytimeShift()) / DragonLib.ticksPerDay()), 0xFFFFFFFF, EAlignment.CENTER, false, LightTexture.FULL_BRIGHT);
+        RenderUtils.drawString(graphics, font, 0, 0, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".journey_info.date", (long)time.toGameDays(DLTime.defaultTimeSystem())), DLColor.WHITE, ETextAlignment.CENTER, false, LightTexture.FULL_BRIGHT);
         poseStack.popPose();
         
         poseStack.pushPose();
         poseStack.translate(4, 2, 0);
         poseStack.scale(0.2f, 0.2f, 0.2f);
-        BERUtils.drawString(graphics, font, 0, 0, TimeUtils.formatTime(DragonLib.getCurrentWorldTime(), ModClientConfig.TIME_FORMAT.get()), 0xFFFFFFFF, EAlignment.CENTER, false, LightTexture.FULL_BRIGHT);
+        RenderUtils.drawString(graphics, font, 0, 0, time.format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem()), DLColor.WHITE, ETextAlignment.CENTER, false, LightTexture.FULL_BRIGHT);
         poseStack.popPose();
     }
 

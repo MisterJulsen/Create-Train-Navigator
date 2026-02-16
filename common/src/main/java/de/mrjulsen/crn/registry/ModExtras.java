@@ -10,8 +10,6 @@ import de.mrjulsen.crn.block.display.AdvancedDisplaySource;
 import de.mrjulsen.crn.block.display.AdvancedDisplayTarget;
 import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 
 import java.util.List;
 

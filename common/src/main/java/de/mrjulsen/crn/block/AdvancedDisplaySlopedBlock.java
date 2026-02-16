@@ -1,9 +1,10 @@
 package de.mrjulsen.crn.block;
 
-import de.mrjulsen.mcdragonlib.data.Pair;
-import de.mrjulsen.mcdragonlib.data.Tripple;
+import de.mrjulsen.mcdragonlib.util.Pair;
+import de.mrjulsen.mcdragonlib.util.Tripple;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -11,6 +12,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jetbrains.annotations.Nullable;
 
 public class AdvancedDisplaySlopedBlock extends AbstractAdvancedDisplayBlock {
 
@@ -29,6 +31,11 @@ public class AdvancedDisplaySlopedBlock extends AbstractAdvancedDisplayBlock {
 
     public AdvancedDisplaySlopedBlock(Properties properties) {
         super(properties);
+    }
+
+    @Override
+    public @Nullable BlockState getAcceptedBlockState(Level pLevel, BlockPos pPos, ItemStack item, Direction face) {
+        return null;
     }
 
     @Override

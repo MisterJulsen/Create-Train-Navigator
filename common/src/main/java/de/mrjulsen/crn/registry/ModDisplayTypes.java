@@ -30,6 +30,7 @@ import de.mrjulsen.crn.client.ber.variants.BERTrainDestinationSimple;
 
 public final class ModDisplayTypes {
 
+    
     public static final DisplayTypeResourceKey PASSENGER_INFORMATION_RUNNING_TEXT = AdvancedDisplaysRegistry.register(
         EDisplayType.PASSENGER_INFORMATION, "running_text",
         PassengerInformationScrollingTextSettings::new, BERPassengerInfoSimple::new, new DisplayProperties(true, null));

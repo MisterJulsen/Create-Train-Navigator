@@ -1,19 +1,25 @@
 package de.mrjulsen.crn.client.gui.overlay.pages;
 
+import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.overlay.pages.RouteOverviewPage.RoutePathIcons;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.data.StationTag.StationInfo;
 import de.mrjulsen.crn.data.navigation.ClientRoute;
 import de.mrjulsen.crn.data.navigation.TransferConnection;
-import de.mrjulsen.mcdragonlib.DragonLib;
-import de.mrjulsen.mcdragonlib.client.util.Graphics;
+import de.mrjulsen.crn.util.ModUtils;
+import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.data.ETextAlignment;
+import de.mrjulsen.mcdragonlib.util.DLColor;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
-import de.mrjulsen.mcdragonlib.util.TimeUtils;
+import de.mrjulsen.mcdragonlib.util.math.Rectangle;
+import de.mrjulsen.mcdragonlib.util.time.DLTime;
+import de.mrjulsen.mcdragonlib.util.time.TimeContext;
+import de.mrjulsen.mcdragonlib.util.time.VanillaTimeSystem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.components.MultiLineLabel;
+import net.minecraft.network.chat.Component;
 
 public class TransferPage extends AbstractRouteDetailsPage {
 
@@ -41,7 +47,7 @@ public class TransferPage extends AbstractRouteDetailsPage {
         connection.getDepartureStation().getTrainDisplayName(),
             terminus,
             info.platform()
-        ), width - (15 + ModGuiIcons.ICON_SIZE));
+        ), width() - (15 + ModGuiIcons.ICON_SIZE));
     }
 
     @Override
@@ -50,16 +56,17 @@ public class TransferPage extends AbstractRouteDetailsPage {
     }
 
     @Override
-    public void renderMainLayer(Graphics graphics, int mouseX, int mouseY, float partialTicks) {
+    public void renderMainLayer(DLGuiGraphics graphics, double mouseX, double mouseY, Rectangle renderBounds) {
         int y = 0;
         RouteOverviewPage.renderStation(graphics, -4, width(), font, connection.getDepartureStation(), RoutePathIcons.START, true, connection.isConnectionMissed());
         y += 16;
-        GuiUtils.fill(graphics, 0, y, width(), 1, 0xFFDBDBDB);
+        GuiUtils.fill(graphics, 0, y, width(), 1, DLColor.WHITE);
         
         // Title
         ModGuiIcons.WALK.render(graphics, 5, y + 3);        
-        long transferTime = connection.getDepartureStation().getRealTimeDepartureTime() - DragonLib.getCurrentWorldTime();
-        GuiUtils.drawString(graphics, font, 10 + ModGuiIcons.ICON_SIZE, y + 3 + ModGuiIcons.ICON_SIZE / 2 - font.lineHeight / 2, CustomLanguage.translate(keyScheduleTransfer).append(" ").append(transferTime > 0 ? TextUtils.text(TimeUtils.parseDurationShort((int)transferTime)) : CustomLanguage.translate(keyTimeNow)).withStyle(ChatFormatting.BOLD), 0xFFFFFFFF, EAlignment.LEFT, false);
+        long transferTime = connection.getDepartureStation().getRealTimeDepartureTime() - ModUtils.getTransformedWorldTime();
+        Component transferTimeText = TextUtils.text(new DLTime(transferTime, VanillaTimeSystem.INSTANCE).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME, DLTime.defaultTimeSystem()));
+        GuiUtils.drawString(graphics, font, 10 + ModGuiIcons.ICON_SIZE, y + 3 + ModGuiIcons.ICON_SIZE / 2 - font.lineHeight / 2, CustomLanguage.translate(keyScheduleTransfer).append(" ").append(transferTime > 0 ? transferTimeText : CustomLanguage.translate(keyTimeNow)).withStyle(ChatFormatting.BOLD), DLColor.WHITE, ETextAlignment.LEFT, false);
         y += 5 + ModGuiIcons.ICON_SIZE;
         
         // Details

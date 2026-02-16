@@ -2,8 +2,9 @@ package de.mrjulsen.crn.util;
 
 import java.util.Arrays;
 
-import de.mrjulsen.mcdragonlib.core.IIterableEnum;
-import de.mrjulsen.mcdragonlib.core.ITranslatableEnum;
+import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.mcdragonlib.data.IIterableEnum;
+import de.mrjulsen.mcdragonlib.data.ITranslatableEnum;
 
 public enum EDepartureBoardTrainFilter implements ITranslatableEnum, IIterableEnum<EDepartureBoardTrainFilter> {
     ARRIVAL_AND_DEPARTURE((byte)0, "arrival_and_departure"),
@@ -31,17 +32,12 @@ public enum EDepartureBoardTrainFilter implements ITranslatableEnum, IIterableEn
     }
 
     @Override
-    public String getEnumName() {
-        return "departure_board_train_filter";
-    }
-
-    @Override
-    public String getEnumValueName() {
-        return getName();
-    }
-
-    @Override
     public EDepartureBoardTrainFilter[] getValues() {
         return values();
+    }
+
+    @Override
+    public Data getTranslationData() {
+        return new Data(CreateRailwaysNavigator.MOD_ID, "departure_board_train_filter", name);
     }
 }

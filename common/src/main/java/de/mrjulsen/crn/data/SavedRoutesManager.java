@@ -8,16 +8,17 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import de.mrjulsen.crn.data.navigation.ClientRoute;
-import de.mrjulsen.crn.registry.ModAccessorTypes;
-import de.mrjulsen.mcdragonlib.data.Single.MutableSingle;
+import de.mrjulsen.crn.network.packets.pain.GetUserSettingsPacketData;
+import de.mrjulsen.crn.registry.ModNetworkManager;
+import de.mrjulsen.mcdragonlib.network.NetworkDirection;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
-import de.mrjulsen.mcdragonlib.util.accessor.DataAccessor;
+import de.mrjulsen.mcdragonlib.util.Holder.MutableHolder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 
 public final class SavedRoutesManager {
     private static final LinkedHashSet<ClientRoute> savedRoutes = new LinkedHashSet<>();
-    private static MutableSingle<Boolean> isSynchronizing = new MutableSingle<Boolean>(false);
+    private static MutableHolder<Boolean> isSynchronizing = new MutableHolder<Boolean>(false);
 
     public static void saveRoute(ClientRoute route) {
         route.addListener();
@@ -42,35 +43,39 @@ public final class SavedRoutesManager {
         return new ArrayList<>(savedRoutes);
     }
 
-    @SuppressWarnings("resource")
     public static void push(boolean clear, Runnable andThen) {
-        isSynchronizing.setFirst(true);
-        DataAccessor.getFromServer(Minecraft.getInstance().player.getUUID(), ModAccessorTypes.GET_USER_SETTINGS, (settings) -> {
-            Set<CompoundTag> currentValue = clear ? new HashSet<>() : settings.savedRoutes.getValue();
-            currentValue.addAll(savedRoutes.stream().map(x -> x.toNbt()).toList());
-            settings.savedRoutes.setValue(currentValue);
-            settings.clientSave(() -> {
-                isSynchronizing.setFirst(false);
-                DLUtils.doIfNotNull(andThen, Runnable::run);
+        isSynchronizing.set(true);
+        ModNetworkManager.GET_USER_SETTINGS.send(NetworkDirection.toServer(), new GetUserSettingsPacketData.Request(Minecraft.getInstance().player.getUUID()), (response) -> {
+            response.getData().ifPresent(settings -> {
+                Set<CompoundTag> currentValue = clear ? new HashSet<>() : settings.savedRoutes.getValue();
+                currentValue.addAll(savedRoutes.stream().map(x -> x.toNbt()).toList());
+                settings.savedRoutes.setValue(currentValue);
+                settings.clientSave(() -> {
+                    isSynchronizing.set(false);
+                    DLUtils.doIfNotNull(andThen, Runnable::run);
+                });
             });
-        });
+
+        }, () -> {});
     }
 
-    @SuppressWarnings("resource")
     public static void pull(boolean clear, Runnable andThen) {
-        isSynchronizing.setFirst(true);
-        DataAccessor.getFromServer(Minecraft.getInstance().player.getUUID(), ModAccessorTypes.GET_USER_SETTINGS, (settings) -> {
-            Set<ClientRoute> currentValue = settings.savedRoutes.getValue().stream().map(x -> ClientRoute.fromNbt(x, true)).collect(Collectors.toSet());
-            if (clear) {
-                savedRoutes.clear();
-            }
-            savedRoutes.addAll(currentValue);
-            isSynchronizing.setFirst(false);
-            DLUtils.doIfNotNull(andThen, Runnable::run);
-        });
+        isSynchronizing.set(true);
+        ModNetworkManager.GET_USER_SETTINGS.send(NetworkDirection.toServer(), new GetUserSettingsPacketData.Request(Minecraft.getInstance().player.getUUID()), (response) -> {
+            response.getData().ifPresent(settings -> {
+                Set<ClientRoute> currentValue = settings.savedRoutes.getValue().stream().map(x -> ClientRoute.fromNbt(x, true)).collect(Collectors.toSet());
+                if (clear) {
+                    savedRoutes.clear();
+                }
+                savedRoutes.addAll(currentValue);
+                isSynchronizing.set(false);
+                DLUtils.doIfNotNull(andThen, Runnable::run);
+            });
+
+        }, () -> {});
     }
 
     public static boolean isSynchronizing() {
-        return isSynchronizing.getFirst();
+        return isSynchronizing.get();
     }
 }

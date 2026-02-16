@@ -40,7 +40,7 @@ import de.mrjulsen.crn.data.schedule.condition.IDelayedWaitCondition.DelayedWait
 import de.mrjulsen.crn.data.schedule.instruction.PrioritizedDestinationInstruction;
 import de.mrjulsen.crn.util.IFrontierEntry;
 import de.mrjulsen.crn.util.PenaltyResult;
-import de.mrjulsen.mcdragonlib.data.Pair;
+import de.mrjulsen.mcdragonlib.util.Pair;
 import net.minecraft.world.level.Level;
 
 @Mixin(Navigation.class)
@@ -105,6 +105,10 @@ public abstract class NavigationMixin implements INavigationExtension {
     @Inject(method = "findPathTo", remap = false, at = @At(value = "HEAD"))
     public void onStartNavigation(@Coerce Object a, double maxCost, CallbackInfoReturnable<?> cir) {
         if (train == null || train.runtime == null || train.runtime.getSchedule() == null) {
+            return;
+        }
+
+        if ((train.runtime.currentEntry < 0 || train.runtime.currentEntry > train.runtime.getSchedule().entries.size()) || !(this.shouldCheckPenalties = train.runtime.getSchedule().entries.get(train.runtime.currentEntry).instruction instanceof PrioritizedDestinationInstruction)) {
             return;
         }
 

@@ -17,11 +17,13 @@ import de.mrjulsen.crn.data.train.PredictionTimes.DepartureTime;
 import de.mrjulsen.crn.event.ModCommonEvents;
 import de.mrjulsen.crn.exceptions.RuntimeSideException;
 import de.mrjulsen.crn.mixin.ScheduleRuntimeAccessor;
+import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.crn.util.PrimaryStringSelector;
-import de.mrjulsen.mcdragonlib.DragonLib;
-import de.mrjulsen.mcdragonlib.data.Cache;
+import de.mrjulsen.mcdragonlib.util.Cache;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
+import de.mrjulsen.mcdragonlib.util.time.ConfiguredTimeSystem;
+import de.mrjulsen.mcdragonlib.util.time.ITimeSystem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -238,19 +240,23 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
     }
 
     public long getScheduledArrivalDay() {
-        return scheduled().arrivalTime() / DragonLib.ticksPerDay();
+        ITimeSystem system = new ConfiguredTimeSystem();
+        return scheduled().arrivalTime() / system.getTicksPerDay();
     }
     
     public long getScheduledDepartureDay() {
-        return scheduled().departureTime() / DragonLib.ticksPerDay();
+        ITimeSystem system = new ConfiguredTimeSystem();
+        return scheduled().departureTime() / system.getTicksPerDay();
     }
     
     public long getRealTimeArrivalDay() {
-        return realTime().arrivalTime() / DragonLib.ticksPerDay();
+        ITimeSystem system = new ConfiguredTimeSystem();
+        return realTime().arrivalTime() / system.getTicksPerDay();
     }
     
     public long getRealTimeDepartureDay() {
-        return realTime().departureTime() / DragonLib.ticksPerDay();
+        ITimeSystem system = new ConfiguredTimeSystem();
+        return realTime().departureTime() / system.getTicksPerDay();
     }
 
 
@@ -309,7 +315,7 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
 
     /** Time since start of recording. */
     public long getRuntime() {
-        return DragonLib.getCurrentWorldTime() - scheduled().refreshTime();
+        return ModUtils.getTransformedWorldTime() - scheduled().refreshTime();
     }
 
     public boolean hasDepartedOnce() {
@@ -478,7 +484,7 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
         return TextUtils.text("[ " + entryIndex + " ]: ").withStyle(ChatFormatting.WHITE)
             .append(TextUtils.text(getTargetedStationName()).withStyle(ChatFormatting.WHITE))
             .append(TextUtils.text(", ").withStyle(ChatFormatting.WHITE))
-            .append(TextUtils.text("*" + getCurrentCycle()).withStyle(ChatFormatting.YELLOW))
+            .append(TextUtils.text("*" + getCurrentCycle()).withStyle(ChatFormatting.YELLOW))            
             .append(TextUtils.text(", ").withStyle(ChatFormatting.WHITE))
             .append(TextUtils.text("sA: " + (scheduled().arrivalTime())).withStyle(ChatFormatting.BLUE))
             .append(TextUtils.text(", ").withStyle(ChatFormatting.WHITE))

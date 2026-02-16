@@ -7,10 +7,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 import de.mrjulsen.crn.data.navigation.ClientRoutePart.TrainRealTimeData;
-import de.mrjulsen.crn.registry.ModAccessorTypes;
-import de.mrjulsen.mcdragonlib.data.Pair;
+import de.mrjulsen.crn.network.packets.pain.UpdateRealtimePacketData;
+import de.mrjulsen.crn.registry.ModNetworkManager;
+import de.mrjulsen.mcdragonlib.network.NetworkDirection;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
-import de.mrjulsen.mcdragonlib.util.accessor.DataAccessor;
+import de.mrjulsen.mcdragonlib.util.Pair;
 
 public final class ClientTrainListener {
     
@@ -56,12 +57,13 @@ public final class ClientTrainListener {
                 }
                 
                 final Map<UUID, Pair<UUID, Consumer<ClientRoutePart.TrainRealTimeData>>> listeners = entry.getValue();
-                DataAccessor.getFromServer(entry.getKey(), ModAccessorTypes.UPDATE_REALTIME, res -> {
-                    if (res != null) {
+
+                ModNetworkManager.UPDATE_REALTIME.send(NetworkDirection.toServer(), new UpdateRealtimePacketData.Request(entry.getKey()), (response) -> {
+                    response.getData().ifPresent(res -> {
                         listeners.values().forEach(a -> a.getSecond().accept(res));
-                    }
+                    });
                     DLUtils.doIfNotNull(andThen, a -> a.run());
-                });
+                }, () -> {});
             }
         }
     }

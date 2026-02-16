@@ -1,12 +1,8 @@
 package de.mrjulsen.crn.client.gui.widgets;
 
-import java.io.Closeable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.function.Consumer;
 
-import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.simibubi.create.foundation.gui.AllIcons;
@@ -16,115 +12,127 @@ import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.gui.Animator;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
+import de.mrjulsen.crn.client.gui.widgets.skins.ModernScrollbarComponentRenderer;
 import de.mrjulsen.crn.data.UserSettings;
 import de.mrjulsen.crn.data.navigation.ClientRoute;
 import de.mrjulsen.crn.data.storage.RecentSearchQueries.RecentSearchQuery;
-import de.mrjulsen.crn.registry.ModAccessorTypes;
-import de.mrjulsen.crn.registry.ModAccessorTypes.NavigationData;
-import de.mrjulsen.mcdragonlib.DragonLib;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.DLAbstractScrollBar;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.DLButton;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.DLContextMenu;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.DLContextMenuItem;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.DLContextMenuItem.ContextMenuItemData;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.DLIconButton;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.DLScrollableWidgetContainer;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.DLAbstractImageButton.ButtonType;
-import de.mrjulsen.mcdragonlib.client.render.DynamicGuiRenderer.AreaStyle;
-import de.mrjulsen.mcdragonlib.client.render.Sprite;
-import de.mrjulsen.mcdragonlib.client.util.Graphics;
-import de.mrjulsen.mcdragonlib.client.util.GuiAreaDefinition;
+import de.mrjulsen.crn.network.packets.pain.NavigatePacketData;
+import de.mrjulsen.crn.registry.ModNetworkManager;
+import de.mrjulsen.mcdragonlib.client.gui.events.DLGuiStandardEvents;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLGuiComponent;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLContextMenu;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLPanel;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLScrollBar;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLScrollBar.Orientation;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.util.EAlign;
+import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
+import de.mrjulsen.mcdragonlib.client.util.DLSprite;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
-import de.mrjulsen.mcdragonlib.util.DLUtils;
+import de.mrjulsen.mcdragonlib.data.ETextAlignment;
+import de.mrjulsen.mcdragonlib.network.NetworkDirection;
+import de.mrjulsen.mcdragonlib.util.DLColor;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
-import de.mrjulsen.mcdragonlib.util.accessor.DataAccessor;
+import de.mrjulsen.mcdragonlib.util.math.Rectangle;
+import de.mrjulsen.mcdragonlib.util.properties.BooleanProperty;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
-public class RouteViewer extends DLScrollableWidgetContainer implements Closeable {
-
+public class RouteViewer extends DLGuiComponent {
+    
     private final MutableComponent searchingText = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.searching");
     private final MutableComponent noConnectionsText = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.no_connections");
     private final MutableComponent notSearchedText = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.not_searched");
     private final MutableComponent txtRecentSearchQueries = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.recently_searched").withStyle(ChatFormatting.BOLD);
 
-
-    private final Screen parent;
-    private final DLAbstractScrollBar<?> scrollBar;
-    private boolean shouldDisplayRecentSearchQueries;
-    private UserSettings userSettings;
-    private int contentHeight = 0;
-    private int angle = 0;
+    public final BooleanProperty displayRecentSearchQueries = new BooleanProperty(false);
 
     private final List<ClientRoute> routes = new ArrayList<>();
-    private final Consumer<List<ClientRoute>> onUpdateRoutes;
-    private DLIconButton closeBtn;
 
-    // flags
-    private boolean loadingRoutes = false;
-    private boolean hasSearched = false;
+    private final DLPanel contentPanel;
+    private final DLScrollBar scrollbar;
+    private UserSettings settings;
+    private final Animator animator;
+    
+    private int angle = 0;
 
-    private final Animator animator = new Animator();
     private double animPercentage = 0;
     private double renderOffsetX = 0;
     private boolean animationStarted = false;
 
-    public RouteViewer(Screen parent, int x, int y, int width, int height, DLAbstractScrollBar<?> scrollBar, Consumer<List<ClientRoute>> onUpdateRoutes) {
-        super(x, y, width, height);
-        this.parent = parent;
-        this.scrollBar = scrollBar;
-        this.onUpdateRoutes = onUpdateRoutes;
-        scrollBar.setAutoScrollerSize(true);
-        scrollBar.setScreenSize(height());
-        scrollBar.setMaxScroll(0);
-        scrollBar.withOnValueChanged((sb) -> setYScrollOffset(sb.getScrollValue()));
-        scrollBar.setStepSize(10);
+    private boolean hasSearched = false;
+    private boolean isLoading = false;
+    private int contentHeight = 0;
 
-        setupList();
-    }
+    public RouteViewer(int x, int y, int w, int h) {
+        super(x, y, w, h);
+        this.animator = addComponent(new Animator());
 
-    public void enableRecentlySearchedList(UserSettings settings) {
-        this.shouldDisplayRecentSearchQueries = true;
-        this.userSettings = settings;
-        refresh(settings);
-    }
+        contentPanel = addComponent(new DLPanel(0, 0, width(), height()));
+        contentPanel.anchor.set2(EAlign.values());
+        contentPanel.inputConsumptionPolicy.set((type) -> false);
 
-    public Screen getParent() {
-        return parent;
-    }
-
-    public List<ClientRoute> getRoutes() {
-        return ImmutableList.copyOf(routes);
-    }
-
-    public void setRoutes(Collection<ClientRoute> routes, boolean closeCurrent) {
-        if (closeCurrent) clear();
-        if (routes != null) {
-            this.routes.addAll(routes);
-            DLUtils.doIfNotNull(onUpdateRoutes, x -> x.accept(getRoutes()));
-            this.hasSearched = true;
-        }
-        setupList();
-    }
-
-    public void search(String from, String to, UserSettings settings, Consumer<RouteViewer> andThen) {
-        this.loadingRoutes = true;
-        this.userSettings = settings;
-        userSettings.recentSearchQueries.getValue().add(new RecentSearchQuery(from, to));
-        clear();
+        scrollbar = addComponent(new DLScrollBar(width() - 5, 0, 5, height(), Orientation.VERTICAL));
+        scrollbar.componentRenderer.set(ModernScrollbarComponentRenderer.INSTANCE);
+        scrollbar.anchor.set2(EAlign.TOP, EAlign.BOTTOM, EAlign.RIGHT);
+        scrollbar.scrollerSize.set(0);
+        scrollbar.screenSize.set(height());
+        scrollbar.scrollSteps.set(10);
+        scrollbar.max.set(0);
+        scrollbar.inputConsumptionPolicy.set((type) -> true);
+        scrollbar.addEventListener(DLScrollBar.ValueChangedEvent.class, (s, e) -> {
+            contentPanel.setScrollOffsetY(e.value());
+            return false;
+        });
         
-        userSettings.clientSave(() -> {
+        addEventListener(DLGuiStandardEvents.ScrollEvent.class, scrollbar::invokeEvent);
+
+        DLContextMenu recetlySearchedMenu = new DLContextMenu((pX, pY) -> {
+            List<DLContextMenu.ItemEntry> entries = new ArrayList<>();
+            entries.add(new DLContextMenu.ItemEntry(TextUtils.text("Clear"), DLSprite.empty(), true, () -> {
+                
+            }, null));
+            return entries;
+        });
+
+        DLContextMenu routesViewMenu = new DLContextMenu((pX, pY) -> {
+            List<DLContextMenu.ItemEntry> entries = new ArrayList<>();
+            entries.add(new DLContextMenu.ItemEntry(TextUtils.text("Clear"), DLSprite.empty(), true, () -> {
+                
+            }, null));
+            entries.add(DLContextMenu.ItemEntry.SEPARATOR);
+            entries.add(new DLContextMenu.ItemEntry(TextUtils.text("Refresh"), DLSprite.empty(), true, () -> {
+                
+            }, null));
+            return entries;
+        });
+
+        addEventListener(DLGuiStandardEvents.RightClickEvent.class, (src, event) -> {
+            if (this.hasSearched) {
+                routesViewMenu.open(getWindowManager(), (int)getWindowManager().mouseXOnScreen(), (int)getWindowManager().mouseYOnScreen());
+            } else {                
+                recetlySearchedMenu.open(getWindowManager(), (int)getWindowManager().mouseXOnScreen(), (int)getWindowManager().mouseYOnScreen());
+            }
+            return false;
+        });
+    }
+
+    public void search(String start, String end, Runnable andThen) {
+        this.isLoading = true;
+        settings.recentSearchQueries.getValue().add(new RecentSearchQuery(start, end));
+        contentPanel.clearComponents();
+        this.animPercentage = 0;
+        this.renderOffsetX = -50;
+        
+        settings.clientSave(() -> {
             animator.start(10, (poseStack, current, total, percentage) -> {
                 this.animPercentage = Math.pow(1D - percentage, 4);
                 this.renderOffsetX = -(50 * animPercentage);
             }, null, () -> {
                 this.renderOffsetX = 0;
-                DataAccessor.getFromServer(new NavigationData(from, to, Minecraft.getInstance().player.getUUID()), ModAccessorTypes.NAVIGATE, (routeList) -> {   
+                ModNetworkManager.NAVIGATE.send(NetworkDirection.toServer(), new NavigatePacketData.Request(start, end, Minecraft.getInstance().player.getUUID()), (response) -> {
+                    this.routes.clear();
+                    this.routes.addAll(response.getData());
                     animator.start(10, (poseStack, current, total, percentage) -> {
                         this.animPercentage = Math.pow(percentage, 4);
                         this.renderOffsetX = (50 * animPercentage);
@@ -132,96 +140,81 @@ public class RouteViewer extends DLScrollableWidgetContainer implements Closeabl
                         this.animationStarted = false;
                         this.animPercentage = 0;
                         this.renderOffsetX = 0;
-                        setRoutes(routeList, true);
-                        this.loadingRoutes = false;
-                        DLUtils.doIfNotNull(andThen, x -> x.accept(this));            
-                        if (this.routes.isEmpty()) {
-                            closeBtn = addRenderableWidget(new DLIconButton(ButtonType.DEFAULT, AreaStyle.FLAT, ModGuiIcons.X.getAsSprite(16, 16), x() + width() / 2 - DLIconButton.DEFAULT_BUTTON_WIDTH / 2, y() + height() / 2 + 20, TextUtils.empty(),
-                            (btn) -> {
-                                this.hasSearched = false;
-                                refresh(userSettings);
-                            }));
-                            closeBtn.setBackColor(0);
-                        }
+
+                        loadList();
+                        andThen.run();
+                        hasSearched = true;
+                        this.isLoading = false;
                     });
-                });
+                }, andThen::run);
             });
             this.animationStarted = true;
-        });        
+        });
+
     }
 
-    @Override
-    public void clearWidgets() {
-        super.clearWidgets();
-        closeBtn = null;;
-    }
-
-    @Override
-    public void tick() {        
-        super.tick();
-        animator.tick();
-    }
-
-    public void refresh(UserSettings settings) {
-        if (this.loadingRoutes) {
+    public void updateSettings(UserSettings settings) {
+        if (this.isLoading) {
             return;
         }
-        this.userSettings = settings;
-        clearWidgets();
-        setupList();
+        this.settings = settings;
+        loadList();
     }
 
-    private void setupList() {
-        clearWidgets();
+    private void loadList() {
+        contentPanel.clearComponents();
         this.contentHeight = 0;
-        if (this.shouldDisplayRecentSearchQueries && !this.hasSearched && !this.loadingRoutes && this.routes.isEmpty() && userSettings != null) {
+        if (this.displayRecentSearchQueries.get() && !this.hasSearched && !this.isLoading && this.routes.isEmpty() && settings != null) {
             contentHeight = 20 + Minecraft.getInstance().font.lineHeight;
-            for (RecentSearchQuery query : userSettings.recentSearchQueries.getValue().getAll()) {
-                RecentSearchQueryButton btn = addRenderableWidget(new RecentSearchQueryButton(this, x() + 10, y() + contentHeight, width() - 20, query));
+            for (RecentSearchQuery query : settings.recentSearchQueries.getValue().getAll()) {
+                RecentSearchQueryButton btn = contentPanel.addComponent(new RecentSearchQueryButton(this, 10, contentHeight, width() - 20, query));
                 contentHeight += btn.height();
             }
             contentHeight += 10;
-        } else if (!this.routes.isEmpty()) {            
+        } else if (!this.routes.isEmpty()) {
             contentHeight = 5;
-            for (int i = 0; i < routes.size(); i++) {
-                RouteWidget widget = new RouteWidget(this, routes.get(i), x() + 10, y() + contentHeight);
-                addRenderableWidget(widget);
-                contentHeight += (RouteWidget.HEIGHT + 3);
+            for (ClientRoute route : routes) {
+                RouteWidget w = contentPanel.addComponent(new RouteWidget(10, contentHeight, route));
+                contentHeight += (w.height() + 3);
             }
-            contentHeight += 2;
+            contentHeight += 3;
         }
-        scrollBar.setMaxScroll(contentHeight);
+        scrollbar.max.set(contentHeight);
+    }
+    
+
+    public UserSettings getUserSettings() {
+        return settings;
     }
 
-    @Override
-    public void renderMainLayer(Graphics graphics, int mouseX, int mouseY, float partialTicks) {
-        animator.renderMainLayer(graphics, mouseX, mouseY, partialTicks);  
 
-        super.renderMainLayer(graphics, mouseX, mouseY, partialTicks);
+
+    @Override
+    public void renderMainLayer(DLGuiGraphics graphics, double mouseX, double mouseY, Rectangle renderBounds) {        
         graphics.poseStack().pushPose();
         graphics.poseStack().translate(renderOffsetX, 0, 0);
         
-        partialTicks = Minecraft.getInstance().getTimer().getGameTimeDeltaTicks();
-        angle += 6 * partialTicks;
+        float frameTime = Minecraft.getInstance().getTimer().getGameTimeDeltaTicks();
+        angle += 6 * frameTime;
         if (angle > 360) {
             angle = 0;
         }
         double offsetX = Math.sin(Math.toRadians(angle)) * 5;
         double offsetY = Math.cos(Math.toRadians(angle)) * 5;
 
-        if (!this.loadingRoutes) {
+        if (!this.isLoading) {
             if (this.hasSearched && routes.isEmpty()) {
-                GuiUtils.drawString(graphics, font, x() + width() / 2, y() + height() / 2 + 15 - font.lineHeight - 10, noConnectionsText, 0xFFFFFF, EAlignment.CENTER, false);
-                AllIcons.I_ACTIVE.render(graphics.graphics(), (int)(x() + width() / 2 - 8), (int)(y() + height() / 2 - 15 - font.lineHeight - 10));
-            } else if (this.shouldDisplayRecentSearchQueries && !this.hasSearched && !userSettings.recentSearchQueries.getValue().isEmpty()) {
-                GuiUtils.drawString(graphics, font, x() + 10, y() + 10, txtRecentSearchQueries, 0xFFFFFF, EAlignment.LEFT, true);
-                if (this.userSettings == null) {
-                    GuiUtils.drawString(graphics, font, x() + width() / 2, y() + height() / 2 + 15 - font.lineHeight, Constants.TEXT_LOADING, 0xFFFFFF, EAlignment.CENTER, false);
-                    AllIcons.I_MTD_SCAN.render(graphics.graphics(), (int)(x() + width() / 2 - 8 + offsetX), (int)(y() + height() / 2 - 15 - font.lineHeight + offsetY));
+                GuiUtils.drawString(graphics, graphics.defaultFont(), width() / 2, height() / 2 + 15 - graphics.defaultFont().lineHeight - 10, noConnectionsText, DLColor.WHITE, ETextAlignment.CENTER, false);
+                AllIcons.I_ACTIVE.render(graphics.graphics(), (int)(width() / 2 - 8), (int)(height() / 2 - 15 - graphics.defaultFont().lineHeight - 10));
+            } else if (settings != null && this.displayRecentSearchQueries.get() && !this.hasSearched && !settings.recentSearchQueries.getValue().isEmpty()) {
+                GuiUtils.drawString(graphics, graphics.defaultFont(), 10, 10, txtRecentSearchQueries, DLColor.WHITE, ETextAlignment.LEFT, true);
+                if (this.settings == null) {
+                    GuiUtils.drawString(graphics, graphics.defaultFont(), width() / 2, height() / 2 + 15 - graphics.defaultFont().lineHeight, Constants.TEXT_LOADING, DLColor.WHITE, ETextAlignment.CENTER, false);
+                    AllIcons.I_MTD_SCAN.render(graphics.graphics(), (int)(width() / 2 - 8 + offsetX), (int)(height() / 2 - 15 - graphics.defaultFont().lineHeight + offsetY));
                 }
-            } else if (!this.hasSearched) {                
-                GuiUtils.drawString(graphics, font, x() + width() / 2, y() + height() / 2 + 15 - font.lineHeight, notSearchedText, 0xFFFFFF, EAlignment.CENTER, false);
-                ModGuiIcons.INFO.render(graphics, (int)(x() + width() / 2 - 8), (int)(y() + height() / 2 - 15 - font.lineHeight));
+            } else if (!this.hasSearched) {
+                GuiUtils.drawString(graphics, graphics.defaultFont(), width() / 2, height() / 2 + 15 - graphics.defaultFont().lineHeight, notSearchedText, DLColor.WHITE, ETextAlignment.CENTER, false);
+                ModGuiIcons.INFO.render(graphics, (int)(width() / 2 - 8), (int)(height() / 2 - 15 - graphics.defaultFont().lineHeight));
             }
         } else {
             if (animationStarted) {
@@ -229,104 +222,20 @@ public class RouteViewer extends DLScrollableWidgetContainer implements Closeabl
                 RenderSystem.defaultBlendFunc();
                 RenderSystem.enableDepthTest();
                 RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
-                GuiUtils.setTint(1f, 1f, 1f, animator.isRunning() ? (float)(1D - animPercentage) : 1f);
-                CreateDynamicWidgets.renderShadow(graphics, x() + width() / 2 - font.width(searchingText) / 2 - 10, (int)(y() + height() / 2 - 25 - font.lineHeight), font.width(searchingText) + 20, 55);
-                GuiUtils.drawString(graphics, font, x() + width() / 2, y() + height() / 2 + 15 - font.lineHeight, searchingText, ((int)(255F * (float)(1D - animPercentage)) << 24) | 0xFFFFFF, EAlignment.CENTER, false);
-                AllIcons.I_MTD_SCAN.render(graphics.graphics(), (int)(x() + width() / 2 - 8 + offsetX), (int)(y() + height() / 2 - 15 - font.lineHeight + offsetY));
+                GuiUtils.setTint(DLColor.of(animator.isRunning() ? (float)(1D - animPercentage) : 1f, 1f, 1f, 1f));
+                CreateDynamicWidgets.renderShadow(graphics, width() / 2 - graphics.defaultFont().width(searchingText) / 2 - 10, (int)(height() / 2 - 25 - graphics.defaultFont().lineHeight), graphics.defaultFont().width(searchingText) + 20, 55);
+                GuiUtils.drawString(graphics, graphics.defaultFont(), width() / 2, height() / 2 + 15 - graphics.defaultFont().lineHeight, searchingText, DLColor.of((float)(1D - animPercentage), 1f, 1f, 1f), ETextAlignment.CENTER, false);
+                AllIcons.I_MTD_SCAN.render(graphics.graphics(), (int)(width() / 2 - 8 + offsetX), (int)(height() / 2 - 15 - graphics.defaultFont().lineHeight + offsetY));
             }
         }
         
-        if (scrollBar.getScrollValue() > 0) {
-            GuiUtils.fillGradient(graphics, x(), y(), 0, width(), 10, 0x77000000, 0x00000000);
+        if (!isLoading && scrollbar.canScroll() && scrollbar.value.get() > 0) {
+            GuiUtils.fillGradient(graphics, 0, 0, width(), 10, DLColor.fromInt(0x77000000), DLColor.TRANSPARENT, EAlign.TOP);
         }
-        if (scrollBar.getScrollValue() < scrollBar.getMaxScroll()) {
-            GuiUtils.fillGradient(graphics, x(), y() + height() - 10, 0, width(), 10, 0x00000000, 0x77000000);
+        if (!isLoading && scrollbar.canScroll() && scrollbar.value.get() < scrollbar.max.get()) {
+            GuiUtils.fillGradient(graphics, 0, height() - 10, width(), 10, DLColor.fromInt(0x77000000), DLColor.TRANSPARENT, EAlign.BOTTOM);
         }
         graphics.poseStack().popPose();
     }
-
-    @Override
-    public void renderFrontLayer(Graphics graphics, int mouseX, int mouseY, float partialTicks) {
-        super.renderFrontLayer(graphics, mouseX, mouseY, partialTicks);
-        if (closeBtn != null) {
-            GuiUtils.renderTooltip(parent, closeBtn, List.of(DragonLib.TEXT_CLOSE), 200, graphics, mouseX, mouseY);
-        }
-    }
-
-    @Override
-    public NarrationPriority narrationPriority() {
-        return NarrationPriority.HOVERED;
-    }
-
-    @Override
-    public void updateNarration(NarrationElementOutput narrationElementOutput) {}
-
-    @Override
-    public boolean consumeScrolling(double mouseX, double mouseY) {
-        return false;
-    }
-
-    public void clear() {
-        this.routes.forEach(ClientRoute::close);
-        this.routes.clear();
-        clearWidgets();
-    }
-
-
-
-    private static class RecentSearchQueryButton extends DLButton {
-
-        private final Component text;
-        private final Component subText;
-
-        public RecentSearchQueryButton(RouteViewer viewer, int x, int y, int width, RecentSearchQuery query) {
-            super(x, y, width, 12, TextUtils.empty(),
-            (btn) -> {
-                viewer.search(query.getStartStation(), query.getDestinationStation(), viewer.userSettings, null);
-            });
-            this.subText = GuiUtils.ellipsisString(Minecraft.getInstance().font, TextUtils.text(DragonLib.DATE_FORMAT.format(query.getCreationTime())).withStyle(ChatFormatting.GRAY), (int)((float)(width - 6) / 0.75f));
-            this.text = GuiUtils.ellipsisString(Minecraft.getInstance().font, TextUtils.text(String.format("%s \u2192 %s", query.getStartStation(), query.getDestinationStation())), (int)((float)(width - 6 - Minecraft.getInstance().font.width(subText) - 5) / 0.75f));
-            
-            setRenderStyle(AreaStyle.FLAT);
-            setBackColor(0);
-            
-            setMenu(new DLContextMenu(() -> GuiAreaDefinition.of(this), () -> new DLContextMenuItem.Builder()
-                .add(new ContextMenuItemData(Constants.TEXT_SEARCH, Sprite.empty(), true, (b) -> onPress.onPress(b), null))
-                .addSeparator()
-                .add(new ContextMenuItemData(Constants.TEXT_REMOVE, Sprite.empty(), true, (b) -> {
-                    DLUtils.doIfNotNull(viewer.userSettings, a -> {
-                        a.recentSearchQueries.getValue().remove(query);
-                        a.clientSave(() -> {
-                            viewer.hasSearched = false;
-                            viewer.refresh(viewer.userSettings);
-                        });
-                    });
-                }, null))
-            ));
-        }
-
-        @Override
-        public void renderMainLayer(Graphics graphics, int mouseX, int mouseY, float partialTick) {
-            super.renderMainLayer(graphics, mouseX, mouseY, partialTick);
-            graphics.poseStack().pushPose();
-            graphics.poseStack().translate(x() + 3, y() + 3, 0);
-            graphics.poseStack().scale(0.75f, 0.75f, 0.75f);
-            GuiUtils.drawString(graphics, font, 0, 0, text, DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, EAlignment.LEFT, false);
-            graphics.poseStack().popPose();
-            
-            graphics.poseStack().pushPose();
-            graphics.poseStack().translate(x() + width() - 3, y() + 3, 0);
-            graphics.poseStack().scale(0.75f, 0.75f, 0.75f);
-            GuiUtils.drawString(graphics, font, 0, 0, subText, DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE, EAlignment.RIGHT, false);
-            graphics.poseStack().popPose();
-            
-        }
-        
-    }
-
-
-
-    public boolean isLoading() {
-        return loadingRoutes;
-    }
+    
 }

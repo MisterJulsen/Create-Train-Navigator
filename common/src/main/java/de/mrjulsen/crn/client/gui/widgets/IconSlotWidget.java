@@ -1,31 +1,27 @@
 package de.mrjulsen.crn.client.gui.widgets;
 
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.DLRenderable;
-import de.mrjulsen.mcdragonlib.client.render.Sprite;
-import de.mrjulsen.mcdragonlib.client.util.Graphics;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLGuiComponent;
+import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
+import de.mrjulsen.mcdragonlib.client.util.DLSprite;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
+import de.mrjulsen.mcdragonlib.util.math.Rectangle;
+import de.mrjulsen.mcdragonlib.util.properties.Property;
 
-public class IconSlotWidget extends DLRenderable {
+public class IconSlotWidget extends DLGuiComponent {
     
-    private Sprite icon;
+    public static final int WIDTH = 18;
+    public static final int HEIGHT = 18;
+    
+    public final Property<DLSprite> icon = new Property<>(DLSprite.empty());
 
-    public IconSlotWidget(int x, int y, Sprite icon) {
+    public IconSlotWidget(int x, int y) {
         super(x, y, 18, 18);
-        this.icon = icon;
-    }
-
-    public void setIcon(Sprite icon) {
-        this.icon = icon;
-    }
-
-    public Sprite getIcon() {
-        return icon;
     }
 
     @Override
-    public void renderMainLayer(Graphics graphics, int mouseX, int mouseY, float partialTicks) {
-        CreateDynamicWidgets.renderIconSlot(graphics, x(), y(), width(), height());
-        DLUtils.doIfNotNull(icon, x -> x.render(graphics, x() + (width() / 2 - icon.getWidth() / 2), y() + (height() / 2 - icon.getHeight() / 2)));
+    public void renderMainLayer(DLGuiGraphics graphics, double mouseX, double mouseY, Rectangle renderBounds) {
+        CreateDynamicWidgets.renderIconSlot(graphics, 0, 0, width(), height());
+        DLUtils.doIfNotNull(icon.get(), x -> x.render(graphics, (width() / 2 - x.getWidth() / 2), (height() / 2 - x.getHeight() / 2)));
     }
 }

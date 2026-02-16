@@ -1,265 +1,74 @@
 package de.mrjulsen.crn.client.gui.widgets.options;
 
-import java.io.Closeable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Function;
-
-import com.mojang.blaze3d.systems.RenderSystem;
-
 import java.util.List;
-import java.util.Map;
 
-import de.mrjulsen.crn.client.gui.Animator;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.ColorShade;
-import de.mrjulsen.crn.data.StationTag;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.DLButton;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.DLEditBox;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.DLIconButton;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.DLTooltip;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.DLWidgetContainer;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.IDragonLibWidget;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.DLAbstractImageButton.ButtonType;
-import de.mrjulsen.mcdragonlib.client.render.Sprite;
-import de.mrjulsen.mcdragonlib.client.render.DynamicGuiRenderer.AreaStyle;
-import de.mrjulsen.mcdragonlib.client.util.Graphics;
-import de.mrjulsen.mcdragonlib.client.util.GuiAreaDefinition;
+import de.mrjulsen.mcdragonlib.client.gui.events.DLGuiStandardEvents;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLGuiComponent;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLAbstractCollectionComponent.ListLayoutChangedEvent;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.richtext.Padding;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.util.EAlign;
+import de.mrjulsen.mcdragonlib.client.render.GuiIcons;
+import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.util.DLUtils;
-import de.mrjulsen.mcdragonlib.util.TextUtils;
-import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.gui.screens.Screen;
+import de.mrjulsen.mcdragonlib.events.IEventListener;
+import de.mrjulsen.mcdragonlib.util.DLColor;
+import de.mrjulsen.mcdragonlib.util.math.Rectangle;
+import de.mrjulsen.mcdragonlib.util.properties.BooleanProperty;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
-import net.minecraft.network.chat.Style;
 
-public class OptionEntry<T extends DLWidgetContainer> extends DLWidgetContainer implements Closeable {
+public class OptionEntry<T> extends DLGuiComponent {
 
-    public static void expandOrCollapse(OptionEntry<?> entry) {
-        if (entry.isExpanded())
-            entry.collapse();
-        else
-            entry.expand();
-    }
-
-    private int btnX = 0;
-    private final Collection<DLButton> additionalButtons = new ArrayList<>();
-    private final Map<DLIconButton, DLTooltip> tooltips = new HashMap<>();
-    private List<FormattedText> descriptionTooltips;
-
-    private final int initialHeight = OptionEntryHeader.DEFAULT_HEIGHT;
-    private final Component description;
-    private Component text;
-
-    private final Screen parent;
-    private final DLOptionsList parentList;
-    private final T contentContainer;
-    private final Consumer<OptionEntry<T>> onSizeChanged;
     private final OptionEntryHeader header;
-    private DLEditBox editBox;
-    private final Animator animator = addRenderableOnly(new Animator());
+    public final OptionsDataView<T> dataView;
+    private final Padding padding = new Padding(10, 5, 10, 20);
 
-    // flag
-    private boolean expanded;
-    private boolean closing;
+    public final BooleanProperty expanded = new BooleanProperty(false);
+
+    int requiredHeight = 0;
     
-
-    public OptionEntry(Screen parent, DLOptionsList parentList, int x, int y, int width, Function<OptionEntry<T>, T> contentContainer, Component text, Component description, Consumer<OptionEntry<T>> onSizeChanged, BiConsumer<OptionEntry<T>, OptionEntryHeader> onHeaderClick, Function<String, Boolean> onTitleEdited) {
-        super(x, y, width, OptionEntryHeader.DEFAULT_HEIGHT);
-        this.parent = parent;
-        this.parentList = parentList;
-        this.text = text;
-        this.contentContainer = contentContainer != null ? contentContainer.apply(this) : null;
-        this.description = description;
-        this.onSizeChanged = onSizeChanged;
-        this.setTooltip(font.getSplitter().splitLines(description, width, Style.EMPTY));
-
-        header = addRenderableWidget(new OptionEntryHeader(this, x(), y(), width(), text, (b) -> onHeaderClick.accept(this, b)));
-        DLUtils.doIfNotNull(this.contentContainer, a -> {
-            addRenderableWidget(a);
-            a.set_visible(false);
-        });
-
-        if (onTitleEdited != null) {
-            editBox = addRenderableWidget(new DLEditBox(font, x() + 5, y() + 6, width() - 5 - 25, font.lineHeight, text) {
-                @Override
-                public void setMouseSelected(boolean selected) {
-                    super.setMouseSelected(selected);
-                    if (selected) {
-                        header.setCustomMouseSelected(true);
-                    }
-                }
-            });
-            editBox.setValue(text.getString());
-            editBox.setBordered(false);
-            editBox.setMaxLength(StationTag.MAX_NAME_LENGTH);
-            editBox.set_visible(false);
-            editBox.withOnFocusChanged((box, focus) -> {
-                if (!focus && !closing) {
-                    if (onTitleEdited.apply(box.getValue())) {
-                        this.text = TextUtils.text(box.getValue());
-                        header.setMessage(this.text);
-                    }
-                }
-            });
-
-        }
-
-        animator.start(10, null, null, null);
-    }
-
-    @Override
-    public void close() {
-        super.close();
-        this.closing = true;
-    }
-
-    public DLIconButton addAdditionalButton(Sprite icon, List<FormattedText> text, BiConsumer<OptionEntry<T>, DLIconButton> onClick) {
-        DLIconButton btn = new DLIconButton(ButtonType.DEFAULT, AreaStyle.FLAT, icon, x() + width() - 2 - 18 - btnX - 16, y() + 2, 16, OptionEntryHeader.DEFAULT_HEIGHT - 4, TextUtils.empty(), x -> onClick.accept(this, x)) {
-            @Override
-            public void setMouseSelected(boolean selected) {
-                super.setMouseSelected(selected);
-                header.setCustomMouseSelected(selected);
+    public OptionEntry(Component caption, List<FormattedText> description, IEventListener<DLGuiComponent, DLGuiStandardEvents.MousePressedEvent> clickEvent) {
+        super(0, 0, 100, 100);
+        header = addComponent(new OptionEntryHeader(caption, description));
+        header.addEventListener(DLGuiStandardEvents.MousePressedEvent.class, (s, e) -> clickEvent.invoke(this, e));
+        setHeight(header.height());
+        dataView = new OptionsDataView<>(padding.left(), header.height() + padding.top(), width() - padding.left() - padding.right(), height() - padding.bottom() - header.height());
+        dataView.anchor.set(EAlign.values());
+        dataView.visible.set(false);
+        dataView.addEventListener(ListLayoutChangedEvent.class, (s, e) -> {
+            requiredHeight = e.layoutResult().contentHeight();
+            if (expanded.get()) {
+                setHeight(getRequiredHeight());
+                dataView.setHeight(e.layoutResult().contentHeight());
             }
-        };
-        btn.setBackColor(0x00000000);
-        DLTooltip tooltip = DLTooltip.of(text).assignedTo(btn);
-        tooltip.setDynamicOffset(() -> (int)parentList.getXScrollOffset(), () -> (int)parentList.getYScrollOffset());
-        tooltips.put(btn, tooltip);
-        btnX += btn.width();
-        addRenderableWidget(btn);
-        additionalButtons.add(btn);
-        return btn;
-    }
-
-    public void updateTooltipOf(DLIconButton widget, List<FormattedText> text) {
-        DLTooltip tooltip = DLTooltip.of(text).assignedTo(widget);
-        tooltip.setDynamicOffset(() -> (int)parentList.getXScrollOffset(), () -> (int)parentList.getYScrollOffset());
-        tooltips.put(widget, tooltip);
-    }
-
-    public OptionEntry(Screen parent, DLOptionsList parentList, int x, int y, int width, Function<OptionEntry<T>, T> contentContainer, Component text, Component description, Consumer<OptionEntry<T>> onExpandedChanged, BiConsumer<OptionEntry<T>, OptionEntryHeader> onHeaderClick) {
-        this(parent, parentList, x, y, width, contentContainer, text, description, onExpandedChanged, onHeaderClick, null);
-    }
-
-    public GuiAreaDefinition getContentSpace() {
-        return new GuiAreaDefinition(x() + 3, y() + initialHeight, width() - 6, height() - initialHeight - 2);
-    }
-
-    public void collapse() {
-        expanded = false;
-        set_height(initialHeight);
-        DLUtils.doIfNotNull(editBox, a -> {
-            a.setVisible(false);
-            a.setWidth(width() - 5 - 5 - 18 - btnX);
+            return false;
         });
-        DLUtils.doIfNotNull(contentContainer, a -> a.set_visible(false));
-        onSizeChanged.accept(this);
-    }
-
-    public void expand() {
-        expanded = true;
-        DLUtils.doIfNotNull(contentContainer, a -> {
-            set_height(initialHeight + a.height() + 2);
-            a.set_visible(true);
+        
+        expanded.withAfterPropertyChangedCallback((o, n) -> {
+            header.icon.set(n ? GuiIcons.ARROW_UP.getAsSprite(16, 16) : GuiIcons.ARROW_DOWN.getAsSprite(16, 16));            
+            setHeight(n ? getRequiredHeight() : getHeader().height());
+            dataView.visible.set(n);
         });
-        DLUtils.doIfNotNull(editBox, a -> a.setVisible(true));
-        onSizeChanged.accept(this);
+
+        addComponent(dataView);
     }
 
-    public void notifyContentSizeChanged() {
-        DLUtils.doIfNotNull(contentContainer, a -> {
-            set_height(initialHeight + a.height() + 2);
-        });
-        onSizeChanged.accept(this);
+    public int getRequiredHeight() {
+        return header.height() + padding.top() + padding.bottom() + requiredHeight;
     }
 
-    public int getInitialHeight() {
-        return initialHeight;
-    }
-
-    public Component getText() {
-        return text;
-    }
-
-    public Component getDescription() {
-        return description;
-    }
-
-    public boolean isExpanded() {
-        return expanded;
-    }
-
-    public T getContentContainer() {
-        return contentContainer;
-    }
-
-    public void setTooltip(List<FormattedText> tooltip) {
-        this.descriptionTooltips = tooltip;
-    }
-
-    public List<FormattedText> getTooltips() {
-        return descriptionTooltips;
-    }
-
-    public DLOptionsList getParentList() {
-        return parentList;
-    }
-
-    public Screen getParentScreen() {
-        return parent;
+    public OptionEntryHeader getHeader() {
+        return header;
     }
 
     @Override
-    public NarrationPriority narrationPriority() {
-        return NarrationPriority.HOVERED;
-    }
-
-    @Override
-    public void updateNarration(NarrationElementOutput narrationElementOutput) {}
-
-    @Override
-    public boolean consumeScrolling(double mouseX, double mouseY) {
-        return false;
-    }
-
-    @Override
-    public void renderMainLayer(Graphics graphics, int mouseX, int mouseY, float partialTicks) {
-        graphics.poseStack().pushPose();
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.enableDepthTest();
-
-        if (animator.isRunning()) {
-            graphics.poseStack().translate(-(50 * Math.pow(1D - animator.getPercentage(), 4)), 0, 0);
+    public void renderMainLayer(DLGuiGraphics graphics, double mouseX, double mouseY, Rectangle renderBounds) {
+        if (expanded.get()) {                
+            CreateDynamicWidgets.renderSingleShadeWidget(graphics, 1, 1, width() - 2, height() - 2, ColorShade.LIGHT);
+            GuiUtils.fillGradient(graphics, 1, header.height(), width() - 2, 10, DLColor.fromInt(0x77000000), DLColor.TRANSPARENT, EAlign.TOP);
         }
-
-        CreateDynamicWidgets.renderSingleShadeWidget(graphics, x() + 1, y(), width() - 2, height(), ColorShade.LIGHT);
-        super.renderMainLayer(graphics, mouseX, mouseY, partialTicks);
-        DLUtils.doIfNotNull(editBox, a -> {
-            if (a.visible()) {
-                CreateDynamicWidgets.renderTextBox(graphics, x() + 1, y() + 1, width() - 2 - 2 - 20 - btnX);
-                //GuiUtils.fill(graphics, x() + 2, y() + 2, width() - 2 - 2 - 18 - btnX, OptionEntryHeader.DEFAULT_HEIGHT - 4, 0xFF000000);
-                editBox.render(graphics.graphics(), mouseX, mouseY, partialTicks);
-            }
-        });
-        if (isExpanded() && contentContainer != null) {
-            GuiUtils.fillGradient(graphics, x() + 3, y() + 20, 0, width() - 6, 10, 0x77000000, 0x00000000);
-        }
-        graphics.poseStack().popPose();
     }
-
-    @Override
-    public void renderFrontLayer(Graphics graphics, int mouseX, int mouseY, float partialTicks) {
-        super.renderFrontLayer(graphics, mouseX, mouseY, partialTicks);
-        tooltips.values().stream().forEach(x -> {
-            if (x.getAssignedWidget() instanceof IDragonLibWidget dlw && dlw.isMouseSelected()) {
-                x.render(parent, graphics, mouseX, mouseY);
-            }
-        });
-    }
+    
 }

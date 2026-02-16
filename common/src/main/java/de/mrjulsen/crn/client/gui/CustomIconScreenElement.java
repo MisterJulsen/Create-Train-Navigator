@@ -1,8 +1,10 @@
 package de.mrjulsen.crn.client.gui;
 
-import de.mrjulsen.mcdragonlib.client.util.Graphics;
+import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import net.createmod.catnip.gui.element.ScreenElement;
+import de.mrjulsen.mcdragonlib.client.util.GuiUtils.TextureFillMode;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 
@@ -28,7 +30,7 @@ public class CustomIconScreenElement implements ScreenElement {
 
     @Override
     public void render(GuiGraphics graphics, int x, int y) {
-        GuiUtils.drawTexture(texture, new Graphics(graphics, graphics.pose()), x, y, u, v, uW, vH, texW, texH);
+        GuiUtils.drawTexture(texture, new DLGuiGraphics(graphics, graphics.pose(), Minecraft.getInstance().font, 0), x, y, texW, texH, u, v, uW, vH, TextureFillMode.STRETCH);
     }
     
 }

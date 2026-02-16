@@ -7,14 +7,9 @@ import com.simibubi.create.foundation.item.KineticStats;
 import com.simibubi.create.foundation.item.TooltipModifier;
 
 import de.mrjulsen.crn.block.AdvancedDisplayBlock;
-import de.mrjulsen.crn.event.CRNClientEventsRegistryEvent;
-import de.mrjulsen.crn.event.CRNEventsManager;
 import de.mrjulsen.crn.event.ModClientEvents;
 import de.mrjulsen.crn.event.ModCommonEvents;
-import de.mrjulsen.crn.network.packets.cts.AdvancedDisplayUpdatePacket;
-import de.mrjulsen.crn.network.packets.stc.ServerErrorPacket;
 import de.mrjulsen.crn.registry.*;
-import de.mrjulsen.mcdragonlib.net.DLNetworkManager;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import dev.architectury.platform.Platform;
 import dev.architectury.utils.Env;
@@ -24,8 +19,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 
-import java.util.List;
-
 import org.slf4j.Logger;
 
 public final class CreateRailwaysNavigator {
@@ -34,7 +27,7 @@ public final class CreateRailwaysNavigator {
     public static final String SHORT_MOD_ID = "crn";
     public static final Logger LOGGER = LogUtils.getLogger();
 
-    public static final String DISCORD = "https://discord.gg/hH7YxTrPpk";
+    public static final String DISCORD = "https://discord.mrjulsen.net";
     public static final String GITHUB = "https://github.com/MisterJulsen/Create-Train-Navigator";
     
     public static final CreateRegistrate REGISTRATE = CreateRegistrate.create(MOD_ID);
@@ -58,7 +51,7 @@ public final class CreateRailwaysNavigator {
         }
         return null;
     }
-
+    
 
     public static void load() {}
 
@@ -66,19 +59,13 @@ public final class CreateRailwaysNavigator {
         
         ModBlocks.init();
         ModItems.init();
-        ModBlockEntities.init();        
+        ModBlockEntities.init();
         ModExtras.init();
         ModSchedule.init();
-        ModAccessorTypes.init();
+        ModNetworkManager.init();
         ModTrainStatusInfos.init();
         ModDisplayTypes.init();
         ModDataComponents.init();
-
-        DLNetworkManager.registerPackets(MOD_ID, List.of(
-            AdvancedDisplayUpdatePacket.class
-        ), List.of(
-            ServerErrorPacket.class
-        ));
         
         CRNPlatformSpecific.registerConfig();
 
@@ -86,9 +73,6 @@ public final class CreateRailwaysNavigator {
         if (Platform.getEnvironment() == Env.CLIENT) {
             ModClientEvents.init();
         }
-
-        CRNEventsManager.getEvent(CRNClientEventsRegistryEvent.class).register(MOD_ID, () -> {
-        });
 
     }
 

@@ -13,10 +13,10 @@ import de.mrjulsen.crn.data.UserSettings;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
 import de.mrjulsen.crn.data.train.TrainData;
 import de.mrjulsen.crn.data.train.TrainStop;
+import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.crn.data.train.ScheduleSection;
 import de.mrjulsen.crn.data.train.TrainStatus.CompiledTrainStatus;
-import de.mrjulsen.mcdragonlib.DragonLib;
-import de.mrjulsen.mcdragonlib.data.Pair;
+import de.mrjulsen.mcdragonlib.util.Pair;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -120,11 +120,11 @@ public class RoutePart implements Comparable<RoutePart> {
     }
 
     public long departureIn() {
-        return getFirstStop().getScheduledDepartureTime() - DragonLib.getCurrentWorldTime();
+        return getFirstStop().getScheduledDepartureTime() - ModUtils.getTransformedWorldTime();
     }
 
     public long arrivalIn() {
-        return getFirstStop().getScheduledArrivalTime() - DragonLib.getCurrentWorldTime();
+        return getFirstStop().getScheduledArrivalTime() - ModUtils.getTransformedWorldTime();
     }
 
     public long travelTime() {

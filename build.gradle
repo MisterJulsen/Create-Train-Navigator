@@ -1,7 +1,8 @@
 plugins {
-    id 'dev.architectury.loom' version '1.10-SNAPSHOT' apply false
+    id 'dev.architectury.loom' version '1.7-SNAPSHOT' apply false
     id 'architectury-plugin' version '3.4-SNAPSHOT'
     id 'com.github.johnrengelman.shadow' version '8.1.1' apply false
+    id "net.mrjulsen.mod-build-tools" version "1.0.4"
 }
 
 architectury {
@@ -26,11 +27,19 @@ subprojects {
     repositories {
         maven { url = "file://${System.getProperty('user.home')}/.m2/github/modsrepo/maven" } // Local
         maven { url = "https://maven.parchmentmc.org" } // ParchmentMC
-        maven { url = "https://raw.githubusercontent.com/MisterJulsen/modsrepo/main/maven" } // DragonLib
         maven { url = "https://maven.createmod.net" } // Create, Ponder, Flywheel
         maven { url = "https://mvn.devos.one/snapshots" } // Registrate
+        maven { url = "https://mvn.devos.one/snapshots/" } // Create, Porting Lib, Forge Tags, Milk Lib, Registrate
+        maven { url = "https://mvn.devos.one/releases/" } // Porting Lib
+        maven { url = "https://maven.tterrag.com/" } // Flywheel
+        maven { url = "https://maven.blamejared.com" } // Embeddium
+        maven { url = "https://api.modrinth.com/maven" } // Modrinth
+        maven { url = "https://dvs1.progwml6.com/files/maven/" } // JEI
+        maven { url = "https://maven.blamejared.com/" } // JEI
+        maven { url = "https://modmaven.dev" } // JEI
         maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" } // ForgeConfigAPIPort
         maven { url = 'https://maven.neoforged.net/releases' } // NeoForge
+        maven { url = "https://maven.mrjulsen.net" } // DragonLib
     }
 
     dependencies {
@@ -65,6 +74,7 @@ subprojects {
                 "create_neoforge_version": rootProject.create_neoforge_version,
                 "create_neoforge_dependency_version": rootProject.create_neoforge_dependency_version,
                 //"create_fabric_version": rootProject.create_fabric_version,
+                //"create_fabric_dependency_version": rootProject.create_fabric_dependency_version,
                 "main_class_name": rootProject.main_class_name,
         ]
         filesMatching(['pack.mcmeta', 'fabric.mod.json', 'META-INF/neoforge.mods.toml', 'createrailwaysnavigator.mixins.json']) {
@@ -97,5 +107,36 @@ subprojects {
                     "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
             ])
         }
+    }
+
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                artifactId = base.archivesName.get()
+                from components.java
+            }
+        }
+    }
+}
+
+modBuildTools {
+    publish {
+        localRepoDir = "${System.getProperty('user.home')}/.m2/github/modsrepo/maven"
+        s3Bucket = "maven"
+        endpointEnv = "MAVEN_ENDPOINT"
+        accessKeyEnv = "MAVEN_ACCESS_KEY"
+        secretKeyEnv = "MAVEN_SECRET_KEY"
+        publishCommon = false
+    }
+    javadoc {
+        title = "Create Railways Navigator ${release_channel}-${mod_version}"
+        tags = [
+                "apiNote:a:API Note:",
+                "implNote:a:Impl Note:",
+                "implSpec:a:Impl Spec:",
+                "related:a:Related:",
+                "example:a:Examples:",
+                "side:a:Valid on side:"
+        ]
     }
 }

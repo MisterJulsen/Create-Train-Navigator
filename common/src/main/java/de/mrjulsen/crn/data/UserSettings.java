@@ -15,18 +15,22 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
 import de.mrjulsen.crn.data.storage.RecentSearchQueries;
 import de.mrjulsen.crn.event.ModCommonEvents;
 import de.mrjulsen.crn.exceptions.RuntimeSideException;
-import de.mrjulsen.crn.registry.ModAccessorTypes;
+import de.mrjulsen.crn.network.packets.pain.SaveUserSettingsPacketData;
+import de.mrjulsen.crn.registry.ModNetworkManager;
 import de.mrjulsen.crn.util.EDepartureBoardTrainFilter;
+import de.mrjulsen.mcdragonlib.network.NetworkDirection;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
-import de.mrjulsen.mcdragonlib.util.TimeUtils;
-import de.mrjulsen.mcdragonlib.util.accessor.DataAccessor;
+import de.mrjulsen.mcdragonlib.util.time.DLTime;
+import de.mrjulsen.mcdragonlib.util.time.TimeContext;
+import de.mrjulsen.mcdragonlib.util.time.VanillaTimeSystem;
 import dev.architectury.platform.Platform;
 import dev.architectury.utils.Env;
 import net.minecraft.nbt.*;
@@ -54,8 +58,8 @@ public class UserSettings {
     private final boolean readOnly;
 
     // Settings
-    public final UserSetting<Integer> navigationDepartureInTicks = registerSetting(new UserSetting<>(() -> 0, NBT_DEPARTURE_IN, (nbt, val, name) -> nbt.putInt(name, val), (nbt, name) -> nbt.getInt(name), (val) -> TimeUtils.parseDurationShort(val)));
-    public final UserSetting<Integer> navigationTransferTime = registerSetting(new UserSetting<>(() -> 1000, NBT_TRANSFER_TIME, (nbt, val, name) -> nbt.putInt(name, val), (nbt, name) -> nbt.getInt(name), (val) -> TimeUtils.parseDurationShort(val)));
+    public final UserSetting<Integer> navigationDepartureInTicks = registerSetting(new UserSetting<>(() -> 0, NBT_DEPARTURE_IN, (nbt, val, name) -> nbt.putInt(name, val), (nbt, name) -> nbt.getInt(name), (val) -> new DLTime(val, VanillaTimeSystem.INSTANCE).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME, VanillaTimeSystem.INSTANCE)));
+    public final UserSetting<Integer> navigationTransferTime = registerSetting(new UserSetting<>(() -> 1000, NBT_TRANSFER_TIME, (nbt, val, name) -> nbt.putInt(name, val), (nbt, name) -> nbt.getInt(name), (val) -> new DLTime(val, VanillaTimeSystem.INSTANCE).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME, VanillaTimeSystem.INSTANCE)));
     public final UserSetting<Set<UUID>> navigationExcludedTrainCategories = registerSetting(new UserSetting<>(() -> new HashSet<>(), NBT_TRAIN_CATEGORIES,
     (nbt, val, name) -> {
         ListTag list = new ListTag();
@@ -73,7 +77,7 @@ public class UserSettings {
         return nbt.getList(name, Tag.TAG_COMPOUND).stream().map(x -> (CompoundTag)x).collect(Collectors.toSet());
     },(val) -> TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".saved_routes.saved", val.size()).getString()));
     
-    public final UserSetting<Integer> searchDepartureInTicks = registerSetting(new UserSetting<>(() -> 0, NBT_SEARCH_DEPARTURE_TIME, (nbt, val, name) -> nbt.putInt(name, val), (nbt, name) -> nbt.getInt(name), (val) -> TimeUtils.parseDurationShort(val)));
+    public final UserSetting<Integer> searchDepartureInTicks = registerSetting(new UserSetting<>(() -> 0, NBT_SEARCH_DEPARTURE_TIME, (nbt, val, name) -> nbt.putInt(name, val), (nbt, name) -> nbt.getInt(name), (val) -> new DLTime(val, VanillaTimeSystem.INSTANCE).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME, VanillaTimeSystem.INSTANCE)));
     public final UserSetting<Set<UUID>> searchExcludedTrainCaegories = registerSetting(new UserSetting<>(() -> new HashSet<>(), NBT_SEARCH_TRAIN_CATEGORIES,
     (nbt, val, name) -> {
         ListTag list = new ListTag();
@@ -83,7 +87,7 @@ public class UserSettings {
         return nbt.getList(name, Tag.TAG_STRING).stream().filter(x -> GlobalSettings.hasInstance() ? GlobalSettings.getInstance().trainCategoryExists(deserializeUuidString(x.getAsString())) : true).map(x -> deserializeUuidString(x.getAsString())).collect(Collectors.toSet());
     },(val) -> val.isEmpty() ? TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.train_categories.all").getString() : TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.train_categories.excluded", val.size()).getString()));
     
-    public final UserSetting<EDepartureBoardTrainFilter> searchTrainFilter = registerSetting(new UserSetting<>(() -> EDepartureBoardTrainFilter.ARRIVAL_AND_DEPARTURE, NBT_DEPARTURE_TRAIN_FILTER, (nbt, val, name) -> nbt.putByte(name, val.getIndex()), (nbt, name) -> EDepartureBoardTrainFilter.getByIndex(nbt.getByte(name)), (val) -> TextUtils.translate(val.getValueTranslationKey(CreateRailwaysNavigator.MOD_ID)).getString()));
+    public final UserSetting<EDepartureBoardTrainFilter> searchTrainFilter = registerSetting(new UserSetting<>(() -> EDepartureBoardTrainFilter.ARRIVAL_AND_DEPARTURE, NBT_DEPARTURE_TRAIN_FILTER, (nbt, val, name) -> nbt.putByte(name, val.getIndex()), (nbt, name) -> EDepartureBoardTrainFilter.getByIndex(nbt.getByte(name)), (val) -> val.getValueTranslation().getString()));
     
     public final UserSetting<RecentSearchQueries> recentSearchQueries = registerSetting(new UserSetting<>(() -> new RecentSearchQueries(), NBT_RECENT_SEARCH_QUERIES,
     (nbt, val, name) -> {;
@@ -143,7 +147,7 @@ public class UserSettings {
             throw new RuntimeSideException(true);
         }  
         checkReadOnly();
-        DataAccessor.getFromServer(this, ModAccessorTypes.SAVE_USER_SETTINGS, $ -> DLUtils.doIfNotNull(andThen, x -> x.run()));
+        ModNetworkManager.SAVE_USER_SETTINGS.send(NetworkDirection.toServer(), new SaveUserSettingsPacketData(this), (response) -> DLUtils.doIfNotNull(andThen, x -> x.run()), () -> {});
     }
 
     /** Server-side only! */

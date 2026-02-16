@@ -1,0 +1,106 @@
+name: Snapshot Build
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        java: [21]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Read config
+        id: config
+        run: |
+          PATTERN=$(jq -r '.main_branch_pattern' .mod-build-config.json)
+          echo "pattern=$PATTERN" >> $GITHUB_OUTPUT
+
+      - name: Check base branch pattern
+        id: branchcheck
+        run: |
+          BASE="${{ github.event.pull_request.base.ref }}"
+          PATTERN="${{ steps.config.outputs.pattern }}"
+
+          if [[ "$BASE" =~ $PATTERN ]]; then
+            echo "valid=true" >> $GITHUB_OUTPUT
+          else
+            echo "valid=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Stop if branch does not match pattern
+        if: |
+          github.event_name == 'pull_request' &&
+          steps.branchcheck.outputs.valid != 'true'
+        run: exit 0
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Cache Gradle & Loom
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            **/.gradle/loom-cache
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle.properties', '**/libs.versions.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-home-cache-cleanup: true
+          gradle-version: wrapper
+
+      - name: Build
+        run: |
+          chmod +x gradlew
+          export SNAPSHOT_BUILD="${{ github.run_number }}"
+          echo "Using SNAPSHOT_BUILD=$SNAPSHOT_BUILD"
+          ./gradlew buildWithMetadata
+
+      - name: Collect release files
+        id: collect
+        run: |
+          FILES=""
+          for MAIN in $(jq -r '.artifacts[].filename' metadata.json); do
+            echo "Processing $MAIN"
+            MAIN_PATH=$(find . -type f -name "${MAIN}.jar" | head -n 1)
+            if [ -z "$MAIN_PATH" ]; then
+              echo "ERROR: Could not find artifact: $MAIN"
+              exit 1
+            fi
+            DIR=$(dirname "$MAIN_PATH")
+            FILES="$FILES $MAIN_PATH"
+            for f in "$DIR"/*sources.jar; do
+              [ -e "$f" ] && FILES="$FILES $f"
+            done
+            for f in "$DIR"/*javadoc.jar; do
+              [ -e "$f" ] && FILES="$FILES $f"
+            done
+          done
+          echo "FILES<<EOF" >> $GITHUB_ENV
+          for f in $FILES; do
+            echo "$f" >> $GITHUB_ENV
+          done
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: snapshot-${{ github.run_number }}
+          path: ${{ env.FILES }}

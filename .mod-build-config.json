@@ -1,0 +1,56 @@
+{
+  "github_release_title_format": "{MOD_NAME} - v{FULL_VERSION} {PLATFORMS}",
+  "mod_release_title_format": "{MOD_ID}-{LOADER}-{FULL_VERSION}",
+  "main_branch_pattern": "^mc[/-].+",
+  "auto_port_branches": [
+  ],
+  "modules": [
+    "fabric",
+    "forge"
+  ],
+  "changelog_categories": [
+    {
+      "inputs": ["added", "add", "✨"],
+      "output": "Added"
+    },
+    {
+      "inputs": ["fixed", "fix", "🐛"],
+      "output": "Fixed"
+    },
+    {
+      "inputs": ["changed", "change", "♻️"],
+      "output": "Changed"
+    },
+    {
+      "inputs": ["removed", "remove", "🔥"],
+      "output": "Removed"
+    },
+    {
+      "inputs": ["updated", "update", "⬆️"],
+      "output": "Updated"
+    }
+  ],
+  "release_channels": {
+    "alpha": [
+      "a",
+      "alpha",
+      "snapshot",
+      "test",
+      "experimental"
+    ],
+    "beta": [
+      "b",
+      "beta",
+      "rc",
+      "release-candidate",
+      "candidate",
+      "preview"
+    ],
+    "release": [
+      "r",
+      "release",
+      "stable",
+      "final"
+    ]
+  }
+}

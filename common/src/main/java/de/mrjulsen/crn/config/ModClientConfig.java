@@ -3,7 +3,7 @@ package de.mrjulsen.crn.config;
 import de.mrjulsen.crn.client.gui.overlay.OverlayPosition;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.util.ESpeedUnit;
-import de.mrjulsen.mcdragonlib.util.TimeUtils.TimeFormat;
+import de.mrjulsen.crn.util.ETimeFormat;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class ModClientConfig {
@@ -18,7 +18,7 @@ public class ModClientConfig {
     public static final ModConfigSpec.ConfigValue<Double> OVERLAY_SCALE;
     public static final ModConfigSpec.ConfigValue<Boolean> ROUTE_NOTIFICATIONS;
     public static final ModConfigSpec.ConfigValue<OverlayPosition> ROUTE_OVERLAY_POSITION;
-    public static final ModConfigSpec.ConfigValue<TimeFormat> TIME_FORMAT;
+    public static final ModConfigSpec.ConfigValue<ETimeFormat> TIME_FORMAT;
     public static final ModConfigSpec.ConfigValue<CustomLanguage> LANGUAGE;
     public static final ModConfigSpec.ConfigValue<ESpeedUnit> SPEED_UNIT;
 
@@ -50,7 +50,7 @@ public class ModClientConfig {
         SPEED_UNIT = BUILDER.comment("The unit to be used to represent speed. (Default: KMH)")
             .defineEnum("speed_unit", ESpeedUnit.KMH);
         TIME_FORMAT = BUILDER.comment("Display Time Format. (Default: Hours 24)")
-            .defineEnum("time_format", TimeFormat.HOURS_24);
+            .defineEnum("time_format", ETimeFormat.HOURS_24);
 
         BUILDER.pop();
         SPEC = BUILDER.build();

@@ -261,6 +261,8 @@
     "gui.createrailwaysnavigator.advanced_display_settings.show_connections": "Show next connections",
     "gui.createrailwaysnavigator.advanced_display_settings.show_line_color": "Show train line color",
     "gui.createrailwaysnavigator.advanced_display_settings.show_line_color.description": "Highlights the train name text with the color of the current train line.",
+    "gui.createrailwaysnavigator.advanced_display_settings.show_train_multiple_times": "Show train multiple times",
+    "gui.createrailwaysnavigator.advanced_display_settings.show_train_multiple_times.description": "If a train stops multiple times at a station (e.g. once in one direction and then in the other), all arrivals are shown on the displays. If this setting is turned off, only the next arrival of a train is shown, or nothing at all, depending on the display configuration.",
     "gui.createrailwaysnavigator.advanced_display_settings.train_name_width": "Train Name Width",
     "gui.createrailwaysnavigator.advanced_display_settings.train_name_width_next": "Train Name Width (Next departure)",
     "gui.createrailwaysnavigator.advanced_display_settings.train_name_width_table": "Train Name Width (Following trains)",
@@ -371,7 +373,19 @@
     "enum.createrailwaysnavigator.departure_board_train_filter.arrival_and_departure": "All",
     "enum.createrailwaysnavigator.departure_board_train_filter.arrival_only": "Arrivals only",
     "enum.createrailwaysnavigator.departure_board_train_filter.departure_only": "Departures only",
-    
+
+    "enum.createrailwaysnavigator.train_stop_type": "Train Stop Display Type",
+    "enum.createrailwaysnavigator.train_stop_type.all": "All",
+    "enum.createrailwaysnavigator.train_stop_type.description.all": "Shows the arrivals and departures of each train.",
+    "enum.createrailwaysnavigator.train_stop_type.arrivals_only": "Arrivals only",
+    "enum.createrailwaysnavigator.train_stop_type.description.arrivals_only": "Shows only the arrivals of each train. If the train leaves an unnavigable section, nothing will be displayed.",
+    "enum.createrailwaysnavigator.train_stop_type.arrivals_preferred": "Arrivals preferred",
+    "enum.createrailwaysnavigator.train_stop_type.description.arrivals_preferred": "Shows only train arrivals, unless the train starts a new station at this station. In that case, the departure is shown as well.",
+    "enum.createrailwaysnavigator.train_stop_type.departures_only": "Departures only",
+    "enum.createrailwaysnavigator.train_stop_type.description.departures_only": "Shows only the departures of each train. If the train then enters an unnavigable section, nothing will be displayed.",
+    "enum.createrailwaysnavigator.train_stop_type.departures_preferred": "Departures preferred",
+    "enum.createrailwaysnavigator.train_stop_type.description.departures_preferred": "Shows only train departures, unless the train terminates at this station. In that case, the arrival is shown as well.",
+
     "createrailwaysnavigator.display_source.advanced_display": "Advanced Displays",
     "createrailwaysnavigator.display_target.advanced_display.component": "Component %s",
 
@@ -392,7 +406,10 @@
     "createrailwaysnavigator.schedule.condition.train_separation": "Train Separation",
     "createrailwaysnavigator.schedule.condition.train_separation.title": "Separation: %s",
     "createrailwaysnavigator.schedule.condition.train_separation.description": "Departure %s (%s) after:",
-    
+    "createrailwaysnavigator.schedule.condition.train_separation.custom_filter": "with custom station filter:",
+    "createrailwaysnavigator.schedule.condition.train_separation.custom_station_filter": "Custom Station Filter",
+    "createrailwaysnavigator.schedule.condition.train_separation.custom_station_filter.description": "This filter text is used to determine which stations should be used for train separation. If left empty, the filter from the instruction is used.",
+
     "createrailwaysnavigator.schedule.instruction.configure": "Configure...",
     "createrailwaysnavigator.schedule.instruction.travel_section": "New Schedule Section",
     "createrailwaysnavigator.schedule.instruction.travel_section.description": "Beginning of a new schedule section.",

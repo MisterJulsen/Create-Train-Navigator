@@ -58,12 +58,12 @@ public final class AdvancedDisplaysRegistry {
         }
 
         public String getTranslationKey() {
-            return "display." + CreateRailwaysNavigator.MOD_ID + "." + category().getEnumValueName() + "." + name();
+            return "display." + CreateRailwaysNavigator.MOD_ID + "." + category().getSerializedName() + "." + name();
         }
 
         @Override
         public final String toString() {
-            return "DisplayType[" + category().getEnumValueName() + "/" + name() + "]";
+            return "DisplayType[" + category().getSerializedName() + "/" + name() + "]";
         }
     }
 

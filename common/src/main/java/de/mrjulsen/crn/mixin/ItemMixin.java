@@ -2,6 +2,7 @@ package de.mrjulsen.crn.mixin;
 
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.block.display.properties.BasicDisplaySettings;
+import de.mrjulsen.mcdragonlib.util.DLColor;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.DyeColor;
@@ -41,9 +42,9 @@ public abstract class ItemMixin extends Item {
             blockEntity.applyToAll(be -> {
                 be.getSettingsAs(BasicDisplaySettings.class).ifPresent(x -> {
                     if (context.getPlayer().isShiftKeyDown()) {
-                        x.setBackColor(dyeColor);
+                        x.setBackColor(DLColor.fromInt(dyeColor));
                     } else {
-                        x.setFontColor(dyeColor);
+                        x.setFontColor(DLColor.fromInt(dyeColor));
                     }
                     be.notifyUpdate();
                 });

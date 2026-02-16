@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.simibubi.create.content.decoration.copycat.CopycatBlockEntity;
 import com.simibubi.create.content.trains.display.FlapDisplayBlock;
 import com.simibubi.create.content.trains.entity.CarriageContraption;
 import com.simibubi.create.content.trains.entity.CarriageContraptionEntity;
-import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 
 import de.mrjulsen.crn.block.AbstractAdvancedDisplayBlock;
@@ -30,20 +30,24 @@ import de.mrjulsen.crn.data.CarriageData;
 import de.mrjulsen.crn.data.TrainExitSide;
 import de.mrjulsen.crn.data.StationTag.ClientStationTag;
 import de.mrjulsen.crn.data.StationTag.StationInfo;
+import de.mrjulsen.crn.data.train.ETrainStopState;
 import de.mrjulsen.crn.data.train.TrainUtils;
 import de.mrjulsen.crn.data.train.portable.StationDisplayData;
 import de.mrjulsen.crn.data.train.portable.TrainDisplayData;
 import de.mrjulsen.crn.data.train.portable.TrainStopDisplayData;
-import de.mrjulsen.crn.registry.ModAccessorTypes;
+import de.mrjulsen.crn.network.packets.pain.GetTrainDisplayDataPacketData;
 import de.mrjulsen.crn.registry.ModDisplayTypes;
+import de.mrjulsen.crn.registry.ModNetworkManager;
+import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.block.IBERInstance;
 import de.mrjulsen.mcdragonlib.client.ber.IBlockEntityRendererInstance;
 import de.mrjulsen.mcdragonlib.config.ECachingPriority;
-import de.mrjulsen.mcdragonlib.data.Cache;
-import de.mrjulsen.mcdragonlib.data.Pair;
-import de.mrjulsen.mcdragonlib.data.Tripple;
-import de.mrjulsen.mcdragonlib.util.ListUtils;
-import de.mrjulsen.mcdragonlib.util.accessor.DataAccessor;
+import de.mrjulsen.mcdragonlib.network.NetworkDirection;
+import de.mrjulsen.mcdragonlib.util.Cache;
+import de.mrjulsen.mcdragonlib.util.DLColor;
+import de.mrjulsen.mcdragonlib.util.DLListUtils;
+import de.mrjulsen.mcdragonlib.util.Pair;
+import de.mrjulsen.mcdragonlib.util.Tripple;
 import dev.architectury.platform.Platform;
 import dev.architectury.utils.Env;
 import net.minecraft.core.BlockPos;
@@ -63,7 +67,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 
-public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
+public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
     IMultiblockBlockEntity<AdvancedDisplayBlockEntity, AbstractAdvancedDisplayBlock>,
     IContraptionBlockEntity<AdvancedDisplayBlockEntity>,
     IBERInstance<AdvancedDisplayBlockEntity>
@@ -111,7 +115,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     // OTHER
     private int syncTicks = 0;
     private final Cache<IBlockEntityRendererInstance<AdvancedDisplayBlockEntity>> renderer = new Cache<>(() -> new AdvancedDisplayRenderInstance(this), ECachingPriority.ALWAYS);
-
+    
     public final Cache<TrainExitSide> relativeExitDirection = new Cache<>(() -> {        
         if (getCarriageData() == null || !getTrainData().getNextStop().isPresent() || !(getBlockState().getBlock() instanceof AbstractAdvancedDisplayBlock)) {
             return TrainExitSide.UNKNOWN;
@@ -247,7 +251,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     }
 
     public boolean isPlatformFixed() {
-        return !stationNameFilter.contains("*");
+        return !ModUtils.isGlobPattern(stationNameFilter);
     }
 
     /**
@@ -295,6 +299,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         }
 
     }
+
     
     /**
      * Updates the display type.
@@ -314,7 +319,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
     }
 
     public void setData(List<StationDisplayData> predictions, String stationNameFilter, StationInfo staionInfo, long lastRefreshedTime) {
-        this.dataOrderChanged = dataOrderChanged || !ListUtils.compareCollections(this.predictions, predictions, StationDisplayData::equals);
+        this.dataOrderChanged = dataOrderChanged || !DLListUtils.compareCollections(this.predictions, predictions, StationDisplayData::equals);
 
         boolean clientUpdate = Platform.getEnvironment() == Env.CLIENT && !getStationInfo().equals(staionInfo);
         
@@ -512,7 +517,9 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         syncTicks--;
         if (level.isClientSide && syncTicks <= 0) {
             syncTicks = ModClientConfig.DISPLAY_REFRESH_RATE.get();
-            DataAccessor.getFromServer(((CarriageContraptionEntity)carriage.entity).trainId, ModAccessorTypes.GET_TRAIN_DISPLAY_DATA_FROM_SERVER, (data) -> { 
+
+            ModNetworkManager.GET_TRAIN_DISPLAY_DATA.send(NetworkDirection.toServer(), new GetTrainDisplayDataPacketData.Request(((CarriageContraptionEntity)carriage.entity).trainId), (response) -> {
+                TrainDisplayData data = response.getData();
                 if (data.getState().isOutOfService() && this.trainData.getState().isOutOfService()) {
                     return;
                 }
@@ -520,8 +527,9 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
                 boolean shouldUpdate = false;
                 if (this.trainData != null && this.trainData.getNextStop().isPresent() && data.getNextStop().isPresent()) {
                     TrainStopDisplayData prediction = this.trainData.getNextStop().get();
+                    ETrainStopState stopState = ETrainStopState.beforeArrival(data.isWaitingAtStation());
 
-                    shouldUpdate = !this.trainData.getTrainData().getName().equals(data.getTrainData().getName()) ||
+                    shouldUpdate = !this.trainData.getTrainData().getName(stopState).equals(data.getTrainData().getName(stopState)) ||
                         !prediction.getDestination().equals(data.getNextStop().get().getDestination()) ||
                         prediction.getStationEntryIndex() != data.getNextStop().get().getStationEntryIndex() ||
                         this.trainData.getNextStopExitSide() != data.getNextStopExitSide() ||
@@ -537,7 +545,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
                 this.relativeExitDirection.clear();
                 
                 getRenderer().update(level, pos, state, this, shouldUpdate ? EUpdateReason.LAYOUT_CHANGED : EUpdateReason.DATA_CHANGED);
-            });
+            }, () -> {});
         }
     }
 
@@ -611,7 +619,7 @@ public class AdvancedDisplayBlockEntity extends SmartBlockEntity implements
         }
         
         if (tag.contains(LEGACY_NBT_COLOR)) {
-            getSettingsAs(BasicDisplaySettings.class).ifPresent(x -> x.setFontColor(tag.getInt(LEGACY_NBT_COLOR)));
+            getSettingsAs(BasicDisplaySettings.class).ifPresent(x -> x.setFontColor(DLColor.fromInt(tag.getInt(LEGACY_NBT_COLOR))));
         }
         if (displayTypeId.category().getSource() == EDisplayTypeDataSource.PLATFORM) {            
             if (tag.contains(LEGACY_NBT_PLATFORM_WIDTH)) {

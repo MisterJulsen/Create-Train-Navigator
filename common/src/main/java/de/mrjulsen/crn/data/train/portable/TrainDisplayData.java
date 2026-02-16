@@ -4,25 +4,27 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import com.simibubi.create.content.trains.entity.Train;
 
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.TrainExitSide;
 import de.mrjulsen.crn.exceptions.RuntimeSideException;
+import de.mrjulsen.mcdragonlib.util.Cache;
+import de.mrjulsen.mcdragonlib.util.Pair;
+import de.mrjulsen.mcdragonlib.util.Holder.MutableHolder;
 import de.mrjulsen.crn.data.train.TrainListener;
 import de.mrjulsen.crn.data.train.TrainPrediction;
 import de.mrjulsen.crn.data.train.TrainStop;
 import de.mrjulsen.crn.data.train.ScheduleSection;
 import de.mrjulsen.crn.data.train.TrainUtils;
 import de.mrjulsen.crn.event.ModCommonEvents;
-import de.mrjulsen.mcdragonlib.data.Cache;
-import de.mrjulsen.mcdragonlib.data.Pair;
-import de.mrjulsen.mcdragonlib.data.Single.MutableSingle;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.server.MinecraftServer;
 
 public class TrainDisplayData {
 
@@ -170,14 +172,22 @@ public class TrainDisplayData {
         }
 
         return TrainListener.getTrainData(train.id).map(data -> {
-            MutableSingle<TrainExitSide> sideHolder = new MutableSingle<>(null); 
-            ModCommonEvents.getCurrentServer().ifPresent(x -> {
-                x.execute(() -> sideHolder.setFirst(TrainUtils.getExitSide(train.navigation.destination)));
-                while (sideHolder.getFirst() == null) {
-                    try { TimeUnit.MILLISECONDS.sleep(10); } catch (InterruptedException e) {}
+            MutableHolder<TrainExitSide> sideHolder = new MutableHolder<>(null); 
+
+            MinecraftServer server = ModCommonEvents.getCurrentServer().orElse(null);
+            if (server != null) {
+                if (Thread.currentThread() == server.getRunningThread()) {
+                    sideHolder.set(TrainUtils.getExitSide(train.navigation.destination));
+                } else {
+                    CompletableFuture<Void> future = new CompletableFuture<>();
+                    server.execute(() -> {
+                        sideHolder.set(TrainUtils.getExitSide(train.navigation.destination));
+                        future.complete(null);
+                    });
+                    future.join();
                 }
-            });
-            TrainExitSide side = sideHolder.getFirst() == null ? TrainExitSide.UNKNOWN : sideHolder.getFirst();
+            }
+            TrainExitSide side = sideHolder.get() == null ? TrainExitSide.UNKNOWN : sideHolder.get();
 
             final ScheduleSection section = data.getCurrentSection();
             final ScheduleSection prevSection = section.previousSection();
@@ -196,7 +206,7 @@ public class TrainDisplayData {
                 selectedSection = prevSection;
             }
 
-            List<TrainStopDisplayData> displayData = new ArrayList<>();
+            List<TrainStopDisplayData> stopsOfSection = new ArrayList<>();
             if (selectedSection.isUsable()) {
                 List<TrainPrediction> predictions = selectedSection.getPredictions(-1, false);
                 for (int i = 0; i < predictions.size(); i++) {
@@ -205,7 +215,7 @@ public class TrainDisplayData {
                     if (i == predictions.size() - 1 && predictions.get(0) == prediction) {
                         stop.simulateCycles(1);
                     }
-                    displayData.add(TrainStopDisplayData.of(stop));
+                    stopsOfSection.add(TrainStopDisplayData.of(stop));
                 }
             }
             boolean preStart = isFirstStationInSection && (!prevSection.shouldIncludeNextStationOfNextSection() || !prevSection.isUsable()) && !isAtStation;
@@ -218,7 +228,7 @@ public class TrainDisplayData {
                 }
             }
             boolean atTerminus = nextStopTerminus && isAtStation;
-            boolean teminusAnnounced = nextStopTerminus && data.getNextStopPrediction().map(x -> x.realTime().arrivalIn() < 600).orElse(false);
+            boolean teminusAnnounced = nextStopTerminus && data.getNextStopPrediction().map(x -> x.realTime().arrivalIn() < ModClientConfig.NEXT_STOP_ANNOUNCEMENT.get()).orElse(false);
 
             State state = State.OUT_OF_SERVICE;
             if (preStart) state = State.BEFORE_START;
@@ -235,7 +245,7 @@ public class TrainDisplayData {
 
             return new TrainDisplayData(
                 BasicTrainDisplayData.of(train.id),
-                displayData,
+                stopsOfSection,
                 data.getCurrentScheduleIndex(),
                 side,
                 train.speed,
@@ -288,11 +298,12 @@ public class TrainDisplayData {
 
     public int getCurrentScheduleIndex() {
         return currentScheduleIndex;
+
     }
 
-    public Optional<TrainStopDisplayData> getCurrentStop() {
+public Optional<TrainStopDisplayData> getCurrentStop() {
         int idx = getCurrentStopIndex();
-        if (isWaitingAtStation()) {
+        if (!isWaitingAtStation()) {
             idx -= 1;
             if (idx < 0) {
                 idx = getAllStops().size() - 1;

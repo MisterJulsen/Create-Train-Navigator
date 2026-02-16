@@ -5,15 +5,10 @@ import java.util.Collection;
 
 import com.simibubi.create.foundation.gui.widget.ScrollInput;
 
-import de.mrjulsen.mcdragonlib.client.gui.widgets.DLRenderable;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.DLWidgetContainer;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.IDragonLibWidget;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLGuiComponent;
 import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.components.Renderable;
-import net.minecraft.client.gui.components.events.GuiEventListener;
-import net.minecraft.client.gui.narration.NarrationElementOutput;
 
-public class ModularWidgetLine extends DLWidgetContainer {
+public class ModularWidgetLine extends DLGuiComponent {
 
     protected static final int HEIGHT = 22;
 
@@ -37,20 +32,7 @@ public class ModularWidgetLine extends DLWidgetContainer {
         if (w instanceof ScrollInput i) {
             scrollInputs.add(i);
         }
-        return this.addRenderableWidget(w);
-    }
-
-    public <T extends IDragonLibWidget & Renderable & GuiEventListener> T addDLW(T w) {
-        currentX += w.x() - currentX + w.width();
-        if (w instanceof ScrollInput i) {
-            scrollInputs.add(i);
-        }
-        return this.addRenderableWidget(w);
-    }
-
-    public <T extends DLRenderable> T add(T w) {
-        currentX += w.x() - currentX + w.width();
-        return this.addRenderableOnly(w);
+        return null;
     }
 
     @Override
@@ -59,20 +41,6 @@ public class ModularWidgetLine extends DLWidgetContainer {
         for (ScrollInput i : scrollInputs) {
             i.tick();
         }
-    }
-
-
-    @Override
-    public NarrationPriority narrationPriority() {
-        return NarrationPriority.HOVERED;
-    }
-
-    @Override
-    public void updateNarration(NarrationElementOutput narrationElementOutput) {}
-
-    @Override
-    public boolean consumeScrolling(double mouseX, double mouseY) {
-        return false;
     }
     
 }

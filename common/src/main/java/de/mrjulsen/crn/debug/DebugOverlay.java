@@ -1,6 +1,6 @@
 package de.mrjulsen.crn.debug;
 
-import net.minecraft.client.DeltaTracker;
+import de.mrjulsen.mcdragonlib.events.EventListenerId;
 import org.lwjgl.glfw.GLFW;
 
 import com.simibubi.create.content.trains.entity.Carriage;
@@ -16,25 +16,49 @@ import de.mrjulsen.crn.mixin.ScheduleRuntimeAccessor;
 import de.mrjulsen.crn.mixin.TrainStatusAccessor;
 import de.mrjulsen.crn.util.ESpeedUnit;
 import de.mrjulsen.crn.util.ModUtils;
-import de.mrjulsen.mcdragonlib.client.OverlayManager;
-import de.mrjulsen.mcdragonlib.client.gui.DLOverlayScreen;
-import de.mrjulsen.mcdragonlib.client.util.Graphics;
+import de.mrjulsen.mcdragonlib.client.DLOverlayManager;
+import de.mrjulsen.mcdragonlib.client.gui.events.DLGuiStandardEvents;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLWindow;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLWindowManager;
+import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
-import de.mrjulsen.mcdragonlib.core.EAlignment;
+import de.mrjulsen.mcdragonlib.data.ETextAlignment;
+import de.mrjulsen.mcdragonlib.util.DLColor;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
+import de.mrjulsen.mcdragonlib.util.math.Rectangle;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 
-public class DebugOverlay extends DLOverlayScreen {
-  
-    private static long debugOverlayId = -1;
+public class DebugOverlay extends DLWindow {  
+
+    private static DebugOverlay instance;
+    private final EventListenerId event;
+    
+    public DebugOverlay(DLWindowManager manager) {
+        super(manager);
+        fullscreen.set(true);
+
+        event = getWindowManager().addEventListener(DLGuiStandardEvents.KeyPressEvent.class, (s, e) -> {
+            if (e.keyCode() == GLFW.GLFW_KEY_K) {
+                trainIndex++;
+                return true;
+            }
+            return false;
+        });
+    }
+
+    @Override
+    public void close() throws Exception {
+        getWindowManager().removeEventListener(DLGuiStandardEvents.KeyPressEvent.class, event);
+        super.close();
+    }
 
     public static void toggle() {
-        OverlayManager.remove(debugOverlayId);
-        if (debugOverlayId == -1) {
-            debugOverlayId = OverlayManager.add(new DebugOverlay());
+        if (instance != null) {
+            DLOverlayManager.getWindowManager().ifPresent(w -> w.closeWindow(instance));
+            instance = null;
         } else {
-            debugOverlayId = -1;
+            DLOverlayManager.addOverlay(mgr -> instance = new DebugOverlay(mgr));
         }
     }
 
@@ -44,7 +68,7 @@ public class DebugOverlay extends DLOverlayScreen {
     int lastKey = -1;
 
     @Override
-    public void render(Graphics graphics, DeltaTracker deltaTracker, int screenWidth, int screenHeight) {
+    public void renderMainLayer(DLGuiGraphics graphics, double mouseX, double mouseY, Rectangle renderBounds) {
         graphics.poseStack().pushPose();
         graphics.poseStack().scale(0.75f, 0.75f, 0.75f);
         line = 0;
@@ -99,33 +123,16 @@ public class DebugOverlay extends DLOverlayScreen {
         graphics.poseStack().popPose();
     }
     
-    private void drawLine(Graphics graphics, String str) {
+    private void drawLine(DLGuiGraphics graphics, String str) {
         drawLine(graphics, TextUtils.text(str));
     }
     
-    private void drawLine(Graphics graphics, Component str) {
+    private void drawLine(DLGuiGraphics graphics, Component str) {
         int x = 2;
         int y = 2;
-        GuiUtils.fill(graphics, x - 1, y - 1 + line * (getFont().lineHeight + 2), getFont().width(str) + 2, getFont().lineHeight + 2, 0x44000000);
-        GuiUtils.drawString(graphics, getFont(), x, y + 1 + line * (getFont().lineHeight + 2), str, 0xFFFFFFFF, EAlignment.LEFT, true);
+        GuiUtils.fill(graphics, x - 1, y - 1 + line * (graphics.defaultFont().lineHeight + 2), graphics.defaultFont().width(str) + 2, graphics.defaultFont().lineHeight + 2, DLColor.fromInt(0x44000000));
+        GuiUtils.drawString(graphics, graphics.defaultFont(), x, y + 1 + line * (graphics.defaultFont().lineHeight + 2), str, DLColor.WHITE, ETextAlignment.LEFT, true);
         line++;
-    }
-
-    @Override
-    public boolean keyPressed(int pKeyCode, int pScanCode, int pModifiers) {
-        if (lastKey != pKeyCode) {
-            lastKey = pKeyCode;
-        } else if (lastKey == pKeyCode){        
-            lastKey = GLFW.GLFW_KEY_UNKNOWN;    
-            if (pKeyCode == GLFW.GLFW_KEY_K) {
-                trainIndex++;
-                return true;
-            }
-        }
-        if (pKeyCode == GLFW.GLFW_KEY_P) {
-            return true;
-        }
-        return super.keyPressed(pKeyCode, pScanCode, pModifiers);
-    }    
+    } 
 
 }

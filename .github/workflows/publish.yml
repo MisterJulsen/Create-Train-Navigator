@@ -1,0 +1,189 @@
+name: Publish to Mod Platforms
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  prepare:
+    if: ${{ !contains(github.event.release.body, '[skip-mod-publish]') }}
+    runs-on: ubuntu-latest
+
+    outputs:
+      loaders: ${{ steps.collect.outputs.loaders }}
+      release_title: ${{ steps.collect.outputs.release_title }}
+
+    steps:
+      - name: Checkout correct branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.target_commitish }}
+          fetch-depth: 0
+
+      - name: Download release assets
+        uses: robinraju/release-downloader@v1
+        with:
+          tag: ${{ github.event.release.tag_name }}
+          fileName: "*"
+          out-file-path: artifacts
+
+      - name: Parse metadata.json
+        id: collect
+        run: |
+          META="artifacts/metadata.json"
+          
+          MOD_ID=$(jq -r '.mod_id' "$META")
+          MOD_NAME=$(jq -r '.display_name' "$META")
+          MC_VERSION=$(jq -r '.minecraft_version' "$META")
+          MOD_VERSION=$(jq -r '.mod_version' "$META")
+          FULL_VERSION=$(jq -r '.full_version' "$META")
+          RELEASE_CHANNEL=$(jq -r '.release_channel' "$META")
+
+          PLATFORM_STRING=$(jq -r '
+            if has("artifacts") and (.artifacts | length > 0) then
+              "[" + (.artifacts | keys | map(ascii_upcase) | join("/")) + "]"
+            else
+              "[]"
+            end
+          ' "$META")
+
+          TITLE_FORMAT=$(jq -r '.mod_release_title_format' .mod-build-config.json)
+
+          RELEASE_TITLE=$TITLE_FORMAT
+          RELEASE_TITLE=${RELEASE_TITLE//\{MOD_ID\}/$MOD_ID}
+          RELEASE_TITLE=${RELEASE_TITLE//\{MOD_NAME\}/$MOD_NAME}
+          RELEASE_TITLE=${RELEASE_TITLE//\{MOD_VERSION\}/$MOD_VERSION}
+          RELEASE_TITLE=${RELEASE_TITLE//\{FULL_VERSION\}/$FULL_VERSION}
+          RELEASE_TITLE=${RELEASE_TITLE//\{MC_VERSION\}/$MC_VERSION}
+          RELEASE_TITLE=${RELEASE_TITLE//\{RELEASE_CHANNEL\}/$RELEASE_CHANNEL}
+          RELEASE_TITLE=${RELEASE_TITLE//\{PLATFORMS\}/$PLATFORM_STRING}
+
+          echo "MOD_ID=$MOD_ID" >> $GITHUB_ENV
+          echo "MOD_NAME=$MOD_NAME" >> $GITHUB_ENV
+          echo "MC_VERSION=$MC_VERSION" >> $GITHUB_ENV
+          echo "MOD_VERSION=$MOD_VERSION" >> $GITHUB_ENV
+          echo "FULL_VERSION=$FULL_VERSION" >> $GITHUB_ENV
+          echo "RELEASE_CHANNEL=$RELEASE_CHANNEL" >> $GITHUB_ENV
+          echo "PLATFORMS=$PLATFORM_STRING" >> $GITHUB_ENV
+          echo "RELEASE_TITLE=$RELEASE_TITLE" >> $GITHUB_ENV
+
+          echo "release_title=$RELEASE_TITLE" >> $GITHUB_OUTPUT
+          
+          # Loader-Liste erzeugen
+          LOADERS=$(jq -r '.artifacts[].platform' "$META" | sort -u)
+          LOADERS_JSON=$(printf '%s\n' $LOADERS | jq -R . | jq -s -c .)
+          echo "loaders=$LOADERS_JSON" >> $GITHUB_OUTPUT
+
+          # Für jeden Loader eine Datei files_<loader>.txt erzeugen
+          for L in $LOADERS; do
+            # Haupt-JAR aus metadata.json + .jar anhängen
+            jq -r --arg L "$L" '.artifacts[] | select(.platform==$L) | .filename' "$META" \
+              | sed 's|$|.jar|' \
+              | sed 's|^|artifacts/|' > "files_${L}.txt"
+
+            # sources.jar hinzufügen
+            for f in artifacts/*${L}*sources.jar; do
+              [ -f "$f" ] && echo "$f" >> "files_${L}.txt"
+            done
+
+            # javadoc.jar hinzufügen
+            for f in artifacts/*${L}*javadoc.jar; do
+              [ -f "$f" ] && echo "$f" >> "files_${L}.txt"
+            done
+          done
+
+      - name: Upload loader data
+        uses: actions/upload-artifact@v4
+        with:
+          name: loader-data
+          path: |
+            files_*.txt
+
+      - name: Print release summary
+        run: |
+          echo "======================================="
+          echo "           RELEASE SUMMARY"
+          echo "======================================="
+          echo ""
+          echo "Minecraft:        $MC_VERSION"
+          echo "Mod Version:      $MOD_VERSION"
+          echo "Full Version:     $FULL_VERSION"
+          echo "Release Type:     $RELEASE_TYPE"
+          echo "Title:            $RELEASE_TITLE"
+          echo ""
+          echo "Loaders:"
+          printf '%s\n' $LOADERS
+          echo ""
+          echo "Artifacts:"
+          for f in files_*.txt; do
+            echo "== ${f#files_}"
+            cat "$f"
+          done
+          echo "======================================="
+
+  publish:
+    needs: prepare
+    runs-on: ubuntu-latest
+
+    env:
+      RELEASE_TITLE: ${{ needs.prepare.outputs.release_title }}
+
+    strategy:
+      matrix:
+        loader: ${{ fromJson(needs.prepare.outputs.loaders) }}
+
+    steps:
+      - name: Checkout correct branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.target_commitish }}
+          fetch-depth: 0
+
+      - name: Download release assets
+        uses: robinraju/release-downloader@v1
+        with:
+          tag: ${{ github.event.release.tag_name }}
+          fileName: "*"
+          out-file-path: artifacts
+
+      - name: Download loader data
+        uses: actions/download-artifact@v4
+        with:
+          name: loader-data
+
+      - name: Load files for loader
+        run: |
+          LOADER="${{ matrix.loader }}"
+          echo "LOADER=$LOADER" >> $GITHUB_ENV
+          FILELIST=$(cat "files_${LOADER}.txt")
+          echo "files<<EOF" >> $GITHUB_ENV
+          echo "$FILELIST" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Create release title
+        run: |
+          MOD_RELEASE_TITLE=$RELEASE_TITLE
+          MOD_RELEASE_TITLE=${MOD_RELEASE_TITLE//\{LOADER\}/$LOADER}
+          echo "MOD_RELEASE_TITLE=$MOD_RELEASE_TITLE" >> $GITHUB_ENV
+
+          echo "Generated Release Title:"
+          echo "$MOD_RELEASE_TITLE"
+          echo "Loader: $LOADER"
+
+      - name: Publish ${{ matrix.loader }}
+        uses: Kir-Antipov/mc-publish@v3.3
+        with:
+          name: ${{ env.MOD_RELEASE_TITLE }}
+          version: ${{ env.MOD_VERSION }}
+          version-type: ${{ env.RELEASE_TYPE }}
+          game-versions: ${{ env.MC_VERSION }}
+          loaders: ${{ matrix.loader }}
+
+          changelog: ${{ github.event.release.body }}
+          files: ${{ env.files }}
+
+          modrinth-id: ${{ secrets.MODRINTH_ID }}
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+
+          curseforge-id: ${{ secrets.CF_ID }}
+          curseforge-token: ${{ secrets.CF_TOKEN }}

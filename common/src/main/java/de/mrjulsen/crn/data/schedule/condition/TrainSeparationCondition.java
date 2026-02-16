@@ -1,5 +1,6 @@
 package de.mrjulsen.crn.data.schedule.condition;
 
+import java.util.ArrayList;
 import java.util.List;
 import com.google.common.collect.ImmutableList;
 import com.simibubi.create.content.trains.entity.Train;
@@ -8,6 +9,7 @@ import com.simibubi.create.content.trains.schedule.condition.ScheduledDelay;
 import com.simibubi.create.content.trains.schedule.destination.DestinationInstruction;
 import com.simibubi.create.foundation.gui.ModularGuiLineBuilder;
 
+import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.api.IPredictableWaitCondition;
 import de.mrjulsen.crn.client.ClientWrapper;
@@ -16,8 +18,10 @@ import de.mrjulsen.crn.data.schedule.INavigationExtension;
 import de.mrjulsen.crn.data.schedule.instruction.PrioritizedDestinationInstruction;
 import de.mrjulsen.crn.data.train.DepartureHistory;
 import de.mrjulsen.crn.data.train.DepartureHistory.ETrainFilter;
-import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
+import de.mrjulsen.mcdragonlib.util.time.DLTime;
+import de.mrjulsen.mcdragonlib.util.time.TimeContext;
+import de.mrjulsen.mcdragonlib.util.time.VanillaTimeSystem;
 import dev.architectury.utils.GameInstance;
 import net.createmod.catnip.data.Pair;
 import net.minecraft.ChatFormatting;
@@ -35,12 +39,14 @@ public class TrainSeparationCondition extends ScheduledDelay implements IDelayed
     public static final String NBT_TICKS = "Ticks";
     public static final String NBT_TRAIN_FILTER = "TrainFilter";
     public static final String NBT_TIME_SOURCE = "TimeSource";
-    
+    public static final String NBT_STATION_FILTER = "StationFilter";
+
     public TrainSeparationCondition() {
         super();
 		data.putByte(NBT_TRAIN_FILTER, ETrainFilter.ANY.getIndex());
 		data.putInt(NBT_TICKS, 100);
 		data.putByte(NBT_TIME_SOURCE, ETimeSource.REAL_LIFE.getIndex());
+		data.putString(NBT_STATION_FILTER, "");
     }
 
 	@Override
@@ -65,44 +71,49 @@ public class TrainSeparationCondition extends ScheduledDelay implements IDelayed
 		return 0;
 	}
 
+	private String getCustomStationFilter() {
+		if (data.contains(NBT_STATION_FILTER)) {
+			return data.getString(NBT_STATION_FILTER);
+		}
+		return "";
+	}
+
 	@Override
 	protected Component formatTime(boolean compact) {
         int remainingTicks = getSeparationTime();
 
 		switch (getTimeSource()) {
 			case IN_GAME -> {
-				int[] t = toInGameTime(remainingTicks);
-				if (compact) {
-					return TextUtils.text(String.format("%d:%02d:%02d", t[2], t[1], t[0]));
-				}
-				return TextUtils.text(String.format("%dd %dh %dm", t[2], t[1], t[0]));
+				return TextUtils.text(toTime(remainingTicks).format(compact ? Constants.DEFAULT_GAME_DURATION_FORMAT : Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME, DLTime.defaultTimeSystem()));
 			}
 			default -> {
-				int[] t = toRealLifeTime(remainingTicks);
-				if (compact) {
-					return TextUtils.text(String.format("%d:%02d,%02d", t[2], t[1], t[0]));
-				}
-				return TextUtils.text(String.format("%dm %ds %dt", t[2], t[1], t[0]));
+				return TextUtils.text(toTime(remainingTicks).format(compact ? Constants.DEFAULT_REAL_DURATION_FORMAT : Constants.DEFAULT_VERBOSE_REAL_DURATION_FORMAT, TimeContext.REAL, DLTime.defaultTimeSystem()));
 			}
 		}
 	}
 
     @Override
 	public List<Component> getTitleAs(String type) {
-		return ImmutableList.of(
-			TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule." + type + "." + getId().getPath()),
-			TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule." + type + "." + getId().getPath() + ".description",
+		List<Component> components = new ArrayList<>();
+		components.add(TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule." + type + "." + getId().getPath()));
+		components.add(TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule." + type + "." + getId().getPath() + ".description",
 				formatTime(false),
-				TextUtils.translate(getTimeSource().getValueTranslationKey(CreateRailwaysNavigator.MOD_ID)).getString()
-			).withStyle(ChatFormatting.DARK_AQUA),
-			TextUtils.translate(getTrainFilter().getValueTranslationKey(CreateRailwaysNavigator.MOD_ID)).withStyle(ChatFormatting.AQUA)
-        );
+				getTimeSource().getValueTranslation().getString()
+		).withStyle(ChatFormatting.DARK_AQUA));
+		components.add(getTrainFilter().getValueTranslation().withStyle(ChatFormatting.AQUA));
+
+		String customStationFilter = getCustomStationFilter();
+		if (customStationFilter != null && !customStationFilter.isBlank()) {
+			components.add(TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule." + type + "." + getId().getPath() + ".custom_filter").withStyle(ChatFormatting.DARK_AQUA));
+			components.add(TextUtils.text(customStationFilter).withStyle(ChatFormatting.AQUA));
+		}
+		return components;
 	}
 
 	@Override
 	public boolean tickCompletion(Level level, Train train, CompoundTag context) {
 		ScheduleEntry entry = train.runtime.getSchedule().entries.get(train.runtime.currentEntry);
-		((INavigationExtension)(Object)train.navigation).addDelayedWaitCondition(de.mrjulsen.mcdragonlib.data.Pair.of(this, new DelayedWaitConditionContext(level, train, context, train.getCurrentStation(), entry)));
+		((INavigationExtension)(Object)train.navigation).addDelayedWaitCondition(de.mrjulsen.mcdragonlib.util.Pair.of(this, new DelayedWaitConditionContext(level, train, context, train.getCurrentStation(), entry)));
 		return true;
 	}
 
@@ -112,7 +123,10 @@ public class TrainSeparationCondition extends ScheduledDelay implements IDelayed
 		int delayValue = getSeparationTime();
 		long lastDepartureTimestamp = Long.MIN_VALUE;
 		ScheduleEntry entry = context.scheduleEntry();
-		if (entry.instruction instanceof PrioritizedDestinationInstruction instruction) {
+		String customStationFilter = getCustomStationFilter();
+		if (customStationFilter != null && !customStationFilter.isBlank()) {
+			lastDepartureTimestamp = DepartureHistory.getLatestDepartureFor(getTrainFilter(), context.train(), customStationFilter);
+		} else if (entry.instruction instanceof PrioritizedDestinationInstruction instruction) {
 			List<String> stationName = instruction.getFilters();
 			lastDepartureTimestamp = stationName.stream().mapToLong(x -> DepartureHistory.getLatestDepartureFor(getTrainFilter(), context.train(), x)).max().orElse(0);
 		} else if (entry.instruction instanceof DestinationInstruction instruction) {
@@ -121,7 +135,9 @@ public class TrainSeparationCondition extends ScheduledDelay implements IDelayed
 		}
 
 		if (GameInstance.getServer() != null && lastDepartureTimestamp + delayValue < GameInstance.getServer().overworld().getGameTime()) {
-			DepartureHistory.updateDepartures(context.station().name, context.train());
+			if (context.station() != null && context.station().name != null && context.train() != null) { // TODO what's going on here? Why can station().name be null???
+				DepartureHistory.updateDepartures(context.station().name, context.train());
+			}
 			return true;
 		}
 		return false;
@@ -150,32 +166,8 @@ public class TrainSeparationCondition extends ScheduledDelay implements IDelayed
 		return worldTime + totalWaitTicks();
 	}
 
-
-	public static int[] toRealLifeTime(int ticks) {
-        int t = ticks;
-        int m = t / 1200;
-        t %= 1200;
-        int s = t / 20;
-        t %= 20;
-        return new int[] { t, s, m };
-    }
-
-    public static int[] toInGameTime(int ticks) {
-        int t = ticks;
-        int d = (int)(t / DragonLib.ticksPerDay());
-        t %= DragonLib.ticksPerDay();
-        int h = (int)(t / DragonLib.ticksPerIngameHour());
-        t %= DragonLib.ticksPerIngameHour();
-        int m = (int)(t / (DragonLib.ticksPerIngameHour() / 60));
-        return new int[] { m, h, d };
-    }
-
-    public static int toTicksFromRealLife(int[] t) {
-        return t[2] * TimeUnit.MINUTES.ticksPer + t[1] * TimeUnit.SECONDS.ticksPer + t[0];
-    }
-
-    public static int toTicksFromInGame(int[] t) {
-        return (int)(t[2] * DragonLib.ticksPerDay() + t[1] * DragonLib.ticksPerIngameHour() + t[0] * (DragonLib.ticksPerIngameHour() / 60));
+    public static DLTime toTime(long ticks) {
+		return new DLTime(ticks, DLTime.defaultTimeSystem());
     }
 
 }

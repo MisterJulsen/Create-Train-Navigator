@@ -2,12 +2,13 @@ package de.mrjulsen.crn.client.gui;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 
-import de.mrjulsen.mcdragonlib.client.gui.widgets.DLRenderable;
-import de.mrjulsen.mcdragonlib.client.util.Graphics;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLGuiComponent;
+import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
+import de.mrjulsen.mcdragonlib.util.math.Rectangle;
 import net.minecraft.client.Minecraft;
 
-public class Animator extends DLRenderable {
+public class Animator extends DLGuiComponent {
 
     private int maxTicks;
     private int currentTicks;
@@ -19,7 +20,7 @@ public class Animator extends DLRenderable {
     private Runnable onCompleted;
 
     public Animator() {
-        super(0, 0, 0, 0);
+        super(0, 0, 1, 1);
     }
 
     public boolean isRunning() {
@@ -43,10 +44,15 @@ public class Animator extends DLRenderable {
     }
 
     @Override
-    public void renderMainLayer(Graphics graphics, int mouseX, int mouseY, float partialTicks) {
+    public Rectangle getRenderBounds() {
+        return Rectangle.INFINITE;
+    }
+
+    @Override
+    public void renderMainLayer(DLGuiGraphics graphics, double mouseX, double mouseY, Rectangle renderBounds) {
         if (running) {
-            partialTicks = Minecraft.getInstance().getTimer().getGameTimeDeltaTicks();
-            currentTicksSmooth += partialTicks;
+            float frameTime = Minecraft.getInstance().getTimer().getGameTimeDeltaTicks();
+            currentTicksSmooth += frameTime;
             DLUtils.doIfNotNull(onAnimateRender, x -> x.execute(graphics.poseStack(), getCurrentTicks(), getTotalTicks(), getPercentage()));
             if (currentTicks >= maxTicks) {
                 stop();

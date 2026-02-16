@@ -7,8 +7,11 @@ import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
 import de.mrjulsen.crn.util.VariableManager;
 import de.mrjulsen.mcdragonlib.client.ber.BERGraphics;
 import de.mrjulsen.mcdragonlib.client.ber.BERLabel;
-import de.mrjulsen.mcdragonlib.client.ber.BERLabel.BoundsHitReaction;
+import de.mrjulsen.mcdragonlib.client.ber.BERLabel.EScrollMode;
+import de.mrjulsen.mcdragonlib.data.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
+import de.mrjulsen.mcdragonlib.util.math.Point;
+import de.mrjulsen.mcdragonlib.util.math.Rectangle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
@@ -21,24 +24,22 @@ import net.minecraft.world.level.storage.loot.providers.nbt.NbtProviders;
 public class BERStaticText implements AbstractAdvancedDisplayRenderer<SimpleStaticTextDisplaySettings> {
 
 
-    private final BERLabel label = new BERLabel()        
-        .setScrollingSpeed(2)
-        .setYScale(0.75f)
-        .setScale(0.75f, 0.5f)
-        .setPos(3, 5.2f)
-        .setCentered(true)
-        .setText(TextUtils.empty())
-    ;
+    private final BERLabel label = new BERLabel();
 
-    @Override
-    public void renderTick(float deltaTime) {
-        label.renderTick();
+    public BERStaticText() {
+        label.position.set(Point.of(3, 5.2f));
+        label.horizontalScrollingSpeed.set(SCROLLING_SPEED);
+        label.horizontalMinScale.set(0.5f);
+        label.horizontalMaxScale.set(0.75f);
+        label.verticalMinScale.set(0.75f);
+        label.verticalMaxScale.set(0.75f);
+        label.horizontalScrollMode.set(EScrollMode.WHEN_NEEDED);
     }
 
     @Override
     public void tick(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent) {
         MutableComponent text = getText(getDisplaySettings(blockEntity).getStaticText());    
-        label.setText(text);
+        label.text.set(text);
     }
     
     @Override
@@ -68,12 +69,9 @@ public class BERStaticText implements AbstractAdvancedDisplayRenderer<SimpleStat
             return;
         }        
         
-        MutableComponent text = getText(getDisplaySettings(blockEntity).getStaticText());
-
-        label
-            .setColor((0xFF << 24) | (getDisplaySettings(blockEntity).getFontColor() & 0x00FFFFFF))
-            .setText(text)
-            .setMaxWidth(blockEntity.getXSizeScaled() * 16 - 3 - label.getX(), BoundsHitReaction.SCALE_SCROLL)
-        ;
+        label.clippingArea.set(Rectangle.withSize(3, 3, blockEntity.getXSizeScaled() * 16 - 6, blockEntity.getYSizeScaled() * 16 - 6));
+        label.color.set(getDisplaySettings(blockEntity).getFontColor());
+        label.preferredWidth.set(blockEntity.getXSizeScaled() * 16 - 3 - label.x.get());
+        label.horizontalAlign.set(ETextAlignment.CENTER);
     }
 }

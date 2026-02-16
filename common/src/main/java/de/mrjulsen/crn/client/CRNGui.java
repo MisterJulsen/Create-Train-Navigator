@@ -1,10 +1,11 @@
 package de.mrjulsen.crn.client;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
-import net.minecraft.resources.ResourceLocation;
+import de.mrjulsen.mcdragonlib.client.render.DLTextureSheet;
+import de.mrjulsen.mcdragonlib.client.util.DLTexture;
+import de.mrjulsen.mcdragonlib.util.DLUtils;
 
 public final class CRNGui {
-    public static final ResourceLocation GUI = ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "textures/gui/gui.png");
-    public static final int GUI_WIDTH = 64;
-    public static final int GUI_HEIGHT = 64;
+    public static final DLTexture GUI = new DLTexture(DLUtils.resourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/gui.png"), 64, 64);
+    public static final DLTextureSheet GUI_SPRITES = new DLTextureSheet(DLUtils.resourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/gui.png"));
 }

@@ -9,9 +9,9 @@ import com.google.common.collect.ImmutableMap;
 
 import de.mrjulsen.crn.mixin.TrainPenaltyAccessor;
 import de.mrjulsen.mcdragonlib.config.ECachingPriority;
-import de.mrjulsen.mcdragonlib.data.Cache;
-import de.mrjulsen.mcdragonlib.data.MapCache;
-import de.mrjulsen.mcdragonlib.data.Pair;
+import de.mrjulsen.mcdragonlib.util.Cache;
+import de.mrjulsen.mcdragonlib.util.MapCache;
+import de.mrjulsen.mcdragonlib.util.Pair;
 
 public class PenaltyResult {
 

@@ -1,18 +1,12 @@
 package de.mrjulsen.crn.data.train;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import de.mrjulsen.crn.util.ModUtils;
+import org.joml.Vector3f;
 
 import com.simibubi.create.Create;
 import com.simibubi.create.content.decoration.slidingDoor.DoorControlBehaviour;
@@ -33,16 +27,15 @@ import de.mrjulsen.crn.data.storage.GlobalSettings;
 import de.mrjulsen.crn.event.ModCommonEvents;
 import de.mrjulsen.crn.data.navigation.TrainSchedule;
 import de.mrjulsen.mcdragonlib.config.ECachingPriority;
-import de.mrjulsen.mcdragonlib.data.Cache;
-import de.mrjulsen.mcdragonlib.data.MapCache;
-import de.mrjulsen.mcdragonlib.data.Single.MutableSingle;
-import de.mrjulsen.mcdragonlib.util.MathUtils;
+import de.mrjulsen.mcdragonlib.util.Cache;
+import de.mrjulsen.mcdragonlib.util.MapCache;
+import de.mrjulsen.mcdragonlib.util.Holder.MutableHolder;
+import de.mrjulsen.mcdragonlib.util.math.MathUtils;
 import net.createmod.catnip.data.Couple;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.Vec3;
 
 public final class TrainUtils {
 
@@ -100,32 +93,24 @@ public final class TrainUtils {
         return trains;
     }, String::hashCode, ECachingPriority.LOWEST);
     
-    private static record DeparturesFromTagContext(StationTag station, UUID selfTrain, boolean realTimeOnly) {
-        @Override
-        public final int hashCode() {
-            return Objects.hash(station, selfTrain);
-        }
-    }    
+    private static record DeparturesFromTagContext(StationTag station, UUID selfTrain, boolean realTimeOnly, boolean allowDuplicates) {}
+
     private static final MapCache<List<TrainStop>, DeparturesFromTagContext, DeparturesFromTagContext> departuresAtTagCache = new MapCache<>((context) -> {
         return getDeparturesAt(x -> 
             !GlobalSettings.getInstance().isStationBlacklisted(x.getStationFilter()) && (
             x.getStationTag().equals(context.station()) ||
             (!context.realTimeOnly() && x.getEstimatedStationTag().equals(context.station())
-        )), context.selfTrain());
+        )), context.selfTrain(), context.allowDuplicates());
     }, DeparturesFromTagContext::hashCode, ECachingPriority.LOWEST);
     
-    private static record DeparturesFromStationContext(String station, UUID selfTrain, boolean realTimeOnly) {
-        @Override
-        public final int hashCode() {
-            return Objects.hash(station, selfTrain);
-        }
-    }    
+    private static record DeparturesFromStationContext(String station, UUID selfTrain, boolean realTimeOnly, boolean allowDuplicates) {}
+
     private static final MapCache<List<TrainStop>, DeparturesFromStationContext, DeparturesFromStationContext> departuresAtStationCache = new MapCache<>((context) -> {
         return getDeparturesAt(x ->
             !GlobalSettings.getInstance().isStationBlacklisted(x.getStationFilter()) && (
             TrainUtils.stationMatches(x.getTargetedStationName(), context.station()) ||
             (!context.realTimeOnly() && TrainUtils.stationMatches(x.getScheduledStationName(), context.station())
-        )), context.selfTrain());
+        )), context.selfTrain(), context.allowDuplicates());
     }, DeparturesFromStationContext::hashCode, ECachingPriority.LOWEST);
 
     public static void refreshCache() {
@@ -225,8 +210,8 @@ public final class TrainUtils {
      * @param realTimeOnly Whether only currently valid departures at this station should be returned or also trains that were intended to stop here but the track has changed.
      * @return A list of stops at this stations.
      */
-    public static List<TrainStop> getDeparturesAt(StationTag station, UUID selfTrain, boolean realTimeOnly) {
-        DeparturesFromTagContext context = new DeparturesFromTagContext(station, selfTrain, realTimeOnly);
+    public static List<TrainStop> getDeparturesAt(StationTag station, UUID selfTrain, boolean realTimeOnly, boolean allowDuplicates) {
+        DeparturesFromTagContext context = new DeparturesFromTagContext(station, selfTrain, realTimeOnly, allowDuplicates);
         return departuresAtTagCache.get(context, context);
     }
     /**
@@ -236,15 +221,15 @@ public final class TrainUtils {
      * @param realTimeOnly Whether only currently valid departures at this station should be returned or also trains that were intended to stop here but the track has changed.
      * @return A list of stops at this stations.
      */
-    public static List<TrainStop> getDeparturesAtStationName(String stationName, UUID selfTrain, boolean realTimeOnly) {
-        DeparturesFromStationContext context = new DeparturesFromStationContext(stationName, selfTrain, realTimeOnly);
+    public static List<TrainStop> getDeparturesAtStationName(String stationName, UUID selfTrain, boolean realTimeOnly, boolean allowDuplicates) {
+        DeparturesFromStationContext context = new DeparturesFromStationContext(stationName, selfTrain, realTimeOnly, allowDuplicates);
         return departuresAtStationCache.get(context, context);
     }
 
-    public static List<TrainStop> getDeparturesAt(Predicate<TrainPrediction> stationFilter, UUID selfTrain) {
-        MutableSingle<TrainSchedule> selfSchedule = new MutableSingle<TrainSchedule>(null);
+    public static List<TrainStop> getDeparturesAt(Predicate<TrainPrediction> stationFilter, UUID selfTrain, boolean allowDuplicates) {
+        MutableHolder<TrainSchedule> selfSchedule = new MutableHolder<TrainSchedule>(null);
         TrainUtils.getTrain(selfTrain).ifPresent(x -> {
-            selfSchedule.setFirst(new TrainSchedule(TrainListener.getTrainData(x.id).map(TrainData::getSessionId).orElse(new UUID(0, 0)), x));
+            selfSchedule.set(new TrainSchedule(TrainListener.getTrainData(x.id).map(TrainData::getSessionId).orElse(new UUID(0, 0)), x));
         });
         
         List<TrainStop> stops = new ArrayList<>();
@@ -260,20 +245,20 @@ public final class TrainUtils {
                 }
 
                 TrainStop stop = new TrainStop(pred);
-                if (selfSchedule.getFirst() == null) {
+                if (selfSchedule.get() == null) {
                     Optional<Train> train = TrainUtils.getTrain(stop.getTrainId());
                     if (!train.isPresent()) {
                         continue;
                     }
                     TrainSchedule sched = new TrainSchedule(TrainListener.getTrainData(train.get().id).map(TrainData::getSessionId).orElse(new UUID(0, 0)), train.get());
-                    if (sched.isEqual(selfSchedule.getFirst())) {
+                    if (sched.isEqual(selfSchedule.get())) {
                         continue;
                     }
                 }
                 stops.add(stop);
             }
 
-            Collections.sort(stops, (a, b) -> Long.compare(a.getScheduledDepartureTime(), b.getScheduledDepartureTime()));
+            Collections.sort(stops, Comparator.comparingLong(TrainStop::getRealTimeDepartureTime));
         }
 
         List<TrainStop> results = new ArrayList<>();
@@ -287,7 +272,7 @@ public final class TrainUtils {
                 continue;
             }
             
-            if (!usedTrains.contains(stop.getTrainId())) {
+            if (!usedTrains.contains(stop.getTrainId()) || allowDuplicates) {
                 usedTrains.add(stop.getTrainId());
                 results.add(stop);
             }
@@ -371,20 +356,20 @@ public final class TrainUtils {
     
 
     public static Optional<TrackEdge> getEdge(GlobalStation station) {
-        MutableSingle<TrackEdge> edge = new MutableSingle<TrackEdge>(null);
+        MutableHolder<TrackEdge> edge = new MutableHolder<TrackEdge>(null);
         Create.RAILWAYS.trackNetworks.forEach((uuid, graph) -> {
-            if (edge.getFirst() != null) return;
+            if (edge.get() != null) return;
             TrackEdge e = graph.getConnection(Couple.create(graph.locateNode(station.edgeLocation.getFirst()), graph.locateNode(station.edgeLocation.getSecond())));
             if (e == null) return;
-            edge.setFirst(e);
+            edge.set(e);
         });        
-        return Optional.ofNullable(edge.getFirst());
+        return Optional.ofNullable(edge.get());
     }
 
     public static double angleOn(TrackEdgePoint point, TrackEdge edge) {
         double basePos = point.isPrimary(edge.node1) ? edge.getLength() - point.position : point.position;
-        Vec3 vec = edge.getDirectionAt(basePos);
-        return point.isPrimary(edge.node1) ? MathUtils.getVectorAngle(vec) : MathUtils.getVectorAngle(vec.reverse());
+        Vector3f vec = edge.getDirectionAt(basePos).toVector3f();
+        return point.isPrimary(edge.node1) ? MathUtils.getVectorAngle(vec) : MathUtils.getVectorAngle(vec.negate());
     }
 
     public static TrainExitSide getExitSide(GlobalStation station) {
@@ -403,8 +388,10 @@ public final class TrainUtils {
 
     
     public static boolean stationMatches(String stationName, String filter) {
-        String regex = filter.isBlank() ? filter : "\\Q" + filter.replace("*", "\\E.*\\Q");
-        return stationName.matches(regex);
+        Pattern pattern = ModUtils.buildPattern(filter);
+        return pattern.matcher(stationName).matches();
+        //String regex = filter.isBlank() ? filter : "\\Q" + filter.replace("*", "\\E.*\\Q");
+        //return stationName.matches(regex);
     }
 
     public static boolean isTrainValid(Train train) {

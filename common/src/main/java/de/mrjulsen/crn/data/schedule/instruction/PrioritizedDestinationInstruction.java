@@ -23,7 +23,7 @@ import de.mrjulsen.crn.mixin.ScheduleRuntimeAccessor;
 import de.mrjulsen.crn.util.PenaltyResult;
 import de.mrjulsen.crn.util.PenaltyResult.Category;
 import de.mrjulsen.crn.util.PenaltyResult.Type;
-import de.mrjulsen.mcdragonlib.data.MapCache;
+import de.mrjulsen.mcdragonlib.util.MapCache;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.createmod.catnip.data.Pair;
 import net.minecraft.ChatFormatting;
