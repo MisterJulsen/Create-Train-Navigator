@@ -4,46 +4,46 @@
     "advancement.createrailwaysnavigator.advanced_display": "Nicht ganz 4k",
     "advancement.createrailwaysnavigator.advanced_display.description": "Verbessere deine Anzeigetafel, um mehr Informationen darzustellen und sie sogar auf Zügen zu verwenden.",
 
-    "itemGroup.createrailwaysnavigator.tab": "Create Railways Navigator",    
+    "itemGroup.createrailwaysnavigator.tab": "Create Railways Navigator",
 
     "item.createrailwaysnavigator.navigator": "Navigator",
-	"item.createrailwaysnavigator.navigator.tooltip.summary": "Der _Navigator_ zeigt mögliche _Zugverbindungen_ mit zusätzlichen Informationen, wie _Zwischenhalte_, _Echtzeitdaten_ und mehr.",
+    "item.createrailwaysnavigator.navigator.tooltip.summary": "Der _Navigator_ zeigt mögliche _Zugverbindungen_ mit zusätzlichen Informationen, wie _Zwischenhalte_, _Echtzeitdaten_ und mehr.",
 
     "block.createrailwaysnavigator.train_station_clock": "Bahnhofsuhr",
     "block.createrailwaysnavigator.advanced_display_block": "Verbesserter Anzeige-Block",
-	"block.createrailwaysnavigator.advanced_display_block.tooltip.summary": "Benutze den Block auf _Zügen_ als _Zugzielanzeigen_ oder _Fahrgastinformationsanzeigen_ oder an _Bahnhöfen_ als verbesserte _Bahnsteiganzeige_, die auch mehr Informationen anzeigen als normale Anzeigetafeln.",
+    "block.createrailwaysnavigator.advanced_display_block.tooltip.summary": "Benutze den Block auf _Zügen_ als _Zugzielanzeigen_ oder _Fahrgastinformationsanzeigen_ oder an _Bahnhöfen_ als verbesserte _Bahnsteiganzeige_, die auch mehr Informationen anzeigen als normale Anzeigetafeln.",
     "block.createrailwaysnavigator.advanced_display_block.tooltip.condition1": "R-Klick mit einem Schraubenschlüssel",
-	"block.createrailwaysnavigator.advanced_display_block.tooltip.behaviour1": "Öffne ein _Menü_, um die Anzeige zu _konfigurieren_.",
+    "block.createrailwaysnavigator.advanced_display_block.tooltip.behaviour1": "Öffne ein _Menü_, um die Anzeige zu _konfigurieren_.",
     "block.createrailwaysnavigator.advanced_display": "Verbesserte Anzeigetafel",
-	"block.createrailwaysnavigator.advanced_display.tooltip.summary": "Benutze den Block auf _Zügen_ als _Zugzielanzeigen_ oder _Fahrgastinformationsanzeigen_ oder an _Bahnhöfen_ als verbesserte _Bahnsteiganzeige_, die auch mehr Informationen anzeigen als normale Anzeigetafeln.",
+    "block.createrailwaysnavigator.advanced_display.tooltip.summary": "Benutze den Block auf _Zügen_ als _Zugzielanzeigen_ oder _Fahrgastinformationsanzeigen_ oder an _Bahnhöfen_ als verbesserte _Bahnsteiganzeige_, die auch mehr Informationen anzeigen als normale Anzeigetafeln.",
     "block.createrailwaysnavigator.advanced_display.tooltip.condition1": "R-Klick mit einem Schraubenschlüssel",
-	"block.createrailwaysnavigator.advanced_display.tooltip.behaviour1": "Öffne ein _Menü_, um die Anzeige zu _konfigurieren_.",
+    "block.createrailwaysnavigator.advanced_display.tooltip.behaviour1": "Öffne ein _Menü_, um die Anzeige zu _konfigurieren_.",
     "block.createrailwaysnavigator.advanced_display_small": "Kleine verbesserte Anzeigetafel",
-	"block.createrailwaysnavigator.advanced_display_small.tooltip.summary": "Benutze den Block auf _Zügen_ als _Zugzielanzeigen_ oder _Fahrgastinformationsanzeigen_ oder an _Bahnhöfen_ als verbesserte _Bahnsteiganzeige_, die auch mehr Informationen anzeigen als normale Anzeigetafeln.",
+    "block.createrailwaysnavigator.advanced_display_small.tooltip.summary": "Benutze den Block auf _Zügen_ als _Zugzielanzeigen_ oder _Fahrgastinformationsanzeigen_ oder an _Bahnhöfen_ als verbesserte _Bahnsteiganzeige_, die auch mehr Informationen anzeigen als normale Anzeigetafeln.",
     "block.createrailwaysnavigator.advanced_display_small.tooltip.condition1": "R-Klick mit einem Schraubenschlüssel",
-	"block.createrailwaysnavigator.advanced_display_small.tooltip.behaviour1": "Öffne ein _Menü_, um die Anzeige zu _konfigurieren_.",
+    "block.createrailwaysnavigator.advanced_display_small.tooltip.behaviour1": "Öffne ein _Menü_, um die Anzeige zu _konfigurieren_.",
     "block.createrailwaysnavigator.advanced_display_panel": "Verbessertes Anzeigepanel",
-	"block.createrailwaysnavigator.advanced_display_panel.tooltip.summary": "Benutze den Block auf _Zügen_ als _Zugzielanzeigen_ oder _Fahrgastinformationsanzeigen_ oder an _Bahnhöfen_ als verbesserte _Bahnsteiganzeige_, die auch mehr Informationen anzeigen als normale Anzeigetafeln.",
+    "block.createrailwaysnavigator.advanced_display_panel.tooltip.summary": "Benutze den Block auf _Zügen_ als _Zugzielanzeigen_ oder _Fahrgastinformationsanzeigen_ oder an _Bahnhöfen_ als verbesserte _Bahnsteiganzeige_, die auch mehr Informationen anzeigen als normale Anzeigetafeln.",
     "block.createrailwaysnavigator.advanced_display_panel.tooltip.condition1": "R-Klick mit einem Schraubenschlüssel",
-	"block.createrailwaysnavigator.advanced_display_panel.tooltip.behaviour1": "Öffne ein _Menü_, um die Anzeige zu _konfigurieren_.",    
+    "block.createrailwaysnavigator.advanced_display_panel.tooltip.behaviour1": "Öffne ein _Menü_, um die Anzeige zu _konfigurieren_.",
     "block.createrailwaysnavigator.advanced_display_half_panel": "Halbes Verbessertes Anzeigepanel",
-	"block.createrailwaysnavigator.advanced_display_half_panel.tooltip.summary": "Benutze den Block auf _Zügen_ als _Zugzielanzeigen_ oder _Fahrgastinformationsanzeigen_ oder an _Bahnhöfen_ als verbesserte _Bahnsteiganzeige_, die auch mehr Informationen anzeigen als normale Anzeigetafeln.",
+    "block.createrailwaysnavigator.advanced_display_half_panel.tooltip.summary": "Benutze den Block auf _Zügen_ als _Zugzielanzeigen_ oder _Fahrgastinformationsanzeigen_ oder an _Bahnhöfen_ als verbesserte _Bahnsteiganzeige_, die auch mehr Informationen anzeigen als normale Anzeigetafeln.",
     "block.createrailwaysnavigator.advanced_display_half_panel.tooltip.condition1": "R-Klick mit einem Schraubenschlüssel",
-	"block.createrailwaysnavigator.advanced_display_half_panel.tooltip.behaviour1": "Öffne ein _Menü_, um die Anzeige zu _konfigurieren_.",
+    "block.createrailwaysnavigator.advanced_display_half_panel.tooltip.behaviour1": "Öffne ein _Menü_, um die Anzeige zu _konfigurieren_.",
     "block.createrailwaysnavigator.advanced_display_sloped": "Abgeschrägte verbesserte Anzeigetafel",
-	"block.createrailwaysnavigator.advanced_display_sloped.tooltip.summary": "Benutze den Block auf _Zügen_ als _Zugzielanzeigen_ oder _Fahrgastinformationsanzeigen_ oder an _Bahnhöfen_ als verbesserte _Bahnsteiganzeige_, die auch mehr Informationen anzeigen als normale Anzeigetafeln.",
+    "block.createrailwaysnavigator.advanced_display_sloped.tooltip.summary": "Benutze den Block auf _Zügen_ als _Zugzielanzeigen_ oder _Fahrgastinformationsanzeigen_ oder an _Bahnhöfen_ als verbesserte _Bahnsteiganzeige_, die auch mehr Informationen anzeigen als normale Anzeigetafeln.",
     "block.createrailwaysnavigator.advanced_display_sloped.tooltip.condition1": "R-Klick mit einem Schraubenschlüssel",
-	"block.createrailwaysnavigator.advanced_display_sloped.tooltip.behaviour1": "Öffne ein _Menü_, um die Anzeige zu _konfigurieren_.",
+    "block.createrailwaysnavigator.advanced_display_sloped.tooltip.behaviour1": "Öffne ein _Menü_, um die Anzeige zu _konfigurieren_.",
     "block.createrailwaysnavigator.advanced_display_slab": "Verbesserte Anzeige-Stufe",
-	"block.createrailwaysnavigator.advanced_display_slab.tooltip.summary": "Benutze den Block auf _Zügen_ als _Zugzielanzeigen_ oder _Fahrgastinformationsanzeigen_ oder an _Bahnhöfen_ als verbesserte _Bahnsteiganzeige_, die auch mehr Informationen anzeigen als normale Anzeigetafeln.",
+    "block.createrailwaysnavigator.advanced_display_slab.tooltip.summary": "Benutze den Block auf _Zügen_ als _Zugzielanzeigen_ oder _Fahrgastinformationsanzeigen_ oder an _Bahnhöfen_ als verbesserte _Bahnsteiganzeige_, die auch mehr Informationen anzeigen als normale Anzeigetafeln.",
     "block.createrailwaysnavigator.advanced_display_slab.tooltip.condition1": "R-Klick mit einem Schraubenschlüssel",
-	"block.createrailwaysnavigator.advanced_display_slab.tooltip.behaviour1": "Öffne ein _Menü_, um die Anzeige zu _konfigurieren_.",
+    "block.createrailwaysnavigator.advanced_display_slab.tooltip.behaviour1": "Öffne ein _Menü_, um die Anzeige zu _konfigurieren_.",
     "block.createrailwaysnavigator.train_station_clock.tooltip.summary": "Zeigt die _aktuelle Uhrzeit_ an.",
     "block.createrailwaysnavigator.train_station_clock.tooltip.condition1": "R-Klick",
-	"block.createrailwaysnavigator.train_station_clock.tooltip.behaviour1": "Zeigt die _aktuelle Uhrzeit_ über der _Inventarleiste_ an.",
+    "block.createrailwaysnavigator.train_station_clock.tooltip.behaviour1": "Zeigt die _aktuelle Uhrzeit_ über der _Inventarleiste_ an.",
     "block.createrailwaysnavigator.train_station_clock.tooltip.condition2": "R-Klick auf eine andere Bahnhofsuhr",
-	"block.createrailwaysnavigator.train_station_clock.tooltip.behaviour2": "Ändert die Uhr, sodass die Zeit auf _allen vier Seiten_ angezeigt wird.", 
-	"block.createrailwaysnavigator.navigator_lectern": "Lesepult mit Navigator",
+    "block.createrailwaysnavigator.train_station_clock.tooltip.behaviour2": "Ändert die Uhr, sodass die Zeit auf _allen vier Seiten_ angezeigt wird.",
+    "block.createrailwaysnavigator.navigator_lectern": "Lesepult mit Navigator",
 
     "block.createrailwaysnavigator.advanced_display.ber.not_in_service": "Betriebsfahrt",
     "block.createrailwaysnavigator.advanced_display.ber.do_not_board": "Nicht einsteigen!",
@@ -53,20 +53,18 @@
 
     "category.createrailwaysnavigator.crn": "Create Railways Navigator",
     "key.createrailwaysnavigator.route_overlay_options": "Routenanzeige Einstellungen",
-    
+
     "enum.createrailwaysnavigator.overlay_position": "Anzeigeposition",
     "enum.createrailwaysnavigator.overlay_position.info.top_left": "Ecke oben links",
     "enum.createrailwaysnavigator.overlay_position.info.top_right": "Ecke oben rechts",
     "enum.createrailwaysnavigator.overlay_position.info.bottom_left": "Ecke unten links",
     "enum.createrailwaysnavigator.overlay_position.info.bottom_right": "Ecke unten rechts",
-    
-    "gui.createrailwaysnavigator.loading.title": "Daten werden heruntergeladen...",
 
     "gui.createrailwaysnavigator.overlay_settings.title": "Routenanzeige Einstellungen",
     "gui.createrailwaysnavigator.route_overlay_settings.show_details": "Details anzeigen",
     "gui.createrailwaysnavigator.route_overlay_settings.unpin": "Anzeige entfernen",
     "gui.createrailwaysnavigator.route_overlay_settings.narrator.on": "Erzählerankündigungen aktiviert.",
-    "gui.createrailwaysnavigator.route_overlay_settings.narrator.off": "Erzählerankündigungen deaktiviert.",    
+    "gui.createrailwaysnavigator.route_overlay_settings.narrator.off": "Erzählerankündigungen deaktiviert.",
     "gui.createrailwaysnavigator.route_overlay_settings.notifications.on": "Benachrichtigungen aktiviert.",
     "gui.createrailwaysnavigator.route_overlay_settings.notifications.off": "Benachrichtigungen deaktiviert.",
     "gui.createrailwaysnavigator.route_overlay_settings.scale": "Benutzeroberflächenskalierung",
@@ -104,7 +102,7 @@
     "gui.createrailwaysnavigator.common.read_only": "(Schreibgeschützt)",
     "gui.createrailwaysnavigator.common.server": "Server",
     "gui.createrailwaysnavigator.common.are_you_sure": "Bist du sicher?",
-    
+
     "gui.createrailwaysnavigator.navigator.title": "Create Railways Navigator",
     "gui.createrailwaysnavigator.navigator.no_connections": "Keine Verbindungen gefunden.",
     "gui.createrailwaysnavigator.navigator.not_searched": "Bisher nichts gesucht.",
@@ -128,7 +126,7 @@
     "gui.createrailwaysnavigator.route_details.arrival": "Ankunft in",
     "gui.createrailwaysnavigator.route_details.next_transfer_time": "Umstieg in",
     "gui.createrailwaysnavigator.route_details.transfer": "Umstieg",
-    
+
     "gui.createrailwaysnavigator.route_overview.title": "Reisebegleitung",
     "gui.createrailwaysnavigator.route_overview.journey_begins": "Ihre Reise beginnt! %s nach %s, Abfahrt %s",
     "gui.createrailwaysnavigator.route_overview.journey_begins_with_platform": "Ihre Reise beginnt! %s nach %s, Abfahrt %s von Gleis %s",
@@ -171,7 +169,7 @@
     "gui.createrailwaysnavigator.route_overview.notification.journey_completed.title": "Sie haben Ihr Ziel erreicht!",
     "gui.createrailwaysnavigator.route_overview.notification.journey_completed": "Wir bedanken uns für Ihre Reise und wünschen einen schönen Tag.",
     "gui.createrailwaysnavigator.route_overview.date": "Tag %s, %s",
-    
+
     "gui.createrailwaysnavigator.lock.permissions": "Bearbeitungsberechtigungen",
     "gui.createrailwaysnavigator.lock.state": "Zustand: %s",
     "gui.createrailwaysnavigator.lock.owner": "Besitzer: %s",
@@ -193,15 +191,10 @@
     "gui.createrailwaysnavigator.global_settings.train_blacklist.description": "Schließe Züge aus, z.B. Güterzüge, Sonderzüge, etc., damit diese nicht in den Vorschlägen auftauchen.",
 
     "gui.createrailwaysnavigator.station_tags.summary": "Enthält %s Stationen",
-    "gui.createrailwaysnavigator.station_tags.add.tooltip": "Neuen Eintrag erstellen",
-    "gui.createrailwaysnavigator.station_tags.delete_alias.tooltip": "Tag löschen",
-    "gui.createrailwaysnavigator.station_tags.delete_station.tooltip": "Station entfernen",
-    "gui.createrailwaysnavigator.station_tags.modify_platform.tooltip": "Zum Ändern klicken",
-    "gui.createrailwaysnavigator.station_tags.add_station.tooltip": "Station hinzufügen",
     "gui.createrailwaysnavigator.station_tags.hint.station_name": "Bahnhofsname",
     "gui.createrailwaysnavigator.station_tags.hint.platform": "Gleisbezeichnung",
     "gui.createrailwaysnavigator.station_tags.enter_name": "Name eingeben",
-    
+
     "gui.createrailwaysnavigator.train_category_settings.title": "Zugkategorien Einstellungen",
     "gui.createrailwaysnavigator.train_category_settings.summary": "Enthält %s Züge",
     "gui.createrailwaysnavigator.train_category_settings.delete_alias.tooltip": "Kategorie löschen",
@@ -211,11 +204,11 @@
     "gui.createrailwaysnavigator.blacklist.title": "Bahnhof Blacklist",
     "gui.createrailwaysnavigator.blacklist.add.tooltip": "Zur Blacklist hinzufügen",
     "gui.createrailwaysnavigator.blacklist.delete.tooltip": "Von Blacklist entfernen",
-    
+
     "gui.createrailwaysnavigator.train_blacklist.title": "Zug Blacklist",
     "gui.createrailwaysnavigator.train_blacklist.add.tooltip": "Zur Blacklist hinzufügen",
     "gui.createrailwaysnavigator.train_blacklist.delete.tooltip": "Von Blacklist entfernen",
-    
+
     "gui.createrailwaysnavigator.search_settings.title": "Sucheinstellungen",
     "gui.createrailwaysnavigator.search_settings.transfer_time": "Minimale Umstiegszeit",
     "gui.createrailwaysnavigator.search_settings.transfer_time.description": "Die minimale Zeit für einen Umstieg. (1h ~ 50 Real Life Sekunden)",
@@ -231,7 +224,7 @@
     "gui.createrailwaysnavigator.time_format.dhm": "%s Tage %s Std. %s min.",
     "gui.createrailwaysnavigator.time_format.hm": "%s Std. %s min.",
     "gui.createrailwaysnavigator.time_format.m": "%s min.",
-        
+
     "gui.createrailwaysnavigator.platform": "Gleis",
     "gui.createrailwaysnavigator.departure": "Abfahrt",
     "gui.createrailwaysnavigator.destination": "Ziel",
@@ -265,6 +258,18 @@
     "gui.createrailwaysnavigator.advanced_display_settings.show_line_color.description": "Hebt den Zugname mit der Farbe der aktuellen Linie hervor.",
     "gui.createrailwaysnavigator.advanced_display_settings.show_train_multiple_times": "Zeige Züge mehrfach",
     "gui.createrailwaysnavigator.advanced_display_settings.show_train_multiple_times.description": "Wenn ein Zug mehrfach an diesem Bahnhof hält (z.B. in die eine und in die andere Richtung), wird jede Ankunft auf der Anzeige dargestellt. Falls diese Option aus ist, wird nur die nächste Ankunft des Zuges angezeigt, oder nichts, je nach Anzeigenkonfiguration.",
+    "gui.createrailwaysnavigator.advanced_display_settings.train_name_width": "Zugname Breite",
+    "gui.createrailwaysnavigator.advanced_display_settings.train_name_width_next": "Zugname Breite (Nächste Abfahrt)",
+    "gui.createrailwaysnavigator.advanced_display_settings.train_name_width_table": "Zugname Breite (Folgezüge)",
+    "gui.createrailwaysnavigator.advanced_display_settings.train_name_width.description": "in Blockpixel",
+    "gui.createrailwaysnavigator.advanced_display_settings.platform_width": "Geisbezeichnung Breite",
+    "gui.createrailwaysnavigator.advanced_display_settings.platform_width_next": "Geisbezeichnung Breite (Nächste Abfahrt)",
+    "gui.createrailwaysnavigator.advanced_display_settings.platform_width_table": "Geisbezeichnung Breite (Folgezüge)",
+    "gui.createrailwaysnavigator.advanced_display_settings.platform_width.description": "in Blockpixel",
+    "gui.createrailwaysnavigator.advanced_display_settings.info_width": "Infobereich Breite",
+    "gui.createrailwaysnavigator.advanced_display_settings.info_width.description": "in Prozent der verbleibenden Bildschirmbreite",
+    "gui.createrailwaysnavigator.advanced_display_settings.stopovers_width": "Zwischenhalte Breite",
+    "gui.createrailwaysnavigator.advanced_display_settings.stopovers_width.description": "in Prozent der verbleibenden Bildschirmbreite",
     "gui.createrailwaysnavigator.advanced_display_settings.static_text": "Angezeigter Text",
     "gui.createrailwaysnavigator.advanced_display_settings.static_text.description": "normaler Text oder das Text Component Format können genutzt werden.",
     "gui.createrailwaysnavigator.advanced_display_settings.text_pos_x": "X Position",
@@ -291,7 +296,7 @@
     "enum.createrailwaysnavigator.train_text_components.all": "Alle",
     "enum.createrailwaysnavigator.train_text_components.train_name": "Nur Zugname",
     "enum.createrailwaysnavigator.train_text_components.destination": "Nur Ziel",
-    
+
     "enum.createrailwaysnavigator.display_info_type": "Informationsart",
     "enum.createrailwaysnavigator.display_info_type.description": "Gibt an, wie viele Informationen dargestellt werden sollen.",
     "enum.createrailwaysnavigator.display_info_type.simple": "Einfach",
@@ -300,7 +305,7 @@
     "enum.createrailwaysnavigator.display_info_type.info.detailed": "Die wichtigsten Informationen mit einigen Details, wie z.B Zwischenhalte.",
     "enum.createrailwaysnavigator.display_info_type.informative": "Informativ",
     "enum.createrailwaysnavigator.display_info_type.info.informative": "Zeigt alle Informationen, die relevant sein können, und stellt sie möglichst anschaulich dar. Nicht für kleine Anzeigen empfohlen.",
-    
+
     "enum.createrailwaysnavigator.display_type": "Anzeigetyp",
     "enum.createrailwaysnavigator.display_type.description": "Die Art der Anzeige, was von ihrem Zweck abhängt.",
     "enum.createrailwaysnavigator.display_type.train_destination": "Zugzielanzeige",
@@ -338,7 +343,7 @@
     "enum.createrailwaysnavigator.train_filter.info.same_category": "Nur Züge der gleichen Zugkategorie werden berücksichtigt.",
     "enum.createrailwaysnavigator.train_filter.same_name": "Gleicher Name",
     "enum.createrailwaysnavigator.train_filter.info.same_name": "Nur Züge des gleichen Namens werden berücksichtigt.",
-    
+
     "enum.createrailwaysnavigator.time_source": "Zeitquelle",
     "enum.createrailwaysnavigator.time_source.description": "Die Quelle, aus der die Zeit bezogen werden soll.",
     "enum.createrailwaysnavigator.time_source.real_life": "Realität",
@@ -364,22 +369,22 @@
     "enum.createrailwaysnavigator.departure_board_train_filter.arrival_only": "Nur Ankünfte",
     "enum.createrailwaysnavigator.departure_board_train_filter.departure_only": "Nur Abfahrten",
 
+    "enum.createrailwaysnavigator.train_stop_type": "Anzeigetyp für Zughalte",
+    "enum.createrailwaysnavigator.train_stop_type.all": "Alles",
+    "enum.createrailwaysnavigator.train_stop_type.description.all": "Zeigt die Ankunft und Abfahrt für jeden Zug.",
+    "enum.createrailwaysnavigator.train_stop_type.arrivals_only": "Nur Ankünfte",
+    "enum.createrailwaysnavigator.train_stop_type.description.arrivals_only": "Zeigt nur die Ankunft für jeden Zug. Wenn der Zug aus einem deaktiviertem Fahrplanabschnitt kommt, wird nichts angezeigt.",
+    "enum.createrailwaysnavigator.train_stop_type.arrivals_preferred": "Bevorzugt Ankünfte",
+    "enum.createrailwaysnavigator.train_stop_type.description.arrivals_preferred": "Zeigt nur die Ankunft eines Zuges, außer der Zug beginnt an dieser Station einen neuen Fahrplanabschnitt. In diesem Fall wird auch die Abfahrt angezeigt.",
+    "enum.createrailwaysnavigator.train_stop_type.departures_only": "Nur Abfahrten",
+    "enum.createrailwaysnavigator.train_stop_type.description.departures_only": "Zeigt nur die Abfahrt eines Zuges. Wenn der Zug anschließend in einen deaktivierten Fahrplanabschnitt fährt, wird nichts angezeigt.",
+    "enum.createrailwaysnavigator.train_stop_type.departures_preferred": "Bevorzugt Abfahrten",
+    "enum.createrailwaysnavigator.train_stop_type.description.departures_preferred": "Zeigt nur die Abfahrt eines Zuges, außer der Zug beendet an dieser Station einen Fahrplanabschnitt. In diesem fall wird auch die Ankunft angezeigt.",
+
+
     "createrailwaysnavigator.display_source.advanced_display": "Verbesserte Anzeige",
     "createrailwaysnavigator.display_target.advanced_display.component": "Komponente %s",
 
-    "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width": "Zugname Spaltenbreite",
-    "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width_next": "Zugname Breite (Nächste Abfahrt)",
-    "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width_table": "Zugname Breite (Folgezüge)",
-    "gui.createrailwaysnavigator.display_source.advanced_display.train_name_width.description": "in Blockpixel",
-    "gui.createrailwaysnavigator.display_source.advanced_display.platform_width": "Gleis Spaltenbreite",
-    "gui.createrailwaysnavigator.display_source.advanced_display.platform_width_next": "Gleis Breite (Nächste Abfahrt)",
-    "gui.createrailwaysnavigator.display_source.advanced_display.platform_width_table": "Gleis Breite (Folgezüge)",
-    "gui.createrailwaysnavigator.display_source.advanced_display.platform_width.description": "in Blockpixel",
-    "gui.createrailwaysnavigator.display_source.advanced_display.info_width": "Infobereich Breite",
-    "gui.createrailwaysnavigator.display_source.advanced_display.info_width.description": "in Prozent des verbleibenden Platzes",
-    "gui.createrailwaysnavigator.display_source.advanced_display.stopovers_width": "Zwischenhalte Breite",
-    "gui.createrailwaysnavigator.display_source.advanced_display.stopovers_width.description": "in Prozent des verbleibenden Platzes",
-    
     "gui.createrailwaysnavigator.section_settings.title": "Abschnittseinstellungen",
     "gui.createrailwaysnavigator.section_settings.train_categories": "Zugkategorie zuweisen",
     "gui.createrailwaysnavigator.section_settings.train_lines": "Zuglinie zuweisen",
@@ -410,7 +415,7 @@
     "createrailwaysnavigator.schedule.instruction.travel_section.usable": " - Navigierbar: ",
 
     "createrailwaysnavigator.schedule.instruction.reset_timings": "Zeiten zurücksetzen",
-    
+
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction": "Priorisiertes Ziel",
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.summary": "Prioritätenliste für Nächste Station:",
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.empty": "(Nichts)",

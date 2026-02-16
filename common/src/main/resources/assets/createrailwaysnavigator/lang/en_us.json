@@ -1,48 +1,48 @@
 {
     "advancement.createrailwaysnavigator.navigator": "Thank you for traveling",
-    "advancement.createrailwaysnavigator.navigator.description": "Craft a Navigator to search for train connections from one train station to another.",    
+    "advancement.createrailwaysnavigator.navigator.description": "Craft a Navigator to search for train connections from one train station to another.",
     "advancement.createrailwaysnavigator.advanced_display": "Not quite 4k",
     "advancement.createrailwaysnavigator.advanced_display.description": "Upgrade your display boards to display more information and even place them in your trains.",
 
     "itemGroup.createrailwaysnavigator.tab": "Create Railways Navigator",
 
     "item.createrailwaysnavigator.navigator": "Navigator",
-	"item.createrailwaysnavigator.navigator.tooltip.summary": "The _navigator_ shows possible _train connections_ with additional information such as _stopovers_, _real-time data_ and more.",
+    "item.createrailwaysnavigator.navigator.tooltip.summary": "The _navigator_ shows possible _train connections_ with additional information such as _stopovers_, _real-time data_ and more.",
 
     "block.createrailwaysnavigator.train_station_clock": "Train Station Clock",
     "block.createrailwaysnavigator.advanced_display_block": "Advanced Display Block",
-	"block.createrailwaysnavigator.advanced_display_block.tooltip.summary": "Use it on _trains_, as a _train destination display_ or _passenger information display_, or at _train stations_ as improved _platform displays_ which also shows more information than regular display boards.",
+    "block.createrailwaysnavigator.advanced_display_block.tooltip.summary": "Use it on _trains_, as a _train destination display_ or _passenger information display_, or at _train stations_ as improved _platform displays_ which also shows more information than regular display boards.",
     "block.createrailwaysnavigator.advanced_display_block.tooltip.condition1": "When R-Clicked using a Wrench",
-	"block.createrailwaysnavigator.advanced_display_block.tooltip.behaviour1": "Open a menu to _configure_ the _display_.",
+    "block.createrailwaysnavigator.advanced_display_block.tooltip.behaviour1": "Open a menu to _configure_ the _display_.",
     "block.createrailwaysnavigator.advanced_display": "Advanced Display Board",
-	"block.createrailwaysnavigator.advanced_display.tooltip.summary": "Use it on _trains_, as a _train destination display_ or _passenger information display_, or at _train stations_ as improved _platform displays_ which also shows more information than regular display boards.",
+    "block.createrailwaysnavigator.advanced_display.tooltip.summary": "Use it on _trains_, as a _train destination display_ or _passenger information display_, or at _train stations_ as improved _platform displays_ which also shows more information than regular display boards.",
     "block.createrailwaysnavigator.advanced_display.tooltip.condition1": "When R-Clicked using a Wrench",
-	"block.createrailwaysnavigator.advanced_display.tooltip.behaviour1": "Open a menu to _configure_ the _display_.",
+    "block.createrailwaysnavigator.advanced_display.tooltip.behaviour1": "Open a menu to _configure_ the _display_.",
     "block.createrailwaysnavigator.advanced_display_small": "Small Advanced Display",
-	"block.createrailwaysnavigator.advanced_display_small.tooltip.summary": "Use it on _trains_, as a _train destination display_ or _passenger information display_, or at _train stations_ as improved _platform displays_ which also shows more information than regular display boards.",
+    "block.createrailwaysnavigator.advanced_display_small.tooltip.summary": "Use it on _trains_, as a _train destination display_ or _passenger information display_, or at _train stations_ as improved _platform displays_ which also shows more information than regular display boards.",
     "block.createrailwaysnavigator.advanced_display_small.tooltip.condition1": "When R-Clicked using a Wrench",
-	"block.createrailwaysnavigator.advanced_display_small.tooltip.behaviour1": "Open a menu to _configure_ the _display_.",
+    "block.createrailwaysnavigator.advanced_display_small.tooltip.behaviour1": "Open a menu to _configure_ the _display_.",
     "block.createrailwaysnavigator.advanced_display_panel": "Advanced Display Panel",
-	"block.createrailwaysnavigator.advanced_display_panel.tooltip.summary": "Use it on _trains_, as a _train destination display_ or _passenger information display_, or at _train stations_ as improved _platform displays_ which also shows more information than regular display boards.",
+    "block.createrailwaysnavigator.advanced_display_panel.tooltip.summary": "Use it on _trains_, as a _train destination display_ or _passenger information display_, or at _train stations_ as improved _platform displays_ which also shows more information than regular display boards.",
     "block.createrailwaysnavigator.advanced_display_panel.tooltip.condition1": "When R-Clicked using a Wrench",
-	"block.createrailwaysnavigator.advanced_display_panel.tooltip.behaviour1": "Open a menu to _configure_ the _display_.",
+    "block.createrailwaysnavigator.advanced_display_panel.tooltip.behaviour1": "Open a menu to _configure_ the _display_.",
     "block.createrailwaysnavigator.advanced_display_half_panel": "Half Advanced Display Panel",
-	"block.createrailwaysnavigator.advanced_display_half_panel.tooltip.summary": "Use it on _trains_, as a _train destination display_ or _passenger information display_, or at _train stations_ as improved _platform displays_ which also shows more information than regular display boards.",
+    "block.createrailwaysnavigator.advanced_display_half_panel.tooltip.summary": "Use it on _trains_, as a _train destination display_ or _passenger information display_, or at _train stations_ as improved _platform displays_ which also shows more information than regular display boards.",
     "block.createrailwaysnavigator.advanced_display_half_panel.tooltip.condition1": "When R-Clicked using a Wrench",
-	"block.createrailwaysnavigator.advanced_display_half_panel.tooltip.behaviour1": "Open a menu to _configure_ the _display_.",
+    "block.createrailwaysnavigator.advanced_display_half_panel.tooltip.behaviour1": "Open a menu to _configure_ the _display_.",
     "block.createrailwaysnavigator.advanced_display_sloped": "Sloped Advanced Display",
-	"block.createrailwaysnavigator.advanced_display_sloped.tooltip.summary": "Use it on _trains_, as a _train destination display_ or _passenger information display_, or at _train stations_ as improved _platform displays_ which also shows more information than regular display boards.",
+    "block.createrailwaysnavigator.advanced_display_sloped.tooltip.summary": "Use it on _trains_, as a _train destination display_ or _passenger information display_, or at _train stations_ as improved _platform displays_ which also shows more information than regular display boards.",
     "block.createrailwaysnavigator.advanced_display_sloped.tooltip.condition1": "When R-Clicked using a Wrench",
-	"block.createrailwaysnavigator.advanced_display_sloped.tooltip.behaviour1": "Open a menu to _configure_ the _display_.",
+    "block.createrailwaysnavigator.advanced_display_sloped.tooltip.behaviour1": "Open a menu to _configure_ the _display_.",
     "block.createrailwaysnavigator.advanced_display_slab": "Advanced Display Slab",
-	"block.createrailwaysnavigator.advanced_display_slab.tooltip.summary": "Use it on _trains_, as a _train destination display_ or _passenger information display_, or at _train stations_ as improved _platform displays_ which also shows more information than regular display boards.",
+    "block.createrailwaysnavigator.advanced_display_slab.tooltip.summary": "Use it on _trains_, as a _train destination display_ or _passenger information display_, or at _train stations_ as improved _platform displays_ which also shows more information than regular display boards.",
     "block.createrailwaysnavigator.advanced_display_slab.tooltip.condition1": "When R-Clicked using a Wrench",
-	"block.createrailwaysnavigator.advanced_display_slab.tooltip.behaviour1": "Open a menu to _configure_ the _display_.",    
-	"block.createrailwaysnavigator.train_station_clock.tooltip.summary": "Shows the _current time_.",
+    "block.createrailwaysnavigator.advanced_display_slab.tooltip.behaviour1": "Open a menu to _configure_ the _display_.",
+    "block.createrailwaysnavigator.train_station_clock.tooltip.summary": "Shows the _current time_.",
     "block.createrailwaysnavigator.train_station_clock.tooltip.condition1": "When R-Clicked",
-	"block.createrailwaysnavigator.train_station_clock.tooltip.behaviour1": "Displays the _current time_ above the _hotbar_.",
+    "block.createrailwaysnavigator.train_station_clock.tooltip.behaviour1": "Displays the _current time_ above the _hotbar_.",
     "block.createrailwaysnavigator.train_station_clock.tooltip.condition2": "When R-Clicked on another Train Station Clock",
-	"block.createrailwaysnavigator.train_station_clock.tooltip.behaviour2": "Changes the clock to display the time on _all four sides_.",
+    "block.createrailwaysnavigator.train_station_clock.tooltip.behaviour2": "Changes the clock to display the time on _all four sides_.",
     "block.createrailwaysnavigator.navigator_lectern": "Lectern with Navigator",
 
     "block.createrailwaysnavigator.advanced_display.ber.not_in_service": "Out of service!",
@@ -53,7 +53,7 @@
 
     "category.createrailwaysnavigator.crn": "Create Railways Navigator",
     "key.createrailwaysnavigator.route_overlay_options": "Show Route Overlay Options",
-    
+
     "enum.createrailwaysnavigator.overlay_position": "Display Position",
     "enum.createrailwaysnavigator.overlay_position.info.top_left": "Top Left Corner",
     "enum.createrailwaysnavigator.overlay_position.info.top_right": "Top Right Corner",
@@ -64,7 +64,7 @@
     "gui.createrailwaysnavigator.route_overlay_settings.show_details": "Show details",
     "gui.createrailwaysnavigator.route_overlay_settings.unpin": "Remove route overlay",
     "gui.createrailwaysnavigator.route_overlay_settings.narrator.on": "Narrator announcements enabled.",
-    "gui.createrailwaysnavigator.route_overlay_settings.narrator.off": "Narrator announcements disabled.",    
+    "gui.createrailwaysnavigator.route_overlay_settings.narrator.off": "Narrator announcements disabled.",
     "gui.createrailwaysnavigator.route_overlay_settings.notifications.on": "Notifications enabled",
     "gui.createrailwaysnavigator.route_overlay_settings.notifications.off": "Notifications disabled",
     "gui.createrailwaysnavigator.route_overlay_settings.scale": "GUI Scale",
@@ -102,7 +102,7 @@
     "gui.createrailwaysnavigator.common.read_only": "(Read Only)",
     "gui.createrailwaysnavigator.common.server": "Server",
     "gui.createrailwaysnavigator.common.are_you_sure": "Are you sure?",
-    
+
     "gui.createrailwaysnavigator.navigator.title": "Create Railways Navigator",
     "gui.createrailwaysnavigator.navigator.no_connections": "No connections found.",
     "gui.createrailwaysnavigator.navigator.not_searched": "Nothing searched yet.",
@@ -126,7 +126,7 @@
     "gui.createrailwaysnavigator.route_details.arrival": "Arrival in",
     "gui.createrailwaysnavigator.route_details.next_transfer_time": "Transfer in",
     "gui.createrailwaysnavigator.route_details.transfer": "Transfer",
-    
+
     "gui.createrailwaysnavigator.route_overview.title": "Travel Companion",
     "gui.createrailwaysnavigator.route_overview.journey_begins": "Your journey begins! %s to %s, departure %s",
     "gui.createrailwaysnavigator.route_overview.journey_begins_with_platform": "Your journey begins! %s to %s, departure %s on platform %s",
@@ -156,7 +156,7 @@
     "gui.createrailwaysnavigator.route_overview.notification.platform_changed.title": "Your platform has changed!",
     "gui.createrailwaysnavigator.route_overview.notification.platform_changed": "Your train in %s leaves from platform %s today.",
     "gui.createrailwaysnavigator.route_overview.notification.train_delayed.title": "%s: Arrival %s delayed.",
-    "gui.createrailwaysnavigator.route_overview.notification.train_delayed": "%s instead of %s in %s",     
+    "gui.createrailwaysnavigator.route_overview.notification.train_delayed": "%s instead of %s in %s",
     "gui.createrailwaysnavigator.route_overview.notification.train_cancelled.title": "%s: Train cancelled",
     "gui.createrailwaysnavigator.route_overview.notification.train_cancelled": "%s to %s is cancelled today.",
     "gui.createrailwaysnavigator.route_overview.notification.transfer.title": "Transfer is coming",
@@ -199,7 +199,7 @@
     "gui.createrailwaysnavigator.station_tags.hint.station_name": "Train Station Name",
     "gui.createrailwaysnavigator.station_tags.hint.platform": "Platform Label",
     "gui.createrailwaysnavigator.station_tags.enter_name": "Enter name here",
-    
+
     "gui.createrailwaysnavigator.train_category_settings.title": "Train Category Settings",
     "gui.createrailwaysnavigator.train_category_settings.summary": "Contains %s Trains",
     "gui.createrailwaysnavigator.train_category_settings.delete_alias.tooltip": "Delete Category",
@@ -209,11 +209,11 @@
     "gui.createrailwaysnavigator.blacklist.title": "Train Station Blacklist",
     "gui.createrailwaysnavigator.blacklist.add.tooltip": "Add to blacklist",
     "gui.createrailwaysnavigator.blacklist.delete.tooltip": "Remove from blacklist",
-    
+
     "gui.createrailwaysnavigator.train_blacklist.title": "Train Blacklist",
     "gui.createrailwaysnavigator.train_blacklist.add.tooltip": "Add to blacklist",
     "gui.createrailwaysnavigator.train_blacklist.delete.tooltip": "Remove from blacklist",
-    
+
     "gui.createrailwaysnavigator.search_settings.title": "Search Settings",
     "gui.createrailwaysnavigator.search_settings.transfer_time": "Minimum Transfer Time",
     "gui.createrailwaysnavigator.search_settings.transfer_time.description": "The minimum time that should be available to change train. (1h ~ 50 Real Life Seconds)",
@@ -229,7 +229,7 @@
     "gui.createrailwaysnavigator.time_format.dhm": "%s days %s hrs. %s min.",
     "gui.createrailwaysnavigator.time_format.hm": "%s hrs. %s min.",
     "gui.createrailwaysnavigator.time_format.m": "%s min.",
-    
+
     "gui.createrailwaysnavigator.platform": "Platform",
     "gui.createrailwaysnavigator.departure": "Departure",
     "gui.createrailwaysnavigator.destination": "Destination",
@@ -301,7 +301,7 @@
     "enum.createrailwaysnavigator.train_text_components.all": "All",
     "enum.createrailwaysnavigator.train_text_components.train_name": "Train Name only",
     "enum.createrailwaysnavigator.train_text_components.destination": "Destination only",
-    
+
     "enum.createrailwaysnavigator.display_info_type": "Display Info Type",
     "enum.createrailwaysnavigator.display_info_type.description": "Determines how much information should be displayed on your display board.",
     "enum.createrailwaysnavigator.display_info_type.simple": "Simple",
@@ -310,7 +310,7 @@
     "enum.createrailwaysnavigator.display_info_type.info.detailed": "The most important information with some details will be shown, such as train speed, stopovers, etc.",
     "enum.createrailwaysnavigator.display_info_type.informative": "Informative",
     "enum.createrailwaysnavigator.display_info_type.info.informative": "Shows all information that could be interesting and displays it in a fancy layout. Not recommended for small displays as the text might become very small.",
-    
+
     "enum.createrailwaysnavigator.display_type": "Display Type",
     "enum.createrailwaysnavigator.display_type.description": "The type of your display which depends on their purpose.",
     "enum.createrailwaysnavigator.display_type.train_destination": "Train Destination",
@@ -323,14 +323,14 @@
     "enum.createrailwaysnavigator.display_type.info.departure_board": "A summary of all trains departing from a station.",
     "enum.createrailwaysnavigator.display_type.static_text": "Static Text",
     "enum.createrailwaysnavigator.display_type.info.static_text": "Displays user-defined text.",
-    
+
     "enum.createrailwaysnavigator.side": "Side",
     "enum.createrailwaysnavigator.side.description": "The side of the block where the information should be rendered on.",
     "enum.createrailwaysnavigator.side.front": "Front side",
     "enum.createrailwaysnavigator.side.info.front": "The information will only be rendered on the front side. This is the default behaviour.",
     "enum.createrailwaysnavigator.side.both": "Both sides",
     "enum.createrailwaysnavigator.side.info.both": "The information will be rendered on both sides.",
-    
+
     "enum.createrailwaysnavigator.time_display": "Time Display",
     "enum.createrailwaysnavigator.time_display.description": "Determines how the time should be displayed.",
     "enum.createrailwaysnavigator.time_display.abs": "ABS",
@@ -348,7 +348,7 @@
     "enum.createrailwaysnavigator.train_filter.info.same_category": "Only trains with the same train category are taken into account.",
     "enum.createrailwaysnavigator.train_filter.same_name": "Same Name",
     "enum.createrailwaysnavigator.train_filter.info.same_name": "Only trains with the same name are taken into account.",
-    
+
     "enum.createrailwaysnavigator.time_source": "Time Source",
     "enum.createrailwaysnavigator.time_source.description": "The source from which the time should be calculated.",
     "enum.createrailwaysnavigator.time_source.real_life": "Real Life",
@@ -368,7 +368,7 @@
     "enum.createrailwaysnavigator.text_scale_bounds.cut_off": "Cut Off",
     "enum.createrailwaysnavigator.text_scale_bounds.scale_scroll": "Scale/Scroll",
     "enum.createrailwaysnavigator.text_scale_bounds.scroll": "Always Scroll",
-    
+
     "enum.createrailwaysnavigator.departure_board_train_filter": "Filter",
     "enum.createrailwaysnavigator.departure_board_train_filter.arrival_and_departure": "All",
     "enum.createrailwaysnavigator.departure_board_train_filter.arrival_only": "Arrivals only",
@@ -380,7 +380,7 @@
     "enum.createrailwaysnavigator.train_stop_type.arrivals_only": "Arrivals only",
     "enum.createrailwaysnavigator.train_stop_type.description.arrivals_only": "Shows only the arrivals of each train. If the train leaves an unnavigable section, nothing will be displayed.",
     "enum.createrailwaysnavigator.train_stop_type.arrivals_preferred": "Arrivals preferred",
-    "enum.createrailwaysnavigator.train_stop_type.description.arrivals_preferred": "Shows only train arrivals, unless the train starts a new station at this station. In that case, the departure is shown as well.",
+    "enum.createrailwaysnavigator.train_stop_type.description.arrivals_preferred": "Shows only train arrivals, unless the train starts a new section at this station. In that case, the departure is shown as well.",
     "enum.createrailwaysnavigator.train_stop_type.departures_only": "Departures only",
     "enum.createrailwaysnavigator.train_stop_type.description.departures_only": "Shows only the departures of each train. If the train then enters an unnavigable section, nothing will be displayed.",
     "enum.createrailwaysnavigator.train_stop_type.departures_preferred": "Departures preferred",
@@ -419,7 +419,7 @@
     "createrailwaysnavigator.schedule.instruction.travel_section.usable": " - Navigable: ",
 
     "createrailwaysnavigator.schedule.instruction.reset_timings": "Reset Timings",
-    
+
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction": "Prioritized Destination",
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.summary": "Next stop priority list:",
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.empty": "(None)",
@@ -522,6 +522,6 @@
 
     "create.generic.unit.days": "Days",
     "create.generic.unit.hours": "Hours",
-    
+
     "createrailwaysnavigator.moin": "moin"
 }
