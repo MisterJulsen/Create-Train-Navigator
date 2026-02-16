@@ -380,7 +380,7 @@
     "enum.createrailwaysnavigator.train_stop_type.arrivals_only": "Arrivals only",
     "enum.createrailwaysnavigator.train_stop_type.description.arrivals_only": "Shows only the arrivals of each train. If the train leaves an unnavigable section, nothing will be displayed.",
     "enum.createrailwaysnavigator.train_stop_type.arrivals_preferred": "Arrivals preferred",
-    "enum.createrailwaysnavigator.train_stop_type.description.arrivals_preferred": "Shows only train arrivals, unless the train starts a new station at this station. In that case, the departure is shown as well.",
+    "enum.createrailwaysnavigator.train_stop_type.description.arrivals_preferred": "Shows only train arrivals, unless the train starts a new section at this station. In that case, the departure is shown as well.",
     "enum.createrailwaysnavigator.train_stop_type.departures_only": "Departures only",
     "enum.createrailwaysnavigator.train_stop_type.description.departures_only": "Shows only the departures of each train. If the train then enters an unnavigable section, nothing will be displayed.",
     "enum.createrailwaysnavigator.train_stop_type.departures_preferred": "Departures preferred",
