@@ -203,7 +203,7 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 			boolean terminus = data.isNextSectionExcluded();
 			boolean start = data.isPrevSectionExcluded();
 
-			ITrainStopTypeSetting.ETrainStopType type = controller.getSettingsAs(ITrainStopTypeSetting.class).map(ITrainStopTypeSetting::getTrainStopType).orElse(ITrainStopTypeSetting.ETrainStopType.ALL);
+			ITrainStopTypeSetting.ETrainStopType type = controller.getSettingsAs(ITrainStopTypeSetting.class).map(ITrainStopTypeSetting::getTrainStopType).orElse(ITrainStopTypeSetting.ETrainStopType.DEF_VALUE);
 			boolean showArrival = type.showArrivals(terminus) && !start;
 			boolean showDeparture = type.showDepartures(start) && !terminus;
 

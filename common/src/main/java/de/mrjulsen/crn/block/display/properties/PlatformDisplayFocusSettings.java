@@ -17,7 +17,7 @@ public class PlatformDisplayFocusSettings extends BasicDisplaySettings implement
     protected byte platformWidthNextStop = -1;
     protected boolean showTrainLineColor = false;
     protected boolean showTrainMultipleTimes = true;
-    protected ETrainStopType trainStopType = ETrainStopType.DEPARTURES_PREFERRED;
+    protected ETrainStopType trainStopType = ETrainStopType.DEF_VALUE;
 
     @Override
     public void deserializeNbt(CompoundTag nbt) {
@@ -31,7 +31,7 @@ public class PlatformDisplayFocusSettings extends BasicDisplaySettings implement
         if (nbt.contains(NBT_SHOW_TRAIN_MULTIPLE_TIMES)) this.showTrainMultipleTimes = nbt.getBoolean(NBT_SHOW_TRAIN_MULTIPLE_TIMES);
         if (nbt.contains(NBT_TRAIN_STOP_TYPE)) this.trainStopType = ETrainStopType.getById(nbt.getByte(NBT_TRAIN_STOP_TYPE));
 
-        if (nbt.contains(LEGACY_NBT_SHOW_ARRIVAL)) this.trainStopType = nbt.getBoolean(LEGACY_NBT_SHOW_ARRIVAL) ? ETrainStopType.ALL : ETrainStopType.DEPARTURES_ONLY;
+        if (nbt.contains(LEGACY_NBT_SHOW_ARRIVAL)) this.trainStopType = nbt.getBoolean(LEGACY_NBT_SHOW_ARRIVAL) ? ETrainStopType.DEPARTURES_PREFERRED : ETrainStopType.DEPARTURES_ONLY;
     }
 
     @Override

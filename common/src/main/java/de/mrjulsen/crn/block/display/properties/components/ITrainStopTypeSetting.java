@@ -18,6 +18,8 @@ public interface ITrainStopTypeSetting {
         DEPARTURES_ONLY((byte)3, "departures_only"),
         DEPARTURES_PREFERRED((byte)4, "departures_preferred");
 
+        public static final ETrainStopType DEF_VALUE = DEPARTURES_PREFERRED;
+
         final String name;
         final byte id;
 
@@ -31,7 +33,7 @@ public interface ITrainStopTypeSetting {
         }	
 
         public static ETrainStopType getById(int id) {
-            return Arrays.stream(values()).filter(x -> x.getId() == (byte)id).findFirst().orElse(ETrainStopType.ALL);
+            return Arrays.stream(values()).filter(x -> x.getId() == (byte)id).findFirst().orElse(DEF_VALUE);
         }
 
         @Override
