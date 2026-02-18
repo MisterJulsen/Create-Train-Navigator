@@ -66,7 +66,7 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 					try {	
 						workerTasks.poll().run();						
 					} catch (Exception e) {
-						CreateRailwaysNavigator.LOGGER.info("Error while process Advanced Display Data. " + e.getMessage(), e);
+						CreateRailwaysNavigator.LOGGER.error("Error while processing Advanced Display Data. " + e.getMessage(), e);
 					}
 				}
 				try {
