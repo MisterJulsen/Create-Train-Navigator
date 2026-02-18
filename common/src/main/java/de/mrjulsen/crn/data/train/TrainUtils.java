@@ -168,7 +168,10 @@ public final class TrainUtils {
         return allStationNamesCache.get();
     }
 
-    public static Optional<Train> getTrain(UUID trainId) { 
+    public static Optional<Train> getTrain(UUID trainId) {
+        if (trainId == null) {
+            return Optional.empty();
+        }
         return Optional.ofNullable(getRailwayManager().trains.get(trainId));
     }
 
