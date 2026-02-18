@@ -82,6 +82,11 @@ public class StationDisplayData {
         List<String> stopovers,
         State state
     ) {
+        Objects.requireNonNull(trainData, "trainData cannot be null");
+        Objects.requireNonNull(stationData, "stationData cannot be null");
+        Objects.requireNonNull(firstStopName, "firstStopName cannot be null");
+        Objects.requireNonNull(stopovers, "stopovers cannot be null");
+        Objects.requireNonNull(state, "state cannot be null");
         this.trainData = trainData;
         this.stationData = stationData;
         this.stopovers = stopovers;

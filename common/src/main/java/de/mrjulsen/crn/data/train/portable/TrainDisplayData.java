@@ -1,9 +1,6 @@
 package de.mrjulsen.crn.data.train.portable;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -119,6 +116,10 @@ public class TrainDisplayData {
         boolean isWaitingAtStation,
         State state
     ) {
+        Objects.requireNonNull(trainData, "trainData cannot be null");
+        Objects.requireNonNull(stops, "stops cannot be null");
+        Objects.requireNonNull(exitSide, "exitSide cannot be null");
+        Objects.requireNonNull(state, "state cannot be null");
         this.trainData = trainData;
         this.stops = stops;
         this.currentScheduleIndex = currentScheduleIndex;
