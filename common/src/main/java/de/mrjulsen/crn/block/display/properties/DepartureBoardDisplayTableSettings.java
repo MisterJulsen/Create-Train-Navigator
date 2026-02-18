@@ -18,7 +18,7 @@ public class DepartureBoardDisplayTableSettings extends BasicDisplaySettings imp
     protected float infoWidthPercentage = 0.25f;
     protected float stopoversWidthPercentage = 0.33f;
     protected boolean showTrainMultipleTimes = true;
-    protected ETrainStopType trainStopType = ETrainStopType.DEPARTURES_ONLY;
+    protected ETrainStopType trainStopType = ETrainStopType.DEF_VALUE;
 
     @Override
     public void deserializeNbt(CompoundTag nbt) {
@@ -33,7 +33,7 @@ public class DepartureBoardDisplayTableSettings extends BasicDisplaySettings imp
         if (nbt.contains(NBT_SHOW_TRAIN_MULTIPLE_TIMES)) this.showTrainMultipleTimes = nbt.getBoolean(NBT_SHOW_TRAIN_MULTIPLE_TIMES);
         if (nbt.contains(NBT_TRAIN_STOP_TYPE)) this.trainStopType = ETrainStopType.getById(nbt.getByte(NBT_TRAIN_STOP_TYPE));
 
-        if (nbt.contains(LEGACY_NBT_SHOW_ARRIVAL)) this.trainStopType = nbt.getBoolean(LEGACY_NBT_SHOW_ARRIVAL) ? ETrainStopType.ALL : ETrainStopType.DEPARTURES_ONLY;
+        if (nbt.contains(LEGACY_NBT_SHOW_ARRIVAL)) this.trainStopType = nbt.getBoolean(LEGACY_NBT_SHOW_ARRIVAL) ? ETrainStopType.DEPARTURES_PREFERRED : ETrainStopType.DEPARTURES_ONLY;
     }
 
     @Override
