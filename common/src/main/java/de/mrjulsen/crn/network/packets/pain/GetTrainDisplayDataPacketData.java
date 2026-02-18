@@ -42,7 +42,7 @@ public class GetTrainDisplayDataPacketData {
     }
 
     public static class Response extends NetworkPacketData {
-        private TrainDisplayData data;
+        private TrainDisplayData data = TrainDisplayData.empty();
 
         public Response(DLStatus status) {
             super(status);
@@ -71,7 +71,7 @@ public class GetTrainDisplayDataPacketData {
 
     public static Response handle(Request packet, NetworkPacketContext context) {
         Optional<Train> trainOpt = TrainUtils.getTrain(packet.id);
-        if (!trainOpt.isPresent() || !TrainUtils.isTrainUsable(trainOpt.get()) || GlobalSettings.getInstance().isTrainBlacklisted(trainOpt.get())) {
+        if (trainOpt.isEmpty() || !TrainUtils.isTrainUsable(trainOpt.get()) || GlobalSettings.getInstance().isTrainBlacklisted(trainOpt.get())) {
             return new Response(TrainDisplayData.empty());
         }
         return new Response(TrainDisplayData.of(trainOpt.get()));

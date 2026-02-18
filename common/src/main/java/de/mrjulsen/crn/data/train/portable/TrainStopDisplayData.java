@@ -41,6 +41,10 @@ public class TrainStopDisplayData {
         String destination,
         String trainName
     ) {
+        Objects.requireNonNull(scheduledStation, "scheduledStation cannot be null");
+        Objects.requireNonNull(realTimeStation, "realTimeStation cannot be null");
+        Objects.requireNonNull(destination, "destination cannot be null");
+        Objects.requireNonNull(trainName, "trainName cannot be null");
         this.stationEntryIndex = stationEntryIndex;
         this.scheduledStation = scheduledStation;
         this.realTimeStation = realTimeStation;

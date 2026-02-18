@@ -249,8 +249,8 @@ public class BasicTrainDisplayData {
             nbt.getUUID(NBT_ID),
             //nbt.getString(NBT_NAME),
             //DLColor.fromInt(nbt.getInt(NBT_COLOR)),
-            TrainIconType.byId(ResourceLocation.parse(nbt.getString(NBT_ICON))),
-            nbt.getList(NBT_STATUS, Tag.TAG_STRING).stream().map(x -> ResourceLocation.parse(((StringTag)x).getAsString())).toList(),
+            TrainIconType.byId(new ResourceLocation(nbt.getString(NBT_ICON))),
+            nbt.getList(NBT_STATUS, Tag.TAG_STRING).stream().map(x -> new ResourceLocation(((StringTag)x).getAsString())).toList(),
             nbt.getBoolean(NBT_CANCELLED),
             nbt.contains(NBT_STATE_DATA) ? ModUtils.getMap(nbt, NBT_STATE_DATA, (k) -> ETrainStopState.getById(Integer.parseInt(k)), StateData::fromNbt) : fallbackStateData.get()
         );

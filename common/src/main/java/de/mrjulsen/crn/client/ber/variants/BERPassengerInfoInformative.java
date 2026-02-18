@@ -418,7 +418,13 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
         } else if (nextStopAnnounced) {
             labelText = CustomLanguage.translate(keyNextStop, displayData.getNextStop().get().getRealTimeStation().tagName());
         } else {
-            labelText = TextUtils.text((settings.getTrainTextComponents().showTrainName() ? displayData.getTrainData().getName(stopState) + " " : "") + (settings.getTrainTextComponents().showDestination() ? displayData.getNextStop().get().getDestination() : "")).withStyle(ChatFormatting.BOLD);
+            StringBuilder sb = new StringBuilder();
+            boolean showTrainName = settings.getTrainTextComponents().showTrainName();
+            boolean showDestination = settings.getTrainTextComponents().showDestination() && displayData.getNextStop().isPresent();
+            if (showTrainName) sb.append(displayData.getTrainData().getName(stopState));
+            if (showTrainName && showDestination) sb.append(" ");
+            if (showDestination) sb.append(displayData.getNextStop().get().getDestination());
+            labelText = TextUtils.text(sb.toString()).withStyle(ChatFormatting.BOLD);
         }
 
         trainLineLabel.text.set(labelText);
