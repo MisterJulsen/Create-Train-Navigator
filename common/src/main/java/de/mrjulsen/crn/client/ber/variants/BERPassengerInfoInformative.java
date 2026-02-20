@@ -2,6 +2,7 @@ package de.mrjulsen.crn.client.ber.variants;
 
 import java.util.List;
 
+import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.data.train.ETrainStopState;
 import org.joml.Vector3f;
 
@@ -331,7 +332,7 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
 
         TrainDisplayData data = blockEntity.getTrainData();
         boolean wasNextStopAnnounced = nextStopAnnounced;
-        nextStopAnnounced = !data.isWaitingAtStation() && data.getNextStop().isPresent() && data.getNextStop().get().getRealTimeArrivalTime() - ModUtils.getTransformedWorldTime() < ModClientConfig.NEXT_STOP_ANNOUNCEMENT.get();
+        nextStopAnnounced = !data.isWaitingAtStation() && data.getNextStop().isPresent() && data.getNextStop().get().getRealTimeArrivalTime() - ModUtils.getTransformedWorldTime() < ModCommonConfig.NEXT_STOP_ANNOUNCEMENT.get();
         this.exitSide = (!nextStopAnnounced && !data.isWaitingAtStation()) || !getDisplaySettings(blockEntity).showExit() ? TrainExitSide.UNKNOWN : (data.isWaitingAtStation() ? exitSide : blockEntity.relativeExitDirection.get());
         
         if (oos) {

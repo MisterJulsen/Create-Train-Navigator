@@ -199,7 +199,7 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 		for (TrainStop stop : TrainUtils.getDeparturesAtStationName(filter, null, false, controller.getSettingsAs(IShowTrainMultipleTimes.class).map(IShowTrainMultipleTimes::showTrainMultipleTimes).orElse(false))) {
 			StationDisplayData data = StationDisplayData.of(stop);
 			boolean cancelled = data.getTrainData().isCancelled();
-			boolean isStillValid = DragonLib.getCurrentWorldTime() < data.getStationData().getScheduledDepartureTime() + ModClientConfig.DISPLAY_LEAD_TIME.get();
+			boolean isStillValid = DragonLib.getCurrentWorldTime() < data.getStationData().getScheduledDepartureTime() + ModCommonConfig.DISPLAY_LEAD_TIME.get();
 			boolean terminus = data.isNextSectionExcluded();
 			boolean start = data.isPrevSectionExcluded();
 

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 import de.mrjulsen.crn.block.display.properties.components.ITrainStopTypeSetting;
+import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.data.train.ETrainStopState;
 import de.mrjulsen.mcdragonlib.util.math.Size;
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -224,7 +225,7 @@ public class BERDepartureBoardTable implements AbstractAdvancedDisplayRenderer<D
     public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason) {
         List<StationDisplayData> preds = blockEntity.getStops().stream().filter(x -> {
             boolean cancelled = x.getTrainData().isCancelled();
-            boolean isStillValid = ModUtils.getTransformedWorldTime() < x.getStationData().getScheduledDepartureTime() + ModClientConfig.DISPLAY_LEAD_TIME.get();
+            boolean isStillValid = ModUtils.getTransformedWorldTime() < x.getStationData().getScheduledDepartureTime() + ModCommonConfig.DISPLAY_LEAD_TIME.get();
             boolean terminus = x.isNextSectionExcluded();
             boolean start = x.isPrevSectionExcluded();
 

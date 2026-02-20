@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 import com.simibubi.create.content.trains.entity.TrainIconType;
 
 import de.mrjulsen.crn.config.ModClientConfig;
+import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.data.StationTag.ClientStationTag;
 import de.mrjulsen.crn.data.TrainInfo;
 import de.mrjulsen.crn.data.navigation.ITrainListenerClient;
@@ -68,7 +69,7 @@ public class ClientTrainStop extends TrainStop implements ITrainListenerClient<C
         if (Platform.getEnvironment() != Env.CLIENT) {
             throw new RuntimeSideException(true);
         }
-        return (getScheduledArrivalTime() + getArrivalTimeDeviation()) / ModClientConfig.REALTIME_PRECISION_THRESHOLD.get() * ModClientConfig.REALTIME_PRECISION_THRESHOLD.get();
+        return (getScheduledArrivalTime() + getArrivalTimeDeviation()) / ModCommonConfig.REALTIME_PRECISION_THRESHOLD.get() * ModCommonConfig.REALTIME_PRECISION_THRESHOLD.get();
     }
 
     /** Client-side only! */
@@ -76,7 +77,7 @@ public class ClientTrainStop extends TrainStop implements ITrainListenerClient<C
         if (Platform.getEnvironment() != Env.CLIENT) {
             throw new RuntimeSideException(true);
         }
-        return (getScheduledDepartureTime() + getDepartureTimeDeviation()) / ModClientConfig.REALTIME_PRECISION_THRESHOLD.get() * ModClientConfig.REALTIME_PRECISION_THRESHOLD.get();
+        return (getScheduledDepartureTime() + getDepartureTimeDeviation()) / ModCommonConfig.REALTIME_PRECISION_THRESHOLD.get() * ModCommonConfig.REALTIME_PRECISION_THRESHOLD.get();
     }
 
     @Override
@@ -116,7 +117,7 @@ public class ClientTrainStop extends TrainStop implements ITrainListenerClient<C
         if (!oldRealTimeStation.equals(getRealTimeStationTag().stationName())) {
             notifyListeners(EVENT_STATION_CHANGED, this);
         }
-        if (trainState == TrainState.BEFORE && oldTimeUntilArrival > getTicksUntilArrival() && getTicksUntilArrival() <= ModClientConfig.NEXT_STOP_ANNOUNCEMENT.get()) {
+        if (trainState == TrainState.BEFORE && oldTimeUntilArrival > getTicksUntilArrival() && getTicksUntilArrival() <= ModCommonConfig.NEXT_STOP_ANNOUNCEMENT.get()) {
             trainState = TrainState.ANNOUNCED;
             notifyListeners(EVENT_ANNOUNCE_NEXT_STOP, this);
         }

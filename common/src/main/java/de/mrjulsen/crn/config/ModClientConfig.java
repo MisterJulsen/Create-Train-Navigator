@@ -10,10 +10,6 @@ public class ModClientConfig {
     public static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
     public static final ModConfigSpec SPEC;
 
-    
-    public static final ModConfigSpec.ConfigValue<Integer> REALTIME_PRECISION_THRESHOLD;
-    public static final ModConfigSpec.ConfigValue<Integer> NEXT_STOP_ANNOUNCEMENT;
-    public static final ModConfigSpec.ConfigValue<Integer> DISPLAY_LEAD_TIME;
     public static final ModConfigSpec.ConfigValue<Integer> DISPLAY_REFRESH_RATE;
     public static final ModConfigSpec.ConfigValue<Double> OVERLAY_SCALE;
     public static final ModConfigSpec.ConfigValue<Boolean> ROUTE_NOTIFICATIONS;
@@ -29,12 +25,6 @@ public class ModClientConfig {
         BUILDER.push("Create Railways Navigator Config");
 
         /* CONFIGS */
-        NEXT_STOP_ANNOUNCEMENT = BUILDER.comment(new String[] {"[in Ticks]", "The next stop or information about the start of the journey is announced in the specified number of ticks before the scheduled arrival at the next station. (Default: 600, 30 real life seconds)"})
-            .defineInRange("general.next_stop_announcement", 600, 100, 1000);
-        REALTIME_PRECISION_THRESHOLD = BUILDER.comment(new String[] {"[in Ticks]", "This value indicates how accurately the real-time data should be displayed. By default, only deviations above 10 in-game minutes (167 ticks, approx. 8 real life seconds) are displayed. The lower the value, the more accurate the real-time data but also the more often deviations from the schedule occur. (Default: 167, 10 in-game minutes)"})
-            .defineInRange("general.realtime_precision_threshold", 167, 1, 1000); 
-        DISPLAY_LEAD_TIME = BUILDER.comment(new String[] {"[in Ticks]", "How early a train should be shown on the display. (Default: 1200, 1 real life minute)"})
-            .defineInRange("general.display_lead_time", 1200, 100, 24000);
         DISPLAY_REFRESH_RATE = BUILDER.comment(new String[] {"[in Ticks]", "The interval in which the displays are updated with new information. Lower values can decrease performance and increase the network traffic, while larger values reduce the reaction speed of the displays. (Default: 50, Recommended: 50 - 100)"})
             .defineInRange("general.display_refresh_rate", 50, 20, 200);
         

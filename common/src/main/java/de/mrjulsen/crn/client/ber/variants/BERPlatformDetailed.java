@@ -13,6 +13,7 @@ import de.mrjulsen.crn.block.display.properties.PlatformDisplayTableSettings;
 import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
+import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.data.train.ETrainStopState;
 import de.mrjulsen.crn.data.train.TrainStatus.CompiledTrainStatus;
 import de.mrjulsen.crn.data.train.portable.StationDisplayData;
@@ -115,9 +116,9 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
         
         for (int i = 0; i < blockEntity.getStops().size(); i++) {
             StationDisplayData data = blockEntity.getStops().get(i);
-            boolean shouldShow = i == 0 || data.getStationData().getRealTimeArrivalTime() < ModUtils.getTransformedWorldTime() + ModClientConfig.DISPLAY_LEAD_TIME.get();
+            boolean shouldShow = i == 0 || data.getStationData().getRealTimeArrivalTime() < ModUtils.getTransformedWorldTime() + ModCommonConfig.DISPLAY_LEAD_TIME.get();
             boolean cancelled = data.getTrainData().isCancelled();
-            boolean isStillValid = ModUtils.getTransformedWorldTime() < data.getStationData().getScheduledDepartureTime() + ModClientConfig.DISPLAY_LEAD_TIME.get();
+            boolean isStillValid = ModUtils.getTransformedWorldTime() < data.getStationData().getScheduledDepartureTime() + ModCommonConfig.DISPLAY_LEAD_TIME.get();
             boolean terminus = data.isNextSectionExcluded();
             boolean start = data.isPrevSectionExcluded();
 

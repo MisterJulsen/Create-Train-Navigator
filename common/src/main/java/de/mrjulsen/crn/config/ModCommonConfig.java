@@ -7,6 +7,9 @@ public class ModCommonConfig {
     public static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
     public static final ModConfigSpec SPEC;
 
+    public static final ModConfigSpec.ConfigValue<Integer> REALTIME_PRECISION_THRESHOLD;
+    public static final ModConfigSpec.ConfigValue<Integer> NEXT_STOP_ANNOUNCEMENT;
+    public static final ModConfigSpec.ConfigValue<Integer> DISPLAY_LEAD_TIME;
     public static final ModConfigSpec.ConfigValue<Integer> GLOBAL_SETTINGS_PERMISSION_LEVEL;
     public static final ModConfigSpec.ConfigValue<Integer> GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL;
     public static final ModConfigSpec.ConfigValue<Integer> TOTAL_DURATION_BUFFER_SIZE;
@@ -24,6 +27,14 @@ public class ModCommonConfig {
 
     static {
         BUILDER.push(CreateRailwaysNavigator.MOD_ID + "_common_config");
+
+        NEXT_STOP_ANNOUNCEMENT = BUILDER.comment(new String[] {"[in Ticks]", "The next stop or information about the start of the journey is announced in the specified number of ticks before the scheduled arrival at the next station. (Default: 600, 30 real life seconds)"})
+                .defineInRange("general.next_stop_announcement", 600, 100, 1000);
+        REALTIME_PRECISION_THRESHOLD = BUILDER.comment(new String[] {"[in Ticks]", "This value indicates how accurately the real-time data should be displayed. By default, only deviations above 10 in-game minutes (167 ticks, approx. 8 real life seconds) are displayed. The lower the value, the more accurate the real-time data but also the more often deviations from the schedule occur. (Default: 167, 10 in-game minutes)"})
+                .defineInRange("general.realtime_precision_threshold", 167, 1, 1000);
+        DISPLAY_LEAD_TIME = BUILDER.comment(new String[] {"[in Ticks]", "How early a train should be shown on the display. (Default: 1200, 1 real life minute)"})
+                .defineInRange("general.display_lead_time", 1200, 100, 24000);
+
 
         GLOBAL_SETTINGS_PERMISSION_LEVEL = BUILDER.comment("Minimum permission level required to edit the global navigator settings. 0 allows everyone to edit these settings. (Default: 0)")
             .defineInRange("permissions.global_settings_permission_level", 0, 0, 4);

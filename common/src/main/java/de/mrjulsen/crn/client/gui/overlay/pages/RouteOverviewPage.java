@@ -8,6 +8,7 @@ import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.client.CRNGui;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.config.ModClientConfig;
+import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.data.train.TrainStop;
 import de.mrjulsen.crn.data.navigation.ClientRoute;
 import de.mrjulsen.crn.data.navigation.ClientRoutePart;
@@ -67,7 +68,7 @@ public class RouteOverviewPage extends AbstractRouteDetailsPage {
     }
 
     public static void renderStation(DLGuiGraphics graphics, int y, int width, Font font, TrainStop stop, RoutePathIcons icon, boolean isStart, boolean isMissed) {
-        final int precision = ModClientConfig.REALTIME_PRECISION_THRESHOLD.get();
+        final int precision = ModCommonConfig.REALTIME_PRECISION_THRESHOLD.get();
 
         long scheduledTime = isStart ? stop.getScheduledDepartureTime() : stop.getScheduledArrivalTime();
         String scheduledTimeText = new DLTime(scheduledTime, DLTime.defaultTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem());
