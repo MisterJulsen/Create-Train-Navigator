@@ -7,6 +7,7 @@ import java.util.concurrent.ExecutionException;
 import com.simibubi.create.content.trains.entity.Train;
 
 import de.mrjulsen.crn.config.ModClientConfig;
+import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.data.TrainExitSide;
 import de.mrjulsen.crn.exceptions.RuntimeSideException;
 import de.mrjulsen.mcdragonlib.util.Cache;
@@ -229,7 +230,7 @@ public class TrainDisplayData {
                 }
             }
             boolean atTerminus = nextStopTerminus && isAtStation;
-            boolean teminusAnnounced = nextStopTerminus && data.getNextStopPrediction().map(x -> x.realTime().arrivalIn() < ModClientConfig.NEXT_STOP_ANNOUNCEMENT.get()).orElse(false);
+            boolean teminusAnnounced = nextStopTerminus && data.getNextStopPrediction().map(x -> x.realTime().arrivalIn() < ModCommonConfig.NEXT_STOP_ANNOUNCEMENT.get()).orElse(false);
 
             State state = State.OUT_OF_SERVICE;
             if (preStart) state = State.BEFORE_START;

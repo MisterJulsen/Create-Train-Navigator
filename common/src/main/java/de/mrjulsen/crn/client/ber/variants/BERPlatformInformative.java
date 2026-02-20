@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 
 import de.mrjulsen.crn.block.display.properties.components.ITrainStopTypeSetting;
+import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.data.train.ETrainStopState;
 import org.joml.Vector3f;
 
@@ -148,7 +149,7 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
     public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason) {
         List<StationDisplayData> preds = blockEntity.getStops().stream().filter(x -> {
             boolean cancelled = x.getTrainData().isCancelled();
-            boolean isStillValid = ModUtils.getTransformedWorldTime() < x.getStationData().getScheduledDepartureTime() + ModClientConfig.DISPLAY_LEAD_TIME.get();
+            boolean isStillValid = ModUtils.getTransformedWorldTime() < x.getStationData().getScheduledDepartureTime() + ModCommonConfig.DISPLAY_LEAD_TIME.get();
             boolean terminus = x.isNextSectionExcluded();
             boolean start = x.isPrevSectionExcluded();
 
