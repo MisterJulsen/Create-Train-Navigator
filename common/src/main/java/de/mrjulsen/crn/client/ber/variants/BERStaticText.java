@@ -35,7 +35,7 @@ public class BERStaticText implements AbstractAdvancedDisplayRenderer<SimpleStat
 
     @Override
     public void tick(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent) {
-        MutableComponent text = getText(getDisplaySettings(blockEntity).getStaticText());    
+        MutableComponent text = getText(getDisplaySettings(blockEntity).getStaticText(), blockEntity);
         label.text.set(text);
     }
     
@@ -44,8 +44,8 @@ public class BERStaticText implements AbstractAdvancedDisplayRenderer<SimpleStat
         label.render(graphics, light);
     }
 
-    private MutableComponent getText(String input) {
-        String staticText = VariableManager.replacePlaceholders(input);
+    private MutableComponent getText(String input, AdvancedDisplayBlockEntity blockEntity) {
+        String staticText = VariableManager.replacePlaceholders(input, blockEntity);
         MutableComponent text = TextUtils.empty();
         if (staticText != null) {
             try {

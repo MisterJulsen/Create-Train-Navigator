@@ -2,7 +2,6 @@ package de.mrjulsen.crn.data.train.portable;
 
 import java.util.*;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.simibubi.create.content.trains.entity.TrainIconType;
 
@@ -19,7 +18,6 @@ import de.mrjulsen.crn.data.train.TrainListener;
 import de.mrjulsen.crn.data.train.TrainStop;
 import de.mrjulsen.crn.data.train.TrainStatus.CompiledTrainStatus;
 import de.mrjulsen.crn.event.ModCommonEvents;
-import de.mrjulsen.mcdragonlib.util.NbtUtils;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -62,6 +60,7 @@ public class BasicTrainDisplayData {
     private final Collection<ResourceLocation> statusLocations; // Server
     private final boolean cancelled;
     private final Map<ETrainStopState, StateData> dataByState;
+    private final int carriages;
 
     private final Cache<List<CompiledTrainStatus>> clientStatus;
     private static final Cache<Map<ETrainStopState, StateData>> fallbackStateData = new Cache<>(() -> {
@@ -77,13 +76,15 @@ public class BasicTrainDisplayData {
     private static final String NBT_STATUS = "Status";
     private static final String NBT_CANCELLED = "Cancelled";
     private static final String NBT_STATE_DATA = "StateData";
+    private static final String NBT_CARRIAGES = "Carriages";
 
     private BasicTrainDisplayData(
         UUID id,
         TrainIconType icon,
         Collection<ResourceLocation> statusLocations,
         boolean cancelled,
-        Map<ETrainStopState, StateData> dataByState
+        Map<ETrainStopState, StateData> dataByState,
+        int carriages
     ) {
         Objects.requireNonNull(id, "id cannot be null");
         Objects.requireNonNull(icon, "icon cannot be null");
@@ -94,12 +95,13 @@ public class BasicTrainDisplayData {
         this.statusLocations = statusLocations;
         this.cancelled = cancelled;
         this.dataByState = dataByState;
+        this.carriages = carriages;
 
         this.clientStatus = new Cache<>(() -> CompiledTrainStatus.load(statusLocations));
     }
 
     public static BasicTrainDisplayData empty() {
-        return new BasicTrainDisplayData(new UUID(0, 0), /*"", DLColor.TRANSPARENT, */TrainIconType.getDefault(), List.of(), true, fallbackStateData.get());
+        return new BasicTrainDisplayData(new UUID(0, 0), /*"", DLColor.TRANSPARENT, */TrainIconType.getDefault(), List.of(), true, fallbackStateData.get(), 0);
     }
 
     /** Server-side only! */
@@ -138,7 +140,8 @@ public class BasicTrainDisplayData {
                     data.getTrain().icon,
                     new ArrayList<>(data.getStatus()),
                     data.isCancelled(),
-                    dataByState
+                    dataByState,
+                    data.getTrain().carriages.size()
             );
         }).orElse(empty());
     }
@@ -180,7 +183,8 @@ public class BasicTrainDisplayData {
                 stop.getTrainIcon(),
                 new ArrayList<>(data.getStatus()),
                 data.isCancelled(),
-                dataByState
+                dataByState,
+                stop.getTrainCarriages()
             );
         }).orElse(empty());
     }
@@ -217,6 +221,10 @@ public class BasicTrainDisplayData {
         return !getStatus().isEmpty();
     }
 
+    public int getCarriages() {
+        return carriages;
+    }
+
     public CompoundTag toNbt() {
         CompoundTag nbt = new CompoundTag();
 
@@ -230,6 +238,7 @@ public class BasicTrainDisplayData {
         nbt.put(NBT_STATUS, statusList);
         nbt.putBoolean(NBT_CANCELLED, cancelled);
         ModUtils.putMap(nbt, NBT_STATE_DATA, dataByState, (k) -> String.valueOf(k.getId()), StateData::toNbt);
+        nbt.putInt(NBT_CARRIAGES, carriages);
 
         return nbt;
     }
@@ -240,7 +249,8 @@ public class BasicTrainDisplayData {
             TrainIconType.byId(new ResourceLocation(nbt.getString(NBT_ICON))),
             nbt.getList(NBT_STATUS, Tag.TAG_STRING).stream().map(x -> new ResourceLocation(((StringTag)x).getAsString())).toList(),
             nbt.getBoolean(NBT_CANCELLED),
-            nbt.contains(NBT_STATE_DATA) ? ModUtils.getMap(nbt, NBT_STATE_DATA, (k) -> ETrainStopState.getById(Integer.parseInt(k)), StateData::fromNbt) : fallbackStateData.get()
+            nbt.contains(NBT_STATE_DATA) ? ModUtils.getMap(nbt, NBT_STATE_DATA, (k) -> ETrainStopState.getById(Integer.parseInt(k)), StateData::fromNbt) : fallbackStateData.get(),
+            nbt.getInt(NBT_CARRIAGES)
         );
     }
 

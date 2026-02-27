@@ -69,11 +69,11 @@ public final class ModDisplayTypes {
 
     public static final DisplayTypeResourceKey SIMPLE_TEXT = AdvancedDisplaysRegistry.register(
         EDisplayType.STATIC_TEXT, "simple_text",
-        SimpleStaticTextDisplaySettings::new, BERStaticText::new, new DisplayProperties(true, null));
+        SimpleStaticTextDisplaySettings::new, BERStaticText::new, new DisplayProperties(true, be -> 16));
 
     public static final DisplayTypeResourceKey RICH_TEXT = AdvancedDisplaysRegistry.register(
         EDisplayType.STATIC_TEXT, "rich_text",
-        StaticTextDisplaySettings::new, BERRichText::new, new DisplayProperties(false, null));
+        StaticTextDisplaySettings::new, BERRichText::new, new DisplayProperties(false, be -> 16));
     
     @Deprecated
     public static DisplayTypeResourceKey legacy_getKeyForType(EDisplayType type, EDisplayInfo info) {

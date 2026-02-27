@@ -509,7 +509,8 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
             return;
         }
 
-        if (getDisplayType().category().getSource() != EDisplayTypeDataSource.TRAIN_INFORMATION) {
+        EDisplayTypeDataSource source = getDisplayType().category().getSource();
+        if (source != EDisplayTypeDataSource.TRAIN_INFORMATION && source != EDisplayTypeDataSource.NONE) {
             return;
         }
 

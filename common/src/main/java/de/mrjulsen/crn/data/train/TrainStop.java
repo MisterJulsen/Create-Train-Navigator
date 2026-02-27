@@ -36,6 +36,7 @@ public class TrainStop implements Comparable<TrainStop> {
     protected static final String NBT_STAY_DURATION = "StayDuration";
     protected static final String NBT_IS_CUSTOM_TITLE = "IsCustomTitle";
     protected static final String NBT_SIMULATED_TIME = "SimulationTime";
+    protected static final String NBT_TRAIN_CARRIAGES = "TrainCarriages";
 
     protected static final String NBT_SCHEDULED_DEPARTURE_TIME = "ScheduledDeparture";
     protected static final String NBT_SCHEDULED_ARRIVAL_TIME = "ScheduledArrival";
@@ -58,6 +59,7 @@ public class TrainStop implements Comparable<TrainStop> {
     protected final String terminusText;
     protected final int stayDuration;
     protected final boolean isCustomTitle;
+    protected final int trainCarriages;
 
     protected boolean simulated;
     protected long simulationTime;
@@ -83,7 +85,7 @@ public class TrainStop implements Comparable<TrainStop> {
             String scheduleTitle, boolean isCustomTitle, String terminusText, int stayDuration, boolean simulated,
             long scheduledDepartureTime, long scheduledArrivalTime, int cycle, ClientStationTag tag, long realTimeArrivalTime,
             long realTimeDepartureTime, int realTimeCycle, ClientStationTag realTimeTag,
-            int realTimeTicksUntilArrival, TrainState trainPosition) {
+            int realTimeTicksUntilArrival, TrainState trainPosition, int trainCarriages) {
         this.scheduleIndex = scheduleIndex;
         this.sectionIndex = sectionIndex;
         this.trainId = trainId;
@@ -105,6 +107,7 @@ public class TrainStop implements Comparable<TrainStop> {
         this.realTimeTag = realTimeTag;
         this.realTimeTicksUntilArrival = realTimeTicksUntilArrival;
         this.trainState = trainPosition;
+        this.trainCarriages = trainCarriages;
     }
 
     public TrainStop(TrainPrediction prediction) {
@@ -133,7 +136,8 @@ public class TrainStop implements Comparable<TrainStop> {
             prediction.getCurrentCycle() - (lastCycle ? 1 : 0), 
             GlobalSettings.getInstance().getOrCreateStationTagFor(prediction.getRealTimeStationName()).getClientTag(prediction.getRealTimeStationName()),
             (int)prediction.realTime().arrivalIn(), 
-            TrainState.BEFORE
+            TrainState.BEFORE,
+            prediction.getData().getTrain().carriages.size()
         );
         //updateRealTime(prediction);
     }
@@ -160,7 +164,8 @@ public class TrainStop implements Comparable<TrainStop> {
             this.realTimeCycle,
             this.realTimeTag,
             this.realTimeTicksUntilArrival,
-            this.trainState
+            this.trainState,
+            this.trainCarriages
         );
     }
 
@@ -393,6 +398,10 @@ public class TrainStop implements Comparable<TrainStop> {
         return trainState == TrainState.AFTER;
     }
 
+    public int getTrainCarriages() {
+        return trainCarriages;
+    }
+
     @Override
     public int compareTo(TrainStop o) {
         return Long.compare(getScheduledArrivalTime(), o.getScheduledArrivalTime());
@@ -419,6 +428,7 @@ public class TrainStop implements Comparable<TrainStop> {
         nbt.putLong(NBT_REAL_TIME_DEPARTURE_TIME, realTimeDepartureTime);
         nbt.putInt(NBT_REAL_CYCLE, realTimeCycle);
         nbt.put(NBT_REAL_TIME_TAG, realTimeTag.toNbt());
+        nbt.putInt(NBT_TRAIN_CARRIAGES, trainCarriages);
         return nbt;
     }
 
@@ -444,7 +454,8 @@ public class TrainStop implements Comparable<TrainStop> {
             nbt.getInt(NBT_REAL_CYCLE),
             ClientStationTag.fromNbt(nbt.getCompound(NBT_REAL_TIME_TAG)),
             0,
-            TrainState.BEFORE
+            TrainState.BEFORE,
+            nbt.getInt(NBT_TRAIN_CARRIAGES)
         );
     }
 }
