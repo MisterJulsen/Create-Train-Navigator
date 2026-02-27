@@ -29,7 +29,7 @@ public class BERRichText implements AbstractAdvancedDisplayRenderer<StaticTextDi
     public void tick(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent) {
         for (int i = 0; i < labels.length && i < getDisplaySettings(blockEntity).getComponents().size(); i++) {
             TextComponent component = getDisplaySettings(blockEntity).getComponents().get(i);
-            MutableComponent text = getText(component.getStaticText());    
+            MutableComponent text = getText(component.getStaticText(), blockEntity);
             labels[i].text.set(text);
         }
     }
@@ -41,8 +41,8 @@ public class BERRichText implements AbstractAdvancedDisplayRenderer<StaticTextDi
         }
     }
 
-    private MutableComponent getText(String input) {
-        String staticText = VariableManager.replacePlaceholders(input);
+    private MutableComponent getText(String input, AdvancedDisplayBlockEntity blockEntity) {
+        String staticText = VariableManager.replacePlaceholders(input, blockEntity);
         MutableComponent text = TextUtils.empty();
         if (staticText != null) {
             try {
@@ -72,7 +72,7 @@ public class BERRichText implements AbstractAdvancedDisplayRenderer<StaticTextDi
             TextComponent component = components.get(i);
             BERLabel label = new BERLabel();
 
-            MutableComponent text = getText(component.getStaticText());
+            MutableComponent text = getText(component.getStaticText(), blockEntity);
 
             label.clippingArea.set(Rectangle.withSize(3, 3, blockEntity.getXSizeScaled() * 16 - 6, blockEntity.getYSizeScaled() * 16 - 6));
             label.horizontalScrollingSpeed.set(SCROLLING_SPEED);

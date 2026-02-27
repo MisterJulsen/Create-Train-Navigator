@@ -40,12 +40,12 @@ public class ClientTrainStop extends TrainStop implements ITrainListenerClient<C
             String scheduleTitle, boolean isCustomTitle, String terminusText, int stayDuration, boolean simulated,
             long scheduledDepartureTime, long scheduledArrivalTime, int cycle, ClientStationTag tag, long realTimeArrivalTime,
             long realTimeDepartureTime, int realTimeCycle, ClientStationTag realTimeTag,
-             int realTimeTicksUntilArrival, TrainState trainPosition)
+             int realTimeTicksUntilArrival, TrainState trainPosition, int trainCarriages)
     {
         super(scheduleIndex, sectionIndex, trainId, trainName, trainIcon, trainInfo, scheduleTitle, isCustomTitle,
                 terminusText, stayDuration, simulated, scheduledDepartureTime, scheduledArrivalTime, cycle, tag,
                 realTimeArrivalTime, realTimeDepartureTime, realTimeCycle, realTimeTag,
-                realTimeTicksUntilArrival, trainPosition);
+                realTimeTicksUntilArrival, trainPosition, trainCarriages);
         initEvents();
     }
 
@@ -152,7 +152,8 @@ public class ClientTrainStop extends TrainStop implements ITrainListenerClient<C
             nbt.getInt(NBT_REAL_CYCLE),
             ClientStationTag.fromNbt(nbt.getCompound(NBT_REAL_TIME_TAG)),
             0,
-            TrainState.BEFORE
+            TrainState.BEFORE,
+            nbt.getInt(NBT_TRAIN_CARRIAGES)
         );
     }
 

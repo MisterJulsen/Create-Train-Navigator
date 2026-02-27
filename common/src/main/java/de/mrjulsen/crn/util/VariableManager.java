@@ -1,21 +1,112 @@
 package de.mrjulsen.crn.util;
 
-import java.util.Map;
-import java.util.function.Supplier;
+import java.util.List;
 
+import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
+import de.mrjulsen.crn.block.display.properties.components.ITrainStopTypeSetting;
 import de.mrjulsen.crn.config.ModClientConfig;
+import de.mrjulsen.crn.data.train.ETrainStopState;
+import de.mrjulsen.crn.data.train.portable.StationDisplayData;
+import de.mrjulsen.crn.data.train.portable.TrainDisplayData;
+import de.mrjulsen.crn.data.train.portable.TrainStopDisplayData;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.util.time.DLTime;
 import de.mrjulsen.mcdragonlib.util.time.TimeContext;
+import org.jetbrains.annotations.Nullable;
 
 public class VariableManager {
+    private static String handleStopover(List<TrainStopDisplayData> list, int i, String variable) {
+        if (i < 0 || i >= list.size()) return handleStopover(null, variable);
+        return handleStopover(list.get(i), variable);
+    }
+    
+    private static String handleStopover(@Nullable TrainStopDisplayData data, String variable) {
+        boolean eta = variable.endsWith("_eta");
 
-    private static final Map<String, Supplier<String>> variables = Map.ofEntries(
-        Map.entry("time", () -> new DLTime(DragonLib.getCurrentWorldTime(), DLTime.defaultTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem()))
-    );
+        // this should only return null if the variable is invalid so don't anyone
+        // dare replace the tertiary statements with a single guard statement
+        // - C1200
+        return switch (variable) {
+            case "station_name" -> data == null ? "" : data.getRealTimeStation().tagName();
+            case "platform" -> data == null ? "" : data.getRealTimeStation().info().platform();
+            case "arrival", "arrival_eta" -> data == null ? "" : ModUtils.formatTime(data.getScheduledArrivalTime(), eta);
+            case "departure", "departure_eta" -> data == null ? "" : ModUtils.formatTime(data.getScheduledDepartureTime(), eta);
+            default -> null;
+        };
+    }
 
-    public static String replacePlaceholders(String text) {
-        
+    private static String handleTrainEntry(List<StationDisplayData> list, int i, String variable) {
+        if (i >= list.size()) return handleTrainEntry(null, variable);
+        return handleTrainEntry(list.get(i), variable);
+    }
+
+    private static String handleTrainEntry(@Nullable StationDisplayData data, String variable) {
+        ITrainStopTypeSetting.ETrainStopType t = ITrainStopTypeSetting.ETrainStopType.ALL;
+
+        // same rule as above applies
+
+        String maybeReplacement = handleStopover(data == null ? null : data.getStationData(), variable);
+        if (maybeReplacement != null) return maybeReplacement;
+
+        if (variable.matches("^stop\\d+$")) {
+            int n = Integer.parseInt(variable.substring(4));
+            if (data == null || n < 0 || n >= data.getStopovers().size()) return "";
+            return data.getStopovers().get(n);
+        }
+
+        return switch (variable) {
+            case "via" -> data == null ? "" : data.getStopovers().stream().reduce("", (a, b) -> a + ", " + b);
+            case "line" -> data == null ? "" : data.getTrainData().getName(ITrainStopTypeSetting.resolveStopState(data, t.showDepartures(data.isFirstStop()), t.showArrivals(data.isLastStop())));
+            case "origin" -> data == null ? "" : data.getFirstStopName();
+            case "destination" -> data == null ? "" : data.getStationData().getDestination();
+            case "carriages" -> data == null ? "" : "" + data.getTrainData().getCarriages();
+            default -> null;
+        };
+    }
+
+    private static String getReplacement(AdvancedDisplayBlockEntity blockEntity, String variable) {
+        // generic
+        DLTime time = new DLTime(DragonLib.getCurrentWorldTime(), DLTime.defaultTimeSystem());
+        if (variable.equals("time")) {
+            return time.format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem());
+        } else if (variable.equals("day")) {
+            return "" + (long)time.toGameDays(DLTime.defaultTimeSystem());
+        }
+
+        // on-board
+        TrainDisplayData train = blockEntity.getTrainData();
+
+        if (variable.equals("via")) {
+            return train.getStopovers().stream().reduce("", (a, b) -> a + ", " + b.getRealTimeStation().tagName(), (a, b) -> a + ", " + b);
+        } else if (variable.equals("line")) {
+            return train.getTrainData().getName(ETrainStopState.beforeArrival(!train.isWaitingAtStation()));
+        } else if (variable.equals("carriages")) {
+            return "" + train.getTrainData().getCarriages();
+        }else if (variable.startsWith("origin.")) {
+            return handleStopover(train.getAllStops(), 0, variable.substring(7));
+        } else if (variable.startsWith("destination.")) {
+            return handleStopover(train.getAllStops(), train.getAllStops().size() - 1, variable.substring(12));
+        } else if (variable.startsWith("next.")) {
+            if (train.getStopovers().isEmpty())
+                return handleStopover(train.getAllStops(), train.getAllStops().size() - 1, variable.substring(5));
+            return handleStopover(train.getStopovers(), 0, variable.substring(5));
+        } else if (variable.matches("^stop\\d+\\..+")) {
+            int dot = variable.indexOf(".");
+            int n = Integer.parseInt(variable.substring(4, dot));
+            return handleStopover(train.getStopovers(), n, variable.substring(dot + 1));
+        }
+
+        // station
+        if (variable.matches("^train\\d+\\..+")) {
+            int dot = variable.indexOf(".");
+            int n = Integer.parseInt(variable.substring(5, dot));
+            return handleTrainEntry(blockEntity.getStops(), n, variable.substring(dot + 1));
+        }
+
+        return null;
+    }
+
+    public static String replacePlaceholders(String text, AdvancedDisplayBlockEntity blockEntity) {
         StringBuilder result = new StringBuilder();
         int length = text.length();
 
@@ -33,9 +124,8 @@ public class VariableManager {
                 int end = text.indexOf('%', i + 1);
                 if (end > i + 1) {
                     String key = text.substring(i + 1, end);
-                    Supplier<String> supplier = variables.get(key);
-                    if (supplier != null) {
-                        String replacement = supplier.get();
+                    String replacement = getReplacement(blockEntity, key);
+                    if (replacement != null) {
                         result.append(replacement);
                     } else {
                         // Key nicht gefunden: lasse Platzhalter unverändert
@@ -52,6 +142,7 @@ public class VariableManager {
     }
 
 
+    /*
     public static boolean hasValidPlaceholders(String text) {
         int length = text.length();
         for (int i = 0; i < length; i++) {
@@ -79,4 +170,5 @@ public class VariableManager {
         }
         return true;
     }
+    */
 }
