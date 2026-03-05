@@ -74,33 +74,37 @@ public class VariableManager {
         }
 
         // on-board
-        TrainDisplayData train = blockEntity.getTrainData();
+        if (blockEntity.assembledOnContraption) {
+            TrainDisplayData train = blockEntity.getTrainData();
 
-        if (variable.equals("via")) {
-            return train.getStopovers().stream().reduce("", (a, b) -> a + ", " + b.getRealTimeStation().tagName(), (a, b) -> a + ", " + b);
-        } else if (variable.equals("line")) {
-            return train.getTrainData().getName(ETrainStopState.beforeArrival(!train.isWaitingAtStation()));
-        } else if (variable.equals("carriages")) {
-            return "" + train.getTrainData().getCarriages();
-        }else if (variable.startsWith("origin.")) {
-            return handleStopover(train.getAllStops(), 0, variable.substring(7));
-        } else if (variable.startsWith("destination.")) {
-            return handleStopover(train.getAllStops(), train.getAllStops().size() - 1, variable.substring(12));
-        } else if (variable.startsWith("next.")) {
-            if (train.getStopovers().isEmpty())
-                return handleStopover(train.getAllStops(), train.getAllStops().size() - 1, variable.substring(5));
-            return handleStopover(train.getStopovers(), 0, variable.substring(5));
-        } else if (variable.matches("^stop\\d+\\..+")) {
-            int dot = variable.indexOf(".");
-            int n = Integer.parseInt(variable.substring(4, dot));
-            return handleStopover(train.getStopovers(), n, variable.substring(dot + 1));
+            if (variable.equals("via")) {
+                return train.getStopovers().stream().reduce("", (a, b) -> a + ", " + b.getRealTimeStation().tagName(), (a, b) -> a + ", " + b);
+            } else if (variable.equals("line")) {
+                return train.getTrainData().getName(ETrainStopState.beforeArrival(!train.isWaitingAtStation()));
+            } else if (variable.equals("carriages")) {
+                return "" + train.getTrainData().getCarriages();
+            } else if (variable.startsWith("origin.")) {
+                return handleStopover(train.getAllStops(), 0, variable.substring(7));
+            } else if (variable.startsWith("destination.")) {
+                return handleStopover(train.getAllStops(), train.getAllStops().size() - 1, variable.substring(12));
+            } else if (variable.startsWith("next.")) {
+                if (train.getStopovers().isEmpty())
+                    return handleStopover(train.getAllStops(), train.getAllStops().size() - 1, variable.substring(5));
+                return handleStopover(train.getStopovers(), 0, variable.substring(5));
+            } else if (variable.matches("^stop\\d+\\..+")) {
+                int dot = variable.indexOf(".");
+                int n = Integer.parseInt(variable.substring(4, dot));
+                return handleStopover(train.getStopovers(), n, variable.substring(dot + 1));
+            }
         }
 
         // station
-        if (variable.matches("^train\\d+\\..+")) {
-            int dot = variable.indexOf(".");
-            int n = Integer.parseInt(variable.substring(5, dot));
-            return handleTrainEntry(blockEntity.getStops(), n, variable.substring(dot + 1));
+        if (!blockEntity.assembledOnContraption) {
+            if (variable.matches("^train\\d+\\..+")) {
+                int dot = variable.indexOf(".");
+                int n = Integer.parseInt(variable.substring(5, dot));
+                return handleTrainEntry(blockEntity.getStops(), n, variable.substring(dot + 1));
+            }
         }
 
         return null;
