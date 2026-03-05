@@ -107,6 +107,7 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
     private IDisplaySettings displayTypeSettings = AdvancedDisplaysRegistry.createSettings(ModDisplayTypes.TRAIN_DESTINATION_SIMPLE);
     
     // CLIENT DISPLAY ONLY - this data is not saved!
+    public boolean assembledOnContraption = false;
     private long lastRefreshedTime;
     private TrainDisplayData trainData = TrainDisplayData.empty();
     private CarriageData carriageData = new CarriageData(0, Direction.NORTH, false);
@@ -503,6 +504,7 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
 
     @Override
     public void contraptionTick(Level level, BlockPos pos, BlockState state, CarriageContraption carriage) {
+        assembledOnContraption = true;
         getRenderer().tick(level, pos, state, this);
 
         if (!isController()) {

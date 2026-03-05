@@ -184,7 +184,7 @@ public class BasicTrainDisplayData {
                 new ArrayList<>(data.getStatus()),
                 data.isCancelled(),
                 dataByState,
-                stop.getTrainCarriages()
+                data.getTrain().carriages.size()
             );
         }).orElse(empty());
     }
