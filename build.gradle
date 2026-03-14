@@ -123,9 +123,9 @@ modBuildTools {
     publish {
         localRepoDir = "${System.getProperty('user.home')}/.m2/github/modsrepo/maven"
         s3Bucket = "maven"
-        endpointEnv = "MAVEN_ENDPOINT"
-        accessKeyEnv = "MAVEN_ACCESS_KEY"
-        secretKeyEnv = "MAVEN_SECRET_KEY"
+        endpointEnv = System.getenv("MAVEN_ENDPOINT")
+        accessKeyEnv = System.getenv("MAVEN_ACCESS_KEY")
+        secretKeyEnv = System.getenv("MAVEN_SECRET_KEY")
         publishCommon = false
     }
     javadoc {
