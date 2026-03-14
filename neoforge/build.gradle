@@ -50,7 +50,7 @@ dependencies {
     neoForge "net.neoforged:neoforge:$rootProject.neoforge_version"
 
     modImplementation "dev.architectury:architectury-neoforge:$rootProject.architectury_api_version"
-    modImplementation(include("de.mrjulsen.mcdragonlib:dragonlib-neoforge:${rootProject.minecraft_version}-${rootProject.dragonlib_version}"))
+    modImplementation("de.mrjulsen.mcdragonlib:dragonlib-neoforge:${rootProject.minecraft_version}-${rootProject.dragonlib_version}")
 
     implementation("com.simibubi.create:create-${minecraft_version}:${create_neoforge_version}:slim") { transitive = false }
     implementation("net.createmod.ponder:Ponder-NeoForge-${minecraft_version}:${ponder_neoforge_version}")
