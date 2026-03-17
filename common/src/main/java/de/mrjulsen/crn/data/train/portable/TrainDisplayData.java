@@ -6,6 +6,7 @@ import java.util.concurrent.ExecutionException;
 
 import com.simibubi.create.content.trains.entity.Train;
 
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.data.TrainExitSide;

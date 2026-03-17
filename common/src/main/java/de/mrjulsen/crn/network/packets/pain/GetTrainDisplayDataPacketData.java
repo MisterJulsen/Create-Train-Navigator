@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import com.simibubi.create.content.trains.entity.Train;
 
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
 import de.mrjulsen.crn.data.train.TrainUtils;
 import de.mrjulsen.crn.data.train.portable.TrainDisplayData;
@@ -60,6 +61,14 @@ public class GetTrainDisplayDataPacketData {
 
         @Override
         protected void read(CompoundTag nbt) {
+            CompoundTag dataTag = nbt.getCompound(NBT_DATA);
+            CompoundTag n = dataTag.getCompound("Train");
+            if (!n.contains("Id")) {
+                CreateRailwaysNavigator.LOGGER.error("Raw: " + nbt);
+                CreateRailwaysNavigator.LOGGER.error("TrainDisplayData: " + dataTag);
+                CreateRailwaysNavigator.LOGGER.error("BasicTrainDisplayData: " + n);
+            }
+
             this.data = TrainDisplayData.fromNbt(nbt.getCompound(NBT_DATA));
         }
 

@@ -10,6 +10,7 @@ import java.util.regex.PatternSyntaxException;
 import com.simibubi.create.foundation.utility.CreateLang;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.compat.CompatManager;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.exceptions.RuntimeSideException;
 import de.mrjulsen.mcdragonlib.DragonLib;
@@ -412,5 +413,21 @@ public class ModUtils {
             map.put(keyDeserializer.apply(k), valueDeserializer.apply(mapNbt.getCompound(k)));
         }
         return map;
+    }
+
+    // In ModUtils.java hinzufügen:
+    /**
+     * Converts train-thread ticks to server-world ticks.
+     * When CreateThreadedTrains is loaded, trains may run at a lower TPS than the server.
+     * A duration measured in train-ticks must be scaled up to match real server time.
+     */
+    public static long toServerTicks(long trainTicks) {
+        return CompatManager.getCTTCompat()
+            .map(c -> (long)(trainTicks / c.getTpsFactor()))
+            .orElse(trainTicks);
+    }
+
+    public static int toServerTicks(int trainTicks) {
+        return (int) toServerTicks((long) trainTicks);
     }
 }

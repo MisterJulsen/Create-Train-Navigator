@@ -25,6 +25,8 @@ import com.simibubi.create.content.trains.schedule.destination.DestinationInstru
 import com.simibubi.create.content.trains.station.GlobalStation;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.compat.CompatManager;
+import de.mrjulsen.crn.compat.CreateThreadedTrainsCompat;
 import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.data.schedule.instruction.IPredictableInstruction;
 import de.mrjulsen.crn.event.CRNEventsManager;
@@ -579,10 +581,12 @@ public class TrainData implements IListenable<TrainData> {
         Set<Integer> validPredictionEntries = new HashSet<>();
         boolean hasCycled = false;
 
-        final long now = ModUtils.getTransformedWorldTime() + waitingAtStationTicks();
+        final double fac = CompatManager.getCTTCompat().map(CreateThreadedTrainsCompat::getTpsFactor).orElse(1.0);
+        final long now = ModUtils.getTransformedWorldTime() + (long)(waitingAtStationTicks() * fac);
         long time = now;
 
         for (int i = 0; i < entryCount; i++) {
+            long newTime = 0;
             final int cyclicIndex = (i + getCurrentScheduleIndex()) % entryCount;
             final ScheduleEntry entry = schedule.entries.get(cyclicIndex);
 
@@ -600,7 +604,7 @@ public class TrainData implements IListenable<TrainData> {
             final DestinationInstruction destination = (DestinationInstruction)entry.instruction;
             AtomicReference<String> name = new AtomicReference<>(destination.getFilter());
             if (i <= 0) {
-                time += this.ticksToNextStop = predictTimeToNextStop();
+                newTime += this.ticksToNextStop = predictTimeToNextStop();
                 GlobalStation destStation = train.navigation.destination != null ? train.navigation.destination : train.getCurrentStation();
                 name.set(destStation != null ? destStation.name : name.get());
             } else {
@@ -608,7 +612,7 @@ public class TrainData implements IListenable<TrainData> {
                     hasCycled = true;
                     continue;
                 }
-                time += getTransitTimeAtStation(cyclicIndex);
+                newTime += getTransitTimeAtStation(cyclicIndex);
             }
 
             TrainPrediction pred = predictionsByIndex.computeIfAbsent(cyclicIndex, idx -> new TrainPrediction(this, idx, destination.getFilter(), name.get(), currentTitle.get()));
@@ -616,6 +620,8 @@ public class TrainData implements IListenable<TrainData> {
                 pred.preInit();
             }
             predictionsChronologically.add(pred);
+            newTime *= fac;
+            time += newTime;
             pred.updateRealTime(destination.getFilter(), name.get(), now, time, currentTitle.get());
             time = pred.realTime().departureTime();
         }
