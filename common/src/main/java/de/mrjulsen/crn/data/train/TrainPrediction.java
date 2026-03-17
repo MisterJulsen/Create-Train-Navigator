@@ -392,8 +392,11 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
     }
 
     public static DepartureTime estimateDepartures(Train train, int entryIndex, long triggerTime) {
-		ScheduleEntry scheduleEntry = train.runtime.getSchedule().entries.get(entryIndex);
+		if (train == null || train.runtime == null || train.runtime.getSchedule() == null) {
+            return new DepartureTime(0, 0);
+        }
 
+        ScheduleEntry scheduleEntry = train.runtime.getSchedule().entries.get(entryIndex);
         long[] currentTime = new long[] { triggerTime, triggerTime };
 		for (List<ScheduleWaitCondition> list : scheduleEntry.conditions) {
 			for (ScheduleWaitCondition condition : list) {
