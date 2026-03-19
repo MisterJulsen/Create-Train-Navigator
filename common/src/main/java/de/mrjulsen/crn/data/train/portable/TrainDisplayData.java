@@ -94,8 +94,8 @@ public class TrainDisplayData {
     private static final String NBT_DO_NOT_BOARD = "DoNotBoard";
     private static final String NBT_STATE = "State";
 
-    private TrainDisplayData() {
-        this.trainData = BasicTrainDisplayData.empty();
+    private TrainDisplayData(BasicTrainDisplayData trainData) {
+        this.trainData = trainData;
         this.stops = List.of();
         this.currentScheduleIndex = -1;
         this.speed = 0;
@@ -160,8 +160,8 @@ public class TrainDisplayData {
         this.state = state;
     }
 
-    public static TrainDisplayData empty() {
-        return new TrainDisplayData();
+    public static TrainDisplayData empty(int carriages) {
+        return new TrainDisplayData(BasicTrainDisplayData.empty(carriages));
     }
 
     /** Server-side only! */
@@ -170,7 +170,7 @@ public class TrainDisplayData {
             throw new RuntimeSideException(false);
         }
         if (train.runtime.getSchedule() == null) {
-            return empty();
+            return empty(train.carriages.size());
         }
 
         return TrainListener.getTrainData(train.id).map(data -> {
@@ -255,7 +255,7 @@ public class TrainDisplayData {
                 isAtStation,
                 state
             );
-        }).orElse(empty());        
+        }).orElse(empty(train.carriages.size()));
     }
 
     public BasicTrainDisplayData getTrainData() {
@@ -349,7 +349,7 @@ public Optional<TrainStopDisplayData> getCurrentStop() {
     public static TrainDisplayData fromNbt(CompoundTag nbt) {
         
         if (nbt.getBoolean(NBT_OUT_OF_SERVICE) && !nbt.getBoolean(NBT_DO_NOT_BOARD)) {
-            return new TrainDisplayData();
+            return new TrainDisplayData(nbt.contains(NBT_TRAIN) ? BasicTrainDisplayData.fromNbt(nbt.getCompound(NBT_TRAIN)) : BasicTrainDisplayData.empty(0));
         }
         
         return new TrainDisplayData(

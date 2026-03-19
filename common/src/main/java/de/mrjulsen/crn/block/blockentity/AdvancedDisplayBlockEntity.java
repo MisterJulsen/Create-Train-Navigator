@@ -110,7 +110,7 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
     // CLIENT DISPLAY ONLY - this data is not saved!
     public boolean assembledOnContraption = false;
     private long lastRefreshedTime;
-    private TrainDisplayData trainData = TrainDisplayData.empty();
+    private TrainDisplayData trainData = TrainDisplayData.empty(0);
     private CarriageData carriageData = new CarriageData(0, Direction.NORTH, false);
     
     // OTHER
@@ -521,8 +521,14 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
         if (level.isClientSide && syncTicks <= 0) {
             syncTicks = ModClientConfig.DISPLAY_REFRESH_RATE.get();
 
-            ModNetworkManager.GET_TRAIN_DISPLAY_DATA.send(NetworkDirection.toServer(), new GetTrainDisplayDataPacketData.Request(((CarriageContraptionEntity)carriage.entity).trainId), (response) -> {
+            if (!(carriage.entity instanceof CarriageContraptionEntity carriageContraption)) {
+                return;
+            }
+
+            ModNetworkManager.GET_TRAIN_DISPLAY_DATA.send(NetworkDirection.toServer(), new GetTrainDisplayDataPacketData.Request(carriageContraption.trainId), (response) -> {
                 TrainDisplayData data = response.getData();
+                int carriagesCount = TrainUtils.getTrain(carriageContraption.trainId).map(x -> x.carriages.size()).orElse(0);
+                this.trainData = TrainDisplayData.empty(carriagesCount);
                 if (data.getState().isOutOfService() && this.trainData.getState().isOutOfService()) {
                     return;
                 }
@@ -543,8 +549,8 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
                 if (outOfService) {
                     shouldUpdate = true;
                 }
-                this.trainData = outOfService ? TrainDisplayData.empty() : data;
-                this.carriageData = new CarriageData(((CarriageContraptionEntity)carriage.entity).carriageIndex, carriage.getAssemblyDirection(), data.isOppositeDirection());
+                this.trainData = outOfService ? TrainDisplayData.empty(carriagesCount) : data;
+                this.carriageData = new CarriageData(carriageContraption.carriageIndex, carriage.getAssemblyDirection(), data.isOppositeDirection());
                 this.relativeExitDirection.clear();
                 
                 getRenderer().update(level, pos, state, this, shouldUpdate ? EUpdateReason.LAYOUT_CHANGED : EUpdateReason.DATA_CHANGED);
