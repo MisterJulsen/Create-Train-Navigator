@@ -36,6 +36,7 @@ public class TrainStop implements Comparable<TrainStop> {
     protected static final String NBT_STAY_DURATION = "StayDuration";
     protected static final String NBT_IS_CUSTOM_TITLE = "IsCustomTitle";
     protected static final String NBT_SIMULATED_TIME = "SimulationTime";
+    protected static final String NBT_TRAIN_CARRIAGES = "TrainCarriages";
 
     protected static final String NBT_SCHEDULED_DEPARTURE_TIME = "ScheduledDeparture";
     protected static final String NBT_SCHEDULED_ARRIVAL_TIME = "ScheduledArrival";

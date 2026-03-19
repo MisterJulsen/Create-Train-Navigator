@@ -99,7 +99,7 @@ public class StationDisplayData {
     }
 
     public static StationDisplayData empty() {
-        return new StationDisplayData(BasicTrainDisplayData.empty(), TrainStopDisplayData.empty(), "", false, false, false, false, List.of(), State.OUT_OF_SERVICE);
+        return new StationDisplayData(BasicTrainDisplayData.empty(0), TrainStopDisplayData.empty(), "", false, false, false, false, List.of(), State.OUT_OF_SERVICE);
     }
 
     /** Server-side only! */
