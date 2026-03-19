@@ -8,14 +8,11 @@ import com.simibubi.create.content.trains.entity.TrainIconType;
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.data.TrainCategory;
 import de.mrjulsen.crn.data.TrainLine;
-import de.mrjulsen.crn.data.train.ETrainStopState;
-import de.mrjulsen.crn.data.train.ScheduleSection;
+import de.mrjulsen.crn.data.train.*;
 import de.mrjulsen.crn.exceptions.RuntimeSideException;
 import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.util.Cache;
 import de.mrjulsen.mcdragonlib.util.DLColor;
-import de.mrjulsen.crn.data.train.TrainListener;
-import de.mrjulsen.crn.data.train.TrainStop;
 import de.mrjulsen.crn.data.train.TrainStatus.CompiledTrainStatus;
 import de.mrjulsen.crn.event.ModCommonEvents;
 import net.minecraft.nbt.CompoundTag;
@@ -100,8 +97,8 @@ public class BasicTrainDisplayData {
         this.clientStatus = new Cache<>(() -> CompiledTrainStatus.load(statusLocations));
     }
 
-    public static BasicTrainDisplayData empty() {
-        return new BasicTrainDisplayData(new UUID(0, 0), /*"", DLColor.TRANSPARENT, */TrainIconType.getDefault(), List.of(), true, fallbackStateData.get(), 0);
+    public static BasicTrainDisplayData empty(int carriages) {
+        return new BasicTrainDisplayData(new UUID(0, 0), TrainIconType.getDefault(), List.of(), true, fallbackStateData.get(), carriages);
     }
 
     /** Server-side only! */
@@ -110,19 +107,9 @@ public class BasicTrainDisplayData {
             throw new RuntimeSideException(false);
         }
 
+        int carriagesCount = TrainUtils.getTrain(train).map(x -> x.carriages.size()).orElse(0);
+
         return TrainListener.getTrainData(train).map(data -> {
-            /*
-            final ScheduleSection section = data.getCurrentSection();
-            final ScheduleSection prevSection = section.previousSection();
-            ScheduleSection selectedSection = section;
-
-            boolean isAtStation = data.waitingAtStationIndex == data.getCurrentScheduleIndex();
-            boolean isFirstStationInSection = section.getFirstStop().map(x -> x.getEntryIndex() == data.getCurrentScheduleIndex()).orElse(false);
-
-            if (isFirstStationInSection && !isAtStation && prevSection.shouldIncludeNextStationOfNextSection()) {
-                selectedSection = prevSection;
-            }
-             */
             Map<ETrainStopState, StateData> dataByState = new HashMap<>(ETrainStopState.values().length);
             for (ETrainStopState state : ETrainStopState.values()) {
                 ScheduleSection section = state.resolveSection(data.getCurrentSection(), data.waitingAtStationTime, data.getCurrentScheduleIndex());
@@ -141,9 +128,9 @@ public class BasicTrainDisplayData {
                     new ArrayList<>(data.getStatus()),
                     data.isCancelled(),
                     dataByState,
-                    data.getTrain().carriages.size()
+                    carriagesCount
             );
-        }).orElse(empty());
+        }).orElse(empty(carriagesCount));
     }
 
     /** Server-side only! */
@@ -152,20 +139,9 @@ public class BasicTrainDisplayData {
             throw new RuntimeSideException(false);
         }
 
+        int carriagesCount = TrainUtils.getTrain(stop.getTrainId()).map(x -> x.carriages.size()).orElse(0);
+
         return TrainListener.getTrainData(stop.getTrainId()).map(data -> {
-            /*
-            final ScheduleSection section = data.getCurrentSection();
-            final ScheduleSection prevSection = section.previousSection();
-            ScheduleSection selectedSection = section;
-
-            boolean isAtStation = data.waitingAtStationIndex == data.getCurrentScheduleIndex();
-            boolean isFirstStationInSection = section.getFirstStop().map(x -> x.getEntryIndex() == data.getCurrentScheduleIndex()).orElse(false);
-
-            if (isFirstStationInSection && !isAtStation && prevSection.shouldIncludeNextStationOfNextSection()) {
-                selectedSection = prevSection;
-            }
-
-             */
             Map<ETrainStopState, StateData> dataByState = new HashMap<>(ETrainStopState.values().length);
             for (ETrainStopState state : ETrainStopState.values()) {
                 ScheduleSection section = state.resolveSection(data.getSectionForIndex(stop.getScheduleIndex()), data.waitingAtStationIndex, stop.getScheduleIndex());
@@ -179,14 +155,14 @@ public class BasicTrainDisplayData {
             }
 
             return new BasicTrainDisplayData(
-                stop.getTrainId(),
-                stop.getTrainIcon(),
-                new ArrayList<>(data.getStatus()),
-                data.isCancelled(),
-                dataByState,
-                data.getTrain().carriages.size()
+                    stop.getTrainId(),
+                    stop.getTrainIcon(),
+                    new ArrayList<>(data.getStatus()),
+                    data.isCancelled(),
+                    dataByState,
+                    carriagesCount
             );
-        }).orElse(empty());
+        }).orElse(empty(carriagesCount));
     }
 
     public UUID getId() {
