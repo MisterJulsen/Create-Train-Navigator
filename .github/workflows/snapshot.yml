@@ -8,9 +8,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        java: [21]
+    # Only run when the PR was actually merged, not just closed.
+    # Branch pattern check happens inside the steps since we need
+    # to read it from .mod-build-config.json first.
+    if: github.event.pull_request.merged == true
 
     steps:
       - name: Checkout repository
@@ -19,37 +20,27 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
-      - name: Read config
-        id: config
-        run: |
-          PATTERN=$(jq -r '.main_branch_pattern' .mod-build-config.json)
-          echo "pattern=$PATTERN" >> $GITHUB_OUTPUT
-
-      - name: Check base branch pattern
+      - name: Check base branch matches main pattern
         id: branchcheck
         run: |
+          PATTERN=$(jq -r '.main_branch_pattern' .mod-build-config.json)
           BASE="${{ github.event.pull_request.base.ref }}"
-          PATTERN="${{ steps.config.outputs.pattern }}"
-
           if [[ "$BASE" =~ $PATTERN ]]; then
-            echo "valid=true" >> $GITHUB_OUTPUT
+            echo "valid=true" >> "$GITHUB_OUTPUT"
           else
-            echo "valid=false" >> $GITHUB_OUTPUT
+            echo "valid=false" >> "$GITHUB_OUTPUT"
+            echo "Base branch '$BASE' does not match pattern '$PATTERN' – skipping snapshot build."
           fi
 
-      - name: Stop if branch does not match pattern
-        if: |
-          github.event_name == 'pull_request' &&
-          steps.branchcheck.outputs.valid != 'true'
-        run: exit 0
-
       - name: Setup Java
+        if: steps.branchcheck.outputs.valid == 'true'
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
 
       - name: Cache Gradle & Loom
+        if: steps.branchcheck.outputs.valid == 'true'
         uses: actions/cache@v4
         with:
           path: |
@@ -57,50 +48,51 @@ jobs:
             ~/.gradle/wrapper
             **/.gradle/loom-cache
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle.properties', '**/libs.versions.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
+          restore-keys: ${{ runner.os }}-gradle-
 
       - name: Setup Gradle
+        if: steps.branchcheck.outputs.valid == 'true'
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-home-cache-cleanup: true
           gradle-version: wrapper
 
+      # SNAPSHOT_BUILD is picked up by the versioning plugin and produces a
+      # version string like "1.21.1-beta-2.0.0-SNAPSHOT+build.7890123456".
+      # Using run_id (not run_number) guarantees uniqueness across all branches.
       - name: Build
+        if: steps.branchcheck.outputs.valid == 'true'
         run: |
           chmod +x gradlew
-          export SNAPSHOT_BUILD="${{ github.run_number }}"
+          export SNAPSHOT_BUILD="${{ github.run_id }}"
           echo "Using SNAPSHOT_BUILD=$SNAPSHOT_BUILD"
           ./gradlew buildWithMetadata
 
-      - name: Collect release files
+      - name: Collect JARs
+        if: steps.branchcheck.outputs.valid == 'true'
         id: collect
         run: |
-          FILES=""
-          for MAIN in $(jq -r '.artifacts[].filename' metadata.json); do
-            echo "Processing $MAIN"
-            MAIN_PATH=$(find . -type f -name "${MAIN}.jar" | head -n 1)
-            if [ -z "$MAIN_PATH" ]; then
-              echo "ERROR: Could not find artifact: $MAIN"
-              exit 1
-            fi
-            DIR=$(dirname "$MAIN_PATH")
-            FILES="$FILES $MAIN_PATH"
-            for f in "$DIR"/*sources.jar; do
-              [ -e "$f" ] && FILES="$FILES $f"
+          {
+            echo "files<<EOF"
+            for STEM in $(jq -r '.artifacts[].filename' metadata.json); do
+              MAIN=$(find . -type f -name "${STEM}.jar" ! -path "*/.gradle/*" | head -n1)
+              if [ -z "$MAIN" ]; then
+                echo "ERROR: Artifact not found: ${STEM}.jar" >&2
+                exit 1
+              fi
+              echo "$MAIN"
+              DIR=$(dirname "$MAIN")
+              find "$DIR" -maxdepth 1 \
+                \( -name "*sources.jar" -o -name "*javadoc.jar" \) \
+                2>/dev/null || true
             done
-            for f in "$DIR"/*javadoc.jar; do
-              [ -e "$f" ] && FILES="$FILES $f"
-            done
-          done
-          echo "FILES<<EOF" >> $GITHUB_ENV
-          for f in $FILES; do
-            echo "$f" >> $GITHUB_ENV
-          done
-          echo "EOF" >> $GITHUB_ENV
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
-      - name: Upload Artifacts
+      - name: Upload snapshot artifact
+        if: steps.branchcheck.outputs.valid == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: snapshot-${{ github.run_number }}
-          path: ${{ env.FILES }}
+          name: snapshot-${{ github.run_id }}
+          path: ${{ steps.collect.outputs.files }}
+          retention-days: 30

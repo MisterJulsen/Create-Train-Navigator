@@ -1,13 +1,10 @@
 name: Build Test
-on: [ pull_request ]
+
+on: [pull_request]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        java: [21]
 
     steps:
       - name: Checkout repository
@@ -30,8 +27,7 @@ jobs:
             ~/.gradle/wrapper
             **/.gradle/loom-cache
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle.properties', '**/libs.versions.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
+          restore-keys: ${{ runner.os }}-gradle-
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -39,47 +35,38 @@ jobs:
           gradle-home-cache-cleanup: true
           gradle-version: wrapper
 
+      # TEST_BUILD is picked up by the versioning plugin and appended to the
+      # version string, e.g. "1.21.1-beta-2.0.0-TEST+pr.42".
+      # Pull request number is always available here since this workflow only
+      # triggers on pull_request events.
       - name: Build
         run: |
           chmod +x gradlew
-
-          if [ "${{ github.event.pull_request.number }}" != "" ]; then
-            export TEST_BUILD="pr.${{ github.event.pull_request.number }}"
-          else
-            export TEST_BUILD="pu.${{ github.run_number }}"
-          fi
-
+          export TEST_BUILD="pr.${{ github.event.pull_request.number }}"
           echo "Using TEST_BUILD=$TEST_BUILD"
           ./gradlew buildWithMetadata
 
-      - name: Collect release files
+      # Collect only the main JARs for the test artifact – no sources/javadoc
+      # needed here since this is purely a build verification artifact.
+      - name: Collect JARs
         id: collect
         run: |
-          FILES=""
-          for MAIN in $(jq -r '.artifacts[].filename' metadata.json); do
-            echo "Processing $MAIN"
-            MAIN_PATH=$(find . -type f -name "${MAIN}.jar" | head -n 1)
-            if [ -z "$MAIN_PATH" ]; then
-              echo "ERROR: Could not find artifact: $MAIN"
-              exit 1
-            fi
-            DIR=$(dirname "$MAIN_PATH")
-            FILES="$FILES $MAIN_PATH"
-            for f in "$DIR"/*sources.jar; do
-              [ -e "$f" ] && FILES="$FILES $f"
+          {
+            echo "files<<EOF"
+            for STEM in $(jq -r '.artifacts[].filename' metadata.json); do
+              MAIN=$(find . -type f -name "${STEM}.jar" ! -path "*/.gradle/*" | head -n1)
+              if [ -z "$MAIN" ]; then
+                echo "ERROR: Artifact not found: ${STEM}.jar" >&2
+                exit 1
+              fi
+              echo "$MAIN"
             done
-            for f in "$DIR"/*javadoc.jar; do
-              [ -e "$f" ] && FILES="$FILES $f"
-            done
-          done
-          echo "FILES<<EOF" >> $GITHUB_ENV
-          for f in $FILES; do
-            echo "$f" >> $GITHUB_ENV
-          done
-          echo "EOF" >> $GITHUB_ENV
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
-      - name: Upload Artifacts
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: test-${{ github.event.pull_request.number || github.run_number }}
-          path: ${{ env.FILES }}
+          name: test-pr${{ github.event.pull_request.number }}
+          path: ${{ steps.collect.outputs.files }}
+          retention-days: 14

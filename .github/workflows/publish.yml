@@ -6,184 +6,355 @@ on:
 
 jobs:
   prepare:
-    if: ${{ !contains(github.event.release.body, '[skip-mod-publish]') }}
+    if: ${{ !contains(github.event.release.body, '[skip-platforms]') || !contains(github.event.release.body, '[skip-maven]') }}
     runs-on: ubuntu-latest
 
     outputs:
-      loaders: ${{ steps.collect.outputs.loaders }}
-      release_title: ${{ steps.collect.outputs.release_title }}
+      loaders: ${{ steps.parse.outputs.loaders }}
+      release_title: ${{ steps.parse.outputs.release_title }}
+      mod_version: ${{ steps.parse.outputs.mod_version }}
+      mc_version: ${{ steps.parse.outputs.mc_version }}
+      release_channel: ${{ steps.parse.outputs.release_channel }}
+      full_version: ${{ steps.parse.outputs.full_version }}
+      maven_local_path: ${{ steps.parse.outputs.maven_local_path }}
+      internal_artifact_name: ${{ steps.parse.outputs.internal_artifact_name }}
+      ci_run_id: ${{ steps.parse.outputs.ci_run_id }}
 
     steps:
-      - name: Checkout correct branch
+      - name: Checkout release commit
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.release.target_commitish }}
           fetch-depth: 0
 
-      - name: Download release assets
-        uses: robinraju/release-downloader@v1
-        with:
-          tag: ${{ github.event.release.tag_name }}
-          fileName: "*"
-          out-file-path: artifacts
-
-      - name: Parse metadata.json
-        id: collect
+      # metadata.json comes from the internal Actions Artifact created by release.yml.
+      # The release body contains the run-id encoded as an HTML comment so we
+      # can download across workflow runs without any API searching.
+      - name: Extract run ID from release body
+        id: find_run
         run: |
-          META="artifacts/metadata.json"
-          
+          RUN_ID=$(echo "${{ github.event.release.body }}" | grep -oP '(?<=<!--run-id:)\d+(?=-->)' || true)
+          if [ -z "$RUN_ID" ]; then
+            echo "Error: Could not find run-id comment in release body" >&2
+            echo "Expected a comment like: <!--run-id:1234567890-->" >&2
+            exit 1
+          fi
+          echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Download internal artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: internal-${{ github.event.release.tag_name }}
+          run-id: ${{ steps.find_run.outputs.run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: internal/
+
+      - name: Parse metadata and build loader matrix
+        id: parse
+        run: |
+          META="internal/metadata.json"
+
           MOD_ID=$(jq -r '.mod_id' "$META")
           MOD_NAME=$(jq -r '.display_name' "$META")
           MC_VERSION=$(jq -r '.minecraft_version' "$META")
           MOD_VERSION=$(jq -r '.mod_version' "$META")
           FULL_VERSION=$(jq -r '.full_version' "$META")
           RELEASE_CHANNEL=$(jq -r '.release_channel' "$META")
+          MAVEN_LOCAL_PATH=$(jq -r '.maven_local_path' "$META")
 
           PLATFORM_STRING=$(jq -r '
-            if has("artifacts") and (.artifacts | length > 0) then
+            if (.artifacts | length) > 0 then
               "[" + (.artifacts | keys | map(ascii_upcase) | join("/")) + "]"
-            else
-              "[]"
-            end
+            else "[]" end
           ' "$META")
 
-          TITLE_FORMAT=$(jq -r '.mod_release_title_format' .mod-build-config.json)
+          TITLE=$(jq -r '.mod_release_title_format' .mod-build-config.json)
+          TITLE=${TITLE//\{MOD_ID\}/$MOD_ID}
+          TITLE=${TITLE//\{MOD_NAME\}/$MOD_NAME}
+          TITLE=${TITLE//\{MOD_VERSION\}/$MOD_VERSION}
+          TITLE=${TITLE//\{FULL_VERSION\}/$FULL_VERSION}
+          TITLE=${TITLE//\{MC_VERSION\}/$MC_VERSION}
+          TITLE=${TITLE//\{RELEASE_CHANNEL\}/$RELEASE_CHANNEL}
+          TITLE=${TITLE//\{PLATFORMS\}/$PLATFORM_STRING}
 
-          RELEASE_TITLE=$TITLE_FORMAT
-          RELEASE_TITLE=${RELEASE_TITLE//\{MOD_ID\}/$MOD_ID}
-          RELEASE_TITLE=${RELEASE_TITLE//\{MOD_NAME\}/$MOD_NAME}
-          RELEASE_TITLE=${RELEASE_TITLE//\{MOD_VERSION\}/$MOD_VERSION}
-          RELEASE_TITLE=${RELEASE_TITLE//\{FULL_VERSION\}/$FULL_VERSION}
-          RELEASE_TITLE=${RELEASE_TITLE//\{MC_VERSION\}/$MC_VERSION}
-          RELEASE_TITLE=${RELEASE_TITLE//\{RELEASE_CHANNEL\}/$RELEASE_CHANNEL}
-          RELEASE_TITLE=${RELEASE_TITLE//\{PLATFORMS\}/$PLATFORM_STRING}
+          CI_RUN_ID=$(jq -r '.ci_run_id' "$META")
 
-          echo "MOD_ID=$MOD_ID" >> $GITHUB_ENV
-          echo "MOD_NAME=$MOD_NAME" >> $GITHUB_ENV
-          echo "MC_VERSION=$MC_VERSION" >> $GITHUB_ENV
-          echo "MOD_VERSION=$MOD_VERSION" >> $GITHUB_ENV
-          echo "FULL_VERSION=$FULL_VERSION" >> $GITHUB_ENV
-          echo "RELEASE_CHANNEL=$RELEASE_CHANNEL" >> $GITHUB_ENV
-          echo "PLATFORMS=$PLATFORM_STRING" >> $GITHUB_ENV
-          echo "RELEASE_TITLE=$RELEASE_TITLE" >> $GITHUB_ENV
+          {
+            echo "mod_id=$MOD_ID"
+            echo "mod_name=$MOD_NAME"
+            echo "mc_version=$MC_VERSION"
+            echo "mod_version=$MOD_VERSION"
+            echo "full_version=$FULL_VERSION"
+            echo "release_channel=$RELEASE_CHANNEL"
+            echo "maven_local_path=$MAVEN_LOCAL_PATH"
+            echo "ci_run_id=$CI_RUN_ID"
+            echo "release_title=$TITLE"
+            echo "internal_artifact_name=internal-${FULL_VERSION}"
+          } >> "$GITHUB_OUTPUT"
 
-          echo "release_title=$RELEASE_TITLE" >> $GITHUB_OUTPUT
-          
-          # Loader-Liste erzeugen
-          LOADERS=$(jq -r '.artifacts[].platform' "$META" | sort -u)
-          LOADERS_JSON=$(printf '%s\n' $LOADERS | jq -R . | jq -s -c .)
-          echo "loaders=$LOADERS_JSON" >> $GITHUB_OUTPUT
+          LOADERS_JSON=$(jq -c '[.artifacts[].platform] | unique' "$META")
+          echo "loaders=$LOADERS_JSON" >> "$GITHUB_OUTPUT"
 
-          # Für jeden Loader eine Datei files_<loader>.txt erzeugen
-          for L in $LOADERS; do
-            # Haupt-JAR aus metadata.json + .jar anhängen
-            jq -r --arg L "$L" '.artifacts[] | select(.platform==$L) | .filename' "$META" \
-              | sed 's|$|.jar|' \
-              | sed 's|^|artifacts/|' > "files_${L}.txt"
+          # Per-loader file lists – built from metadata.json, no filesystem access needed.
+          # The filenames follow the Gradle archive naming convention:
+          #   main:    <filename>.jar
+          #   sources: <filename>-sources.jar  (only if withSourcesJar() is configured)
+          #   javadoc: <filename>-javadoc.jar  (only if withJavadocJar() is configured)
+          # mc-publish silently skips entries that don't exist as release assets.
+          jq -r '.artifacts | to_entries[] | "\(.key) \(.value.filename)"' "$META" \
+            | while read -r loader filename; do
+                {
+                  echo "release-assets/${filename}.jar"
+                  echo "release-assets/${filename}-sources.jar"
+                  echo "release-assets/${filename}-javadoc.jar"
+                } > "files_${loader}.txt"
+                echo "=== files_${loader}.txt ==="
+                cat "files_${loader}.txt"
+              done
 
-            # sources.jar hinzufügen
-            for f in artifacts/*${L}*sources.jar; do
-              [ -f "$f" ] && echo "$f" >> "files_${L}.txt"
-            done
-
-            # javadoc.jar hinzufügen
-            for f in artifacts/*${L}*javadoc.jar; do
-              [ -f "$f" ] && echo "$f" >> "files_${L}.txt"
-            done
-          done
-
-      - name: Upload loader data
+      - name: Upload loader file lists
         uses: actions/upload-artifact@v4
         with:
           name: loader-data
-          path: |
-            files_*.txt
+          path: files_*.txt
+          retention-days: 1
 
-      - name: Print release summary
+      - name: Release summary
         run: |
-          echo "======================================="
-          echo "           RELEASE SUMMARY"
-          echo "======================================="
-          echo ""
-          echo "Minecraft:        $MC_VERSION"
-          echo "Mod Version:      $MOD_VERSION"
-          echo "Full Version:     $FULL_VERSION"
-          echo "Release Type:     $RELEASE_TYPE"
-          echo "Title:            $RELEASE_TITLE"
-          echo ""
-          echo "Loaders:"
-          printf '%s\n' $LOADERS
-          echo ""
-          echo "Artifacts:"
-          for f in files_*.txt; do
-            echo "== ${f#files_}"
-            cat "$f"
-          done
-          echo "======================================="
+          echo "================================================"
+          echo "               RELEASE SUMMARY"
+          echo "================================================"
+          echo "Mod:          ${{ steps.parse.outputs.mod_id }}"
+          echo "Minecraft:    ${{ steps.parse.outputs.mc_version }}"
+          echo "Version:      ${{ steps.parse.outputs.mod_version }}"
+          echo "Full:         ${{ steps.parse.outputs.full_version }}"
+          echo "Channel:      ${{ steps.parse.outputs.release_channel }}"
+          echo "Loaders:      ${{ steps.parse.outputs.loaders }}"
+          echo "================================================"
 
-  publish:
+  # CurseForge & Modrinth – platform JARs from Release Assets, parallel per loader
+  publish-platforms:
     needs: prepare
+    if: ${{ !contains(github.event.release.body, '[skip-platforms]') }}
     runs-on: ubuntu-latest
 
-    env:
-      RELEASE_TITLE: ${{ needs.prepare.outputs.release_title }}
-
     strategy:
+      fail-fast: false
       matrix:
         loader: ${{ fromJson(needs.prepare.outputs.loaders) }}
 
     steps:
-      - name: Checkout correct branch
+      - name: Checkout release commit
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.release.target_commitish }}
           fetch-depth: 0
 
+      # Download platform JARs from the GitHub Release Assets.
+      # These are exactly the files that were in the Draft Release –
+      # the ones you tested and approved.
       - name: Download release assets
         uses: robinraju/release-downloader@v1
         with:
           tag: ${{ github.event.release.tag_name }}
-          fileName: "*"
-          out-file-path: artifacts
+          fileName: "*.jar"
+          out-file-path: release-assets
 
-      - name: Download loader data
+      - name: Download loader file lists
         uses: actions/download-artifact@v4
         with:
           name: loader-data
 
-      - name: Load files for loader
+      - name: Load file list for ${{ matrix.loader }}
+        id: files
         run: |
-          LOADER="${{ matrix.loader }}"
-          echo "LOADER=$LOADER" >> $GITHUB_ENV
-          FILELIST=$(cat "files_${LOADER}.txt")
-          echo "files<<EOF" >> $GITHUB_ENV
-          echo "$FILELIST" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          FILE="files_${{ matrix.loader }}.txt"
+          [ -f "$FILE" ] || { echo "Error: $FILE not found" >&2; exit 1; }
+          {
+            echo "list<<EOF"
+            cat "$FILE"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
-      - name: Create release title
+      - name: Resolve release title
+        id: title
         run: |
-          MOD_RELEASE_TITLE=$RELEASE_TITLE
-          MOD_RELEASE_TITLE=${MOD_RELEASE_TITLE//\{LOADER\}/$LOADER}
-          echo "MOD_RELEASE_TITLE=$MOD_RELEASE_TITLE" >> $GITHUB_ENV
+          TITLE="${{ needs.prepare.outputs.release_title }}"
+          TITLE=${TITLE//\{LOADER\}/${{ matrix.loader }}}
+          echo "value=$TITLE" >> "$GITHUB_OUTPUT"
 
-          echo "Generated Release Title:"
-          echo "$MOD_RELEASE_TITLE"
-          echo "Loader: $LOADER"
-
-      - name: Publish ${{ matrix.loader }}
+      - name: Publish ${{ matrix.loader }} to CurseForge & Modrinth
         uses: Kir-Antipov/mc-publish@v3.3
         with:
-          name: ${{ env.MOD_RELEASE_TITLE }}
-          version: ${{ env.MOD_VERSION }}
-          version-type: ${{ env.RELEASE_TYPE }}
-          game-versions: ${{ env.MC_VERSION }}
+          name: ${{ steps.title.outputs.value }}
+          version: ${{ needs.prepare.outputs.mod_version }}
+          version-type: ${{ needs.prepare.outputs.release_channel }}
+          game-versions: ${{ needs.prepare.outputs.mc_version }}
           loaders: ${{ matrix.loader }}
-
           changelog: ${{ github.event.release.body }}
-          files: ${{ env.files }}
-
-          modrinth-id: ${{ secrets.MODRINTH_ID }}
+          files: ${{ steps.files.outputs.list }}
+          modrinth-id: ${{ vars.MODRINTH_ID }}
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          curseforge-id: ${{ vars.CURSEFORGE_ID }}
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
 
-          curseforge-id: ${{ secrets.CF_ID }}
-          curseforge-token: ${{ secrets.CF_TOKEN }}
+  # Maven – publishes the staged Maven repo to the configured target.
+  #
+  # The MAVEN_TARGET variable (Settings → Variables → Actions) selects the
+  # publish strategy. Only the secrets for the chosen target need to be set.
+  #
+  # Supported targets:
+  #   github-pages  → commit to a GitHub repo served via GitHub Pages
+  #                   Secret:   MOD_RESOURCES_DEPLOY_KEY
+  #                   Variable: MAVEN_GITHUB_REPO  (e.g. "MisterJulsen/mod-resources")
+  #                   Variable: MAVEN_GITHUB_PATH  (subfolder in repo, e.g. "maven")
+  #
+  #   http          → HTTP PUT to Nexus, Artifactory, Gitea, nginx+WebDAV, etc.
+  #                   Secret: MAVEN_HTTP_URL       (e.g. "https://nexus.example.com/repository/releases")
+  #                   Secret: MAVEN_HTTP_USERNAME
+  #                   Secret: MAVEN_HTTP_PASSWORD
+  #
+  #   s3            → S3-compatible storage (AWS, Backblaze B2, MinIO, Cloudflare R2)
+  #                   Secret: MAVEN_S3_ENDPOINT    (e.g. "https://s3.us-east-1.amazonaws.com")
+  #                   Secret: MAVEN_S3_BUCKET
+  #                   Secret: MAVEN_S3_ACCESS_KEY
+  #                   Secret: MAVEN_S3_SECRET_KEY
+  #                   Secret: MAVEN_S3_PATH_PREFIX (optional, prefix inside bucket)
+  #
+  #   ssh           → rsync over SSH to a self-hosted server
+  #                   Secret: MAVEN_SSH_KEY        (private key)
+  #                   Secret: MAVEN_SSH_HOST       (e.g. "maven.example.com")
+  #                   Secret: MAVEN_SSH_USER       (e.g. "deploy")
+  #                   Secret: MAVEN_SSH_PATH       (remote path, e.g. "/var/www/maven")
+  publish-maven:
+    needs: prepare
+    if: ${{ !contains(github.event.release.body, '[skip-maven]') }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download internal artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.prepare.outputs.internal_artifact_name }}
+          run-id: ${{ needs.prepare.outputs.ci_run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: internal/
+
+      - name: Verify Maven staging directory
+        run: |
+          if [ ! -d "internal/maven" ]; then
+            echo "Error: internal/maven not found" >&2
+            find internal/ -maxdepth 4 | head -40 >&2
+            exit 1
+          fi
+          echo "Maven staging contents:"
+          find internal/maven -maxdepth 4
+
+      # ── GitHub Pages ──────────────────────────────────────────────────────
+      - name: "[github-pages] Setup SSH deploy key"
+        if: ${{ vars.MAVEN_TARGET == 'github-pages' }}
+        run: |
+          [ -n "${{ secrets.MOD_RESOURCES_DEPLOY_KEY }}" ] || {
+            echo "Error: MOD_RESOURCES_DEPLOY_KEY secret is not set" >&2; exit 1
+          }
+          [ -n "${{ vars.MAVEN_GITHUB_REPO }}" ] || {
+            echo "Error: MAVEN_GITHUB_REPO variable is not set (e.g. 'MisterJulsen/mod-resources')" >&2; exit 1
+          }
+          mkdir -p ~/.ssh
+          echo "${{ secrets.MOD_RESOURCES_DEPLOY_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+          echo "GIT_SSH_COMMAND=ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" >> "$GITHUB_ENV"
+
+      - name: "[github-pages] Clone target repo"
+        if: ${{ vars.MAVEN_TARGET == 'github-pages' }}
+        run: git clone "git@github.com:${{ vars.MAVEN_GITHUB_REPO }}.git" /tmp/maven-target
+
+      - name: "[github-pages] Sync and push"
+        if: ${{ vars.MAVEN_TARGET == 'github-pages' }}
+        run: |
+          SUBFOLDER="${{ vars.MAVEN_GITHUB_PATH }}"
+          SUBFOLDER="${SUBFOLDER:-maven}"
+          TARGET_DIR="/tmp/maven-target/${SUBFOLDER}"
+          mkdir -p "$TARGET_DIR"
+          rsync -av "internal/maven/" "$TARGET_DIR/"
+          cd /tmp/maven-target
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name  "github-actions[bot]"
+          git add "${SUBFOLDER}/"
+          if git diff --cached --quiet; then
+            echo "Nothing to commit – version already published"
+          else
+            git commit -m "maven: ${{ needs.prepare.outputs.full_version }}"
+            git push origin HEAD
+          fi
+
+      # ── HTTP / WebDAV ─────────────────────────────────────────────────────
+      - name: "[http] Upload via HTTP PUT"
+        if: ${{ vars.MAVEN_TARGET == 'http' }}
+        env:
+          BASE_URL: ${{ secrets.MAVEN_HTTP_URL }}
+          USERNAME: ${{ secrets.MAVEN_HTTP_USERNAME }}
+          PASSWORD: ${{ secrets.MAVEN_HTTP_PASSWORD }}
+        run: |
+          [ -n "$BASE_URL" ] || { echo "Error: MAVEN_HTTP_URL secret is not set" >&2; exit 1; }
+          [ -n "$USERNAME" ] || { echo "Error: MAVEN_HTTP_USERNAME secret is not set" >&2; exit 1; }
+          [ -n "$PASSWORD" ] || { echo "Error: MAVEN_HTTP_PASSWORD secret is not set" >&2; exit 1; }
+          BASE_URL="${BASE_URL%/}"
+          ERRORS=0
+          find internal/maven -type f | while read -r file; do
+            RELATIVE="${file#internal/maven/}"
+            TARGET_URL="${BASE_URL}/${RELATIVE}"
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}"               -u "${USERNAME}:${PASSWORD}"               -X PUT               -H "Content-Type: application/octet-stream"               --data-binary "@${file}"               "$TARGET_URL")
+            if [[ "$HTTP_CODE" =~ ^2 ]]; then
+              echo "✓ ${RELATIVE} (HTTP ${HTTP_CODE})"
+            else
+              echo "✗ ${RELATIVE} (HTTP ${HTTP_CODE})" >&2
+              ERRORS=$((ERRORS + 1))
+            fi
+          done
+          [ "$ERRORS" -eq 0 ] || { echo "Error: ${ERRORS} file(s) failed to upload" >&2; exit 1; }
+
+      # ── S3-compatible ─────────────────────────────────────────────────────
+      - name: "[s3] Upload to S3-compatible storage"
+        if: ${{ vars.MAVEN_TARGET == 's3' }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.MAVEN_S3_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.MAVEN_S3_SECRET_KEY }}
+          S3_ENDPOINT: ${{ secrets.MAVEN_S3_ENDPOINT }}
+          S3_BUCKET: ${{ secrets.MAVEN_S3_BUCKET }}
+          S3_PATH_PREFIX: ${{ secrets.MAVEN_S3_PATH_PREFIX }}
+        run: |
+          [ -n "$AWS_ACCESS_KEY_ID" ]     || { echo "Error: MAVEN_S3_ACCESS_KEY secret is not set" >&2; exit 1; }
+          [ -n "$AWS_SECRET_ACCESS_KEY" ] || { echo "Error: MAVEN_S3_SECRET_KEY secret is not set" >&2; exit 1; }
+          [ -n "$S3_ENDPOINT" ]           || { echo "Error: MAVEN_S3_ENDPOINT secret is not set" >&2; exit 1; }
+          [ -n "$S3_BUCKET" ]             || { echo "Error: MAVEN_S3_BUCKET secret is not set" >&2; exit 1; }
+          PREFIX="${S3_PATH_PREFIX:+${S3_PATH_PREFIX}/}"
+          aws s3 sync "internal/maven/" "s3://${S3_BUCKET}/${PREFIX}"             --endpoint-url "$S3_ENDPOINT"             --no-progress
+
+      # ── SSH / rsync ───────────────────────────────────────────────────────
+      - name: "[ssh] Setup SSH key"
+        if: ${{ vars.MAVEN_TARGET == 'ssh' }}
+        run: |
+          [ -n "${{ secrets.MAVEN_SSH_KEY }}" ]  || { echo "Error: MAVEN_SSH_KEY secret is not set" >&2; exit 1; }
+          [ -n "${{ secrets.MAVEN_SSH_HOST }}" ] || { echo "Error: MAVEN_SSH_HOST secret is not set" >&2; exit 1; }
+          [ -n "${{ secrets.MAVEN_SSH_USER }}" ] || { echo "Error: MAVEN_SSH_USER secret is not set" >&2; exit 1; }
+          [ -n "${{ secrets.MAVEN_SSH_PATH }}" ] || { echo "Error: MAVEN_SSH_PATH secret is not set" >&2; exit 1; }
+          mkdir -p ~/.ssh
+          echo "${{ secrets.MAVEN_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan "${{ secrets.MAVEN_SSH_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: "[ssh] Sync via rsync"
+        if: ${{ vars.MAVEN_TARGET == 'ssh' }}
+        run: |
+          rsync -av             -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no"             "internal/maven/"             "${{ secrets.MAVEN_SSH_USER }}@${{ secrets.MAVEN_SSH_HOST }}:${{ secrets.MAVEN_SSH_PATH }}/"
+
+      # ── Unknown / missing target ──────────────────────────────────────────
+      - name: Validate maven target
+        if: ${{ vars.MAVEN_TARGET == '' || (vars.MAVEN_TARGET != 'github-pages' && vars.MAVEN_TARGET != 'http' && vars.MAVEN_TARGET != 's3' && vars.MAVEN_TARGET != 'ssh') }}
+        run: |
+          echo "Error: MAVEN_TARGET variable is not set or has an invalid value." >&2
+          echo "Go to Settings → Variables → Actions and set MAVEN_TARGET to one of:" >&2
+          echo "  github-pages, http, s3, ssh" >&2
+          exit 1

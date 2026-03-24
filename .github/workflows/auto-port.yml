@@ -6,11 +6,11 @@ on:
 
   workflow_dispatch:
     inputs:
-      items:
-        description: "Pull Request or Commit SHAs (comma separated)"
+      pr_number:
+        description: "Pull Request number to port"
         required: true
       target_branches:
-        description: "Target branches (comma separated, empty = config)"
+        description: "Target branches (comma separated, empty = use config)"
         required: false
 
 permissions:
@@ -22,8 +22,9 @@ jobs:
     runs-on: ubuntu-latest
 
     if: |
-      github.event_name == 'workflow_dispatch' ||
       (
+        github.event_name == 'workflow_dispatch'
+      ) || (
         github.event.pull_request.merged == true &&
         github.actor != 'github-actions[bot]' &&
         !contains(github.event.pull_request.labels.*.name, 'auto-port')
@@ -39,19 +40,23 @@ jobs:
         id: config
         run: |
           PATTERN=$(jq -r '.main_branch_pattern' .mod-build-config.json)
-          BRANCHES=$(jq -r '.auto_port_branches[]' .mod-build-config.json | tr '\n' ' ')
-          echo "pattern=$PATTERN" >> $GITHUB_OUTPUT
-          echo "branches=$BRANCHES" >> $GITHUB_OUTPUT
+          BRANCHES=$(jq -r '.auto_port_branches | join(" ")' .mod-build-config.json)
+          echo "pattern=$PATTERN"   >> "$GITHUB_OUTPUT"
+          echo "branches=$BRANCHES" >> "$GITHUB_OUTPUT"
 
+      # For PR events: verify the base branch matches the configured pattern.
+      # For workflow_dispatch: always proceed (user explicitly chose the PR).
       - name: Check base branch pattern
         if: github.event_name == 'pull_request'
         id: branchcheck
         run: |
           BASE="${{ github.event.pull_request.base.ref }}"
-          if [[ "$BASE" =~ ${{ steps.config.outputs.pattern }} ]]; then
-            echo "valid=true" >> $GITHUB_OUTPUT
+          PATTERN="${{ steps.config.outputs.pattern }}"
+          if [[ "$BASE" =~ $PATTERN ]]; then
+            echo "valid=true" >> "$GITHUB_OUTPUT"
           else
-            echo "valid=false" >> $GITHUB_OUTPUT
+            echo "valid=false" >> "$GITHUB_OUTPUT"
+            echo "Base branch '$BASE' does not match pattern '$PATTERN' – skipping auto-port."
           fi
 
       - name: Stop if branch does not match pattern
@@ -60,29 +65,46 @@ jobs:
           steps.branchcheck.outputs.valid != 'true'
         run: exit 0
 
-      - name: Determine items to port
-        id: items
+      # Resolve PR metadata – works for both trigger types.
+      - name: Resolve PR metadata
+        id: pr
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            PR="${{ github.event.pull_request.number }}"
-            COMMITS=$(gh pr view $PR --json commits -q '.commits[].oid')
+            PR_NUMBER="${{ github.event.pull_request.number }}"
+            BASE_BRANCH="${{ github.event.pull_request.base.ref }}"
+            HEAD_BRANCH="${{ github.event.pull_request.head.ref }}"
+            MERGE_SHA="${{ github.event.pull_request.merge_commit_sha }}"
+            PR_TITLE="${{ github.event.pull_request.title }}"
+            PR_BODY="${{ github.event.pull_request.body }}"
           else
-            COMMITS=""
-            ITEMS=$(echo "${{ inputs.items }}" | tr ',' ' ')
-            for ITEM in $ITEMS; do
-              if [[ "$ITEM" =~ ^[0-9]+$ ]]; then
-                COMMITS+=" $(gh pr view $ITEM --json commits -q '.commits[].oid')"
-              else
-                COMMITS+=" $ITEM"
-              fi
-            done
+            PR_NUMBER="${{ inputs.pr_number }}"
+            BASE_BRANCH=$(gh pr view "$PR_NUMBER" --json baseRefName -q '.baseRefName')
+            HEAD_BRANCH=$(gh pr view "$PR_NUMBER" --json headRefName -q '.headRefName')
+            MERGE_SHA=$(gh pr view "$PR_NUMBER" --json mergeCommit -q '.mergeCommit.oid')
+            PR_TITLE=$(gh pr view "$PR_NUMBER" --json title -q '.title')
+            PR_BODY=$(gh pr view "$PR_NUMBER" --json body -q '.body')
+
+            if [ -z "$MERGE_SHA" ] || [ "$MERGE_SHA" = "null" ]; then
+              echo "Error: PR #${PR_NUMBER} has no merge commit – is it merged?" >&2
+              exit 1
+            fi
           fi
 
-          echo "commits=$COMMITS" >> $GITHUB_OUTPUT
+          echo "pr_number=$PR_NUMBER"   >> "$GITHUB_OUTPUT"
+          echo "base_branch=$BASE_BRANCH" >> "$GITHUB_OUTPUT"
+          echo "head_branch=$HEAD_BRANCH" >> "$GITHUB_OUTPUT"
+          echo "merge_sha=$MERGE_SHA"     >> "$GITHUB_OUTPUT"
+          # Escape for multiline output
+          echo "pr_title<<EOF"            >> "$GITHUB_OUTPUT"
+          echo "$PR_TITLE"                >> "$GITHUB_OUTPUT"
+          echo "EOF"                      >> "$GITHUB_OUTPUT"
+          echo "pr_body<<EOF"             >> "$GITHUB_OUTPUT"
+          echo "$PR_BODY"                 >> "$GITHUB_OUTPUT"
+          echo "EOF"                      >> "$GITHUB_OUTPUT"
 
-      - name: Determine target branches
+      - name: Resolve target branches
         id: targets
         run: |
           if [ -n "${{ inputs.target_branches }}" ]; then
@@ -90,59 +112,109 @@ jobs:
           else
             TARGETS="${{ steps.config.outputs.branches }}"
           fi
-          echo "targets=$TARGETS" >> $GITHUB_OUTPUT
+          echo "targets=$TARGETS" >> "$GITHUB_OUTPUT"
 
-      - name: Create auto-port PRs
+      - name: Ensure auto-port label exists
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git config --global user.email "github-actions@github.com"
-          git config --global user.name "github-actions"
-
-          LABEL="auto-port"
-
-          echo "Checking if label '$LABEL' exists..."
-
-          if ! gh label list --limit 200 | grep -q "^$LABEL"; then
-            echo "Label '$LABEL' does not exist. Creating it..."
-            gh label create "$LABEL" --color "#1D76DB" --description "Automatically created auto-port label"
-          else
-            echo "Label '$LABEL' already exists."
+          if ! gh label list --limit 200 | grep -q "^auto-port"; then
+            gh label create "auto-port" \
+              --color "#1D76DB" \
+              --description "Pull request created by the auto-port workflow"
           fi
 
-          FEATURE_BRANCH="${{ github.event.pull_request.head.ref }}"
-          PR_NUMBER="${{ github.event.pull_request.number }}"
+      - name: Create port PRs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ steps.pr.outputs.pr_number }}
+          BASE_BRANCH: ${{ steps.pr.outputs.base_branch }}
+          HEAD_BRANCH: ${{ steps.pr.outputs.head_branch }}
+          MERGE_SHA: ${{ steps.pr.outputs.merge_sha }}
+          PR_TITLE: ${{ steps.pr.outputs.pr_title }}
+          PR_BODY: ${{ steps.pr.outputs.pr_body }}
+          TARGETS: ${{ steps.targets.outputs.targets }}
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name  "github-actions[bot]"
 
-          echo "Original Feature Branch: $FEATURE_BRANCH"
-          echo "Original PR Number: $PR_NUMBER"
+          for TARGET in $TARGETS; do
+            echo ""
+            echo "═══════════════════════════════════════"
+            echo "Porting PR #${PR_NUMBER} → ${TARGET}"
+            echo "═══════════════════════════════════════"
 
-          for TARGET in ${{ steps.targets.outputs.targets }}; do
-            echo "Processing target branch: $TARGET"
-
-            if ! git ls-remote --exit-code --heads origin "$TARGET" > /dev/null; then
-              echo "⚠️ Branch '$TARGET' doesn't exist. Skip..."
+            # Skip if target branch doesn't exist
+            if ! git ls-remote --exit-code --heads origin "$TARGET" > /dev/null 2>&1; then
+              echo "⚠️  Branch '$TARGET' does not exist – skipping."
               continue
             fi
 
-            SAFE_FEATURE_BRANCH=$(echo "$FEATURE_BRANCH" | tr '/' '-')
-            SAFE_TARGET=$(echo "$TARGET" | tr '/' '-')
-
-            BACKPORT_BRANCH="auto-port/${PR_NUMBER}-${SAFE_FEATURE_BRANCH}-to-${SAFE_TARGET}"
-
-            git checkout -b "$BACKPORT_BRANCH" "origin/$TARGET"
-            git merge --no-ff "origin/$FEATURE_BRANCH" || true
-
-            if ! git diff --quiet; then
-              git add -A
-              git commit -m "Auto-Port of PR #${PR_NUMBER} from $FEATURE_BRANCH" || true
+            # Skip if source and target are the same
+            if [ "$TARGET" = "$BASE_BRANCH" ]; then
+              echo "⚠️  Target '$TARGET' is the same as the source branch – skipping."
+              continue
             fi
 
-            git push origin "$BACKPORT_BRANCH"
+            SAFE_HEAD=$(echo "$HEAD_BRANCH" | tr '/' '-')
+            SAFE_TARGET=$(echo "$TARGET" | tr '/' '-')
+            PORT_BRANCH="auto-port/${PR_NUMBER}-${SAFE_HEAD}-to-${SAFE_TARGET}"
+
+            # Clean up any leftover branch from a previous failed attempt
+            git push origin --delete "$PORT_BRANCH" 2>/dev/null || true
+
+            git checkout -b "$PORT_BRANCH" "origin/$TARGET"
+
+            # Use merge --squash to reproduce the full PR diff as a single commit
+            # on top of the target branch, exactly as if the PR had been opened
+            # against that branch from the start.
+            # We merge the merge commit (not the feature branch tip) so we get
+            # the resolved state including any fixups made during review.
+            HAS_CONFLICT=false
+            if ! git merge --squash "$MERGE_SHA" 2>&1; then
+              echo "⚠️  Merge conflict detected – will create PR with conflict markers."
+              HAS_CONFLICT=true
+              # Stage whatever was merged (including conflict markers)
+              git add -A
+            fi
+
+            # Check if there are actually any changes to commit
+            if git diff --cached --quiet; then
+              echo "ℹ️  No changes to apply to '$TARGET' – the changes may already be present."
+              git checkout -
+              git branch -D "$PORT_BRANCH"
+              continue
+            fi
+
+            git commit -m "Port PR #${PR_NUMBER}: ${PR_TITLE}"
+
+            git push origin "$PORT_BRANCH"
+
+            # Build PR body
+            if [ "$HAS_CONFLICT" = "true" ]; then
+              CONFLICT_WARNING="
+            > [!WARNING]
+            > **This port has merge conflicts.** Manual resolution is required before merging.
+            "
+            else
+              CONFLICT_WARNING=""
+            fi
+
+            FULL_BODY="Automatic port of PR #${PR_NUMBER} from \`${BASE_BRANCH}\` → \`${TARGET}\`.
+
+            ${CONFLICT_WARNING}
+            **Original PR:** #${PR_NUMBER} – ${PR_TITLE}
+
+            ---
+
+            ${PR_BODY}"
 
             gh pr create \
-              --base "$TARGET" \
-              --head "$BACKPORT_BRANCH" \
-              --title "[Auto-Port] ${FEATURE_BRANCH} → ${TARGET}" \
-              --body "Automatic port of PR #${PR_NUMBER} from branch \`${FEATURE_BRANCH}\`." \
-              --label "$LABEL"
+              --base    "$TARGET" \
+              --head    "$PORT_BRANCH" \
+              --title   "[Auto-Port] ${PR_TITLE} (${BASE_BRANCH} → ${TARGET})" \
+              --body    "$FULL_BODY" \
+              --label   "auto-port"
+
+            echo "✓ Created port PR: ${PORT_BRANCH} → ${TARGET}"
           done
