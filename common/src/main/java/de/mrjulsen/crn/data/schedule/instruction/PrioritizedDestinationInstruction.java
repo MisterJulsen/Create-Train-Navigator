@@ -19,7 +19,9 @@ import com.simibubi.create.foundation.gui.ModularGuiLineBuilder;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.data.schedule.INavigationExtension;
+import de.mrjulsen.crn.data.train.TrainUtils;
 import de.mrjulsen.crn.mixin.ScheduleRuntimeAccessor;
+import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.crn.util.PenaltyResult;
 import de.mrjulsen.crn.util.PenaltyResult.Category;
 import de.mrjulsen.crn.util.PenaltyResult.Type;
@@ -145,8 +147,8 @@ public class PrioritizedDestinationInstruction extends DestinationInstruction {
 		Train train = runtime.train;
 		List<String> filters = getFilters();
 		List<Pattern> patterns = filters.stream()
-				.map(Pattern::compile)
-				.collect(Collectors.toList());
+				.map(ModUtils::buildPattern)
+				.toList();
 		INavigationExtension ext = (INavigationExtension)train.navigation;
 
 		DiscoveredPath selectedDestination = null;
@@ -154,9 +156,7 @@ public class PrioritizedDestinationInstruction extends DestinationInstruction {
 		boolean anyMatch = false;
 
 
-		MapCache<DiscoveredPath, GlobalStation, GlobalStation> navigationCache = new MapCache<>((station) -> {
-			return train.navigation.findPathTo(station, Double.MAX_VALUE);
-		}, GlobalStation::hashCode);
+		MapCache<DiscoveredPath, GlobalStation, GlobalStation> navigationCache = new MapCache<>((station) -> train.navigation.findPathTo(station, Double.MAX_VALUE), GlobalStation::hashCode);
 
 		if (!train.hasForwardConductor() && !train.hasBackwardConductor()) {
 			train.status.missingConductor();
