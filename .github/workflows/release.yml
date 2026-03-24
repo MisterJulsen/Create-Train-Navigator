@@ -3,17 +3,16 @@ name: Create Release
 on:
   workflow_dispatch:
     inputs:
+      publish_platforms:
+        description: "Publish to CurseForge & Modrinth"
+        required: false
+        type: boolean
+        default: true
       publish_maven:
-        description: "Publish Maven (S3)"
+        description: "Publish to Maven"
         required: false
         type: boolean
         default: true
-      trigger_mod_publish:
-        description: "Publish Mods on CurseForge/Modrinth"
-        required: false
-        type: boolean
-        default: true
-
 
 permissions:
   contents: write
@@ -21,10 +20,6 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        java: [21]
 
     steps:
       - name: Checkout repository
@@ -47,130 +42,153 @@ jobs:
             ~/.gradle/wrapper
             **/.gradle/loom-cache
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle.properties', '**/libs.versions.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
+          restore-keys: ${{ runner.os }}-gradle-
+
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-home-cache-cleanup: true
           gradle-version: wrapper
 
-      - name: Build
-        env:
-          MAVEN_ENDPOINT: ${{ secrets.MAVEN_ENDPOINT }}
-          MAVEN_ACCESS_KEY: ${{ secrets.MAVEN_ACCESS_KEY }}
-          MAVEN_SECRET_KEY: ${{ secrets.MAVEN_SECRET_KEY }}
+      # ── Platform build ─────────────────────────────────────────────────────
+      # Produces full JARs for players (large, with bundled deps if configured).
+      # These go into the GitHub Draft Release and later to CurseForge/Modrinth.
+      - name: Build platform JARs
         run: |
           chmod +x gradlew
-          
-          if [ "${{ github.event.inputs.publish_maven }}" = "true" ]; then
-            echo "Publishing to Maven (S3)…"
-            ./gradlew publishS3
-          else
-            echo "Publishing locally…"
-            ./gradlew publishLocal
-          fi
-      - name: Read metadata
-        run: |
-          MOD_ID=$(jq -r '.mod_id' metadata.json)
-          MOD_NAME=$(jq -r '.display_name' metadata.json)
-          MC_VERSION=$(jq -r '.minecraft_version' metadata.json)
-          MOD_VERSION=$(jq -r '.mod_version' metadata.json)
-          FULL_VERSION=$(jq -r '.full_version' metadata.json)
-          RELEASE_CHANNEL=$(jq -r '.release_channel' metadata.json)
-          
-          PLATFORM_STRING=$(jq -r '
-            if has("artifacts") and (.artifacts | length > 0) then
-              "[" + (.artifacts | keys | map(ascii_upcase) | join("/")) + "]"
-            else
-              "[]"
-            end
-          ' metadata.json)
-          
-          TITLE_FORMAT=$(jq -r '.github_release_title_format' .mod-build-config.json)
-          
-          RELEASE_TITLE=$TITLE_FORMAT
-          RELEASE_TITLE=${RELEASE_TITLE//\{MOD_ID\}/$MOD_ID}
-          RELEASE_TITLE=${RELEASE_TITLE//\{MOD_NAME\}/$MOD_NAME}
-          RELEASE_TITLE=${RELEASE_TITLE//\{MOD_VERSION\}/$MOD_VERSION}
-          RELEASE_TITLE=${RELEASE_TITLE//\{FULL_VERSION\}/$FULL_VERSION}
-          RELEASE_TITLE=${RELEASE_TITLE//\{MC_VERSION\}/$MC_VERSION}
-          RELEASE_TITLE=${RELEASE_TITLE//\{RELEASE_CHANNEL\}/$RELEASE_CHANNEL}
-          RELEASE_TITLE=${RELEASE_TITLE//\{PLATFORMS\}/$PLATFORM_STRING}
-          
-          echo "MOD_ID=$MOD_ID" >> $GITHUB_ENV
-          echo "MOD_NAME=$MOD_NAME" >> $GITHUB_ENV
-          echo "MC_VERSION=$MC_VERSION" >> $GITHUB_ENV
-          echo "MOD_VERSION=$MOD_VERSION" >> $GITHUB_ENV
-          echo "FULL_VERSION=$FULL_VERSION" >> $GITHUB_ENV
-          echo "RELEASE_CHANNEL=$RELEASE_CHANNEL" >> $GITHUB_ENV
-          echo "PLATFORMS=$PLATFORM_STRING" >> $GITHUB_ENV
-          echo "RELEASE_TITLE=$RELEASE_TITLE" >> $GITHUB_ENV
+          ./gradlew buildWithMetadata -PbuildProfile=platform
 
-      - name: Generate changelog
+      - name: Collect platform JARs
+        id: platform
         run: |
-          sudo apt-get update
-          sudo apt-get install -y jq
+          {
+            echo "files<<EOF"
+            for STEM in $(jq -r '.artifacts[].filename' metadata.json); do
+              MAIN=$(find . -type f -name "${STEM}.jar" ! -path "*/.gradle/*" | head -n1)
+              if [ -z "$MAIN" ]; then
+                echo "ERROR: Artifact not found: ${STEM}.jar" >&2
+                exit 1
+              fi
+              echo "$MAIN"
+              DIR=$(dirname "$MAIN")
+              find "$DIR" -maxdepth 1 \
+                \( -name "*sources.jar" -o -name "*javadoc.jar" \) \
+                2>/dev/null || true
+            done
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      # ── Maven build ────────────────────────────────────────────────────────
+      # Produces slim JARs for developers (no bundled deps).
+      # publishLocal writes into localRepoDir as configured in build.gradle.
+      # The result is stored as an Actions Artifact – internal only, not in
+      # the GitHub Release. publish.yml picks it up after your approval.
+      - name: Publish Maven JARs (local staging)
+        run: ./gradlew publishLocal -PbuildProfile=maven
+
+      # ── Read metadata ──────────────────────────────────────────────────────
+      - name: Read metadata
+        id: meta
+        run: |
+          get() { jq -r "$1" metadata.json; }
+
+          MOD_ID=$(get '.mod_id')
+          MOD_NAME=$(get '.display_name')
+          MC_VERSION=$(get '.minecraft_version')
+          MOD_VERSION=$(get '.mod_version')
+          FULL_VERSION=$(get '.full_version')
+          RELEASE_CHANNEL=$(get '.release_channel')
+          MAVEN_LOCAL_PATH=$(get '.maven_local_path')
+
+          PLATFORM_STRING=$(jq -r '
+            if (.artifacts | length) > 0 then
+              "[" + (.artifacts | keys | map(ascii_upcase) | join("/")) + "]"
+            else "[]" end
+          ' metadata.json)
+
+          TITLE=$(jq -r '.github_release_title_format' .mod-build-config.json)
+          TITLE=${TITLE//\{MOD_ID\}/$MOD_ID}
+          TITLE=${TITLE//\{MOD_NAME\}/$MOD_NAME}
+          TITLE=${TITLE//\{MOD_VERSION\}/$MOD_VERSION}
+          TITLE=${TITLE//\{FULL_VERSION\}/$FULL_VERSION}
+          TITLE=${TITLE//\{MC_VERSION\}/$MC_VERSION}
+          TITLE=${TITLE//\{RELEASE_CHANNEL\}/$RELEASE_CHANNEL}
+          TITLE=${TITLE//\{PLATFORMS\}/$PLATFORM_STRING}
+
+          {
+            echo "mod_id=$MOD_ID"
+            echo "mod_name=$MOD_NAME"
+            echo "mc_version=$MC_VERSION"
+            echo "mod_version=$MOD_VERSION"
+            echo "full_version=$FULL_VERSION"
+            echo "release_channel=$RELEASE_CHANNEL"
+            echo "maven_local_path=$MAVEN_LOCAL_PATH"
+            echo "release_title=$TITLE"
+          } >> "$GITHUB_OUTPUT"
+
+      # ── Changelog ──────────────────────────────────────────────────────────
+      - name: Download changelog script
+        env:
+          SCRIPT_COMMIT: ${{ vars.CHANGELOG_SCRIPT_COMMIT }}
+        run: |
           curl -fsSL \
-            https://files.mrjulsen.net/scripts/java/generate_changelog.sh \
+            "https://raw.githubusercontent.com/MisterJulsen/mod-resources/main/data/build-tools/generate_changelog.sh" \
             -o generate_changelog.sh
           chmod +x generate_changelog.sh
-          ./generate_changelog.sh "${{ env.FULL_VERSION }}" "${{ env.MOD_NAME }}"
 
-      - name: Collect release files
-        id: collect
-        run: |
-          FILES=""
-          for MAIN in $(jq -r '.artifacts[].filename' metadata.json); do
-            echo "Processing $MAIN"
-            MAIN_PATH=$(find . -type f -name "${MAIN}.jar" | head -n 1)
-            if [ -z "$MAIN_PATH" ]; then
-              echo "ERROR: Could not find artifact: $MAIN"
-              exit 1
-            fi
-            DIR=$(dirname "$MAIN_PATH")
-            FILES="$FILES $MAIN_PATH"
-            for f in "$DIR"/*sources.jar; do
-              [ -e "$f" ] && FILES="$FILES $f"
-            done
-            for f in "$DIR"/*javadoc.jar; do
-              [ -e "$f" ] && FILES="$FILES $f"
-            done
-          done
-          echo "FILES<<EOF" >> $GITHUB_ENV
-          for f in $FILES; do
-            echo "$f" >> $GITHUB_ENV
-          done
-          echo "EOF" >> $GITHUB_ENV
+      - name: Generate changelog
+        run: ./generate_changelog.sh "${{ steps.meta.outputs.full_version }}" "${{ steps.meta.outputs.mod_name }}"
 
       - name: Load changelog
         id: changelog
         run: |
-          CONTENT=$(cat CHANGELOG.md)
-          echo "content<<EOF" >> $GITHUB_OUTPUT
-          echo "$CONTENT" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-      - name: Upload Release Artifacts
+          {
+            echo "content<<EOF"
+            cat CHANGELOG.md
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      # ── Internal Actions Artifact ──────────────────────────────────────────
+      # Stores the Maven staging directory and metadata.json for publish.yml.
+      # Not visible in the GitHub Release – only accessible in the Actions run.
+      #
+      # metadata.json is copied into a staging dir first so it lands at a
+      # predictable flat path in the artifact (internal/metadata.json),
+      # not mirroring the absolute runner path.
+      # The Maven staging dir is uploaded separately under the key "maven/".
+      - name: Prepare internal artifact staging
+        run: |
+          mkdir -p internal-staging/maven
+          cp metadata.json internal-staging/metadata.json
+          # Sync Maven local repo into internal-staging/maven/
+          # Strip the absolute path prefix so the artifact layout is always:
+          #   internal/metadata.json
+          #   internal/maven/<group>/<artifact>/...
+          rsync -a "${{ steps.meta.outputs.maven_local_path }}/" internal-staging/maven/
+
+      - name: Upload internal build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: release-${{ env.FULL_VERSION }}
-          path: |
-            ${{ env.FILES }}
-            metadata.json
-            CHANGELOG.md
+          name: internal-${{ steps.meta.outputs.full_version }}
+          path: internal-staging/
+          retention-days: 30
+
+      # ── GitHub Draft Release ───────────────────────────────────────────────
+      # Contains only the platform JARs and the editable changelog.
+      # metadata.json and Maven files are intentionally excluded.
       - name: Create GitHub Release Draft
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ env.FULL_VERSION }}
-          name: ${{ env.RELEASE_TITLE }}
-          target_commitish: ${{ github.ref_name }}
+          tag_name: ${{ steps.meta.outputs.full_version }}
+          name: ${{ steps.meta.outputs.release_title }}
+          target_commitish: ${{ github.sha }}
           draft: true
-          prerelease: ${{ env.RELEASE_CHANNEL != 'release' }}
+          prerelease: ${{ steps.meta.outputs.release_channel != 'release' }}
           body: |
-            ${{ github.event.inputs.trigger_mod_publish == 'false' && '[skip-mod-publish]' || '' }}
+            ${{ inputs.publish_platforms == false && '[skip-platforms]' || '' }}
+            ${{ inputs.publish_maven == false && '[skip-maven]' || '' }}
             ${{ steps.changelog.outputs.content }}
-          files: |
-            ${{ env.FILES }}
-            metadata.json
+            <!--run-id:${{ github.run_id }}-->
+          files: ${{ steps.platform.outputs.files }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
