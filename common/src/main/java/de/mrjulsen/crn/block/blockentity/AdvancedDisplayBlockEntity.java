@@ -522,7 +522,7 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
         int minDistance = Integer.MAX_VALUE;
 
         for (var entry : ec.namesList) {
-            int contactY = entry.getFirst(); // Y-level piętra
+            int contactY = entry.getFirst();
             int distance = Math.abs(contactY - currentFloorY);
             
             if (distance < minDistance) {
@@ -558,7 +558,6 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
                 
                 String shortName = "", longName = "", shortNameDest = "", longNameDest = "";
 
-                // Wyciągamy nazwy z namesList zamiast z BlockEntity
                 for (var entry : elevator.namesList) {
                     int contactY = entry.getFirst();
                     if (contactY == closestY) {
