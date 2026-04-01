@@ -33,6 +33,7 @@ import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.CarriageData;
 import de.mrjulsen.crn.data.ElevatorData;
+import de.mrjulsen.crn.data.ElevatorMovementType;
 import de.mrjulsen.crn.data.TrainExitSide;
 import de.mrjulsen.crn.data.StationTag.ClientStationTag;
 import de.mrjulsen.crn.data.StationTag.StationInfo;
@@ -119,7 +120,7 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
     private long lastRefreshedTime;
     private TrainDisplayData trainData = TrainDisplayData.empty(0);
     private CarriageData carriageData = new CarriageData(0, Direction.NORTH, false);
-    private ElevatorData elevatorData = new ElevatorData("", "", "", "", "");
+    private ElevatorData elevatorData = new ElevatorData("", "", "", "", ElevatorMovementType.STANDING_STILL);
     
     // OTHER
     private int syncTicks = 0;
@@ -571,14 +572,14 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
                     }
                 }
 
-                String directionSign = "";
+                ElevatorMovementType directionSign = ElevatorMovementType.STANDING_STILL;
                 if (!elevator.arrived) {
                     double actualY = elevator.entity.getY() + elevator.getContactYOffset();
-                    if (targetY > actualY + 0.5) directionSign = "up";
-                    else if (targetY < actualY - 0.5) directionSign = "dn";
+                    if (targetY > actualY + 0.5) directionSign = ElevatorMovementType.GOING_UP;
+                    else if (targetY < actualY - 0.5) directionSign = ElevatorMovementType.GOING_DOWN;
                 }
 
-                ElevatorData newData = new ElevatorData(shortName.toString(), longName.toString(), shortNameDest.toString(), longNameDest.toString(), directionSign.toString());
+                ElevatorData newData = new ElevatorData(shortName.toString(), longName.toString(), shortNameDest.toString(), longNameDest.toString(), directionSign);
                 
                 if (!newData.equals(this.elevatorData)) {
                     this.elevatorData = newData;
