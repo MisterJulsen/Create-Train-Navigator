@@ -87,17 +87,9 @@ public class VariableManager {
                 } else if (variable.equals("elevator.destination.long")) {
                     return blockEntity.getElevatorData().destinationLongName() + "\u200C";
                 } else if (variable.equals("elevator.sign")) {
-                    if (blockEntity.getElevatorData().sign() == "up")
-                        return "↑";
-                    else if (blockEntity.getElevatorData().sign() == "dn")
-                        return "↓";
-                    else return "";
+                    return blockEntity.getElevatorData().sign().getArrow();
                 } else if (variable.equals("elevator.sign.triangle")) {
-                    if (blockEntity.getElevatorData().sign() == "up")
-                        return "▲";
-                    else if (blockEntity.getElevatorData().sign() == "dn")
-                        return "▼";
-                    else return "";
+                    return blockEntity.getElevatorData().sign().getTriangle();
                 } 
             }
 
