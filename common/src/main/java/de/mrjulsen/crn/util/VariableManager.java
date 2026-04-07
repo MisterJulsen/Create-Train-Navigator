@@ -104,7 +104,7 @@ public class VariableManager {
         int h = num / 60;
         int m = num % 60;
 
-        return m > 0 ? h + " h " + m + " min" : h + " h";
+        return m > 0 ? h + "h " + m + " min" : h + "h";
     }
 
     private static String getReplacement(AdvancedDisplayBlockEntity blockEntity, String variable) {
