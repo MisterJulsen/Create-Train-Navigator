@@ -4,6 +4,7 @@ import java.util.List;
 
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.block.display.properties.components.ITrainStopTypeSetting;
+import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.train.ETrainStopState;
 import de.mrjulsen.crn.data.train.portable.StationDisplayData;
@@ -60,8 +61,50 @@ public class VariableManager {
             case "origin" -> data == null ? "" : data.getFirstStopName();
             case "destination" -> data == null ? "" : data.getStationData().getDestination();
             case "carriages" -> data == null ? "" : "" + data.getTrainData().getCarriages();
+            case "delay_time" -> data == null ? "" : getDelayText(data);
+            case "delay_reason" -> {
+                if (data == null || data.getTrainData() == null) yield "";
+
+                yield data.getTrainData().getStatus().stream().map(s -> s.text().getString()).filter(s -> !s.isBlank()).findFirst().orElse("");
+            }
             default -> null;
         };
+    }
+
+    private static String getDelayText(StationDisplayData data) {
+        var stop = data.getStationData();
+
+        if (stop != null) {
+            long ticks = stop.getDepartureTimeDeviation();
+
+            if (ticks > 0) {
+                String formatted = formatDelay(ticks);
+                return CustomLanguage.translate("block.createrailwaysnavigator.advanced_display.ber.delayed", formatted).getString();
+            }
+        }
+
+        return "";
+    }
+
+    private static String formatDelay(long ticks) {
+        // similar logic used as in the DynamicDelayCondition class
+        if (ticks <= 0) return "";
+
+        boolean showInMinutes = ticks >= 20 * 60;
+
+        int num = (int)(
+                showInMinutes
+                        ? Math.floor(ticks / (20 * 60f))
+                        : Math.ceil(ticks / 100f) * 5
+        );
+
+        if (!showInMinutes) { return num + "s"; }
+        if (num < 60) { return num + " min"; }
+
+        int h = num / 60;
+        int m = num % 60;
+
+        return m > 0 ? h + " h " + m + " min" : h + " h";
     }
 
     private static String getReplacement(AdvancedDisplayBlockEntity blockEntity, String variable) {
