@@ -27,8 +27,6 @@ Distribute your trains evenly along your route with the Train Separation Instruc
 ## 📕 Wiki and other information
 If you need help, please read the [Wiki](https://github.com/MisterJulsen/Create-Train-Navigator/wiki) or visit our Discord server.
 
-[![Discord](https://i.imgur.com/YnDoeHs.png)](https://discord.gg/AeSbNgvc7f)
-
 ## 🤗 Contribute to this project
 Feel free to help with development and translation by creating pull requests or issues on GitHub.
 
