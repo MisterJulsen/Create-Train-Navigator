@@ -3,13 +3,18 @@ name: Crowdin Sync
 on:
   workflow_dispatch:
     inputs:
-      upload_sources:
-        description: "Update Sources"
+      update_sources:
+        description: "Update sources"
+        type: boolean
+        required: true
+        default: true
+      upload_translations:
+        description: "Upload translations"
         type: boolean
         required: true
         default: false
       download_translations:
-        description: "Download Translations"
+        description: "Download translations"
         type: boolean
         required: true
         default: true
@@ -28,8 +33,8 @@ jobs:
       - name: Crowdin Sync
         uses: crowdin/github-action@v2
         with:
-          upload_sources: ${{ github.event.inputs.upload_sources }}
-          upload_translations: false
+          upload_sources: ${{ github.event.inputs.update_sources }}
+          upload_translations: ${{ github.event.inputs.upload_translations }}
           download_translations: ${{ github.event.inputs.download_translations }}
           skip_untranslated_strings: true
           export_only_approved: false
