@@ -6,7 +6,7 @@
 
 "files": [
   {
-    "source": "common/src/main/resources/assets/createrailwaysnavigator/lang/en_us.json",
-    "translation": "common/src/main/resources/assets/createrailwaysnavigator/lang/%locale_with_underscore%.json"
+    "source": "**/assets/**/lang/en_us.json",
+    "translation": "**/assets/**/lang/%locale_with_underscore%.json"
   }
 ]
