@@ -4,28 +4,29 @@
   "compatibilityLevel": "JAVA_17",
   "minVersion": "0.8",
   "client": [
-    "ScheduleScreenAccessor",
     "ModularGuiLineBuilderAccessor",
+    "ScheduleScreenAccessor",
     "ScheduleScreenMixin",
     "StationBlockEntityMixin"
   ],
   "mixins": [
-    "extensions.ScheduledDelayMixin",
-    "extensions.TimeOfDayConditionMixin",
-    "ScheduleRuntimeAccessor",
-    "TrainStatusAccessor",
+    "ContraptionAccessor",
     "ControlsHandlerMixin",
-    "MountedStorageManagerMixin",
-    "ScheduleRuntimeMixin",
+    "CreateAccessor",
+    "FrontierEntryMixin",
+    "GlobalRailwayManagerMixin",
     "GlobalTrainDisplayDataMixin",
-    "TrainMixin",
     "ItemMixin",
+    "MountedStorageManagerMixin",
     "NavigationMixin",
     "ScheduleEntryMixin",
-    "FrontierEntryMixin",
+    "ScheduleRuntimeAccessor",
+    "ScheduleRuntimeMixin",
+    "TrainMixin",
     "TrainPenaltyAccessor",
-    "GlobalRailwayManagerMixin",
-    "ContraptionAccessor"
+    "TrainStatusAccessor",
+    "extensions.ScheduledDelayMixin",
+    "extensions.TimeOfDayConditionMixin"
   ],
   "injectors": {
     "defaultRequire": 1

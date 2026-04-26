@@ -2,25 +2,20 @@ package de.mrjulsen.crn.fabric;
 
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.fml.config.ModConfig;
 
 import java.nio.file.Path;
 
-import com.simibubi.create.AllBlockEntityTypes;
-import com.simibubi.create.api.behaviour.display.DisplaySource;
 import com.simibubi.create.content.contraptions.Contraption;
 import com.simibubi.create.content.trains.station.GlobalStation;
 import com.simibubi.create.content.trains.station.StationBlockEntity;
-import com.tterrag.registrate.util.entry.RegistryEntry;
 
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
-import de.mrjulsen.crn.block.display.AdvancedDisplaySource;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.mixin.ContraptionAccessor;
@@ -67,13 +62,5 @@ public class CRNPlatformSpecificImpl {
             return null;
         }
         return maybeNullClientContraption.getBlockEntity(localPos);
-    }    
-
-    public static final RegistryEntry<AdvancedDisplaySource> registerDisplaySource() {
-        return CreateRailwaysNavigator.REGISTRATE.displaySource("advanced_display", AdvancedDisplaySource::new)
-        .onRegisterAfter(Registries.BLOCK_ENTITY_TYPE, (src) -> {            
-            DisplaySource.BY_BLOCK_ENTITY.add(AllBlockEntityTypes.TRACK_STATION.get(), src);
-        })
-        .register();
     }
 }
