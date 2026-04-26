@@ -61,6 +61,6 @@ public class CRNPlatformSpecificImpl {
     public static BlockEntity getClientContraptionBlockEntity(Contraption contraption, BlockPos localPos) {
         return contraption.getBlockEntityClientSide(localPos);
     }
-    
+
 }
  
