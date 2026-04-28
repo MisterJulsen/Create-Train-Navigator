@@ -1,8 +1,8 @@
 plugins {
-    id 'dev.architectury.loom' version '1.7-SNAPSHOT' apply false
+    id 'dev.architectury.loom' version '1.9-SNAPSHOT' apply false
     id 'architectury-plugin' version '3.4-SNAPSHOT'
-    id 'com.github.johnrengelman.shadow' version '8.1.1' apply false
-    id "net.mrjulsen.mod-build-tools" version "1.0.13"
+    id 'com.gradleup.shadow' version '9.0.0' apply false
+    id "net.mrjulsen.mod-build-tools" version "1.0.15"
 }
 
 architectury {
