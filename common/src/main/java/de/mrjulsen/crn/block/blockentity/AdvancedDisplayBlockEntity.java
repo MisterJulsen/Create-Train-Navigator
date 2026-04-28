@@ -4,6 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.simibubi.create.content.contraptions.Contraption;
+import com.simibubi.create.content.contraptions.ControlledContraptionEntity;
+import com.simibubi.create.content.contraptions.elevator.ElevatorColumn;
+import com.simibubi.create.content.contraptions.elevator.ElevatorContactBlockEntity;
+import com.simibubi.create.content.contraptions.elevator.ElevatorContraption;
 import com.simibubi.create.content.decoration.copycat.CopycatBlockEntity;
 import com.simibubi.create.content.trains.display.FlapDisplayBlock;
 import com.simibubi.create.content.trains.entity.CarriageContraption;
@@ -27,6 +32,8 @@ import de.mrjulsen.crn.client.AdvancedDisplaysRegistry.DisplayTypeResourceKey;
 import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.CarriageData;
+import de.mrjulsen.crn.data.ElevatorData;
+import de.mrjulsen.crn.data.ElevatorMovementType;
 import de.mrjulsen.crn.data.TrainExitSide;
 import de.mrjulsen.crn.data.StationTag.ClientStationTag;
 import de.mrjulsen.crn.data.StationTag.StationInfo;
@@ -59,6 +66,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -111,6 +119,7 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
     private long lastRefreshedTime;
     private TrainDisplayData trainData = TrainDisplayData.empty(0);
     private CarriageData carriageData = new CarriageData(0, Direction.NORTH, false);
+    private ElevatorData elevatorData = new ElevatorData("", "", "", "", ElevatorMovementType.STANDING_STILL);
     
     // OTHER
     private int syncTicks = 0;
@@ -182,6 +191,10 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
 
     public CarriageData getCarriageData() {
         return carriageData;
+    }
+
+    public ElevatorData getElevatorData() {
+        return elevatorData;
     }
 
     public long getLastRefreshedTime() {
@@ -502,8 +515,28 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
         }
     }
 
+    public int getClosestFloor(ElevatorContraption ec) {
+        double currentY = ec.entity.getY();
+        int currentFloorY = Mth.floor(0.5f + (float)currentY) + ec.getContactYOffset();
+
+        int closest = -1;
+        int minDistance = Integer.MAX_VALUE;
+
+        for (var entry : ec.namesList) {
+            int contactY = entry.getFirst();
+            int distance = Math.abs(contactY - currentFloorY);
+            
+            if (distance < minDistance) {
+                minDistance = distance;
+                closest = contactY;
+            }
+        }
+        
+        return closest;
+    }
+
     @Override
-    public void contraptionTick(Level level, BlockPos pos, BlockState state, CarriageContraption carriage) {
+    public void contraptionTick(Level level, BlockPos pos, BlockState state, Contraption contraption) {
         assembledOnContraption = true;
         getRenderer().tick(level, pos, state, this);
 
@@ -520,7 +553,43 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
         if (level.isClientSide && syncTicks <= 0) {
             syncTicks = ModClientConfig.DISPLAY_REFRESH_RATE.get();
 
-            if (!(carriage.entity instanceof CarriageContraptionEntity carriageContraption)) {
+            if (contraption instanceof ElevatorContraption elevator) {
+                int targetY = elevator.clientYTarget;
+                int closestY = getClosestFloor(elevator);
+                
+                String shortName = "", longName = "", shortNameDest = "", longNameDest = "";
+
+                for (var entry : elevator.namesList) {
+                    int contactY = entry.getFirst();
+                    if (contactY == closestY) {
+                        shortName = entry.getValue().getFirst();
+                        longName = entry.getValue().getSecond();
+                    }
+                    if (contactY == targetY) {
+                        shortNameDest = entry.getValue().getFirst();
+                        longNameDest = entry.getValue().getSecond();
+                    }
+                }
+
+                ElevatorMovementType directionSign = ElevatorMovementType.STANDING_STILL;
+                if (!elevator.arrived) {
+                    double actualY = elevator.entity.getY() + elevator.getContactYOffset();
+                    if (targetY > actualY + 0.5) directionSign = ElevatorMovementType.GOING_UP;
+                    else if (targetY < actualY - 0.5) directionSign = ElevatorMovementType.GOING_DOWN;
+                }
+
+                ElevatorData newData = new ElevatorData(shortName.toString(), longName.toString(), shortNameDest.toString(), longNameDest.toString(), directionSign);
+                
+                if (!newData.equals(this.elevatorData)) {
+                    this.elevatorData = newData;
+                    getRenderer().update(level, pos, state, this, EUpdateReason.DATA_CHANGED);
+                }
+            }
+
+            if (!(contraption.entity instanceof CarriageContraptionEntity carriageContraption)) {
+                return;
+            }
+            if (!(contraption instanceof CarriageContraption carriage)) {
                 return;
             }
 

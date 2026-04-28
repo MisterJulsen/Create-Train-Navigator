@@ -118,6 +118,24 @@ public class VariableManager {
 
         // on-board
         if (blockEntity.assembledOnContraption) {
+            if (blockEntity.getElevatorData() != null) {
+                // elevator
+                if (variable.equals("elevator.current.short")) {
+                    // Used only because the format %elevator.current.short% %elevator.current.sign% fails because short is often an integer.
+                    return blockEntity.getElevatorData().currentShortName() + "\u200C";
+                } else if (variable.equals("elevator.current.long")) {
+                    return blockEntity.getElevatorData().currentLongName() + "\u200C";
+                } else if (variable.equals("elevator.destination.short")) {
+                    return blockEntity.getElevatorData().destinationShortName() + "\u200C";
+                } else if (variable.equals("elevator.destination.long")) {
+                    return blockEntity.getElevatorData().destinationLongName() + "\u200C";
+                } else if (variable.equals("elevator.sign")) {
+                    return blockEntity.getElevatorData().sign().getArrow();
+                } else if (variable.equals("elevator.sign.triangle")) {
+                    return blockEntity.getElevatorData().sign().getTriangle();
+                } 
+            }
+
             TrainDisplayData train = blockEntity.getTrainData();
 
             if (variable.equals("via")) {
