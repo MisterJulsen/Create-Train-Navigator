@@ -119,16 +119,8 @@ public class ModUtils {
     }
 
     public static Pattern buildPattern(String src) {
-        return Pattern.compile(Glob.toRegexPattern(src));
-        //String escaped = "\\Q" + src.replace("*", "\\E(.*)\\Q") + "\\E";
-        //return Pattern.compile(escaped);
+        return Pattern.compile(Glob.toRegexPattern(src, "^.*$"));
     }
-
-    /*
-    public static boolean hasWildcards(String text) {
-        return text.contains("*");
-    }
-     */
 
     public static boolean isGlobPattern(String text) {
         if (text == null) {
