@@ -25,7 +25,8 @@ subprojects {
     }
 
     repositories {
-        maven { url = "file://${System.getProperty('user.home')}/.m2/github/modsrepo/maven" } // Local
+        maven { url = file("${System.getProperty('user.home')}/.m2/github/modsrepo/maven") } // Local
+        maven { url = "https://maven.mrjulsen.net" } // DragonLib
         maven { url = "https://maven.parchmentmc.org" } // ParchmentMC
         maven { url = "https://maven.createmod.net" } // Create, Ponder, Flywheel
         maven { url = "https://mvn.devos.one/snapshots" } // Registrate
@@ -39,7 +40,6 @@ subprojects {
         maven { url = "https://modmaven.dev" } // JEI
         maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" } // ForgeConfigAPIPort
         maven { url = 'https://maven.neoforged.net/releases' } // NeoForge
-        maven { url = "https://maven.mrjulsen.net" } // DragonLib
     }
 
     dependencies {
