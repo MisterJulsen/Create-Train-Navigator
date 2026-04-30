@@ -3,12 +3,9 @@
     "advancement.createrailwaysnavigator.navigator.description": "合成一个导航仪，并搜索两个车站之间的路线。",
     "advancement.createrailwaysnavigator.advanced_display": "不够4K",
     "advancement.createrailwaysnavigator.advanced_display.description": "升级翻牌显示器，现在它能显示更多信息，甚至还能放在列车上。",
-    
     "itemGroup.createrailwaysnavigator.tab": "机械动力：铁路导航",
-
     "item.createrailwaysnavigator.navigator": "导航仪",
     "item.createrailwaysnavigator.navigator.tooltip.summary": "_导航仪_能显示车站之间的_列车路线_，以及_经停站_、_实时信息_等额外信息。",
-
     "block.createrailwaysnavigator.train_station_clock": "车站时钟",
     "block.createrailwaysnavigator.advanced_display_block": "高级显示器方块",
     "block.createrailwaysnavigator.advanced_display_block.tooltip.summary": "可以在_列车上_作为_列车终点站显示器_或_乘客信息显示器_使用。也可以放置在_车站_当作高级版_站台显示器_，能比普通翻牌显示器提供更多信息。",
@@ -40,26 +37,22 @@
     "block.createrailwaysnavigator.advanced_display_slab.tooltip.behaviour1": "打开一个用于_配置显示器_的菜单",
     "block.createrailwaysnavigator.train_station_clock.tooltip.summary": "显示_当前时间_。",
     "block.createrailwaysnavigator.train_station_clock.tooltip.condition1": "右键单击时",
-	"block.createrailwaysnavigator.train_station_clock.tooltip.behaviour1": "在_快捷栏_上方显示_当前时间_。",
+    "block.createrailwaysnavigator.train_station_clock.tooltip.behaviour1": "在_快捷栏_上方显示_当前时间_。",
     "block.createrailwaysnavigator.train_station_clock.tooltip.condition2": "对着另一个车站时钟单击时",
-	"block.createrailwaysnavigator.train_station_clock.tooltip.behaviour2": "将时钟变为_四个面_显示时间的样式。",
+    "block.createrailwaysnavigator.train_station_clock.tooltip.behaviour2": "将时钟变为_四个面_显示时间的样式。",
     "block.createrailwaysnavigator.navigator_lectern": "放有导航仪的讲台",
-
     "block.createrailwaysnavigator.advanced_display.ber.not_in_service": "无法使用！",
     "block.createrailwaysnavigator.advanced_display.ber.do_not_board": "切勿上车！",
     "block.createrailwaysnavigator.advanced_display.ber.this_train_terminates_there": "本站为终点站！",
     "block.createrailwaysnavigator.advanced_display.ber.train_terminates": "本站为终点站！",
     "block.createrailwaysnavigator.advanced_display.ber.passengers_leave_train": "请全体乘客于此处换乘。",
-
     "category.createrailwaysnavigator.crn": "机械动力：铁路导航",
     "key.createrailwaysnavigator.route_overlay_options": "显示路线叠加层选项",
-    
     "enum.createrailwaysnavigator.overlay_position": "显示位置",
     "enum.createrailwaysnavigator.overlay_position.info.top_left": "左上角",
     "enum.createrailwaysnavigator.overlay_position.info.top_right": "右上角",
     "enum.createrailwaysnavigator.overlay_position.info.bottom_left": "左下角",
     "enum.createrailwaysnavigator.overlay_position.info.bottom_right": "右下角",
-
     "gui.createrailwaysnavigator.overlay_settings.title": "路线叠加层设置",
     "gui.createrailwaysnavigator.route_overlay_settings.show_details": "显示详细信息",
     "gui.createrailwaysnavigator.route_overlay_settings.unpin": "移除路线叠加层",
@@ -72,7 +65,6 @@
     "gui.createrailwaysnavigator.route_overlay_settings.narrator.description": "讲述人会播报您旅途中的重要事件，例如下一站、换乘等。",
     "gui.createrailwaysnavigator.route_overlay_settings.notifications": "通知",
     "gui.createrailwaysnavigator.route_overlay_settings.notifications.description": "在旅途中接收关于重要事件的弹窗通知，例如下一站、换乘等。",
-
     "gui.createrailwaysnavigator.common.expand": "显示详细信息",
     "gui.createrailwaysnavigator.common.collapse": "隐藏详细信息",
     "gui.createrailwaysnavigator.common.go_back": "返回",
@@ -102,8 +94,6 @@
     "gui.createrailwaysnavigator.common.read_only": "（只读）",
     "gui.createrailwaysnavigator.common.server": "服务端",
     "gui.createrailwaysnavigator.common.are_you_sure": "是否确定？",
-    
-
     "gui.createrailwaysnavigator.navigator.title": "机械动力：铁路导航",
     "gui.createrailwaysnavigator.navigator.no_connections": "未找到路线。",
     "gui.createrailwaysnavigator.navigator.not_searched": "尚未搜索。",
@@ -120,13 +110,12 @@
     "gui.createrailwaysnavigator.navigator.location.tooltip": "定位最近的车站",
     "gui.createrailwaysnavigator.navigator.refresh.tooltip": "刷新",
     "gui.createrailwaysnavigator.navigator.switch.tooltip": "交换地点",
-
+    "gui.createrailwaysnavigator.navigator.recently_searched": "最近搜索",
     "gui.createrailwaysnavigator.route_details.title": "路线详情",
     "gui.createrailwaysnavigator.route_details.departure": "出发时间",
     "gui.createrailwaysnavigator.route_details.arrival": "到达时间",
     "gui.createrailwaysnavigator.route_details.next_transfer_time": "换乘时间",
     "gui.createrailwaysnavigator.route_details.transfer": "换乘",
-
     "gui.createrailwaysnavigator.route_overview.title": "出行助手",
     "gui.createrailwaysnavigator.route_overview.journey_begins": "您的旅程开始了！从 %s 到 %s，出发时间 %s",
     "gui.createrailwaysnavigator.route_overview.journey_begins_with_platform": "您的旅程开始了！从 %s 到 %s，出发时间 %s，在 %s 站台乘车",
@@ -169,7 +158,6 @@
     "gui.createrailwaysnavigator.route_overview.notification.journey_completed.title": "您已抵达目的地！",
     "gui.createrailwaysnavigator.route_overview.notification.journey_completed": "感谢您的乘坐，祝您旅途愉快",
     "gui.createrailwaysnavigator.route_overview.date": "第 %s 天，%s",
-    
     "gui.createrailwaysnavigator.lock.permissions": "修改权限",
     "gui.createrailwaysnavigator.lock.state": "状态%s",
     "gui.createrailwaysnavigator.lock.owner": "所有者：%s",
@@ -178,7 +166,6 @@
     "gui.createrailwaysnavigator.lock.trusted_players": "受信任玩家",
     "gui.createrailwaysnavigator.lock.transfer_ownership": "变更所有权",
     "gui.createrailwaysnavigator.lock.transfer_ownership.warning": "该操作无法撤销！变更所有权时会将您将加入受信任玩家列表，但您不能再自行修改权限。",
-
     "gui.createrailwaysnavigator.global_settings.title": "全局设置",
     "gui.createrailwaysnavigator.global_settings.option.tooltip": "点击编辑",
     "gui.createrailwaysnavigator.global_settings.option_alias.title": "车站标签",
@@ -189,7 +176,6 @@
     "gui.createrailwaysnavigator.global_settings.train_category.description": "可以创建列车类别来分类管理所有列车（例如，分为短途列车、长途列车...）。用户在导航时可以选择想要的列车类别。",
     "gui.createrailwaysnavigator.global_settings.train_blacklist.title": "列车黑名单",
     "gui.createrailwaysnavigator.global_settings.train_blacklist.description": "排除列车，例如货运列车、专列等，以便在路线建议中不显示它们。",
-    
     "gui.createrailwaysnavigator.station_tags.summary": "包含%s个车站",
     "gui.createrailwaysnavigator.station_tags.add": "新建条目",
     "gui.createrailwaysnavigator.station_tags.delete_tag": "删除标签",
@@ -199,21 +185,17 @@
     "gui.createrailwaysnavigator.station_tags.hint.station_name": "车站名称",
     "gui.createrailwaysnavigator.station_tags.hint.platform": "站台标签",
     "gui.createrailwaysnavigator.station_tags.enter_name": "在此输入名称",
-        
     "gui.createrailwaysnavigator.train_category_settings.title": "列车类别设置",
     "gui.createrailwaysnavigator.train_category_settings.summary": "包含%s辆列车",
     "gui.createrailwaysnavigator.train_category_settings.delete_alias.tooltip": "删除类别",
     "gui.createrailwaysnavigator.train_category_settings.delete_station.tooltip": "移除列车",
     "gui.createrailwaysnavigator.train_category_settings.add_station.tooltip": "添加列车",
-
     "gui.createrailwaysnavigator.blacklist.title": "车站黑名单",
     "gui.createrailwaysnavigator.blacklist.add.tooltip": "加入黑名单",
     "gui.createrailwaysnavigator.blacklist.delete.tooltip": "从黑名单移除",
-
     "gui.createrailwaysnavigator.train_blacklist.title": "列车黑名单",
     "gui.createrailwaysnavigator.train_blacklist.add.tooltip": "加入黑名单",
     "gui.createrailwaysnavigator.train_blacklist.delete.tooltip": "从黑名单移除",
-
     "gui.createrailwaysnavigator.search_settings.title": "搜索设置",
     "gui.createrailwaysnavigator.search_settings.transfer_time": "最短换乘时间",
     "gui.createrailwaysnavigator.search_settings.transfer_time.description": "留给换乘的时间最短允许为多少。（游戏内1小时≈50秒现实时间）",
@@ -223,13 +205,11 @@
     "gui.createrailwaysnavigator.search_settings.train_categories.overview.all": "全部",
     "gui.createrailwaysnavigator.search_settings.train_categories.overview.none": "无",
     "gui.createrailwaysnavigator.search_settings.train_categories.tooltip.reset": "重置过滤器",
-
     "gui.createrailwaysnavigator.time": "时间：%s",
     "gui.createrailwaysnavigator.time.now": "现在",
     "gui.createrailwaysnavigator.time_format.dhm": "%s天%s小时%s分钟",
     "gui.createrailwaysnavigator.time_format.hm": "%s小时%s分钟",
     "gui.createrailwaysnavigator.time_format.m": "%s分钟",
-
     "gui.createrailwaysnavigator.platform": "站台",
     "gui.createrailwaysnavigator.departure": "出发",
     "gui.createrailwaysnavigator.destination": "终点站",
@@ -237,7 +217,6 @@
     "gui.createrailwaysnavigator.following_trains": "后续车次：",
     "gui.createrailwaysnavigator.via": "经停",
     "gui.createrailwaysnavigator.too_small": "尺寸过小！",
-
     "gui.createrailwaysnavigator.advanced_display_settings.title": "高级显示设置",
     "gui.createrailwaysnavigator.advanced_display_settings.display_type": "显示类型",
     "gui.createrailwaysnavigator.advanced_display_settings.display_type.description": "决定显示的信息。",
@@ -261,6 +240,8 @@
     "gui.createrailwaysnavigator.advanced_display_settings.show_connections": "显示下一车次信息",
     "gui.createrailwaysnavigator.advanced_display_settings.show_line_color": "显示列车线路颜色",
     "gui.createrailwaysnavigator.advanced_display_settings.show_line_color.description": "使用列车线路的颜色作为列车名称文本的底色。",
+    "gui.createrailwaysnavigator.advanced_display_settings.show_train_multiple_times": "同列车重复显示",
+    "gui.createrailwaysnavigator.advanced_display_settings.show_train_multiple_times.description": "当一列车多次停靠同一站点（例如上行停靠后下行停靠），每次停靠均在显示器显示。当此选项关闭时，取决于显示器配置，将显示下一站或不显示任何内容。",
     "gui.createrailwaysnavigator.advanced_display_settings.train_name_width": "列车名称宽度",
     "gui.createrailwaysnavigator.advanced_display_settings.train_name_width_next": "列车名称宽度（下次出发）",
     "gui.createrailwaysnavigator.advanced_display_settings.train_name_width_table": "列车名称宽度（后续车次）",
@@ -293,13 +274,11 @@
     "gui.createrailwaysnavigator.advanced_display_settings.label_background_color": "标签背景色",
     "gui.createrailwaysnavigator.advanced_display_settings.background_color_full_size": "全尺寸",
     "gui.createrailwaysnavigator.advanced_display_settings.background_color_full_size.description": "横向填充文本所在的整个区域，还是只填充文本。",
-
     "enum.createrailwaysnavigator.train_text_components": "列车文本组件",
     "enum.createrailwaysnavigator.train_text_components.description": "乘客显示器上应显示的文本内容。",
     "enum.createrailwaysnavigator.train_text_components.all": "全部",
     "enum.createrailwaysnavigator.train_text_components.train_name": "仅限列车名称",
     "enum.createrailwaysnavigator.train_text_components.destination": "仅限终点站",
-
     "enum.createrailwaysnavigator.display_info_type": "显示信息类型",
     "enum.createrailwaysnavigator.display_info_type.description": "决定显示器上应显示多少信息。",
     "enum.createrailwaysnavigator.display_info_type.simple": "简单",
@@ -308,7 +287,6 @@
     "enum.createrailwaysnavigator.display_info_type.info.detailed": "将展示最重要的信息，以及一些细节，例如列车速度、经停站等。",
     "enum.createrailwaysnavigator.display_info_type.informative": "全部展示",
     "enum.createrailwaysnavigator.display_info_type.info.informative": "以美观的布局显示所有可能有用的信息。不建议在小型显示器上使用，因为文本可能会变得非常小。",
-
     "enum.createrailwaysnavigator.display_type": "显示器类型",
     "enum.createrailwaysnavigator.display_type.description": "决定显示器的类型，由其用途决定。",
     "enum.createrailwaysnavigator.display_type.train_destination": "列车终点站",
@@ -321,21 +299,18 @@
     "enum.createrailwaysnavigator.display_type.info.departure_board": "显示车站全部出发列车的总览。",
     "enum.createrailwaysnavigator.display_type.static_text": "静态文本",
     "enum.createrailwaysnavigator.display_type.info.static_text": "显示用户决定的文本。",
-
     "enum.createrailwaysnavigator.side": "显示方向",
     "enum.createrailwaysnavigator.side.description": "决定信息应显示在方块的哪一面。",
     "enum.createrailwaysnavigator.side.front": "正面",
     "enum.createrailwaysnavigator.side.info.front": "信息仅在正面显示，这是默认选项。",
     "enum.createrailwaysnavigator.side.both": "双面",
     "enum.createrailwaysnavigator.side.info.both": "信息将在双面显示。",
-
     "enum.createrailwaysnavigator.time_display": "时间显示",
     "enum.createrailwaysnavigator.time_display.description": "决定时间的显示方式。",
     "enum.createrailwaysnavigator.time_display.abs": "ABS",
     "enum.createrailwaysnavigator.time_display.info.abs": "ABS（绝对时间、absolute）",
     "enum.createrailwaysnavigator.time_display.eta": "ETA",
     "enum.createrailwaysnavigator.time_display.info.eta": "ETA（预计到达时间、estimated time of arrival）",
-
     "enum.createrailwaysnavigator.train_filter": "列车过滤器",
     "enum.createrailwaysnavigator.train_filter.description": "基于所选标准对列车进行比较，决定应包含哪些列车。",
     "enum.createrailwaysnavigator.train_filter.any": "任意列车",
@@ -346,53 +321,46 @@
     "enum.createrailwaysnavigator.train_filter.info.same_category": "只包含类别相同的列车。",
     "enum.createrailwaysnavigator.train_filter.same_name": "相同名称",
     "enum.createrailwaysnavigator.train_filter.info.same_name": "只包含名称相同的列车。",
-    
     "enum.createrailwaysnavigator.time_source": "时间来源",
     "enum.createrailwaysnavigator.time_source.description": "计算时间时采用的数据来源。",
     "enum.createrailwaysnavigator.time_source.real_life": "现实时间",
     "enum.createrailwaysnavigator.time_source.info.real_life": "现实中的时间系统",
     "enum.createrailwaysnavigator.time_source.in_game": "游戏时间",
     "enum.createrailwaysnavigator.time_source.info.in_game": "游戏内的时间系统",
-
     "enum.createrailwaysnavigator.lock_state.unlocked": "未锁定",
     "enum.createrailwaysnavigator.lock_state.info.unlocked": "所有人均有权限。",
     "enum.createrailwaysnavigator.lock_state.trusted": "受信任",
     "enum.createrailwaysnavigator.lock_state.info.trusted": "仅受信任玩家有权限。",
     "enum.createrailwaysnavigator.lock_state.locked": "锁定",
     "enum.createrailwaysnavigator.lock_state.info.locked": "只有你有权限。",
-
     "enum.createrailwaysnavigator.text_scale_bounds": "边界行为",
     "enum.createrailwaysnavigator.text_scale_bounds.description": "文本长度超出可用空间后的行为，",
     "enum.createrailwaysnavigator.text_scale_bounds.cut_off": "截断",
     "enum.createrailwaysnavigator.text_scale_bounds.scale_scroll": "缩放/滚动",
     "enum.createrailwaysnavigator.text_scale_bounds.scroll": "总是滚动",
-    
     "enum.createrailwaysnavigator.departure_board_train_filter": "过滤器",
     "enum.createrailwaysnavigator.departure_board_train_filter.arrival_and_departure": "全部",
     "enum.createrailwaysnavigator.departure_board_train_filter.arrival_only": "仅到达",
     "enum.createrailwaysnavigator.departure_board_train_filter.departure_only": "仅出发",
-    
+    "enum.createrailwaysnavigator.train_stop_type": "火车站显示",
+    "enum.createrailwaysnavigator.train_stop_type.all": "全部",
     "createrailwaysnavigator.display_source.advanced_display": "高级显示器",
     "createrailwaysnavigator.display_target.advanced_display.component": "组件%s",
-
     "gui.createrailwaysnavigator.section_settings.title": "区段设置",
     "gui.createrailwaysnavigator.section_settings.train_categories": "分配列车类别",
     "gui.createrailwaysnavigator.section_settings.train_lines": "分配列车线路",
     "gui.createrailwaysnavigator.section_settings.include_previous_station": "包含下一区段首站",
     "gui.createrailwaysnavigator.section_settings.usable": "可导航",
     "gui.createrailwaysnavigator.section_settings.none": "（无）",
-
     "create.schedule.condition.dynamic_delay.status": "于 %s 后发车",
     "createrailwaysnavigator.schedule.condition.dynamic_delay": "动态延迟",
     "createrailwaysnavigator.schedule.condition.dynamic_delay.min_duration": "最短时长",
     "createrailwaysnavigator.schedule.condition.dynamic_delay.title": "等待：%s至%s",
     "createrailwaysnavigator.schedule.condition.dynamic_delay.at_least": "但至少为%s",
-
     "createrailwaysnavigator.schedule.condition.train_separation.settings": "分隔列车设置",
     "createrailwaysnavigator.schedule.condition.train_separation": "分隔列车",
     "createrailwaysnavigator.schedule.condition.train_separation.title": "间隔：%s",
     "createrailwaysnavigator.schedule.condition.train_separation.description": "在该种列车发车后%s（%s）发车：",
-
     "createrailwaysnavigator.schedule.instruction.configure": "配置...",
     "createrailwaysnavigator.schedule.instruction.travel_section": "新建时刻表区段",
     "createrailwaysnavigator.schedule.instruction.travel_section.description": "新时刻表区段的开始",
@@ -400,9 +368,7 @@
     "createrailwaysnavigator.schedule.instruction.travel_section.train_line": " -设置列车线路：",
     "createrailwaysnavigator.schedule.instruction.travel_section.include_previous_station": " - 包含下一区段的首站：",
     "createrailwaysnavigator.schedule.instruction.travel_section.usable": " - 可导航：",
-
     "createrailwaysnavigator.schedule.instruction.reset_timings": "重置时间",
-
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction": "带优先级目的地",
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.summary": "下一站优先级列表：",
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.empty": "（无）",
@@ -415,7 +381,6 @@
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.avoid_signals_description": "选择沿途被红石切换为红灯的信号机较少的车站。",
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.avoid_trains": "避开其他列车",
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.avoid_trains_description": "选择沿途列车最少的车站。",
-
     "goggles.createrailwaysnavigator.train_listener.departures.title": "发车历史",
     "goggles.createrailwaysnavigator.train_listener.departures.any": "上次发车：",
     "goggles.createrailwaysnavigator.train_listener.departures.line": "按线路：",
@@ -424,7 +389,6 @@
     "goggles.createrailwaysnavigator.train_listener.departures.nothing": "（近期没有车次发出）",
     "goggles.createrailwaysnavigator.train_listener.departures.has_more": "还有%s条...",
     "goggles.createrailwaysnavigator.train_listener.departures.press_shift_for_in_game_time": "潜行以按照显示游戏内时间显示",
-
     "display.createrailwaysnavigator.train_destination.simple": "紧凑",
     "display.createrailwaysnavigator.train_destination.extended": "扩展",
     "display.createrailwaysnavigator.train_destination.detailed": "详细",
@@ -436,7 +400,6 @@
     "display.createrailwaysnavigator.departure_board.table": "列表",
     "display.createrailwaysnavigator.static_text.simple_text": "简单文本",
     "display.createrailwaysnavigator.static_text.rich_text": "富文本",
-
     "gui.createrailwaysnavigator.saved_routes.title": "已保存的路线",
     "gui.createrailwaysnavigator.schedule_board.title": "时刻信息板",
     "gui.createrailwaysnavigator.station_tags.title": "车站标签",
@@ -468,7 +431,7 @@
     "block.createrailwaysnavigator.advanced_display.ber.cancelled": "已取消",
     "block.createrailwaysnavigator.advanced_display.ber.delay_abs_suffix": "分钟",
     "block.createrailwaysnavigator.advanced_display.ber.delayed": "延误约%s",
-    "block.createrailwaysnavigator.advanced_display.ber.information_about_train": "关于 %s 的信息", 
+    "block.createrailwaysnavigator.advanced_display.ber.information_about_train": "关于 %s 的信息",
     "block.createrailwaysnavigator.advanced_display.ber.cancelled2": "车次今日已取消，给您带来的不便，敬请谅解。",
     "block.createrailwaysnavigator.advanced_display.ber.delayed2": "今日将会晚点约%s %s。",
     "block.createrailwaysnavigator.advanced_display.ber.reason": "原因：",
@@ -502,9 +465,7 @@
     "gui.createrailwaysnavigator.global_settings.train_line.title": "列车线路",
     "gui.createrailwaysnavigator.global_settings.train_line.color": "选择颜色",
     "gui.createrailwaysnavigator.global_settings.train_line.description": "创建列车线路以将不同列车分组，覆盖其显示名称，以及调整各线路的其他设置。（仅能通过时刻表分配给列车）",
-
     "create.generic.unit.days": "天",
     "create.generic.unit.hours": "小时",
-    
     "createrailwaysnavigator.moin": "你好"
 }

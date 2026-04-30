@@ -230,7 +230,6 @@
     "enum.createrailwaysnavigator.train_filter.info.any": "Každý vlak je zde brán v potaz.",
     "enum.createrailwaysnavigator.train_filter.same_line": "Stejná linka",
     "enum.createrailwaysnavigator.train_filter.info.same_line": "V potaz se vezmou pouze vlaky se stejnou linkou.",
-    "create.display_source.advanced_display": "Rozšířené displeje",
     "gui.createrailwaysnavigator.section_settings.title": "Nastavení sekce",
     "gui.createrailwaysnavigator.section_settings.train_lines": "Přiřadit vlakovou linku",
     "gui.createrailwaysnavigator.section_settings.include_previous_station": "Zahrnout začátek další sekce",
