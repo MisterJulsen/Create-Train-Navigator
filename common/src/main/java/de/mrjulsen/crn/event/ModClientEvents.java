@@ -21,7 +21,6 @@ public class ModClientEvents {
     private static int tickTime;
 
     private static int langCheckerTicks = 0;
-    private static MutableHolder<Boolean> inGame = new MutableHolder<Boolean>(false);
 
     public static void init() {
 
@@ -29,14 +28,12 @@ public class ModClientEvents {
             ModKeys.init();
         });
 
-        ClientTickEvent.CLIENT_POST.register((mc) -> {
+        ClientTickEvent.CLIENT_LEVEL_POST.register((mc) -> {
             langCheckerTicks++;
 
             if ((langCheckerTicks %= 20) == 0) {
                 ClientWrapper.updateLanguage(ModClientConfig.LANGUAGE.get(), false);
             }
-
-            if (!inGame.get()) return;
 
             tickTime++;
             if ((tickTime %= 100) == 0) {
@@ -56,12 +53,9 @@ public class ModClientEvents {
             CRNEventsManager.getEvent(CRNClientEventsRegistryEvent.class).run();
 
             SavedRoutesManager.pull(true, null);
-
-            inGame.set(true);
         });
 
         ClientPlayerEvent.CLIENT_PLAYER_QUIT.register((player) -> {
-            inGame.set(false);
             CreateRailwaysNavigator.LOGGER.info("Removed all overlays.");
             SavedRoutesManager.removeAllRoutes();
             CRNEventsManager.clearEvents();
