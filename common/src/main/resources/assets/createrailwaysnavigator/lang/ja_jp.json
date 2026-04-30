@@ -3,12 +3,9 @@
     "advancement.createrailwaysnavigator.navigator.description": "特定の駅から別の駅への列車を検索するナビゲーターを作る。",
     "advancement.createrailwaysnavigator.advanced_display": "限りなく4Kに近い何か",
     "advancement.createrailwaysnavigator.advanced_display.description": "ディスプレイボードを強化して、より多くの情報を表示できるようにするほか、からくり化した列車内にも設置できます。",
-
     "itemGroup.createrailwaysnavigator.tab": "Create Railways Navigator",
-
     "item.createrailwaysnavigator.navigator": "ナビゲーター",
     "item.createrailwaysnavigator.navigator.tooltip.summary": "_ナビゲーター_で乗車可能な_列車_や、_停車駅_・_リアルタイムデータ_などの追加情報を見ることができます。",
-
     "block.createrailwaysnavigator.train_station_clock": "駅の時計",
     "block.createrailwaysnavigator.advanced_display_block": "高度なブロック型ディスプレイ",
     "block.createrailwaysnavigator.advanced_display_block.tooltip.summary": "からくり化した_列車_に取り付けると_行き先_や_旅客案内_を表示したり、_駅のホーム_で通常のディスプレイボードより多くの情報を表示できる_ディスプレイボード_として使えます。",
@@ -38,28 +35,24 @@
     "block.createrailwaysnavigator.advanced_display_slab.tooltip.summary": "からくり化した_列車_に取り付けると_行き先_や_旅客案内_を表示したり、_駅のホーム_で通常のディスプレイボードより多くの情報を表示できる_ディスプレイボード_として使えます。",
     "block.createrailwaysnavigator.advanced_display_slab.tooltip.condition1": "レンチで右クリックしたとき",
     "block.createrailwaysnavigator.advanced_display_slab.tooltip.behaviour1": "ディスプレイの_設定_メニューを開きます。",
-	"block.createrailwaysnavigator.train_station_clock.tooltip.summary": "_現在の時刻_を表示します。",
+    "block.createrailwaysnavigator.train_station_clock.tooltip.summary": "_現在の時刻_を表示します。",
     "block.createrailwaysnavigator.train_station_clock.tooltip.condition1": "右クリックしたとき",
-	"block.createrailwaysnavigator.train_station_clock.tooltip.behaviour1": "_ホットバー_の上に_現在の時刻_を表示します。",
+    "block.createrailwaysnavigator.train_station_clock.tooltip.behaviour1": "_ホットバー_の上に_現在の時刻_を表示します。",
     "block.createrailwaysnavigator.train_station_clock.tooltip.condition2": "もう1つの駅の時計で右クリックしたとき",
-	"block.createrailwaysnavigator.train_station_clock.tooltip.behaviour2": "文字盤を_四方_に表示するように時計を変更します。",
+    "block.createrailwaysnavigator.train_station_clock.tooltip.behaviour2": "文字盤を_四方_に表示するように時計を変更します。",
     "block.createrailwaysnavigator.navigator_lectern": "ナビゲーターを置いた書見台",
-
     "block.createrailwaysnavigator.advanced_display.ber.not_in_service": "回送",
     "block.createrailwaysnavigator.advanced_display.ber.do_not_board": "当駅止まり",
     "block.createrailwaysnavigator.advanced_display.ber.this_train_terminates_there": "終点です。",
     "block.createrailwaysnavigator.advanced_display.ber.train_terminates": "この列車は当駅止まりです。",
     "block.createrailwaysnavigator.advanced_display.ber.passengers_leave_train": "次の駅で降車してください。",
-
     "category.createrailwaysnavigator.crn": "Create Railways Navigator",
     "key.createrailwaysnavigator.route_overlay_options": "ルートオーバーレイの設定を表示",
-
     "enum.createrailwaysnavigator.overlay_position": "表示位置",
     "enum.createrailwaysnavigator.overlay_position.info.top_left": "左上",
     "enum.createrailwaysnavigator.overlay_position.info.top_right": "右上",
     "enum.createrailwaysnavigator.overlay_position.info.bottom_left": "左下",
     "enum.createrailwaysnavigator.overlay_position.info.bottom_right": "右下",
-
     "gui.createrailwaysnavigator.overlay_settings.title": "ルートオーバーレイ設定",
     "gui.createrailwaysnavigator.route_overlay_settings.show_details": "ルートの詳細を表示",
     "gui.createrailwaysnavigator.route_overlay_settings.unpin": "ルートオーバーレイを削除",
@@ -72,7 +65,6 @@
     "gui.createrailwaysnavigator.route_overlay_settings.narrator.description": "ナレーターは、次の停車駅や変更などをアナウンスします。",
     "gui.createrailwaysnavigator.route_overlay_settings.notifications": "通知",
     "gui.createrailwaysnavigator.route_overlay_settings.notifications.description": "トーストは、次の停車駅や変更などをアナウンスします。",
-
     "gui.createrailwaysnavigator.common.expand": "詳細を表示",
     "gui.createrailwaysnavigator.common.collapse": "詳細を非表示",
     "gui.createrailwaysnavigator.common.go_back": "戻る",
@@ -102,7 +94,6 @@
     "gui.createrailwaysnavigator.common.read_only": "(読み取り専用)",
     "gui.createrailwaysnavigator.common.server": "サーバー",
     "gui.createrailwaysnavigator.common.are_you_sure": "本当によろしいですか？",
-
     "gui.createrailwaysnavigator.navigator.title": "Create Railways Navigator",
     "gui.createrailwaysnavigator.navigator.no_connections": "乗り換えが見つかりません。",
     "gui.createrailwaysnavigator.navigator.not_searched": "まだ検索されていません。",
@@ -120,13 +111,11 @@
     "gui.createrailwaysnavigator.navigator.refresh.tooltip": "更新",
     "gui.createrailwaysnavigator.navigator.switch.tooltip": "発着駅を入れ替える",
     "gui.createrailwaysnavigator.navigator.recently_searched": "検索履歴",
-
     "gui.createrailwaysnavigator.route_details.title": "ルート詳細",
     "gui.createrailwaysnavigator.route_details.departure": "出発まで",
     "gui.createrailwaysnavigator.route_details.arrival": "到着まで",
     "gui.createrailwaysnavigator.route_details.next_transfer_time": "乗り換えまで",
     "gui.createrailwaysnavigator.route_details.transfer": "乗り換え",
-
     "gui.createrailwaysnavigator.route_overview.title": "乗換案内",
     "gui.createrailwaysnavigator.route_overview.journey_begins": "案内を開始します %s %s行 %s発",
     "gui.createrailwaysnavigator.route_overview.journey_begins_with_platform": "案内を開始します %s %s行 %s発 %sから",
@@ -169,7 +158,6 @@
     "gui.createrailwaysnavigator.route_overview.notification.journey_completed.title": "目的地に到着しました。",
     "gui.createrailwaysnavigator.route_overview.notification.journey_completed": "ご乗車ありがとうございました。",
     "gui.createrailwaysnavigator.route_overview.date": "%s日目 %s",
-
     "gui.createrailwaysnavigator.lock.permissions": "編集権限",
     "gui.createrailwaysnavigator.lock.state": "状態: %s",
     "gui.createrailwaysnavigator.lock.owner": "所有者: %s",
@@ -178,7 +166,6 @@
     "gui.createrailwaysnavigator.lock.trusted_players": "信頼されたプレイヤー",
     "gui.createrailwaysnavigator.lock.transfer_ownership": "所有権の移転",
     "gui.createrailwaysnavigator.lock.transfer_ownership.warning": "このプロセスは元に戻せません！移転中は信頼されたプレイヤーとして登録されますが、自分で権限を変更することはできません。",
-
     "gui.createrailwaysnavigator.global_settings.title": "グローバル設定",
     "gui.createrailwaysnavigator.global_settings.option.tooltip": "クリックで編集",
     "gui.createrailwaysnavigator.global_settings.option_alias.title": "駅タグ",
@@ -189,7 +176,6 @@
     "gui.createrailwaysnavigator.global_settings.train_category.description": "列車カテゴリを作成して、列車を整理できます（例：路面電車・近距離列車・優等列車など）。ユーザーは、どのカテゴリを使うかを決めることができます。",
     "gui.createrailwaysnavigator.global_settings.train_blacklist.title": "列車ブラックリスト",
     "gui.createrailwaysnavigator.global_settings.train_blacklist.description": "ルート検索の結果から、貨物列車や臨時列車などの特定の列車を除外してください。",
-
     "gui.createrailwaysnavigator.station_tags.summary": "%s 駅を含む",
     "gui.createrailwaysnavigator.station_tags.add": "新規作成",
     "gui.createrailwaysnavigator.station_tags.delete_tag": "タグを削除",
@@ -199,21 +185,17 @@
     "gui.createrailwaysnavigator.station_tags.hint.station_name": "駅名",
     "gui.createrailwaysnavigator.station_tags.hint.platform": "のりばのラベル",
     "gui.createrailwaysnavigator.station_tags.enter_name": "名前をここに入力してください",
-
     "gui.createrailwaysnavigator.train_category_settings.title": "列車カテゴリ設定",
     "gui.createrailwaysnavigator.train_category_settings.summary": "%s 本の列車を含む",
     "gui.createrailwaysnavigator.train_category_settings.delete_alias.tooltip": "カテゴリを削除",
     "gui.createrailwaysnavigator.train_category_settings.delete_station.tooltip": "列車を削除",
     "gui.createrailwaysnavigator.train_category_settings.add_station.tooltip": "列車を追加",
-
     "gui.createrailwaysnavigator.blacklist.title": "駅ブラックリスト",
     "gui.createrailwaysnavigator.blacklist.add.tooltip": "ブラックリストに追加",
     "gui.createrailwaysnavigator.blacklist.delete.tooltip": "ブラックリストから削除",
-
     "gui.createrailwaysnavigator.train_blacklist.title": "列車ブラックリスト",
     "gui.createrailwaysnavigator.train_blacklist.add.tooltip": "ブラックリストに追加",
     "gui.createrailwaysnavigator.train_blacklist.delete.tooltip": "ブラックリストから削除",
-
     "gui.createrailwaysnavigator.search_settings.title": "検索設定",
     "gui.createrailwaysnavigator.search_settings.transfer_time": "最小乗換時間",
     "gui.createrailwaysnavigator.search_settings.transfer_time.description": "乗り換えのために最小限確保すべき時間 （1時間＝現実の約50秒）",
@@ -223,13 +205,11 @@
     "gui.createrailwaysnavigator.search_settings.train_categories.overview.all": "すべて",
     "gui.createrailwaysnavigator.search_settings.train_categories.overview.none": "なし",
     "gui.createrailwaysnavigator.search_settings.train_categories.tooltip.reset": "フィルターをリセット",
-
     "gui.createrailwaysnavigator.time": "時刻: %s",
     "gui.createrailwaysnavigator.time.now": "今",
     "gui.createrailwaysnavigator.time_format.dhm": "%s 日 %s 時間 %s 分",
     "gui.createrailwaysnavigator.time_format.hm": "%s 時間 %s 分",
     "gui.createrailwaysnavigator.time_format.m": "%s 分",
-
     "gui.createrailwaysnavigator.platform": "のりば",
     "gui.createrailwaysnavigator.departure": "時刻",
     "gui.createrailwaysnavigator.destination": "行先",
@@ -237,7 +217,6 @@
     "gui.createrailwaysnavigator.following_trains": "次の電車は:  ",
     "gui.createrailwaysnavigator.via": "途中駅",
     "gui.createrailwaysnavigator.too_small": "画面が小さすぎます！",
-
     "gui.createrailwaysnavigator.advanced_display_settings.title": "高度なディスプレイの設定",
     "gui.createrailwaysnavigator.advanced_display_settings.display_type": "ディスプレイタイプ",
     "gui.createrailwaysnavigator.advanced_display_settings.display_type.description": "表示される情報を決定します。",
@@ -293,13 +272,11 @@
     "gui.createrailwaysnavigator.advanced_display_settings.label_background_color": "テキストの背景色",
     "gui.createrailwaysnavigator.advanced_display_settings.background_color_full_size": "全幅",
     "gui.createrailwaysnavigator.advanced_display_settings.background_color_full_size.description": "表示領域全体を塗りつぶすか、テキストのみを塗りつぶすかを決定します。",
-
     "enum.createrailwaysnavigator.train_text_components": "列車テキスト要素",
     "enum.createrailwaysnavigator.train_text_components.description": "旅客ディスプレイに表示されるテキスト要素",
     "enum.createrailwaysnavigator.train_text_components.all": "すべて",
     "enum.createrailwaysnavigator.train_text_components.train_name": "路線名のみ",
     "enum.createrailwaysnavigator.train_text_components.destination": "行先のみ",
-
     "enum.createrailwaysnavigator.display_info_type": "ディスプレイ情報の種類",
     "enum.createrailwaysnavigator.display_info_type.description": "ディスプレイボードにどれだけの情報を表示するかを決定します。",
     "enum.createrailwaysnavigator.display_info_type.simple": "シンプル",
@@ -308,7 +285,6 @@
     "enum.createrailwaysnavigator.display_info_type.info.detailed": "最も重要な情報に加えて、列車の速度や停車駅などの詳細が表示されます",
     "enum.createrailwaysnavigator.display_info_type.informative": "より詳細",
     "enum.createrailwaysnavigator.display_info_type.info.informative": "興味深い可能性のあるすべての情報を表示し、おしゃれなレイアウトで表示します。テキストが非常に小さくなる可能性があるため、小さなディスプレイにはおすすめしません。",
-
     "enum.createrailwaysnavigator.display_type": "表示のタイプ",
     "enum.createrailwaysnavigator.display_type.description": "目的に応じた表示のタイプ",
     "enum.createrailwaysnavigator.display_type.train_destination": "列車の行先",
@@ -321,21 +297,18 @@
     "enum.createrailwaysnavigator.display_type.info.departure_board": "駅から発車する全列車の概要。",
     "enum.createrailwaysnavigator.display_type.static_text": "固定テキスト",
     "enum.createrailwaysnavigator.display_type.info.static_text": "指定したテキストを表示します。",
-
     "enum.createrailwaysnavigator.side": "表示面",
     "enum.createrailwaysnavigator.side.description": "情報が表示されるブロックの面",
     "enum.createrailwaysnavigator.side.front": "前面",
     "enum.createrailwaysnavigator.side.info.front": "情報は前面にのみ表示されます。これがデフォルトの動作です。",
     "enum.createrailwaysnavigator.side.both": "両面",
     "enum.createrailwaysnavigator.side.info.both": "情報は両面に表示されます。",
-
     "enum.createrailwaysnavigator.time_display": "時刻表示",
     "enum.createrailwaysnavigator.time_display.description": "時刻がどのように表示されるべきかを決定します。",
     "enum.createrailwaysnavigator.time_display.abs": "ABS",
     "enum.createrailwaysnavigator.time_display.info.abs": "ABS（絶対時刻）",
     "enum.createrailwaysnavigator.time_display.eta": "ETA",
     "enum.createrailwaysnavigator.time_display.info.eta": "ETA（到着までの時間）",
-
     "enum.createrailwaysnavigator.train_filter": "列車フィルター",
     "enum.createrailwaysnavigator.train_filter.description": "選択した基準に基づいて列車を比較し、どの列車を考慮すべきかを決定します。",
     "enum.createrailwaysnavigator.train_filter.any": "任意の列車",
@@ -346,53 +319,44 @@
     "enum.createrailwaysnavigator.train_filter.info.same_category": "同じ列車カテゴリの列車のみが考慮されます。",
     "enum.createrailwaysnavigator.train_filter.same_name": "同じ名前",
     "enum.createrailwaysnavigator.train_filter.info.same_name": "同じ名前の列車のみが考慮されます。",
-
     "enum.createrailwaysnavigator.time_source": "時刻のソース",
     "enum.createrailwaysnavigator.time_source.description": "時刻がどのように計算されるべきかを決定します。",
     "enum.createrailwaysnavigator.time_source.real_life": "実際の時間",
     "enum.createrailwaysnavigator.time_source.info.real_life": "実際の時間システム",
     "enum.createrailwaysnavigator.time_source.in_game": "ゲーム内",
     "enum.createrailwaysnavigator.time_source.info.in_game": "ゲーム内の時間システム",
-
     "enum.createrailwaysnavigator.lock_state.unlocked": "ロック解除済み",
     "enum.createrailwaysnavigator.lock_state.info.unlocked": "全員がアクセスできます。",
     "enum.createrailwaysnavigator.lock_state.trusted": "信頼済のみ",
     "enum.createrailwaysnavigator.lock_state.info.trusted": "信頼されたプレイヤーのみがアクセスできます。",
     "enum.createrailwaysnavigator.lock_state.locked": "ロック済み",
     "enum.createrailwaysnavigator.lock_state.info.locked": "あなたのみがアクセスできます。",
-
     "enum.createrailwaysnavigator.text_scale_bounds": "テキストあふれ動作",
     "enum.createrailwaysnavigator.text_scale_bounds.description": "テキストの長さが利用可能な幅を超えたときの動作。",
     "enum.createrailwaysnavigator.text_scale_bounds.cut_off": "見切れる",
     "enum.createrailwaysnavigator.text_scale_bounds.scale_scroll": "縮小/スクロール",
     "enum.createrailwaysnavigator.text_scale_bounds.scroll": "常にスクロール",
-
     "enum.createrailwaysnavigator.departure_board_train_filter": "フィルター",
     "enum.createrailwaysnavigator.departure_board_train_filter.arrival_and_departure": "すべて",
     "enum.createrailwaysnavigator.departure_board_train_filter.arrival_only": "到着のみ",
     "enum.createrailwaysnavigator.departure_board_train_filter.departure_only": "出発のみ",
-
     "createrailwaysnavigator.display_source.advanced_display": "高度なディスプレイ",
     "createrailwaysnavigator.display_target.advanced_display.component": "コンポーネント %s",
-
     "gui.createrailwaysnavigator.section_settings.title": "区間設定",
     "gui.createrailwaysnavigator.section_settings.train_categories": "列車カテゴリを割り当てる",
     "gui.createrailwaysnavigator.section_settings.train_lines": "路線を割り当てる",
     "gui.createrailwaysnavigator.section_settings.include_previous_station": "次の区間の先頭を含める",
     "gui.createrailwaysnavigator.section_settings.usable": "案内可能",
     "gui.createrailwaysnavigator.section_settings.none": "(なし)",
-
     "create.schedule.condition.dynamic_delay.status": "出発まで%s",
     "createrailwaysnavigator.schedule.condition.dynamic_delay": "変動する待ち時間",
     "createrailwaysnavigator.schedule.condition.dynamic_delay.min_duration": "最短待ち時間",
     "createrailwaysnavigator.schedule.condition.dynamic_delay.title": "待つ: %s～%s",
     "createrailwaysnavigator.schedule.condition.dynamic_delay.at_least": "最低でも %s",
-
     "createrailwaysnavigator.schedule.condition.train_separation.settings": "運行間隔の設定",
     "createrailwaysnavigator.schedule.condition.train_separation": "運行間隔",
     "createrailwaysnavigator.schedule.condition.train_separation.title": "運行間隔: %s",
     "createrailwaysnavigator.schedule.condition.train_separation.description": "以下の列車が出発して %s (%s) 後:",
-
     "createrailwaysnavigator.schedule.instruction.configure": "設定する…",
     "createrailwaysnavigator.schedule.instruction.travel_section": "新しい時刻表区間",
     "createrailwaysnavigator.schedule.instruction.travel_section.description": "新しい時刻表区間の先頭。",
@@ -400,9 +364,7 @@
     "createrailwaysnavigator.schedule.instruction.travel_section.train_line": " - 路線を設定する: ",
     "createrailwaysnavigator.schedule.instruction.travel_section.include_previous_station": " - 次の区間の先頭を含める: ",
     "createrailwaysnavigator.schedule.instruction.travel_section.usable": " - 案内可能: ",
-
     "createrailwaysnavigator.schedule.instruction.reset_timings": "タイミングをリセット",
-
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction": "順位付き行先指示",
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.summary": "次の行先候補:",
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.empty": "(なし)",
@@ -415,7 +377,6 @@
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.avoid_signals_description": "レッドストーン入力による停止信号が最も少ない駅を選択します。",
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.avoid_trains": "他の列車を避ける",
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.avoid_trains_description": "ルート上にいる列車が最も少ない駅を選択します。",
-
     "goggles.createrailwaysnavigator.train_listener.departures.title": "発車履歴",
     "goggles.createrailwaysnavigator.train_listener.departures.any": "最後の出発:",
     "goggles.createrailwaysnavigator.train_listener.departures.line": "路線別の履歴:",
@@ -424,7 +385,6 @@
     "goggles.createrailwaysnavigator.train_listener.departures.nothing": "(表示する履歴がありません)",
     "goggles.createrailwaysnavigator.train_listener.departures.has_more": "ほか %s 件",
     "goggles.createrailwaysnavigator.train_listener.departures.press_shift_for_in_game_time": "SHIFTキーを押すと、ゲーム内時間として表示されます。",
-
     "display.createrailwaysnavigator.train_destination.simple": "コンパクト",
     "display.createrailwaysnavigator.train_destination.extended": "拡張",
     "display.createrailwaysnavigator.train_destination.detailed": "詳細",
@@ -436,7 +396,6 @@
     "display.createrailwaysnavigator.departure_board.table": "表形式",
     "display.createrailwaysnavigator.static_text.simple_text": "プレーンテキスト",
     "display.createrailwaysnavigator.static_text.rich_text": "リッチテキスト",
-
     "gui.createrailwaysnavigator.saved_routes.title": "保存したルート",
     "gui.createrailwaysnavigator.schedule_board.title": "時刻表",
     "gui.createrailwaysnavigator.station_tags.title": "駅のタグ",
@@ -502,9 +461,7 @@
     "gui.createrailwaysnavigator.global_settings.train_line.title": "鉄道路線",
     "gui.createrailwaysnavigator.global_settings.train_line.color": "色を選択",
     "gui.createrailwaysnavigator.global_settings.train_line.description": "路線を作成したら、異なる列車をまとめたり、表示名を上書きしたり、各路線ごとに他の設定を調整することができます。(時刻表内の列車のみ割り当て可能)",
-
     "create.generic.unit.days": "日",
     "create.generic.unit.hours": "時間",
-
     "createrailwaysnavigator.moin": "moin"
 }
