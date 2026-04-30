@@ -7,6 +7,6 @@
 "files": [
   {
     "source": "**/assets/**/lang/en_us.json",
-    "translation": "**/assets/**/lang/%locale_with_underscore%.json"
+    "translation": "%original_path%/%locale_with_underscore%.json"
   }
 ]
