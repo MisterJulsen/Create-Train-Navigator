@@ -65,7 +65,7 @@ public class BERRichText implements AbstractAdvancedDisplayRenderer<StaticTextDi
         }
         getDisplaySettings(blockEntity).verifyComponents();
         List<TextComponent> components = getDisplaySettings(blockEntity).getComponents();
-        this.labels = new BERLabel[components.size()];
+        BERLabel[] labels = new BERLabel[components.size()];
 
         for (int i = 0; i < components.size(); i++) {
             TextComponent component = components.get(i);
@@ -89,7 +89,9 @@ public class BERRichText implements AbstractAdvancedDisplayRenderer<StaticTextDi
             label.fullBackground.set(component.isFullLabelBackgroundColor());
             label.glowing.set(blockEntity.isGlowing());
 
-            this.labels[i] = label;
+            labels[i] = label;
         }
+
+        this.labels = labels;
     }
 }
