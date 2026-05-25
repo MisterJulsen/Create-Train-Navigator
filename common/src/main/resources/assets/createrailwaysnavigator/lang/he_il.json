@@ -32,5 +32,19 @@
     "gui.createrailwaysnavigator.navigator.searching": "מחפש חיבורים...",
     "gui.createrailwaysnavigator.route_overview.journey_interrupted": "המסע שלך ל%s לא יכול להמשך.",
     "gui.createrailwaysnavigator.route_overview.train_cancelled_title": "הרכבת בוטלה",
-    "gui.createrailwaysnavigator.route_overview.notification.platform_changed.title": "הפלטפורמה שלך שונתה!"
+    "gui.createrailwaysnavigator.route_overview.notification.platform_changed.title": "הפלטפורמה שלך שונתה!",
+    "block.createrailwaysnavigator.advanced_display.ber.arrival": "הגעה",
+    "block.createrailwaysnavigator.advanced_display.ber.cancelled": "בוטל",
+    "block.createrailwaysnavigator.advanced_display.ber.delay_abs_suffix": "דקות",
+    "gui.createrailwaysnavigator.route_widget.save": "שמור",
+    "gui.createrailwaysnavigator.route_widget.remove": "הסר",
+    "gui.createrailwaysnavigator.route_widget.share": "שתף...",
+    "gui.createrailwaysnavigator.saved_routes.today": "היום",
+    "gui.createrailwaysnavigator.saved_routes.tomorrow": "מחר",
+    "gui.createrailwaysnavigator.saved_routes.in_days": "ב %s ימים",
+    "gui.createrailwaysnavigator.saved_route_widget.show_details": "הראה פרטים",
+    "gui.createrailwaysnavigator.saved_route_widget.share": "שתף...",
+    "gui.createrailwaysnavigator.navigator.my_profile": "הפרופיל שלי",
+    "create.generic.unit.days": "ימים",
+    "create.generic.unit.hours": "שעות"
 }
