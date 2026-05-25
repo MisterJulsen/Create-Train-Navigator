@@ -53,19 +53,19 @@ public class Constants {
     public static final ITimeFormatter DEFAULT_VERBOSE_REAL_DURATION_FORMAT = new TimeFormatVerboseDuration(new TimeFormatVerboseDuration.Config().showDays(true).showHours(true).showMinutes(true).showSeconds(true));
     public static final ITimeFormatter DEFAULT_VERBOSE_GAME_DURATION_FORMAT = new TimeFormatVerboseDuration(new TimeFormatVerboseDuration.Config().showDays(true).showHours(true).showMinutes(true).showSeconds(false));
 
-    public static final String GITHUB_WIKI = "https://github.com/MisterJulsen/Create-Train-Navigator/wiki/";
-    public static final String HELP_PAGE_ADVANCED_DISPLAYS = GITHUB_WIKI + "Advanced-Displays";
-    public static final String HELP_PAGE_DYNAMIC_DELAYS = GITHUB_WIKI + "Dynamic-Delays";
-    public static final String HELP_PAGE_TRAIN_SEPARATION = GITHUB_WIKI + "Train-Separation";
-    public static final String HELP_PAGE_PRIORITIZED_DESTINATION_INSTRUCTION = GITHUB_WIKI + "Prioritized-Destination-Instruction";
-    public static final String HELP_PAGE_GLOBAL_SETTINGS = GITHUB_WIKI + "Global-Settings";
-    public static final String HELP_PAGE_NAVIGATION_WARNING = GITHUB_WIKI + "Navigation-Warning";
-    public static final String HELP_PAGE_SCHEDULE_SECTIONS = GITHUB_WIKI + "Train-Schedule-Sections";
-    public static final String HELP_PAGE_SCHEDULED_TIMES_AND_REAL_TIME = GITHUB_WIKI + "Scheduled-Time-and-Real-Time";
-    public static final String HELP_PAGE_STATION_BLACKLIST = GITHUB_WIKI + "Station-Blacklist";
-    public static final String HELP_PAGE_STATION_TAGS = GITHUB_WIKI + "Station-Tags";
-    public static final String HELP_PAGE_TRAIN_BLACKLIST = GITHUB_WIKI + "Train-Blacklist";
-    public static final String HELP_PAGE_TRAIN_CATEGORIES = GITHUB_WIKI + "Train-Categories";
-    public static final String HELP_PAGE_TRAIN_INITIALIZATION = GITHUB_WIKI + "Train-Imnitialization";
-    public static final String HELP_PAGE_TRAIN_LINES = GITHUB_WIKI + "Train-Lines";
+    public static final String WIKI = "https://wiki.mrjulsen.net/createrailwaysnavigator/";
+    public static final String HELP_PAGE_ADVANCED_DISPLAYS = WIKI + "blocks/advanced_displays/";
+    public static final String HELP_PAGE_DYNAMIC_DELAYS = WIKI + "schedule_entries/dynamic_delay/";
+    public static final String HELP_PAGE_TRAIN_SEPARATION = WIKI + "schedule_entries/train_separation/";
+    public static final String HELP_PAGE_PRIORITIZED_DESTINATION_INSTRUCTION = WIKI + "schedule_entries/prioritized_destination_instruction/";
+    public static final String HELP_PAGE_GLOBAL_SETTINGS = WIKI + "features/global_settings/";
+    public static final String HELP_PAGE_NAVIGATION_WARNING = WIKI + "other_topics/navigation_warning/";
+    public static final String HELP_PAGE_SCHEDULE_SECTIONS = WIKI + "features/schedule_section/";
+    public static final String HELP_PAGE_SCHEDULED_TIMES_AND_REAL_TIME = WIKI + "other_topics/scheduled_and_real_time/";
+    public static final String HELP_PAGE_STATION_BLACKLIST = WIKI + "features/blacklists/";
+    public static final String HELP_PAGE_STATION_TAGS = WIKI + "features/station_tag/";
+    public static final String HELP_PAGE_TRAIN_BLACKLIST = WIKI + "features/blacklists/";
+    public static final String HELP_PAGE_TRAIN_CATEGORIES = WIKI + "features/train_category/";
+    public static final String HELP_PAGE_TRAIN_INITIALIZATION = WIKI + "other_topics/train_initialization/";
+    public static final String HELP_PAGE_TRAIN_LINES = WIKI + "features/train_lines/";
 }
