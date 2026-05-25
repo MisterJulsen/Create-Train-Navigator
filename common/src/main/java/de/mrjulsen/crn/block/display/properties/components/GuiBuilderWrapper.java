@@ -32,7 +32,6 @@ import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLTooltip;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.layout.FlowLayout;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.layout.FlowLayout.Direction;
 import de.mrjulsen.mcdragonlib.data.ETextAlignment;
-import de.mrjulsen.mcdragonlib.data.ITranslatableEnum;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.Holder.MutableHolder;
@@ -743,6 +742,24 @@ public class GuiBuilderWrapper {
         });
         fullLineBox.tooltip.set(new DLTooltip(List.of(ITextBackgroundColorSetting.txtFullSizeDescription), 200));
         line.addComponent(fullLineBox);
+    }
+
+    static void buildRetainGui(IRetainScaleAndPosSetting setting, GuiBuilderContext context) {
+        DLPanel line = context.container().addLine(IRetainScaleAndPosSetting.GUI_LINE_RETAIN_NAME);
+
+        IconSlotWidget icon = line.addComponent(new IconSlotWidget(0, 0));
+        icon.icon.set(ModGuiIcons.LOCKED.getAsSprite(16, 16));
+
+        DLCheckBox retainBox = new DLCheckBox(0, 0, 0, CreateButton.HEIGHT);
+        retainBox.text.set(IRetainScaleAndPosSetting.txtRetain);
+        retainBox.checked.set(setting.shouldRetainScaleAndPos());
+        retainBox.layoutContraint.set(FlowLayout.FlowConstraint.FILL);
+        retainBox.addEventListener(DLToggleButton.CheckedChangedEvent.class, (s, e) -> {
+            setting.setShouldRetainScaleAndPos(e.checked());
+            return false;
+        });
+        retainBox.tooltip.set(new DLTooltip(List.of(IRetainScaleAndPosSetting.txtRetainDescription), 200));
+        line.addComponent(retainBox);
     }
     
 }

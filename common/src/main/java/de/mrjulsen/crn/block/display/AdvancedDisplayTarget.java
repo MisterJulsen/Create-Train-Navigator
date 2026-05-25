@@ -173,11 +173,13 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 							component.setStaticText("{\"text\":\"\"}");
 						} else
 							component.setStaticText(Component.Serializer.toJson(text.get(i)));
-						component.setTextAlignment(ETextAlignment.LEFT);
-						component.setXScale(0.4f);
-						component.setMinXScale(0.4f);
-						component.setYScale(0.4f);
-						component.setY((componentIndex) * 5.5f);
+						if (!component.shouldRetainScaleAndPos()) {
+							component.setTextAlignment(ETextAlignment.LEFT);
+							component.setXScale(0.4f);
+							component.setMinXScale(0.4f);
+							component.setYScale(0.4f);
+							component.setY((componentIndex) * 5.5f);
+						}
 						settings.setComponent(componentIndex, component);
 					}
 					ModCommonEvents.getCurrentServer()
