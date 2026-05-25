@@ -295,6 +295,8 @@
     "gui.createrailwaysnavigator.advanced_display_settings.label_background_color": "Label Background Color",
     "gui.createrailwaysnavigator.advanced_display_settings.background_color_full_size": "Full Size",
     "gui.createrailwaysnavigator.advanced_display_settings.background_color_full_size.description": "Whether the entire area of the text field should be filled or only the text.",
+    "gui.createrailwaysnavigator.advanced_display_settings.retain_scale_pos": "Retain Scale and Position",
+    "gui.createrailwaysnavigator.advanced_display_settings.retain_scale_pos.description": "Whether the scale and position should be updated by an attached display link.",
 
     "enum.createrailwaysnavigator.train_text_components": "Train Text Components",
     "enum.createrailwaysnavigator.train_text_components.description": "Text components which should be displayed on the passenger displays.",

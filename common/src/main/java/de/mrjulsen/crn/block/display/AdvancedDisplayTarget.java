@@ -33,7 +33,6 @@ import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.data.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -140,7 +139,7 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 					SimpleStaticTextDisplaySettings settings = controller
 							.getSettingsAs(SimpleStaticTextDisplaySettings.class)
 							.orElse(new SimpleStaticTextDisplaySettings());
-					settings.setStaticText(Component.Serializer.toJson((text.get(0)), RegistryAccess.EMPTY));
+					settings.setStaticText(Component.Serializer.toJson((text.get(0))));
 					CreateRailwaysNavigator.LOGGER.debug(settings.getStaticText());
 					ModCommonEvents.getCurrentServer()
 							.ifPresent(x -> x.executeIfPossible(() -> controller.applyToAll(a -> {
@@ -173,12 +172,14 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 								break;
 							component.setStaticText("{\"text\":\"\"}");
 						} else
-							component.setStaticText(Component.Serializer.toJson(text.get(i), RegistryAccess.EMPTY));
-						component.setTextAlignment(ETextAlignment.LEFT);
-						component.setXScale(0.4f);
-						component.setMinXScale(0.4f);
-						component.setYScale(0.4f);
-						component.setY((componentIndex) * 5.5f);
+							component.setStaticText(Component.Serializer.toJson(text.get(i)));
+						if (!component.shouldRetainScaleAndPos()) {
+							component.setTextAlignment(ETextAlignment.LEFT);
+							component.setXScale(0.4f);
+							component.setMinXScale(0.4f);
+							component.setYScale(0.4f);
+							component.setY((componentIndex) * 5.5f);
+						}
 						settings.setComponent(componentIndex, component);
 					}
 					ModCommonEvents.getCurrentServer()

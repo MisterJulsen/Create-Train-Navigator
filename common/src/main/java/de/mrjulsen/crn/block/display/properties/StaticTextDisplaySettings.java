@@ -6,12 +6,7 @@ import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
-import de.mrjulsen.crn.block.display.properties.components.GuiBuilderWrapper;
-import de.mrjulsen.crn.block.display.properties.components.IStaticTextSetting;
-import de.mrjulsen.crn.block.display.properties.components.ITextBackgroundColorSetting;
-import de.mrjulsen.crn.block.display.properties.components.ITextPosSetting;
-import de.mrjulsen.crn.block.display.properties.components.ITextScaleSetting;
-import de.mrjulsen.crn.block.display.properties.components.ITextWidthSetting;
+import de.mrjulsen.crn.block.display.properties.components.*;
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
 import de.mrjulsen.mcdragonlib.data.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.DLColor;
@@ -20,7 +15,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 
-public class StaticTextDisplaySettings extends BasicDisplaySettings implements IStaticTextSetting, ITextScaleSetting, ITextPosSetting, ITextWidthSetting, ITextBackgroundColorSetting {
+public class StaticTextDisplaySettings extends BasicDisplaySettings implements IStaticTextSetting, ITextScaleSetting, ITextPosSetting, ITextWidthSetting, ITextBackgroundColorSetting, IRetainScaleAndPosSetting {
 
     public static class TextComponent {
         String staticText = "";
@@ -34,6 +29,7 @@ public class StaticTextDisplaySettings extends BasicDisplaySettings implements I
         ETextAlignment alignment = DEFAULT_TEXT_ALIGNMENT;
         DLColor backgroundColor = DEFAULT_BG_COLOR;
         boolean fullLabelColor = DEFAULT_FULL_LABEL_COLOR;
+        boolean retainScalePos = DEFAULT_RETAIN_SCALE_POS;
 
         public TextComponent() {
 
@@ -131,6 +127,14 @@ public class StaticTextDisplaySettings extends BasicDisplaySettings implements I
             this.fullLabelColor = b;
         }
 
+        public boolean shouldRetainScaleAndPos() {
+            return this.retainScalePos;
+        }
+
+        public void setShouldRetainScaleAndPos(boolean v) {
+            this.retainScalePos = v;
+        }
+
         public static TextComponent fromNbt(CompoundTag nbt) {
             TextComponent comp = new TextComponent();
             if (nbt.contains(NBT_TEXT)) comp.staticText = nbt.getString(NBT_TEXT);
@@ -144,6 +148,7 @@ public class StaticTextDisplaySettings extends BasicDisplaySettings implements I
             if (nbt.contains(NBT_TEXT_ALIGNMENT)) comp.alignment = ETextAlignment.getById(nbt.getInt(NBT_TEXT_ALIGNMENT));
             if (nbt.contains(NBT_TEXT_BG_COLOR)) comp.backgroundColor = DLColor.fromInt(nbt.getInt(NBT_TEXT_BG_COLOR));
             if (nbt.contains(NBT_FULL_LABEL_COLOR)) comp.fullLabelColor = nbt.getBoolean(NBT_FULL_LABEL_COLOR);
+            if (nbt.contains(NBT_RETAIN_SCALE_POS)) comp.retainScalePos = nbt.getBoolean(NBT_RETAIN_SCALE_POS);
             return comp;
         }
     
@@ -160,6 +165,7 @@ public class StaticTextDisplaySettings extends BasicDisplaySettings implements I
             nbt.putInt(NBT_TEXT_ALIGNMENT, alignment.getId());
             nbt.putInt(NBT_TEXT_BG_COLOR, backgroundColor.getAsARGB());
             nbt.putBoolean(NBT_FULL_LABEL_COLOR, fullLabelColor);
+            nbt.putBoolean(NBT_RETAIN_SCALE_POS, retainScalePos);
             return nbt;
         }
 
@@ -221,6 +227,7 @@ public class StaticTextDisplaySettings extends BasicDisplaySettings implements I
         this.buildTextScaleGui(context);
         this.buildTextMaxWidthGui(context);
         this.buildTextBackgroundColorGui(context);
+        this.buildRetainGui(context);
     }
 
     @Override
@@ -238,6 +245,7 @@ public class StaticTextDisplaySettings extends BasicDisplaySettings implements I
                 copyTextPosSettings(oldSettings);
                 copyTextMaxWidthSetting(oldSettings);
                 copyTextBackgroundColorSettings(oldSettings);
+                copyRetainSettings(oldSettings);
             }
         } else { 
                
@@ -246,6 +254,7 @@ public class StaticTextDisplaySettings extends BasicDisplaySettings implements I
             copyTextPosSettings(oldSettings);
             copyTextMaxWidthSetting(oldSettings);
             copyTextBackgroundColorSettings(oldSettings);
+            copyRetainSettings(oldSettings);
         }
         setSelectedComponentIndex(currentIndex);
     }
@@ -390,6 +399,16 @@ public class StaticTextDisplaySettings extends BasicDisplaySettings implements I
     @Override
     public void setFullLabelBackgroundColor(boolean b) {
         getSelectedComponent().fullLabelColor = b;
+    }
+
+    @Override
+    public boolean shouldRetainScaleAndPos() {
+        return getSelectedComponent().retainScalePos;
+    }
+
+    @Override
+    public void setShouldRetainScaleAndPos(boolean v) {
+        getSelectedComponent().retainScalePos = v;
     }
 
     public void verifyComponents() {
