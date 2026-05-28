@@ -1,6 +1,7 @@
 package de.mrjulsen.crn.util;
 
 import java.util.List;
+import java.util.function.Function;
 
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.block.display.properties.components.ITrainStopTypeSetting;
@@ -16,6 +17,15 @@ import de.mrjulsen.mcdragonlib.util.time.TimeContext;
 import org.jetbrains.annotations.Nullable;
 
 public class VariableManager {
+    private static <T> String join(List<T> items, Function<T, String> toString, String delimiter) {
+        StringBuilder string = new StringBuilder();
+        for (int i = 0; i < items.size(); i++) {
+            if (i != 0) string.append(delimiter);
+            string.append(toString.apply(items.get(i)));
+        }
+        return string.toString();
+    }
+
     private static String handleStopover(List<TrainStopDisplayData> list, int i, String variable) {
         if (i < 0 || i >= list.size()) return handleStopover(null, variable);
         return handleStopover(list.get(i), variable);
@@ -55,8 +65,13 @@ public class VariableManager {
             return data.getStopovers().get(n);
         }
 
+        if (variable.startsWith("via:")) {
+            if (data == null) return "";
+            return join(data.getStopovers(), s -> s, variable.substring(4));
+        }
+
         return switch (variable) {
-            case "via" -> data == null ? "" : data.getStopovers().stream().reduce("", (a, b) -> a + ", " + b);
+            case "via" -> data == null ? "" : join(data.getStopovers(), s -> s, ", ");
             case "line" -> data == null ? "" : data.getTrainData().getName(ITrainStopTypeSetting.resolveStopState(data, t.showDepartures(data.isFirstStop()), t.showArrivals(data.isLastStop())));
             case "origin" -> data == null ? "" : data.getFirstStopName();
             case "destination" -> data == null ? "" : data.getStationData().getDestination();
@@ -139,11 +154,15 @@ public class VariableManager {
             TrainDisplayData train = blockEntity.getTrainData();
 
             if (variable.equals("via")) {
-                return train.getStopovers().stream().reduce("", (a, b) -> a + ", " + b.getRealTimeStation().tagName(), (a, b) -> a + ", " + b);
+                return join(train.getStopovers(), s -> s.getRealTimeStation().tagName(), ", ");
+            } else if (variable.startsWith("via:")) {
+                return join(train.getStopovers(), s -> s.getRealTimeStation().tagName(), variable.substring(4));
             } else if (variable.equals("line")) {
                 return train.getTrainData().getName(ETrainStopState.beforeArrival(!train.isWaitingAtStation()));
             } else if (variable.equals("carriages")) {
                 return "" + train.getTrainData().getCarriages();
+            } else if (variable.equals("title")) {
+                return train.getCurrentStop().map(TrainStopDisplayData::getDestination).orElse("");
             } else if (variable.startsWith("origin.")) {
                 return handleStopover(train.getAllStops(), 0, variable.substring(7));
             } else if (variable.startsWith("destination.")) {
