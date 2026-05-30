@@ -33,6 +33,7 @@ public class VariableManager {
     
     private static String handleStopover(@Nullable TrainStopDisplayData data, String variable) {
         boolean eta = variable.endsWith("_eta");
+        long ticksDelayed = data == null ? 0 : data.getDepartureTimeDeviation();
 
         // this should only return null if the variable is invalid so don't anyone
         // dare replace the tertiary statements with a single guard statement
@@ -42,6 +43,7 @@ public class VariableManager {
             case "platform" -> data == null ? "" : data.getRealTimeStation().info().platform();
             case "arrival", "arrival_eta" -> data == null ? "" : ModUtils.formatTime(data.getScheduledArrivalTime(), eta);
             case "departure", "departure_eta" -> data == null ? "" : ModUtils.formatTime(data.getScheduledDepartureTime(), eta);
+            case "delay_time" -> ticksDelayed <= 0 ? "" : formatDelay(ticksDelayed);
             default -> null;
         };
     }
@@ -76,7 +78,6 @@ public class VariableManager {
             case "origin" -> data == null ? "" : data.getFirstStopName();
             case "destination" -> data == null ? "" : data.getStationData().getDestination();
             case "carriages" -> data == null ? "" : "" + data.getTrainData().getCarriages();
-            case "delay_time" -> data == null ? "" : getDelayText(data);
             case "delay_reason" -> {
                 if (data == null || data.getTrainData() == null) yield "";
 
@@ -84,21 +85,6 @@ public class VariableManager {
             }
             default -> null;
         };
-    }
-
-    private static String getDelayText(StationDisplayData data) {
-        var stop = data.getStationData();
-
-        if (stop != null) {
-            long ticks = stop.getDepartureTimeDeviation();
-
-            if (ticks > 0) {
-                String formatted = formatDelay(ticks);
-                return CustomLanguage.translate("block.createrailwaysnavigator.advanced_display.ber.delayed", formatted).getString();
-            }
-        }
-
-        return "";
     }
 
     private static String formatDelay(long ticks) {
