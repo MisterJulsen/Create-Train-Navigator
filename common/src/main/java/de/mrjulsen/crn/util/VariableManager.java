@@ -69,7 +69,7 @@ public class VariableManager {
 
         if (variable.startsWith("via:")) {
             if (data == null) return "";
-            return join(data.getStopovers(), s -> s, variable.substring(4));
+            return join(data.getStopovers(), s -> s, variable.substring("via:".length()));
         }
 
         return switch (variable) {
@@ -142,7 +142,7 @@ public class VariableManager {
             if (variable.equals("via")) {
                 return join(train.getStopovers(), s -> s.getRealTimeStation().tagName(), ", ");
             } else if (variable.startsWith("via:")) {
-                return join(train.getStopovers(), s -> s.getRealTimeStation().tagName(), variable.substring(4));
+                return join(train.getStopovers(), s -> s.getRealTimeStation().tagName(), variable.substring("via:".length()));
             } else if (variable.equals("line")) {
                 return train.getTrainData().getName(ETrainStopState.beforeArrival(!train.isWaitingAtStation()));
             } else if (variable.equals("carriages")) {
