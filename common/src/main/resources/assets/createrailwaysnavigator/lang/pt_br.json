@@ -274,6 +274,8 @@
     "gui.createrailwaysnavigator.advanced_display_settings.label_background_color": "Cor de fundo do texto",
     "gui.createrailwaysnavigator.advanced_display_settings.background_color_full_size": "Tamanho máximo",
     "gui.createrailwaysnavigator.advanced_display_settings.background_color_full_size.description": "Se a área inteira do campo de texto deve ser preenchida ou só o texto.",
+    "gui.createrailwaysnavigator.advanced_display_settings.retain_scale_pos": "Manter Escala e Posição",
+    "gui.createrailwaysnavigator.advanced_display_settings.retain_scale_pos.description": "Se a escala e a posição deve ser atualizadas por vínculo de tela anexada.",
     "enum.createrailwaysnavigator.train_text_components": "Componentes de texto do trem",
     "enum.createrailwaysnavigator.train_text_components.description": "Componentes de texto que devem ser exibidos nas exibições do passageiro.",
     "enum.createrailwaysnavigator.train_text_components.all": "Todos",
