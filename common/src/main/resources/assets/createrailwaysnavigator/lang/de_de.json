@@ -274,6 +274,8 @@
     "gui.createrailwaysnavigator.advanced_display_settings.label_background_color": "Textfeld Hintergrundfarbe",
     "gui.createrailwaysnavigator.advanced_display_settings.background_color_full_size": "Gefüllt",
     "gui.createrailwaysnavigator.advanced_display_settings.background_color_full_size.description": "Ob der gesamte Bereich des Textfeldes oder nur der Text selbst mit dieser Farbe hinterlegt sein soll.",
+    "gui.createrailwaysnavigator.advanced_display_settings.retain_scale_pos": "Position und Skalierung beibehalten",
+    "gui.createrailwaysnavigator.advanced_display_settings.retain_scale_pos.description": "Gibt an, ob Skalierung und Position durch einen Anzeigelink aktualisiert werden sollen.",
     "enum.createrailwaysnavigator.train_text_components": "Zugbezeichnung",
     "enum.createrailwaysnavigator.train_text_components.description": "Text, der auf den Bahnsteiganzeigen verwendet werden sollen.",
     "enum.createrailwaysnavigator.train_text_components.all": "Alle",

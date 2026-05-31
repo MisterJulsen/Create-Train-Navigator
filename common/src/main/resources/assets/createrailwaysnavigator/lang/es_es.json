@@ -274,6 +274,7 @@
     "gui.createrailwaysnavigator.advanced_display_settings.label_background_color": "Color de fondo de la etiqueta",
     "gui.createrailwaysnavigator.advanced_display_settings.background_color_full_size": "Tamaño Completo",
     "gui.createrailwaysnavigator.advanced_display_settings.background_color_full_size.description": "Decide si toda el área del texto debería rellenarse o solo el texto",
+    "gui.createrailwaysnavigator.advanced_display_settings.retain_scale_pos": "Conservar escala y posición",
     "enum.createrailwaysnavigator.train_text_components": "Componentes de texto de los trenes",
     "enum.createrailwaysnavigator.train_text_components.description": "Componentes de texto que deben mostrarse en pantallas de los trenes de pasajeros",
     "enum.createrailwaysnavigator.train_text_components.all": "Todos",
