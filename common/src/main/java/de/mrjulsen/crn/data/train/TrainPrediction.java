@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.google.common.base.Objects;
 import com.simibubi.create.content.trains.entity.Train;
+import com.simibubi.create.content.trains.schedule.Schedule;
 import com.simibubi.create.content.trains.schedule.ScheduleEntry;
 import com.simibubi.create.content.trains.schedule.condition.ScheduleWaitCondition;
 import com.simibubi.create.content.trains.schedule.destination.DestinationInstruction;
@@ -392,11 +393,12 @@ public class TrainPrediction implements Comparable<TrainPrediction> {
     }
 
     public static DepartureTime estimateDepartures(Train train, int entryIndex, long triggerTime) {
-		if (train == null || train.runtime == null || train.runtime.getSchedule() == null) {
+        Schedule schedule;
+		    if (train == null || train.runtime == null || (schedule = train.runtime.getSchedule()) == null || entryIndex >= schedule.entries.size()) {
             return new DepartureTime(0, 0);
         }
 
-        ScheduleEntry scheduleEntry = train.runtime.getSchedule().entries.get(entryIndex);
+        ScheduleEntry scheduleEntry = schedule.entries.get(entryIndex);
         long[] currentTime = new long[] { triggerTime, triggerTime };
 		for (List<ScheduleWaitCondition> list : scheduleEntry.conditions) {
 			for (ScheduleWaitCondition condition : list) {
