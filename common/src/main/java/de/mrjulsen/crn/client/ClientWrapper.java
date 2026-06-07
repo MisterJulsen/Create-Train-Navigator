@@ -32,6 +32,7 @@ import de.mrjulsen.crn.data.schedule.instruction.TravelSectionInstruction;
 import de.mrjulsen.crn.item.NavigatorItem;
 import de.mrjulsen.crn.mixin.ModularGuiLineBuilderAccessor;
 import de.mrjulsen.crn.mixin.ScheduleScreenAccessor;
+import de.mrjulsen.crn.network.packets.pain.ShowWebApiScreenPacketData;
 import de.mrjulsen.crn.network.packets.stc.ServerErrorPacketData;
 import de.mrjulsen.crn.util.Owner;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLWindow;
@@ -138,6 +139,12 @@ public class ClientWrapper {
     public static void showTrainDebugScreen() {
         RenderSystem.recordRenderCall(() -> {
             DLWindow.openWindow(TrainStatsWindow::new);
+        });
+    }
+
+    public static void showWebApiScreen(ShowWebApiScreenPacketData data) {
+        RenderSystem.recordRenderCall(() -> {
+            DLWindow.openWindow(mgr -> new WebApiInfoWindow(mgr, data));
         });
     }
 
