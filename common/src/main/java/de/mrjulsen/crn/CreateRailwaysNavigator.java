@@ -9,20 +9,14 @@ import com.simibubi.create.foundation.item.TooltipModifier;
 import de.mrjulsen.crn.block.AdvancedDisplayBlock;
 import de.mrjulsen.crn.event.ModClientEvents;
 import de.mrjulsen.crn.event.ModCommonEvents;
-import de.mrjulsen.crn.registry.ModBlockEntities;
-import de.mrjulsen.crn.registry.ModBlocks;
-import de.mrjulsen.crn.registry.ModCreativeModeTab;
-import de.mrjulsen.crn.registry.ModDisplayTypes;
-import de.mrjulsen.crn.registry.ModExtras;
-import de.mrjulsen.crn.registry.ModItems;
-import de.mrjulsen.crn.registry.ModNetworkManager;
-import de.mrjulsen.crn.registry.ModSchedule;
-import de.mrjulsen.crn.registry.ModTrainStatusInfos;
+import de.mrjulsen.crn.registry.*;
+import de.mrjulsen.mcdragonlib.util.TextUtils;
 import dev.architectury.platform.Platform;
 import dev.architectury.utils.Env;
 import net.createmod.catnip.lang.FontHelper;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 
 import org.slf4j.Logger;
@@ -42,7 +36,10 @@ public final class CreateRailwaysNavigator {
 		REGISTRATE.setTooltipModifierFactory(item -> {
 			return new ItemDescription.Modifier(item, FontHelper.Palette.STANDARD_CREATE)
 				.andThen(TooltipModifier.mapNull(KineticStats.create(item)));
-		});
+		}).defaultCreativeTab(MOD_ID, builder -> builder
+            .title(TextUtils.text("Create Railways Navigator"))
+            .icon(() -> new ItemStack(ModItems.NAVIGATOR.get()))
+        ).build();
 	}
 
     public static KineticStats create(Item item) {
@@ -68,7 +65,7 @@ public final class CreateRailwaysNavigator {
         ModNetworkManager.init();
         ModTrainStatusInfos.init();
         ModDisplayTypes.init();
-        ModCreativeModeTab.setup();
+        ModDataComponents.init();
         
         CRNPlatformSpecific.registerConfig();
 

@@ -4,19 +4,19 @@ import de.mrjulsen.crn.client.gui.overlay.OverlayPosition;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.util.ESpeedUnit;
 import de.mrjulsen.crn.util.ETimeFormat;
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class ModClientConfig {
-    public static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
-    public static final ForgeConfigSpec SPEC;
+    public static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
+    public static final ModConfigSpec SPEC;
 
-    public static final ForgeConfigSpec.ConfigValue<Integer> DISPLAY_REFRESH_RATE;
-    public static final ForgeConfigSpec.ConfigValue<Double> OVERLAY_SCALE;
-    public static final ForgeConfigSpec.ConfigValue<Boolean> ROUTE_NOTIFICATIONS;
-    public static final ForgeConfigSpec.ConfigValue<OverlayPosition> ROUTE_OVERLAY_POSITION;
-    public static final ForgeConfigSpec.ConfigValue<ETimeFormat> TIME_FORMAT;
-    public static final ForgeConfigSpec.ConfigValue<CustomLanguage> LANGUAGE;
-    public static final ForgeConfigSpec.ConfigValue<ESpeedUnit> SPEED_UNIT;
+    public static final ModConfigSpec.ConfigValue<Integer> DISPLAY_REFRESH_RATE;
+    public static final ModConfigSpec.ConfigValue<Double> OVERLAY_SCALE;
+    public static final ModConfigSpec.ConfigValue<Boolean> ROUTE_NOTIFICATIONS;
+    public static final ModConfigSpec.ConfigValue<OverlayPosition> ROUTE_OVERLAY_POSITION;
+    public static final ModConfigSpec.ConfigValue<ETimeFormat> TIME_FORMAT;
+    public static final ModConfigSpec.ConfigValue<CustomLanguage> LANGUAGE;
+    public static final ModConfigSpec.ConfigValue<ESpeedUnit> SPEED_UNIT;
 
     public static final double MIN_SCALE = 0.25f;
     public static final double MAX_SCALE = 2.0f;

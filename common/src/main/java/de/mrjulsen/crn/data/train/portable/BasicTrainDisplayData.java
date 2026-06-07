@@ -15,6 +15,7 @@ import de.mrjulsen.mcdragonlib.util.Cache;
 import de.mrjulsen.mcdragonlib.util.DLColor;
 import de.mrjulsen.crn.data.train.TrainStatus.CompiledTrainStatus;
 import de.mrjulsen.crn.event.ModCommonEvents;
+import de.mrjulsen.mcdragonlib.util.DLUtils;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -222,8 +223,8 @@ public class BasicTrainDisplayData {
     public static BasicTrainDisplayData fromNbt(CompoundTag nbt) {
         return new BasicTrainDisplayData(
             nbt.getUUID(NBT_ID),
-            TrainIconType.byId(new ResourceLocation(nbt.getString(NBT_ICON))),
-            nbt.getList(NBT_STATUS, Tag.TAG_STRING).stream().map(x -> new ResourceLocation(((StringTag)x).getAsString())).toList(),
+            TrainIconType.byId(DLUtils.resourceLocation(nbt.getString(NBT_ICON))),
+            nbt.getList(NBT_STATUS, Tag.TAG_STRING).stream().map(x -> DLUtils.resourceLocation(((StringTag)x).getAsString())).toList(),
             nbt.getBoolean(NBT_CANCELLED),
             nbt.contains(NBT_STATE_DATA) ? ModUtils.getMap(nbt, NBT_STATE_DATA, (k) -> ETrainStopState.getById(Integer.parseInt(k)), StateData::fromNbt) : fallbackStateData.get(),
             nbt.getInt(NBT_CARRIAGES)

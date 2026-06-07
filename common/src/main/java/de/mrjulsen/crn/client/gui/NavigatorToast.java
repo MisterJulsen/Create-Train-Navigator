@@ -18,10 +18,12 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.toasts.Toast;
 import net.minecraft.client.gui.components.toasts.ToastComponent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 
 public class NavigatorToast implements Toast {
 
+    private static final ResourceLocation BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("toast/system");
     private static final long DISPLAY_TIME = 5000L;
     private static final int MAX_LINE_SIZE = 200;
 
@@ -77,7 +79,7 @@ public class NavigatorToast implements Toast {
 
         DLGuiGraphics graphics = new DLGuiGraphics(guiGraphics, guiGraphics.pose(), Minecraft.getInstance().font, 0);
 
-        RenderSystem.setShaderTexture(0, TEXTURE);
+        RenderSystem.setShaderTexture(0, BACKGROUND_SPRITE);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         int lineWidth = width;
         int lineHeight = 10;

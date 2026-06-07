@@ -2,6 +2,7 @@ package de.mrjulsen.crn.data;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -32,11 +33,7 @@ import de.mrjulsen.mcdragonlib.util.time.TimeContext;
 import de.mrjulsen.mcdragonlib.util.time.VanillaTimeSystem;
 import dev.architectury.platform.Platform;
 import dev.architectury.utils.Env;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtIo;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
 import net.minecraft.world.level.storage.LevelResource;
 
 public class UserSettings {
@@ -162,7 +159,7 @@ public class UserSettings {
         UserSettings.update(this);
         CompoundTag nbt = this.toNbt();    
         try {
-            NbtIo.writeCompressed(nbt, new File(ModCommonEvents.getCurrentServer().get().getWorldPath(new LevelResource("data/" + FILENAME + getOwnerId() + ".nbt")).toString()));
+            NbtIo.writeCompressed(nbt, ModCommonEvents.getCurrentServer().get().getWorldPath(new LevelResource("data/" + FILENAME + getOwnerId() + ".nbt")));
             if (ModCommonConfig.ADVANCED_LOGGING.get()) CreateRailwaysNavigator.LOGGER.info("Saved user settings.");
         } catch (IOException e) {
             CreateRailwaysNavigator.LOGGER.error("Unable to save user settings.", e);
@@ -175,11 +172,11 @@ public class UserSettings {
             throw new RuntimeSideException(false);
         }
 
-        File settingsFile = new File(ModCommonEvents.getCurrentServer().get().getWorldPath(new LevelResource("data/" + FILENAME + playerId + ".nbt")).toString());    
+        Path settingsPath = ModCommonEvents.getCurrentServer().get().getWorldPath(new LevelResource("data/" + FILENAME + playerId + ".nbt"));
         
-        if (settingsFile.exists()) {            
+        if (settingsPath.toFile().exists()) {
             try {
-                return UserSettings.fromNbt(NbtIo.readCompressed(settingsFile), playerId, readOnly);
+                return UserSettings.fromNbt(NbtIo.readCompressed(settingsPath, NbtAccounter.unlimitedHeap()), playerId, readOnly);
             } catch (IOException e) {
                 CreateRailwaysNavigator.LOGGER.error("Cannot load user settings for player: " + playerId, e);
             }

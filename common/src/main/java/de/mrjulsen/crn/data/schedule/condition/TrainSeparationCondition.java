@@ -145,7 +145,7 @@ public class TrainSeparationCondition extends ScheduledDelay implements IDelayed
 
 	@Override
 	public ResourceLocation getId() {
-		return new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "train_separation");
+		return ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "train_separation");
 	}
     
 	public ETrainFilter getTrainFilter() {

@@ -9,7 +9,7 @@ import com.simibubi.create.foundation.block.connected.CTType;
 import com.simibubi.create.foundation.block.connected.ConnectedTextureBehaviour;
 import de.mrjulsen.crn.CRNPlatformSpecificClient;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
-import net.minecraft.resources.ResourceLocation;
+import de.mrjulsen.mcdragonlib.util.DLUtils;
 import net.minecraft.world.level.block.Block;
 
 public class ClientWrapper {
@@ -29,7 +29,7 @@ public class ClientWrapper {
 	public static CTSpriteShiftEntry getCT(CTType type, String blockTextureName, String connectedTextureName) {
 		return CTSpriteShifter.getCT(
 				type,
-				new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "block/" + blockTextureName),
-				new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "block/" + connectedTextureName + "_connected"));
+				DLUtils.resourceLocation(CreateRailwaysNavigator.MOD_ID, "block/" + blockTextureName),
+				DLUtils.resourceLocation(CreateRailwaysNavigator.MOD_ID, "block/" + connectedTextureName + "_connected"));
 	}
 }

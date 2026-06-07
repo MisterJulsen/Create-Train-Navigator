@@ -21,7 +21,7 @@ import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 
 public class TrainStationClockRenderer extends AbstractBlockEntityRenderInstance<TrainStationClockBlockEntity> {
 
-    private static final ResourceLocation DIAL_TEXTURE = new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/block/dial.png");
+    private static final ResourceLocation DIAL_TEXTURE = ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "textures/block/dial.png");
 
     public TrainStationClockRenderer(TrainStationClockBlockEntity blockEntity) {
         super(blockEntity);

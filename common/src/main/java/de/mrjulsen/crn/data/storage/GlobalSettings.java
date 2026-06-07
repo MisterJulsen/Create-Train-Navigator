@@ -2,6 +2,7 @@ package de.mrjulsen.crn.data.storage;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,11 +38,7 @@ import de.mrjulsen.crn.event.ModCommonEvents;
 import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.crn.util.Owner;
 import de.mrjulsen.mcdragonlib.data.INBTSerializable;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtIo;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.storage.LevelResource;
@@ -111,7 +108,7 @@ public class GlobalSettings implements INBTSerializable {
         CompoundTag nbt = this.serializeNbt();
     
         try {
-            NbtIo.writeCompressed(nbt, new File(server.getWorldPath(new LevelResource("data/" + FILENAME)).toString()));
+            NbtIo.writeCompressed(nbt, server.getWorldPath(new LevelResource("data/" + FILENAME)));
             if (ModCommonConfig.ADVANCED_LOGGING.get()) CreateRailwaysNavigator.LOGGER.info("Saved global settings.");
         } catch (IOException e) {
             CreateRailwaysNavigator.LOGGER.error("Unable to save global settings.", e);
@@ -119,17 +116,17 @@ public class GlobalSettings implements INBTSerializable {
     }
     
     public synchronized static GlobalSettings open(MinecraftServer server) throws Exception {   
-        File legacyFile = new File(server.getWorldPath(new LevelResource("data/" + LEGACY_FILENAME)).toString()); 
-        File settingsFile = new File(server.getWorldPath(new LevelResource("data/" + FILENAME)).toString());    
+        Path legacyPath = server.getWorldPath(new LevelResource("data/" + LEGACY_FILENAME));
+        Path settingsPath = server.getWorldPath(new LevelResource("data/" + FILENAME));
 
         GlobalSettings file = new GlobalSettings(server);  
 
-        if (legacyFile.exists()) {
+        if (legacyPath.toFile().exists()) {
             CreateRailwaysNavigator.LOGGER.warn("A legacy global settings file was found. Try to load it.");
-            file.deserializeNbtLegacy(NbtIo.readCompressed(legacyFile).getCompound("data"));
-            legacyFile.delete();
-        } else if (settingsFile.exists()) {
-            file.deserializeNbt(NbtIo.readCompressed(settingsFile));
+            file.deserializeNbtLegacy(NbtIo.readCompressed(legacyPath, NbtAccounter.unlimitedHeap()).getCompound("data"));
+            legacyPath.toFile().delete();
+        } else if (settingsPath.toFile().exists()) {
+            file.deserializeNbt(NbtIo.readCompressed(settingsPath, NbtAccounter.unlimitedHeap()));
         }
         return file;
     }

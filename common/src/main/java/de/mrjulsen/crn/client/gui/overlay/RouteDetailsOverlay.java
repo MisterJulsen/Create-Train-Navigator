@@ -46,6 +46,7 @@ import de.mrjulsen.mcdragonlib.util.time.TimeContext;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.animation.LerpedFloat.Chaser;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.Screen;
@@ -298,6 +299,8 @@ public class RouteDetailsOverlay extends DLWindow {
     //#endregion
 
     //#region RENDERING
+
+
     @Override
     public void renderMainLayer(DLGuiGraphics graphics, double mouseX, double mouseY, Rectangle renderBounds) {
         
@@ -308,7 +311,7 @@ public class RouteDetailsOverlay extends DLWindow {
         xPos.chase(x, 0.2f, Chaser.EXP);
         yPos.chase(y, 0.2f, Chaser.EXP);
 
-        setPosition(xPos.getValue(Minecraft.getInstance().getFrameTime()), yPos.getValue(Minecraft.getInstance().getFrameTime()));
+        setPosition(Minecraft.getInstance().getTimer().getGameTimeDeltaTicks(), yPos.getValue(Minecraft.getInstance().getTimer().getGameTimeDeltaTicks()));
 
         CreateDynamicWidgets.renderWindow(graphics, 0, 0, width(), height(), currentPage.isImportant() ? ContainerColor.GOLD : ContainerColor.BLUE, currentPage.isImportant() ? BarColor.GOLD : BarColor.GRAY, FooterSize.DEFAULT.size(), FooterSize.DEFAULT.size(), false);
         CreateDynamicWidgets.renderContainer(graphics, 1, FooterSize.DEFAULT.size() - 1, width() - 2, SCROLL_AREA_HEIGHT, ContainerColor.GRAY);

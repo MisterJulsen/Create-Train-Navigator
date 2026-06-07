@@ -175,14 +175,14 @@ public class TrainStatus {
         }
 
         public TrainStatus register(String name, TrainStatus statusPattern) {
-            ResourceLocation loc = new ResourceLocation(modid, name);
+            ResourceLocation loc = ResourceLocation.fromNamespaceAndPath(modid, name);
             statusPattern.setLocation(loc);
             registeredStatusInfos.put(loc, statusPattern);
             return statusPattern;
         }
 
         public TrainStatus registerDefault(String name, TrainStatus statusPattern) {
-            ResourceLocation loc = new ResourceLocation(modid, name);
+            ResourceLocation loc = ResourceLocation.fromNamespaceAndPath(modid, name);
             statusPattern.setLocation(loc);
             registeredStatusInfos.put(loc, statusPattern);
             return statusPattern;

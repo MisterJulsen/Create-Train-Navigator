@@ -51,7 +51,7 @@ public class Animator extends DLGuiComponent {
     @Override
     public void renderMainLayer(DLGuiGraphics graphics, double mouseX, double mouseY, Rectangle renderBounds) {
         if (running) {
-            float frameTime = Minecraft.getInstance().getDeltaFrameTime();
+            float frameTime = Minecraft.getInstance().getTimer().getGameTimeDeltaTicks();
             currentTicksSmooth += frameTime;
             DLUtils.doIfNotNull(onAnimateRender, x -> x.execute(graphics.poseStack(), getCurrentTicks(), getTotalTicks(), getPercentage()));
             if (currentTicks >= maxTicks) {

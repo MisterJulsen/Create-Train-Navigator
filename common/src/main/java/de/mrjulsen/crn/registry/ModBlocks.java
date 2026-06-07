@@ -17,6 +17,7 @@ import de.mrjulsen.crn.block.blockentity.AdvancedDisplayInteractionBehaviour;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayMovementBehaviour;
 import de.mrjulsen.crn.block.connected.AdvancedDisplayCTBehaviour;
 import de.mrjulsen.crn.block.connected.AdvancedDisplaySmallCTBehaviour;
+import de.mrjulsen.mcdragonlib.util.DLUtils;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
 import net.minecraft.client.renderer.RenderType;
@@ -26,6 +27,7 @@ import net.minecraft.world.level.block.Blocks;
 
 public class ModBlocks {	
 
+
 	public static final BlockEntry<AdvancedDisplayBlock> ADVANCED_DISPLAY_BLOCK = CreateRailwaysNavigator.REGISTRATE.block("advanced_display_block", AdvancedDisplayBlock::new)
 			.initialProperties(SharedProperties::softMetal)
 			.transform(TagGen.pickaxeOnly())
@@ -33,11 +35,10 @@ public class ModBlocks {
 			.transform(BuilderTransformer.copycatDisplay(
 					new AdvancedDisplayCTBehaviour(ClientWrapper.CT_ADVANCED_DISPLAY_ALL),
 					new AdvancedDisplayCTBehaviour(ClientWrapper.CT_ADVANCED_DISPLAY_ALL_BORDER),
-					new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "block/advanced_display_back")))
+					DLUtils.resourceLocation(CreateRailwaysNavigator.MOD_ID, "block/advanced_display_back")))
 			.onRegister(MovementBehaviour.movementBehaviour(new AdvancedDisplayMovementBehaviour()))
 			.onRegister(MovingInteractionBehaviour.interactionBehaviour(new AdvancedDisplayInteractionBehaviour()))
 			.item()
-			.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 			.build()
 			.register();
 	public static final BlockEntry<AdvancedDisplaySlabBlock> ADVANCED_DISPLAY_SLAB = CreateRailwaysNavigator.REGISTRATE.block("advanced_display_slab", AdvancedDisplaySlabBlock::new)
@@ -47,11 +48,10 @@ public class ModBlocks {
 			.transform(BuilderTransformer.copycatDisplay(
 					new AdvancedDisplaySmallCTBehaviour(ClientWrapper.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL),
 					new AdvancedDisplaySmallCTBehaviour(ClientWrapper.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL_BORDER),
-					new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "block/advanced_display_back")))
+					DLUtils.resourceLocation(CreateRailwaysNavigator.MOD_ID, "block/advanced_display_back")))
 			.onRegister(MovementBehaviour.movementBehaviour(new AdvancedDisplayMovementBehaviour()))
 			.onRegister(MovingInteractionBehaviour.interactionBehaviour(new AdvancedDisplayInteractionBehaviour()))
 			.item()
-			.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 			.build()
 			.register();
 
@@ -62,11 +62,10 @@ public class ModBlocks {
 			.transform(BuilderTransformer.copycatDisplay(
 					new AdvancedDisplayCTBehaviour(ClientWrapper.CT_ADVANCED_DISPLAY_ALL),
 					new AdvancedDisplayCTBehaviour(ClientWrapper.CT_ADVANCED_DISPLAY_ALL_BORDER),
-					new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "block/advanced_display_back")))
+					DLUtils.resourceLocation(CreateRailwaysNavigator.MOD_ID, "block/advanced_display_back")))
 			.onRegister(MovementBehaviour.movementBehaviour(new AdvancedDisplayMovementBehaviour()))
 			.onRegister(MovingInteractionBehaviour.interactionBehaviour(new AdvancedDisplayInteractionBehaviour()))
 			.item()
-			.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 			.build()
 			.register();
 
@@ -77,11 +76,10 @@ public class ModBlocks {
 			.transform(BuilderTransformer.copycatDisplay(
 					new AdvancedDisplaySmallCTBehaviour(ClientWrapper.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL),
 					new AdvancedDisplaySmallCTBehaviour(ClientWrapper.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL_BORDER),
-					new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "block/advanced_display_back")))
+					DLUtils.resourceLocation(CreateRailwaysNavigator.MOD_ID, "block/advanced_display_back")))
 			.onRegister(MovementBehaviour.movementBehaviour(new AdvancedDisplayMovementBehaviour()))
 			.onRegister(MovingInteractionBehaviour.interactionBehaviour(new AdvancedDisplayInteractionBehaviour()))
 			.item()
-			.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 			.build()
 			.register();
 
@@ -92,11 +90,10 @@ public class ModBlocks {
 			.transform(BuilderTransformer.copycatDisplay(
 					new AdvancedDisplayCTBehaviour(ClientWrapper.CT_ADVANCED_DISPLAY_ALL),
 					new AdvancedDisplayCTBehaviour(ClientWrapper.CT_ADVANCED_DISPLAY_ALL_BORDER),
-					new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "block/advanced_display_back")))
+					DLUtils.resourceLocation(CreateRailwaysNavigator.MOD_ID, "block/advanced_display_back")))
 			.onRegister(MovementBehaviour.movementBehaviour(new AdvancedDisplayMovementBehaviour()))
 			.onRegister(MovingInteractionBehaviour.interactionBehaviour(new AdvancedDisplayInteractionBehaviour()))
 			.item()
-			.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 			.build()
 			.register();
 
@@ -107,11 +104,10 @@ public class ModBlocks {
 			.transform(BuilderTransformer.copycatDisplay(
 					new AdvancedDisplaySmallCTBehaviour(ClientWrapper.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL),
 					new AdvancedDisplaySmallCTBehaviour(ClientWrapper.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL_BORDER),
-					new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "block/advanced_display_back")))
+					DLUtils.resourceLocation(CreateRailwaysNavigator.MOD_ID, "block/advanced_display_back")))
 			.onRegister(MovementBehaviour.movementBehaviour(new AdvancedDisplayMovementBehaviour()))
 			.onRegister(MovingInteractionBehaviour.interactionBehaviour(new AdvancedDisplayInteractionBehaviour()))
 			.item()
-			.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 			.build()
 			.register();
 
@@ -126,7 +122,6 @@ public class ModBlocks {
 			.onRegister(MovementBehaviour.movementBehaviour(new AdvancedDisplayMovementBehaviour()))
 			.onRegister(MovingInteractionBehaviour.interactionBehaviour(new AdvancedDisplayInteractionBehaviour()))
 			.item()
-			.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 			.build()
 			.register();
 	
@@ -135,7 +130,6 @@ public class ModBlocks {
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
 		.item()
-		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
 		.register();
 

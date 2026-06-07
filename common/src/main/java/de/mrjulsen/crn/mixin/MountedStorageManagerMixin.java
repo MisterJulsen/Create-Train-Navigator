@@ -13,8 +13,8 @@ import com.simibubi.create.content.contraptions.MountedStorageManager;
 import com.simibubi.create.content.contraptions.elevator.ElevatorContraption;
 import com.simibubi.create.content.trains.entity.CarriageContraption;
 
-import de.mrjulsen.crn.CRNPlatformSpecific;
 import de.mrjulsen.crn.block.blockentity.IContraptionBlockEntity;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate.StructureBlockInfo;
 
@@ -27,7 +27,7 @@ public class MountedStorageManagerMixin {
             Set<BlockEntity> beList = new LinkedHashSet<>();
 
             for (StructureBlockInfo info : entity.getContraption().getBlocks().values()) {
-                BlockEntity be = CRNPlatformSpecific.getClientContraptionBlockEntity(entity.getContraption(), info.pos());
+                BlockEntity be = entity.getContraption().getBlockEntityClientSide(info.pos());
                 if (be != null) {
                     beList.add(be);
                 }

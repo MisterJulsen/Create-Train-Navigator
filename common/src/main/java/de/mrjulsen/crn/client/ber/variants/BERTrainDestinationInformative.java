@@ -16,6 +16,7 @@ import de.mrjulsen.mcdragonlib.client.gui.widgets.richtext.PaddingF;
 import de.mrjulsen.mcdragonlib.client.util.RenderUtils;
 import de.mrjulsen.mcdragonlib.data.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.DLColor;
+import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.Pair;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.math.Point;
@@ -31,8 +32,8 @@ import net.minecraft.world.level.block.state.BlockState;
 public class BERTrainDestinationInformative implements AbstractAdvancedDisplayRenderer<TrainDestinationDetailedSettings> {
 
     private final Component TEXT_DO_NOT_BOARD = CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.do_not_board");
-    private static final ResourceLocation CARRIAGE_ICON = new ResourceLocation("create:textures/gui/assemble.png");
-    private static final ResourceLocation ICONS = new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/icons.png");  
+    private static final ResourceLocation CARRIAGE_ICON = DLUtils.resourceLocation("create:textures/gui/assemble.png");
+    private static final ResourceLocation ICONS = DLUtils.resourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/icons.png");  
 
 
     private final BERLabel carriageIndexLabel = new BERLabel();

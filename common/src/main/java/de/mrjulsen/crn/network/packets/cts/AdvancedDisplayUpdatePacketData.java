@@ -26,6 +26,7 @@ import de.mrjulsen.mcdragonlib.util.NbtUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -180,11 +181,11 @@ public class AdvancedDisplayUpdatePacketData extends NetworkPacketData {
             contraption.resetClientContraption();
         }
 
-        if (CRNPlatformSpecific.getClientContraptionBlockEntity(contraption, pos) instanceof AdvancedDisplayBlockEntity be) {
+        if (contraption.getBlockEntityClientSide(pos) instanceof AdvancedDisplayBlockEntity be) {
             be.setDisplayType(level, packet.key, packet.settings);
             be.setBlockState(contraption.getBlocks().get(pos).state());
         }
-
+        
         for (int i = 0; i < width && i < AdvancedDisplayBlockEntity.MAX_XSIZE; i++) {
             BlockPos newPos = pos.relative(side, i);
             for (int j = 0; j < height && j < AdvancedDisplayBlockEntity.MAX_YSIZE; j++) {
@@ -209,7 +210,7 @@ public class AdvancedDisplayUpdatePacketData extends NetworkPacketData {
                 BlockPos immutablePos = new BlockPos(newPos2.getX(), newPos2.getY(), newPos2.getZ());
                 updateTags.put(immutablePos, info.nbt().copy());
 
-                if (CRNPlatformSpecific.getClientContraptionBlockEntity(contraption, newPos2) instanceof AdvancedDisplayBlockEntity be) {
+                if (contraption.getBlockEntityClientSide(newPos2) instanceof AdvancedDisplayBlockEntity be) {
                     be.setDisplayType(level, packet.key, packet.settings);
                     be.setBlockState(contraption.getBlocks().get(newPos2).state());
                 }
@@ -230,7 +231,7 @@ public class AdvancedDisplayUpdatePacketData extends NetworkPacketData {
                     be.getRenderer().update(level, a.getLeft().pos(), be.getBlockState(), be, EUpdateReason.LAYOUT_CHANGED);
                 }
                 if (updateTags.containsKey(a.getLeft().pos()))
-                    be.writeClient(updateTags.get(a.getLeft().pos()));
+                    be.writeClient(updateTags.get(a.getLeft().pos()), RegistryAccess.EMPTY);
             }
         }
     }

@@ -50,8 +50,8 @@ import net.minecraft.world.level.block.state.BlockState;
 public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRenderer<PassengerInformationDetailedSettings> {
 
     private final MutableComponent textTrainTerminates = CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.train_terminates");
-    private static final ResourceLocation CARRIAGE_ICON = new ResourceLocation("create:textures/gui/assemble.png");  
-    private static final ResourceLocation ICONS = new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/icons.png");  
+    private static final ResourceLocation CARRIAGE_ICON = DLUtils.resourceLocation("create:textures/gui/assemble.png");  
+    private static final ResourceLocation ICONS = DLUtils.resourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/icons.png");  
     private static final String keyDate = "gui.createrailwaysnavigator.route_overview.date";
     private static final String keyNextStop = "gui.createrailwaysnavigator.route_overview.next_stop";
     private static final String keyNextConnections = "gui.createrailwaysnavigator.route_overview.next_connections";

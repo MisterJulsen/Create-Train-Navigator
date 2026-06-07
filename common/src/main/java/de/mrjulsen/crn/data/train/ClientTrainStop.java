@@ -136,7 +136,7 @@ public class ClientTrainStop extends TrainStop implements ITrainListenerClient<C
             nbt.getInt(NBT_SECTION_INDEX),
             nbt.getUUID(NBT_TRAIN_ID), 
             nbt.getString(NBT_TRAIN_NAME), 
-            TrainIconType.byId(new ResourceLocation(nbt.getString(NBT_TRAIN_ICON))), 
+            TrainIconType.byId(ResourceLocation.parse(nbt.getString(NBT_TRAIN_ICON))),
             TrainInfo.fromNbt(nbt.getCompound(NBT_TRAIN_INFO)),
             nbt.getString(NBT_SCHEDULE_TITLE), 
             nbt.getBoolean(NBT_IS_CUSTOM_TITLE), 

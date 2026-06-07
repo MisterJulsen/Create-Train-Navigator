@@ -31,6 +31,7 @@ import de.mrjulsen.mcdragonlib.client.render.DLTextureSheet;
 import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
 import de.mrjulsen.mcdragonlib.client.util.DLSprite;
 import de.mrjulsen.mcdragonlib.network.NetworkDirection;
+import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.math.Rectangle;
 import net.minecraft.client.Minecraft;
@@ -38,7 +39,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class NavigatorWindow extends AbstractNavigatorScreen {
 
-    private static final DLTextureSheet GUI_SHEET = new DLTextureSheet(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/gui.png"));
+    private static final DLTextureSheet GUI_SHEET = new DLTextureSheet(DLUtils.resourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/gui.png"));
     
     private UserSettings userSettings = new UserSettings(Minecraft.getInstance().player.getUUID(), false);
 

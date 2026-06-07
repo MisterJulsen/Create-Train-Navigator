@@ -5,6 +5,7 @@ import de.mrjulsen.mcdragonlib.util.TextUtils;
 import dev.architectury.platform.Platform;
 import dev.architectury.utils.Env;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.util.StringRepresentable;
 
 public enum CustomLanguage implements StringRepresentable {
@@ -57,7 +58,7 @@ public enum CustomLanguage implements StringRepresentable {
 
     public static MutableComponent translate(String key) {
         if (Platform.getEnvironment() == Env.CLIENT) {
-            MutableComponent comp = MutableComponent.create(new ModTranslatableComponent(key));
+            MutableComponent comp = MutableComponent.create(new ModTranslatableComponent(key, key, TranslatableContents.NO_ARGS));
             if (comp.getString().equals(key)) {
                 return TextUtils.translate(key);
             }
@@ -69,7 +70,7 @@ public enum CustomLanguage implements StringRepresentable {
 
     public static MutableComponent translate(String key, Object... args) {
         if (Platform.getEnvironment() == Env.CLIENT) {
-            MutableComponent comp = MutableComponent.create(new ModTranslatableComponent(key, args));
+            MutableComponent comp = MutableComponent.create(new ModTranslatableComponent(key, key, args));
             if (comp.getString().equals(key)) {
                 return TextUtils.translate(key, args);
             }

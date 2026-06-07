@@ -3,6 +3,7 @@ package de.mrjulsen.crn.event;
 import java.util.Optional;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.api.web.StationStopWebApi;
 import de.mrjulsen.crn.block.display.AdvancedDisplayTarget;
 import de.mrjulsen.crn.cmd.DebugCommand;
 import de.mrjulsen.crn.config.ModCommonConfig;
@@ -55,11 +56,13 @@ public class ModCommonEvents {
 
             TrainListener.start();
             AdvancedDisplayTarget.start();
+            StationStopWebApi.start();
         });
 
         LifecycleEvent.SERVER_STOPPING.register((server) -> {
             GlobalSettings.clearInstance();
             
+            StationStopWebApi.stop();
             TrainListener.stop();
             AdvancedDisplayTarget.stop();
             CRNEventsManager.clearEvents();
@@ -85,6 +88,8 @@ public class ModCommonEvents {
                 }
                 lastTicks = currentTicks;
             }
+
+            StationStopWebApi.tick();
         });
 
         CommandRegistrationEvent.EVENT.register((dispatcher, context, selection) -> {

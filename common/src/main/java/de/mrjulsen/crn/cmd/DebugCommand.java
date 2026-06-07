@@ -8,6 +8,7 @@ import de.mrjulsen.crn.data.train.DepartureHistory;
 import de.mrjulsen.crn.data.train.TrainListener;
 import de.mrjulsen.crn.debug.DebugOverlay;
 import de.mrjulsen.crn.network.packets.pain.ShowTrainDebugScreenPacketData;
+import de.mrjulsen.crn.network.packets.pain.ShowWebApiScreenPacketData;
 import de.mrjulsen.crn.registry.ModNetworkManager;
 import de.mrjulsen.mcdragonlib.network.NetworkDirection;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
@@ -31,11 +32,16 @@ public class DebugCommand {
     private static final String SUB_TRAIN_DEBUG_OVERLAY = "trainDebugOverlay";
     private static final String SUB_TRAIN_OVERVIEW = "trainOverview";
     private static final String SUB_CLEAR_DEPARTURE_HISTORY = "clearDepartureHistory";
+    private static final String SUB_API = "api";
     
     @SuppressWarnings("all")
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandSelection selection) {        
         
         LiteralArgumentBuilder<CommandSourceStack> builder = Commands.literal(CMD_NAME)
+            .then(Commands.literal(SUB_API)
+                .requires(x -> x.hasPermission(2))
+                .executes(x -> showApiInfo(x.getSource()))
+            )
             .then(Commands.literal(SUB_DEBUG)
                 .requires(x -> x.hasPermission(3))
                 .then(Commands.literal(SUB_HARD_RESET)
@@ -109,6 +115,15 @@ public class DebugCommand {
     private static int clearDepartureHistory(CommandSourceStack cmd) throws CommandSyntaxException {
         cmd.sendSuccess(() -> TextUtils.text("The departure history has been deleted."), false);
         DepartureHistory.clear();
+        return 1;
+    }
+
+    private static int showApiInfo(CommandSourceStack cmd) throws CommandSyntaxException {
+        cmd.sendSuccess(() -> TextUtils.empty(), false);
+        ModNetworkManager.SHOW_WEB_API_SCREEN.send(
+            NetworkDirection.toPlayer(cmd.getPlayerOrException()),
+            ShowWebApiScreenPacketData.fromServer()
+        );
         return 1;
     }
 }

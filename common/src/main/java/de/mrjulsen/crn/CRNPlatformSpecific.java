@@ -1,14 +1,12 @@
 package de.mrjulsen.crn;
 
 import dev.architectury.injectables.annotations.ExpectPlatform;
-import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.block.entity.BlockEntity;
+
 import java.nio.file.Path;
 
-import com.simibubi.create.content.contraptions.Contraption;
 import com.simibubi.create.content.trains.station.GlobalStation;
-
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -41,11 +39,6 @@ public abstract class CRNPlatformSpecific {
 
     @ExpectPlatform
     public static Map<UUID, String> getAllKnownPlayers() {
-        throw new AssertionError();
-    }    
-
-    @ExpectPlatform
-    public static BlockEntity getClientContraptionBlockEntity(Contraption contraption, BlockPos localPos) {
         throw new AssertionError();
     }
 }

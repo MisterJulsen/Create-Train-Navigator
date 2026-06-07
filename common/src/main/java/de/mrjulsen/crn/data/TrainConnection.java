@@ -31,7 +31,7 @@ public record TrainConnection(String trainName, UUID trainId, ResourceLocation t
         return new TrainConnection(
             nbt.getString(NBT_TRAIN_NAME),
             nbt.getUUID(NBT_TRAIN_ID),
-            new ResourceLocation(nbt.getString(NBT_TRAIN_ICON)),
+            ResourceLocation.parse(nbt.getString(NBT_TRAIN_ICON)),
             nbt.getInt(NBT_TICKS),
             nbt.getString(NBT_SCHEDULE_TITLE),
             StationInfo.fromNbt(nbt)

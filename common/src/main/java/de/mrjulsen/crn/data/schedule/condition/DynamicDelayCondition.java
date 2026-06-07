@@ -87,7 +87,7 @@ public class DynamicDelayCondition extends ScheduledDelay implements IPredictabl
 
 	@Override
 	public ResourceLocation getId() {
-		return new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "dynamic_delay");
+		return ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "dynamic_delay");
 	}
     
 	public int getMinValue() {

@@ -245,7 +245,6 @@ public class BERDepartureBoardTable implements AbstractAdvancedDisplayRenderer<D
             shouldShowLine.setTrue();
             return getStatusInfo(blockEntity, x, false).stream();
         }).toArray(Component[]::new));
-
         this.showInfoLine = shouldShowLine.isTrue();
         if (!showInfoLine) {
             infoLineText = TextUtils.empty();

@@ -17,6 +17,7 @@
     "GlobalRailwayManagerMixin",
     "GlobalTrainDisplayDataMixin",
     "ItemMixin",
+    "LecternBlockMixin",
     "MountedStorageManagerMixin",
     "NavigationMixin",
     "ScheduleEntryMixin",

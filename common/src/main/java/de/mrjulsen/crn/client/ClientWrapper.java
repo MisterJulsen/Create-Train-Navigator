@@ -3,6 +3,7 @@ package de.mrjulsen.crn.client;
 import java.util.List;
 import com.simibubi.create.foundation.utility.CreateLang;
 import de.mrjulsen.crn.client.gui.windows.*;
+import de.mrjulsen.mcdragonlib.client.ber.StaticBlockEntityRenderer;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLScreen;
 import net.createmod.catnip.data.Pair;
 import net.minecraft.core.SectionPos;
@@ -33,6 +34,8 @@ import de.mrjulsen.crn.item.NavigatorItem;
 import de.mrjulsen.crn.mixin.ModularGuiLineBuilderAccessor;
 import de.mrjulsen.crn.mixin.ScheduleScreenAccessor;
 import de.mrjulsen.crn.network.packets.stc.ServerErrorPacketData;
+import de.mrjulsen.crn.network.packets.pain.ShowWebApiScreenPacketData;
+import de.mrjulsen.crn.registry.ModDataComponents;
 import de.mrjulsen.crn.util.Owner;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLWindow;
 import de.mrjulsen.mcdragonlib.client.util.DLGraphics;
@@ -41,6 +44,7 @@ import de.mrjulsen.mcdragonlib.client.util.RenderUtils;
 import de.mrjulsen.mcdragonlib.data.ETextAlignment;
 import de.mrjulsen.mcdragonlib.network.NetworkPacketContext;
 import de.mrjulsen.mcdragonlib.util.DLColor;
+import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.time.DLTime;
 import de.mrjulsen.mcdragonlib.util.time.TimeContext;
@@ -48,9 +52,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.components.toasts.SystemToast;
-import net.minecraft.client.gui.components.toasts.SystemToast.SystemToastIds;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.resources.language.ClientLanguage;
 import net.minecraft.client.resources.language.LanguageInfo;
 import net.minecraft.client.resources.model.BakedModel;
@@ -63,10 +67,11 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 
 public class ClientWrapper {
     
-    public static final ModelResourceLocation NAVIGATOR_WORLD_MODEL = new ModelResourceLocation(CreateRailwaysNavigator.MOD_ID, "navigator_world", "inventory");
+    public static final ModelResourceLocation NAVIGATOR_WORLD_MODEL = ModelResourceLocation.inventory(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "navigator_world"));
     
     private static CustomLanguage currentLanguage;
     private static Language currentClientLanguage;
@@ -87,7 +92,7 @@ public class ClientWrapper {
     }
 
     public static void handleErrorMessagePacket(ServerErrorPacketData packet, NetworkPacketContext ctx) {        
-        Minecraft.getInstance().getToasts().addToast(new SystemToast(SystemToastIds.PERIODIC_NOTIFICATION, Constants.TEXT_SERVER_ERROR, TextUtils.text(packet.message)));   
+        Minecraft.getInstance().getToasts().addToast(new SystemToast(SystemToast.SystemToastId.PERIODIC_NOTIFICATION, Constants.TEXT_SERVER_ERROR, TextUtils.text(packet.message)));
     }
     
     public static void showAdvancedDisplaySettingsScreen(AdvancedDisplayBlockEntity blockEntity, AbstractContraptionEntity contraption) {
@@ -138,6 +143,12 @@ public class ClientWrapper {
     public static void showTrainDebugScreen() {
         RenderSystem.recordRenderCall(() -> {
             DLWindow.openWindow(TrainStatsWindow::new);
+        });
+    }
+
+    public static void showWebApiScreen(ShowWebApiScreenPacketData data) {
+        RenderSystem.recordRenderCall(() -> {
+            DLWindow.openWindow(mgr -> new WebApiInfoWindow(mgr, data));
         });
     }
 
@@ -258,15 +269,17 @@ public class ClientWrapper {
         if (context != ItemDisplayContext.FIRST_PERSON_LEFT_HAND && context != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND && context != ItemDisplayContext.FIXED) {
             return;
         }
-        
 
-        int backgroundId = itemStack.getOrCreateTag().getInt(NavigatorItem.NBT_BACKGROUND_ID);
+        int backgroundId = 0;
+        if (itemStack.has(ModDataComponents.NAVIGATOR_BACKGROUND_COMPONENT)) {
+            backgroundId = itemStack.get(ModDataComponents.NAVIGATOR_BACKGROUND_COMPONENT).backgroundId();
+        }
         DLTime time = new DLTime(Minecraft.getInstance().level, DLTime.defaultTimeSystem());
 
         Font font = Minecraft.getInstance().font;
         poseStack.mulPose(Axis.XP.rotationDegrees(90F));
         poseStack.translate(4, 2, -1.26f);
-        RenderUtils.renderTexture(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, String.format("textures/item/navigator_backgrounds/%s.png", backgroundId)), graphics, new Vector3f(0), 8, 12, 0, 0, 1F / 12F * 8, 1F, Direction.UP, DLColor.WHITE, LightTexture.FULL_BRIGHT, false);
+        RenderUtils.renderTexture(DLUtils.resourceLocation(CreateRailwaysNavigator.MOD_ID, String.format("textures/item/navigator_backgrounds/%s.png", backgroundId)), graphics, new Vector3f(0), 8, 12, 0, 0, 1F / 12F * 8, 1F, Direction.UP, DLColor.WHITE, LightTexture.FULL_BRIGHT, false);
         
         poseStack.translate(0, 0, -0.01f);
         poseStack.pushPose();
@@ -288,5 +301,17 @@ public class ClientWrapper {
 
     public static Player getClientPlayer() {
         return Minecraft.getInstance().player;
+    }
+
+    public static StaticBlockEntityRenderer<AdvancedDisplayBlockEntity> createAdvancedDisplayBlockEntityRenderer(BlockEntityRendererProvider.Context context) {
+        return new StaticBlockEntityRenderer<>(context) {
+			public boolean shouldRenderOffScreen(AdvancedDisplayBlockEntity blockEntity) {
+				return blockEntity.isController();
+			}
+			public AABB getRenderBoundingBox(AdvancedDisplayBlockEntity blockEntity) {
+				return blockEntity.getRenderBoundingBox();
+			}
+
+		};
     }
 }

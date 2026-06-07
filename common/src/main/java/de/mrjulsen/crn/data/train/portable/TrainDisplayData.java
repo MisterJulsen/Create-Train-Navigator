@@ -303,7 +303,7 @@ public class TrainDisplayData {
 
     }
 
-    public Optional<TrainStopDisplayData> getCurrentStop() {
+public Optional<TrainStopDisplayData> getCurrentStop() {
         int idx = getCurrentStopIndex();
         if (!isWaitingAtStation()) {
             idx -= 1;

@@ -47,7 +47,7 @@ import net.minecraft.world.level.Level;
 public abstract class NavigationMixin implements INavigationExtension {
 
     public Queue<Pair<IDelayedWaitCondition, DelayedWaitConditionContext>> delayedWaitConditions = new ConcurrentLinkedQueue<>();
-    
+
     public PenaltyResult currentReasons;
     public boolean forward;
     public Map<Boolean, PenaltyResult> finalReasonByDirection;
@@ -58,6 +58,7 @@ public abstract class NavigationMixin implements INavigationExtension {
     public Train train;
 
 
+    @Shadow public abstract double startNavigation(DiscoveredPath pathTo);
 
     @Override
     public void addDelayedWaitCondition(Pair<IDelayedWaitCondition, DelayedWaitConditionContext> pair) {
@@ -68,7 +69,7 @@ public abstract class NavigationMixin implements INavigationExtension {
     public boolean isDelayedWaitConditionPending() {
         return !delayedWaitConditions.isEmpty();
     }
-    
+
     @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lcom/simibubi/create/content/trains/entity/Train;leaveStation()V", shift = Shift.BEFORE), remap = false, cancellable = true)
     public void onTick(Level level, CallbackInfo ci) {
         if (!delayedWaitConditions.isEmpty()) {
@@ -78,7 +79,7 @@ public abstract class NavigationMixin implements INavigationExtension {
             }
             if (p.getFirst().runDelayed(p.getSecond())) {
                 delayedWaitConditions.poll().getSecond().nbt().remove(IDelayedWaitCondition.NBT_DELAY);
-            } else {                
+            } else {
                 p.getSecond().nbt().putInt(IDelayedWaitCondition.NBT_DELAY, p.getSecond().nbt().getInt(IDelayedWaitCondition.NBT_DELAY) + 1);
             }
             ci.cancel();
@@ -89,7 +90,7 @@ public abstract class NavigationMixin implements INavigationExtension {
     public void resetOnCancel(CallbackInfo ci) {
         delayedWaitConditions.clear();
     }
-    
+
     private boolean shouldCheckPenalties = false;
     private boolean isForwardSelected = false;
 
@@ -110,7 +111,11 @@ public abstract class NavigationMixin implements INavigationExtension {
         if ((train.runtime.currentEntry < 0 || train.runtime.currentEntry > train.runtime.getSchedule().entries.size()) || !(this.shouldCheckPenalties = train.runtime.getSchedule().entries.get(train.runtime.currentEntry).instruction instanceof PrioritizedDestinationInstruction)) {
             return;
         }
-        
+
+        if ((train.runtime.currentEntry < 0 || train.runtime.currentEntry > train.runtime.getSchedule().entries.size()) || !(this.shouldCheckPenalties = train.runtime.getSchedule().entries.get(train.runtime.currentEntry).instruction instanceof PrioritizedDestinationInstruction)) {
+            return;
+        }
+
         if (this.finalReasonByDirection == null) {
             this.finalReasonByDirection = new IdentityHashMap<>(2);
         } else {
@@ -120,7 +125,7 @@ public abstract class NavigationMixin implements INavigationExtension {
         this.finalReasonByDirection.put(false, new PenaltyResult());
         this.currentReasons = null;
     }
-        
+
     @Inject(method = "findPathTo", remap = false, at = @At(value = "TAIL"))
     public void onEndNavigation(@Coerce Object a, double maxCost, CallbackInfoReturnable<?> cir) {
         this.shouldCheckPenalties = false;
@@ -138,7 +143,7 @@ public abstract class NavigationMixin implements INavigationExtension {
     public boolean onTestStation(StationTest test, double distance, double cost, Map<TrackEdge, net.createmod.catnip.data.Pair<Boolean, Couple<TrackNode>>> reachedVia, net.createmod.catnip.data.Pair<Couple<TrackNode>, TrackEdge> current, GlobalStation station) {
         boolean b = test.test(distance, cost, reachedVia, current, station);        
         if (this.shouldCheckPenalties && b) {
-            this.finalReasonByDirection.put(forward, new PenaltyResult(currentReasons));            
+            this.finalReasonByDirection.put(forward, new PenaltyResult(currentReasons));
         }
         return b;
     }
@@ -147,7 +152,7 @@ public abstract class NavigationMixin implements INavigationExtension {
     public boolean onReadFrontierEntry(PriorityQueue<Object> queue, @Coerce Object obj) {
         IFrontierEntry entry = (IFrontierEntry)obj;
         if (this.shouldCheckPenalties) {
-            entry.setPenaltyReasons(new PenaltyResult(currentReasons));            
+            entry.setPenaltyReasons(new PenaltyResult(currentReasons));
         }
         return queue.add(obj);
     }
@@ -156,7 +161,7 @@ public abstract class NavigationMixin implements INavigationExtension {
     public int onCreateFrontierEntry(@Coerce Object obj) {
         IFrontierEntry entry = (IFrontierEntry)obj;        
         if (this.shouldCheckPenalties) {
-            this.currentReasons = new PenaltyResult(entry.getPenaltyReasons());            
+            this.currentReasons = new PenaltyResult(entry.getPenaltyReasons());
         }
         return entry.getPenalty();
     }
@@ -165,7 +170,7 @@ public abstract class NavigationMixin implements INavigationExtension {
     public boolean onForceRed(SignalBoundary signal, TrackNode node) {
         boolean b = signal.isForcedRed(node);        
         if (this.shouldCheckPenalties && b) {
-            this.currentReasons.add(PenaltyResult.Type.REDSTONE_RED_SIGNAL);            
+            this.currentReasons.add(PenaltyResult.Type.REDSTONE_RED_SIGNAL);
         }
         return b;
     }
