@@ -73,6 +73,7 @@ public final class ModNetworkManager {
 
 
     public static final NetworkPacketType.Send<NetworkDirection.S2C, ShowTrainDebugScreenPacketData> SHOW_TRAIN_DEBUG_SCREEN = NETWORK.registerSendOnlyPacket("show_train_debug_screen", NetworkDirection.S2C, ShowTrainDebugScreenPacketData::handle, ShowTrainDebugScreenPacketData::new);
+    public static final NetworkPacketType.Send<NetworkDirection.S2C, ShowWebApiScreenPacketData> SHOW_WEB_API_SCREEN = NETWORK.registerSendOnlyPacket("show_web_api_screen", NetworkDirection.S2C, ShowWebApiScreenPacketData::handle, ShowWebApiScreenPacketData::new);
     public static final NetworkPacketType.Send<NetworkDirection.S2C, ServerErrorPacketData> SERVER_ERROR = NETWORK.registerSendOnlyPacket("server_error", NetworkDirection.S2C, ServerErrorPacketData::handle, ServerErrorPacketData::new);
 
 

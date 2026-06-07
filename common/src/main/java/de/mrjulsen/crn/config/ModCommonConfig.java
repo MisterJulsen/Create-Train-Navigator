@@ -25,6 +25,11 @@ public class ModCommonConfig {
 
     public static final ForgeConfigSpec.ConfigValue<Boolean> EXPERIMENT_SIMULATION_ALGORITHM;
 
+    public static final ForgeConfigSpec.ConfigValue<Boolean> WEB_API_ENABLED;
+    public static final ForgeConfigSpec.ConfigValue<Integer> WEB_API_PORT;
+    public static final ForgeConfigSpec.ConfigValue<String> WEB_API_BIND_ADDRESS;
+    public static final ForgeConfigSpec.ConfigValue<Integer> WEB_API_MAX_EVENTS;
+
     static {
         BUILDER.push(CreateRailwaysNavigator.MOD_ID + "_common_config");
 
@@ -70,6 +75,17 @@ public class ModCommonConfig {
 
         AUTO_UPDATE_DISPLAY_TYPE = BUILDER.comment("Automatically changes the display type when a display link is connected, depending on what should be displayed. (Default: ON)")
                 .define("advanced_display.auto_change_display_type", true);
+
+        BUILDER.push("web_api");
+        WEB_API_ENABLED = BUILDER.comment("Expose a JSON HTTP API that updates when trains arrive at or leave stations. Bind address defaults to localhost for safety. (Default: OFF)")
+            .define("enabled", false);
+        WEB_API_PORT = BUILDER.comment("TCP port for the station-stops web API. (Default: 8765)")
+            .defineInRange("port", 8765, 1024, 65535);
+        WEB_API_BIND_ADDRESS = BUILDER.comment("Address to bind the web API to. Use 0.0.0.0 only if you trust your network. (Default: 127.0.0.1)")
+            .define("bind_address", "127.0.0.1");
+        WEB_API_MAX_EVENTS = BUILDER.comment("Maximum number of recent arrival/departure events kept in memory for polling and SSE replay. (Default: 256)")
+            .defineInRange("max_events", 256, 32, 4096);
+        BUILDER.pop();
 
         BUILDER.pop();
         SPEC = BUILDER.build();
