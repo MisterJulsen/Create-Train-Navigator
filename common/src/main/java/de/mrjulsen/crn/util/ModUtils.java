@@ -63,13 +63,12 @@ public class ModUtils {
         }
 
         Collections.sort(values);
-        int median = 0;
+        int median;
         if (values.size() % 2 == 0) {
-            median = (int)(((double)values.get(values.size() / 2) + (double)values.get(values.size() / 2 + 1)) / 2D);
-        } else if (values.size() == 1) {
-            median = (int)(((double)values.get(0) * 2) / 2D);
+            median = (int)((values.get(values.size() / 2 - 1) + values.get(values.size() / 2)) / 2D);
+        } else {
+            median = values.get(values.size() / 2);
         }
-        median = values.get(values.size() / 2);
 
         final int med = median;
         return (int)history.stream().mapToInt(x -> x).filter(x -> Math.abs(med - x) <= smoothingThreshold).average().orElse(0);
