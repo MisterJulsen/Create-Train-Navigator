@@ -82,6 +82,8 @@ public class DebugCommand {
                 .then(Commands.literal(SUB_BACKEND_DATA_DUMP)
                     .executes(x -> toggleBackendDataDump(x.getSource()))
                 )
+                .then(NavigatorDebugCommand.navigate())
+                .then(NavigatorDebugCommand.index())
             )
             .then(Commands.literal(SUB_DISCORD)
                 .executes(x -> discord(x.getSource()))

@@ -5,7 +5,7 @@ import java.util.UUID;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.data.TagName;
 import de.mrjulsen.crn.data.navigation.ClientRoute;
-import de.mrjulsen.crn.data.navigation.NavigableGraph;
+import de.mrjulsen.crn.data.navigation.NavigatorRoutes;
 import de.mrjulsen.crn.data.navigation.Route;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
 import de.mrjulsen.mcdragonlib.data.DLStatus;
@@ -89,7 +89,7 @@ public class NavigatePacketData {
     public static Response handle(Request packet, NetworkPacketContext context) {
         try {
             GlobalSettings settings = GlobalSettings.getInstance();
-            List<Route> routes = NavigableGraph.searchRoutes(
+            List<Route> routes = NavigatorRoutes.search(
                 settings.getTagByName(TagName.of(packet.start)).orElse(settings.getOrCreateStationTagFor(packet.start)),
                 settings.getTagByName(TagName.of(packet.end)).orElse(settings.getOrCreateStationTagFor(packet.end)),
                 packet.playerId,

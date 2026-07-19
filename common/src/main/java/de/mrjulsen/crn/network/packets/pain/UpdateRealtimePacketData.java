@@ -1,19 +1,29 @@
 package de.mrjulsen.crn.network.packets.pain;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
+import de.mrjulsen.crn.backend.api.JourneySnapshot;
+import de.mrjulsen.crn.backend.api.RailwayBackendApi;
+import de.mrjulsen.crn.backend.api.StopSnapshot;
+import de.mrjulsen.crn.backend.api.TrainSnapshot;
+import de.mrjulsen.crn.backend.delay.DelayInstance;
+import de.mrjulsen.crn.data.StationTag;
 import de.mrjulsen.crn.data.navigation.ClientRoutePart.TrainRealTimeData;
+import de.mrjulsen.crn.data.storage.GlobalSettings;
 import de.mrjulsen.crn.data.train.ClientTrainStop.TrainStopRealTimeData;
-import de.mrjulsen.crn.data.train.TrainListener;
-import de.mrjulsen.crn.data.train.TrainPrediction;
+import de.mrjulsen.crn.data.train.TrainStatus;
+import de.mrjulsen.crn.registry.ModDelayCauses;
 import de.mrjulsen.mcdragonlib.data.DLStatus;
 import de.mrjulsen.mcdragonlib.network.NetworkPacketContext;
 import de.mrjulsen.mcdragonlib.network.NetworkPacketData;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 
 public class UpdateRealtimePacketData {
 
@@ -71,24 +81,43 @@ public class UpdateRealtimePacketData {
     }
 
     public static Response handle(Request packet, NetworkPacketContext context) {
-        return new Response(Optional.ofNullable(TrainListener.getTrainData(packet.id).map(data -> {
-            List<TrainPrediction> predictions = data.getPredictions();
+        return new Response(RailwayBackendApi.getTrain(packet.id).map(train -> {
+            long now = RailwayBackendApi.currentTime();
             Map<Integer, TrainStopRealTimeData> values = new HashMap<>();
-            for (TrainPrediction prediction : predictions) {
+
+            for (StopSnapshot stop : RailwayBackendApi.getJourney(packet.id).map(JourneySnapshot::stops).orElse(List.of())) {
+                StationTag tag = GlobalSettings.getInstance().getOrCreateStationTagFor(stop.stationName());
                 TrainStopRealTimeData realTimeData = new TrainStopRealTimeData(
-                    prediction.getStationTag().getClientTag(prediction.getTargetedStationName()),
-                    prediction.getEntryIndex(),
-                    prediction.scheduled().arrivalTime(),
-                    prediction.scheduled().departureTime(),
-                    prediction.realTime().arrivalTime(),
-                    prediction.realTime().departureTime(),
-                    (int)prediction.realTime().arrivalIn(),
-                    prediction.getCurrentCycle()
+                    tag.getClientTag(stop.stationName()),
+                    stop.entryIndex(),
+                    stop.scheduled().arrival(),
+                    stop.scheduled().departure(),
+                    stop.realtime().arrival(),
+                    stop.realtime().departure(),
+                    (int) stop.arrivalIn(now),
+                    stop.completedVisits()
                 );
                 values.put(realTimeData.entryIndex(), realTimeData);
             }
-            return TrainRealTimeData.createServer(data.getSessionId(), values, data.getStatus(), data.isCancelled());
-        }).orElse(null)));
+
+            return TrainRealTimeData.createServer(train.sessionId(), values, statusOf(train), train.isCancelled());
+        }));
+    }
+
+    private static Set<ResourceLocation> statusOf(TrainSnapshot train) {
+        Set<ResourceLocation> status = new HashSet<>();
+        if (train.isCancelled()) {
+            status.add(TrainStatus.CANCELLED.getLocation());
+        }
+        for (DelayInstance delay : train.delays()) {
+            if (!delay.severity().isDelay()) {
+                continue;
+            }
+            status.add(delay.causeId().equals(ModDelayCauses.PREVIOUS_JOURNEY.id())
+                ? TrainStatus.DELAY_FROM_PREVIOUS_JOURNEY.getLocation()
+                : TrainStatus.DEFAULT_DELAY.getLocation());
+        }
+        return status;
     }
     
 }
