@@ -163,6 +163,7 @@ public class GlobalSettings implements INBTSerializable {
     
     public void deserializeNbt(CompoundTag nbt) {
         int version = nbt.getInt(NBT_VERSION);
+        StationTag.markModified();
 
         CompoundTag stationsComp = nbt.getCompound(NBT_STATION_TAGS);
         this.stationTags.putAll(stationsComp.getAllKeys().stream().map(x -> StationTag.fromNbt(stationsComp.getCompound(x), UUID.fromString(x))).collect(Collectors.toMap(x -> x.getId(), x -> x)));
@@ -340,6 +341,7 @@ public class GlobalSettings implements INBTSerializable {
         } while (stationTags.containsKey(newId));
         StationTag newTag = new StationTag(newId, name, owner);
         stationTags.put(newId, newTag);
+        StationTag.markModified();
         return newTag;
     }
 
@@ -350,6 +352,7 @@ public class GlobalSettings implements INBTSerializable {
         } while (stationTags.containsKey(newId));
         tag.setId(newId);
         stationTags.put(newId, tag);
+        StationTag.markModified();
         return tag;
     }
     
@@ -371,11 +374,19 @@ public class GlobalSettings implements INBTSerializable {
     }    
 
     public boolean removeStationTag(TagName name) {
-        return stationTags.values().removeIf(x -> x.getTagName().equals(name));
+        boolean removed = stationTags.values().removeIf(x -> x.getTagName().equals(name));
+        if (removed) {
+            StationTag.markModified();
+        }
+        return removed;
     }
 
     public StationTag removeStationTag(UUID id) {
-        return stationTags.remove(id);
+        StationTag removed = stationTags.remove(id);
+        if (removed != null) {
+            StationTag.markModified();
+        }
+        return removed;
     }
 
     public List<StationTag> getAllStationTags() {

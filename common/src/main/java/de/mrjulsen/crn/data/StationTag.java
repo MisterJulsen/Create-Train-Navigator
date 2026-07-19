@@ -66,6 +66,23 @@ public class StationTag {
     
     public static final int MAX_NAME_LENGTH = 32;
 
+    /**
+     * Bumped whenever any tag's stations or name change. Lets consumers that index tags by station
+     * (see {@code StationLookup}) tell without comparing anything whether their index is still
+     * valid, instead of rebuilding it or rescanning every tag on each lookup.
+     */
+    private static final java.util.concurrent.atomic.AtomicLong MODIFICATION_COUNT = new java.util.concurrent.atomic.AtomicLong();
+
+    /** The current modification count of all station tags. */
+    public static long getModificationCount() {
+        return MODIFICATION_COUNT.get();
+    }
+
+    /** Marks the station tags as changed, invalidating anything derived from them. */
+    public static void markModified() {
+        MODIFICATION_COUNT.incrementAndGet();
+    }
+
     private static final String LEGACY_NBT_TAG_NAME = "AliasName";
 
     private static final String NBT_ID = "Id";
@@ -211,6 +228,7 @@ public class StationTag {
     public void updateInfoForStation(String station, StationInfo info) {
         if (stations.containsKey(station)) {
             stations.replace(station, info);
+            markModified();
         }
     }
 
@@ -225,6 +243,7 @@ public class StationTag {
                 platformString = entry.getValue().get(0);
             }
             stations.put(entry.getKey(), new StationInfo(platformString));
+            markModified();
         }
     }
 
@@ -232,6 +251,7 @@ public class StationTag {
         stations.forEach((key, value) -> {
             if (!this.stations.containsKey(key)) {
                 this.stations.put(key, value);
+                markModified();
             }
         });
     }
@@ -273,10 +293,12 @@ public class StationTag {
 
     public void setName(TagName name) {
         this.tagName = name;
+        markModified();
     }
 
     public void remove(String station) {
         stations.remove(station);
+        markModified();
     }
 
     public ClientStationTag getClientTag(String station) {
@@ -318,6 +340,7 @@ public class StationTag {
         this.lastEditedTime = newData.lastEditedTime;
         this.lastEditor = newData.lastEditor;
         this.owner = newData.owner;
+        markModified();
     }
 
     /**

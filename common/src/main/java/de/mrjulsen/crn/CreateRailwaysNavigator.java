@@ -6,7 +6,9 @@ import com.simibubi.create.foundation.item.ItemDescription;
 import com.simibubi.create.foundation.item.KineticStats;
 import com.simibubi.create.foundation.item.TooltipModifier;
 
+import de.mrjulsen.crn.backend.RailwayBackend;
 import de.mrjulsen.crn.block.AdvancedDisplayBlock;
+import de.mrjulsen.crn.compat.tramways.TramwaysCompat;
 import de.mrjulsen.crn.event.ModClientEvents;
 import de.mrjulsen.crn.event.ModCommonEvents;
 import de.mrjulsen.crn.registry.ModBlockEntities;
@@ -16,6 +18,7 @@ import de.mrjulsen.crn.registry.ModDisplayTypes;
 import de.mrjulsen.crn.registry.ModExtras;
 import de.mrjulsen.crn.registry.ModItems;
 import de.mrjulsen.crn.registry.ModNetworkManager;
+import de.mrjulsen.crn.registry.ModDelayCauses;
 import de.mrjulsen.crn.registry.ModSchedule;
 import de.mrjulsen.crn.registry.ModTrainStatusInfos;
 import dev.architectury.platform.Platform;
@@ -67,14 +70,20 @@ public final class CreateRailwaysNavigator {
         ModSchedule.init();
         ModNetworkManager.init();
         ModTrainStatusInfos.init();
+        ModDelayCauses.init();
         ModDisplayTypes.init();
         ModCreativeModeTab.setup();
         
         CRNPlatformSpecific.registerConfig();
 
         ModCommonEvents.init();
+        RailwayBackend.init(); // New train data backend, runs parallel to the legacy TrainListener.
         if (Platform.getEnvironment() == Env.CLIENT) {
             ModClientEvents.init();
+        }
+
+        if (Platform.isModLoaded("tramways")) {
+            TramwaysCompat.init();
         }
 
     }

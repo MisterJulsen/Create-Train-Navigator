@@ -163,6 +163,45 @@ public class TravelSectionInstruction extends ScheduleInstruction implements IPr
         ClientWrapper.initScheduleSectionInstruction(this, builder);
 	}
 
+    /** The id of the train category assigned to this section, or {@code null}. Handles legacy data formats. */
+    public UUID getTrainCategoryId() {
+        String categoryNbtKey = this.data.contains(LEGACY_NBT_TRAIN_CATEGORY) ? LEGACY_NBT_TRAIN_CATEGORY : NBT_TRAIN_CATEGORY;
+        if (!this.data.contains(categoryNbtKey)) {
+            return null;
+        }
+        if (this.data.getTagType(categoryNbtKey) == Tag.TAG_STRING) {
+            return TrainCategory.genMD5Uuid(this.data.getString(categoryNbtKey));
+        }
+        if (this.data.getTagType(categoryNbtKey) == Tag.TAG_INT_ARRAY) {
+            return this.data.getUUID(categoryNbtKey);
+        }
+        return null;
+    }
+
+    /** The id of the train line assigned to this section, or {@code null}. Handles legacy data formats. */
+    public UUID getTrainLineId() {
+        if (!this.data.contains(NBT_TRAIN_LINE)) {
+            return null;
+        }
+        if (this.data.getTagType(NBT_TRAIN_LINE) == Tag.TAG_STRING) {
+            return TrainLine.genMD5Uuid(this.data.getString(NBT_TRAIN_LINE));
+        }
+        if (this.data.getTagType(NBT_TRAIN_LINE) == Tag.TAG_INT_ARRAY) {
+            return this.data.getUUID(NBT_TRAIN_LINE);
+        }
+        return null;
+    }
+
+    /** Whether the first station of the following section should still be displayed as part of this section. */
+    public boolean shouldIncludePreviousStationStop() {
+        return this.data.getBoolean(NBT_INCLUDE_PREVIOUS_STATION);
+    }
+
+    /** Whether this section may be used for navigation. */
+    public boolean isSectionUsable() {
+        return !this.data.contains(NBT_USABLE) || this.data.getBoolean(NBT_USABLE);
+    }
+
     private ScheduleSection getSectionData(TrainData data, int index) {
         String categoryNbtKey = null;
         if (this.data.contains(LEGACY_NBT_TRAIN_CATEGORY))

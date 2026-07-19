@@ -1,6 +1,7 @@
 package de.mrjulsen.crn.data.train;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -38,6 +39,21 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.Level;
 
 public final class TrainUtils {
+
+    /** Upper bound of {@link #patternCache}, see {@link #stationMatches(String, String)}. */
+    private static final int MAX_CACHED_PATTERNS = 1024;
+
+    /** Compiled station filters, keyed by their raw text. */
+    private static final Map<String, Pattern> patternCache = new ConcurrentHashMap<>();
+
+    /** Signals by id, so a lookup does not have to scan the whole network. */
+    private static final Cache<Map<UUID, SignalBoundary>> signalsByIdCache = new Cache<>(() -> {
+        Map<UUID, SignalBoundary> byId = new HashMap<>();
+        for (SignalBoundary signal : getAllSignals()) {
+            byId.put(signal.getId(), signal);
+        }
+        return byId;
+    }, ECachingPriority.LOWEST);
 
     private static final Cache<Collection<GlobalStation>> allStationsCache = new Cache<>(() -> {
         final Collection<GlobalStation> stations = new ArrayList<>();
@@ -116,6 +132,7 @@ public final class TrainUtils {
     public static void refreshCache() {
         allStationsCache.clear();
         allSignalsCache.clear();
+        signalsByIdCache.clear();
         departingTrainsAtTagCache.clearAll();
         departingTrainsAtStationCache.clearAll();
         departuresAtTagCache.clearAll();
@@ -284,17 +301,21 @@ public final class TrainUtils {
         return results;
     }
 
+    /**
+     * The trains occupying the block behind the given signal.
+     * <p>
+     * The signal itself is resolved through an index rather than by scanning the whole network,
+     * since this runs on the server thread whenever a train starts waiting at a different signal -
+     * which, on a busy network, is many times per tick.
+     */
     public static Set<Train> isSignalOccupied(UUID signalId, Set<UUID> excludedTrains) {
-        Optional<SignalBoundary> signal = Optional.empty();
-        for (SignalBoundary s : getAllSignals()) {
-            if (s.getId().equals(signalId)) {
-                signal = Optional.of(s);
-                break;
-            }
-        }
-        if (!signal.isPresent()) {
+        SignalBoundary signal = signalsByIdCache.get().get(signalId);
+        if (signal == null) {
             return Set.of();
         }
+
+        UUID firstGroup = signal.groups.getFirst();
+        UUID secondGroup = signal.groups.getSecond();
 
         Set<Train> occupyingTrains = new HashSet<>();
         for (Train train : getTrains(false)) {
@@ -304,7 +325,7 @@ public final class TrainUtils {
 
             boolean isOccupyingSignal = false;
             for (UUID occupiedSignal : train.occupiedSignalBlocks.keySet()) {
-                if (occupiedSignal.equals(signal.get().groups.getFirst()) || occupiedSignal.equals(signal.get().groups.getSecond())) {
+                if (occupiedSignal.equals(firstGroup) || occupiedSignal.equals(secondGroup)) {
                     isOccupyingSignal = true;
                     break;
                 }
@@ -390,11 +411,38 @@ public final class TrainUtils {
     }
 
     
+    /**
+     * Whether a station name matches a filter, which may contain wildcards.
+     * <p>
+     * This sits in the hot path of every board query, which tests it once per stop of every train,
+     * so the two expensive parts are avoided: a filter without wildcards never builds a pattern at
+     * all, and one that does is compiled only the first time it is seen. Filters come from schedules
+     * and station tags, so the number of distinct ones is bounded by the network, not by the number
+     * of queries.
+     */
     public static boolean stationMatches(String stationName, String filter) {
-        Pattern pattern = ModUtils.buildPattern(filter);
-        return pattern.matcher(stationName).matches();
-        //String regex = filter.isBlank() ? filter : "\\Q" + filter.replace("*", "\\E.*\\Q");
-        //return stationName.matches(regex);
+        if (stationName == null || filter == null) {
+            return false;
+        }
+        if (!ModUtils.isGlobPattern(filter)) {
+            return stationName.equals(filter);
+        }
+        return patternOf(filter).matcher(stationName).matches();
+    }
+
+    /** The compiled pattern of a filter, compiling it on first use. */
+    private static Pattern patternOf(String filter) {
+        Pattern cached = patternCache.get(filter);
+        if (cached != null) {
+            return cached;
+        }
+        // Bounded so a stream of one-off filters (e.g. from commands) cannot grow this without end.
+        if (patternCache.size() >= MAX_CACHED_PATTERNS) {
+            patternCache.clear();
+        }
+        Pattern compiled = ModUtils.buildPattern(filter);
+        patternCache.put(filter, compiled);
+        return compiled;
     }
 
     public static boolean isTrainValid(Train train) {

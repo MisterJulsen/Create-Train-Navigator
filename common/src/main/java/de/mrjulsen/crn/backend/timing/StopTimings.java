@@ -1,17 +1,12 @@
 package de.mrjulsen.crn.backend.timing;
 
+import de.mrjulsen.crn.backend.util.FrequencyStringSelector;
 import de.mrjulsen.crn.config.ModCommonConfig;
 import net.minecraft.nbt.CompoundTag;
 
 /**
- * All timing data the backend maintains for one stop of a train:
- * <ul>
- *   <li>the learned duration of the leg leading to this stop,</li>
- *   <li>the learned dwell (stay) duration at this stop,</li>
- *   <li>the scheduled times (the "timetable"),</li>
- *   <li>the current real-time estimates,</li>
- *   <li>the actually measured times of the most recent visit.</li>
- * </ul>
+ * All timing data the backend maintains for one stop: the learned leg and dwell durations, the
+ * scheduled times, the current projection and the measured times of the most recent visit.
  * All timestamps are transformed game ticks.
  */
 public final class StopTimings {
@@ -23,6 +18,10 @@ public final class StopTimings {
     private static final String NBT_LAST_DEPARTURE = "LastDeparture";
     private static final String NBT_VISITS = "Visits";
     private static final String NBT_STATION = "Station";
+    private static final String NBT_STATION_GUESS = "StationGuess";
+
+    /** How many recent visits feed the station guess of an ambiguous stop. */
+    private static final int STATION_GUESS_WINDOW = 10;
 
     private final int entryIndex;
 
@@ -30,20 +29,25 @@ public final class StopTimings {
     private final MedianDurationTracker legDuration;
     private long dwellDuration = 0;
 
+    /**
+     * Tracks which concrete station this stop most often resolved to, so a likely one can be shown
+     * for an ambiguous destination before the train has committed. Only relevant while the filter
+     * is not itself a concrete station.
+     */
+    private final FrequencyStringSelector stationGuess = new FrequencyStringSelector(STATION_GUESS_WINDOW);
+
     private volatile StopTimes scheduled = StopTimes.UNKNOWN;
     private volatile StopTimes realtime = StopTimes.UNKNOWN;
 
     /**
-     * The nominal timetable projection for this stop: the times the train would have with zero
-     * carried-over delay (full wait, no catch-up shortening), chained from the previous stop's
-     * nominal departure. Used as the anchor value on a soft reset so that (a) a flexible stop's
-     * catch-up buffer is not baked away and (b) the anchored legs stay consistent with the learned
-     * legs (scheduled leg == real leg), instead of leaving a buffer-sized phantom delay per leg.
-     * Transient (recomputed every projection), {@code UNKNOWN} until first set.
+     * The nominal projection for this stop: the times the train would have with zero carried-over
+     * delay, chained from the previous stop's nominal departure. Used as the anchor on a soft
+     * reset, so a flexible stop keeps its catch-up buffer and the anchored legs stay consistent
+     * with the learned ones. Recomputed by every projection.
      */
     private volatile StopTimes nominalTimes = StopTimes.UNKNOWN;
 
-    /* Times of the previous (completed) visit, for history purposes. */
+    /** Times of the previous, completed visit. */
     private volatile StopTimes previousScheduled = StopTimes.UNKNOWN;
     private volatile StopTimes previousRealtime = StopTimes.UNKNOWN;
 
@@ -56,35 +60,54 @@ public final class StopTimings {
         this.legDuration = new MedianDurationTracker(ModCommonConfig.TOTAL_DURATION_BUFFER_SIZE.get(), ModCommonConfig.TOTAL_DURATION_DEVIATION_THRESHOLD.get());
     }
 
+    /** The schedule entry index of the stop this data belongs to. */
     public int getEntryIndex() {
         return entryIndex;
     }
 
+    /** The learned transit duration from the previous stop to this one. */
     public MedianDurationTracker legDuration() {
         return legDuration;
     }
 
+    /** The dwell duration in ticks measured on the most recent visit. */
     public long dwellDuration() {
         return dwellDuration;
     }
 
+    /** The timetable times, {@link StopTimes#UNKNOWN} until one has been anchored. */
     public StopTimes getScheduled() {
         return scheduled;
     }
 
+    /** The current projected times. */
     public StopTimes getRealtime() {
         return realtime;
     }
 
+    /**
+     * The scheduled times as they should be published. While no timetable has been anchored yet the
+     * projection stands in, so consumers never see an unknown scheduled time next to a known
+     * projected one and the train simply reports as running on time.
+     * <p>
+     * For output only. The projection keeps using {@link #getScheduled()}, which stays unknown
+     * until a real timetable exists, so this fallback can never be learned as one.
+     */
+    public StopTimes getPublishedScheduled() {
+        return scheduled.isKnown() ? scheduled : realtime;
+    }
+
+    /** The timetable times of the previous, completed visit. */
     public StopTimes getPreviousScheduled() {
         return previousScheduled;
     }
 
+    /** The measured times of the previous, completed visit. */
     public StopTimes getPreviousRealtime() {
         return previousRealtime;
     }
 
-    /** The measured arrival time of the current/most recent visit, or {@code -1}. */
+    /** The measured arrival time of the current visit, or {@code -1} if the train is not here. */
     public long getLastActualArrival() {
         return lastActualArrival;
     }
@@ -94,25 +117,27 @@ public final class StopTimings {
         return lastActualDeparture;
     }
 
-    /** How often the train has completed (departed from) this stop while being tracked. */
+    /** How often the train has departed from this stop while being tracked. */
     public int getCompletedVisits() {
         return completedVisits;
     }
 
+    /** Sets the current projected times. */
     public void setRealtime(StopTimes realtime) {
         this.realtime = realtime;
     }
 
-    /** Sets the nominal timetable projection of the current update (see {@link #nominalTimes}). */
+    /** Sets the nominal projection of the current update. */
     public void setNominalTimes(StopTimes nominalTimes) {
         this.nominalTimes = nominalTimes;
     }
 
+    /** Overwrites the timetable times. */
     public void setScheduled(StopTimes scheduled) {
         this.scheduled = scheduled;
     }
 
-    /** Whether both scheduled and real-time data is available for this stop. */
+    /** Whether both timetable and projected times are available, so a deviation is meaningful. */
     public boolean isComparable() {
         return scheduled.isKnown() && realtime.isKnown();
     }
@@ -127,23 +152,31 @@ public final class StopTimings {
         return isComparable() ? realtime.departure() - scheduled.departure() : 0;
     }
 
+    /** The larger of the arrival and departure deviation, in ticks. */
     public long getMaxDeviation() {
         return Math.max(getArrivalDeviation(), getDepartureDeviation());
     }
 
+    /** Whether the arrival deviation exceeds the given threshold. */
     public boolean isArrivalDelayed(long thresholdTicks) {
         return getArrivalDeviation() > thresholdTicks;
     }
 
+    /** Whether the departure deviation exceeds the given threshold. */
     public boolean isDepartureDelayed(long thresholdTicks) {
         return getDepartureDeviation() > thresholdTicks;
     }
 
+    /** Whether either deviation exceeds the given threshold. */
     public boolean isDelayed(long thresholdTicks) {
         return getMaxDeviation() > thresholdTicks;
     }
 
-    /** Records the actual arrival at this stop. */
+    /**
+     * Records the actual arrival at this stop.
+     *
+     * @param countMeasurement Whether the measured leg duration may become a learned reference.
+     */
     public void recordArrival(long time, int measuredLegTicks, boolean countMeasurement) {
         this.lastActualArrival = time;
         if (countMeasurement) {
@@ -151,10 +184,17 @@ public final class StopTimings {
         }
     }
 
-    /**
-     * Records the actual departure from this stop and moves the current times into the
-     * "previous visit" slots.
-     */
+    /** Remembers the concrete station this stop resolved to on this visit. */
+    public void recordVisitedStation(String stationName) {
+        stationGuess.add(stationName);
+    }
+
+    /** The most likely concrete station for this stop, or {@code null} if none has been seen. */
+    public String getEstimatedStationName() {
+        return stationGuess.getPrimary();
+    }
+
+    /** Records the actual departure and moves the current times into the previous-visit slots. */
     public synchronized void recordDeparture(long time, long measuredDwellTicks) {
         this.lastActualDeparture = time;
         this.dwellDuration = measuredDwellTicks;
@@ -165,7 +205,7 @@ public final class StopTimings {
         this.lastActualArrival = -1;
     }
 
-    /** Moves the scheduled times one cycle ahead (for cyclic schedules). */
+    /** Moves the timetable times one cycle ahead, for cyclic schedules. */
     public void advanceScheduledCycle(long cycleDuration) {
         if (scheduled.isKnown() && cycleDuration > 0) {
             this.scheduled = scheduled.shifted(cycleDuration);
@@ -173,11 +213,10 @@ public final class StopTimings {
     }
 
     /**
-     * Moves the real-time estimate one cycle ahead as well, so it stays in sync with
-     * {@link #advanceScheduledCycle(long)} until the next full update recomputes the
-     * authoritative projection for the new cycle. Without this, the stale real-time value of
-     * the just-completed visit would be compared against the already-advanced schedule and
-     * report a deviation of roughly {@code -cycleDuration}.
+     * Moves the projection one cycle ahead as well, keeping it in sync with
+     * {@link #advanceScheduledCycle(long)} until the next full update recomputes it. Without this
+     * the stale value of the completed visit would be compared against the advanced timetable and
+     * report a deviation of roughly one negative cycle.
      */
     public void advanceRealtimeCycle(long cycleDuration) {
         if (realtime.isKnown() && cycleDuration > 0) {
@@ -186,12 +225,10 @@ public final class StopTimings {
     }
 
     /**
-     * Resets the timetable of this stop to the nominal projection ({@link #nominalTimes}): the
-     * ideal times with zero carried-over delay. This preserves a flexible stop's catch-up buffer
-     * (unlike anchoring the shortened {@link #realtime} departure, which would collapse it into a
-     * permanent phantom delay) and keeps the anchored legs consistent with the learned legs (so a
-     * normally running train departs and arrives exactly on schedule). Falls back to the real-time
-     * values if no nominal projection is available yet.
+     * Resets the timetable of this stop to the nominal projection, i.e. the times with zero
+     * carried-over delay. This preserves a flexible stop's catch-up buffer, which anchoring the
+     * shortened projection would collapse into a permanent phantom delay, and keeps the anchored
+     * legs consistent with the learned ones. Falls back to the projection if no nominal one exists.
      */
     public void anchorScheduleToRealtime() {
         if (nominalTimes.isKnown()) {
@@ -201,7 +238,7 @@ public final class StopTimings {
         }
     }
 
-    /** Shifts all absolute timestamps, e.g. after a world time jump. */
+    /** Shifts all absolute timestamps by the given amount, after a world time jump. */
     public synchronized void shiftTimes(long ticks) {
         this.scheduled = scheduled.shifted(ticks);
         this.realtime = realtime.shifted(ticks);
@@ -212,10 +249,12 @@ public final class StopTimings {
         this.nominalTimes = nominalTimes.shifted(ticks);
     }
 
-    /** Clears all learned and live data. */
-    public void reset() {
-        legDuration.reset();
-        dwellDuration = 0;
+    /**
+     * Discards everything describing a concrete run of this stop while keeping what was learned.
+     * Used when a train returns to service: its old times refer to the run that was interrupted and
+     * would otherwise project forward as an enormous delay, but its durations have not changed.
+     */
+    public synchronized void resetRuntimeData() {
         scheduled = StopTimes.UNKNOWN;
         realtime = StopTimes.UNKNOWN;
         nominalTimes = StopTimes.UNKNOWN;
@@ -223,9 +262,9 @@ public final class StopTimings {
         previousRealtime = StopTimes.UNKNOWN;
         lastActualArrival = -1;
         lastActualDeparture = -1;
-        completedVisits = 0;
     }
 
+    /** Serializes this data, storing the given resolved station name alongside it. */
     public CompoundTag toNbt(String stationName) {
         CompoundTag nbt = new CompoundTag();
         nbt.put(NBT_LEG, legDuration.toNbt());
@@ -235,9 +274,11 @@ public final class StopTimings {
         nbt.putLong(NBT_LAST_DEPARTURE, lastActualDeparture);
         nbt.putInt(NBT_VISITS, completedVisits);
         if (stationName != null) nbt.putString(NBT_STATION, stationName);
+        nbt.put(NBT_STATION_GUESS, stationGuess.toNbt());
         return nbt;
     }
 
+    /** Restores persisted data. */
     public void loadNbt(CompoundTag nbt) {
         legDuration.loadNbt(nbt.getCompound(NBT_LEG));
         this.dwellDuration = nbt.getLong(NBT_DWELL);
@@ -247,8 +288,12 @@ public final class StopTimings {
         this.lastActualArrival = nbt.getLong(NBT_LAST_ARRIVAL);
         this.lastActualDeparture = nbt.getLong(NBT_LAST_DEPARTURE);
         this.completedVisits = nbt.getInt(NBT_VISITS);
+        if (nbt.contains(NBT_STATION_GUESS)) {
+            stationGuess.loadNbt(nbt.getCompound(NBT_STATION_GUESS));
+        }
     }
 
+    /** Reads the resolved station name stored by {@link #toNbt(String)}. */
     public static String loadStationName(CompoundTag nbt) {
         return nbt.getString(NBT_STATION);
     }

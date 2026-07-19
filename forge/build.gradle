@@ -45,12 +45,13 @@ dependencies {
     modCompileOnly("dev.engine-room.flywheel:flywheel-forge-api-${rootProject.minecraft_version}:${rootProject.flywheel_forge_version}")
     modRuntimeOnly("dev.engine-room.flywheel:flywheel-forge-${rootProject.minecraft_version}:${rootProject.flywheel_forge_version}")
     modImplementation("com.tterrag.registrate:Registrate:${rootProject.registrate_forge_version}")
-    compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:0.4.1"))
-    implementation("io.github.llamalad7:mixinextras-forge:0.4.1")
+    compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:0.5.3"))
+    implementation("io.github.llamalad7:mixinextras-forge:0.5.3")
 
     
     modRuntimeOnly("curse.maven:time-control-303570:5095704")
     modRuntimeOnly("curse.maven:configured-457570:5180900")
+    modRuntimeOnly("maven.modrinth:tramways:0.3.3-forge")
 
     common(project(path: ':common', configuration: 'namedElements')) { transitive false }
     shadowBundle project(path: ':common', configuration: 'transformProductionForge')

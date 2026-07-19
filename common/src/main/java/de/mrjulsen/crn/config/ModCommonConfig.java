@@ -15,6 +15,9 @@ public class ModCommonConfig {
     public static final ForgeConfigSpec.ConfigValue<Integer> TOTAL_DURATION_BUFFER_SIZE;
     public static final ForgeConfigSpec.ConfigValue<Integer> SCHEDULE_DEVIATION_THRESHOLD;
     public static final ForgeConfigSpec.ConfigValue<Integer> AUTO_RESET_TIMINGS;
+    public static final ForgeConfigSpec.ConfigValue<Integer> DISRUPTION_DISPLAY_DURATION;
+    public static final ForgeConfigSpec.ConfigValue<Integer> DISRUPTION_DISPLAY_DURATION_PAUSED;
+    public static final ForgeConfigSpec.ConfigValue<Integer> DISRUPTION_DISPLAY_DURATION_DERAILED;
     public static final ForgeConfigSpec.ConfigValue<Integer> TRANSFER_COST;
     public static final ForgeConfigSpec.ConfigValue<Integer> TOTAL_DURATION_DEVIATION_THRESHOLD;
     public static final ForgeConfigSpec.ConfigValue<Boolean> CUSTOM_TRANSIT_TIME_CALCULATION;
@@ -61,6 +64,13 @@ public class ModCommonConfig {
             .defineInRange("train_data_calculation.schedule_deviation_threshold", 500, 100, 24000);
         AUTO_RESET_TIMINGS = BUILDER.comment(new String[] {"[In Cycles]", "(ONLY WORKS FOR TRAINS WITH DYNAMIC DELAYS! Trains without dynamic delays do this every new schedule section by default.)", " ", "Every X cycles the scheduled times are updated to the current real-time data. (Default: 2; Disabled: 0)"})
             .defineInRange("train_data_calculation.auto_reset_timings", 2, 0, Integer.MAX_VALUE);
+
+        DISRUPTION_DISPLAY_DURATION = BUILDER.comment(new String[] {"[in Ticks]", "How long a train whose schedule was removed keeps being shown as cancelled, so travellers learn that it is not running.", "Removing a schedule means a player parked the train on purpose, so afterwards it is dropped from the backend entirely and its recorded data is discarded. It is picked up again from scratch as soon as it runs.", "This is also the default for disruption reasons that do not define a duration of their own. (Default: 1200, 1 real life minute; Unlimited: -1; Never shown: 0)"})
+            .defineInRange("disruptions.display_duration", 1200, -1, Integer.MAX_VALUE);
+        DISRUPTION_DISPLAY_DURATION_PAUSED = BUILDER.comment(new String[] {"[in Ticks]", "How long a train whose schedule was paused keeps being shown as cancelled. Like a removed schedule this is a deliberate action, so it is short by default and the train is forgotten afterwards.", "Pausing also overrules any other reason: a paused train that has additionally derailed disappears on this schedule, not on the derailment's. (Default: 3600, 3 real life minutes; Unlimited: -1; Never shown: 0)"})
+            .defineInRange("disruptions.display_duration_schedule_paused", 3600, -1, Integer.MAX_VALUE);
+        DISRUPTION_DISPLAY_DURATION_DERAILED = BUILDER.comment(new String[] {"[in Ticks]", "How long a derailed train keeps being shown as cancelled. A derailment is an accident rather than an intentional shutdown, so by default it stays visible until the train is recovered or removed.", "A derailed train's data is never discarded, even after it stops being displayed - it is what you need to work out what happened. (Default: -1, unlimited; Never shown: 0)"})
+            .defineInRange("disruptions.display_duration_derailed", -1, -1, Integer.MAX_VALUE);
 
         ADVANCED_LOGGING = BUILDER.comment(new String[] {"Prints more details to the console to better observe the behavior of CRN. Only relevant for debugging."})
             .define("debug.advanced_logging", false);

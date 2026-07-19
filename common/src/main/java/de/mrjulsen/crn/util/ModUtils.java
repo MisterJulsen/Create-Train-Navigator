@@ -114,10 +114,6 @@ public class ModUtils {
         return dyeColorsCache.get();
     }
 
-    public static long convertToTimeTicks(int hours, int minutes) {
-        return (long)((double)hours * 1000D + (1000D / 60D * (double)minutes));
-    }
-
     public static Pattern buildPattern(String src) {
         return Pattern.compile(Glob.toRegexPattern(src, "^.*$"));
     }
@@ -384,7 +380,17 @@ public class ModUtils {
     }
 
     public static long getTransformedWorldTime() {
-        return Math.round(DLTime.fromGameTicks(DragonLib.getCurrentWorldTime(), DLTime.defaultTimeSystem()).toTicks(VanillaTimeSystem.INSTANCE));
+        return transformWorldTime(DragonLib.getCurrentWorldTime());
+    }
+
+    /**
+     * Converts a raw world time (as returned by {@code DragonLib.getCurrentWorldTime()}) into the
+     * transformed tick scale used everywhere else. Because a time system may define a non-linear
+     * tick rate across the day, the conversion is only meaningful for absolute times - never
+     * convert a difference of two raw times with this.
+     */
+    public static long transformWorldTime(long rawWorldTime) {
+        return Math.round(DLTime.fromGameTicks(rawWorldTime, DLTime.defaultTimeSystem()).toTicks(VanillaTimeSystem.INSTANCE));
     }
 
 
