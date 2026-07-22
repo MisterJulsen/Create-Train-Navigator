@@ -12,4 +12,4 @@ include("common")
 include("fabric")
 include("forge")
 
-rootProject.name = "CRN 1.20.1 - C6-DL3"
+rootProject.name = "Create Railways Navigator 1.20.1 - C6-DL3"

@@ -92,12 +92,12 @@ public class RouteOverlaySettingsWindow extends DLWindow {
         notificationsIndicator = addComponent(new CreateIndicator(20, 20));
         notificationsButton = addComponent(new CreateButton(20, 26, ModGuiIcons.INFO.getAsCreateIcon()));
         notificationsButton.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
-            overlay.getRoute().setShowNotifications(!overlay.getRoute().shouldShowNotifications());
-        notificationsIndicator.state.set(overlay.getRoute().shouldShowNotifications() ? Indicator.State.ON : Indicator.State.OFF);
+            overlay.setShowNotifications(!overlay.shouldShowNotifications());
+        notificationsIndicator.state.set(overlay.shouldShowNotifications() ? Indicator.State.ON : Indicator.State.OFF);
             return false;
         });
         notificationsButton.tooltip.set(new DLTooltip(List.of(textNotifications, textNotificationsDescription), 200));
-        notificationsIndicator.state.set(overlay.getRoute().shouldShowNotifications() ? Indicator.State.ON : Indicator.State.OFF);
+        notificationsIndicator.state.set(overlay.shouldShowNotifications() ? Indicator.State.ON : Indicator.State.OFF);
 
         
         scaleInput = addComponent(new CreateScrollNumberInput(63, 23, 43));

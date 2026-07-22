@@ -1,5 +1,7 @@
 package de.mrjulsen.crn.backend.api;
 
+import de.mrjulsen.crn.util.NbtHelper;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 
 /**
@@ -57,4 +59,36 @@ public record SpeedLimitSegment(
     public boolean hasDescription() {
         return descriptionKey != null && !descriptionKey.isBlank();
     }
+
+    /** Serializes this segment. */
+    public CompoundTag toNbt() {
+        CompoundTag nbt = new CompoundTag();
+        nbt.putDouble(NBT_START_DISTANCE, startDistance);
+        nbt.putDouble(NBT_SPEED_LIMIT, speedLimit);
+        nbt.putString(NBT_KIND, kind.name());
+        if (source != null) {
+            nbt.putString(NBT_SOURCE, source.toString());
+        }
+        if (descriptionKey != null) {
+            nbt.putString(NBT_DESCRIPTION_KEY, descriptionKey);
+        }
+        return nbt;
+    }
+
+    /** Deserializes a segment written by {@link #toNbt()}. */
+    public static SpeedLimitSegment fromNbt(CompoundTag nbt) {
+        return new SpeedLimitSegment(
+            nbt.getDouble(NBT_START_DISTANCE),
+            nbt.getDouble(NBT_SPEED_LIMIT),
+            NbtHelper.readEnum(nbt.getString(NBT_KIND), SpeedLimitKind.class, SpeedLimitKind.OTHER),
+            nbt.contains(NBT_SOURCE) ? new ResourceLocation(nbt.getString(NBT_SOURCE)) : null,
+            nbt.contains(NBT_DESCRIPTION_KEY) ? nbt.getString(NBT_DESCRIPTION_KEY) : null
+        );
+    }
+
+    private static final String NBT_START_DISTANCE = "StartDistance";
+    private static final String NBT_SPEED_LIMIT = "SpeedLimit";
+    private static final String NBT_KIND = "Kind";
+    private static final String NBT_SOURCE = "Source";
+    private static final String NBT_DESCRIPTION_KEY = "DescriptionKey";
 }

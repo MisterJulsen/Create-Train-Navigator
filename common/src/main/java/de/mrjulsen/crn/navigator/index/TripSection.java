@@ -1,8 +1,8 @@
 package de.mrjulsen.crn.navigator.index;
 
+import de.mrjulsen.crn.backend.api.CategoryRef;
+import de.mrjulsen.crn.backend.api.LineRef;
 import de.mrjulsen.crn.backend.api.StationRef;
-import de.mrjulsen.crn.data.TrainCategory;
-import de.mrjulsen.crn.data.TrainLine;
 
 /**
  * The service a stretch of a trip is operated as: which line and category it carries and what it
@@ -12,17 +12,19 @@ import de.mrjulsen.crn.data.TrainLine;
  * repeats a hundred times still holds one of these per section.
  *
  * @param sectionIndex The position of the section in the train's journey.
- * @param line         The train line, or {@code null} if the section carries none.
- * @param category     The train category, or {@code null} if the section carries none.
+ * @param line         The train line, or {@link LineRef#NONE} if the section carries none.
+ * @param category     The train category, or {@link CategoryRef#NONE} if the section carries none.
  * @param destination  The terminus advertised for this section.
  * @param includesNextSectionStart Whether this section still advertises the following one's first
  *                     stop. This is what decides whether a traveller may stay seated across the
  *                     boundary: without it the train is doing something else beyond this section
  *                     and carries no passengers over it.
  */
-public record TripSection(int sectionIndex, TrainLine line, TrainCategory category, StationRef destination, boolean includesNextSectionStart) {
+public record TripSection(int sectionIndex, LineRef line, CategoryRef category, StationRef destination, boolean includesNextSectionStart) {
 
     public TripSection {
+        line = line == null ? LineRef.NONE : line;
+        category = category == null ? CategoryRef.NONE : category;
         destination = destination == null ? StationRef.NONE : destination;
     }
 }

@@ -8,7 +8,6 @@ import de.mrjulsen.crn.client.gui.windows.RouteDetailsWindow;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.data.ISavableNavigatorData;
 import de.mrjulsen.crn.data.ISavableNavigatorData.SavableNavigatorDataLine;
-import de.mrjulsen.crn.data.navigation.ClientRoute;
 import de.mrjulsen.mcdragonlib.client.gui.events.DLGuiStandardEvents;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLButton;
 import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
@@ -64,8 +63,8 @@ public class SavedRouteWidget extends DLButton {
         */
 
         addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
-            if (data instanceof ClientRoute route) {
-                getWindowManager().createModal(mgr -> new RouteDetailsWindow(mgr, route));
+            if (data instanceof SavedRouteData saved) {
+                getWindowManager().createModal(mgr -> new RouteDetailsWindow(mgr, saved.journey()));
             }
             return false;
         });

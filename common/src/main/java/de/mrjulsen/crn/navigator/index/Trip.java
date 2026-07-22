@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import net.minecraft.resources.ResourceLocation;
+
 /**
  * One uninterrupted travel opportunity: a train running a contiguous stretch of its journey once,
  * with concrete times a traveller can board and alight at.
@@ -16,6 +18,7 @@ import java.util.UUID;
  * @param sessionId   The train's tracking session, for detecting that a planned route went stale.
  * @param trainName   The train's own name.
  * @param displayName The line name if one is assigned, otherwise the train name.
+ * @param iconId      The id of the train's icon, or {@code null} if it carries none.
  * @param cycle       How many journey cycles ahead of the current run this trip is. {@code 0} is the
  *                    run the train is on now.
  * @param calls       The calls in travel order, with times increasing throughout.
@@ -32,6 +35,7 @@ public record Trip(
     UUID sessionId,
     String trainName,
     String displayName,
+    ResourceLocation iconId,
     int cycle,
     List<TripCall> calls,
     int boardableCalls
@@ -73,7 +77,7 @@ public record Trip(
         for (TripCall call : calls) {
             shifted.add(call.shifted(ticks));
         }
-        return new Trip(trainId, sessionId, trainName, displayName, cycle, shifted, boardableCalls);
+        return new Trip(trainId, sessionId, trainName, displayName, iconId, cycle, shifted, boardableCalls);
     }
 
     @Override

@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import de.mrjulsen.crn.backend.api.CategoryRef;
+import de.mrjulsen.crn.backend.api.LineRef;
 import de.mrjulsen.crn.backend.api.RailwayBackendApi;
-import de.mrjulsen.crn.data.TrainCategory;
-import de.mrjulsen.crn.data.TrainLine;
 
 /**
  * Everything a route search needs to know: where the traveller is going, when, and what they are
@@ -267,14 +267,9 @@ public record NavigationQuery(
     }
 
     /** Whether a section carrying the given line and category may be used. */
-    public boolean accepts(TrainLine line, TrainCategory category) {
-        return acceptsId(line == null ? null : line.getId(), includedLines, excludedLines)
-            && acceptsId(category == null ? null : category.getId(), includedCategories, excludedCategories);
-    }
-
-    /** Whether the traveller may get on, off or change at the given station. */
-    public boolean acceptsStation(String stationName) {
-        return avoidedStations.isEmpty() || !avoidedStations.contains(stationName);
+    public boolean accepts(LineRef line, CategoryRef category) {
+        return acceptsId(line == null ? null : line.id(), includedLines, excludedLines)
+            && acceptsId(category == null ? null : category.id(), includedCategories, excludedCategories);
     }
 
     private static boolean acceptsId(UUID id, Set<UUID> included, Set<UUID> excluded) {

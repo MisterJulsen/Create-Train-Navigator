@@ -114,12 +114,12 @@ public final class RailwayBackendEvents {
 
     public static void fireArrival(TrackedTrain train, JourneyStop stop) {
         if (!isReportable(train)) return;
-        enqueue(listener -> listener.onArrival(TrainSnapshot.of(train), StopSnapshot.of(train, stop, StopVisitState.CURRENT)));
+        enqueue(listener -> listener.onArrival(TrainSnapshot.of(train), StopSnapshot.of(train, stop)));
     }
 
     public static void fireDeparture(TrackedTrain train, JourneyStop stop) {
         if (!isReportable(train)) return;
-        enqueue(listener -> listener.onDeparture(TrainSnapshot.of(train), StopSnapshot.of(train, stop, StopVisitState.PASSED)));
+        enqueue(listener -> listener.onDeparture(TrainSnapshot.of(train), StopSnapshot.of(train, stop)));
     }
 
     public static void fireServiceStateChanged(TrackedTrain train, ServiceState previous, ServiceState current) {

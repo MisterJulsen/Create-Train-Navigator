@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Optional;
 
 import de.mrjulsen.crn.navigator.route.RouteJourney;
+import de.mrjulsen.crn.util.NbtHelper;
+import net.minecraft.nbt.CompoundTag;
 
 /**
  * What a route search came back with: the routes worth offering, in the order the query asked for,
@@ -74,4 +76,35 @@ public record NavigationResult(
     public boolean isSuccess() {
         return status.isSuccess() && !journeys.isEmpty();
     }
+
+    /** Serializes this result. */
+    public CompoundTag toNbt() {
+        CompoundTag nbt = new CompoundTag();
+        nbt.putString(NBT_STATUS, status.name());
+        nbt.put(NBT_JOURNEYS, NbtHelper.writeList(journeys, RouteJourney::toNbt));
+        nbt.putLong(NBT_COMPUTED_AT, computedAt);
+        nbt.putLong(NBT_DURATION_MS, durationMs);
+        nbt.putInt(NBT_STATIONS_SEARCHED, stationsSearched);
+        nbt.putInt(NBT_TRIPS_SCANNED, tripsScanned);
+        return nbt;
+    }
+
+    /** Deserializes a result written by {@link #toNbt()}. */
+    public static NavigationResult fromNbt(CompoundTag nbt) {
+        return new NavigationResult(
+            NbtHelper.readEnum(nbt.getString(NBT_STATUS), NavigationStatus.class, NavigationStatus.NO_ROUTE),
+            NbtHelper.readList(nbt, NBT_JOURNEYS, RouteJourney::fromNbt),
+            nbt.getLong(NBT_COMPUTED_AT),
+            nbt.getLong(NBT_DURATION_MS),
+            nbt.getInt(NBT_STATIONS_SEARCHED),
+            nbt.getInt(NBT_TRIPS_SCANNED)
+        );
+    }
+
+    private static final String NBT_STATUS = "Status";
+    private static final String NBT_JOURNEYS = "Journeys";
+    private static final String NBT_COMPUTED_AT = "ComputedAt";
+    private static final String NBT_DURATION_MS = "DurationMs";
+    private static final String NBT_STATIONS_SEARCHED = "StationsSearched";
+    private static final String NBT_TRIPS_SCANNED = "TripsScanned";
 }

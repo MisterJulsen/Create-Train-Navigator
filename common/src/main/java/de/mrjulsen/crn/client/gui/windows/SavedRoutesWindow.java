@@ -4,6 +4,7 @@ import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.BarColor;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.ContainerColor;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.FooterSize;
+import de.mrjulsen.crn.client.gui.widgets.SavedRouteData;
 import de.mrjulsen.crn.client.gui.widgets.SavedRoutesViewer;
 import de.mrjulsen.crn.data.SavedRoutesManager;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLWindowManager;
@@ -19,7 +20,7 @@ public class SavedRoutesWindow extends AbstractNavigatorScreen {
         int wY = FooterSize.DEFAULT.size() - 1;
         int wH = GUI_HEIGHT - wY - FooterSize.SMALL.size();
         this.viewer = new SavedRoutesViewer(3, wY + 2, width() - 6, wH - 3);
-        this.viewer.displaySavedRoutes(SavedRoutesManager.getAllSavedRoutes());
+        this.viewer.displaySavedRoutes(SavedRoutesManager.getAllSavedRoutes().stream().map(SavedRouteData::new).toList());
         
         addComponent(viewer);
     }

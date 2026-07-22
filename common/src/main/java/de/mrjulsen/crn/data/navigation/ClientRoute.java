@@ -405,11 +405,6 @@ public class ClientRoute extends Route implements AutoCloseable, IListenable<Cli
             if (currentPartIndex < parts.size() - 1) return;
             this.progressState = RouteProgressState.AFTER;
             sendNotification(CustomLanguage.translate(keyNotificationJourneyCompletedTitle), CustomLanguage.translate(keyNotificationJourneyCompleted));
-            if (!savedRouteRemoved) {
-                savedRouteRemoved = true;
-                SavedRoutesManager.removeRoute(this);
-                SavedRoutesManager.push(true, null);
-            }
             queuedAnnouncements.clear();
             notifyListeners(EVENT_DEPARTURE_FROM_ANY_STOP, new ListenerNotificationData(this, x.part(), x.trainStop(), null));
             notifyListeners(EVENT_DEPARTURE_FROM_ANY_IMPORTANT_STATION, new ListenerNotificationData(this, x.part(), x.trainStop(), null));

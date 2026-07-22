@@ -5,12 +5,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import de.mrjulsen.crn.backend.api.CategoryRef;
 import de.mrjulsen.crn.backend.api.JourneySnapshot;
+import de.mrjulsen.crn.backend.api.LineRef;
 import de.mrjulsen.crn.backend.api.RailwayBackendApi;
 import de.mrjulsen.crn.backend.api.SectionSnapshot;
 import de.mrjulsen.crn.backend.api.StationRef;
 import de.mrjulsen.crn.backend.api.StopSnapshot;
 import de.mrjulsen.crn.backend.api.TrainSnapshot;
+import de.mrjulsen.crn.backend.util.StationLookup;
+import de.mrjulsen.crn.data.StationTag;
 import de.mrjulsen.crn.data.train.TrainUtils;
 
 /**
@@ -51,8 +55,16 @@ public final class TimetableIndex {
     /** How long a built index may be handed out again, in ticks. Matches the backend update rate. */
     private static final long MAX_AGE = 100;
 
-    /** The most cycles a single train is unrolled into, whatever the window would allow. */
-    private static final int MAX_CYCLES_PER_TRAIN = 16;
+    /**
+     * The most trips one stretch of one train is unrolled into.
+     * <p>
+     * Unrolling normally stops at the end of the window, and this only catches a journey whose cycle
+     * is so short that covering the window would take an absurd number of trips. It has to be well
+     * clear of what a real timetable needs: a shuttle running every ten seconds fills a day's window
+     * with something over a hundred trips, and a limit that cut in there would quietly make the line
+     * disappear for most of the window rather than merely bounding the work.
+     */
+    private static final int MAX_TRIPS_PER_STRETCH = 128;
 
     /** One opportunity to get on a trip: the trip, and which of its calls to board at. */
     public record Boarding(int trip, int call, long departure) {}
@@ -182,12 +194,17 @@ public final class TimetableIndex {
         if (byTag != null) {
             return byTag;
         }
+
+        // A filter can match several stations. Whichever it is, it has to be the same one every time:
+        // resolving to a different station between two searches would answer the same question two
+        // different ways, so the candidates are ordered rather than taken as the map hands them out.
+        String best = null;
         for (Map.Entry<String, Integer> entry : nodeByStation.entrySet()) {
-            if (TrainUtils.stationMatches(entry.getKey(), name)) {
-                return entry.getValue();
+            if (TrainUtils.stationMatches(entry.getKey(), name) && (best == null || entry.getKey().compareTo(best) < 0)) {
+                best = entry.getKey();
             }
         }
-        return -1;
+        return best == null ? -1 : nodeByStation.get(best);
     }
 
     /** How many station nodes the index knows. */
@@ -242,30 +259,35 @@ public final class TimetableIndex {
             this.until = until;
         }
 
-        /** The usable stretch of one train's journey, before it is unrolled into cycles. */
+        /** One usable stretch of a train's journey, before it is unrolled into cycles. */
         private record Template(List<TripCall> calls, int boardableCalls) {}
 
+        /**
+         * Adds every travel opportunity one train offers over the window.
+         * <p>
+         * A journey can hold more than one stretch a traveller may ride - between them the train is
+         * doing something they cannot follow it through - and each of those is its own service. All of
+         * them are added, because a stretch left out is one no route can ever use, however well the
+         * train describes it.
+         */
         private void add(TrainSnapshot train, JourneySnapshot journey) {
-            Template template = buildTemplate(journey);
-            if (template == null) {
-                return;
-            }
+            for (Template template : buildTemplates(journey)) {
+                Trip base = new Trip(train.trainId(), train.sessionId(), train.trainName(),
+                    train.displayName(), train.iconId(), 0, template.calls(), template.boardableCalls());
 
-            Trip base = new Trip(train.trainId(), train.sessionId(), train.trainName(),
-                train.displayName(), 0, template.calls(), template.boardableCalls());
-
-            if (!journey.repeats()) {
-                addTrip(base);
-                return;
-            }
-
-            long cycleDuration = journey.totalDuration();
-            for (int cycle = 0; cycle < MAX_CYCLES_PER_TRAIN; cycle++) {
-                long shift = cycle * cycleDuration;
-                if (base.firstDeparture() + shift > until) {
-                    break;
+                if (!journey.repeats()) {
+                    addTrip(base);
+                    continue;
                 }
-                addTrip(cycle == 0 ? base : base.shifted(shift, cycle));
+
+                long cycleDuration = journey.totalDuration();
+                for (int cycle = 0; cycle < MAX_TRIPS_PER_STRETCH; cycle++) {
+                    long shift = cycle * cycleDuration;
+                    if (base.firstDeparture() + shift > until) {
+                        break;
+                    }
+                    addTrip(cycle == 0 ? base : base.shifted(shift, cycle));
+                }
             }
         }
 
@@ -276,23 +298,26 @@ public final class TimetableIndex {
         }
 
         /**
-         * The stretch of a journey a traveller can actually ride, as one trip of the current cycle.
+         * Every stretch of a journey a traveller can actually ride, as trips of the current cycle.
          * <p>
          * A cyclic journey is laid out twice over, so that a ride starting near the end of a cycle can
-         * still reach a station lying beyond the point where the journey wraps around. The longest
-         * uninterrupted run of usable calls in that layout is what gets offered; a stretch closed to
-         * passengers, a stop without times, or times that fail to increase all end a run. Taking the
-         * longest run rather than the first makes the result independent of where the train happens
-         * to be standing right now.
+         * still reach a station lying beyond the point where the journey wraps around. Every
+         * uninterrupted run of usable calls in that layout becomes a stretch of its own; a stretch
+         * closed to passengers, a stop without times, times that fail to increase, or a point the
+         * train carries nobody through all end a run.
+         * <p>
+         * The same opportunity must not be offered twice, and the second lap of the layout is the same
+         * as the first lap of the following cycle. A stretch beginning there is therefore left with
+         * nowhere to board, which is what keeps it out of the index.
          */
-        private Template buildTemplate(JourneySnapshot journey) {
+        private List<Template> buildTemplates(JourneySnapshot journey) {
             List<StopSnapshot> ordered = journey.upcomingStops();
             if (ordered.isEmpty()) {
                 ordered = journey.stops();
             }
             int cycleLength = ordered.size();
             if (cycleLength < 2) {
-                return null;
+                return List.of();
             }
 
             Map<Integer, SectionSnapshot> sections = new HashMap<>();
@@ -310,47 +335,62 @@ public final class TimetableIndex {
                 if (!stop.hasTimes() || !isServiceable(stop, journey, sections)) {
                     continue;
                 }
-                long shift = (i / cycleLength) * journey.totalDuration();
+                int lap = i / cycleLength;
+                long shift = lap * journey.totalDuration();
                 TripSection section = tripSections.computeIfAbsent(stop.sectionIndex(),
                     x -> toTripSection(x, sections.get(x)));
                 laid[i] = new TripCall(
-                    nodeOf(stop.station()),
-                    stop.station(),
+                    nodeOf(stop.realtimeStation()),
+                    stop.realtimeStation(),
+                    stop.scheduledStation(),
                     stop.entryIndex(),
+                    stop.stopIndex(),
                     stop.scheduled().shifted(shift),
                     stop.realtime().arrival() + shift,
                     stop.realtime().departure() + shift,
-                    stop.completedVisits(),
+                    stop.completedVisits() + lap,
                     section,
                     stop.title()
                 );
             }
 
-            int bestStart = -1;
-            int bestLength = 0;
+            List<Template> templates = new ArrayList<>();
             int runStart = -1;
             for (int i = 0; i < length; i++) {
-                boolean breaks = laid[i] == null
-                    || (runStart >= 0 && (laid[i].arrival() < laid[i - 1].departure() || !ridesThrough(laid[i - 1], laid[i])));
-                if (breaks) {
-                    runStart = laid[i] == null ? -1 : i;
-                } else if (runStart < 0) {
+                if (laid[i] == null) {
+                    addTemplate(templates, laid, runStart, i, cycleLength);
+                    runStart = -1;
+                    continue;
+                }
+                if (runStart < 0) {
+                    runStart = i;
+                } else if (laid[i].arrival() < laid[i - 1].departure() || !ridesThrough(laid[i - 1], laid[i])) {
+                    addTemplate(templates, laid, runStart, i, cycleLength);
                     runStart = i;
                 }
-                if (runStart >= 0 && i - runStart + 1 > bestLength) {
-                    bestStart = runStart;
-                    bestLength = i - runStart + 1;
-                }
             }
+            addTemplate(templates, laid, runStart, length, cycleLength);
+            return templates;
+        }
 
-            if (bestLength < 2) {
-                return null;
+        /**
+         * Takes the run between the given positions as a stretch, if it is one anybody can use: it
+         * needs somewhere to get on and somewhere to get off, and at least one of its calls has to
+         * lie in the first lap for there to be a boarding at all.
+         */
+        private static void addTemplate(List<Template> templates, TripCall[] laid, int start, int end, int cycleLength) {
+            if (start < 0 || end - start < 2) {
+                return;
             }
-            List<TripCall> calls = new ArrayList<>(bestLength);
-            for (int i = bestStart; i < bestStart + bestLength; i++) {
+            int boardable = Math.min(end - start, cycleLength - start);
+            if (boardable <= 0) {
+                return;
+            }
+            List<TripCall> calls = new ArrayList<>(end - start);
+            for (int i = start; i < end; i++) {
                 calls.add(laid[i]);
             }
-            return new Template(calls, cycleLength - bestStart);
+            templates.add(new Template(calls, boardable));
         }
 
         /**
@@ -359,8 +399,17 @@ public final class TimetableIndex {
          * Within a section they always are. Across a section boundary only if the section being left
          * declares that it still covers the following one's first stop - otherwise the train changes
          * role there and carries nobody over.
+         * <p>
+         * The end of a cycle is such a boundary too, even where the section either side of it is the
+         * same one. A journey with a single section runs into itself when it starts over, and asking
+         * only whether the section matches would answer "yes, ride on" and never look at the flag -
+         * which is how a service ending at its terminus used to carry passengers straight round the
+         * loop and back out again.
          */
         private static boolean ridesThrough(TripCall from, TripCall to) {
+            if (to.startsNewLap(from)) {
+                return from.section().includesNextSectionStart();
+            }
             return from.section() == to.section() || from.section().includesNextSectionStart();
         }
 
@@ -372,10 +421,17 @@ public final class TimetableIndex {
          * same rule the departure boards apply.
          */
         private static boolean isServiceable(StopSnapshot stop, JourneySnapshot journey, Map<Integer, SectionSnapshot> sections) {
-            if (stop.sectionUsable()) {
+            SectionSnapshot section = sections.get(stop.sectionIndex());
+            if (section == null || section.usable()) {
                 return true;
             }
-            if (!stop.firstStopOfSection() || sections.size() < 2) {
+            boolean firstStopOfSection = !section.stops().isEmpty()
+                && section.stops().get(0).stopIndex() == stop.stopIndex();
+            if (!firstStopOfSection || sections.size() < 2) {
+                return false;
+            }
+            if (stop.sectionIndex() == 0 && !journey.cyclic()) {
+                // Only a journey that comes round again has a section before its first one.
                 return false;
             }
             int previousIndex = Math.floorMod(stop.sectionIndex() - 1, journey.sections().size());
@@ -385,7 +441,7 @@ public final class TimetableIndex {
 
         private static TripSection toTripSection(int index, SectionSnapshot section) {
             if (section == null) {
-                return new TripSection(index, null, null, StationRef.NONE, false);
+                return new TripSection(index, LineRef.NONE, CategoryRef.NONE, StationRef.NONE, false);
             }
             return new TripSection(index, section.line(), section.category(),
                 section.destination(), section.includesNextSectionStart());
@@ -393,7 +449,7 @@ public final class TimetableIndex {
 
         private int nodeOf(StationRef station) {
             String key = station.hasTag()
-                ? "#" + station.tag().getId()
+                ? "#" + station.tagId()
                 : "@" + station.name();
 
             Integer existing = nodeByKey.get(key);
@@ -407,8 +463,13 @@ public final class TimetableIndex {
             nodeByKey.put(key, node);
             nodeByStation.put(station.name(), node);
             if (station.hasTag()) {
-                for (String member : station.tag().getAllStationNames()) {
-                    nodeByStation.putIfAbsent(member, node);
+                // The station carries its tag's name but not its members, so the tag itself is what
+                // says which other stations share this node.
+                StationTag tag = StationLookup.findTag(station.name());
+                if (tag != null) {
+                    for (String member : tag.getAllStationNames()) {
+                        nodeByStation.putIfAbsent(member, node);
+                    }
                 }
                 nodeByTagName.putIfAbsent(station.tagName().toLowerCase(), node);
             }

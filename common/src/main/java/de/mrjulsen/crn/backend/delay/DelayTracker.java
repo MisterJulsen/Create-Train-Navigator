@@ -199,8 +199,7 @@ public final class DelayTracker {
      */
     public DisruptionOutcome evaluateDisruption(long now) {
         int fallback = ModCommonConfig.DISRUPTION_DISPLAY_DURATION.get();
-        boolean deliberate = active.stream().anyMatch(x -> x.severity() == DelaySeverity.IMPORTANT
-            && handlingOf(x) == DisruptionHandling.DELIBERATE);
+        boolean deliberate = active.stream().anyMatch(x -> x.severity() == DelaySeverity.IMPORTANT && handlingOf(x) == DisruptionHandling.DELIBERATE);
         boolean anyReason = false;
 
         for (DelayInstance instance : active) {
@@ -214,6 +213,7 @@ public final class DelayTracker {
             int duration = DelayCauseRegistry.get(instance.causeId())
                 .map(DelayCause::displayDurationWhileOutOfService)
                 .orElse(fallback);
+
             if (duration < 0 || now - instance.since() < duration) {
                 return new DisruptionOutcome(true, deliberate);
             }

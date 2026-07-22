@@ -3,10 +3,11 @@ package de.mrjulsen.crn.client.gui.overlay.pages;
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.overlay.pages.RouteOverviewPage.RoutePathIcons;
+import de.mrjulsen.crn.client.journey.JourneyTracker;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
-import de.mrjulsen.crn.data.StationTag.StationInfo;
-import de.mrjulsen.crn.data.navigation.ClientRoute;
-import de.mrjulsen.crn.data.navigation.TransferConnection;
+import de.mrjulsen.crn.navigator.route.RouteCall;
+import de.mrjulsen.crn.navigator.route.RouteLeg;
+import de.mrjulsen.crn.navigator.route.RouteTransfer;
 import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
@@ -28,26 +29,24 @@ public class TransferPage extends AbstractRouteDetailsPage {
     private static final String keyTransferWithPlatform = "gui.createrailwaysnavigator.route_overview.transfer_with_platform";
     private static final String keyTimeNow = "gui.createrailwaysnavigator.time.now";
 
-    private final TransferConnection connection;
-    private MultiLineLabel messageLabel;
+    private final RouteLeg connectingLeg;
+    private final RouteTransfer transfer;
+    private final MultiLineLabel messageLabel;
 
-    public TransferPage(ClientRoute route, TransferConnection connection) {
-        super(route);
-        this.connection = connection;
+    public TransferPage(JourneyTracker tracker, RouteTransfer transfer, RouteLeg connectingLeg) {
+        super(tracker);
+        this.transfer = transfer;
+        this.connectingLeg = connectingLeg;
 
-        String terminus = connection.getDepartureStation().getDisplayTitle();
-        StationInfo info = connection.getDepartureStation().getRealTimeStationTag().info();
-        this.messageLabel = MultiLineLabel.create(font,
-        info.platform() == null || info.platform().isBlank() ?
-        CustomLanguage.translate(keyTransfer,
-            connection.getDepartureStation().getTrainDisplayName(),
-            terminus
-        ) : 
-        CustomLanguage.translate(keyTransferWithPlatform,
-        connection.getDepartureStation().getTrainDisplayName(),
-            terminus,
-            info.platform()
-        ), width() - (15 + ModGuiIcons.ICON_SIZE));
+        this.messageLabel = MultiLineLabel.create(font, transferMessage(connectingLeg), width() - (15 + ModGuiIcons.ICON_SIZE));
+    }
+
+    /** The "change to <train> towards <destination>" line, with the platform when one is known. */
+    static Component transferMessage(RouteLeg connectingLeg) {
+        String platform = connectingLeg.boarding().realtimePlatform();
+        return platform == null || platform.isBlank()
+            ? CustomLanguage.translate(keyTransfer, connectingLeg.displayName(), connectingLeg.destinationText())
+            : CustomLanguage.translate(keyTransferWithPlatform, connectingLeg.displayName(), connectingLeg.destinationText(), platform);
     }
 
     @Override
@@ -57,20 +56,18 @@ public class TransferPage extends AbstractRouteDetailsPage {
 
     @Override
     public void renderMainLayer(DLGuiGraphics graphics, double mouseX, double mouseY, Rectangle renderBounds) {
+        RouteCall boarding = connectingLeg.boarding();
         int y = 0;
-        RouteOverviewPage.renderStation(graphics, -4, width(), font, connection.getDepartureStation(), RoutePathIcons.START, true, connection.isConnectionMissed());
+        RouteOverviewPage.renderStation(graphics, -4, width(), font, boarding, RoutePathIcons.START, true, !transfer.state().isReachable());
         y += 16;
         GuiUtils.fill(graphics, 0, y, width(), 1, DLColor.WHITE);
-        
-        // Title
-        ModGuiIcons.WALK.render(graphics, 5, y + 3);        
-        long transferTime = connection.getDepartureStation().getRealTimeDepartureTime() - ModUtils.getTransformedWorldTime();
+
+        ModGuiIcons.WALK.render(graphics, 5, y + 3);
+        long transferTime = boarding.realtime().departure() - ModUtils.getTransformedWorldTime();
         Component transferTimeText = TextUtils.text(new DLTime(transferTime, VanillaTimeSystem.INSTANCE).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME, DLTime.defaultTimeSystem()));
         GuiUtils.drawString(graphics, font, 10 + ModGuiIcons.ICON_SIZE, y + 3 + ModGuiIcons.ICON_SIZE / 2 - font.lineHeight / 2, CustomLanguage.translate(keyScheduleTransfer).append(" ").append(transferTime > 0 ? transferTimeText : CustomLanguage.translate(keyTimeNow)).withStyle(ChatFormatting.BOLD), DLColor.WHITE, ETextAlignment.LEFT, false);
         y += 5 + ModGuiIcons.ICON_SIZE;
-        
-        // Details
+
         this.messageLabel.renderLeftAligned(graphics.graphics(), 10 + ModGuiIcons.ICON_SIZE, y, font.lineHeight, 0xFFDBDBDB);
     }
-    
 }

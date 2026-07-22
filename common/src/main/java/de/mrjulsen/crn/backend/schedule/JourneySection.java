@@ -44,7 +44,7 @@ public final class JourneySection implements IJourneyEntry<JourneySection> {
     }
 
     static JourneySection def() {
-        return new JourneySection(0, 0, null, null, false, true, true);
+        return new JourneySection(0, 0, null, null, true, true, true);
     }
 
     void addStop(JourneyStop stop) {

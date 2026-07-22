@@ -9,6 +9,8 @@ import de.mrjulsen.crn.backend.delay.DelayInstance;
 import de.mrjulsen.crn.backend.delay.DelaySeverity;
 import de.mrjulsen.crn.backend.realtime.RealtimeTracker;
 import de.mrjulsen.crn.backend.timing.StopTimings;
+import de.mrjulsen.crn.util.NbtHelper;
+import net.minecraft.nbt.CompoundTag;
 
 /**
  * An immutable report on why a train is late, and by how much.
@@ -106,4 +108,56 @@ public record DelayReport(
     public long attributedDelay() {
         return causes.stream().filter(DelayInstance::hasEstimatedDelay).mapToLong(DelayInstance::estimatedDelayTicks).sum();
     }
+
+    /** Serializes this report. */
+    public CompoundTag toNbt() {
+        CompoundTag nbt = new CompoundTag();
+        NbtHelper.putNullableUUID(nbt, NBT_TRAIN_ID, trainId);
+        nbt.putString(NBT_TRAIN_NAME, trainName == null ? "" : trainName);
+        nbt.putBoolean(NBT_DELAYED, delayed);
+        nbt.putBoolean(NBT_CANCELLED, cancelled);
+        nbt.putLong(NBT_MAX_DEVIATION, maxDeviation);
+        nbt.putLong(NBT_DELAY_OFFSET, delayOffset);
+        nbt.putLong(NBT_NEXT_ARRIVAL_DEVIATION, nextStopArrivalDeviation);
+        nbt.putLong(NBT_NEXT_DEPARTURE_DEVIATION, nextStopDepartureDeviation);
+        nbt.putInt(NBT_SIGNAL_WAIT, signalWaitTicks);
+        nbt.putInt(NBT_STALLED, stalledTicks);
+        nbt.putInt(NBT_DWELL, dwellTicks);
+        nbt.put(NBT_BLOCKING_TRAINS, NbtHelper.writeStrings(blockingTrains));
+        nbt.put(NBT_CAUSES, NbtHelper.writeList(causes, DelayInstance::toNbt));
+        return nbt;
+    }
+
+    /** Deserializes a report written by {@link #toNbt()}. */
+    public static DelayReport fromNbt(CompoundTag nbt) {
+        return new DelayReport(
+            NbtHelper.readNullableUUID(nbt, NBT_TRAIN_ID),
+            nbt.getString(NBT_TRAIN_NAME),
+            nbt.getBoolean(NBT_DELAYED),
+            nbt.getBoolean(NBT_CANCELLED),
+            nbt.getLong(NBT_MAX_DEVIATION),
+            nbt.getLong(NBT_DELAY_OFFSET),
+            nbt.getLong(NBT_NEXT_ARRIVAL_DEVIATION),
+            nbt.getLong(NBT_NEXT_DEPARTURE_DEVIATION),
+            nbt.getInt(NBT_SIGNAL_WAIT),
+            nbt.getInt(NBT_STALLED),
+            nbt.getInt(NBT_DWELL),
+            NbtHelper.readStrings(nbt, NBT_BLOCKING_TRAINS),
+            NbtHelper.readList(nbt, NBT_CAUSES, DelayInstance::fromNbt)
+        );
+    }
+
+    private static final String NBT_TRAIN_ID = "TrainId";
+    private static final String NBT_TRAIN_NAME = "TrainName";
+    private static final String NBT_DELAYED = "Delayed";
+    private static final String NBT_CANCELLED = "Cancelled";
+    private static final String NBT_MAX_DEVIATION = "MaxDeviation";
+    private static final String NBT_DELAY_OFFSET = "DelayOffset";
+    private static final String NBT_NEXT_ARRIVAL_DEVIATION = "NextStopArrivalDeviation";
+    private static final String NBT_NEXT_DEPARTURE_DEVIATION = "NextStopDepartureDeviation";
+    private static final String NBT_SIGNAL_WAIT = "SignalWaitTicks";
+    private static final String NBT_STALLED = "StalledTicks";
+    private static final String NBT_DWELL = "DwellTicks";
+    private static final String NBT_BLOCKING_TRAINS = "BlockingTrains";
+    private static final String NBT_CAUSES = "Causes";
 }

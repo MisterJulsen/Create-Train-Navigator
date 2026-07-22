@@ -5,9 +5,9 @@ import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.gui.windows.ScheduleBoardWindow;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.config.ModCommonConfig;
-import de.mrjulsen.crn.data.train.ClientTrainStop;
-import de.mrjulsen.crn.data.navigation.ClientRoute;
-import de.mrjulsen.crn.data.navigation.ClientRoutePart;
+import de.mrjulsen.crn.navigator.route.RouteCall;
+import de.mrjulsen.crn.navigator.route.RouteJourney;
+import de.mrjulsen.crn.navigator.route.RouteLeg;
 import de.mrjulsen.mcdragonlib.client.gui.events.DLGuiStandardEvents;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLButton;
 import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
@@ -29,13 +29,13 @@ public class RoutePartEntryWidget extends DLButton {
     protected static final DLTexture GUI = new DLTexture(DLUtils.resourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/widgets.png"), 256, 256);
     protected static final int ENTRY_WIDTH = 225;
 
-    private final ClientRoute route;
-    private final ClientRoutePart part;
-    private final ClientTrainStop stop;
+    private final RouteJourney route;
+    private final RouteLeg part;
+    private final RouteCall stop;
     private final TrainStopType type;
     private boolean valid;
 
-    public RoutePartEntryWidget(ClientRoutePart part, ClientRoute route, ClientTrainStop stop, TrainStopType type, boolean valid) {
+    public RoutePartEntryWidget(RouteLeg part, RouteJourney route, RouteCall stop, TrainStopType type, boolean valid) {
         super(0, 0, ENTRY_WIDTH, type.h);
         this.route = route;
         this.part = part;
@@ -44,7 +44,7 @@ public class RoutePartEntryWidget extends DLButton {
         this.valid = valid;
 
         addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
-            getWindowManager().createModal(mgr -> new ScheduleBoardWindow(mgr, stop.getRealTimeStationTag()));
+            getWindowManager().createModal(mgr -> new ScheduleBoardWindow(mgr, stop.realtimeStation()));
             return false;
         });
 
@@ -63,14 +63,14 @@ public class RoutePartEntryWidget extends DLButton {
     @Override
     public void tick() {
         super.tick();
-        this.valid = route.isPartReachable(part);
+        this.valid = route.isLegReachable(part);
     }
 
     protected void renderData(DLGuiGraphics graphics, int y) {
         final float scale = 0.75f;
 
-        String platformText = stop.getRealTimeStationTag().info().platform();
-        String nameText = stop.getRealTimeStationTag().tagName();
+        String platformText = stop.realtimeStation().info().platform();
+        String nameText = stop.realtimeStation().displayName();
         int maxStationNameWidth = 138 - 8 - graphics.defaultFont().width(platformText) - 6;
 
         GuiUtils.drawString(graphics, graphics.defaultFont(), 80, type.dy + 5, TextUtils.truncateWithEllipsis(graphics.defaultFont(), nameText, maxStationNameWidth), DLColor.WHITE, ETextAlignment.LEFT, false);
@@ -83,18 +83,18 @@ public class RoutePartEntryWidget extends DLButton {
 
         if (this.type == TrainStopType.TRANSIT) {
             graphics.poseStack().translate((x() + 28) / scale, (y + 2) / scale, 0);
-            GuiUtils.drawString(graphics, graphics.defaultFont(), 0,  0, TextUtils.text(new DLTime(stop.getScheduledArrivalTime(),   VanillaTimeSystem.INSTANCE).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem())).withStyle(valid ? ChatFormatting.RESET : ChatFormatting.STRIKETHROUGH), valid ? DLColor.WHITE : Constants.COLOR_DELAYED, ETextAlignment.LEFT, false);
-            GuiUtils.drawString(graphics, graphics.defaultFont(), 0, 12, TextUtils.text(new DLTime(stop.getScheduledDepartureTime(), VanillaTimeSystem.INSTANCE).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem())).withStyle(valid ? ChatFormatting.RESET : ChatFormatting.STRIKETHROUGH), valid ? DLColor.WHITE : Constants.COLOR_DELAYED, ETextAlignment.LEFT, false);
+            GuiUtils.drawString(graphics, graphics.defaultFont(), 0,  0, TextUtils.text(new DLTime(stop.scheduled().arrival(), VanillaTimeSystem.INSTANCE).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem())).withStyle(valid ? ChatFormatting.RESET : ChatFormatting.STRIKETHROUGH), valid ? DLColor.WHITE : Constants.COLOR_DELAYED, ETextAlignment.LEFT, false);
+            GuiUtils.drawString(graphics, graphics.defaultFont(), 0, 12, TextUtils.text(new DLTime(stop.scheduled().departure(), VanillaTimeSystem.INSTANCE).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem())).withStyle(valid ? ChatFormatting.RESET : ChatFormatting.STRIKETHROUGH), valid ? DLColor.WHITE : Constants.COLOR_DELAYED, ETextAlignment.LEFT, false);
             
-            if (stop.shouldRenderRealTime() && !part.isCancelled() && valid) {
-                GuiUtils.drawString(graphics, graphics.defaultFont(), 30,  0, TextUtils.text(new DLTime(stop.getScheduledArrivalTime() + (stop.getArrivalTimeDeviation() / precision * precision),     VanillaTimeSystem.INSTANCE).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem())), stop.isArrivalDelayed() ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME, ETextAlignment.LEFT, false);        
-                GuiUtils.drawString(graphics, graphics.defaultFont(), 30, 12, TextUtils.text(new DLTime(stop.getScheduledDepartureTime() + (stop.getDepartureTimeDeviation() / precision * precision), VanillaTimeSystem.INSTANCE).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem())), stop.isDepartureDelayed() ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME, ETextAlignment.LEFT, false);
+            if (stop.hasRealtime() && !part.cancelled() && valid) {
+                GuiUtils.drawString(graphics, graphics.defaultFont(), 30,  0, TextUtils.text(new DLTime(stop.realtime().arrival(), VanillaTimeSystem.INSTANCE).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem())), stop.isArrivalDelayed() ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME, ETextAlignment.LEFT, false);
+                GuiUtils.drawString(graphics, graphics.defaultFont(), 30, 12, TextUtils.text(new DLTime(stop.realtime().departure(), VanillaTimeSystem.INSTANCE).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem())), stop.isDepartureDelayed() ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME, ETextAlignment.LEFT, false);
             }
         } else {
             graphics.poseStack().translate((28) / scale, (y + 6) / scale, 0); 
-            GuiUtils.drawString(graphics, graphics.defaultFont(), 0, 0, TextUtils.text(new DLTime((type == TrainStopType.START ? stop.getScheduledDepartureTime() : stop.getScheduledArrivalTime()), VanillaTimeSystem.INSTANCE).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem())).withStyle(valid ? ChatFormatting.RESET : ChatFormatting.STRIKETHROUGH), valid ? DLColor.WHITE : Constants.COLOR_DELAYED, ETextAlignment.LEFT, false);
-            if (stop.shouldRenderRealTime() && !part.isCancelled() && valid) {
-                long realTime = type == TrainStopType.START ? stop.getScheduledDepartureTime() + (stop.getDepartureTimeDeviation() / precision * precision) : stop.getScheduledArrivalTime() + (stop.getArrivalTimeDeviation() / precision * precision);
+            GuiUtils.drawString(graphics, graphics.defaultFont(), 0, 0, TextUtils.text(new DLTime((type == TrainStopType.START ? stop.scheduled().departure() : stop.scheduled().arrival()), VanillaTimeSystem.INSTANCE).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem())).withStyle(valid ? ChatFormatting.RESET : ChatFormatting.STRIKETHROUGH), valid ? DLColor.WHITE : Constants.COLOR_DELAYED, ETextAlignment.LEFT, false);
+            if (stop.hasRealtime() && !part.cancelled() && valid) {
+                long realTime = type == TrainStopType.START ? stop.realtime().departure() : stop.realtime().arrival();
                 GuiUtils.drawString(graphics, graphics.defaultFont(), 30, 0, TextUtils.text(new DLTime(realTime, VanillaTimeSystem.INSTANCE).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem())), (type == TrainStopType.START ? stop.isDepartureDelayed() : stop.isArrivalDelayed()) ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME, ETextAlignment.LEFT, false);        
             }            
         }

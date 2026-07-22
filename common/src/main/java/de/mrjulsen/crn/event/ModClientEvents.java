@@ -2,6 +2,7 @@ package de.mrjulsen.crn.event;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.ClientWrapper;
+import de.mrjulsen.crn.client.RealtimeTrains;
 import de.mrjulsen.crn.client.input.ModKeys;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.config.ModCommonConfig;
@@ -40,6 +41,7 @@ public class ModClientEvents {
                 ClientTrainListener.tick(() -> {
                     CRNEventsManager.getEvent(DefaultTrainDataRefreshEvent.class).run();
                 });
+                RealtimeTrains.tick();
             }
         });
 
@@ -61,6 +63,7 @@ public class ModClientEvents {
             CRNEventsManager.clearEvents();
             InstanceManager.removeRouteOverlay();
             ClientTrainListener.clear();
+            RealtimeTrains.clear();
         });
 
         ClientGuiEvent.DEBUG_TEXT_LEFT.register((texts) -> {

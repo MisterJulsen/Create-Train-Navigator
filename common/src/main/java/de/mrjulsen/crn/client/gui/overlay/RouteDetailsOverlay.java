@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.mojang.blaze3d.platform.InputConstants;
 
+import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.BarColor;
@@ -21,11 +22,14 @@ import de.mrjulsen.crn.client.gui.widgets.skins.CRNFlatButtonRenderer;
 import de.mrjulsen.crn.client.gui.windows.RouteDetailsWindow;
 import de.mrjulsen.crn.client.gui.windows.RouteOverlaySettingsWindow;
 import de.mrjulsen.crn.client.input.ModKeys;
+import de.mrjulsen.crn.client.journey.JourneyPhase;
+import de.mrjulsen.crn.client.journey.JourneyTracker;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
-import de.mrjulsen.crn.data.StationTag.StationInfo;
-import de.mrjulsen.crn.data.navigation.ClientRoute;
-import de.mrjulsen.crn.data.navigation.TransferConnection;
+import de.mrjulsen.crn.data.SavedRoutesManager;
+import de.mrjulsen.crn.navigator.route.RouteCall;
+import de.mrjulsen.crn.navigator.route.RouteJourney;
+import de.mrjulsen.crn.navigator.route.RouteLeg;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.gui.events.DLGuiStandardEvents;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLWindow;
@@ -43,6 +47,7 @@ import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.math.Rectangle;
 import de.mrjulsen.mcdragonlib.util.time.DLTime;
 import de.mrjulsen.mcdragonlib.util.time.TimeContext;
+import de.mrjulsen.mcdragonlib.util.time.VanillaTimeSystem;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.animation.LerpedFloat.Chaser;
 import net.minecraft.ChatFormatting;
@@ -50,47 +55,58 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.level.Level;
 
+/**
+ * The in-game overlay following a journey the player is travelling.
+ * <p>
+ * Which page is shown follows straight from {@link JourneyPhase}; the ticker text follows from the
+ * phase and from which call is next. The old overlay subscribed to fourteen separate route events
+ * and had to keep its own idea of the journey's state in sync with them - here there is one source
+ * of truth, and every page reads from it rather than being handed a frozen copy.
+ */
 public class RouteDetailsOverlay extends DLWindow {
 
     private static final Component title = TextUtils.translate("gui.createrailwaysnavigator.route_overview.title");
     private static final int GUI_WIDTH = 226;
     private static final int GUI_HEIGHT = 118;
     private static final int SCROLL_AREA_HEIGHT = 25;
-    private static final int SLIDING_TEXT_AREA_WIDTH = 220;
 
-    private float slidingTextOffset = 0;
-    private int slidingTextWidth = 0;
-
-    private LerpedFloat xPos;
-    private LerpedFloat yPos;
-    
     private static final String keyTrainDetails = "gui.createrailwaysnavigator.route_overview.train_details";
     private static final String keyTransfer = "gui.createrailwaysnavigator.route_overview.transfer";
     private static final String keyTransferWithPlatform = "gui.createrailwaysnavigator.route_overview.transfer_with_platform";
     private static final String keyAfterJourney = "gui.createrailwaysnavigator.route_overview.after_journey";
     private static final String keyOptionsText = "gui.createrailwaysnavigator.route_overview.options";
-    private static final String keyKeybindOptions = "key.createrailwaysnavigator.route_overlay_options";    
+    private static final String keyKeybindOptions = "key.createrailwaysnavigator.route_overlay_options";
     private static final String keyJourneyBegins = "gui.createrailwaysnavigator.route_overview.journey_begins";
     private static final String keyJourneyBeginsWithPlatform = "gui.createrailwaysnavigator.route_overview.journey_begins_with_platform";
     private static final String keyNextStop = "gui.createrailwaysnavigator.route_overview.next_stop";
     private static final String keyConnectionMissedInfo = "gui.createrailwaysnavigator.route_overview.connection_missed_info";
     private static final String keyTrainCancelledInfo = "gui.createrailwaysnavigator.route_overview.train_cancelled_info";
 
+    private static final String keyNotificationJourneyBeginsTitle = "gui.createrailwaysnavigator.route_overview.notification.journey_begins.title";
+    private static final String keyNotificationJourneyBegins = "gui.createrailwaysnavigator.route_overview.notification.journey_begins";
+    private static final String keyNotificationJourneyBeginsWithPlatform = "gui.createrailwaysnavigator.route_overview.notification.journey_begins_with_platform";
+    private static final String keyNotificationJourneyCompletedTitle = "gui.createrailwaysnavigator.route_overview.notification.journey_completed.title";
+    private static final String keyNotificationJourneyCompleted = "gui.createrailwaysnavigator.route_overview.notification.journey_completed";
+    private static final String keyNotificationConnectionMissedTitle = "gui.createrailwaysnavigator.route_overview.notification.connection_missed.title";
+    private static final String keyNotificationConnectionMissed = "gui.createrailwaysnavigator.route_overview.notification.connection_missed";
+    private static final String keyNotificationTrainCancelledTitle = "gui.createrailwaysnavigator.route_overview.notification.train_cancelled.title";
+    private static final String keyNotificationTrainCancelled = "gui.createrailwaysnavigator.route_overview.notification.train_cancelled";
+
+    private final LerpedFloat xPos;
+    private final LerpedFloat yPos;
 
     private final Font font = Minecraft.getInstance().font;
-    private final ClientRoute route;
-    private boolean journeyCompleted = false;
+    private final JourneyTracker tracker;
 
     private final DLPanel contentPanel;
     private final SlidingTextComponent slidingTextComponent;
     private AbstractRouteDetailsPage currentPage;
+    private boolean showNotifications = true;
 
-    public RouteDetailsOverlay(DLWindowManager manager, Level level, ClientRoute route, int width, int height) {
+    public RouteDetailsOverlay(DLWindowManager manager, RouteJourney route, int width, int height) {
         super(manager);
-        this.route = route;
-        route.addListener();
+        this.tracker = new JourneyTracker(route);
 
         scale.set(ModClientConfig.OVERLAY_SCALE.get());
         setSize(GUI_WIDTH, GUI_HEIGHT);
@@ -98,7 +114,7 @@ public class RouteDetailsOverlay extends DLWindow {
         windowSpawnPosition.set(WindowPosition.CENTER);
         xPos = LerpedFloat.linear().startWithValue(manager.getScreenWidth() / 2 - (scale.get() * (width() / 2)));
         yPos = LerpedFloat.linear().startWithValue(manager.getScreenHeight() / 2 - (scale.get() * (height() / 2)));
-        
+
         final int dy = FooterSize.DEFAULT.size() + SCROLL_AREA_HEIGHT;
         contentPanel = addComponent(new DLPanel(3, dy, width() - 6, height() - dy - FooterSize.DEFAULT.size() - 1));
         contentPanel.layout.set(new BorderLayout(0, 0));
@@ -113,10 +129,9 @@ public class RouteDetailsOverlay extends DLWindow {
         layout.addColumn("popout", 1, ColumnSizeMode.AUTO);
         layout.addColumn("close", 1, ColumnSizeMode.AUTO);
         optionsPanel.layout.set(layout);
-        
-        
-        DLButton closeBtn = optionsPanel.addComponent(new DLButton(0, 0, 16, optionsPanelSize));    
-        closeBtn.layoutContraint.set("close");    
+
+        DLButton closeBtn = optionsPanel.addComponent(new DLButton(0, 0, 16, optionsPanelSize));
+        closeBtn.layoutContraint.set("close");
         closeBtn.icon.set(ModGuiIcons.X_SMALL.getAsSprite(16, 16));
         closeBtn.text.set(TextUtils.empty());
         closeBtn.textColor.set(DragonLib.VANILLA_UI_FONT_COLOR);
@@ -138,7 +153,6 @@ public class RouteDetailsOverlay extends DLWindow {
             DLWindow.openWindow(mgr -> new RouteOverlaySettingsWindow(mgr, this));
             return false;
         });
-        
 
         DLButton popoutBtn = optionsPanel.addComponent(new DLButton(0, 0, 16, optionsPanelSize));
         popoutBtn.layoutContraint.set("popout");
@@ -148,107 +162,136 @@ public class RouteDetailsOverlay extends DLWindow {
         popoutBtn.componentRenderer.set(CRNFlatButtonRenderer.INSTANCE);
         popoutBtn.tooltip.set(new DLTooltip(List.of(TextUtils.text("Show route details")), width()));
         popoutBtn.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
-            DLWindow.openWindow(mgr -> new RouteDetailsWindow(mgr, route));
+            DLWindow.openWindow(mgr -> new RouteDetailsWindow(mgr, tracker.journey()));
             return false;
         });
 
-        
         addEventListener(DLGuiStandardEvents.ComponentPosAndSizeChanged.class, (s, e) -> {
             contentPanel.setPosition(3, dy);
             contentPanel.setSize(width() - 6, height() - dy - FooterSize.DEFAULT.size() - 1);
             optionsPanel.setPosition(3, height() - 2 - optionsPanelSize);
             optionsPanel.setSize(width() - 6, optionsPanelSize);
             return false;
-
         });
 
-        {
-            setPage(new WelcomePage(this.route));
-            String terminus = route.getStart().getDisplayTitle();
-            StationInfo info = route.getStart().getRealTimeStationTag().info();
-            String departureTimeText = new DLTime(route.getStart().getScheduledDepartureTime(), DLTime.defaultTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem());
-            setSlidingText(info.platform().isEmpty() ? CustomLanguage.translate(keyJourneyBegins, route.getStart().getTrainDisplayName(), terminus, departureTimeText) : CustomLanguage.translate(keyJourneyBeginsWithPlatform, route.getStart().getTrainDisplayName(), terminus, departureTimeText, info.platform()));
+        applyPhase(tracker.phase());
+
+        tracker.addListener(new JourneyTracker.Listener() {
+            @Override
+            public void onPhaseChanged(JourneyPhase phase, JourneyTracker source) {
+                applyPhase(phase);
+            }
+
+            @Override
+            public void onNextCallChanged(RouteCall call, JourneyTracker source) {
+                if (source.phase() == JourneyPhase.RIDING) {
+                    setSlidingText(CustomLanguage.translate(keyNextStop, call.realtimeStation().displayName()));
+                }
+            }
+        });
+        tracker.start();
+    }
+
+    /** Everything the overlay shows follows from the phase, so this is the only place pages change. */
+    private void applyPhase(JourneyPhase phase) {
+        switch (phase) {
+            case BEFORE_DEPARTURE -> {
+                setPage(new WelcomePage(tracker));
+                setSlidingText(journeyBeginsText());
+                notify(CustomLanguage.translate(keyNotificationJourneyBeginsTitle, tracker.journey().destination().displayName()), journeyBeginsNotification());
+            }
+            case RIDING -> {
+                RouteLeg leg = tracker.currentLeg();
+                setPage(new RouteOverviewPage(tracker));
+                setSlidingText(CustomLanguage.translate(keyTrainDetails, leg.displayName(), leg.destinationText()));
+            }
+            case TRANSFERRING -> {
+                RouteLeg leg = tracker.currentLeg();
+                tracker.currentTransfer().ifPresent(transfer -> setPage(new TransferPage(tracker, transfer, leg)));
+                setSlidingText(transferText(leg));
+            }
+            case COMPLETED -> {
+                setSlidingText(CustomLanguage.translate(keyAfterJourney, tracker.journey().destination().displayName()));
+                setPage(new JourneyCompletedPage(tracker, this::showNextConnections));
+                notify(CustomLanguage.translate(keyNotificationJourneyCompletedTitle), CustomLanguage.translate(keyNotificationJourneyCompleted));
+                forgetSavedRoute();
+            }
+            case CONNECTION_MISSED -> {
+                setSlidingText(CustomLanguage.translate(keyConnectionMissedInfo));
+                setPage(new ConnectionMissedPage(tracker));
+                RouteLeg missedLeg = tracker.currentLeg();
+                notify(CustomLanguage.translate(keyNotificationConnectionMissedTitle), CustomLanguage.translate(keyNotificationConnectionMissed, missedLeg.displayName(), missedLeg.destinationText()));
+            }
+            case TRAIN_CANCELLED -> {
+                RouteLeg cancelledLeg = tracker.currentLeg();
+                String trainName = cancelledLeg.displayName();
+                setSlidingText(CustomLanguage.translate(keyTrainCancelledInfo, trainName));
+                setPage(new TrainCancelledInfo(tracker, trainName));
+                notify(CustomLanguage.translate(keyNotificationTrainCancelledTitle, trainName), CustomLanguage.translate(keyNotificationTrainCancelled, trainName, cancelledLeg.destinationText()));
+            }
         }
-
-        if (route.isClosed()) return;
-
-        route.listen(ClientRoute.EVENT_DEPARTURE_FROM_ANY_STOP, this, x -> {
-            setPage(new RouteOverviewPage(this.route));
-            String terminus = x.part().getNextStop().getTerminusText();
-            setSlidingText(CustomLanguage.translate(keyTrainDetails, x.part().getNextStop().getTrainDisplayName(), terminus == null || terminus.isEmpty() ? x.part().getNextStop().getScheduleTitle() : terminus));
-        });
-        route.listen(ClientRoute.EVENT_FIRST_STOP_STATION_CHANGED, this, x -> {
-            setSlidingText(x.trainStop().getRealTimeStationTag().info().platform().isEmpty() ? CustomLanguage.translate(keyJourneyBegins) : CustomLanguage.translate(keyJourneyBeginsWithPlatform, x.trainStop().getRealTimeStationTag().info().platform()));
-        });
-        route.listen(ClientRoute.EVENT_ARRIVAL_AT_ANY_STOP, this, x -> {
-            setSlidingText(TextUtils.text(x.trainStop().getRealTimeStationTag().tagName()));
-        });
-        route.listen(ClientRoute.EVENT_ANY_STOP_ANNOUNCED, this, x -> {
-            NextConnectionsPage page = new NextConnectionsPage(this.route, null);
-            if (page.hasConnections()) {
-                setPage(page);
-            }
-        });
-        route.listen(ClientRoute.EVENT_ANNOUNCE_STOPOVER, this, x -> {
-            setSlidingText(CustomLanguage.translate(keyNextStop, x.trainStop().getRealTimeStationTag().tagName()));
-        });
-        route.listen(ClientRoute.EVENT_ANNOUNCE_LAST_STOP, this, x -> {
-            setSlidingText(CustomLanguage.translate(keyNextStop, x.trainStop().getRealTimeStationTag().tagName()));
-        });
-        route.listen(ClientRoute.EVENT_ANNOUNCE_TRANSFER_ARRIVAL_STATION, this, x -> {
-            if (x.connection().isConnectionMissed()) {
-                connectionMissed();
-                return;
-            }
-            setSlidingText(CustomLanguage.translate(keyNextStop, x.trainStop().getRealTimeStationTag().tagName()).append("   ***   ").append(getTransferSlidingText(x.connection())));
-            setPage(new TransferPage(this.route, x.connection()));
-        });        
-        route.listen(ClientRoute.EVENT_PART_CHANGED, this, x -> {
-            if (x.connection().isConnectionMissed()) {
-                connectionMissed();
-            }
-        });
-        route.listen(ClientRoute.EVENT_DEPARTURE_FROM_TRANSFER_ARRIVAL_STATION, this, x -> {
-            setSlidingText(TextUtils.text(x.connection().getArrivalStation().getRealTimeStationTag().tagName()).append("   ***   ").append(getTransferSlidingText(x.connection())));
-            setPage(new TransferPage(this.route, x.connection()));
-        });
-        route.listen(ClientRoute.EVENT_ARRIVAL_AT_LAST_STOP, this, x -> {
-            setSlidingText(CustomLanguage.translate(keyAfterJourney, x.trainStop().getRealTimeStationTag().tagName()));
-            setPage(new JourneyCompletedPage(this.route, () -> setPage(new NextConnectionsPage(route, () -> {} /*InstanceManager::removeRouteOverlay*/))));
-            route.close();
-        });
-        route.listen(ClientRoute.EVENT_DEPARTURE_FROM_LAST_STOP, this, x -> {
-            if (journeyCompleted) {
-                return;
-            }
-            setSlidingText(CustomLanguage.translate(keyAfterJourney, x.trainStop().getRealTimeStationTag().tagName()));
-            setPage(new JourneyCompletedPage(this.route, () -> setPage(new NextConnectionsPage(route, () -> {} /*InstanceManager::removeRouteOverlay*/))));
-            route.close();
-        });
-        route.listen(ClientRoute.EVENT_ANY_TRANSFER_MISSED, this, x -> {
-            connectionMissed();
-        });
-        route.listen(ClientRoute.EVENT_ANY_TRAIN_CANCELLED, this, x -> {
-            trainCancelled(x.part().getLastStop().getTrainDisplayName());
-        });
     }
 
-    private Component getTransferSlidingText(TransferConnection connection) {        
-        StationInfo info = connection.getDepartureStation().getRealTimeStationTag().info();
-        String terminus = connection.getDepartureStation().getDisplayTitle();
-        return (info == null || info.platform().isBlank() ? CustomLanguage.translate(keyTransfer, connection.getDepartureStation().getTrainDisplayName(), terminus) : CustomLanguage.translate(keyTransferWithPlatform, connection.getDepartureStation().getTrainDisplayName(), terminus, info.platform()));
+    private void notify(Component title, Component description) {
+        if (showNotifications) {
+            ClientWrapper.sendCRNNotification(title, description);
+        }
     }
 
-    private void connectionMissed() {
-        setSlidingText(CustomLanguage.translate(keyConnectionMissedInfo));
-        setPage(new ConnectionMissedPage(this.route));
-        route.close();
+    public boolean shouldShowNotifications() {
+        return showNotifications;
     }
 
-    private void trainCancelled(String trainName) {
-        setSlidingText(CustomLanguage.translate(keyTrainCancelledInfo, trainName));
-        setPage(new TrainCancelledInfo(this.route, trainName));
-        route.close();
+    public void setShowNotifications(boolean value) {
+        this.showNotifications = value;
+    }
+
+    private void showNextConnections() {
+        NextConnectionsPage page = new NextConnectionsPage(tracker, () -> {});
+        if (page.hasConnections()) {
+            setPage(page);
+        }
+    }
+
+    /**
+     * A journey that has been travelled is no longer a plan worth keeping, so it drops off the saved
+     * list the moment it completes.
+     */
+    private void forgetSavedRoute() {
+        if (SavedRoutesManager.isSaved(tracker.journey())) {
+            SavedRoutesManager.removeRoute(tracker.journey());
+            SavedRoutesManager.push(true, null);
+        }
+    }
+
+    private Component journeyBeginsText() {
+        RouteLeg leg = tracker.journey().firstLeg();
+        String platform = leg.boarding().realtimePlatform();
+        String departureTimeText = clockTime(leg.boarding().scheduled().departure());
+        return platform == null || platform.isBlank()
+            ? CustomLanguage.translate(keyJourneyBegins, leg.displayName(), leg.destinationText(), departureTimeText)
+            : CustomLanguage.translate(keyJourneyBeginsWithPlatform, leg.displayName(), leg.destinationText(), departureTimeText, platform);
+    }
+
+    /** The toast body when the journey starts. Its key takes the same values but without the lead-in. */
+    private Component journeyBeginsNotification() {
+        RouteLeg leg = tracker.journey().firstLeg();
+        String platform = leg.boarding().realtimePlatform();
+        String departureTimeText = clockTime(leg.boarding().scheduled().departure());
+        return platform == null || platform.isBlank()
+            ? CustomLanguage.translate(keyNotificationJourneyBegins, leg.displayName(), leg.destinationText(), departureTimeText)
+            : CustomLanguage.translate(keyNotificationJourneyBeginsWithPlatform, leg.displayName(), leg.destinationText(), departureTimeText, platform);
+    }
+
+    private Component transferText(RouteLeg connectingLeg) {
+        String platform = connectingLeg.boarding().realtimePlatform();
+        return platform == null || platform.isBlank()
+            ? CustomLanguage.translate(keyTransfer, connectingLeg.displayName(), connectingLeg.destinationText())
+            : CustomLanguage.translate(keyTransferWithPlatform, connectingLeg.displayName(), connectingLeg.destinationText(), platform);
+    }
+
+    private static String clockTime(long ticks) {
+        return new DLTime(ticks, VanillaTimeSystem.INSTANCE).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem());
     }
 
     public void setPage(AbstractRouteDetailsPage page) {
@@ -260,8 +303,7 @@ public class RouteDetailsOverlay extends DLWindow {
 
     @Override
     public void close() {
-        route.close();
-        journeyCompleted = true;
+        tracker.close();
     }
 
     @Override
@@ -273,47 +315,28 @@ public class RouteDetailsOverlay extends DLWindow {
         yPos.tickChaser();
     }
 
-    protected void tickSlidingText(float delta) {
-        // Sliding text
-        if (slidingTextWidth > SLIDING_TEXT_AREA_WIDTH * 0.75f) {
-            slidingTextOffset -= delta;
-            if (slidingTextOffset < -(slidingTextWidth / 2)) {
-                slidingTextOffset = (int)((SLIDING_TEXT_AREA_WIDTH + slidingTextWidth / 2) + 20);                
-            }
-        }
-    }
-
-    //#region FUNCTIONS
-
+    /** The ticker text. {@link SlidingTextComponent} scrolls it on its own if it does not fit. */
     private void setSlidingText(Component component) {
         slidingTextComponent.text.set(component);
-        slidingTextWidth = font.width(component);
-
-        if (slidingTextWidth > SLIDING_TEXT_AREA_WIDTH * 0.75f) {
-            slidingTextOffset = (int)((SLIDING_TEXT_AREA_WIDTH + slidingTextWidth / 2) + 20);
-        } else {
-            slidingTextOffset = (int)(SLIDING_TEXT_AREA_WIDTH * 0.75f / 2);
-        }
     }
-    //#endregion
 
-    //#region RENDERING
     @Override
     public void renderMainLayer(DLGuiGraphics graphics, double mouseX, double mouseY, Rectangle renderBounds) {
-        
+
         OverlayPosition pos = ModClientConfig.ROUTE_OVERLAY_POSITION.get();
         final int x = pos == OverlayPosition.TOP_LEFT || pos == OverlayPosition.BOTTOM_LEFT ? 8 : (int)(getWindowManager().getScreenWidth() - width() * scale.get() - 10);
         final int y = pos == OverlayPosition.TOP_LEFT || pos == OverlayPosition.TOP_RIGHT ? 8 : (int)(getWindowManager().getScreenHeight() - height() * scale.get() - 10);
-        
+
         xPos.chase(x, 0.2f, Chaser.EXP);
         yPos.chase(y, 0.2f, Chaser.EXP);
 
         setPosition(xPos.getValue(Minecraft.getInstance().getFrameTime()), yPos.getValue(Minecraft.getInstance().getFrameTime()));
 
-        CreateDynamicWidgets.renderWindow(graphics, 0, 0, width(), height(), currentPage.isImportant() ? ContainerColor.GOLD : ContainerColor.BLUE, currentPage.isImportant() ? BarColor.GOLD : BarColor.GRAY, FooterSize.DEFAULT.size(), FooterSize.DEFAULT.size(), false);
+        boolean important = currentPage != null && currentPage.isImportant();
+        CreateDynamicWidgets.renderWindow(graphics, 0, 0, width(), height(), important ? ContainerColor.GOLD : ContainerColor.BLUE, important ? BarColor.GOLD : BarColor.GRAY, FooterSize.DEFAULT.size(), FooterSize.DEFAULT.size(), false);
         CreateDynamicWidgets.renderContainer(graphics, 1, FooterSize.DEFAULT.size() - 1, width() - 2, SCROLL_AREA_HEIGHT, ContainerColor.GRAY);
         int dy = FooterSize.DEFAULT.size() + SCROLL_AREA_HEIGHT - 2;
-        CreateDynamicWidgets.renderContainer(graphics, 1, dy, width() - 2, height() - dy - FooterSize.DEFAULT.size() + 1, currentPage.isImportant() ? ContainerColor.GOLD : ContainerColor.BLUE);
+        CreateDynamicWidgets.renderContainer(graphics, 1, dy, width() - 2, height() - dy - FooterSize.DEFAULT.size() + 1, important ? ContainerColor.GOLD : ContainerColor.BLUE);
         GuiUtils.drawString(graphics, font, 6, 4, title, DragonLib.VANILLA_UI_FONT_COLOR, ETextAlignment.LEFT, false);
         Component timeText = TextUtils.text(new DLTime(Minecraft.getInstance().level, DLTime.defaultTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem()));
         GuiUtils.drawString(graphics, font, width() - 6, 4, timeText, DragonLib.VANILLA_UI_FONT_COLOR, ETextAlignment.RIGHT, false);
@@ -321,7 +344,7 @@ public class RouteDetailsOverlay extends DLWindow {
         GuiUtils.drawString(graphics, graphics.defaultFont(), 6, height() - 2 - graphics.defaultFont().lineHeight, TextUtils.truncateWithEllipsis(graphics.defaultFont(), TextUtils.translate(keyOptionsText, TextUtils.translate(InputConstants.getKey(Minecraft.ON_OSX ? InputConstants.KEY_LWIN : InputConstants.KEY_LCONTROL, 0).getName()).append(" + ").append(TextUtils.keybind(keyKeybindOptions)).withStyle(ChatFormatting.BOLD)), width() - 50), DragonLib.VANILLA_UI_FONT_COLOR, ETextAlignment.LEFT, false);
     }
 
-    public ClientRoute getRoute() {
-        return route;
+    public RouteJourney getRoute() {
+        return tracker.journey();
     }
 }

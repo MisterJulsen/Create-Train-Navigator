@@ -67,9 +67,6 @@ public final class Navigator {
         if (origin < 0 || destination < 0) {
             return NavigationResult.failed(NavigationStatus.UNKNOWN_STATION, now, elapsed(startedAt));
         }
-        if (origin == destination) {
-            return NavigationResult.failed(NavigationStatus.SAME_STATION, now, elapsed(startedAt));
-        }
 
         int[] waypoints = new int[query.waypoints().size()];
         for (int i = 0; i < waypoints.length; i++) {
@@ -77,6 +74,10 @@ public final class Navigator {
             if (waypoints[i] < 0) {
                 return NavigationResult.failed(NavigationStatus.UNKNOWN_STATION, now, elapsed(startedAt));
             }
+        }
+
+        if (repeatsAStation(origin, destination, waypoints)) {
+            return NavigationResult.failed(NavigationStatus.SAME_STATION, now, elapsed(startedAt));
         }
 
         WaypointPlanner planner = WaypointPlanner.of(index, query, origin, destination, waypoints);
@@ -116,7 +117,8 @@ public final class Navigator {
             long earliestDeparture = Long.MAX_VALUE;
             for (RouteJourney journey : batch) {
                 earliestDeparture = Math.min(earliestDeparture, journey.departure());
-                if (found.size() < query.maxResults() && seen.add(journey.signature())) {
+                if (found.size() < query.maxResults() && withinChangeLimit(journey, query)
+                        && seen.add(journey.signature())) {
                     found.add(journey);
                 }
             }
@@ -128,6 +130,36 @@ public final class Navigator {
         }
 
         return found;
+    }
+
+    /**
+     * Whether the same place is named twice among the stations the route has to touch.
+     * <p>
+     * Stations sharing a tag are one place, so this catches naming two platforms of the same station
+     * as well as naming one outright twice. Either way there is nothing to plan: a journey that ends
+     * where it began, or is asked to travel via somewhere it already is, has no stretch to search.
+     */
+    private static boolean repeatsAStation(int origin, int destination, int[] waypoints) {
+        Set<Integer> seen = new HashSet<>();
+        seen.add(origin);
+        for (int waypoint : waypoints) {
+            if (!seen.add(waypoint)) {
+                return true;
+            }
+        }
+        return !seen.add(destination);
+    }
+
+    /**
+     * Whether a route keeps to what the traveller asked for in the way of changes.
+     * <p>
+     * The search counts boardings, and a single ride can still hand the traveller from one service to
+     * another without their getting out - so a route that fits in the search's rounds can carry more
+     * changes than the traveller allowed. What was promised is checked against what was actually
+     * built, not against what the search believes it did.
+     */
+    private static boolean withinChangeLimit(RouteJourney journey, NavigationQuery query) {
+        return query.directOnly() ? journey.isDirect() : journey.transferCount() <= query.maxTransfers();
     }
 
     private static long elapsed(long startedAt) {

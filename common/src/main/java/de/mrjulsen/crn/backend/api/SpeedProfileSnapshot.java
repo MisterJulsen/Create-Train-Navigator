@@ -2,6 +2,9 @@ package de.mrjulsen.crn.backend.api;
 
 import java.util.List;
 
+import de.mrjulsen.crn.util.NbtHelper;
+import net.minecraft.nbt.CompoundTag;
+
 /**
  * The speed limits in force along the stretch of track ahead of a train, as reported by the
  * registered {@link ISpeedLimitProvider}s and resolved into one profile.
@@ -65,4 +68,29 @@ public record SpeedProfileSnapshot(
         }
         return limit;
     }
+
+    /** Serializes this profile. */
+    public CompoundTag toNbt() {
+        CompoundTag nbt = new CompoundTag();
+        nbt.putDouble(NBT_HORIZON, horizon);
+        nbt.putDouble(NBT_CRUISE_SPEED, cruiseSpeed);
+        nbt.put(NBT_SEGMENTS, NbtHelper.writeList(segments, SpeedLimitSegment::toNbt));
+        nbt.putInt(NBT_ESTIMATED_TICKS, estimatedTicks);
+        return nbt;
+    }
+
+    /** Deserializes a profile written by {@link #toNbt()}. */
+    public static SpeedProfileSnapshot fromNbt(CompoundTag nbt) {
+        return new SpeedProfileSnapshot(
+            nbt.getDouble(NBT_HORIZON),
+            nbt.getDouble(NBT_CRUISE_SPEED),
+            NbtHelper.readList(nbt, NBT_SEGMENTS, SpeedLimitSegment::fromNbt),
+            nbt.contains(NBT_ESTIMATED_TICKS) ? nbt.getInt(NBT_ESTIMATED_TICKS) : NO_ESTIMATE
+        );
+    }
+
+    private static final String NBT_HORIZON = "Horizon";
+    private static final String NBT_CRUISE_SPEED = "CruiseSpeed";
+    private static final String NBT_SEGMENTS = "Segments";
+    private static final String NBT_ESTIMATED_TICKS = "EstimatedTicks";
 }

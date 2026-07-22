@@ -1,5 +1,8 @@
 package de.mrjulsen.crn.backend.delay;
 
+import de.mrjulsen.crn.Constants;
+import de.mrjulsen.mcdragonlib.util.DLColor;
+
 /**
  * How important a train status reason is for the traveller-facing display, ordered from least to
  * most severe. Used to sort and colour the reasons shown on a board / in the GUI.
@@ -15,5 +18,10 @@ public enum DelaySeverity {
     /** Whether this severity marks an actual delay of the train. */
     public boolean isDelay() {
         return this == DELAY;
+    }
+
+    /** The colour reasons of this severity are shown in. */
+    public DLColor color() {
+        return this == INFO ? DLColor.WHITE : Constants.COLOR_DELAYED;
     }
 }

@@ -23,6 +23,7 @@ import de.mrjulsen.crn.navigator.NavigationResult;
 import de.mrjulsen.crn.navigator.NavigationStatus;
 import de.mrjulsen.crn.navigator.Navigator;
 import de.mrjulsen.crn.navigator.RouteOptimization;
+import de.mrjulsen.crn.navigator.debug.NavigatorDiagnosticsDump;
 import de.mrjulsen.crn.navigator.Waypoint;
 import de.mrjulsen.crn.navigator.index.TimetableIndex;
 import de.mrjulsen.crn.navigator.route.RouteCall;
@@ -61,6 +62,7 @@ public final class NavigatorDebugCommand {
 
     private static final String SUB_NAVIGATE = "navigate";
     private static final String SUB_INDEX = "navigatorIndex";
+    private static final String SUB_DUMP = "navigatorDump";
 
     private static final String ARG_FROM = "from";
     private static final String ARG_TO = "to";
@@ -114,6 +116,53 @@ public final class NavigatorDebugCommand {
     /** The {@code navigatorIndex} subcommand, which reports and drops the cached timetable index. */
     public static LiteralArgumentBuilder<CommandSourceStack> index() {
         return Commands.literal(SUB_INDEX).executes(x -> showIndex(x.getSource()));
+    }
+
+    /**
+     * The {@code navigatorDump} subcommand, which writes everything the search works from to a file.
+     * Given a station pair it runs that query as well and records what came of it.
+     */
+    public static LiteralArgumentBuilder<CommandSourceStack> dump() {
+        RequiredArgumentBuilder<CommandSourceStack, String> to = Commands.argument(ARG_TO, StringArgumentType.string())
+            .suggests((context, builder) -> suggestStations(builder))
+            .executes(x -> writeDump(x, ""))
+            .then(Commands.argument(ARG_OPTIONS, StringArgumentType.greedyString())
+                .executes(x -> writeDump(x, StringArgumentType.getString(x, ARG_OPTIONS))));
+
+        return Commands.literal(SUB_DUMP)
+            .executes(x -> writeDump(x.getSource(), null))
+            .then(Commands.argument(ARG_FROM, StringArgumentType.string())
+                .suggests((context, builder) -> suggestStations(builder))
+                .then(to));
+    }
+
+    private static int writeDump(CommandContext<CommandSourceStack> context, String options) {
+        NavigationQuery query;
+        try {
+            query = parse(StringArgumentType.getString(context, ARG_FROM),
+                StringArgumentType.getString(context, ARG_TO), options);
+        } catch (IllegalArgumentException e) {
+            context.getSource().sendFailure(TextUtils.text(e.getMessage()));
+            return 0;
+        }
+        return writeDump(context.getSource(), query);
+    }
+
+    private static int writeDump(CommandSourceStack source, NavigationQuery query) {
+        if (!RailwayBackendApi.isActive()) {
+            source.sendFailure(TextUtils.text("The railway backend is not running."));
+            return 0;
+        }
+
+        return NavigatorDiagnosticsDump.write(query)
+            .map(file -> {
+                source.sendSuccess(() -> TextUtils.text("Navigator diagnostics written to " + file), false);
+                return 1;
+            })
+            .orElseGet(() -> {
+                source.sendFailure(TextUtils.text("Unable to write the navigator diagnostics dump."));
+                return 0;
+            });
     }
 
     private static Iterable<String> stationNames() {
@@ -234,15 +283,15 @@ public final class NavigatorDebugCommand {
                 RouteTransfer transfer = journey.transfers().get(i);
                 source.sendSuccess(() -> TextUtils.text(String.format(
                     "    §7%s at %s (%s)%s",
-                    transfer.sameTrain() ? "stay seated" : "change",
-                    transfer.stationName(), duration(transfer.duration()),
-                    transfer.risk().isWarning() ? " §c[" + transfer.risk() + "]" : "")), false);
+                    transfer.staysSeated() ? "stay seated" : "change",
+                    transfer.arrivalStationName(), duration(transfer.duration()),
+                    transfer.state().isWarning() ? " §c[" + transfer.state() + "]" : "")), false);
             }
         }
     }
 
     private static String platform(RouteCall call) {
-        return call.station().hasPlatform() ? "§7[" + call.platform() + "]§f" : "";
+        return call.realtimeStation().hasPlatform() ? "§7[" + call.realtimePlatform() + "]§f" : "";
     }
 
     private static String clock(long ticks) {

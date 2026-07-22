@@ -120,7 +120,7 @@ public final class WaypointPlanner {
 
         List<RouteTransfer> transfers = new ArrayList<>(head.transfers().size() + tail.transfers().size() + 1);
         transfers.addAll(head.transfers());
-        transfers.add(builder.connect(head.lastLeg(), tail.departure(), false));
+        transfers.add(builder.connect(false));
         transfers.addAll(tail.transfers());
 
         return new RouteJourney(legs, transfers);

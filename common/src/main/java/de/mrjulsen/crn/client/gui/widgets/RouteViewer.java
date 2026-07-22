@@ -9,6 +9,7 @@ import com.simibubi.create.foundation.gui.AllIcons;
 
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.client.journey.JourneyTracker;
 import de.mrjulsen.crn.client.gui.Animator;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
@@ -16,6 +17,7 @@ import de.mrjulsen.crn.client.gui.widgets.skins.ModernScrollbarComponentRenderer
 import de.mrjulsen.crn.data.UserSettings;
 import de.mrjulsen.crn.data.navigation.ClientRoute;
 import de.mrjulsen.crn.data.storage.RecentSearchQueries.RecentSearchQuery;
+import de.mrjulsen.crn.navigator.route.RouteJourney;
 import de.mrjulsen.crn.network.packets.pain.NavigatePacketData;
 import de.mrjulsen.crn.registry.ModNetworkManager;
 import de.mrjulsen.mcdragonlib.client.gui.events.DLGuiStandardEvents;
@@ -47,7 +49,8 @@ public class RouteViewer extends DLGuiComponent {
 
     public final BooleanProperty displayRecentSearchQueries = new BooleanProperty(false);
 
-    private final List<ClientRoute> routes = new ArrayList<>();
+    private final List<RouteJourney> routes = new ArrayList<>();
+    private final List<JourneyTracker> trackers = new ArrayList<>();
 
     private final DLPanel contentPanel;
     private final DLScrollBar scrollbar;
@@ -161,8 +164,33 @@ public class RouteViewer extends DLGuiComponent {
         loadList();
     }
 
+    @Override
+    public void close() throws Exception {
+        stopTracking();
+        super.close();
+    }
+
+    /**
+     * The results keep following their trains for as long as they are listed, so a delay that turns
+     * up while the player is still deciding shows here as well as in the detail view.
+     */
+    private void startTracking() {
+        stopTracking();
+        for (RouteJourney route : routes) {
+            JourneyTracker tracker = new JourneyTracker(route);
+            tracker.start();
+            trackers.add(tracker);
+        }
+    }
+
+    private void stopTracking() {
+        trackers.forEach(JourneyTracker::close);
+        trackers.clear();
+    }
+
     private void loadList() {
         contentPanel.clearComponents();
+        startTracking();
         this.contentHeight = 0;
         if (this.displayRecentSearchQueries.get() && !this.hasSearched && !this.isLoading && this.routes.isEmpty() && settings != null) {
             contentHeight = 20 + Minecraft.getInstance().font.lineHeight;
@@ -173,7 +201,7 @@ public class RouteViewer extends DLGuiComponent {
             contentHeight += 10;
         } else if (!this.routes.isEmpty()) {
             contentHeight = 5;
-            for (ClientRoute route : routes) {
+            for (RouteJourney route : routes) {
                 RouteWidget w = contentPanel.addComponent(new RouteWidget(10, contentHeight, route));
                 contentHeight += (w.height() + 3);
             }

@@ -38,6 +38,10 @@ public abstract class DelayCause {
     /**
      * The translation key of this cause's display name. Defaults to
      * {@code gui.<namespace>.delay_cause.<path>} of the registration id.
+     * <p>
+     * The name states what kind of reason this is and nothing more - no train names, no stations.
+     * Anything specific to the occurrence belongs in {@link #detailsTranslationKey()}, so a view can
+     * show the reason on its own the way a departure board does.
      */
     public String translationKey() {
         return "gui." + id.getNamespace() + ".delay_cause." + id.getPath();

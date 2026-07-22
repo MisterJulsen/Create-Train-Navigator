@@ -117,10 +117,10 @@ public record BoardQuery(
 
     /** Whether the given entry satisfies every restriction of this query. */
     public boolean accepts(BoardEntry entry) {
-        if (lineId != null && (entry.line() == null || !lineId.equals(entry.line().getId()))) {
+        if (lineId != null && !lineId.equals(entry.line().id())) {
             return false;
         }
-        if (categoryId != null && (entry.category() == null || !categoryId.equals(entry.category().getId()))) {
+        if (categoryId != null && !categoryId.equals(entry.category().id())) {
             return false;
         }
         if (destination != null && !destination.equalsIgnoreCase(entry.destinationText())) {

@@ -1,13 +1,22 @@
 package de.mrjulsen.crn.network.packets.pain;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.data.TagName;
+import de.mrjulsen.crn.data.UserSettings;
 import de.mrjulsen.crn.data.navigation.ClientRoute;
 import de.mrjulsen.crn.data.navigation.NavigatorRoutes;
 import de.mrjulsen.crn.data.navigation.Route;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
+import de.mrjulsen.crn.navigator.NavigationQuery;
+import de.mrjulsen.crn.navigator.NavigationResult;
+import de.mrjulsen.crn.navigator.Navigator;
+import de.mrjulsen.crn.navigator.RouteOptimization;
+import de.mrjulsen.crn.navigator.route.RouteJourney;
 import de.mrjulsen.mcdragonlib.data.DLStatus;
 import de.mrjulsen.mcdragonlib.network.NetworkPacketContext;
 import de.mrjulsen.mcdragonlib.network.NetworkPacketData;
@@ -55,22 +64,21 @@ public class NavigatePacketData {
     }
 
     public static class Response extends NetworkPacketData {
-        private List<Route> rawData;
-        private List<ClientRoute> data;
+        private List<RouteJourney> data;
 
         public Response(DLStatus status) {
             super(status);
         }
 
-        public Response(List<Route> rawData) {
+        public Response(List<RouteJourney> rawData) {
             super(DLStatus.OK);
-            this.rawData = rawData;
+            this.data = rawData;
         }
 
         @Override
         protected void write(CompoundTag nbt) {
             ListTag list = new ListTag();
-            for (Route route : rawData) {
+            for (RouteJourney route : data) {
                 list.add(route.toNbt());
             }
             nbt.put(NBT_DATA, list);
@@ -78,10 +86,10 @@ public class NavigatePacketData {
 
         @Override
         protected void read(CompoundTag nbt) {
-            this.data = nbt.getList(NBT_DATA, Tag.TAG_COMPOUND).stream().map(x -> ClientRoute.fromNbt((CompoundTag)x, true)).toList();
+            this.data = nbt.getList(NBT_DATA, Tag.TAG_COMPOUND).stream().map(x -> RouteJourney.fromNbt((CompoundTag)x)).toList();
         }
 
-        public List<ClientRoute> getData() {
+        public List<RouteJourney> getData() {
             return data;
         }        
     }
@@ -89,13 +97,27 @@ public class NavigatePacketData {
     public static Response handle(Request packet, NetworkPacketContext context) {
         try {
             GlobalSettings settings = GlobalSettings.getInstance();
-            List<Route> routes = NavigatorRoutes.search(
-                settings.getTagByName(TagName.of(packet.start)).orElse(settings.getOrCreateStationTagFor(packet.start)),
-                settings.getTagByName(TagName.of(packet.end)).orElse(settings.getOrCreateStationTagFor(packet.end)),
-                packet.playerId,
-                true
-            );
-            return new Response(routes);
+            UserSettings userSettings = UserSettings.getSettingsFor(packet.playerId, true);
+
+            NavigationQuery query = NavigationQuery
+                    .from(settings.getTagByName(TagName.of(packet.start)).orElse(settings.getOrCreateStationTagFor(packet.start)).getTagName().get())
+                    .to(settings.getTagByName(TagName.of(packet.end)).orElse(settings.getOrCreateStationTagFor(packet.end)).getTagName().get())
+                    .departingIn(userSettings.navigationDepartureInTicks.getValue())
+                    .withMinTransferTime(userSettings.navigationTransferTime.getValue())
+                    .excludingCategories(userSettings.navigationExcludedTrainCategories.getValue())
+                    .preferring(RouteOptimization.FEWEST_TRANSFERS);
+
+            NavigationResult result = Navigator.search(query);
+            if (ModCommonConfig.ADVANCED_LOGGING.get()) {
+                CreateRailwaysNavigator.LOGGER.info(String.format("%s route(s) calculated. Took %sms. Searched %s nodes, %s trips.",
+                        result.size(),
+                        result.durationMs(),
+                        result.stationsSearched(),
+                        result.tripsScanned()
+                ));
+            }
+
+            return new Response(result.byDeparture());
         } catch (Exception e) {
             CreateRailwaysNavigator.LOGGER.error("Navigation error.", e);
         }

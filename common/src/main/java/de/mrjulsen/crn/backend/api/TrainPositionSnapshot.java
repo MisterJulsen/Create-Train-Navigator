@@ -1,12 +1,18 @@
 package de.mrjulsen.crn.backend.api;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import com.simibubi.create.content.trains.entity.Carriage;
 import com.simibubi.create.content.trains.entity.Train;
 
+import de.mrjulsen.crn.util.NbtHelper;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
@@ -93,4 +99,61 @@ public record TrainPositionSnapshot(
     public double speedFraction() {
         return maxSpeed <= 0 ? 0 : Math.min(1, Math.abs(speed) / maxSpeed);
     }
+
+    /** Serializes this position. */
+    public CompoundTag toNbt() {
+        CompoundTag nbt = new CompoundTag();
+        NbtHelper.putNullableUUID(nbt, NBT_TRAIN_ID, trainId);
+        if (dimension != null) {
+            nbt.putString(NBT_DIMENSION, dimension.toString());
+        }
+        if (position != null) {
+            nbt.putLong(NBT_POSITION, position.asLong());
+        }
+        ListTag dimensionsTag = new ListTag();
+        for (ResourceLocation id : dimensions) {
+            dimensionsTag.add(StringTag.valueOf(id.toString()));
+        }
+        nbt.put(NBT_DIMENSIONS, dimensionsTag);
+        nbt.putDouble(NBT_SPEED, speed);
+        nbt.putDouble(NBT_TARGET_SPEED, targetSpeed);
+        nbt.putDouble(NBT_MAX_SPEED, maxSpeed);
+        nbt.putDouble(NBT_THROTTLE, throttle);
+        nbt.putBoolean(NBT_BACKWARDS, backwards);
+        nbt.putDouble(NBT_DISTANCE, distanceToNextStop);
+        return nbt;
+    }
+
+    /** Deserializes a position written by {@link #toNbt()}. */
+    public static TrainPositionSnapshot fromNbt(CompoundTag nbt) {
+        ListTag dimensionsTag = nbt.getList(NBT_DIMENSIONS, Tag.TAG_STRING);
+        List<ResourceLocation> dimensions = new ArrayList<>(dimensionsTag.size());
+        for (int i = 0; i < dimensionsTag.size(); i++) {
+            dimensions.add(new ResourceLocation(dimensionsTag.getString(i)));
+        }
+
+        return new TrainPositionSnapshot(
+            NbtHelper.readNullableUUID(nbt, NBT_TRAIN_ID),
+            nbt.contains(NBT_DIMENSION) ? new ResourceLocation(nbt.getString(NBT_DIMENSION)) : null,
+            nbt.contains(NBT_POSITION) ? BlockPos.of(nbt.getLong(NBT_POSITION)) : null,
+            dimensions,
+            nbt.getDouble(NBT_SPEED),
+            nbt.getDouble(NBT_TARGET_SPEED),
+            nbt.getDouble(NBT_MAX_SPEED),
+            nbt.getDouble(NBT_THROTTLE),
+            nbt.getBoolean(NBT_BACKWARDS),
+            nbt.contains(NBT_DISTANCE) ? nbt.getDouble(NBT_DISTANCE) : -1
+        );
+    }
+
+    private static final String NBT_TRAIN_ID = "TrainId";
+    private static final String NBT_DIMENSION = "Dimension";
+    private static final String NBT_POSITION = "Position";
+    private static final String NBT_DIMENSIONS = "Dimensions";
+    private static final String NBT_SPEED = "Speed";
+    private static final String NBT_TARGET_SPEED = "TargetSpeed";
+    private static final String NBT_MAX_SPEED = "MaxSpeed";
+    private static final String NBT_THROTTLE = "Throttle";
+    private static final String NBT_BACKWARDS = "Backwards";
+    private static final String NBT_DISTANCE = "DistanceToNextStop";
 }

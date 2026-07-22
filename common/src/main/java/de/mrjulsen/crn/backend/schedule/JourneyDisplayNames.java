@@ -11,33 +11,46 @@ import de.mrjulsen.crn.data.TrainLine;
  * Resolves the texts shown to travellers: which station name to print for a stop, and which
  * terminus to advertise as the train's destination.
  * <p>
- * A stop's station is not always what its filter says. An ambiguous destination only resolves to a
- * concrete station once the train commits to one, and until then the best available answer is what
- * the stop resolved to on previous visits.
+ * A stop's station is not always what its filter says. A filter containing wildcards only resolves
+ * to a concrete station once the train commits to one, and which one that is can differ from run to
+ * run - a blocked platform can send the train to a station in an entirely different tag. So a stop
+ * has two answers, not one: the station the timetable plans for and the station the train is
+ * actually heading to, which is why both are resolved separately here.
  */
 public final class JourneyDisplayNames {
 
     private JourneyDisplayNames() {}
 
     /**
-     * The station name to display for the given stop: the filter if it already names an existing
-     * station, otherwise the live-resolved target, otherwise the most likely station learned from
-     * past visits, falling back to the raw filter.
+     * The station the timetable plans for: the filter if it already names an existing station,
+     * otherwise the most likely station learned from past visits, falling back to the raw filter.
+     * <p>
+     * Deliberately blind to where the train is going on this run, so that a diverted train still
+     * reports what it was meant to do.
      */
-    public static String stationName(JourneyStop stop, StopTimings timings) {
+    public static String scheduledStationName(JourneyStop stop, StopTimings timings) {
         String filter = stop.getStationFilter();
         if (StationLookup.exists(filter)) {
             return filter;
         }
+        String guess = timings == null ? null : timings.getEstimatedStationName();
+        return StationLookup.exists(guess) ? guess : filter;
+    }
+
+    /**
+     * The station the train is actually heading to: the live-resolved target if the schedule has
+     * already committed to one, otherwise whatever the timetable plans for.
+     */
+    public static String realtimeStationName(JourneyStop stop, StopTimings timings) {
         String live = stop.getStationName();
-        if (live != null && !live.equals(filter) && StationLookup.exists(live)) {
+        if (StationLookup.exists(live)) {
             return live;
         }
-        String guess = timings == null ? null : timings.getEstimatedStationName();
-        if (StationLookup.exists(guess)) {
-            return guess;
+        String scheduled = scheduledStationName(stop, timings);
+        if (StationLookup.exists(scheduled)) {
+            return scheduled;
         }
-        return live != null && !live.isBlank() ? live : filter;
+        return live != null && !live.isBlank() ? live : stop.getStationFilter();
     }
 
     /**
@@ -54,7 +67,7 @@ public final class JourneyDisplayNames {
             ? journey.getNextSection(section)
             : section;
         return terminusStop(journey, destinationSection)
-            .map(terminus -> stationName(terminus, timings.apply(terminus)))
+            .map(terminus -> realtimeStationName(terminus, timings.apply(terminus)))
             .orElse("");
     }
 

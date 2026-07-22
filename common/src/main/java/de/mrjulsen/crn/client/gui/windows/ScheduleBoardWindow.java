@@ -5,6 +5,7 @@ import java.util.List;
 import com.simibubi.create.foundation.gui.AllIcons;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.backend.api.StationRef;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.BarColor;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.ColorShade;
@@ -59,7 +60,7 @@ public class ScheduleBoardWindow extends AbstractNavigatorScreen {
     private final MutableComponent tooltipLocation = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.location.tooltip");
     private final MutableComponent tooltipRefresh = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.refresh.tooltip");
 
-    public ScheduleBoardWindow(DLWindowManager manager, ClientStationTag tag) {
+    public ScheduleBoardWindow(DLWindowManager manager, StationRef tag) {
         super(manager, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".schedule_board.title"), ContainerColor.GOLD, BarColor.GOLD);
         this.fixedStation = tag != null;
         if (fixedStation) {

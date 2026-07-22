@@ -3,13 +3,12 @@ package de.mrjulsen.crn.client.gui.overlay.pages;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.mrjulsen.crn.backend.api.BoardEntry;
+import de.mrjulsen.crn.client.journey.JourneyTracker;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
-import de.mrjulsen.crn.config.ModClientConfig;
-import de.mrjulsen.crn.data.train.ClientTrainStop;
-import de.mrjulsen.crn.data.train.TrainStop;
-import de.mrjulsen.crn.network.packets.pain.GetDeparturesAtPacketData;
+import de.mrjulsen.crn.navigator.route.RouteCall;
+import de.mrjulsen.crn.network.packets.pain.GetStationBoardPacketData;
 import de.mrjulsen.crn.registry.ModNetworkManager;
-import de.mrjulsen.crn.data.navigation.ClientRoute;
 import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import de.mrjulsen.mcdragonlib.data.ETextAlignment;
@@ -18,37 +17,42 @@ import de.mrjulsen.mcdragonlib.util.DLColor;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.math.Rectangle;
-import de.mrjulsen.mcdragonlib.util.time.DLTime;
-import de.mrjulsen.mcdragonlib.util.time.TimeContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 
 public class NextConnectionsPage extends AbstractRouteDetailsPage {
 
-    private final List<TrainStop> nextConnections = new ArrayList<>();
     private static final String keyNextConnections = "gui.createrailwaysnavigator.route_overview.next_connections";
-    
+
     private static final int CONNECTION_ENTRIES_PER_PAGE = 3;
     private static final int TIME_PER_CONNECTIONS_SUBPAGE = 200;
+    private static final int MAX_CONNECTIONS = 12;
+
+    private final List<BoardEntry> nextConnections = new ArrayList<>();
+    private final Runnable afterFirstCycle;
+
     private int connectionsSubPageTime = 0;
     private int connectionsSubPageIndex = 0;
     private int connectionsSubPagesCount = 0;
-    private final Runnable afterFirstCycle;
     private int cycles;
 
-    public NextConnectionsPage(ClientRoute route, Runnable afterFirstCycle) {
-        super(route);
+    public NextConnectionsPage(JourneyTracker tracker, Runnable afterFirstCycle) {
+        super(tracker);
         this.afterFirstCycle = afterFirstCycle;
 
-        ModNetworkManager.GET_DEPARTURES_AT.send(NetworkDirection.toServer(), new GetDeparturesAtPacketData.Request(route.getCurrentPart().getNextStop().getRealTimeStationTag().tagId(), route.getCurrentPart().getNextStop().getTrainId(), true, false /* TODO CUSTOM SETTINGS */), (response) -> {
-            List<ClientTrainStop> stops = response.getData();
-            
-            if (stops.isEmpty()) {
-                afterFirstCycle.run();
+        RouteCall call = tracker.nextCall();
+        if (call.realtimeStation().tagId() == null) {
+            DLUtils.doIfNotNull(afterFirstCycle, Runnable::run);
+            return;
+        }
+
+        ModNetworkManager.GET_STATION_BOARD.send(NetworkDirection.toServer(), new GetStationBoardPacketData.Request(call.realtimeStation().tagId(), tracker.currentLeg().trainId(), MAX_CONNECTIONS), (response) -> {
+            if (response.getEntries().isEmpty()) {
+                DLUtils.doIfNotNull(afterFirstCycle, Runnable::run);
                 return;
             }
-            nextConnections.addAll(stops);
-            connectionsSubPagesCount = nextConnections.size() / CONNECTION_ENTRIES_PER_PAGE + (nextConnections.size() % CONNECTION_ENTRIES_PER_PAGE == 0 ? 0 : 1);
+            nextConnections.addAll(response.getEntries());
+            connectionsSubPagesCount = (nextConnections.size() + CONNECTION_ENTRIES_PER_PAGE - 1) / CONNECTION_ENTRIES_PER_PAGE;
         }, () -> {});
     }
 
@@ -64,7 +68,7 @@ public class NextConnectionsPage extends AbstractRouteDetailsPage {
     @Override
     public void tick() {
         super.tick();
-        if (nextConnections.isEmpty()) {
+        if (nextConnections.isEmpty() || connectionsSubPagesCount <= 0) {
             return;
         }
         connectionsSubPageTime++;
@@ -73,7 +77,7 @@ public class NextConnectionsPage extends AbstractRouteDetailsPage {
             if ((connectionsSubPageIndex %= connectionsSubPagesCount) == 0) {
                 cycles++;
                 if (cycles == 1) {
-                    DLUtils.doIfNotNull(afterFirstCycle, x -> x.run());
+                    DLUtils.doIfNotNull(afterFirstCycle, Runnable::run);
                 }
             }
         }
@@ -88,22 +92,22 @@ public class NextConnectionsPage extends AbstractRouteDetailsPage {
         final int timeWidth = 30;
         final int trainNameWidth = 40;
         for (int i = connectionsSubPageIndex * CONNECTION_ENTRIES_PER_PAGE; i < (connectionsSubPageIndex + 1) * CONNECTION_ENTRIES_PER_PAGE && i < nextConnections.size(); i++) {
-            TrainStop stop = nextConnections.get(i);
-            String terminus = stop.getDisplayTitle();
-            Component departureTimeText = TextUtils.text(new DLTime(stop.getScheduledDepartureTime(), DLTime.defaultTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem()));
+            BoardEntry entry = nextConnections.get(i);
+            String platform = entry.station().platform();
+            Component departureTimeText = TextUtils.text(RouteOverviewPage.clockTime(entry.scheduled().departure()));
 
             GuiUtils.drawString(graphics, font, 5, y, departureTimeText, DLColor.fromInt(0xFFDBDBDB), ETextAlignment.LEFT, false);
-            GuiUtils.drawString(graphics, font, 5 + timeWidth + spacing, y, TextUtils.truncateWithEllipsis(font, TextUtils.text(stop.getTrainName()), trainNameWidth), DLColor.fromInt(0xFFDBDBDB), ETextAlignment.LEFT, false);
-            GuiUtils.drawString(graphics, font, width() - 5, y, stop.getRealTimeStationTag().info().platform(), DLColor.fromInt(0xFFDBDBDB), ETextAlignment.RIGHT, false);
-            int terminusWidth = width() - 10 + timeWidth + trainNameWidth + spacing * 3 - font.width(stop.getRealTimeStationTag().info().platform());
-            GuiUtils.drawString(graphics, font, 5 + timeWidth + trainNameWidth + spacing * 2, y, TextUtils.truncateWithEllipsis(font, TextUtils.text(terminus), terminusWidth), DLColor.fromInt(0xFFDBDBDB), ETextAlignment.LEFT, false);
+            GuiUtils.drawString(graphics, font, 5 + timeWidth + spacing, y, TextUtils.truncateWithEllipsis(font, TextUtils.text(entry.displayName()), trainNameWidth), DLColor.fromInt(0xFFDBDBDB), ETextAlignment.LEFT, false);
+            GuiUtils.drawString(graphics, font, width() - 5, y, platform, DLColor.fromInt(0xFFDBDBDB), ETextAlignment.RIGHT, false);
+            int terminusWidth = width() - 10 - timeWidth - trainNameWidth - spacing * 3 - font.width(platform);
+            GuiUtils.drawString(graphics, font, 5 + timeWidth + trainNameWidth + spacing * 2, y, TextUtils.truncateWithEllipsis(font, TextUtils.text(entry.destinationText()), terminusWidth), DLColor.fromInt(0xFFDBDBDB), ETextAlignment.LEFT, false);
             y += 12;
         }
 
         y = 52;
         final int dotSize = 4;
         final int center = width() / 2 - dotSize / 2;
-        final int startX = center - (dotSize * 2) * (connectionsSubPagesCount - 1);
+        final int startX = center - (dotSize * 2) * (connectionsSubPagesCount - 1) / 2;
 
         for (int i = 0; i < connectionsSubPagesCount; i++) {
             if (connectionsSubPageIndex == i) {

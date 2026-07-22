@@ -29,7 +29,7 @@ public final class DelayCauseRegistry {
     public static <T extends DelayCause> T register(String modid, String name, T cause) {
         ResourceLocation id = new ResourceLocation(modid, name);
         if (CAUSES.containsKey(id)) {
-            CreateRailwaysNavigator.LOGGER.warn("[Backend] Delay cause '{}' is already registered and will be overwritten.", id);
+            throw new IllegalStateException("Duplicate delay cause id: " + id);
         }
         cause.assignId(id);
         CAUSES.put(id, cause);

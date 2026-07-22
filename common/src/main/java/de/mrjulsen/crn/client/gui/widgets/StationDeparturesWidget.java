@@ -55,7 +55,7 @@ public class StationDeparturesWidget extends DLButton {
         */
 
         addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
-            getWindowManager().createModal(mgr -> new TrainJourneyWindow(mgr, route, route.getStart().getTrainId()));
+            getWindowManager().createModal(mgr -> new TrainJourneyWindow(mgr, route.getStart().getTrainId()));
             return false;
         });
     }  

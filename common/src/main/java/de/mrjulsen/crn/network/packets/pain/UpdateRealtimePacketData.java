@@ -86,9 +86,9 @@ public class UpdateRealtimePacketData {
             Map<Integer, TrainStopRealTimeData> values = new HashMap<>();
 
             for (StopSnapshot stop : RailwayBackendApi.getJourney(packet.id).map(JourneySnapshot::stops).orElse(List.of())) {
-                StationTag tag = GlobalSettings.getInstance().getOrCreateStationTagFor(stop.stationName());
+                StationTag tag = GlobalSettings.getInstance().getOrCreateStationTagFor(stop.realtimeStationName());
                 TrainStopRealTimeData realTimeData = new TrainStopRealTimeData(
-                    tag.getClientTag(stop.stationName()),
+                    tag.getClientTag(stop.realtimeStationName()),
                     stop.entryIndex(),
                     stop.scheduled().arrival(),
                     stop.scheduled().departure(),

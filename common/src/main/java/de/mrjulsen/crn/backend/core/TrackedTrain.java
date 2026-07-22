@@ -263,9 +263,14 @@ public final class TrackedTrain implements RealtimeTracker.Listener {
         return getCurrentStop().map(journey::getStopsInTravelOrder).orElse(List.of());
     }
 
-    /** The station name to display for the given stop. */
+    /** The station the given stop is actually heading to. */
     public String getDisplayStationName(JourneyStop stop) {
-        return JourneyDisplayNames.stationName(stop, getTimings(stop));
+        return JourneyDisplayNames.realtimeStationName(stop, getTimings(stop));
+    }
+
+    /** The station the timetable plans for the given stop, which a diverted train may not serve. */
+    public String getScheduledStationName(JourneyStop stop) {
+        return JourneyDisplayNames.scheduledStationName(stop, getTimings(stop));
     }
 
     /** The terminus to display as the train's destination at the given stop. */

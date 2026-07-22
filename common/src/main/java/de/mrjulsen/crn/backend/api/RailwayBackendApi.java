@@ -174,7 +174,7 @@ public final class RailwayBackendApi {
      */
     public static Optional<StopSnapshot> getNextCallAt(UUID trainId, String stationName) {
         return getUpcomingStops(trainId).stream()
-            .filter(x -> TrainUtils.stationMatches(x.stationName(), stationName))
+            .filter(x -> TrainUtils.stationMatches(x.realtimeStationName(), stationName))
             .findFirst();
     }
 
@@ -534,7 +534,7 @@ public final class RailwayBackendApi {
 
         return new StationSnapshot(
             StationRef.of(stationName, tags.isEmpty() ? null : tags.get(0)),
-            tags,
+            tags.stream().map(TagRef::of).toList(),
             resolveLines(lineIds),
             resolveCategories(categoryIds),
             trainIds,
@@ -565,7 +565,7 @@ public final class RailwayBackendApi {
             }
         }
 
-        return new LineSnapshot(line, trainIds, stations.stream().map(StationRef::of).toList(), delayed);
+        return new LineSnapshot(LineRef.of(line), trainIds, stations.stream().map(StationRef::of).toList(), delayed);
     }
 
     private static CategorySnapshot buildCategory(TrainCategory category) {
@@ -591,17 +591,17 @@ public final class RailwayBackendApi {
             }
         }
 
-        return new CategorySnapshot(category, trainIds, resolveLines(lineIds), delayed);
+        return new CategorySnapshot(CategoryRef.of(category), trainIds, resolveLines(lineIds), delayed);
     }
 
-    private static List<TrainLine> resolveLines(Set<UUID> lineIds) {
+    private static List<LineRef> resolveLines(Set<UUID> lineIds) {
         GlobalSettings settings = GlobalSettings.getInstance();
-        return lineIds.stream().map(settings::getTrainLine).filter(Optional::isPresent).map(Optional::get).toList();
+        return lineIds.stream().map(settings::getTrainLine).filter(Optional::isPresent).map(Optional::get).map(LineRef::of).toList();
     }
 
-    private static List<TrainCategory> resolveCategories(Set<UUID> categoryIds) {
+    private static List<CategoryRef> resolveCategories(Set<UUID> categoryIds) {
         GlobalSettings settings = GlobalSettings.getInstance();
-        return categoryIds.stream().map(settings::getTrainCategory).filter(Optional::isPresent).map(Optional::get).toList();
+        return categoryIds.stream().map(settings::getTrainCategory).filter(Optional::isPresent).map(Optional::get).map(CategoryRef::of).toList();
     }
 
     private static boolean operatesOn(TrackedTrain train, UUID lineId) {

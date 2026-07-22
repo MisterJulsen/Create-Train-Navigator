@@ -246,8 +246,8 @@ public class BackendDebugOverlay extends DLWindow {
                 drawLine(graphics, TextUtils.text("   " + fit(entry.displayName(), 20)
                     + " -> " + fit(entry.destinationText(), 24)
                     + "  dep " + rel(entry.realtimeDeparture(), now)
-                    + (entry.delayed() ? " (+" + entry.departureDeviation() + ")" : "")
-                ).withStyle(entry.delayed() ? ChatFormatting.RED : ChatFormatting.GREEN));
+                    + (entry.isDelayed() ? " (+" + entry.departureDeviation() + ")" : "")
+                ).withStyle(entry.isDelayed() ? ChatFormatting.RED : ChatFormatting.GREEN));
             }
         } catch (Exception e) {
             drawLine(graphics, TextUtils.text("   API error: " + e.getMessage()).withStyle(ChatFormatting.RED));

@@ -5,11 +5,11 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Predicate;
 
+import de.mrjulsen.crn.client.journey.JourneyTracker;
 import de.mrjulsen.crn.client.gui.widgets.skins.ModernScrollbarComponentRenderer;
-import de.mrjulsen.crn.data.navigation.ClientRoute;
-import de.mrjulsen.crn.data.navigation.ClientRoutePart;
-import de.mrjulsen.crn.data.navigation.RoutePart;
-import de.mrjulsen.crn.data.navigation.TransferConnection;
+import de.mrjulsen.crn.navigator.route.RouteJourney;
+import de.mrjulsen.crn.navigator.route.RouteLeg;
+import de.mrjulsen.crn.navigator.route.RouteTransfer;
 import de.mrjulsen.mcdragonlib.client.gui.events.DLGuiStandardEvents;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLGuiComponent;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLPanel;
@@ -26,13 +26,14 @@ import de.mrjulsen.mcdragonlib.util.math.Rectangle;
 import de.mrjulsen.mcdragonlib.util.properties.BooleanProperty;
 
 public class RouteDetailsViewer extends DLGuiComponent {
-    
+
     private final DLPanel contentPanel;
     private final DLScrollBar scrollbar;
-    
+    private JourneyTracker tracker;
+    private boolean closed;
+
     public final BooleanProperty expanded = new BooleanProperty(false);
     public final BooleanProperty showTrainDetails = new BooleanProperty(true);
-    public final BooleanProperty showEntireJourney = new BooleanProperty(false);
     public final BooleanProperty canExpandCollapse = new BooleanProperty(true);
 
     public RouteDetailsViewer(int x, int y, int w, int h) {
@@ -72,33 +73,51 @@ public class RouteDetailsViewer extends DLGuiComponent {
     }
     
 
-    public void displayRoute(ClientRoute route) {
-        displayRouteInternal(route, route.getClientParts(), true);
+    public void displayRoute(RouteJourney route) {
+        displayRouteInternal(route, route.legs(), true);
     }    
 
-    public void displayPart(ClientRoute route, Predicate<RoutePart> verifiedSelector) {
-        displayRouteInternal(route, route.getClientParts().stream().filter(verifiedSelector).toList(), false);
+    public void displayPart(RouteJourney route, Predicate<RouteLeg> verifiedSelector) {
+        displayRouteInternal(route, route.legs().stream().filter(verifiedSelector).toList(), false);
     }
 
-    public void displayRouteInternal(ClientRoute route, List<ClientRoutePart> parts, boolean showTransfers) {
+    public void displayRouteInternal(RouteJourney route, List<RouteLeg> parts, boolean showTransfers) {
+        if (closed) {
+            return;
+        }
         contentPanel.clearComponents();
 
-        Queue<TransferConnection> connections = new ConcurrentLinkedQueue<>(route.getConnections());
+        if (tracker != null) {
+            tracker.close();
+        }
+        tracker = new JourneyTracker(route);
+        tracker.start();
+
+        Queue<RouteTransfer> connections = new ConcurrentLinkedQueue<>(route.transfers());
         for (int i = 0; i < parts.size(); i++) {
-            ClientRoutePart part = parts.get(i);
-            
+            RouteLeg part = parts.get(i);
+
             RoutePartWidget widget = new RoutePartWidget(width(), route, part);
             widget.expanded.set(expanded.get());
             widget.canExpandCollapse.set(canExpandCollapse.get());
             widget.showTrainDetails.set(showTrainDetails.get());
-            widget.showEntireJourney.set(showEntireJourney.get());
-            
+
             contentPanel.addComponent(widget);
 
             if (!connections.isEmpty() && showTransfers) {
                 RouteDetailsTransferWidget transfer = contentPanel.addComponent(new RouteDetailsTransferWidget(connections.poll()));
             }
         }
+    }
+
+    @Override
+    public void close() throws Exception {
+        closed = true;
+        if (tracker != null) {
+            tracker.close();
+            tracker = null;
+        }
+        super.close();
     }
 
     @Override

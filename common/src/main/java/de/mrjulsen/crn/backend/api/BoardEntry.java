@@ -11,50 +11,49 @@ import de.mrjulsen.crn.backend.delay.DelayInstance;
 import de.mrjulsen.crn.backend.schedule.JourneySection;
 import de.mrjulsen.crn.backend.schedule.JourneyStop;
 import de.mrjulsen.crn.backend.timing.StopTimes;
-import de.mrjulsen.crn.data.TrainCategory;
-import de.mrjulsen.crn.data.TrainLine;
+import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
+import de.mrjulsen.crn.util.NbtHelper;
+import de.mrjulsen.mcdragonlib.util.DLColor;
+import net.minecraft.nbt.CompoundTag;
 
 /**
  * One row of a departure or arrival board: a specific train calling at a specific station, with
  * everything needed to render that row without further queries - including the platform, which the
- * {@linkplain StationRef#tag() station's tag} carries.
+ * {@linkplain StationRef#info() station's info} carries.
+ * <p>
+ * Only what the backend measures is stored. Deviations and lateness follow from the scheduled and
+ * projected times and are offered as methods rather than fields.
  *
- * @param trainId       The id of the calling train.
- * @param sessionId     The train's tracking session. See {@link TrainSnapshot#sessionId()}.
- * @param trainName     The train's own name. What to actually show is {@link #displayName()}.
- * @param line          The train line serving this call, or {@code null} if it carries none.
- * @param category      The train category of this call, or {@code null} if it carries none.
- * @param station       The station this row belongs to.
- * @param title         The schedule title the train carries towards this call. May be empty.
- * @param destination   The terminus advertised for this call. A train carrying a schedule title
- *                      advertises that instead - see {@link #destinationText()}.
- * @param scheduled     The timetable times of this call.
- * @param realtime      The projected times of this call.
- * @param arrivalDeviation   How much later than scheduled the train arrives, in ticks.
- * @param departureDeviation How much later than scheduled the train departs, in ticks.
- * @param delayed       Whether this call is late beyond the configured threshold.
- * @param serviceState  Whether the calling train can run at all. {@link #isCancelled()} answers the
- *                      common question about it.
- * @param entryIndex    The schedule entry index of this call, identifying it within the journey.
- * @param sectionIndex  The position of the section this call belongs to, or {@code -1}.
- * @param stopovers     The stations served after this call within the same section.
- * @param delays        The status reasons currently applying to the train, most important first.
+ * @param trainId      The id of the calling train.
+ * @param sessionId    The train's tracking session. See {@link TrainSnapshot#sessionId()}.
+ * @param trainName    The train's own name. What to actually show is {@link #displayName()}.
+ * @param line         The train line serving this call, or {@link LineRef#NONE} if it carries none.
+ * @param category     The train category of this call, or {@link CategoryRef#NONE}.
+ * @param station      The station this row belongs to.
+ * @param title        The schedule title the train carries towards this call. May be empty.
+ * @param destination  The terminus advertised for this call. A train carrying a schedule title
+ *                     advertises that instead - see {@link #destinationText()}.
+ * @param scheduled    The timetable times of this call.
+ * @param realtime     The projected times of this call.
+ * @param serviceState Whether the calling train can run at all. {@link #isCancelled()} answers the
+ *                     common question about it.
+ * @param entryIndex   The schedule entry index of this call, identifying it within the journey.
+ * @param sectionIndex The position of the section this call belongs to, or {@code -1}.
+ * @param stopovers    The stations served after this call within the same section.
+ * @param delays       The status reasons currently applying to the train, most important first.
  */
 public record BoardEntry(
     UUID trainId,
     UUID sessionId,
     String trainName,
-    TrainLine line,
-    TrainCategory category,
+    LineRef line,
+    CategoryRef category,
     StationRef station,
     String title,
     StationRef destination,
     StopTimes scheduled,
     StopTimes realtime,
-    long arrivalDeviation,
-    long departureDeviation,
-    boolean delayed,
     ServiceState serviceState,
     int entryIndex,
     int sectionIndex,
@@ -62,32 +61,52 @@ public record BoardEntry(
     List<DelayInstance> delays
 ) {
 
+    private static final String NBT_TRAIN_ID = "TrainId";
+    private static final String NBT_SESSION_ID = "SessionId";
+    private static final String NBT_TRAIN_NAME = "TrainName";
+    private static final String NBT_LINE = "Line";
+    private static final String NBT_CATEGORY = "Category";
+    private static final String NBT_STATION = "Station";
+    private static final String NBT_TITLE = "Title";
+    private static final String NBT_DESTINATION = "Destination";
+    private static final String NBT_SCHEDULED = "Scheduled";
+    private static final String NBT_REALTIME = "Realtime";
+    private static final String NBT_SERVICE_STATE = "ServiceState";
+    private static final String NBT_ENTRY_INDEX = "EntryIndex";
+    private static final String NBT_SECTION_INDEX = "SectionIndex";
+    private static final String NBT_STOPOVERS = "Stopovers";
+    private static final String NBT_DELAYS = "Delays";
+
     public BoardEntry {
         stopovers = stopovers == null ? List.of() : List.copyOf(stopovers);
         delays = delays == null ? List.of() : List.copyOf(delays);
+        trainName = trainName == null ? "" : trainName;
+        line = line == null ? LineRef.NONE : line;
+        category = category == null ? CategoryRef.NONE : category;
         station = station == null ? StationRef.NONE : station;
+        title = title == null ? "" : title;
         destination = destination == null ? StationRef.NONE : destination;
+        scheduled = scheduled == null ? StopTimes.UNKNOWN : scheduled;
+        realtime = realtime == null ? StopTimes.UNKNOWN : realtime;
+        serviceState = serviceState == null ? ServiceState.IN_SERVICE : serviceState;
     }
 
     /** Captures the given call of the given train as a board row. */
     public static BoardEntry of(TrackedTrain train, JourneyStop stop) {
-        StopSnapshot snapshot = StopSnapshot.of(train, stop, StopVisitState.UPCOMING);
+        StopSnapshot snapshot = StopSnapshot.of(train, stop);
         JourneySection section = stop.getSection();
 
         return new BoardEntry(
             train.getTrainId(),
             train.getSessionId(),
             train.getTrainName(),
-            section == null ? null : section.getTrainLine().orElse(null),
-            section == null ? null : section.getTrainCategory().orElse(null),
-            snapshot.station(),
+            LineRef.of(section == null ? null : section.getTrainLine().orElse(null)),
+            CategoryRef.of(section == null ? null : section.getTrainCategory().orElse(null)),
+            snapshot.realtimeStation(),
             stop.getTitle() == null ? "" : stop.getTitle(),
             resolveDestination(train, stop, snapshot),
             snapshot.scheduled(),
             snapshot.realtime(),
-            snapshot.arrivalDeviation(),
-            snapshot.departureDeviation(),
-            snapshot.delayed(),
             train.getServiceState(),
             stop.entryIndex(),
             snapshot.sectionIndex(),
@@ -104,7 +123,7 @@ public record BoardEntry(
         }
         return train.getJourney().getNextStop(stop)
             .map(x -> StationRef.of(train.getDisplayStationName(x)))
-            .orElse(snapshot.station());
+            .orElse(snapshot.realtimeStation());
     }
 
     /** The stations served after this call within the same section, blacklisted ones omitted. */
@@ -132,7 +151,7 @@ public record BoardEntry(
      * the terminus, which is why this may name no station at all.
      */
     public String destinationText() {
-        return title != null && !title.isBlank() ? title : destination.name();
+        return title.isBlank() ? destination.name() : title;
     }
 
     /** The station's name, as a shorthand for {@code station().name()}. */
@@ -140,19 +159,34 @@ public record BoardEntry(
         return station.name();
     }
 
-    /** The train line serving this call, if it carries one. */
-    public Optional<TrainLine> trainLine() {
-        return Optional.ofNullable(line);
+    /** How much later than the timetable the train gets here, in ticks. Negative when it is early. */
+    public long arrivalDeviation() {
+        return scheduled.isKnown() && realtime.isKnown() ? realtime.arrival() - scheduled.arrival() : 0;
     }
 
-    /** The train category of this call, if it carries one. */
-    public Optional<TrainCategory> trainCategory() {
-        return Optional.ofNullable(category);
+    /** How much later than the timetable the train leaves here, in ticks. */
+    public long departureDeviation() {
+        return scheduled.isKnown() && realtime.isKnown() ? realtime.departure() - scheduled.departure() : 0;
+    }
+
+    /** Whether either deviation reaches the given threshold in ticks. */
+    public boolean isDelayed(long thresholdTicks) {
+        return arrivalDeviation() >= thresholdTicks || departureDeviation() >= thresholdTicks;
+    }
+
+    /** Whether either deviation reaches the configured threshold. */
+    public boolean isDelayed() {
+        return isDelayed(ModCommonConfig.SCHEDULE_DEVIATION_THRESHOLD.get());
     }
 
     /** Whether this call is served by a train line at all. */
     public boolean hasLine() {
-        return line != null;
+        return line.isKnown();
+    }
+
+    /** Whether this call carries a train category at all. */
+    public boolean hasCategory() {
+        return category.isKnown();
     }
 
     /**
@@ -163,8 +197,15 @@ public record BoardEntry(
      * for a later section of the journey is labelled with the line that will actually run it.
      */
     public String displayName() {
-        String lineName = line == null ? null : line.getLineName();
-        return lineName == null || lineName.isEmpty() ? trainName : lineName;
+        return line.hasName() ? line.name() : trainName;
+    }
+
+    /**
+     * What to paint this row in: the colour of the line serving it, the colour of its category if
+     * the line carries none, and a neutral default if neither does.
+     */
+    public DLColor displayColor() {
+        return ServiceColor.of(line, category);
     }
 
     /** Whether the calling train is out of service because of a disruption. */
@@ -195,5 +236,52 @@ public record BoardEntry(
     /** Whether this call serves any further stations within its section. */
     public boolean hasStopovers() {
         return !stopovers.isEmpty();
+    }
+
+    /** The most important status reason currently applying, if there is any. */
+    public Optional<DelayInstance> primaryDelay() {
+        return delays.isEmpty() ? Optional.empty() : Optional.of(delays.get(0));
+    }
+
+    /** Serializes this board row. */
+    public CompoundTag toNbt() {
+        CompoundTag nbt = new CompoundTag();
+        NbtHelper.putNullableUUID(nbt, NBT_TRAIN_ID, trainId);
+        NbtHelper.putNullableUUID(nbt, NBT_SESSION_ID, sessionId);
+        nbt.putString(NBT_TRAIN_NAME, trainName);
+        nbt.put(NBT_LINE, line.toNbt());
+        nbt.put(NBT_CATEGORY, category.toNbt());
+        nbt.put(NBT_STATION, station.toNbt());
+        nbt.putString(NBT_TITLE, title);
+        nbt.put(NBT_DESTINATION, destination.toNbt());
+        nbt.put(NBT_SCHEDULED, scheduled.toNbt());
+        nbt.put(NBT_REALTIME, realtime.toNbt());
+        nbt.putString(NBT_SERVICE_STATE, serviceState.name());
+        nbt.putInt(NBT_ENTRY_INDEX, entryIndex);
+        nbt.putInt(NBT_SECTION_INDEX, sectionIndex);
+        nbt.put(NBT_STOPOVERS, NbtHelper.writeList(stopovers, StationRef::toNbt));
+        nbt.put(NBT_DELAYS, NbtHelper.writeList(delays, DelayInstance::toNbt));
+        return nbt;
+    }
+
+    /** Deserializes a board row written by {@link #toNbt()}. */
+    public static BoardEntry fromNbt(CompoundTag nbt) {
+        return new BoardEntry(
+            NbtHelper.readNullableUUID(nbt, NBT_TRAIN_ID),
+            NbtHelper.readNullableUUID(nbt, NBT_SESSION_ID),
+            nbt.getString(NBT_TRAIN_NAME),
+            LineRef.fromNbt(nbt.getCompound(NBT_LINE)),
+            CategoryRef.fromNbt(nbt.getCompound(NBT_CATEGORY)),
+            StationRef.fromNbt(nbt.getCompound(NBT_STATION)),
+            nbt.getString(NBT_TITLE),
+            StationRef.fromNbt(nbt.getCompound(NBT_DESTINATION)),
+            StopTimes.fromNbt(nbt.getCompound(NBT_SCHEDULED)),
+            StopTimes.fromNbt(nbt.getCompound(NBT_REALTIME)),
+            NbtHelper.readEnum(nbt.getString(NBT_SERVICE_STATE), ServiceState.class, ServiceState.IN_SERVICE),
+            nbt.getInt(NBT_ENTRY_INDEX),
+            nbt.getInt(NBT_SECTION_INDEX),
+            NbtHelper.readList(nbt, NBT_STOPOVERS, StationRef::fromNbt),
+            NbtHelper.readList(nbt, NBT_DELAYS, DelayInstance::fromNbt)
+        );
     }
 }

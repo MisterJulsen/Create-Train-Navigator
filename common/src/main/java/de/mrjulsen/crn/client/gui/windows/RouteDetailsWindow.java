@@ -16,6 +16,7 @@ import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.data.SavedRoutesManager;
 import de.mrjulsen.crn.data.navigation.ClientRoute;
 import de.mrjulsen.crn.event.ModCommonEvents;
+import de.mrjulsen.crn.navigator.route.RouteJourney;
 import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.DLOverlayManager;
@@ -46,9 +47,9 @@ public class RouteDetailsWindow extends AbstractNavigatorScreen {
     private final MutableComponent tooltipShowNotifications = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".route_overlay_settings.notifications");
     private final MutableComponent tooltipShowNotificationsDescription = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".route_overlay_settings.notifications.description").withStyle(ChatFormatting.GRAY);
 
-    private final ClientRoute route;
+    private final RouteJourney route;
 
-    public RouteDetailsWindow(DLWindowManager manager, ClientRoute route) {
+    public RouteDetailsWindow(DLWindowManager manager, RouteJourney route) {
         super(manager, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".route_details.title"), ContainerColor.GOLD, BarColor.GOLD);
         this.route = route;
 
@@ -59,29 +60,29 @@ public class RouteDetailsWindow extends AbstractNavigatorScreen {
 
         CreateButton saveRouteBtn = addComponent(new CreateButton(30, 223, SavedRoutesManager.isSaved(route) ? ModGuiIcons.BOOKMARK_FILLED.getAsCreateIcon() : ModGuiIcons.BOOKMARK.getAsCreateIcon()));
         saveRouteBtn.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
-            saveRouteBtn.tooltip.set(new DLTooltip(List.of(SavedRoutesManager.isSaved(route) ? tooltipRemoveRoute : tooltipSaveRoute), 200));
             if (SavedRoutesManager.isSaved(route)) {
                 SavedRoutesManager.removeRoute(route);
-                saveRouteBtn.icon = ModGuiIcons.BOOKMARK.getAsCreateIcon();
             } else {
                 SavedRoutesManager.saveRoute(route);
-                saveRouteBtn.icon = ModGuiIcons.BOOKMARK_FILLED.getAsCreateIcon();
             }
             SavedRoutesManager.push(true, null);
-            boolean isSaved = SavedRoutesManager.isSaved(route);
-            //notificationButton.set_visible(isSaved);
-            //notificationIndicator.set_visible(isSaved);
-            route.setShowNotifications(isSaved);
+            updateSaveRouteBtn(saveRouteBtn);
             return false;
         });
-        saveRouteBtn.tooltip.set(new DLTooltip(List.of(SavedRoutesManager.isSaved(route) ? tooltipRemoveRoute : tooltipSaveRoute), 200));
+        updateSaveRouteBtn(saveRouteBtn);
 
         CreateButton popupBtn = addComponent(new CreateButton(50, 223, ModGuiIcons.PIN.getAsCreateIcon()));
         popupBtn.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
-            DLOverlayManager.addOverlay(mgr -> new RouteDetailsOverlay(mgr, ModCommonEvents.getPhysicalLevel(), route, 0, 0));
+            DLOverlayManager.addOverlay(mgr -> new RouteDetailsOverlay(mgr, route, 0, 0));
             return false;
         });
         popupBtn.tooltip.set(new DLTooltip(List.of(tooltipShowPopup), 200));
+    }
+
+    private void updateSaveRouteBtn(CreateButton saveRouteBtn) {
+        boolean saved = SavedRoutesManager.isSaved(route);
+        saveRouteBtn.icon = (saved ? ModGuiIcons.BOOKMARK_FILLED : ModGuiIcons.BOOKMARK).getAsCreateIcon();
+        saveRouteBtn.tooltip.set(new DLTooltip(List.of(saved ? tooltipRemoveRoute : tooltipSaveRoute), 200));
     }
 
     @Override
@@ -94,7 +95,7 @@ public class RouteDetailsWindow extends AbstractNavigatorScreen {
         CreateDynamicWidgets.renderContainer(graphics, 1, y, GUI_WIDTH - 2, GUI_HEIGHT - y - FooterSize.SMALL.size() + 1, ContainerColor.GOLD);
         
         if (!route.isAnyCancelled()) {
-            if (route.getStart().isDeparted()) {
+            if (route.hasDeparted(ModUtils.getTransformedWorldTime())) {
                 GuiUtils.drawString(graphics, graphics.defaultFont(), GUI_WIDTH / 2, 19, textArrival, DLColor.WHITE, ETextAlignment.CENTER, false);
             } else {
                 GuiUtils.drawString(graphics, graphics.defaultFont(), GUI_WIDTH / 2, 19, textDeparture, DLColor.WHITE, ETextAlignment.CENTER, false);
@@ -102,11 +103,11 @@ public class RouteDetailsWindow extends AbstractNavigatorScreen {
             graphics.poseStack().pushPose();
             graphics.poseStack().scale(2, 2, 2);
             long time = 0;
-            if (route.getStart().isDeparted()) {
-                time = route.getEnd().getRealTimeArrivalTime() - ModUtils.getTransformedWorldTime();
+            if (route.hasDeparted(ModUtils.getTransformedWorldTime())) {
+                time = route.lastLeg().alighting().realtime().arrival() - ModUtils.getTransformedWorldTime();
                 GuiUtils.drawString(graphics, graphics.defaultFont(), (GUI_WIDTH / 2) / 2, (31) / 2, time < 0 ? timeNowText : TextUtils.text(new DLTime(time, VanillaTimeSystem.INSTANCE).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME, DLTime.defaultTimeSystem())), DLColor.WHITE, ETextAlignment.CENTER, false);
             } else {
-                time = route.getStart().getRealTimeDepartureTime() - ModUtils.getTransformedWorldTime();
+                time = route.firstLeg().boarding().realtime().departure() - ModUtils.getTransformedWorldTime();
                 GuiUtils.drawString(graphics, graphics.defaultFont(), (GUI_WIDTH / 2) / 2, (31) / 2, time < 0 ? timeNowText : TextUtils.text(new DLTime(time, VanillaTimeSystem.INSTANCE).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME, DLTime.defaultTimeSystem())), DLColor.WHITE, ETextAlignment.CENTER, false);
             }
             graphics.poseStack().popPose();

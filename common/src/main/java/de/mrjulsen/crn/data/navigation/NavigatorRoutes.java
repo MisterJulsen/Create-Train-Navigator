@@ -10,7 +10,9 @@ import java.util.UUID;
 import com.simibubi.create.content.trains.entity.TrainIconType;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.backend.api.CategoryRef;
 import de.mrjulsen.crn.backend.api.JourneySnapshot;
+import de.mrjulsen.crn.backend.api.LineRef;
 import de.mrjulsen.crn.backend.api.RailwayBackendApi;
 import de.mrjulsen.crn.backend.api.SectionSnapshot;
 import de.mrjulsen.crn.backend.api.StopSnapshot;
@@ -18,7 +20,9 @@ import de.mrjulsen.crn.backend.api.TrainSnapshot;
 import de.mrjulsen.crn.backend.timing.StopTimes;
 import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.data.StationTag;
+import de.mrjulsen.crn.data.TrainCategory;
 import de.mrjulsen.crn.data.TrainInfo;
+import de.mrjulsen.crn.data.TrainLine;
 import de.mrjulsen.crn.data.UserSettings;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
 import de.mrjulsen.crn.data.train.TrainState;
@@ -61,6 +65,19 @@ public final class NavigatorRoutes {
         }
         routes.sort(Comparator.comparingLong(x -> x.getStart().getScheduledDepartureTime()));
         return routes;
+    }
+
+    /**
+     * The configured line an API value refers to. The legacy route format holds the live objects,
+     * so building one has to look them back up.
+     */
+    private static TrainLine resolveLine(LineRef line) {
+        return line == null || !line.isKnown() ? null : GlobalSettings.getInstance().getTrainLine(line.id()).orElse(null);
+    }
+
+    /** The configured category an API value refers to. */
+    private static TrainCategory resolveCategory(CategoryRef category) {
+        return category == null || !category.isKnown() ? null : GlobalSettings.getInstance().getTrainCategory(category.id()).orElse(null);
     }
 
     private static String tagName(StationTag tag) {
@@ -122,22 +139,21 @@ public final class NavigatorRoutes {
                 continue;
             }
             stops.add(toTrainStop(train, leg, new RouteCall(
-                stop.station(),
+                stop.scheduledStation(),
+                stop.realtimeStation(),
                 stop.entryIndex(),
                 stop.completedVisits() + cycles,
                 stop.scheduled().shifted(shift),
-                stop.realtime().arrival() + shift,
-                stop.realtime().departure() + shift
+                stop.realtime().shifted(shift)
             )));
         }
         return stops;
     }
 
     private static TrainStop toTrainStop(TrainSnapshot train, RouteLeg leg, RouteCall call) {
-        StopTimes scheduled = call.scheduled().isKnown()
-            ? call.scheduled()
-            : new StopTimes(call.arrival(), call.departure(), call.departure());
-        StationTag tag = GlobalSettings.getInstance().getOrCreateStationTagFor(call.stationName());
+        StopTimes scheduled = call.scheduled().isKnown() ? call.scheduled() : call.realtime();
+        StationTag scheduledTag = GlobalSettings.getInstance().getOrCreateStationTagFor(call.scheduledStationName());
+        StationTag realTimeTag = GlobalSettings.getInstance().getOrCreateStationTagFor(call.realtimeStationName());
 
         return new TrainStop(
             call.entryIndex(),
@@ -145,7 +161,7 @@ public final class NavigatorRoutes {
             leg.trainId(),
             train.trainName(),
             iconOf(train),
-            new TrainInfo(leg.line(), leg.category()),
+            new TrainInfo(resolveLine(leg.line()), resolveCategory(leg.category())),
             leg.destinationText(),
             false,
             leg.destinationText(),
@@ -154,12 +170,12 @@ public final class NavigatorRoutes {
             scheduled.departure(),
             scheduled.arrival(),
             call.cycle(),
-            tag.getClientTag(call.stationName()),
-            call.arrival(),
-            call.departure(),
+            scheduledTag.getClientTag(call.scheduledStationName()),
+            call.realtime().arrival(),
+            call.realtime().departure(),
             call.cycle(),
-            tag.getClientTag(call.stationName()),
-            (int) (call.arrival() - ModUtils.getTransformedWorldTime()),
+            realTimeTag.getClientTag(call.realtimeStationName()),
+            (int) (call.realtime().arrival() - ModUtils.getTransformedWorldTime()),
             TrainState.BEFORE
         );
     }

@@ -84,6 +84,7 @@ public class DebugCommand {
                 )
                 .then(NavigatorDebugCommand.navigate())
                 .then(NavigatorDebugCommand.index())
+                .then(NavigatorDebugCommand.dump())
             )
             .then(Commands.literal(SUB_DISCORD)
                 .executes(x -> discord(x.getSource()))

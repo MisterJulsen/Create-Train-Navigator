@@ -1,7 +1,10 @@
 package de.mrjulsen.crn.backend.delay;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -68,7 +71,10 @@ public record DelayInstance(
         return new DelayInstance(causeId, severity, since, ticks, args, origin);
     }
 
-    /** The translation key of this occurrence's cause, resolved through the registry. */
+    /**
+     * The translation key naming this occurrence's kind of reason, resolved through the registry.
+     * This is what a view shows: the reason and nothing else, without any of the particulars.
+     */
     public String translationKey() {
         return DelayCauseRegistry.get(causeId)
             .map(DelayCause::translationKey)
@@ -93,6 +99,50 @@ public record DelayInstance(
     /** How long this occurrence has been applying at the given time, in ticks. */
     public long durationUntil(long now) {
         return Math.max(0, now - since);
+    }
+
+    /**
+     * Collapses occurrences of the same cause into one, for a view that shows a reason by name.
+     * <p>
+     * Two occurrences of one cause are two separate events - a different train in the way, or the
+     * same situation a second time - and are tracked separately so each keeps its own first-seen
+     * time. Named without their particulars they read as the same line twice, which tells a traveller
+     * nothing, so what is shown is one line per reason with the particulars of all of them gathered
+     * behind it.
+     *
+     * @return One occurrence per cause, in the order the causes first appeared.
+     */
+    public static List<DelayInstance> collapseByCause(Collection<DelayInstance> instances) {
+        Map<ResourceLocation, DelayInstance> byCause = new LinkedHashMap<>();
+        for (DelayInstance instance : instances) {
+            byCause.merge(instance.causeId(), instance, DelayInstance::mergedWith);
+        }
+        return List.copyOf(byCause.values());
+    }
+
+    /**
+     * This occurrence and another of the same cause as one: it began when the earlier of them did,
+     * weighs as heavily as the more severe of them, and carries the arguments of both. Their
+     * quantified shares are added up, since each accounts for a part of the same delay.
+     */
+    private DelayInstance mergedWith(DelayInstance other) {
+        List<DelayArgument> merged = new ArrayList<>(args);
+        for (DelayArgument arg : other.args) {
+            if (!merged.contains(arg)) {
+                merged.add(arg);
+            }
+        }
+        long estimated = hasEstimatedDelay() || other.hasEstimatedDelay()
+            ? Math.max(0, estimatedDelayTicks) + Math.max(0, other.estimatedDelayTicks)
+            : UNKNOWN_DELAY;
+        return new DelayInstance(
+            causeId,
+            severity.compareTo(other.severity) >= 0 ? severity : other.severity,
+            Math.min(since, other.since),
+            estimated,
+            merged,
+            origin == other.origin ? origin : DelayOrigin.DETECTED
+        );
     }
 
     /** Serializes this occurrence. */

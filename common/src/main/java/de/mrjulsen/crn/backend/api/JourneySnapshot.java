@@ -10,18 +10,23 @@ import de.mrjulsen.crn.backend.schedule.JourneySection;
 import de.mrjulsen.crn.backend.schedule.JourneyStop;
 import de.mrjulsen.crn.backend.schedule.TrainJourney;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
+import de.mrjulsen.crn.util.NbtHelper;
+import net.minecraft.nbt.CompoundTag;
 
 /**
  * An immutable snapshot of a train's whole journey: every stop of the run with its timetable and
- * projected times, grouped into sections, and marked with what the train has already done and what
- * is still to come.
+ * projected times, grouped into sections, and marked with how far the train has got.
  * <p>
  * Taken while no backend update is in progress, so every stop belongs to the same projection pass -
  * unlike values read one by one through the individual queries.
+ * <p>
+ * Where a stop lies relative to the train follows from {@link #currentStopIndex()} and is answered
+ * by {@link #visitStateOf(StopSnapshot)} rather than stored on every stop.
  *
  * @param trainId         The id of the train this journey belongs to.
  * @param trainName       The train's own name.
- * @param displayName     The line name if one is assigned, otherwise the train name.
+ * @param line            The current section's train line, or {@link LineRef#NONE}. What to show as
+ *                        the journey's name is {@link #displayName()}.
  * @param cyclic          Whether the train repeats this journey instead of stopping at the end.
  * @param totalDuration   How long one full cycle takes in ticks, or {@code -1} while learning.
  * @param stops           Every stop in travel order, starting from the schedule's first.
@@ -33,7 +38,7 @@ import de.mrjulsen.crn.data.storage.GlobalSettings;
 public record JourneySnapshot(
     UUID trainId,
     String trainName,
-    String displayName,
+    LineRef line,
     boolean cyclic,
     long totalDuration,
     List<StopSnapshot> stops,
@@ -42,9 +47,21 @@ public record JourneySnapshot(
     int currentSectionIndex
 ) {
 
+    private static final String NBT_TRAIN_ID = "TrainId";
+    private static final String NBT_TRAIN_NAME = "TrainName";
+    private static final String NBT_LINE = "Line";
+    private static final String NBT_CYCLIC = "Cyclic";
+    private static final String NBT_TOTAL_DURATION = "TotalDuration";
+    private static final String NBT_STOPS = "Stops";
+    private static final String NBT_SECTIONS = "Sections";
+    private static final String NBT_CURRENT_STOP_INDEX = "CurrentStopIndex";
+    private static final String NBT_CURRENT_SECTION_INDEX = "CurrentSectionIndex";
+
     public JourneySnapshot {
         stops = stops == null ? List.of() : List.copyOf(stops);
         sections = sections == null ? List.of() : List.copyOf(sections);
+        trainName = trainName == null ? "" : trainName;
+        line = line == null ? LineRef.NONE : line;
     }
 
     /** Captures the current journey of the given train. */
@@ -63,7 +80,7 @@ public record JourneySnapshot(
                 if (stop == currentStop) {
                     currentStopIndex = stops.size();
                 }
-                stops.add(StopSnapshot.of(train, stop, visitStateOf(stop, currentStop)));
+                stops.add(StopSnapshot.of(train, stop));
             }
 
             List<SectionSnapshot> sections = new ArrayList<>(journey.getSections().size());
@@ -74,7 +91,7 @@ public record JourneySnapshot(
             return new JourneySnapshot(
                 train.getTrainId(),
                 train.getTrainName(),
-                train.getDisplayName(),
+                LineRef.of(currentSection == null ? null : currentSection.getTrainLine().orElse(null)),
                 journey.isCyclic(),
                 train.getTotalDuration(),
                 stops,
@@ -98,17 +115,26 @@ public record JourneySnapshot(
     }
 
     /**
-     * Where a stop lies relative to the train's position. Stops before the current one on this run
-     * count as passed; on a cyclic journey that means "earlier in the current cycle".
+     * What to show as this journey's name: the name of the line the train currently runs on, or its
+     * own name if it carries no line or the line is unnamed.
      */
-    static StopVisitState visitStateOf(JourneyStop stop, JourneyStop currentStop) {
-        if (currentStop == null) {
+    public String displayName() {
+        return line.hasName() ? line.name() : trainName;
+    }
+
+    /**
+     * Where the given stop lies relative to the train's position. Stops before the current one on
+     * this run count as passed; on a cyclic journey that means "earlier in the current cycle".
+     */
+    public StopVisitState visitStateOf(StopSnapshot stop) {
+        int position = stop == null ? -1 : stops.indexOf(stop);
+        if (currentStopIndex < 0 || position < 0) {
             return StopVisitState.UPCOMING;
         }
-        if (stop.getOrderIndex() == currentStop.getOrderIndex()) {
+        if (position == currentStopIndex) {
             return StopVisitState.CURRENT;
         }
-        return stop.getOrderIndex() < currentStop.getOrderIndex() ? StopVisitState.PASSED : StopVisitState.UPCOMING;
+        return position < currentStopIndex ? StopVisitState.PASSED : StopVisitState.UPCOMING;
     }
 
     /** The stop the train is at or traveling towards. */
@@ -147,7 +173,7 @@ public record JourneySnapshot(
 
     /** Every stop the train has already served on this run, in travel order. */
     public List<StopSnapshot> passedStops() {
-        return stops.stream().filter(x -> x.visitState() == StopVisitState.PASSED).toList();
+        return currentStopIndex <= 0 ? List.of() : stops.subList(0, currentStopIndex);
     }
 
     /** The stop after the current one, i.e. the train's next call. */
@@ -201,7 +227,7 @@ public record JourneySnapshot(
     public Optional<StopSnapshot> nextCallAt(String stationNameOrFilter, long notBefore) {
         StopSnapshot best = null;
         for (StopSnapshot stop : stops) {
-            if (!stop.station().matches(stationNameOrFilter) || !stop.hasTimes()) {
+            if (!stop.realtimeStation().matches(stationNameOrFilter) || !stop.hasTimes()) {
                 continue;
             }
             StopSnapshot candidate = repeats() ? stop.atOrAfter(notBefore, totalDuration) : stop;
@@ -229,7 +255,37 @@ public record JourneySnapshot(
         for (StopSnapshot stop : stops) {
             advanced.add(stop.advancedBy(cycles, totalDuration));
         }
-        return new JourneySnapshot(trainId, trainName, displayName, cyclic, totalDuration,
+        return new JourneySnapshot(trainId, trainName, line, cyclic, totalDuration,
             advanced, sections, currentStopIndex, currentSectionIndex);
+    }
+
+    /** Serializes this journey. */
+    public CompoundTag toNbt() {
+        CompoundTag nbt = new CompoundTag();
+        NbtHelper.putNullableUUID(nbt, NBT_TRAIN_ID, trainId);
+        nbt.putString(NBT_TRAIN_NAME, trainName);
+        nbt.put(NBT_LINE, line.toNbt());
+        nbt.putBoolean(NBT_CYCLIC, cyclic);
+        nbt.putLong(NBT_TOTAL_DURATION, totalDuration);
+        nbt.put(NBT_STOPS, NbtHelper.writeList(stops, StopSnapshot::toNbt));
+        nbt.put(NBT_SECTIONS, NbtHelper.writeList(sections, SectionSnapshot::toNbt));
+        nbt.putInt(NBT_CURRENT_STOP_INDEX, currentStopIndex);
+        nbt.putInt(NBT_CURRENT_SECTION_INDEX, currentSectionIndex);
+        return nbt;
+    }
+
+    /** Deserializes a journey written by {@link #toNbt()}. */
+    public static JourneySnapshot fromNbt(CompoundTag nbt) {
+        return new JourneySnapshot(
+            NbtHelper.readNullableUUID(nbt, NBT_TRAIN_ID),
+            nbt.getString(NBT_TRAIN_NAME),
+            LineRef.fromNbt(nbt.getCompound(NBT_LINE)),
+            nbt.getBoolean(NBT_CYCLIC),
+            nbt.getLong(NBT_TOTAL_DURATION),
+            NbtHelper.readList(nbt, NBT_STOPS, StopSnapshot::fromNbt),
+            NbtHelper.readList(nbt, NBT_SECTIONS, SectionSnapshot::fromNbt),
+            nbt.getInt(NBT_CURRENT_STOP_INDEX),
+            nbt.getInt(NBT_CURRENT_SECTION_INDEX)
+        );
     }
 }

@@ -143,7 +143,7 @@ public final class RaptorSearch {
             }
         }
 
-        return collectResults(rides, roundArrival, destination, maxRounds);
+        return collectResults(rides, roundArrival, destination, maxRounds, departAfter);
     }
 
     /**
@@ -155,6 +155,9 @@ public final class RaptorSearch {
      * Riding them in departure order matters: the earliest of them establishes an arrival at the
      * destination straight away, after which every later trip that cannot beat it is dismissed the
      * moment it is looked at.
+     * <p>
+     * That earliest boarding is what the search needs, not what the traveller wants to be told; the
+     * two are reconciled by {@link #boardAsLateAsPossible} once a route has been found.
      */
     private List<Ride> collectBoardings(int[] markedNodes, int markedCount, long[] previousArrival, int round) {
         Map<Integer, Ride> earliest = new HashMap<>();
@@ -190,7 +193,8 @@ public final class RaptorSearch {
     /**
      * The chains of rides leading to the destination, one per round that improved on all before it.
      */
-    private List<List<Ride>> collectResults(Ride[][] rides, long[][] roundArrival, int destination, int maxRounds) {
+    private List<List<Ride>> collectResults(Ride[][] rides, long[][] roundArrival, int destination, int maxRounds,
+                                            long departAfter) {
         List<List<Ride>> results = new ArrayList<>();
         long bestSoFar = UNREACHABLE;
 
@@ -204,10 +208,48 @@ public final class RaptorSearch {
                 continue;
             }
             bestSoFar = arrival;
-            results.add(chain);
+            results.add(boardAsLateAsPossible(chain, departAfter));
         }
 
         return results;
+    }
+
+    /**
+     * The same chain of rides, but boarding each train as late as the traveller possibly can.
+     * <p>
+     * The search boards every train at the first opportunity, because for the question it is
+     * answering - what can be reached, and when - getting on earlier covers everything getting on
+     * later would. For the traveller the two are not the same at all. A station node is a whole
+     * station tag, so a train that serves one platform of it, goes round its loop and comes back to
+     * another platform offers two boardings at what the search considers one place; taking the first
+     * of them means riding a full lap to arrive back where you started.
+     * <p>
+     * Nothing about the journey changes here except where the traveller gets on: same train, same
+     * stop, same arrival - only later, and without the pointless lap. Which also means a route that
+     * used to differ from a sensible one only by that lap now becomes identical to it and is dropped
+     * as a duplicate rather than offered as an alternative.
+     */
+    private List<Ride> boardAsLateAsPossible(List<Ride> chain, long departAfter) {
+        List<Ride> adjusted = new ArrayList<>(chain.size());
+        long readyAt = departAfter;
+
+        for (Ride ride : chain) {
+            Trip trip = index.trip(ride.trip());
+            int node = trip.call(ride.boardCall()).node();
+            int board = ride.boardCall();
+
+            for (int call = board + 1; call < ride.alightCall(); call++) {
+                TripCall candidate = trip.call(call);
+                if (candidate.node() == node && candidate.departure() >= readyAt) {
+                    board = call;
+                }
+            }
+
+            adjusted.add(new Ride(ride.fromNode(), ride.trip(), board, ride.alightCall()));
+            readyAt = trip.call(ride.alightCall()).arrival() + query.minTransferTime();
+        }
+
+        return adjusted;
     }
 
     private List<Ride> reconstruct(Ride[][] rides, int round, int destination) {
