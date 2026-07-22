@@ -209,7 +209,7 @@ public final class RailwayBackendApi {
      * <b>Server thread only.</b>
      */
     public static Optional<TrainPositionSnapshot> getPosition(UUID trainId) {
-        return manager().getTrain(trainId).map(x -> TrainPositionSnapshot.of(x.getTrain()));
+        return manager().getTrain(trainId).map(x -> TrainPositionSnapshot.of(x.getTrain(), x.getExitSide()));
     }
 
     /**
@@ -218,7 +218,7 @@ public final class RailwayBackendApi {
      * <b>Server thread only.</b>
      */
     public static List<TrainPositionSnapshot> getAllPositions() {
-        return reportableTrains().map(x -> TrainPositionSnapshot.of(x.getTrain())).toList();
+        return reportableTrains().map(x -> TrainPositionSnapshot.of(x.getTrain(), x.getExitSide())).toList();
     }
 
     /**

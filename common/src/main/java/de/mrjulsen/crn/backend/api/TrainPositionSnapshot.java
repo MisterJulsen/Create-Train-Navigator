@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import com.simibubi.create.content.trains.entity.Carriage;
 import com.simibubi.create.content.trains.entity.Train;
+import com.simibubi.create.content.trains.station.GlobalStation;
 
 import de.mrjulsen.crn.data.TrainExitSide;
 import de.mrjulsen.crn.data.train.TrainUtils;
@@ -68,8 +69,15 @@ public record TrainPositionSnapshot(
         exitSide = exitSide == null ? TrainExitSide.UNKNOWN : exitSide;
     }
 
-    /** Captures the position of the given train. Server thread only. */
-    public static TrainPositionSnapshot of(Train train) {
+    /**
+     * Captures the position of the given train.
+     *
+     * @param exitSide Which side the doors will open on at its next stop. Passed in rather than
+     *                 worked out here: it can only be measured on the server thread, and this is
+     *                 built wherever a snapshot happens to be asked for - see
+     *                 {@link de.mrjulsen.crn.backend.core.TrackedTrain#getExitSide()}.
+     */
+    public static TrainPositionSnapshot of(Train train, TrainExitSide exitSide) {
         Carriage leading = train.carriages == null || train.carriages.isEmpty() ? null : train.carriages.get(0);
         if (leading == null) {
             return unknown(train.id);
@@ -90,7 +98,7 @@ public record TrainPositionSnapshot(
             train.throttle,
             train.currentlyBackwards,
             train.navigation == null || train.navigation.destination == null ? -1 : train.navigation.distanceToDestination,
-            train.navigation == null ? TrainExitSide.UNKNOWN : TrainUtils.getExitSide(train.navigation.destination)
+            exitSide
         );
     }
 

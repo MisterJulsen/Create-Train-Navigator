@@ -3,6 +3,7 @@ package de.mrjulsen.crn.backend.core;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -32,6 +33,7 @@ import de.mrjulsen.crn.backend.timing.StopTimings;
 import de.mrjulsen.crn.backend.timing.TimetableCalculator;
 import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
+import de.mrjulsen.crn.data.TrainExitSide;
 import de.mrjulsen.crn.data.train.TrainUtils;
 import de.mrjulsen.crn.mixin.ScheduleRuntimeAccessor;
 import de.mrjulsen.crn.util.ModUtils;
@@ -95,6 +97,14 @@ public final class TrackedTrain implements RealtimeTracker.Listener {
     /** Whether the train can currently run at all. The source of truth for "cancelled". */
     private volatile ServiceState service = ServiceState.IN_SERVICE;
     private volatile int sectionsSinceReset = 0;
+
+    /** How long to wait before asking again for an exit side that could not be determined, in ticks. */
+    private static final int EXIT_SIDE_RETRY_TICKS = 20;
+
+    private volatile TrainExitSide exitSide = TrainExitSide.UNKNOWN;
+    /** Server thread only, alongside {@link #updateExitSide()}. */
+    private UUID exitSideStation;
+    private int exitSideRetryTicks;
 
     private final AtomicBoolean pendingSoftReset = new AtomicBoolean(false);
     private volatile boolean timetableDirty = false;
@@ -320,6 +330,46 @@ public final class TrackedTrain implements RealtimeTracker.Listener {
     /** Observes the train. Called every tick on the server thread; must stay cheap. */
     public void tickLive(long now) {
         realtime.tick(train, this);
+        updateExitSide();
+    }
+
+    /**
+     * Which side of the train the platform will be on at the stop it is heading for, or standing at.
+     * <p>
+     * Measured rather than derived on demand, because working it out reads the station's block entity
+     * and the track graph - both of which only answer truthfully on the server thread. Asking from a
+     * packet handler, which is where a display's request arrives, returns nothing most of the time.
+     */
+    public TrainExitSide getExitSide() {
+        return exitSide;
+    }
+
+    /**
+     * Re-measures the exit side when the train starts heading somewhere else, and keeps trying while
+     * the answer is unknown - a station whose chunk is not loaded yet has none to give, and the train
+     * is usually on its way there.
+     */
+    private void updateExitSide() {
+        GlobalStation station = getDoorStation();
+        UUID stationId = station == null ? null : station.getId();
+        boolean sameStation = Objects.equals(stationId, exitSideStation);
+
+        if (sameStation && (exitSide != TrainExitSide.UNKNOWN || ++exitSideRetryTicks < EXIT_SIDE_RETRY_TICKS)) {
+            return;
+        }
+
+        exitSideStation = stationId;
+        exitSideRetryTicks = 0;
+        exitSide = TrainUtils.getExitSide(station);
+    }
+
+    /**
+     * The station whose platform the doors will open onto: the one being navigated to, or - once the
+     * train has pulled in and Create has cleared the destination - the one it is standing at.
+     */
+    private GlobalStation getDoorStation() {
+        GlobalStation destination = train.navigation == null ? null : train.navigation.destination;
+        return destination != null ? destination : train.getCurrentStation();
     }
 
     /**

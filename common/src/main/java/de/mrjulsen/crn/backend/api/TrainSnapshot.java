@@ -147,7 +147,7 @@ public record TrainSnapshot(
             section == null ? -1 : section.getSectionIndex(),
             tracked.getJourney().getStopCount(),
             train.carriages == null ? 0 : train.carriages.size(),
-            TrainPositionSnapshot.of(train),
+            TrainPositionSnapshot.of(train, tracked.getExitSide()),
             tracked.getActiveDelays()
         );
     }

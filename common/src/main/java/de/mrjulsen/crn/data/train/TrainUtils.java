@@ -36,6 +36,7 @@ import net.createmod.catnip.data.Couple;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 
 public final class TrainUtils {
@@ -396,18 +397,43 @@ public final class TrainUtils {
         return point.isPrimary(edge.node1) ? MathUtils.getVectorAngle(vec) : MathUtils.getVectorAngle(vec.negate());
     }
 
+    /**
+     * Which side of a train the platform is on at the given station, so a display can say where the
+     * doors open. {@link TrainExitSide#UNKNOWN} whenever it cannot be worked out - most often because
+     * the station is not currently loaded.
+     */
     public static TrainExitSide getExitSide(GlobalStation station) {
-        Level level = ModCommonEvents.getPhysicalLevel();
-        if (level == null || station == null || !level.isLoaded(station.getBlockEntityPos())) {
+        if (station == null) {
             return TrainExitSide.UNKNOWN;
         }
-        final Optional<TrackEdge> edge = level != null ? getEdge(station) : Optional.empty();
-        if (!edge.isPresent()) {
+        Level level = levelOf(station);
+        if (level == null || !level.isLoaded(station.getBlockEntityPos())) {
             return TrainExitSide.UNKNOWN;
         }
-        TrainExitSide side = getTrainStationExit(station, Direction.fromYRot(angleOn(station, edge.get())), level);
+        Optional<TrackEdge> edge = getEdge(station);
+        if (edge.isEmpty()) {
+            return TrainExitSide.UNKNOWN;
+        }
+        return getTrainStationExit(station, Direction.fromYRot(angleOn(station, edge.get())), level);
+    }
 
-        return side;
+    /**
+     * The level a station stands in.
+     * <p>
+     * A station remembers which dimension its block entity is in, and that is the only level its
+     * position means anything in - looking it up in whichever level happens to be at hand reads the
+     * blocks of somewhere else entirely, which is why a station outside the overworld used to have no
+     * exit side at all. Only where a station carries no dimension - one saved before Create recorded
+     * them - is there nothing better to fall back on.
+     */
+    private static Level levelOf(GlobalStation station) {
+        ResourceKey<Level> dimension = station.getBlockEntityDimension();
+        if (dimension == null) {
+            return ModCommonEvents.getPhysicalLevel();
+        }
+        return ModCommonEvents.getCurrentServer()
+            .<Level>map(server -> server.getLevel(dimension))
+            .orElseGet(ModCommonEvents::getPhysicalLevel);
     }
 
     
