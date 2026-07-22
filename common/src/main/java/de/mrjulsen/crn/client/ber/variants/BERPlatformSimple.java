@@ -12,8 +12,10 @@ import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.config.ModCommonConfig;
-import de.mrjulsen.crn.data.train.ETrainStopState;
-import de.mrjulsen.crn.data.train.portable.StationDisplayData;
+import de.mrjulsen.crn.backend.api.BoardEntry;
+import de.mrjulsen.crn.backend.api.CallDirection;
+import de.mrjulsen.crn.block.display.properties.components.ITrainStopTypeSetting;
+import de.mrjulsen.crn.block.display.properties.components.ITrainStopTypeSetting.ETrainStopType;
 import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.client.ber.BERGraphics;
 import de.mrjulsen.mcdragonlib.client.ber.BERLabel;
@@ -70,39 +72,43 @@ public class BERPlatformSimple implements AbstractAdvancedDisplayRenderer<Platfo
 
     @Override
     public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason) {
-        List<StationDisplayData> preds = blockEntity.getStops().stream().filter(x -> x.getStationData().getRealTimeArrivalTime() < ModUtils.getTransformedWorldTime() + ModCommonConfig.DISPLAY_LEAD_TIME.get() && (!x.getTrainData().isCancelled() || ModUtils.getTransformedWorldTime() < x.getStationData().getScheduledDepartureTime() + ModCommonConfig.DISPLAY_LEAD_TIME.get())).toList();
+        long now = ModUtils.getTransformedWorldTime();
+        List<BoardEntry> preds = blockEntity.getStops().stream()
+            .filter(x -> x.realtime().arrival() < now + ModCommonConfig.DISPLAY_LEAD_TIME.get())
+            .filter(x -> ITrainStopTypeSetting.accepts(x, ETrainStopType.DEPARTURES_ONLY, now))
+            .toList();
 
-        label.clippingArea.set(Rectangle.withSize(3, 3, blockEntity.getXSizeScaled() * 16 - 6, blockEntity.getYSizeScaled() * 16 - 6));   
+        label.clippingArea.set(Rectangle.withSize(3, 3, blockEntity.getXSizeScaled() * 16 - 6, blockEntity.getYSizeScaled() * 16 - 6));
         label.glowing.set(blockEntity.isGlowing());
         label.color.set(getDisplaySettings(blockEntity).getFontColor());
         label.preferredWidth.set((float)(blockEntity.getXSizeScaled() * 16 - 6));
         label.horizontalScrollMode.set(EScrollMode.WHEN_NEEDED);
 
         texts = new ArrayList<>();
-        texts.addAll(preds.stream().filter(x -> {
-            return !x.isNextSectionExcluded();
-        }).map(x -> {
-            String timeString = ModUtils.formatTime(x.getStationData().getScheduledDepartureTime(), getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA);
+        texts.addAll(preds.stream().map(x -> {
+            String timeString = ModUtils.formatTime(x.scheduled().departure(), getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA);
+            String platform = x.station().platform();
             MutableComponent text = TextUtils.empty();
-            if (x.getStationData().getRealTimeStation().info().platform() == null || x.getStationData().getRealTimeStation().info().platform().isBlank()) {
-                text.append(CustomLanguage.translate(keyTrainDeparture, x.getTrainData().getName(ETrainStopState.DEPARTURE), x.getStationData().getDestination(), timeString));
+            if (platform == null || platform.isBlank()) {
+                text.append(CustomLanguage.translate(keyTrainDeparture, x.displayName(), x.destinationText(), timeString));
             } else {
-                text.append(CustomLanguage.translate(keyTrainDepartureWithPlatform, x.getTrainData().getName(ETrainStopState.DEPARTURE), x.getStationData().getDestination(), timeString, x.getStationData().getRealTimeStation().info().platform()));
+                text.append(CustomLanguage.translate(keyTrainDepartureWithPlatform, x.displayName(), x.destinationText(), timeString, platform));
             }
 
-            if (x.getTrainData().isCancelled()) {
+            if (x.isCancelled()) {
                 text.append(", ").append(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.cancelled2").getString());
-            } else if (x.getStationData().isDepartureDelayed()) {
-                String delay = getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA ? ModUtils.timeRemainingString(x.getStationData().getDepartureTimeDeviation()) : String.valueOf((long)DLTime.fromGameTicks(x.getStationData().getDepartureTimeDeviation(), DLTime.defaultTimeSystem()).toGameMinutes(DLTime.defaultTimeSystem()));
+            } else if (x.isDelayed(CallDirection.DEPARTURE)) {
+                String delay = getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA ? ModUtils.timeRemainingString(x.departureDeviation()) : String.valueOf((long)DLTime.fromGameTicks(x.departureDeviation(), DLTime.defaultTimeSystem()).toGameMinutes(DLTime.defaultTimeSystem()));
                 String timeUnitSuffix = getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ABS ?
                     " " + CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.delay_abs_suffix").getString() :
                     "";
 
                 text.append(", ").append(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.delayed2", delay, timeUnitSuffix).getString());
-                
-                if (x.getTrainData().hasStatusInfo()) {
-                    text.append(" ").append(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.reason").getString()).append(x.getTrainData().getStatus().get(0).text());
-                }
+
+                x.primaryDelay().ifPresent(cause -> text
+                    .append(" ")
+                    .append(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.reason").getString())
+                    .append(CustomLanguage.translate(cause.translationKey())));
             }
             return text;
         }).toList());

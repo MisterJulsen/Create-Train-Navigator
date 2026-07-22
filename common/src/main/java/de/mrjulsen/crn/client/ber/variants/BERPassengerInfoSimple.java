@@ -1,10 +1,10 @@
 package de.mrjulsen.crn.client.ber.variants;
 
 import de.mrjulsen.crn.config.ModCommonConfig;
-import de.mrjulsen.crn.data.train.ETrainStopState;
 import org.joml.Vector3f;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.data.TrainJourneyStage;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity.EUpdateReason;
 import de.mrjulsen.crn.block.display.properties.PassengerInformationScrollingTextSettings;
@@ -13,7 +13,6 @@ import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.TrainExitSide;
-import de.mrjulsen.crn.data.train.portable.TrainDisplayData.State;
 import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.client.ber.BERGraphics;
 import de.mrjulsen.mcdragonlib.client.ber.BERLabel;
@@ -59,7 +58,7 @@ public class BERPassengerInfoSimple implements AbstractAdvancedDisplayRenderer<P
 
     @Override
     public void render(BERGraphics<AdvancedDisplayBlockEntity> graphics, float partialTick, AdvancedDisplayRenderInstance parent, int light, boolean backSide) {
-        if (graphics.blockEntity().getTrainData() == null || graphics.blockEntity().getTrainData().getState().isOutOfService()) {
+        if (graphics.blockEntity().getStage().isOutOfService()) {
             return;
         }
 
@@ -113,7 +112,7 @@ public class BERPassengerInfoSimple implements AbstractAdvancedDisplayRenderer<P
     
     @Override
     public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason data) {
-        if (blockEntity.getTrainData() == null || blockEntity.getTrainData().getState().isOutOfService()) {
+        if (blockEntity.getStage().isOutOfService()) {
             return;
         }
         
@@ -121,19 +120,18 @@ public class BERPassengerInfoSimple implements AbstractAdvancedDisplayRenderer<P
 
 
         PassengerInformationScrollingTextSettings settings = getDisplaySettings(blockEntity);
-        this.exitSide = settings.showExit() ? (blockEntity.getTrainData().isWaitingAtStation() ? exitSide : blockEntity.relativeExitDirection.get()) : TrainExitSide.UNKNOWN;
-        ETrainStopState stopState = ETrainStopState.beforeArrival(!blockEntity.getTrainData().isWaitingAtStation());
+        this.exitSide = settings.showExit() ? (blockEntity.isWaitingAtStation() ? exitSide : blockEntity.relativeExitDirection.get()) : TrainExitSide.UNKNOWN;
 
         
-        if (blockEntity.getTrainData().getState() == State.AT_TERMINUS) {
+        if (blockEntity.getStage() == TrainJourneyStage.AT_TERMINUS) {
             label.text.set(textTrainTerminated);
-        } else if (!blockEntity.getTrainData().getNextStop().isPresent()) {
-            label.text.set(settings.getTrainTextComponents().showTrainName() ? TextUtils.text(blockEntity.getTrainData().getTrainData().getName(stopState)) : TextUtils.empty());
-        } else if (blockEntity.getTrainData().isWaitingAtStation()) {
-            label.text.set(TextUtils.text(blockEntity.getTrainData().getNextStop().get().getRealTimeStation().tagName()));
-        } else if (blockEntity.getTrainData().getNextStop().get().getRealTimeArrivalTime() - ModUtils.getTransformedWorldTime() < ModCommonConfig.NEXT_STOP_ANNOUNCEMENT.get()) {
-            MutableComponent txt = CustomLanguage.translate(keyNextStop, blockEntity.getTrainData().getNextStop().get().getRealTimeStation().tagName());
-            if (blockEntity.getTrainData().getState().isTerminating(getDisplaySettings(blockEntity).showDoNotBoardText())) {
+        } else if (!blockEntity.getNextStop().isPresent()) {
+            label.text.set(settings.getTrainTextComponents().showTrainName() ? TextUtils.text(blockEntity.getTrainDisplayName()) : TextUtils.empty());
+        } else if (blockEntity.isWaitingAtStation()) {
+            label.text.set(TextUtils.text(blockEntity.getNextStop().get().realtimeStation().displayName()));
+        } else if (blockEntity.getNextStop().get().realtime().arrival() - ModUtils.getTransformedWorldTime() < ModCommonConfig.NEXT_STOP_ANNOUNCEMENT.get()) {
+            MutableComponent txt = CustomLanguage.translate(keyNextStop, blockEntity.getNextStop().get().realtimeStation().displayName());
+            if (blockEntity.getStage().isTerminating(getDisplaySettings(blockEntity).showDoNotBoardText())) {
                 txt = TextUtils.concatSimple(txt, textTrainTerminatesHere);
             }
             label.text.set(txt);
@@ -151,15 +149,15 @@ public class BERPassengerInfoSimple implements AbstractAdvancedDisplayRenderer<P
             slide %= slides;
             switch (slide) {
                 case 0 -> label.text.set(TextUtils.text((settings.getTrainTextComponents().showTrainName()
-                        ? blockEntity.getTrainData().getTrainData().getName(stopState) + " "
+                        ? blockEntity.getTrainDisplayName() + " "
                         : "")
-                        + ((settings.getTrainTextComponents().showDestination() && blockEntity.getTrainData().getCurrentStop().isPresent())
-                            ? (blockEntity.getTrainData().getCurrentStop().get().getDestination())//blockEntity.getTrainData().isWaitingAtStation() ? blockEntity.getTrainData().getNextStop().get().getDestination() : blockEntity.getTrainData().getFinalStop().get().getDestination())
+                        + ((settings.getTrainTextComponents().showDestination() && blockEntity.getCurrentStop().isPresent())
+                            ? (blockEntity.getCurrentStop().get().title())//blockEntity.isWaitingAtStation() ? blockEntity.getNextStop().get().title() : blockEntity.getFinalStop().get().title())
                             : "")));
                 case 1 -> label.text.set(
                             CustomLanguage.translate(keyDate, blockEntity.getLevel().getDayTime() / Level.TICKS_PER_DAY,
                                 new DLTime(level, DLTime.defaultTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem())));
-                case 2 -> label.text.set(ModUtils.calcSpeedString(blockEntity.getTrainData().getSpeed(),
+                case 2 -> label.text.set(ModUtils.calcSpeedString(blockEntity.getTrainSpeed(),
                         ModClientConfig.SPEED_UNIT.get()));
             }            
             this.exitSide = TrainExitSide.UNKNOWN;

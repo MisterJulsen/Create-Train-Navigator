@@ -192,6 +192,134 @@ public record JourneySnapshot(
         return index < 0 || index >= sections.size() ? Optional.empty() : Optional.of(sections.get(index));
     }
 
+    /** The section the given stop belongs to. */
+    public Optional<SectionSnapshot> sectionOf(StopSnapshot stop) {
+        return stop == null ? Optional.empty() : section(stop.sectionIndex());
+    }
+
+    /** The section the train reaches after the given one, or empty if there is none. */
+    public Optional<SectionSnapshot> nextSection(SectionSnapshot section) {
+        if (section == null || sections.isEmpty()) {
+            return Optional.empty();
+        }
+        int next = section.index() + 1;
+        return next >= sections.size() ? (cyclic ? section(0) : Optional.empty()) : section(next);
+    }
+
+    /** The section the train ran before the given one, or empty if there is none. */
+    public Optional<SectionSnapshot> previousSection(SectionSnapshot section) {
+        if (section == null || sections.isEmpty()) {
+            return Optional.empty();
+        }
+        int previous = section.index() - 1;
+        return previous < 0 ? (cyclic ? section(sections.size() - 1) : Optional.empty()) : section(previous);
+    }
+
+    /**
+     * Whether a passenger riding the given section is carried into the one after it.
+     * Mirrors {@link de.mrjulsen.crn.backend.schedule.TrainJourney#carriesPassengersOnward} - the
+     * rule lives there; this answers it from a snapshot, for a client that has no journey to ask.
+     */
+    public boolean carriesPassengersOnward(SectionSnapshot section) {
+        return section != null && section.includesNextSectionStart() && nextSection(section).isPresent();
+    }
+
+    /**
+     * Whether everybody has to get out at the given stop, i.e. whether the train stops being usable
+     * beyond it. See {@link de.mrjulsen.crn.backend.schedule.TrainJourney#isTerminus}.
+     */
+    public boolean isTerminus(StopSnapshot stop) {
+        SectionSnapshot section = sectionOf(stop).orElse(null);
+        if (section == null) {
+            return false;
+        }
+        if (!section.usable()) {
+            return true;
+        }
+        return isSectionEnd(stop) && !carriesPassengersOnward(section);
+    }
+
+    /**
+     * Whether the train's service starts at the given stop, i.e. whether nobody can already be aboard.
+     * See {@link de.mrjulsen.crn.backend.schedule.TrainJourney#isOrigin}.
+     */
+    public boolean isOrigin(StopSnapshot stop) {
+        SectionSnapshot section = sectionOf(stop).orElse(null);
+        if (section == null || !section.usable() || !isSectionStart(stop)) {
+            return false;
+        }
+        return previousSection(section)
+            .map(previous -> !previous.usable() || !carriesPassengersOnward(previous))
+            .orElse(true);
+    }
+
+    /**
+     * Whether the service the train arrives with ends at this stop while the train itself carries on
+     * as the next one - the point where one line becomes another without anybody having to get out.
+     * <p>
+     * Neither a terminus nor an origin: passengers ride through it. What changes is only what the
+     * train is called, which is why a display approaching such a stop still shows the arriving
+     * service and switches over once it is standing there.
+     */
+    public boolean isHandover(StopSnapshot stop) {
+        SectionSnapshot section = sectionOf(stop).orElse(null);
+        if (section == null || !section.usable() || !isSectionStart(stop)) {
+            return false;
+        }
+        return previousSection(section).map(previous -> previous.usable() && carriesPassengersOnward(previous)).orElse(false);
+    }
+
+    /**
+     * The service the train is running at this moment. At a handover that depends on whether it has
+     * arrived yet: still on its way it is running the service that is bringing it in, standing at the
+     * platform it is already running the one leaving.
+     *
+     * @param arrived Whether the train has reached its current stop.
+     */
+    public Optional<SectionSnapshot> operatingSection(boolean arrived) {
+        SectionSnapshot section = currentStop().flatMap(this::sectionOf).orElse(null);
+        if (section == null) {
+            return currentSection();
+        }
+        if (arrived || !currentStop().map(this::isHandover).orElse(false)) {
+            return Optional.of(section);
+        }
+        return previousSection(section);
+    }
+
+    /**
+     * The stops a passenger riding the given section is carried through: its own, and the first stop
+     * of the following one wherever it declares that it still covers it.
+     */
+    public List<StopSnapshot> servedStops(SectionSnapshot section) {
+        if (section == null) {
+            return List.of();
+        }
+        if (!carriesPassengersOnward(section)) {
+            return section.stops();
+        }
+        List<StopSnapshot> served = new ArrayList<>(section.stops().size() + 1);
+        served.addAll(section.stops());
+        nextSection(section).flatMap(next -> next.stops().stream().findFirst()).ifPresent(served::add);
+        return List.copyOf(served);
+    }
+
+    /** Whether the given stop is the first of its section. */
+    public boolean isSectionStart(StopSnapshot stop) {
+        return sectionOf(stop)
+            .map(section -> !section.stops().isEmpty()
+                && section.stops().get(0).entryIndex() == stop.entryIndex())
+            .orElse(false);
+    }
+
+    /** Whether the given stop is the last of its section. */
+    public boolean isSectionEnd(StopSnapshot stop) {
+        return sectionOf(stop)
+            .map(section -> !section.stops().isEmpty()
+                && section.stops().get(section.stops().size() - 1).entryIndex() == stop.entryIndex())
+            .orElse(false);
+    }
+
     /**
      * How far through the run the train is, from {@code 0} at the first stop to {@code 1} at the
      * last. Measured in stops rather than distance, and {@code 0} while the position is unknown.

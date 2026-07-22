@@ -1,6 +1,5 @@
 package de.mrjulsen.crn.client.ber.variants;
 
-import de.mrjulsen.crn.data.train.ETrainStopState;
 import org.joml.Vector3f;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
@@ -80,13 +79,13 @@ public class BERTrainDestinationInformative implements AbstractAdvancedDisplayRe
 
         carriageIndexLabel.render(graphics);
 
-        if (graphics.blockEntity().getTrainData() == null || graphics.blockEntity().getTrainData().getState().isOutOfService()) {
+        if (graphics.blockEntity().getStage().isOutOfService()) {
             return;
         }
 
         trainLineLabel.render(graphics, light);
         fromLabel.render(graphics, light);        
-        if (graphics.blockEntity().getTrainData().getState().shouldNotBoard(getDisplaySettings(graphics.blockEntity()).showDoNotBoardText())) {
+        if (graphics.blockEntity().getStage().shouldNotBoard(getDisplaySettings(graphics.blockEntity()).showDoNotBoardText())) {
             return;
         }
 
@@ -130,7 +129,6 @@ public class BERTrainDestinationInformative implements AbstractAdvancedDisplayRe
 
     private void updateContent(AdvancedDisplayBlockEntity blockEntity) {
         TrainDestinationDetailedSettings settings = getDisplaySettings(blockEntity);
-        ETrainStopState stopState = ETrainStopState.beforeArrival(!blockEntity.getTrainData().isWaitingAtStation());
 
         int index = (settings.shouldOverwriteCarriageIndex() ? 0 : blockEntity.getCarriageData().index() + 1) + settings.getCarriageIndex();
 
@@ -141,24 +139,24 @@ public class BERTrainDestinationInformative implements AbstractAdvancedDisplayRe
         carriageIndexLabel.preferredWidth.set(carriageLabelW);
         carriageIndexLabel.color.set(getDisplaySettings(blockEntity).getFontColor());
         
-        if (blockEntity.getTrainData() == null || blockEntity.getTrainData().getState().isOutOfService()) {
+        if (blockEntity.getStage().isOutOfService()) {
             return;
         }
 
         trainLineLabel.position.set(Point.of(3, 2.5f));
         trainLineLabel.preferredWidth.set(carriageIndexLabel.x.get() - 9);
         trainLineLabel.horizontalScrollMode.set(EScrollMode.WHEN_NEEDED);
-        trainLineLabel.text.set(TextUtils.text(blockEntity.getTrainData().getTrainData().getName(stopState)).withStyle(ChatFormatting.BOLD));
+        trainLineLabel.text.set(TextUtils.text(blockEntity.getTrainDisplayName()).withStyle(ChatFormatting.BOLD));
         
-        if (settings.showLineColor() && blockEntity.getTrainData().getTrainData().hasColor(stopState)) {
-            trainLineLabel.backgroundColor.set(blockEntity.getTrainData().getTrainData().getColor(stopState));
-            trainLineLabel.color.set(DLColor.pickBasedOnBrightness(blockEntity.getTrainData().getTrainData().getColor(stopState), LIGHT_FONT_COLOR, DARK_FONT_COLOR, 0.5f));
+        if (settings.showLineColor() && !blockEntity.getTrainDisplayColor().isTransparent()) {
+            trainLineLabel.backgroundColor.set(blockEntity.getTrainDisplayColor());
+            trainLineLabel.color.set(DLColor.pickBasedOnBrightness(blockEntity.getTrainDisplayColor(), LIGHT_FONT_COLOR, DARK_FONT_COLOR, 0.5f));
         } else {
             trainLineLabel.backgroundColor.set(DLColor.TRANSPARENT);
             trainLineLabel.color.set(settings.getFontColor());
         }
         
-        if (blockEntity.getTrainData().getState().shouldNotBoard(getDisplaySettings(blockEntity).showDoNotBoardText())) {    
+        if (blockEntity.getStage().shouldNotBoard(getDisplaySettings(blockEntity).showDoNotBoardText())) {    
             fromLabel.position.set(Point.of(3, 6));
             fromLabel.preferredWidth.set((float)(blockEntity.getXSizeScaled() * 16 - 9));
             fromLabel.text.set(TEXT_DO_NOT_BOARD);
@@ -169,19 +167,19 @@ public class BERTrainDestinationInformative implements AbstractAdvancedDisplayRe
                 
         fromLabel.position.set(Point.of(6, 6));
         fromLabel.preferredWidth.set((float)(blockEntity.getXSizeScaled() * 16 - 9));
-        fromLabel.text.set(TextUtils.text(!blockEntity.getTrainData().getAllStops().isEmpty() ? blockEntity.getTrainData().getAllStops().get(0).getRealTimeStation().tagName() : ""));
+        fromLabel.text.set(TextUtils.text(!blockEntity.getServiceStops().isEmpty() ? blockEntity.getServiceStops().get(0).realtimeStation().displayName() : ""));
         fromLabel.horizontalScrollMode.set(EScrollMode.WHEN_NEEDED);
         fromLabel.color.set(getDisplaySettings(blockEntity).getFontColor());
         
         stopoversLabel.position.set(Point.of(6, 8.75f));
         stopoversLabel.preferredWidth.set((float)(blockEntity.getXSizeScaled() * 16 - 9));
-        stopoversLabel.text.set(TextUtils.concat(TextUtils.text(" \u25CF "), blockEntity.getTrainData().getStopovers().stream().map(x -> (Component)TextUtils.text(x.getRealTimeStation().tagName())).toList()));
+        stopoversLabel.text.set(TextUtils.concat(TextUtils.text(" \u25CF "), blockEntity.getStopovers().stream().map(x -> (Component)TextUtils.text(x.realtimeStation().displayName())).toList()));
         stopoversLabel.horizontalScrollMode.set(EScrollMode.WHEN_NEEDED);
         stopoversLabel.color.set(getDisplaySettings(blockEntity).getFontColor());
         
         destinationLabel.position.set(Point.of(6, 11.25f));
         destinationLabel.preferredWidth.set((float)(blockEntity.getXSizeScaled() * 16 - 9));
-        destinationLabel.text.set(TextUtils.text(blockEntity.getTrainData().getCurrentStop().isPresent() ? blockEntity.getTrainData().getCurrentStop().get().getDestination() : "").withStyle(ChatFormatting.BOLD));
+        destinationLabel.text.set(TextUtils.text(blockEntity.getCurrentStop().isPresent() ? blockEntity.getCurrentStop().get().title() : "").withStyle(ChatFormatting.BOLD));
         destinationLabel.horizontalScrollMode.set(EScrollMode.WHEN_NEEDED);
         destinationLabel.color.set(getDisplaySettings(blockEntity).getFontColor());
     }

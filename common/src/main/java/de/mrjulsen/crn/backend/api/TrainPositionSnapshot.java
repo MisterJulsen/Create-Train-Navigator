@@ -7,6 +7,8 @@ import java.util.UUID;
 import com.simibubi.create.content.trains.entity.Carriage;
 import com.simibubi.create.content.trains.entity.Train;
 
+import de.mrjulsen.crn.data.TrainExitSide;
+import de.mrjulsen.crn.data.train.TrainUtils;
 import de.mrjulsen.crn.util.NbtHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -37,6 +39,10 @@ import net.minecraft.world.level.Level;
  * @param backwards     Whether the train is running backwards along its carriage order.
  * @param distanceToNextStop The remaining distance to the train's current destination in blocks, or
  *                      {@code -1} if it is not navigating anywhere.
+ * @param exitSide      Which side of the train the platform will be on at its next stop, so a
+ *                      passenger information display can say where the doors open. Measured here
+ *                      because working it out needs the loaded track and the server thread, neither
+ *                      of which a display has.
  */
 public record TrainPositionSnapshot(
     UUID trainId,
@@ -48,16 +54,18 @@ public record TrainPositionSnapshot(
     double maxSpeed,
     double throttle,
     boolean backwards,
-    double distanceToNextStop
+    double distanceToNextStop,
+    TrainExitSide exitSide
 ) {
 
     /** A snapshot for a train whose position cannot be determined. */
     public static TrainPositionSnapshot unknown(UUID trainId) {
-        return new TrainPositionSnapshot(trainId, null, null, List.of(), 0, 0, 0, 0, false, -1);
+        return new TrainPositionSnapshot(trainId, null, null, List.of(), 0, 0, 0, 0, false, -1, TrainExitSide.UNKNOWN);
     }
 
     public TrainPositionSnapshot {
         dimensions = dimensions == null ? List.of() : List.copyOf(dimensions);
+        exitSide = exitSide == null ? TrainExitSide.UNKNOWN : exitSide;
     }
 
     /** Captures the position of the given train. Server thread only. */
@@ -81,7 +89,8 @@ public record TrainPositionSnapshot(
             train.maxSpeed(),
             train.throttle,
             train.currentlyBackwards,
-            train.navigation == null || train.navigation.destination == null ? -1 : train.navigation.distanceToDestination
+            train.navigation == null || train.navigation.destination == null ? -1 : train.navigation.distanceToDestination,
+            train.navigation == null ? TrainExitSide.UNKNOWN : TrainUtils.getExitSide(train.navigation.destination)
         );
     }
 
@@ -121,6 +130,7 @@ public record TrainPositionSnapshot(
         nbt.putDouble(NBT_THROTTLE, throttle);
         nbt.putBoolean(NBT_BACKWARDS, backwards);
         nbt.putDouble(NBT_DISTANCE, distanceToNextStop);
+        nbt.putByte(NBT_EXIT_SIDE, exitSide.getAsByte());
         return nbt;
     }
 
@@ -142,7 +152,8 @@ public record TrainPositionSnapshot(
             nbt.getDouble(NBT_MAX_SPEED),
             nbt.getDouble(NBT_THROTTLE),
             nbt.getBoolean(NBT_BACKWARDS),
-            nbt.contains(NBT_DISTANCE) ? nbt.getDouble(NBT_DISTANCE) : -1
+            nbt.contains(NBT_DISTANCE) ? nbt.getDouble(NBT_DISTANCE) : -1,
+            TrainExitSide.getFromByte(nbt.getByte(NBT_EXIT_SIDE))
         );
     }
 
@@ -156,4 +167,5 @@ public record TrainPositionSnapshot(
     private static final String NBT_THROTTLE = "Throttle";
     private static final String NBT_BACKWARDS = "Backwards";
     private static final String NBT_DISTANCE = "DistanceToNextStop";
+    private static final String NBT_EXIT_SIDE = "ExitSide";
 }

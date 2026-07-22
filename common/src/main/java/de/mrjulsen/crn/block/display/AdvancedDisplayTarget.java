@@ -1,6 +1,5 @@
 package de.mrjulsen.crn.block.display;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -20,16 +19,16 @@ import de.mrjulsen.crn.block.display.properties.components.IShowTrainMultipleTim
 import de.mrjulsen.crn.block.display.properties.components.ITrainStopTypeSetting;
 import de.mrjulsen.crn.block.properties.EDisplayType;
 import de.mrjulsen.crn.block.properties.EDisplayType.EDisplayTypeDataSource;
+import de.mrjulsen.crn.backend.api.BoardEntry;
+import de.mrjulsen.crn.backend.api.BoardQuery;
+import de.mrjulsen.crn.backend.api.RailwayBackendApi;
 import de.mrjulsen.crn.client.AdvancedDisplaysRegistry;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
-import de.mrjulsen.crn.data.train.TrainStop;
-import de.mrjulsen.crn.data.train.TrainUtils;
-import de.mrjulsen.crn.data.train.portable.StationDisplayData;
 import de.mrjulsen.crn.event.ModCommonEvents;
 import de.mrjulsen.crn.registry.ModDisplayTypes;
-import de.mrjulsen.mcdragonlib.DragonLib;
+import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.data.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.core.BlockPos;
@@ -127,7 +126,7 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 					}
 					 */
 
-					List<StationDisplayData> preds = prepare(filter, controller.getDisplayProperties().platformDisplayTrainsCount().apply(controller), controller);
+					List<BoardEntry> preds = prepare(filter, controller.getDisplayProperties().platformDisplayTrainsCount().apply(controller), controller);
 					controller.setData(
 							preds,
 							filter,
@@ -193,32 +192,29 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 		}
 	}
 
-	public static List<StationDisplayData> prepare(String filter, int maxLines, AdvancedDisplayBlockEntity controller) {
-		List<StationDisplayData> result = new ArrayList<>(maxLines);
+	/**
+	 * The rows a platform display should show, straight from the backend.
+	 * <p>
+	 * Which calls belong on the board is decided by {@link ITrainStopTypeSetting#accepts} rather than
+	 * here, because the display re-checks the very same question as time moves on - a cancelled train
+	 * drops off the board without the server having to send anything.
+	 */
+	public static List<BoardEntry> prepare(String filter, int maxLines, AdvancedDisplayBlockEntity controller) {
+		ITrainStopTypeSetting.ETrainStopType type = controller.getSettingsAs(ITrainStopTypeSetting.class)
+				.map(ITrainStopTypeSetting::getTrainStopType)
+				.orElse(ITrainStopTypeSetting.ETrainStopType.DEF_VALUE);
+		long now = ModUtils.getTransformedWorldTime();
 
-		int i = 0;
-		for (TrainStop stop : TrainUtils.getDeparturesAtStationName(filter, null, false, controller.getSettingsAs(IShowTrainMultipleTimes.class).map(IShowTrainMultipleTimes::showTrainMultipleTimes).orElse(false))) {
-			StationDisplayData data = StationDisplayData.of(stop);
-			boolean cancelled = data.getTrainData().isCancelled();
-			boolean isStillValid = DragonLib.getCurrentWorldTime() < data.getStationData().getScheduledDepartureTime() + ModCommonConfig.DISPLAY_LEAD_TIME.get();
-			boolean terminus = data.isNextSectionExcluded();
-			boolean start = data.isPrevSectionExcluded();
+		BoardQuery query = BoardQuery.defaults()
+				.withCancelled()
+				.withLimit(Math.max(0, maxLines))
+				.matching(entry -> ITrainStopTypeSetting.accepts(entry, type, now));
 
-			ITrainStopTypeSetting.ETrainStopType type = controller.getSettingsAs(ITrainStopTypeSetting.class).map(ITrainStopTypeSetting::getTrainStopType).orElse(ITrainStopTypeSetting.ETrainStopType.DEF_VALUE);
-			boolean showArrival = type.showArrivals(terminus) && !start;
-			boolean showDeparture = type.showDepartures(start) && !terminus;
-
-			boolean allowed = showArrival || showDeparture;
-			if (!allowed && (!cancelled || isStillValid)) {
-				continue;
-			}
-
-			result.add(StationDisplayData.of(stop));
-			if ((i++) >= maxLines) {
-				break;
-			}
+		if (controller.getSettingsAs(IShowTrainMultipleTimes.class).map(IShowTrainMultipleTimes::showTrainMultipleTimes).orElse(false)) {
+			query = query.withDuplicates();
 		}
-		return result;
+
+		return RailwayBackendApi.getDepartures(filter, query);
 	}
 
 	@Override

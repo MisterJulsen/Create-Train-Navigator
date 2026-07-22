@@ -224,6 +224,102 @@ public final class TrainJourney {
         return sections.get((section.getSectionIndex() - 1 + sections.size()) % sections.size());
     }
 
+    /**
+     * The section the train reaches after the given one, or empty if there is none.
+     * <p>
+     * Unlike {@link #getNextSection(JourneySection)} this does not wrap a journey that never comes
+     * round again: the last section of a one-way run is followed by nothing, and answering "the first
+     * one" there would have a train hand its passengers over to a service it is never going to run.
+     */
+    public Optional<JourneySection> nextSectionOf(JourneySection section) {
+        if (section == null || sections.isEmpty()) {
+            return Optional.empty();
+        }
+        int next = section.getSectionIndex() + 1;
+        if (next >= sections.size()) {
+            return cyclic ? Optional.of(sections.get(0)) : Optional.empty();
+        }
+        return Optional.of(sections.get(next));
+    }
+
+    /** The section the train ran before the given one, or empty if there is none. */
+    public Optional<JourneySection> previousSectionOf(JourneySection section) {
+        if (section == null || sections.isEmpty()) {
+            return Optional.empty();
+        }
+        int previous = section.getSectionIndex() - 1;
+        if (previous < 0) {
+            return cyclic ? Optional.of(sections.get(sections.size() - 1)) : Optional.empty();
+        }
+        return Optional.of(sections.get(previous));
+    }
+
+    /**
+     * Whether a passenger riding the given section is carried into the one after it.
+     * <p>
+     * This is the single question every boundary in a journey comes down to. A section that declares
+     * it still covers the following section's first stop hands its passengers over; one that does not
+     * ends there, and everybody has to get out - whatever the train does next. A section with nothing
+     * after it carries nobody onward by definition.
+     */
+    public boolean carriesPassengersOnward(JourneySection section) {
+        return section != null && section.includesNextSectionStart() && nextSectionOf(section).isPresent();
+    }
+
+    /**
+     * Whether everybody has to get out at the given stop, i.e. whether the train stops being usable
+     * beyond it.
+     * <p>
+     * That is the case at the end of a section that hands nobody over, and at a stop of a section that
+     * is not for public use at all - such a stop is only ever shown because the section before it
+     * advertised it, which makes it that service's last call.
+     */
+    public boolean isTerminus(JourneyStop stop) {
+        JourneySection section = stop == null ? null : stop.getSection();
+        if (section == null) {
+            return false;
+        }
+        if (!section.isUsable()) {
+            return true;
+        }
+        return section.isLastStop(stop) && !carriesPassengersOnward(section);
+    }
+
+    /**
+     * Whether the train's service starts at the given stop, i.e. whether nobody can already be aboard.
+     * The mirror image of {@link #isTerminus(JourneyStop)}: the same boundary seen from the other side.
+     */
+    public boolean isOrigin(JourneyStop stop) {
+        JourneySection section = stop == null ? null : stop.getSection();
+        if (section == null || !section.isUsable() || !section.isFirstStop(stop)) {
+            return false;
+        }
+        return previousSectionOf(section).map(previous -> !previous.isUsable() || !carriesPassengersOnward(previous))
+            .orElse(true);
+    }
+
+    /**
+     * Where the service calling at the given stop started, which is not this journey's first stop
+     * whenever a section before it handed its passengers over.
+     */
+    public Optional<JourneyStop> getOriginOf(JourneyStop stop) {
+        JourneySection section = stop == null ? null : stop.getSection();
+        if (section == null) {
+            return Optional.empty();
+        }
+        // A stop of a section nobody may travel in belongs to the service that advertised it, not to
+        // the section it sits in - so the search for that service's start begins one section earlier.
+        JourneySection start = section.isUsable() ? section : previousSectionOf(section).orElse(section);
+        for (int i = 0; i < sections.size(); i++) {
+            JourneySection previous = previousSectionOf(start).orElse(null);
+            if (previous == null || !previous.isUsable() || !carriesPassengersOnward(previous)) {
+                break;
+            }
+            start = previous;
+        }
+        return start.getFirstStop();
+    }
+
     /** The section the given schedule entry index belongs to. */
     public Optional<JourneySection> getSectionAtEntry(int entryIndex) {
         return getStopAtEntry(entryIndex).map(JourneyStop::getSection)

@@ -6,7 +6,6 @@ import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity.EUpdateReaso
 import de.mrjulsen.crn.block.display.properties.TrainDestinationCompactSettings;
 import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
-import de.mrjulsen.crn.data.train.ETrainStopState;
 import de.mrjulsen.mcdragonlib.client.ber.BERGraphics;
 import de.mrjulsen.mcdragonlib.client.ber.BERLabel;
 import de.mrjulsen.mcdragonlib.client.ber.BERLabel.EScrollMode;
@@ -52,7 +51,7 @@ public class BERTrainDestinationSimple implements AbstractAdvancedDisplayRendere
 
     @Override
     public void render(BERGraphics<AdvancedDisplayBlockEntity> graphics, float partialTick, AdvancedDisplayRenderInstance parent, int light, boolean backSide) {
-        if (graphics.blockEntity().getTrainData() == null || graphics.blockEntity().getTrainData().getState().isIrregular(getDisplaySettings(graphics.blockEntity()).showDoNotBoardText())) {
+        if (graphics.blockEntity().getStage().isIrregular(getDisplaySettings(graphics.blockEntity()).showDoNotBoardText())) {
             outOfServiceLabel.render(graphics, light);
             return;
         }
@@ -62,11 +61,11 @@ public class BERTrainDestinationSimple implements AbstractAdvancedDisplayRendere
 
     @Override
     public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason) {
-        if (blockEntity.getTrainData() == null || blockEntity.getTrainData().getState().isIrregular(getDisplaySettings(blockEntity).showDoNotBoardText())) {
+        if (blockEntity.getStage().isIrregular(getDisplaySettings(blockEntity).showDoNotBoardText())) {
             outOfServiceLabel.clippingArea.set(Rectangle.withSize(3, 3, blockEntity.getXSizeScaled() * 16 - 6, blockEntity.getYSizeScaled() * 16 - 6));
             outOfServiceLabel.preferredWidth.set((float)outOfServiceLabel.clippingArea.get().width());
             outOfServiceLabel.color.set(getDisplaySettings(blockEntity).getFontColor());
-            outOfServiceLabel.text.set((blockEntity.getTrainData() != null && blockEntity.getTrainData().getState().shouldNotBoard(getDisplaySettings(blockEntity).showDoNotBoardText())) ? TEXT_DO_NOT_BOARD : TEXT_OUT_OF_SERVICE);
+            outOfServiceLabel.text.set(blockEntity.getStage().shouldNotBoard(getDisplaySettings(blockEntity).showDoNotBoardText()) ? TEXT_DO_NOT_BOARD : TEXT_OUT_OF_SERVICE);
             return;
         }
         
@@ -77,12 +76,11 @@ public class BERTrainDestinationSimple implements AbstractAdvancedDisplayRendere
 
     private void updateContent(AdvancedDisplayBlockEntity blockEntity) {
         TrainDestinationCompactSettings settings = getDisplaySettings(blockEntity);
-        ETrainStopState stopState = ETrainStopState.beforeArrival(!blockEntity.getTrainData().isWaitingAtStation());
         
         int width = settings.getTrainNameWidth();
 
         trainLineLabel.position.set(Point.of(3, 5));
-        trainLineLabel.text.set(width == 0 ? TextUtils.empty() : TextUtils.text(blockEntity.getTrainData().getTrainData().getName(stopState)).withStyle(ChatFormatting.BOLD));
+        trainLineLabel.text.set(width == 0 ? TextUtils.empty() : TextUtils.text(blockEntity.getTrainDisplayName()).withStyle(ChatFormatting.BOLD));
         trainLineLabel.preferredWidth.set((float)(settings.isFullTrainNameWidth() ?
             trainLineLabel.clippingArea.get().width() :
             (settings.isAutoTrainNameWidth() ?
@@ -95,9 +93,9 @@ public class BERTrainDestinationSimple implements AbstractAdvancedDisplayRendere
         trainLineLabel.horizontalScrollMode.set(settings.isAutoTrainNameWidth() ? EScrollMode.FLEX_FIT : EScrollMode.WHEN_NEEDED);
         trainLineLabel.horizontalAlign.set(settings.isFullTrainNameWidth() ? ETextAlignment.CENTER : ETextAlignment.LEFT);
 
-        if (settings.showLineColor() && blockEntity.getTrainData().getTrainData().hasColor(stopState)) {
-            trainLineLabel.backgroundColor.set(blockEntity.getTrainData().getTrainData().getColor(stopState));
-            trainLineLabel.color.set(DLColor.pickBasedOnBrightness(blockEntity.getTrainData().getTrainData().getColor(stopState), LIGHT_FONT_COLOR, DARK_FONT_COLOR, 0.5f));
+        if (settings.showLineColor() && !blockEntity.getTrainDisplayColor().isTransparent()) {
+            trainLineLabel.backgroundColor.set(blockEntity.getTrainDisplayColor());
+            trainLineLabel.color.set(DLColor.pickBasedOnBrightness(blockEntity.getTrainDisplayColor(), LIGHT_FONT_COLOR, DARK_FONT_COLOR, 0.5f));
         } else {
             trainLineLabel.backgroundColor.set(DLColor.TRANSPARENT);
             trainLineLabel.color.set(settings.getFontColor());
@@ -106,7 +104,7 @@ public class BERTrainDestinationSimple implements AbstractAdvancedDisplayRendere
         
         destinationLabel.position.set(Point.of((settings.isAutoTrainNameWidth() ? trainLineLabel.getRenderedWidth() : width) + 5, 6));
         destinationLabel.preferredWidth.set(blockEntity.getXSizeScaled() * 16 - destinationLabel.x.get() - 3);
-        destinationLabel.text.set(settings.isFullTrainNameWidth() ? TextUtils.empty() : TextUtils.text(blockEntity.getTrainData().getCurrentStop().isPresent() ? blockEntity.getTrainData().getCurrentStop().get().getDestination() : ""));
+        destinationLabel.text.set(settings.isFullTrainNameWidth() ? TextUtils.empty() : TextUtils.text(blockEntity.getCurrentStop().isPresent() ? blockEntity.getCurrentStop().get().title() : ""));
         destinationLabel.color.set(getDisplaySettings(blockEntity).getFontColor());        
         destinationLabel.horizontalScrollMode.set(EScrollMode.WHEN_NEEDED);
     }

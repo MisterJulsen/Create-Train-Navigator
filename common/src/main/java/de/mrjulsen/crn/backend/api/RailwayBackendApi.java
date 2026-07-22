@@ -503,8 +503,9 @@ public final class RailwayBackendApi {
         if (section == null || section.isUsable()) {
             return true;
         }
-        JourneySection previous = journey.getPreviousSection(section);
-        return section.isFirstStop(stop) && previous != section && previous.isUsable() && previous.includesNextSectionStart();
+        return section.isFirstStop(stop) && journey.previousSectionOf(section)
+            .map(previous -> previous.isUsable() && journey.carriesPassengersOnward(previous))
+            .orElse(false);
     }
 
     private static StationSnapshot buildStation(String stationName) {

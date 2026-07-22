@@ -35,13 +35,17 @@ import de.mrjulsen.crn.data.CarriageData;
 import de.mrjulsen.crn.data.ElevatorData;
 import de.mrjulsen.crn.data.ElevatorMovementType;
 import de.mrjulsen.crn.data.TrainExitSide;
-import de.mrjulsen.crn.data.StationTag.ClientStationTag;
 import de.mrjulsen.crn.data.StationTag.StationInfo;
-import de.mrjulsen.crn.data.train.ETrainStopState;
 import de.mrjulsen.crn.data.train.TrainUtils;
-import de.mrjulsen.crn.data.train.portable.StationDisplayData;
-import de.mrjulsen.crn.data.train.portable.TrainDisplayData;
-import de.mrjulsen.crn.data.train.portable.TrainStopDisplayData;
+import de.mrjulsen.crn.backend.api.BoardEntry;
+import de.mrjulsen.crn.backend.api.CallDirection;
+import de.mrjulsen.crn.backend.api.JourneySnapshot;
+import de.mrjulsen.crn.backend.api.SectionSnapshot;
+import de.mrjulsen.crn.backend.api.StopSnapshot;
+import de.mrjulsen.crn.backend.api.TrainSnapshot;
+import de.mrjulsen.crn.backend.core.LiveTrainState;
+import de.mrjulsen.crn.data.TrainJourneyStage;
+import de.mrjulsen.crn.backend.api.StationRef;
 import de.mrjulsen.crn.network.packets.pain.GetTrainDisplayDataPacketData;
 import de.mrjulsen.crn.registry.ModDisplayTypes;
 import de.mrjulsen.crn.registry.ModNetworkManager;
@@ -107,7 +111,7 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
     private byte xSize = 1;
 	private byte ySize = 1;
     private boolean isController;
-    private List<StationDisplayData> predictions;
+    private List<BoardEntry> predictions;
     private boolean dataOrderChanged = false;
     private String stationNameFilter;
     private StationInfo stationInfo;
@@ -117,7 +121,10 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
     // CLIENT DISPLAY ONLY - this data is not saved!
     public boolean assembledOnContraption = false;
     private long lastRefreshedTime;
-    private TrainDisplayData trainData = TrainDisplayData.empty(0);
+    private TrainSnapshot trainSnapshot;
+    private JourneySnapshot journeySnapshot;
+    private final Cache<List<StopSnapshot>> serviceStops = new Cache<>(() ->
+        getJourney().map(x -> x.servedStops(getOperatingSection().orElse(null))).orElse(List.of()));
     private CarriageData carriageData = new CarriageData(0, Direction.NORTH, false);
     private ElevatorData elevatorData = new ElevatorData("", "", "", "", ElevatorMovementType.STANDING_STILL);
     
@@ -126,10 +133,10 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
     private final Cache<IBlockEntityRendererInstance<AdvancedDisplayBlockEntity>> renderer = new Cache<>(() -> new AdvancedDisplayRenderInstance(this), ECachingPriority.ALWAYS);
 
     public final Cache<TrainExitSide> relativeExitDirection = new Cache<>(() -> {        
-        if (getCarriageData() == null || !getTrainData().getNextStop().isPresent() || !(getBlockState().getBlock() instanceof AbstractAdvancedDisplayBlock)) {
+        if (getCarriageData() == null || getNextStop().isEmpty() || !(getBlockState().getBlock() instanceof AbstractAdvancedDisplayBlock)) {
             return TrainExitSide.UNKNOWN;
         }
-        TrainExitSide side = getTrainData().getNextStopExitSide();
+        TrainExitSide side = exitSideOf(trainSnapshot);
         Direction blockFacing = getBlockState().getValue(HorizontalDirectionalBlock.FACING);
         if (!carriageData.isOppositeDirection()) {
             blockFacing = blockFacing.getOpposite();
@@ -185,8 +192,135 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
         reset();
     }
 
-    public TrainDisplayData getTrainData() {
-        return trainData;
+    /** The train this display is riding on, if it is riding on one at all. */
+    public Optional<TrainSnapshot> getTrain() {
+        return Optional.ofNullable(trainSnapshot);
+    }
+
+    /** The run of the train this display is riding on. */
+    public Optional<JourneySnapshot> getJourney() {
+        return Optional.ofNullable(journeySnapshot);
+    }
+
+    /** How far through its service the train is, worked out afresh so announcements keep running. */
+    public TrainJourneyStage getStage() {
+        return TrainJourneyStage.of(trainSnapshot, journeySnapshot, ModUtils.getTransformedWorldTime());
+    }
+
+    /** Whether the train is standing at a station rather than travelling between two. */
+    public boolean isWaitingAtStation() {
+        return trainSnapshot != null && trainSnapshot.liveState() == LiveTrainState.AT_STATION;
+    }
+
+    /**
+     * Which half of its current call the train is in: still bringing passengers in, or already about
+     * to take them on. What a display shows the train as depends on this wherever one service hands
+     * over to another.
+     */
+    public CallDirection getCallDirection() {
+        return isWaitingAtStation() ? CallDirection.DEPARTURE : CallDirection.ARRIVAL;
+    }
+
+    /**
+     * Every stop of the service the train is running, in travel order - not the whole journey. What a
+     * passenger on board wants is the run they are on, which ends where they have to get out.
+     */
+    public List<StopSnapshot> getServiceStops() {
+        return serviceStops.get();
+    }
+
+    /** The stops of the service the train has yet to reach, starting with the one it is heading for. */
+    public List<StopSnapshot> getRemainingStops() {
+        List<StopSnapshot> service = getServiceStops();
+        int current = indexOfCurrentStop();
+        return current < 0 ? service : service.subList(current, service.size());
+    }
+
+    /** The stops between the one the train is heading for and the end of its service. */
+    public List<StopSnapshot> getStopovers() {
+        List<StopSnapshot> remaining = getRemainingStops();
+        int from = isWaitingAtStation() ? 1 : 0;
+        return remaining.size() > from + 1 ? remaining.subList(from, remaining.size() - 1) : List.of();
+    }
+
+    /** The stop the train is at or heading for. */
+    public Optional<StopSnapshot> getCurrentStop() {
+        return getJourney().flatMap(JourneySnapshot::currentStop);
+    }
+
+    /** The next stop the train will call at, which is the current one while it is still on its way. */
+    public Optional<StopSnapshot> getNextStop() {
+        List<StopSnapshot> remaining = getRemainingStops();
+        return remaining.isEmpty() ? Optional.empty() : Optional.of(remaining.get(0));
+    }
+
+    /** Where the service ends, i.e. where everybody has to get out. */
+    public Optional<StopSnapshot> getFinalStop() {
+        List<StopSnapshot> service = getServiceStops();
+        return service.isEmpty() ? Optional.empty() : Optional.of(service.get(service.size() - 1));
+    }
+
+    /** What to show as the train's name: its line where it has one, otherwise its own. */
+    public String getTrainDisplayName() {
+        return getOperatingSection()
+            .filter(x -> x.line().hasName())
+            .map(x -> x.line().name())
+            .orElseGet(() -> getTrain().map(TrainSnapshot::trainName).orElse(""));
+    }
+
+    /** The colour of the service the train is running, or transparent if it carries none. */
+    public DLColor getTrainDisplayColor() {
+        return getOperatingSection().filter(x -> x.hasLine() || x.hasCategory())
+            .map(SectionSnapshot::displayColor)
+            .orElse(DLColor.TRANSPARENT);
+    }
+
+    /**
+     * What the train advertises as where it is going: the title it carries if it carries one, and
+     * otherwise the terminus of the service it is running.
+     */
+    public String getDestinationText() {
+        return getCurrentStop().map(StopSnapshot::title).filter(x -> !x.isBlank())
+            .or(() -> getOperatingSection().map(x -> x.destination().displayName()).filter(x -> !x.isBlank()))
+            .or(() -> getFinalStop().map(x -> x.realtimeStation().displayName()))
+            .orElse("");
+    }
+
+    /** How fast the train is going, in blocks per tick. */
+    public double getTrainSpeed() {
+        return getTrain().map(x -> x.position().speed()).orElse(0d);
+    }
+
+    /** The service the train is running, which at a handover depends on whether it has arrived yet. */
+    public Optional<SectionSnapshot> getOperatingSection() {
+        return getJourney().flatMap(x -> x.operatingSection(isWaitingAtStation()));
+    }
+
+    private int indexOfCurrentStop() {
+        Optional<StopSnapshot> current = getCurrentStop();
+        if (current.isEmpty()) {
+            return -1;
+        }
+        List<StopSnapshot> service = getServiceStops();
+        for (int i = 0; i < service.size(); i++) {
+            if (service.get(i).entryIndex() == current.get().entryIndex()) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private boolean sameNextStop(JourneySnapshot incoming) {
+        Optional<StopSnapshot> before = getNextStop();
+        Optional<StopSnapshot> after = incoming == null ? Optional.empty() : incoming.currentStop();
+        if (before.isEmpty() || after.isEmpty()) {
+            return before.isEmpty() && after.isEmpty();
+        }
+        return before.get().entryIndex() == after.get().entryIndex();
+    }
+
+    private static TrainExitSide exitSideOf(TrainSnapshot train) {
+        return train == null ? TrainExitSide.UNKNOWN : train.position().exitSide();
     }
 
     public CarriageData getCarriageData() {
@@ -259,7 +393,7 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
         return AdvancedDisplayBlockEntity.class;
     }
 
-    public List<StationDisplayData> getStops() {
+    public List<BoardEntry> getStops() {
         return predictions;
     }
 
@@ -281,17 +415,9 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
         return stationNameFilter;
     }
 
-    public boolean isAllowedOnDisplay(ClientStationTag tag) {
-        return TrainUtils.stationMatches(tag.stationName(), getStationNameFilter());
-    }
-
-    public ClientStationTag getAllowedDisplayData(TrainStopDisplayData data) {
-        if (isAllowedOnDisplay(data.getRealTimeStation())) {
-            return data.getRealTimeStation();
-        } else if (isAllowedOnDisplay(data.getScheduledStation())) {
-            return data.getScheduledStation();
-        }
-        return ClientStationTag.empty();
+    /** Whether the given station is one this display speaks for. */
+    public boolean isAllowedOnDisplay(StationRef station) {
+        return station != null && TrainUtils.stationMatches(station.name(), getStationNameFilter());
     }
 
 	public boolean isSingleLine() {
@@ -331,8 +457,8 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
         }
     }
 
-    public void setData(List<StationDisplayData> predictions, String stationNameFilter, StationInfo staionInfo, long lastRefreshedTime) {
-        this.dataOrderChanged = dataOrderChanged || !DLListUtils.compareCollections(this.predictions, predictions, StationDisplayData::equals);
+    public void setData(List<BoardEntry> predictions, String stationNameFilter, StationInfo staionInfo, long lastRefreshedTime) {
+        this.dataOrderChanged = dataOrderChanged || !DLListUtils.compareCollections(this.predictions, predictions, BoardEntry::isSameCall);
 
         boolean clientUpdate = Platform.getEnvironment() == Env.CLIENT && !getStationInfo().equals(staionInfo);
         
@@ -594,33 +720,23 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
             }
 
             ModNetworkManager.GET_TRAIN_DISPLAY_DATA.send(NetworkDirection.toServer(), new GetTrainDisplayDataPacketData.Request(carriageContraption.trainId), (response) -> {
-                TrainDisplayData data = response.getData();
-                int carriagesCount = TrainUtils.getTrain(carriageContraption.trainId).map(x -> x.carriages.size()).orElse(0);
-                this.trainData = TrainDisplayData.empty(carriagesCount);
-                if (data.getState().isOutOfService() && this.trainData.getState().isOutOfService()) {
-                    return;
-                }
+                TrainSnapshot incoming = response.getTrain().orElse(null);
+                JourneySnapshot incomingJourney = response.getJourney().orElse(null);
 
-                boolean shouldUpdate = false;
-                if (this.trainData != null && this.trainData.getNextStop().isPresent() && data.getNextStop().isPresent()) {
-                    TrainStopDisplayData prediction = this.trainData.getNextStop().get();
-                    ETrainStopState stopState = ETrainStopState.beforeArrival(data.isWaitingAtStation());
+                // Only what the layout is built from is worth rebuilding it for. The times move on
+                // every poll; the train's name, where it is heading and which way the doors open do
+                // not, and a rebuild on every tick would rebuild every label on every display.
+                boolean shouldUpdate = getStage() != TrainJourneyStage.of(incoming, incomingJourney, ModUtils.getTransformedWorldTime())
+                    || !sameNextStop(incomingJourney)
+                    || exitSideOf(this.trainSnapshot) != exitSideOf(incoming);
 
-                    shouldUpdate = !this.trainData.getTrainData().getName(stopState).equals(data.getTrainData().getName(stopState)) ||
-                        !prediction.getDestination().equals(data.getNextStop().get().getDestination()) ||
-                        prediction.getStationEntryIndex() != data.getNextStop().get().getStationEntryIndex() ||
-                        this.trainData.getNextStopExitSide() != data.getNextStopExitSide() ||
-                        this.trainData.isWaitingAtStation() != data.isWaitingAtStation()
-                    ;
-                }
-                boolean outOfService = data.getState().isOutOfService();
-                if (outOfService) {
-                    shouldUpdate = true;
-                }
-                this.trainData = outOfService ? TrainDisplayData.empty(carriagesCount) : data;
-                this.carriageData = new CarriageData(carriageContraption.carriageIndex, carriage.getAssemblyDirection(), data.isOppositeDirection());
+                this.trainSnapshot = incoming;
+                this.journeySnapshot = incomingJourney;
+                this.carriageData = new CarriageData(carriageContraption.carriageIndex, carriage.getAssemblyDirection(),
+                    incoming != null && incoming.position().backwards());
                 this.relativeExitDirection.clear();
-                
+                this.serviceStops.clear();
+
                 getRenderer().update(level, pos, state, this, shouldUpdate ? EUpdateReason.LAYOUT_CHANGED : EUpdateReason.DATA_CHANGED);
             }, () -> {});
         }
@@ -643,7 +759,7 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
 
         if (getStops() != null && !getStops().isEmpty()) {            
             ListTag list = new ListTag();
-            for (StationDisplayData data : getStops()) {
+            for (BoardEntry data : getStops()) {
                 list.add(data.toNbt());
             }
             pTag.put(NBT_TRAIN_STOPS, list);
@@ -713,7 +829,7 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
         // ###
 
         setData(
-            pTag.contains(NBT_TRAIN_STOPS) ? new ArrayList<>(pTag.getList(NBT_TRAIN_STOPS, Tag.TAG_COMPOUND).stream().map(x -> StationDisplayData.fromNbt((CompoundTag)x)).toList()) : new ArrayList<>(),
+            pTag.contains(NBT_TRAIN_STOPS) ? new ArrayList<>(pTag.getList(NBT_TRAIN_STOPS, Tag.TAG_COMPOUND).stream().map(x -> BoardEntry.fromNbt((CompoundTag)x)).toList()) : new ArrayList<>(),
             pTag.getString(NBT_FILTER),
             info,
             pTag.getLong(NBT_LAST_REFRESH_TIME)
