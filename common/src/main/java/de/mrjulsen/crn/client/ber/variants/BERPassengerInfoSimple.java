@@ -151,8 +151,8 @@ public class BERPassengerInfoSimple implements AbstractAdvancedDisplayRenderer<P
                 case 0 -> label.text.set(TextUtils.text((settings.getTrainTextComponents().showTrainName()
                         ? blockEntity.getTrainDisplayName() + " "
                         : "")
-                        + ((settings.getTrainTextComponents().showDestination() && blockEntity.getCurrentStop().isPresent())
-                            ? (blockEntity.getCurrentStop().get().title())//blockEntity.isWaitingAtStation() ? blockEntity.getNextStop().get().title() : blockEntity.getFinalStop().get().title())
+                        + (settings.getTrainTextComponents().showDestination()
+                            ? blockEntity.getDestinationText()
                             : "")));
                 case 1 -> label.text.set(
                             CustomLanguage.translate(keyDate, blockEntity.getLevel().getDayTime() / Level.TICKS_PER_DAY,

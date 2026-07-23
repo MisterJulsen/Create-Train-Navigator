@@ -21,6 +21,8 @@ import de.mrjulsen.crn.client.gui.widgets.create.CreateTextBox;
 import de.mrjulsen.crn.client.gui.widgets.FlatIconButton;
 import de.mrjulsen.crn.client.gui.widgets.SearchOptionButton;
 import de.mrjulsen.crn.client.gui.widgets.StationDeparturesViewer;
+import java.util.UUID;
+
 import de.mrjulsen.crn.data.StationTag;
 import de.mrjulsen.crn.data.StationTag.ClientStationTag;
 import de.mrjulsen.crn.registry.ModNetworkManager;
@@ -54,6 +56,7 @@ public class ScheduleBoardWindow extends AbstractNavigatorScreen {
     private CreateTextBox stationBox;
 
     private String stationTagName;
+    private UUID stationTagId;
     private final boolean fixedStation;
 
     private final MutableComponent tooltipSearch = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.search.tooltip");
@@ -65,6 +68,7 @@ public class ScheduleBoardWindow extends AbstractNavigatorScreen {
         this.fixedStation = tag != null;
         if (fixedStation) {
             this.stationTagName = tag.tagName();
+            this.stationTagId = tag.tagId();
         }
 
         int wY = FooterSize.DEFAULT.size() - 1;
@@ -82,13 +86,15 @@ public class ScheduleBoardWindow extends AbstractNavigatorScreen {
             searchButton.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
                 String stationFrom = stationBox.text.get().getPlainText();
                 if (stationFrom == null || stationFrom.isBlank()) {
-                    viewer.displayDepartures(stationFrom, userSettings);
+                    stationTagId = null;
+                    viewer.displayDepartures(null, userSettings);
                     return false;
                 }
 
                 ModNetworkManager.GET_STATION_TAG_BY_TAG.send(NetworkDirection.toServer(), new StationTagRequestByTagPacketData.Request(TagName.of(stationFrom)), (response) -> {
                     stationTagName = response.getTag().getTagName().get();
-                    viewer.displayDepartures(stationTagName, userSettings);
+                    stationTagId = response.getTag().getId();
+                    viewer.displayDepartures(stationTagId, userSettings);
                 }, () -> {});
                 return false;
             });
@@ -129,7 +135,7 @@ public class ScheduleBoardWindow extends AbstractNavigatorScreen {
         SearchOptionButton trainFilterBtn = new SearchOptionButton(0, 0, 100, 18, userSettings.searchTrainFilter.getValue().getEnumTranslation(), () -> userSettings.searchTrainFilter.toString(), (b) -> {
             this.userSettings.searchTrainFilter.setValue(this.userSettings.searchTrainFilter.getValue().next());
             this.userSettings.clientSave(() -> {
-                reloadUserSettings(() -> this.viewer.displayDepartures(stationTagName, userSettings));
+                reloadUserSettings(() -> this.viewer.displayDepartures(stationTagId, userSettings));
             });
         });
         trainFilterBtn.layoutContraint.set("filter");
@@ -137,14 +143,14 @@ public class ScheduleBoardWindow extends AbstractNavigatorScreen {
 
         FlatIconButton refreshBtn = new FlatIconButton(0, 0, ModGuiIcons.REFRESH.getAsSprite(16, 16));
         refreshBtn.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
-            reloadUserSettings(() -> this.viewer.displayDepartures(stationTagName, userSettings));
+            reloadUserSettings(() -> this.viewer.displayDepartures(stationTagId, userSettings));
             return false;
         });
         refreshBtn.layoutContraint.set("refresh");
         refreshBtn.tooltip.set(new DLTooltip(List.of(tooltipRefresh), 200));
         optionsPanel.addComponent(refreshBtn);
 
-        reloadUserSettings(() -> this.viewer.displayDepartures(stationTagName, userSettings));
+        reloadUserSettings(() -> this.viewer.displayDepartures(stationTagId, userSettings));
     }
 
     private void reloadUserSettings(Runnable andThen) {

@@ -121,7 +121,7 @@ public class BERTrainDestinationDetailed implements AbstractAdvancedDisplayRende
 
         destinationLabel.position.set(Point.of((settings.isAutoTrainNameWidth() ? trainLineLabel.getRenderedWidth() : width) + 5, 4));
         destinationLabel.preferredWidth.set(blockEntity.getXSizeScaled() * 16 - destinationLabel.x.get() - 3);
-        destinationLabel.text.set(settings.isFullTrainNameWidth() ? TextUtils.empty() : TextUtils.text(blockEntity.getCurrentStop().isPresent() ? blockEntity.getCurrentStop().get().title() : ""));
+        destinationLabel.text.set(settings.isFullTrainNameWidth() ? TextUtils.empty() : TextUtils.text(blockEntity.getDestinationText()));
         destinationLabel.color.set(getDisplaySettings(blockEntity).getFontColor());
         destinationLabel.horizontalScrollMode.set(EScrollMode.WHEN_NEEDED);
 

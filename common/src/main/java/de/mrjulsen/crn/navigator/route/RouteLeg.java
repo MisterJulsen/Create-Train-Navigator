@@ -205,7 +205,7 @@ public record RouteLeg(
         return new RouteLeg(train.trainId(), train.sessionId(), train.trainName(), train.iconId(),
             section == null ? train.line() : section.line(),
             section == null ? train.category() : section.category(),
-            section == null ? train.destinationText() : section.destination().name(),
+            section == null ? train.destinationText() : section.destination().displayName(),
             sectionIndex, train.isCancelled(), calls);
     }
 

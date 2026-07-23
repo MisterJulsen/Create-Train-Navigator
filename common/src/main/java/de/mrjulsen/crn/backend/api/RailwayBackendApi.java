@@ -17,7 +17,8 @@ import de.mrjulsen.crn.backend.api.event.RailwayBackendListener;
 import de.mrjulsen.crn.backend.core.TrackedTrain;
 import de.mrjulsen.crn.backend.delay.DelayArgument;
 import de.mrjulsen.crn.backend.delay.ExternalDelayReports;
-import de.mrjulsen.crn.backend.history.DepartureLogEntry;
+import de.mrjulsen.crn.backend.history.DepartureLog;
+import de.mrjulsen.crn.backend.history.DepartureStats;
 import de.mrjulsen.crn.backend.index.StationCallIndex;
 import de.mrjulsen.crn.backend.schedule.JourneySection;
 import de.mrjulsen.crn.backend.schedule.JourneyStop;
@@ -27,6 +28,7 @@ import de.mrjulsen.crn.backend.timing.StopTimings;
 import de.mrjulsen.crn.data.StationTag;
 import de.mrjulsen.crn.data.TrainCategory;
 import de.mrjulsen.crn.data.TrainLine;
+import de.mrjulsen.crn.data.schedule.condition.ETrainFilter;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
 import de.mrjulsen.crn.data.train.TrainUtils;
 import de.mrjulsen.crn.util.ModUtils;
@@ -386,14 +388,40 @@ public final class RailwayBackendApi {
         return GlobalSettings.getInstance().getAllTrainCategories().stream().map(RailwayBackendApi::buildCategory).toList();
     }
 
-    /** The departures already recorded at a station, oldest first. */
-    public static List<DepartureLogEntry> getDepartureHistory(String stationName) {
-        return manager().getDepartureLog().getDepartures(stationName);
+    /**
+     * When a train last departed a station, under the given filter, measured against the current
+     * train's line, category or name. The station may be a wildcard, in which case the latest
+     * departure across every matching station is returned. {@link DepartureLog#NEVER} if none.
+     *
+     * @param stationFilter The station name or wildcard to look at.
+     * @param filter        Which departures count: any, or one sharing the train's line, category or name.
+     * @param trainId       The train whose line and category the line and category filters compare against.
+     * @param trainName     The train's name, for the name filter.
+     */
+    public static long getLastDepartureTime(String stationFilter, ETrainFilter filter, UUID trainId, String trainName) {
+        DepartureLog log = manager().getDepartureLog();
+        return switch (filter) {
+            case SAME_LINE -> currentSectionOf(trainId)
+                .map(section -> log.getLastDepartureOfLine(stationFilter, section.getTrainLineId()))
+                .orElse(DepartureLog.NEVER);
+            case SAME_CATEGORY -> currentSectionOf(trainId)
+                .map(section -> log.getLastDepartureOfCategory(stationFilter, section.getTrainCategoryId()))
+                .orElse(DepartureLog.NEVER);
+            case SAME_NAME -> log.getLastDepartureOfName(stationFilter, trainName);
+            default -> log.getLastDeparture(stationFilter);
+        };
     }
 
-    /** The most recent departure from a station matching the given test. */
-    public static Optional<DepartureLogEntry> getLastDeparture(String stationName, Predicate<DepartureLogEntry> filter) {
-        return manager().getDepartureLog().getLastDeparture(stationName, filter);
+    private static Optional<JourneySection> currentSectionOf(UUID trainId) {
+        return manager().getTrain(trainId).flatMap(TrackedTrain::getCurrentSection);
+    }
+
+    /** A station's last-departure times, resolved to display names, for its goggle tooltip. */
+    public static DepartureStats getDepartureStats(String stationName) {
+        GlobalSettings settings = GlobalSettings.getInstance();
+        return manager().getDepartureLog().getStats(stationName,
+            lineId -> settings.getTrainLine(lineId).map(TrainLine::getLineName).orElse(null),
+            categoryId -> settings.getTrainCategory(categoryId).map(TrainCategory::getCategoryName).orElse(null));
     }
 
     /**
@@ -473,10 +501,15 @@ public final class RailwayBackendApi {
                 continue;
             }
             StopTimings timing = train.getTimings(stop);
-            if (timing == null || !query.acceptsTime(timing.getRealtime().departure())) {
+            if (timing == null) {
                 continue;
             }
-            BoardEntry entry = BoardEntry.of(train, stop);
+            // A board asked for departures from later on wants the lap that will be running then,
+            // not silence because this one has already gone.
+            BoardEntry entry = BoardEntry.of(train, stop).atOrAfter(query.fromTime(), train.getTotalDuration());
+            if (!query.acceptsTime(entry.realtimeDeparture())) {
+                continue;
+            }
             if (query.accepts(entry)) {
                 entries.add(entry);
             }

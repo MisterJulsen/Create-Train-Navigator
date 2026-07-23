@@ -299,25 +299,29 @@ public final class TrainJourney {
     }
 
     /**
-     * Where the service calling at the given stop started, which is not this journey's first stop
-     * whenever a section before it handed its passengers over.
+     * Where the service calling at the given stop started: the first stop of the section that service
+     * runs.
+     * <p>
+     * Normally that is the stop's own section. Two cases push it one section back, and only one: the
+     * first stop of a section is one the section before carried over as its terminus, and a stop of an
+     * unusable section is only ever shown because a usable section before it advertised it. In both
+     * the calling service is that previous section, so its first stop is the origin. It goes back at
+     * most this one step - a train handing over through a chain of sections still reports where the
+     * section it is running began, not where a passenger could first have boarded.
      */
     public Optional<JourneyStop> getOriginOf(JourneyStop stop) {
         JourneySection section = stop == null ? null : stop.getSection();
         if (section == null) {
             return Optional.empty();
         }
-        // A stop of a section nobody may travel in belongs to the service that advertised it, not to
-        // the section it sits in - so the search for that service's start begins one section earlier.
-        JourneySection start = section.isUsable() ? section : previousSectionOf(section).orElse(section);
-        for (int i = 0; i < sections.size(); i++) {
-            JourneySection previous = previousSectionOf(start).orElse(null);
-            if (previous == null || !previous.isUsable() || !carriesPassengersOnward(previous)) {
-                break;
+        JourneySection origin = section;
+        if (section.isFirstStop(stop) || !section.isUsable()) {
+            JourneySection previous = previousSectionOf(section).orElse(null);
+            if (previous != null && previous.isUsable() && carriesPassengersOnward(previous)) {
+                origin = previous;
             }
-            start = previous;
         }
-        return start.getFirstStop();
+        return origin.getFirstStop();
     }
 
     /** The section the given schedule entry index belongs to. */

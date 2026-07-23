@@ -106,7 +106,7 @@ public record BoardQuery(
 
     /** A copy restricted to trains terminating at the given station. */
     public BoardQuery onlyDestination(StationRef destination) {
-        return onlyDestination(destination == null ? null : destination.name());
+        return onlyDestination(destination == null ? null : destination.displayName());
     }
 
     /** A copy that additionally applies the given test to every entry. */

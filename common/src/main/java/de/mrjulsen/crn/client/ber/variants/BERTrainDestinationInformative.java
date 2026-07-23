@@ -179,7 +179,7 @@ public class BERTrainDestinationInformative implements AbstractAdvancedDisplayRe
         
         destinationLabel.position.set(Point.of(6, 11.25f));
         destinationLabel.preferredWidth.set((float)(blockEntity.getXSizeScaled() * 16 - 9));
-        destinationLabel.text.set(TextUtils.text(blockEntity.getCurrentStop().isPresent() ? blockEntity.getCurrentStop().get().title() : "").withStyle(ChatFormatting.BOLD));
+        destinationLabel.text.set(TextUtils.text(blockEntity.getDestinationText()).withStyle(ChatFormatting.BOLD));
         destinationLabel.horizontalScrollMode.set(EScrollMode.WHEN_NEEDED);
         destinationLabel.color.set(getDisplaySettings(blockEntity).getFontColor());
     }

@@ -11,8 +11,6 @@ import de.mrjulsen.crn.client.gui.windows.RouteDetailsWindow;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.config.ModCommonConfig;
-import de.mrjulsen.crn.data.navigation.ClientRoute;
-import de.mrjulsen.crn.data.navigation.RoutePart;
 import de.mrjulsen.crn.navigator.route.RouteCall;
 import de.mrjulsen.crn.navigator.route.RouteJourney;
 import de.mrjulsen.crn.navigator.route.RouteLeg;

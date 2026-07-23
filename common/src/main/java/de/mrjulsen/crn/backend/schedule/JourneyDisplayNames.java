@@ -74,8 +74,11 @@ public final class JourneyDisplayNames {
     /**
      * The terminus stop of a section: the following section's first stop if this one carries its
      * start over, otherwise this section's own last stop.
+     * <p>
+     * This is the stop advertised as where the train is going, which is why anything listing the
+     * stations on the way there leaves it out.
      */
-    private static Optional<JourneyStop> terminusStop(TrainJourney journey, JourneySection section) {
+    public static Optional<JourneyStop> terminusStop(TrainJourney journey, JourneySection section) {
         if (section.includesNextSectionStart()) {
             JourneySection next = journey.getNextSection(section);
             if (next != section) {

@@ -15,7 +15,6 @@ import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.widgets.skins.ModernScrollbarComponentRenderer;
 import de.mrjulsen.crn.data.UserSettings;
-import de.mrjulsen.crn.data.navigation.ClientRoute;
 import de.mrjulsen.crn.data.storage.RecentSearchQueries.RecentSearchQuery;
 import de.mrjulsen.crn.navigator.route.RouteJourney;
 import de.mrjulsen.crn.network.packets.pain.NavigatePacketData;

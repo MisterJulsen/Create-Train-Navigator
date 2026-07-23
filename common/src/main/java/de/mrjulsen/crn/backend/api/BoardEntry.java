@@ -9,9 +9,11 @@ import de.mrjulsen.crn.backend.core.LiveTrainState;
 import de.mrjulsen.crn.backend.core.ServiceState;
 import de.mrjulsen.crn.backend.core.TrackedTrain;
 import de.mrjulsen.crn.backend.delay.DelayInstance;
+import de.mrjulsen.crn.backend.schedule.JourneyDisplayNames;
 import de.mrjulsen.crn.backend.schedule.JourneySection;
 import de.mrjulsen.crn.backend.schedule.JourneyStop;
 import de.mrjulsen.crn.backend.schedule.TrainJourney;
+import de.mrjulsen.crn.backend.timing.CycleProjector;
 import de.mrjulsen.crn.backend.timing.StopTimes;
 import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
@@ -207,11 +209,19 @@ public record BoardEntry(
             .orElse(snapshot.realtimeStation());
     }
 
-    /** The stations served after this call within the same section, blacklisted ones omitted. */
+    /**
+     * The stations served on the way from this call to the terminus, blacklisted ones omitted.
+     * <p>
+     * The terminus itself is left out: it is what {@link #destinationText()} advertises, and a board
+     * that named it here as well would list it twice. Where the section carries its start over into
+     * the next one, the terminus is that next section's first stop and so is not among these stops
+     * to begin with, which is why the whole section is listed in that case.
+     */
     private static List<StationRef> collectStopovers(TrackedTrain train, JourneyStop stop, JourneySection section) {
         if (section == null) {
             return List.of();
         }
+        JourneyStop terminus = JourneyDisplayNames.terminusStop(train.getJourney(), section).orElse(null);
         List<StationRef> stopovers = new ArrayList<>();
         boolean reached = false;
         for (JourneyStop other : section.getStops()) {
@@ -219,7 +229,7 @@ public record BoardEntry(
                 reached = true;
                 continue;
             }
-            if (!reached || GlobalSettings.getInstance().isStationBlacklisted(other.getStationName())) {
+            if (!reached || other == terminus || GlobalSettings.getInstance().isStationBlacklisted(other.getStationName())) {
                 continue;
             }
             stopovers.add(StationRef.of(train.getDisplayStationName(other)));
@@ -230,9 +240,12 @@ public record BoardEntry(
     /**
      * What to advertise as this call's destination: an explicit schedule title takes precedence over
      * the terminus, which is why this may name no station at all.
+     * <p>
+     * The terminus is named the way a traveller knows it - by its station tag - and only falls back
+     * to the raw track station name where no tag covers it.
      */
     public String destinationText() {
-        return title.isBlank() ? destination.name() : title;
+        return title.isBlank() ? destination.displayName() : title;
     }
 
     /** The station's name, as a shorthand for {@code station().name()}. */
@@ -359,6 +372,28 @@ public record BoardEntry(
     /** Whether the train is standing at this station right now. */
     public boolean isWaiting() {
         return visitState == StopVisitState.CURRENT;
+    }
+
+    /**
+     * This call as it recurs at or after the given time, i.e. the next occurrence a traveller arriving
+     * then could still catch.
+     * <p>
+     * A board asked for departures from half an hour onwards is not asking which trains have already
+     * gone - it is asking what will be leaving then, and on a cyclic line that is the same train on a
+     * later lap. Returns this row unchanged where there is no later lap to project into.
+     *
+     * @see de.mrjulsen.crn.backend.timing.CycleProjector
+     */
+    public BoardEntry atOrAfter(long notBefore, long cycleDuration) {
+        int cycles = CycleProjector.cyclesUntil(realtime, cycleDuration, notBefore);
+        if (cycles <= 0) {
+            return this;
+        }
+        return new BoardEntry(trainId, sessionId, trainName, carriageCount, line, category,
+            arrivalLine, arrivalCategory, station, scheduledStation, origin, title, destination,
+            CycleProjector.advancedBy(scheduled, cycleDuration, cycles),
+            CycleProjector.advancedBy(realtime, cycleDuration, cycles),
+            serviceState, visitState, entryIndex, sectionIndex, terminus, originating, stopovers, delays);
     }
 
     /**

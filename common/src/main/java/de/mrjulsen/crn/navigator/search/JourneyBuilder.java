@@ -103,7 +103,7 @@ public final class JourneyBuilder {
         }
 
         String title = trip.call(from).title();
-        String destination = title == null || title.isBlank() ? section.destination().name() : title;
+        String destination = title == null || title.isBlank() ? section.destination().displayName() : title;
         return new RouteLeg(trip.trainId(), trip.sessionId(), trip.trainName(), trip.iconId(),
             section.line(), section.category(), destination, section.sectionIndex(), cancelled, calls);
     }

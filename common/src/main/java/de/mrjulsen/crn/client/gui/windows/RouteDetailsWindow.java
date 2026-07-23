@@ -14,7 +14,6 @@ import de.mrjulsen.crn.client.gui.widgets.create.CreateButton;
 import de.mrjulsen.crn.client.gui.widgets.routedetails.RouteDetailsViewer;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.data.SavedRoutesManager;
-import de.mrjulsen.crn.data.navigation.ClientRoute;
 import de.mrjulsen.crn.event.ModCommonEvents;
 import de.mrjulsen.crn.navigator.route.RouteJourney;
 import de.mrjulsen.crn.util.ModUtils;

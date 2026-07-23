@@ -418,10 +418,10 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
         } else {
             StringBuilder sb = new StringBuilder();
             boolean showTrainName = settings.getTrainTextComponents().showTrainName();
-            boolean showDestination = settings.getTrainTextComponents().showDestination() && blockEntity.getNextStop().isPresent();
+            boolean showDestination = settings.getTrainTextComponents().showDestination();
             if (showTrainName) sb.append(blockEntity.getTrainDisplayName());
             if (showTrainName && showDestination) sb.append(" ");
-            if (showDestination) sb.append(blockEntity.getNextStop().get().title());
+            if (showDestination) sb.append(blockEntity.getDestinationText());
             labelText = TextUtils.text(sb.toString()).withStyle(ChatFormatting.BOLD);
         }
 

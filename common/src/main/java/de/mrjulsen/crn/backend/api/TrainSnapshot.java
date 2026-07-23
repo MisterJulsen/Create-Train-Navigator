@@ -164,9 +164,12 @@ public record TrainSnapshot(
     /**
      * What to advertise as this train's destination: an explicit schedule title takes precedence
      * over the terminus, which is why this may name no station at all.
+     * <p>
+     * The terminus is named the way a traveller knows it - by its station tag - and only falls back
+     * to the raw track station name where no tag covers it.
      */
     public String destinationText() {
-        return currentTitle.isBlank() ? destination.name() : currentTitle;
+        return currentTitle.isBlank() ? destination.displayName() : currentTitle;
     }
 
     /**

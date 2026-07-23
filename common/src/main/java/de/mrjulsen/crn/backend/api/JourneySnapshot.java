@@ -270,21 +270,37 @@ public record JourneySnapshot(
     }
 
     /**
-     * The service the train is running at this moment. At a handover that depends on whether it has
-     * arrived yet: still on its way it is running the service that is bringing it in, standing at the
-     * platform it is already running the one leaving.
+     * The service the train is running at this moment.
+     * <p>
+     * The complication is the stop a section carries over from the next one. Such a stop belongs, by
+     * index, to the section it opens, but the train reaches it still running the previous section that
+     * advertised it. Which service to show then depends on what that opened section is:
+     * <ul>
+     *   <li>If it is usable, the stop is a handover - the train runs the arriving service until it
+     *       stands there, then takes on the new one. So it shows the previous section on the way in
+     *       and the opened one once arrived.</li>
+     *   <li>If it is not usable, there is no new service to take on: the stop is a plain terminus the
+     *       previous section runs to, so that section stays the operating one throughout. Reading the
+     *       opened, unusable section here is what made the train look out of service at its own
+     *       terminus.</li>
+     * </ul>
      *
      * @param arrived Whether the train has reached its current stop.
      */
     public Optional<SectionSnapshot> operatingSection(boolean arrived) {
-        SectionSnapshot section = currentStop().flatMap(this::sectionOf).orElse(null);
+        StopSnapshot current = currentStop().orElse(null);
+        SectionSnapshot section = current == null ? null : sectionOf(current).orElse(null);
         if (section == null) {
             return currentSection();
         }
-        if (arrived || !currentStop().map(this::isHandover).orElse(false)) {
-            return Optional.of(section);
+        if (isSectionStart(current)) {
+            Optional<SectionSnapshot> previous = previousSection(section);
+            boolean carriedOver = previous.map(p -> p.usable() && carriesPassengersOnward(p)).orElse(false);
+            if (carriedOver && (!section.usable() || !arrived)) {
+                return previous;
+            }
         }
-        return previousSection(section);
+        return Optional.of(section);
     }
 
     /**

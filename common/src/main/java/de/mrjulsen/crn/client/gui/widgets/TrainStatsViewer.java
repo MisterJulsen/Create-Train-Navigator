@@ -2,9 +2,7 @@ package de.mrjulsen.crn.client.gui.widgets;
 
 import de.mrjulsen.crn.client.gui.widgets.skins.ModernScrollbarComponentRenderer;
 import de.mrjulsen.crn.data.UserSettings;
-import de.mrjulsen.crn.data.navigation.ClientRoute;
 import de.mrjulsen.crn.debug.TrainDebugData;
-import de.mrjulsen.crn.network.packets.pain.GetDepartureAndArrivalRoutesAtPacketData;
 import de.mrjulsen.crn.registry.ModNetworkManager;
 import de.mrjulsen.crn.util.EDepartureBoardTrainFilter;
 import de.mrjulsen.mcdragonlib.client.gui.events.DLGuiStandardEvents;
