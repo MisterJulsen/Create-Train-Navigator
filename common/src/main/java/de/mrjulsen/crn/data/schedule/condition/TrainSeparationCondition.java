@@ -12,17 +12,17 @@ import com.simibubi.create.foundation.gui.ModularGuiLineBuilder;
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.api.IPredictableWaitCondition;
+import de.mrjulsen.crn.backend.api.RailwayBackendApi;
+import de.mrjulsen.crn.backend.history.DepartureLog;
 import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.data.ETimeSource;
 import de.mrjulsen.crn.data.schedule.INavigationExtension;
 import de.mrjulsen.crn.data.schedule.instruction.PrioritizedDestinationInstruction;
-import de.mrjulsen.crn.data.train.DepartureHistory;
-import de.mrjulsen.crn.data.train.DepartureHistory.ETrainFilter;
+import de.mrjulsen.crn.event.ModCommonEvents;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.time.DLTime;
 import de.mrjulsen.mcdragonlib.util.time.TimeContext;
 import de.mrjulsen.mcdragonlib.util.time.VanillaTimeSystem;
-import dev.architectury.utils.GameInstance;
 import net.createmod.catnip.data.Pair;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
@@ -121,26 +121,27 @@ public class TrainSeparationCondition extends ScheduledDelay implements IDelayed
 	@Override
 	public boolean runDelayed(DelayedWaitConditionContext context) {
 		int delayValue = getSeparationTime();
-		long lastDepartureTimestamp = Long.MIN_VALUE;
+		long lastDepartureTimestamp = DepartureLog.NEVER;
 		ScheduleEntry entry = context.scheduleEntry();
+		Train train = context.train();
 		String customStationFilter = getCustomStationFilter();
 		if (customStationFilter != null && !customStationFilter.isBlank()) {
-			lastDepartureTimestamp = DepartureHistory.getLatestDepartureFor(getTrainFilter(), context.train(), customStationFilter);
+			lastDepartureTimestamp = lastDepartureAt(customStationFilter, train);
 		} else if (entry.instruction instanceof PrioritizedDestinationInstruction instruction) {
-			List<String> stationName = instruction.getFilters();
-			lastDepartureTimestamp = stationName.stream().mapToLong(x -> DepartureHistory.getLatestDepartureFor(getTrainFilter(), context.train(), x)).max().orElse(0);
+			lastDepartureTimestamp = instruction.getFilters().stream().mapToLong(x -> lastDepartureAt(x, train)).max().orElse(DepartureLog.NEVER);
 		} else if (entry.instruction instanceof DestinationInstruction instruction) {
-			String stationName = instruction.getFilter();
-			lastDepartureTimestamp = DepartureHistory.getLatestDepartureFor(getTrainFilter(), context.train(), stationName);
+			lastDepartureTimestamp = lastDepartureAt(instruction.getFilter(), train);
 		}
 
-		if (GameInstance.getServer() != null && lastDepartureTimestamp + delayValue < GameInstance.getServer().overworld().getGameTime()) {
-			if (context.station() != null && context.station().name != null && context.train() != null) { // TODO what's going on here? Why can station().name be null???
-				DepartureHistory.updateDepartures(context.station().name, context.train());
-			}
-			return true;
-		}
-		return false;
+		// The train's own departure is recorded by the backend when it actually leaves, so nothing is
+		// written here - only the wait is decided. The log is kept in monotonic world game time, so the
+		// wait is measured against that same clock, matching the raw ticks the separation time is set in.
+		Long now = ModCommonEvents.getCurrentServer().map(server -> server.overworld().getGameTime()).orElse(null);
+		return now != null && lastDepartureTimestamp + delayValue < now;
+	}
+
+	private long lastDepartureAt(String stationFilter, Train train) {
+		return RailwayBackendApi.getLastDepartureTime(stationFilter, getTrainFilter(), train.id, train.name.getString());
 	}
 
 	@Override

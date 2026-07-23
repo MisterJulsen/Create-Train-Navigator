@@ -10,7 +10,6 @@ import de.mrjulsen.crn.backend.schedule.TrainJourney;
 import de.mrjulsen.crn.backend.TrainManager;
 import de.mrjulsen.crn.backend.debug.BackendDebugOverlay;
 import de.mrjulsen.crn.backend.debug.BackendDiagnosticsRecorder;
-import de.mrjulsen.crn.data.train.DepartureHistory;
 import de.mrjulsen.crn.data.train.TrainListener;
 import de.mrjulsen.crn.debug.DebugOverlay;
 import de.mrjulsen.crn.network.packets.pain.ShowTrainDebugScreenPacketData;
@@ -163,7 +162,7 @@ public class DebugCommand {
 
     private static int clearDepartureHistory(CommandSourceStack cmd) throws CommandSyntaxException {
         cmd.sendSuccess(() -> TextUtils.text("The departure history has been deleted."), false);
-        DepartureHistory.clear();
+        TrainManager.getInstance().getDepartureLog().clear();
         return 1;
     }
 

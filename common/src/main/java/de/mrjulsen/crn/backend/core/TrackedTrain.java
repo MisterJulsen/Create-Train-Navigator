@@ -718,7 +718,7 @@ public final class TrackedTrain implements RealtimeTracker.Listener {
                 }
 
                 timing.recordDeparture(now, dwellTicks);
-                owner.recordDeparture(this, stop, now);
+                owner.recordDeparture(this, stop);
                 BackendDiagnosticsRecorder.recordDeparture(this, now, entryIndex, dwellTicks);
 
                 if (journey.isCyclic() && totalDuration > 0) {

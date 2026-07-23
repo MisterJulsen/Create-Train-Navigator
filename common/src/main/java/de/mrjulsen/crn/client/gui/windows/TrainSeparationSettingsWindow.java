@@ -25,7 +25,7 @@ import de.mrjulsen.crn.client.gui.widgets.create.CreateScrollNumberInput;
 import de.mrjulsen.crn.client.gui.widgets.create.CreateTextBox;
 import de.mrjulsen.crn.data.ETimeSource;
 import de.mrjulsen.crn.data.schedule.condition.TrainSeparationCondition;
-import de.mrjulsen.crn.data.train.DepartureHistory.ETrainFilter;
+import de.mrjulsen.crn.data.schedule.condition.ETrainFilter;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.gui.events.DLGuiStandardEvents;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLWindow;

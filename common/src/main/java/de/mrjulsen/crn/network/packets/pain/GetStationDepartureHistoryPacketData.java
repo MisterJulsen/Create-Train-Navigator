@@ -1,6 +1,7 @@
 package de.mrjulsen.crn.network.packets.pain;
 
-import de.mrjulsen.crn.data.train.DepartureHistory;
+import de.mrjulsen.crn.backend.api.RailwayBackendApi;
+import de.mrjulsen.crn.backend.history.DepartureStats;
 import de.mrjulsen.mcdragonlib.data.DLStatus;
 import de.mrjulsen.mcdragonlib.network.NetworkPacketContext;
 import de.mrjulsen.mcdragonlib.network.NetworkPacketData;
@@ -35,13 +36,13 @@ public class GetStationDepartureHistoryPacketData {
     }
 
     public static class Response extends NetworkPacketData {
-        private DepartureHistory.Stats history;
+        private DepartureStats history;
 
         public Response(DLStatus status) {
             super(status);
         }
 
-        public Response(DepartureHistory.Stats history) {
+        public Response(DepartureStats history) {
             super(DLStatus.OK);
             this.history = history;
         }
@@ -53,17 +54,17 @@ public class GetStationDepartureHistoryPacketData {
 
         @Override
         protected void read(CompoundTag nbt) {
-            this.history = DepartureHistory.Stats.fromNbt(nbt.getCompound(NBT_DATA));
+            this.history = DepartureStats.fromNbt(nbt.getCompound(NBT_DATA));
         }
 
-        public DepartureHistory.Stats getHistory() {
+        public DepartureStats getHistory() {
             return history;
         }
 
     }
 
     public static Response handle(Request packet, NetworkPacketContext context) {
-        return new Response(DepartureHistory.Stats.ofStation(packet.name));
+        return new Response(RailwayBackendApi.getDepartureStats(packet.name));
     }
-    
+
 }

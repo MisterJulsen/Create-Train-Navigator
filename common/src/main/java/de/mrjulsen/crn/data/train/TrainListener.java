@@ -20,7 +20,6 @@ import java.util.Set;
 import com.simibubi.create.content.trains.entity.Train;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.config.ModCommonConfig;
-import de.mrjulsen.crn.data.schedule.INavigationExtension;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
 import de.mrjulsen.crn.event.CRNEventsManager;
 import de.mrjulsen.crn.event.ModCommonEvents;
@@ -28,7 +27,6 @@ import de.mrjulsen.crn.event.events.GlobalTrainDisplayDataRefreshEventPost;
 import de.mrjulsen.crn.event.events.GlobalTrainDisplayDataRefreshEventPre;
 import de.mrjulsen.crn.event.events.ScheduleResetEvent;
 import de.mrjulsen.crn.event.events.TotalDurationTimeChangedEvent;
-import de.mrjulsen.crn.event.events.TrainArrivalAndDepartureEvent;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
@@ -39,7 +37,6 @@ public final class TrainListener {
 
     private static final String FILENAME = CreateRailwaysNavigator.MOD_ID + "_train_data.nbt";
     private static final String NBT_TRAIN_DATA = "TrainData";
-    private static final String NBT_DEPARTURE_HISTORY = "DepartureHistory";
 
     private static final ConcurrentHashMap<UUID /* train id */, TrainData> data = new ConcurrentHashMap<>();
 	public static final Map<String, Collection<TrainPrediction>> statusByDestination = new HashMap<>();
@@ -87,7 +84,6 @@ public final class TrainListener {
         CRNEventsManager.getEvent(GlobalTrainDisplayDataRefreshEventPre.class).register(CreateRailwaysNavigator.MOD_ID, () -> {
             queueTrainListenerTask(() -> {
                 try {
-                    DepartureHistory.validate();
                     TrainListener.refreshPre();
                 } catch (Exception e) {
                     DragonLib.LOGGER.error("Cannot run train listener task 'TrainListener#GlobalTrainDisplayDataRefreshEventPre': {}", e.getMessage(), e);
@@ -111,24 +107,6 @@ public final class TrainListener {
                 CreateRailwaysNavigator.LOGGER.info("The total duration of the train {} ({}) has changed from {} Ticks to {} Ticks. This will result in changes to the scheduled departure times!", train.name.getString(), train.id, old, newDuration);
         });
 
-        CRNEventsManager.getEvent(TrainArrivalAndDepartureEvent.class).register(CreateRailwaysNavigator.MOD_ID, (train, station, isArrival) -> {
-            queueTrainListenerTask(() -> {
-                try {                    
-                    if (TrainUtils.canReadTrainNavigation(train)) {
-                        if (!isArrival && station.isPresent() && !((INavigationExtension)(Object)train.navigation).isDelayedWaitConditionPending()) {
-                            // If not checking whether a delayed condition is pending, the train would block itself.
-                            DepartureHistory.updateDepartures(station.get().name, train);
-                        }
-                    } else {
-                        if (ModCommonConfig.ADVANCED_LOGGING.get())
-                            DragonLib.LOGGER.warn("Cannot run train listener task 'TrainListener#TrainArrivalAndDepartureEvent:2'. Unable to read the train navigation of train {}.", train == null ? "null" : train.id);
-                    }                    
-                } catch (Exception e) {
-                    DragonLib.LOGGER.error("Cannot run train listener task 'TrainListener#TrainArrivalAndDepartureEvent': {}", e.getMessage(), e);
-                }
-            });
-        });
-        
         CRNEventsManager.getEvent(ScheduleResetEvent.class).register(CreateRailwaysNavigator.MOD_ID, (train, soft) -> {
             queueTrainListenerTask(() -> {
                 try {
@@ -235,8 +213,7 @@ public final class TrainListener {
 
         CompoundTag nbt = new CompoundTag();
         nbt.put(NBT_TRAIN_DATA, dataNbt);
-        nbt.put(NBT_DEPARTURE_HISTORY, DepartureHistory.toNbt());
-    
+
         try {
             NbtIo.writeCompressed(nbt, new File(ModCommonEvents.getCurrentServer().get().getWorldPath(new LevelResource("data/" + FILENAME)).toString()));
             CreateRailwaysNavigator.LOGGER.debug("Saved train listener data.");
@@ -261,8 +238,6 @@ public final class TrainListener {
                 CreateRailwaysNavigator.LOGGER.warn("Unable to read train listener train data with ID '" + key + "'. " + e.getMessage(), e);
             }
         }
-
-        DepartureHistory.fromNbt(nbt.getCompound(NBT_DEPARTURE_HISTORY));
     }
 
     private static void queueTrainListenerTask(Runnable task) {

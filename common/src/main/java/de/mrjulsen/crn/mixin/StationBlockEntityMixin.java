@@ -11,7 +11,7 @@ import com.simibubi.create.content.trains.station.StationBlockEntity;
 import de.mrjulsen.crn.CRNPlatformSpecific;
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
-import de.mrjulsen.crn.data.train.DepartureHistory;
+import de.mrjulsen.crn.backend.history.DepartureStats;
 import de.mrjulsen.crn.network.packets.pain.GetStationDepartureHistoryPacketData;
 import de.mrjulsen.crn.registry.ModNetworkManager;
 import de.mrjulsen.mcdragonlib.network.NetworkDirection;
@@ -34,7 +34,7 @@ public class StationBlockEntityMixin implements IHaveGoggleInformation {
         return (StationBlockEntity)(Object)this;
     }
 
-    private DepartureHistory.Stats stats;
+    private DepartureStats stats;
 
     @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
@@ -65,15 +65,15 @@ public class StationBlockEntityMixin implements IHaveGoggleInformation {
             .add(TextUtils.translate("goggles." + CreateRailwaysNavigator.MOD_ID + ".train_listener.departures.any").withStyle(ChatFormatting.GRAY))
             .forGoggles(tooltip);
         CreateLang.builder(CreateRailwaysNavigator.MOD_ID)
-            .add(formatTime(Minecraft.getInstance().level.getGameTime() - stats.getLastDeparture()))
+            .add(formatTime(Minecraft.getInstance().level.getGameTime() - stats.lastDeparture()))
             .forGoggles(tooltip, 1);
           
-        if (!stats.getDeparturesByCategory().isEmpty()) {
+        if (!stats.departuresByCategory().isEmpty()) {
             CreateLang.builder(CreateRailwaysNavigator.MOD_ID)
                 .add(TextUtils.translate("goggles." + CreateRailwaysNavigator.MOD_ID + ".train_listener.departures.category").withStyle(ChatFormatting.GRAY))
                 .forGoggles(tooltip);
                              
-            Map<String, Long> data = stats.getDeparturesByCategory();
+            Map<String, Long> data = stats.departuresByCategory();
             int i = 0;
             for (Map.Entry<String, Long> d : data.entrySet()) {
                 CreateLang.builder(CreateRailwaysNavigator.MOD_ID)
@@ -92,12 +92,12 @@ public class StationBlockEntityMixin implements IHaveGoggleInformation {
             }
         }
         
-        if (!stats.getDeparturesByLine().isEmpty()) {
+        if (!stats.departuresByLine().isEmpty()) {
             CreateLang.builder(CreateRailwaysNavigator.MOD_ID)
                 .add(TextUtils.translate("goggles." + CreateRailwaysNavigator.MOD_ID + ".train_listener.departures.line").withStyle(ChatFormatting.GRAY))
                 .forGoggles(tooltip);   
                              
-            Map<String, Long> data = stats.getDeparturesByLine();
+            Map<String, Long> data = stats.departuresByLine();
             int i = 0;
             for (Map.Entry<String, Long> d : data.entrySet()) {
                 CreateLang.builder(CreateRailwaysNavigator.MOD_ID)
@@ -116,12 +116,12 @@ public class StationBlockEntityMixin implements IHaveGoggleInformation {
             }
         }
         
-        if (!stats.getDeparturesByName().isEmpty()) {
+        if (!stats.departuresByName().isEmpty()) {
             CreateLang.builder(CreateRailwaysNavigator.MOD_ID)
                 .add(TextUtils.translate("goggles." + CreateRailwaysNavigator.MOD_ID + ".train_listener.departures.name").withStyle(ChatFormatting.GRAY))
                 .forGoggles(tooltip);   
                              
-            Map<String, Long> data = stats.getDeparturesByName();
+            Map<String, Long> data = stats.departuresByName();
             int i = 0;
             for (Map.Entry<String, Long> d : data.entrySet()) {
                 CreateLang.builder(CreateRailwaysNavigator.MOD_ID)

@@ -7,7 +7,6 @@ import de.mrjulsen.crn.block.display.AdvancedDisplayTarget;
 import de.mrjulsen.crn.cmd.DebugCommand;
 import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
-import de.mrjulsen.crn.data.train.DepartureHistory;
 import de.mrjulsen.crn.data.train.TrainData;
 import de.mrjulsen.crn.data.train.TrainListener;
 import de.mrjulsen.crn.event.events.GlobalTrainDisplayDataRefreshEventPost;
@@ -63,7 +62,6 @@ public class ModCommonEvents {
             TrainListener.stop();
             AdvancedDisplayTarget.stop();
             CRNEventsManager.clearEvents();
-            DepartureHistory.clear();
         });
 
         LifecycleEvent.SERVER_STOPPED.register((server) -> {

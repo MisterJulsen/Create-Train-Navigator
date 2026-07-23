@@ -14,12 +14,12 @@ import de.mrjulsen.crn.backend.api.event.RailwayBackendEvents;
 import de.mrjulsen.crn.backend.core.ServiceState;
 import de.mrjulsen.crn.backend.core.TrackedTrain;
 import de.mrjulsen.crn.backend.history.DepartureLog;
-import de.mrjulsen.crn.backend.history.DepartureLogEntry;
 import de.mrjulsen.crn.backend.index.StationCallIndex;
 import de.mrjulsen.crn.backend.schedule.JourneyStop;
 import de.mrjulsen.crn.data.storage.GlobalSettings;
 import de.mrjulsen.crn.data.train.TrainUtils;
 import de.mrjulsen.crn.config.ModCommonConfig;
+import de.mrjulsen.crn.event.ModCommonEvents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -231,22 +231,35 @@ public final class TrainManager {
         return staged != null && TrackedTrain.readPersistedServiceState(staged) == ServiceState.DISRUPTED;
     }
 
-    /** Records a departure in the departure log. Called by tracked trains. */
-    public void recordDeparture(TrackedTrain train, JourneyStop stop, long now) {
-        departureLog.record(stop.getStationName(), new DepartureLogEntry(
+    /**
+     * Records a departure in the departure log. Called by tracked trains.
+     * <p>
+     * Unlike everything else in the backend this is stamped with the monotonic world game time, not
+     * the transformed one: the train separation condition measures its wait in raw ticks against that
+     * same clock, so a "wait 100 ticks since the last train" means 100 actual ticks. It is the total
+     * game time that only ever counts up, not the day time a {@code /time set} can move.
+     */
+    public void recordDeparture(TrackedTrain train, JourneyStop stop) {
+        long now = ModCommonEvents.getCurrentServer().map(server -> server.overworld().getGameTime()).orElse(-1L);
+        if (now < 0) {
+            return;
+        }
+        departureLog.record(
+            stop.getStationName(),
             now,
-            train.getTrainId(),
-            train.getTrainName(),
             stop.getSection() == null ? null : stop.getSection().getTrainLineId(),
             stop.getSection() == null ? null : stop.getSection().getTrainCategoryId(),
-            train.getSectionDestination(stop)
-        ));
+            train.getTrainName()
+        );
     }
 
-    /** Shifts all absolute timestamps by the given amount, after a world time jump. */
+    /**
+     * Shifts all absolute timestamps by the given amount, after a world time jump. The departure log
+     * is left out on purpose: it is kept in monotonic world game time, which a {@code /time set} does
+     * not move, so it needs no correction - the same as the old system, which never adjusted it.
+     */
     public void shiftTimes(long ticks) {
         trains.values().forEach(x -> x.shiftTimes(ticks));
-        departureLog.shiftTimes(ticks);
     }
 
     /** Removes all tracked trains, staged data, retired ids and the departure log. */
