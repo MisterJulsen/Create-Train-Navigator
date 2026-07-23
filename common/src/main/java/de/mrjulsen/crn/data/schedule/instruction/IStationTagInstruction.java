@@ -1,3 +1,4 @@
 package de.mrjulsen.crn.data.schedule.instruction;
 
-public interface IStationTagInstruction extends ICustomSuggestionsInstruction {}
+/** Marks a schedule instruction whose station field is filled from the known station tags. */
+public interface IStationTagInstruction {}

@@ -26,7 +26,6 @@ import com.simibubi.create.content.trains.station.GlobalStation;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.config.ModCommonConfig;
-import de.mrjulsen.crn.data.schedule.instruction.IPredictableInstruction;
 import de.mrjulsen.crn.event.CRNEventsManager;
 import de.mrjulsen.crn.event.events.TotalDurationTimeChangedEvent;
 import de.mrjulsen.crn.mixin.ScheduleRuntimeAccessor;
@@ -586,10 +585,7 @@ public class TrainData implements IListenable<TrainData> {
             final int cyclicIndex = (i + getCurrentScheduleIndex()) % entryCount;
             final ScheduleEntry entry = schedule.entries.get(cyclicIndex);
 
-            if (entry.instruction instanceof IPredictableInstruction instruction) {
-                instruction.predict(this, train.runtime, cyclicIndex, train);
-                continue;
-            } else if (entry.instruction instanceof ChangeTitleInstruction instruction) {
+            if (entry.instruction instanceof ChangeTitleInstruction instruction) {
                 currentTitle.set(instruction.getScheduleTitle());
                 continue;
             } else if (!(entry.instruction instanceof DestinationInstruction)) {

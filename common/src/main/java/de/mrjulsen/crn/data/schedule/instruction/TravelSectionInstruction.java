@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import com.simibubi.create.content.trains.entity.Train;
 import com.simibubi.create.content.trains.graph.DiscoveredPath;
 import com.simibubi.create.content.trains.schedule.ScheduleRuntime;
 import com.simibubi.create.content.trains.schedule.destination.ScheduleInstruction;
@@ -15,16 +14,11 @@ import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.data.TrainCategory;
 import de.mrjulsen.crn.data.TrainLine;
-import de.mrjulsen.crn.data.storage.GlobalSettings;
-import de.mrjulsen.crn.data.train.TrainData;
 import de.mrjulsen.crn.network.packets.pain.GetTrainCategoryPacketData;
 import de.mrjulsen.crn.network.packets.pain.GetTrainLinePacketData;
-import de.mrjulsen.crn.data.train.ScheduleSection;
-import de.mrjulsen.crn.data.train.TrainListener;
 import de.mrjulsen.crn.registry.ModBlocks;
 import de.mrjulsen.crn.registry.ModNetworkManager;
 import de.mrjulsen.mcdragonlib.network.NetworkDirection;
-import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.createmod.catnip.data.Pair;
 import net.minecraft.ChatFormatting;
@@ -37,7 +31,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
-public class TravelSectionInstruction extends ScheduleInstruction implements IPredictableInstruction {
+public class TravelSectionInstruction extends ScheduleInstruction {
     
     @Deprecated
     public static final String LEGACY_NBT_TRAIN_CATEGORY = "TrainGroup";
@@ -82,10 +76,6 @@ public class TravelSectionInstruction extends ScheduleInstruction implements IPr
 
     @Override
     public DiscoveredPath start(ScheduleRuntime runtime, Level level) {
-        TrainListener.getTrainData(runtime.train.id).ifPresent(x -> {
-            x.addScheduleSection(getSectionData(x, runtime.currentEntry));
-            x.changeCurrentSection(runtime.currentEntry);
-        });
         runtime.state = ScheduleRuntime.State.PRE_TRANSIT;
         runtime.currentEntry++;
         return null;
@@ -202,42 +192,4 @@ public class TravelSectionInstruction extends ScheduleInstruction implements IPr
         return !this.data.contains(NBT_USABLE) || this.data.getBoolean(NBT_USABLE);
     }
 
-    private ScheduleSection getSectionData(TrainData data, int index) {
-        String categoryNbtKey = null;
-        if (this.data.contains(LEGACY_NBT_TRAIN_CATEGORY))
-            categoryNbtKey = LEGACY_NBT_TRAIN_CATEGORY;
-        else 
-            categoryNbtKey = NBT_TRAIN_CATEGORY;
-
-
-        return new ScheduleSection(
-            data,
-            index,
-            !this.data.contains(categoryNbtKey) || (this.data.getTagType(categoryNbtKey) != Tag.TAG_STRING && this.data.getTagType(categoryNbtKey) != Tag.TAG_INT_ARRAY)
-                ? null
-                : GlobalSettings.getInstance().getTrainCategory(
-                    this.data.getTagType(categoryNbtKey) == Tag.TAG_STRING
-                        ? TrainCategory.genMD5Uuid(this.data.getString(categoryNbtKey))
-                        : this.data.getUUID(categoryNbtKey)
-                    ).orElse(null),
-
-            !this.data.contains(NBT_TRAIN_LINE) || (this.data.getTagType(NBT_TRAIN_LINE) != Tag.TAG_STRING && this.data.getTagType(NBT_TRAIN_LINE) != Tag.TAG_INT_ARRAY)
-                ? null
-                : GlobalSettings.getInstance().getTrainLine(
-                    this.data.getTagType(NBT_TRAIN_LINE) == Tag.TAG_STRING
-                        ? TrainCategory.genMD5Uuid(this.data.getString(NBT_TRAIN_LINE))
-                        : this.data.getUUID(NBT_TRAIN_LINE)
-                    ).orElse(null),
-                    
-            this.data.getBoolean(NBT_INCLUDE_PREVIOUS_STATION),
-            this.data.getBoolean(NBT_USABLE)
-        );
-    }
-
-    @Override
-    public void predict(TrainData data, ScheduleRuntime runtime, int indexInSchedule, Train train) {
-        DLUtils.doIfNotNull(data, x -> {            
-            x.addScheduleSection(getSectionData(x, indexInSchedule));
-        });
-    }
 }
