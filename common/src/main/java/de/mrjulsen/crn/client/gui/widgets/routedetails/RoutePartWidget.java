@@ -1,9 +1,9 @@
 package de.mrjulsen.crn.client.gui.widgets.routedetails;
 
 import de.mrjulsen.crn.client.gui.widgets.routedetails.RoutePartEntryWidget.TrainStopType;
-import de.mrjulsen.crn.navigator.route.RouteCall;
-import de.mrjulsen.crn.navigator.route.RouteJourney;
-import de.mrjulsen.crn.navigator.route.RouteLeg;
+import de.mrjulsen.crn.core.navigator.route.RouteCall;
+import de.mrjulsen.crn.core.navigator.route.RouteJourney;
+import de.mrjulsen.crn.core.navigator.route.RouteLeg;
 import de.mrjulsen.mcdragonlib.client.gui.events.DLGuiStandardEvents;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLGuiComponent;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.layout.FlowLayout;

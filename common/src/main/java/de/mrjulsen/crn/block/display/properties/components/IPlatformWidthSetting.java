@@ -3,12 +3,6 @@ package de.mrjulsen.crn.block.display.properties.components;
 import de.mrjulsen.crn.block.display.properties.IDisplaySettings;
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
 
-/**
- * For data conversion: Indicates that this class adopts the original
- * property {@code platformWidth} from the Advanced Displays.
- * If the class should adopt this property, this interface must be
- * implemented or the value will not be converted!
- */
 public interface IPlatformWidthSetting extends ICustomTextWidthSetting {
 
     public static final String NBT_PLATFORM_WIDTH = "PlatformWidth";
@@ -19,7 +13,7 @@ public interface IPlatformWidthSetting extends ICustomTextWidthSetting {
     default void buildPlatformWidthGui(GuiBuilderContext context, boolean allowAuto) {
         GuiBuilderWrapper.buildPlatformWidthGui(this, context, allowAuto);
     }
-    
+
     default void copyPlatformWidthSetting(IDisplaySettings oldSettings) {
         if (oldSettings instanceof IPlatformWidthSetting o) {
             setPlatformWidth(o.getPlatformWidth());

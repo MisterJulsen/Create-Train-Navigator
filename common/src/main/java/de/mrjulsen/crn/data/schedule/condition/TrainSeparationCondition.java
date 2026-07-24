@@ -2,7 +2,6 @@ package de.mrjulsen.crn.data.schedule.condition;
 
 import java.util.ArrayList;
 import java.util.List;
-import com.google.common.collect.ImmutableList;
 import com.simibubi.create.content.trains.entity.Train;
 import com.simibubi.create.content.trains.schedule.ScheduleEntry;
 import com.simibubi.create.content.trains.schedule.condition.ScheduledDelay;
@@ -12,8 +11,8 @@ import com.simibubi.create.foundation.gui.ModularGuiLineBuilder;
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.api.IPredictableWaitCondition;
-import de.mrjulsen.crn.backend.api.RailwayBackendApi;
-import de.mrjulsen.crn.backend.history.DepartureLog;
+import de.mrjulsen.crn.api.core.RailwayBackendApi;
+import de.mrjulsen.crn.core.history.DepartureLog;
 import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.data.ETimeSource;
 import de.mrjulsen.crn.data.schedule.INavigationExtension;
@@ -22,7 +21,6 @@ import de.mrjulsen.crn.event.ModCommonEvents;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.time.DLTime;
 import de.mrjulsen.mcdragonlib.util.time.TimeContext;
-import de.mrjulsen.mcdragonlib.util.time.VanillaTimeSystem;
 import net.createmod.catnip.data.Pair;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
@@ -133,9 +131,6 @@ public class TrainSeparationCondition extends ScheduledDelay implements IDelayed
 			lastDepartureTimestamp = lastDepartureAt(instruction.getFilter(), train);
 		}
 
-		// The train's own departure is recorded by the backend when it actually leaves, so nothing is
-		// written here - only the wait is decided. The log is kept in monotonic world game time, so the
-		// wait is measured against that same clock, matching the raw ticks the separation time is set in.
 		Long now = ModCommonEvents.getCurrentServer().map(server -> server.overworld().getGameTime()).orElse(null);
 		return now != null && lastDepartureTimestamp + delayValue < now;
 	}
@@ -148,7 +143,7 @@ public class TrainSeparationCondition extends ScheduledDelay implements IDelayed
 	public ResourceLocation getId() {
 		return new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "train_separation");
 	}
-    
+
 	public ETrainFilter getTrainFilter() {
 		return ETrainFilter.getByIndex(data.getByte(NBT_TRAIN_FILTER));
 	}

@@ -48,7 +48,7 @@ public class RouteOverlaySettingsWindow extends DLWindow {
 
     private static final MutableComponent title = TextUtils.translate("gui.createrailwaysnavigator.overlay_settings.title");
     private static final MutableComponent narratorOn = TextUtils.translate("gui.createrailwaysnavigator.route_overlay_settings.narrator.on");
-    private static final MutableComponent narratorOff = TextUtils.translate("gui.createrailwaysnavigator.route_overlay_settings.narrator.off");    
+    private static final MutableComponent narratorOff = TextUtils.translate("gui.createrailwaysnavigator.route_overlay_settings.narrator.off");
     private static final MutableComponent notificationsOn = TextUtils.translate("gui.createrailwaysnavigator.route_overlay_settings.notifications.on");
     private static final MutableComponent notificationsOff = TextUtils.translate("gui.createrailwaysnavigator.route_overlay_settings.notifications.off");
     private static final MutableComponent textScale = TextUtils.translate("gui.createrailwaysnavigator.route_overlay_settings.scale");
@@ -59,7 +59,7 @@ public class RouteOverlaySettingsWindow extends DLWindow {
     private static final MutableComponent textNarratorDescription = TextUtils.translate("gui.createrailwaysnavigator.route_overlay_settings.narrator.description").withStyle(ChatFormatting.GRAY);
     private static final MutableComponent textNotifications = TextUtils.translate("gui.createrailwaysnavigator.route_overlay_settings.notifications");
     private static final MutableComponent textNotificationsDescription = TextUtils.translate("gui.createrailwaysnavigator.route_overlay_settings.notifications.description").withStyle(ChatFormatting.GRAY);
-    
+
     public RouteOverlaySettingsWindow(DLWindowManager manager, RouteDetailsOverlay overlay) {
         super(manager);
         setSize(GUI_WIDTH, GUI_HEIGHT);
@@ -68,27 +68,26 @@ public class RouteOverlaySettingsWindow extends DLWindow {
         backButton = addComponent(new CreateButton(width() - CreateButton.WIDTH - 7, height() - CreateButton.HEIGHT - 6, AllIcons.I_CONFIRM));
         backButton.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
             getWindowManager().closeWindow(this);
-            return false; 
+            return false;
         });
-        
+
         detailsButton = addComponent(new CreateButton(7, height() - CreateButton.HEIGHT - 6, AllIcons.I_VIEW_SCHEDULE));
         detailsButton.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
             getWindowManager().createModal(mgr -> new RouteDetailsWindow(mgr, overlay.getRoute()));
-            return false; 
+            return false;
         });
         detailsButton.tooltip.set(new DLTooltip(List.of(textShowDetails), 200));
-        
+
         removeOverlayButton = addComponent(new CreateButton(7 + CreateButton.WIDTH + 3, height() - CreateButton.HEIGHT - 6, ModGuiIcons.DELETE.getAsCreateIcon()));
         removeOverlayButton.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
             if (overlay.getWindowManager() != null) {
                 overlay.getWindowManager().closeWindow(overlay);
             }
-            return false; 
+            return false;
         });
         removeOverlayButton.tooltip.set(new DLTooltip(List.of(textUnpin), 200));
 
 
-        // Notifications
         notificationsIndicator = addComponent(new CreateIndicator(20, 20));
         notificationsButton = addComponent(new CreateButton(20, 26, ModGuiIcons.INFO.getAsCreateIcon()));
         notificationsButton.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
@@ -99,7 +98,7 @@ public class RouteOverlaySettingsWindow extends DLWindow {
         notificationsButton.tooltip.set(new DLTooltip(List.of(textNotifications, textNotificationsDescription), 200));
         notificationsIndicator.state.set(overlay.shouldShowNotifications() ? Indicator.State.ON : Indicator.State.OFF);
 
-        
+
         scaleInput = addComponent(new CreateScrollNumberInput(63, 23, 43));
         scaleInput.format.set(new INumberFormatAdapter.DecimalNumberFormat(2));
         scaleInput.step.set(0.05);
@@ -133,7 +132,7 @@ public class RouteOverlaySettingsWindow extends DLWindow {
     }
 
     @Override
-    public void close() {        
+    public void close() {
         ModClientConfig.SPEC.save();
         ModClientConfig.SPEC.afterReload();
     }
@@ -146,7 +145,7 @@ public class RouteOverlaySettingsWindow extends DLWindow {
         CreateDynamicWidgets.renderContainer(graphics, 1, FooterSize.DEFAULT.size() - 1, 54, 36, ContainerColor.BLUE);
         CreateDynamicWidgets.renderContainer(graphics, 54, FooterSize.DEFAULT.size() - 1, 61, 36, ContainerColor.BLUE);
         CreateDynamicWidgets.renderContainer(graphics, 54 + 60, FooterSize.DEFAULT.size() - 1, 90, 36, ContainerColor.BLUE);
-        
+
         GuiGameElement.of(renderedItem).<GuiGameElement
 			.GuiRenderBuilder>at(width(), height() - 48, -200)
 			.scale(5)

@@ -17,15 +17,10 @@ import de.mrjulsen.crn.block.display.properties.SimpleStaticTextDisplaySettings;
 import de.mrjulsen.crn.block.display.properties.StaticTextDisplaySettings;
 import de.mrjulsen.crn.block.display.properties.components.IShowTrainMultipleTimes;
 import de.mrjulsen.crn.block.display.properties.components.ITrainStopTypeSetting;
-import de.mrjulsen.crn.block.properties.EDisplayType;
-import de.mrjulsen.crn.block.properties.EDisplayType.EDisplayTypeDataSource;
-import de.mrjulsen.crn.backend.api.BoardEntry;
-import de.mrjulsen.crn.backend.api.BoardQuery;
-import de.mrjulsen.crn.backend.api.RailwayBackendApi;
-import de.mrjulsen.crn.client.AdvancedDisplaysRegistry;
-import de.mrjulsen.crn.config.ModClientConfig;
-import de.mrjulsen.crn.config.ModCommonConfig;
-import de.mrjulsen.crn.data.storage.GlobalSettings;
+import de.mrjulsen.crn.api.core.BoardEntry;
+import de.mrjulsen.crn.api.core.BoardQuery;
+import de.mrjulsen.crn.api.core.RailwayBackendApi;
+import de.mrjulsen.crn.data.settings.GlobalSettings;
 import de.mrjulsen.crn.event.ModCommonEvents;
 import de.mrjulsen.crn.registry.ModDisplayTypes;
 import de.mrjulsen.crn.util.ModUtils;
@@ -41,13 +36,13 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
 
 public class AdvancedDisplayTarget extends DisplayTarget {
-	
+
 	private static boolean running = false;
 	private static boolean threadRunning = false;
 	private static final Queue<Runnable> workerTasks = new ConcurrentLinkedQueue<>();
 
 	public static void start() {
-		if (running) stop();		
+		if (running) stop();
 		while (running && threadRunning) {
 			try {
 				TimeUnit.SECONDS.sleep(1);
@@ -59,11 +54,11 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 		new Thread(() -> {
 			threadRunning = true;
 			CreateRailwaysNavigator.LOGGER.info("Advanced Display Data Manager has been started.");
-						
+
 			while (running) {
 				while (!workerTasks.isEmpty()) {
-					try {	
-						workerTasks.poll().run();						
+					try {
+						workerTasks.poll().run();
 					} catch (Exception e) {
 						CreateRailwaysNavigator.LOGGER.error("Error while processing Advanced Display Data. " + e.getMessage(), e);
 					}
@@ -98,33 +93,11 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 			}
 
 			long dayTime = context.getTargetBlockEntity().getLevel().getDayTime();
-			boolean advancedDisplaySource = context.blockEntity().activeSource instanceof AdvancedDisplaySource;//nbt.contains(AdvancedDisplaySource.NBT_ADVANCED_DISPLAY);
+			boolean advancedDisplaySource = context.blockEntity().activeSource instanceof AdvancedDisplaySource;
 
 			queueAdvancedDisplayWorkerTask(() -> {
 				if (advancedDisplaySource) {
 					String filter = context.sourceConfig().getString("Filter");
-
-					/*
-					if (controller.getDisplayType().category().getSource() != EDisplayTypeDataSource.PLATFORM) {
-						if (!ModCommonConfig.AUTO_UPDATE_DISPLAY_TYPE.get()) return;
-						if (controller.getDisplayType().category() != EDisplayType.PLATFORM) {
-							AdvancedDisplaysRegistry.DisplayTypeResourceKey displayType;
-							if (filter.contains("*")) {
-								displayType = ModDisplayTypes.DEPARTURE_BOARD_TABLE;
-							} else if (controller.getDisplayProperties().singleLined()) {
-								displayType = ModDisplayTypes.PLATFORM_RUNNING_TEXT;
-							} else {
-								displayType = ModDisplayTypes.PLATFORM_TABLE;
-							}
-							ModCommonEvents.getCurrentServer().ifPresent(server -> server.executeIfPossible(() -> {
-								controller.applyToAll(x -> {
-									x.setDisplayType(displayType, null);
-									x.notifyUpdate();
-								});
-							}));
-						}
-					}
-					 */
 
 					List<BoardEntry> preds = prepare(filter, controller.getDisplayProperties().platformDisplayTrainsCount().apply(controller), controller);
 					controller.setData(
@@ -152,8 +125,6 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 
 					StaticTextDisplaySettings settings = controller.getSettingsAs(StaticTextDisplaySettings.class)
 							.orElse(new StaticTextDisplaySettings());
-					// Loop through the entire available space to make sure any stragglers are taken
-					// care of.
 					for (int i = 0; i < controller.getYSize() * 3 - line - 1; i++) {
 						final int componentIndex = i + line;
 						if (i == 0)
@@ -192,13 +163,6 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 		}
 	}
 
-	/**
-	 * The rows a platform display should show, straight from the backend.
-	 * <p>
-	 * Which calls belong on the board is decided by {@link ITrainStopTypeSetting#accepts} rather than
-	 * here, because the display re-checks the very same question as time moves on - a cancelled train
-	 * drops off the board without the server having to send anything.
-	 */
 	public static List<BoardEntry> prepare(String filter, int maxLines, AdvancedDisplayBlockEntity controller) {
 		ITrainStopTypeSetting.ETrainStopType type = controller.getSettingsAs(ITrainStopTypeSetting.class)
 				.map(ITrainStopTypeSetting::getTrainStopType)

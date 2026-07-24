@@ -14,10 +14,10 @@ import de.mrjulsen.crn.client.gui.Animator;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.widgets.skins.ModernScrollbarComponentRenderer;
-import de.mrjulsen.crn.data.UserSettings;
-import de.mrjulsen.crn.data.storage.RecentSearchQueries.RecentSearchQuery;
-import de.mrjulsen.crn.navigator.route.RouteJourney;
-import de.mrjulsen.crn.network.packets.pain.NavigatePacketData;
+import de.mrjulsen.crn.data.settings.UserSettings;
+import de.mrjulsen.crn.data.settings.RecentSearchQueries.RecentSearchQuery;
+import de.mrjulsen.crn.core.navigator.route.RouteJourney;
+import de.mrjulsen.crn.network.packets.NavigatePacketData;
 import de.mrjulsen.crn.registry.ModNetworkManager;
 import de.mrjulsen.mcdragonlib.client.gui.events.DLGuiStandardEvents;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLGuiComponent;
@@ -40,7 +40,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.MutableComponent;
 
 public class RouteViewer extends DLGuiComponent {
-    
+
     private final MutableComponent searchingText = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.searching");
     private final MutableComponent noConnectionsText = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.no_connections");
     private final MutableComponent notSearchedText = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.not_searched");
@@ -55,7 +55,7 @@ public class RouteViewer extends DLGuiComponent {
     private final DLScrollBar scrollbar;
     private UserSettings settings;
     private final Animator animator;
-    
+
     private int angle = 0;
 
     private double animPercentage = 0;
@@ -86,13 +86,13 @@ public class RouteViewer extends DLGuiComponent {
             contentPanel.setScrollOffsetY(e.value());
             return false;
         });
-        
+
         addEventListener(DLGuiStandardEvents.ScrollEvent.class, scrollbar::invokeEvent);
 
         DLContextMenu recetlySearchedMenu = new DLContextMenu((pX, pY) -> {
             List<DLContextMenu.ItemEntry> entries = new ArrayList<>();
             entries.add(new DLContextMenu.ItemEntry(TextUtils.text("Clear"), DLSprite.empty(), true, () -> {
-                
+
             }, null));
             return entries;
         });
@@ -100,11 +100,11 @@ public class RouteViewer extends DLGuiComponent {
         DLContextMenu routesViewMenu = new DLContextMenu((pX, pY) -> {
             List<DLContextMenu.ItemEntry> entries = new ArrayList<>();
             entries.add(new DLContextMenu.ItemEntry(TextUtils.text("Clear"), DLSprite.empty(), true, () -> {
-                
+
             }, null));
             entries.add(DLContextMenu.ItemEntry.SEPARATOR);
             entries.add(new DLContextMenu.ItemEntry(TextUtils.text("Refresh"), DLSprite.empty(), true, () -> {
-                
+
             }, null));
             return entries;
         });
@@ -112,7 +112,7 @@ public class RouteViewer extends DLGuiComponent {
         addEventListener(DLGuiStandardEvents.RightClickEvent.class, (src, event) -> {
             if (this.hasSearched) {
                 routesViewMenu.open(getWindowManager(), (int)getWindowManager().mouseXOnScreen(), (int)getWindowManager().mouseYOnScreen());
-            } else {                
+            } else {
                 recetlySearchedMenu.open(getWindowManager(), (int)getWindowManager().mouseXOnScreen(), (int)getWindowManager().mouseYOnScreen());
             }
             return false;
@@ -125,7 +125,7 @@ public class RouteViewer extends DLGuiComponent {
         contentPanel.clearComponents();
         this.animPercentage = 0;
         this.renderOffsetX = -50;
-        
+
         settings.clientSave(() -> {
             animator.start(10, (poseStack, current, total, percentage) -> {
                 this.animPercentage = Math.pow(1D - percentage, 4);
@@ -169,10 +169,6 @@ public class RouteViewer extends DLGuiComponent {
         super.close();
     }
 
-    /**
-     * The results keep following their trains for as long as they are listed, so a delay that turns
-     * up while the player is still deciding shows here as well as in the detail view.
-     */
     private void startTracking() {
         stopTracking();
         for (RouteJourney route : routes) {
@@ -208,7 +204,7 @@ public class RouteViewer extends DLGuiComponent {
         }
         scrollbar.max.set(contentHeight);
     }
-    
+
 
     public UserSettings getUserSettings() {
         return settings;
@@ -217,10 +213,10 @@ public class RouteViewer extends DLGuiComponent {
 
 
     @Override
-    public void renderMainLayer(DLGuiGraphics graphics, double mouseX, double mouseY, Rectangle renderBounds) {        
+    public void renderMainLayer(DLGuiGraphics graphics, double mouseX, double mouseY, Rectangle renderBounds) {
         graphics.poseStack().pushPose();
         graphics.poseStack().translate(renderOffsetX, 0, 0);
-        
+
         float frameTime = Minecraft.getInstance().getFrameTime();
         angle += 6 * frameTime;
         if (angle > 360) {
@@ -255,7 +251,7 @@ public class RouteViewer extends DLGuiComponent {
                 AllIcons.I_MTD_SCAN.render(graphics.graphics(), (int)(width() / 2 - 8 + offsetX), (int)(height() / 2 - 15 - graphics.defaultFont().lineHeight + offsetY));
             }
         }
-        
+
         if (!isLoading && scrollbar.canScroll() && scrollbar.value.get() > 0) {
             GuiUtils.fillGradient(graphics, 0, 0, width(), 10, DLColor.fromInt(0x77000000), DLColor.TRANSPARENT, EAlign.TOP);
         }
@@ -264,5 +260,5 @@ public class RouteViewer extends DLGuiComponent {
         }
         graphics.poseStack().popPose();
     }
-    
+
 }

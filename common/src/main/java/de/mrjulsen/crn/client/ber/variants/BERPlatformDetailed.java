@@ -12,8 +12,8 @@ import de.mrjulsen.crn.block.display.properties.PlatformDisplayTableSettings;
 import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.config.ModCommonConfig;
-import de.mrjulsen.crn.backend.api.BoardEntry;
-import de.mrjulsen.crn.backend.api.CallDirection;
+import de.mrjulsen.crn.api.core.BoardEntry;
+import de.mrjulsen.crn.api.core.CallDirection;
 import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.client.ber.BERGraphics;
 import de.mrjulsen.mcdragonlib.client.ber.BERLabel;
@@ -41,9 +41,9 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
     private boolean showInfoLine = false;
     private MutableComponent infoLineText = TextUtils.empty();
     private int maxLines = 0;
-    
+
     private final BERLabel timeLabel = new BERLabel();
-    private final BERLabel statusLabel = new BERLabel();    
+    private final BERLabel statusLabel = new BERLabel();
     private BERLabel[][] lines = new BERLabel[0][];
 
     public BERPlatformDetailed() {
@@ -51,7 +51,7 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
         timeLabel.horizontalAlign.set(ETextAlignment.CENTER);
         timeLabel.horizontalScale.set(Pair.of(0.4f, 0.4f));
         timeLabel.verticalScale.set(Pair.of(0.4f, 0.4f));
-        
+
         statusLabel.text.set(TextUtils.empty());
         statusLabel.horizontalAlign.set(ETextAlignment.CENTER);
         statusLabel.horizontalScale.set(Pair.of(0.4f, 0.4f));
@@ -68,7 +68,7 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
         timeLabel.text.set(blockEntity.getXSize() > 1
                 ? CustomLanguage.translate(keyTime, ModUtils.formatTime(ModUtils.getTransformedWorldTime(), false))
                 : TextUtils.text(ModUtils.formatTime(ModUtils.getTransformedWorldTime(), false))
-            ) 
+            )
         ;
 
         timeLabel.clippingArea.set(Rectangle.withSize(2, 2, blockEntity.getXSizeScaled() * 16 - 4, blockEntity.getYSizeScaled() * 16 - 4));
@@ -83,7 +83,7 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
             }
         }
     }
-    
+
     @Override
     public void render(BERGraphics<AdvancedDisplayBlockEntity> graphics, float pPartialTicks, AdvancedDisplayRenderInstance parent, int light, boolean backSide) {
         for (int i = 0; i < lines.length && i < maxLines; i++) {
@@ -96,7 +96,7 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
             }
         }
 
-        if (getDisplaySettings(graphics.blockEntity()).showTimeAndDate() && lines.length < maxLines) {            
+        if (getDisplaySettings(graphics.blockEntity()).showTimeAndDate() && lines.length < maxLines) {
             timeLabel.render(graphics);
         }
 
@@ -113,8 +113,6 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
 
         for (int i = 0; i < blockEntity.getStops().size(); i++) {
             BoardEntry data = blockEntity.getStops().get(i);
-            // The topmost train keeps its line even once its time has passed, so the board never goes
-            // blank while the one train it is about is still standing there.
             boolean shouldShow = i == 0 || data.realtime().arrival() < now + ModCommonConfig.DISPLAY_LEAD_TIME.get();
             if (shouldShow && ITrainStopTypeSetting.accepts(data, stopType, now)) {
                 preds.add(data);
@@ -139,12 +137,12 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
             : TextUtils.empty();
 
         int defaultMaxLines = blockEntity.getYSizeScaled() * 3 - 1;
-        this.maxLines = defaultMaxLines - (showInfoLine ? 1 : 0);        
+        this.maxLines = defaultMaxLines - (showInfoLine ? 1 : 0);
         int maxIndices = Math.max(0, Math.min(this.maxLines, preds.size()));
         if (reason == EUpdateReason.LAYOUT_CHANGED || this.lines == null || lines.length != maxIndices) {
             updateLayout(blockEntity, preds, maxIndices);
         }
-            
+
         for (int i = 0; i < this.lines.length; i++) {
             BoardEntry stop = preds.get(i);
             updateContent(blockEntity, stop, i);
@@ -155,7 +153,7 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
         statusLabel.preferredWidth.set((float)statusLabel.clippingArea.get().width() - 2);
         statusLabel.preferredHeight.set(Minecraft.getInstance().font.lineHeight * statusLabel.verticalMaxScale.get());
         statusLabel.horizontalScrollMode.set(EScrollMode.WHEN_NEEDED);
-        
+
         timeLabel.position.set(Point.of(3, 3 + (Math.min(lines.length, maxLines) - (lines.length < maxLines ? 0 : 1)) * LINE_HEIGHT));
     }
 
@@ -189,7 +187,7 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
 
         BERLabel realTimeComponent = components[LineComponent.REAL_TIME.i()];
         if (stop.isCancelled()) {
-            realTimeComponent.text.set(TextUtils.text(" \u274C ")); // X
+            realTimeComponent.text.set(TextUtils.text(" \u274C "));
         } else if (stop.isDelayed(direction)) {
             realTimeComponent.text.set(realTimeFormatted);
         } else {
@@ -250,14 +248,14 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
     private BERLabel[] createLine(AdvancedDisplayBlockEntity blockEntity, BoardEntry stop, int index) {
         BERLabel[] components = new BERLabel[LineComponent.values().length];
 
-        BERLabel timeComponent = components[LineComponent.TIME.i()] = new BERLabel();        
+        BERLabel timeComponent = components[LineComponent.TIME.i()] = new BERLabel();
         timeComponent.clippingArea.set(Rectangle.withSize(2, 2, blockEntity.getXSizeScaled() * 16 - 4, blockEntity.getYSizeScaled() * 16 - 4));
         timeComponent.verticalScale.set(Pair.of(0.4f, 0.4f));
         timeComponent.horizontalScale.set(Pair.of(0.2f, 0.4f));
         timeComponent.preferredWidth.set(12f);
         timeComponent.horizontalScrollMode.set(EScrollMode.WHEN_NEEDED);
         timeComponent.color.set(getDisplaySettings(blockEntity).getFontColor());
-        
+
         BERLabel realTimeComponent = components[LineComponent.REAL_TIME.i()] = new BERLabel();
         realTimeComponent.clippingArea.set(Rectangle.withSize(2, 2, blockEntity.getXSizeScaled() * 16 - 4, blockEntity.getYSizeScaled() * 16 - 4));
         realTimeComponent.verticalScale.set(Pair.of(0.4f, 0.4f));
@@ -267,7 +265,7 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
         realTimeComponent.backgroundColor.set(getDisplaySettings(blockEntity).getFontColor());
         realTimeComponent.color.set(DARK_FONT_COLOR);
         realTimeComponent.backgroundPadding.set(new PaddingF(0.5f));
-                
+
         BERLabel trainNameComponent = components[LineComponent.TRAIN_NAME.i()] = new BERLabel();
         trainNameComponent.clippingArea.set(Rectangle.withSize(2, 2, blockEntity.getXSizeScaled() * 16 - 4, blockEntity.getYSizeScaled() * 16 - 4));
         trainNameComponent.verticalScale.set(Pair.of(0.4f, 0.4f));
@@ -276,7 +274,7 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
         trainNameComponent.horizontalScrollMode.set(EScrollMode.WHEN_NEEDED);
         trainNameComponent.color.set(getDisplaySettings(blockEntity).getFontColor());
         trainNameComponent.backgroundPadding.set(new PaddingF(0.5f));
-        
+
         BERLabel platformComponent = components[LineComponent.PLATFORM.i()] = new BERLabel();
         platformComponent.clippingArea.set(Rectangle.withSize(2, 2, blockEntity.getXSizeScaled() * 16 - 4, blockEntity.getYSizeScaled() * 16 - 4));
         platformComponent.verticalScale.set(Pair.of(0.4f, 0.4f));
@@ -285,7 +283,7 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
         platformComponent.horizontalAlign.set(ETextAlignment.RIGHT);
         platformComponent.color.set(getDisplaySettings(blockEntity).getFontColor());
         platformComponent.backgroundPadding.set(new PaddingF(0.5f));
-        
+
         BERLabel destinationComponent = components[LineComponent.DESTINATION.i()] = new BERLabel();
         destinationComponent.clippingArea.set(Rectangle.withSize(2, 2, blockEntity.getXSizeScaled() * 16 - 4, blockEntity.getYSizeScaled() * 16 - 4));
         destinationComponent.verticalScale.set(Pair.of(0.4f, 0.4f));

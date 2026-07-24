@@ -31,7 +31,7 @@ import net.minecraft.world.item.DyeColor;
 public class ModUtils {
 
     private static final Cache<DLColor[]> dyeColorsCache = new Cache<>(() -> Arrays.stream(DyeColor.values()).map(x -> DLColor.fromInt(x == DyeColor.ORANGE ? 0xFFFF9900 : (0xFF << 24) | (x.getTextColor() & 0x00FFFFFF))).toArray(DLColor[]::new), ECachingPriority.LOW);
-    
+
     public static float clockHandDegrees(double value, double unitsPerRevolution) {
         double normalized = value % unitsPerRevolution;
         return (float) (normalized / unitsPerRevolution * 360.0);
@@ -43,7 +43,7 @@ public class ModUtils {
 
     public static MutableComponent calcSpeedString(double metersPerTick, ESpeedUnit unit) {
         return TextUtils.text((int) Math.abs(Math.round(calcSpeed(metersPerTick, unit))) + " " + unit.getUnit());
-    }    
+    }
 
     public static int calculateMedian(Queue<Integer> history, int smoothingThreshold, Predicate<Integer> filter) {
         if (history.isEmpty()) {
@@ -52,7 +52,7 @@ public class ModUtils {
 
         List<Integer> values = new LinkedList<>();
         for (int i : history) {
-            if (!filter.test(i)) 
+            if (!filter.test(i))
                 continue;
 
             values.add(i);
@@ -109,7 +109,7 @@ public class ModUtils {
         } while (exists.test(id));
         return id;
     }
-    
+
     public static DLColor[] getDyeColors() {
         return dyeColorsCache.get();
     }
@@ -383,12 +383,6 @@ public class ModUtils {
         return transformWorldTime(DragonLib.getCurrentWorldTime());
     }
 
-    /**
-     * Converts a raw world time (as returned by {@code DragonLib.getCurrentWorldTime()}) into the
-     * transformed tick scale used everywhere else. Because a time system may define a non-linear
-     * tick rate across the day, the conversion is only meaningful for absolute times - never
-     * convert a difference of two raw times with this.
-     */
     public static long transformWorldTime(long rawWorldTime) {
         return Math.round(DLTime.fromGameTicks(rawWorldTime, DLTime.defaultTimeSystem()).toTicks(VanillaTimeSystem.INSTANCE));
     }

@@ -7,12 +7,6 @@ import com.simibubi.create.content.trains.schedule.condition.TimeOfDayCondition;
 import de.mrjulsen.crn.api.IPredictableWaitCondition;
 import org.spongepowered.asm.mixin.Unique;
 
-/**
- * Predicts {@link TimeOfDayCondition} the same way Create's own {@code tickCompletion}/{@code
- * getWaitingStatus} compute it, so the backend's estimate can never drift from what actually
- * happens in-game. {@code getRotation()} is the "every X hours" recurrence (e.g. every 6h/2h/45m);
- * a plain once-a-day trigger is just a rotation of 24000 ticks.
- */
 @Mixin(TimeOfDayCondition.class)
 public abstract class TimeOfDayConditionMixin implements IPredictableWaitCondition {
 

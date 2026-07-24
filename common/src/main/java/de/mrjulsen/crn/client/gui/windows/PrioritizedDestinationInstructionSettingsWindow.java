@@ -75,7 +75,7 @@ public class PrioritizedDestinationInstructionSettingsWindow extends DLWindow {
     private static final int GUI_HEIGHT = 200;
 
     private Rectangle workingArea;
-    
+
     private DLScrollBar scrollBar;
     private ListBox list;
     private CreateButton backButton;
@@ -98,7 +98,7 @@ public class PrioritizedDestinationInstructionSettingsWindow extends DLWindow {
     private final MutableComponent txtAvoidSignalsDescription = TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule.instruction.prioritized_destination_instruction.settings.avoid_signals_description").withStyle(ChatFormatting.GRAY);
     private final MutableComponent txtAvoidTrainsTitle = TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule.instruction.prioritized_destination_instruction.settings.avoid_trains");
     private final MutableComponent txtAvoidTrainsDescription = TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule.instruction.prioritized_destination_instruction.settings.avoid_trains_description").withStyle(ChatFormatting.GRAY);
-    
+
     public PrioritizedDestinationInstructionSettingsWindow(DLWindowManager manager, PrioritizedDestinationInstruction instruction, CompoundTag nbt) {
         super(manager);
         setSize(GUI_WIDTH, GUI_HEIGHT);
@@ -122,12 +122,9 @@ public class PrioritizedDestinationInstructionSettingsWindow extends DLWindow {
 
         workingArea = Rectangle.withSize(3, headerSize.size() + 1, GUI_WIDTH - 6, GUI_HEIGHT - headerSize.size() - footerSize.size() - 2);
 
-        // Content
         scrollBar = new DLScrollBar((int)workingArea.right() - 5, (int)workingArea.y(), 5, (int)workingArea.height(), Orientation.VERTICAL);
         scrollBar.componentRenderer.set(ModernScrollbarComponentRenderer.INSTANCE);
         addComponent(scrollBar);
-
-        //listBox = addRenderableWidget(new DLNewListBox<>(this, workingArea.getX() + 33, workingArea.getY() + 40, 178, workingArea.getHeight() - 40, scrollBar));
 
         addTextBox = addComponent(new CreateTextBox((int)workingArea.x() + 63, (int)workingArea.y() + 9, 118));
         addTextBox.autocompleteManager.set(new StationsAutocomplete(List::of));
@@ -135,9 +132,8 @@ public class PrioritizedDestinationInstructionSettingsWindow extends DLWindow {
             addBtn.enabled.set(canAddMore() && e.text().getPlainText() != null && !e.text().getPlainText().isBlank());
             return false;
         });
-		//addTextBox.setFilter(s -> StringUtils.countMatches(s, '*') <= 3);
         addTextBox.tooltip.set(new DLTooltip(instruction.getSecondLineTooltip(0).stream().map(x -> (FormattedText)x).toList(), 200));
-        
+
         addBtn = addComponent(new CreateButton((int)workingArea.x() + 185, (int)workingArea.y() + 9, ModGuiIcons.ADD.getAsCreateIcon()));
         addBtn.enabled.set(false);
         addBtn.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
@@ -152,7 +148,7 @@ public class PrioritizedDestinationInstructionSettingsWindow extends DLWindow {
         addBtn.tooltip.set(new DLTooltip(List.of(), 200));
 
         list = addComponent(new ListBox(this, scrollBar, (int)workingArea.x() + 33, (int)workingArea.y() + 40, 178, (int)workingArea.height() - 40));
-        
+
         scrollBar.anchor.set2(EAlign.TOP, EAlign.BOTTOM, EAlign.RIGHT);
         scrollBar.scrollerSize.set(0);
         scrollBar.screenSize.set(list.height());
@@ -164,9 +160,8 @@ public class PrioritizedDestinationInstructionSettingsWindow extends DLWindow {
             return false;
         });
         addEventListener(DLGuiStandardEvents.ScrollEvent.class, scrollBar::invokeEvent);
-        
 
-        // Buttons
+
         avoidSignalsButton = addComponent(new CreateButton(7, GUI_HEIGHT - 6 - CreateButton.HEIGHT, GuiGameElement.of(AllBlocks.TRACK_SIGNAL.asStack())));
         avoidSignalsIndicator = addComponent(new CreateIndicator(avoidSignalsButton.x(), avoidSignalsButton.y() - 6));
         avoidSignalsIndicator.state.set(this.shouldAvoidSignals ? State.ON : State.OFF);
@@ -192,7 +187,7 @@ public class PrioritizedDestinationInstructionSettingsWindow extends DLWindow {
             getWindowManager().closeWindow(this);
             return false;
         });
-        
+
         CreateButton helpButton = addComponent(new CreateButton(GUI_WIDTH - 17 - DEFAULT_ICON_BUTTON_WIDTH * 2, GUI_HEIGHT - 6 - DEFAULT_ICON_BUTTON_HEIGHT, ModGuiIcons.HELP.getAsCreateIcon()));
         helpButton.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
             Util.getPlatform().openUri(Constants.HELP_PAGE_PRIORITIZED_DESTINATION_INSTRUCTION);
@@ -202,7 +197,7 @@ public class PrioritizedDestinationInstructionSettingsWindow extends DLWindow {
 
         reloadList();
     }
-    
+
 
     @Override
     public void close() {
@@ -233,7 +228,7 @@ public class PrioritizedDestinationInstructionSettingsWindow extends DLWindow {
         DLTextureSheet.DRAGONLIB_UI.getSprite("slot").render(graphics, (int)workingArea.x() + 41, (int)workingArea.y() + 9, 18, 18);
         GuiUtils.drawString(graphics, graphics.defaultFont(), (int)workingArea.x() + 63, (int)workingArea.y() + 28, String.format("%s / %s", stationFilters.size(), PrioritizedDestinationInstruction.MAX_ENTRIES), DragonLib.VANILLA_BUTTON_DISABLED_FONT_COLOR, ETextAlignment.LEFT, false);
         GuiUtils.drawString(graphics, graphics.defaultFont(), 6, 4, TITLE, DragonLib.VANILLA_UI_FONT_COLOR, ETextAlignment.LEFT, false);
-                
+
         RenderSystem.enableDepthTest();
         RenderSystem.depthMask(true);
         GuiGameElement.of(AllBlocks.TRACK_STATION.asStack()).at((int)workingArea.x() + 42, (int)workingArea.y() + 10).render(graphics.graphics());
@@ -278,7 +273,7 @@ public class PrioritizedDestinationInstructionSettingsWindow extends DLWindow {
                     draggedEntry = null;
                 }
                 return false;
-            });            
+            });
         }
 
         @Override
@@ -302,8 +297,8 @@ public class PrioritizedDestinationInstructionSettingsWindow extends DLWindow {
 
         public void reloadList() {
             clearComponents();
-            for (int i = 0; i < win.stationFilters.size(); i++) {                
-                addComponent(new Entry(this, i, 0, 0, width(), win.stationFilters.get(i), (a) -> {                    
+            for (int i = 0; i < win.stationFilters.size(); i++) {
+                addComponent(new Entry(this, i, 0, 0, width(), win.stationFilters.get(i), (a) -> {
                     win.stationFilters.remove(a.index);
                     reloadList();
                 }));
@@ -320,7 +315,7 @@ public class PrioritizedDestinationInstructionSettingsWindow extends DLWindow {
                 GuiUtils.drawBox(graphics, 0, (int)(index * Entry.HEIGHT - getScrollOffsetY()), width(), Entry.HEIGHT, DLColor.TRANSPARENT, DLColor.WHITE);
             }
         }
-        
+
 
         public void updateLayout(DLGuiComponent draggingComponent) {
             int y = 0;
@@ -338,7 +333,7 @@ public class PrioritizedDestinationInstructionSettingsWindow extends DLWindow {
                 i++;
             }
         }
-        
+
     }
 
 
@@ -350,7 +345,7 @@ public class PrioritizedDestinationInstructionSettingsWindow extends DLWindow {
 
 
     private static class Entry extends DLGuiComponent {
-        
+
         static final int HEIGHT = FlatIconButton.HEIGHT + 2;
 
         private final ListBox listBox;
@@ -385,7 +380,7 @@ public class PrioritizedDestinationInstructionSettingsWindow extends DLWindow {
                 this.mouseDownX = e.mouseX();
                 this.mouseDownY = e.mouseY();
                 return false;
-            });            
+            });
             addEventListener(DLGuiStandardEvents.DragEndEvent.class, (s, e) -> {
                 listBox.applyReorder();
                 return false;
@@ -412,13 +407,13 @@ public class PrioritizedDestinationInstructionSettingsWindow extends DLWindow {
 
         @Override
         public void renderFrontLayer(DLGuiGraphics graphics, double mouseX, double mouseY, Rectangle renderBounds) {
-            if (isDragged()) {                
+            if (isDragged()) {
                 RenderSystem.enableBlend();
                 graphics.poseStack().pushPose();
                 graphics.poseStack().translate(mouseX - mouseDownX, mouseY - mouseDownY - listBox.getScrollOffsetY(), 0);
                 CreateDynamicWidgets.renderShadow(graphics, -2, -2, width() + 4, height() + 4);
                 CreateDynamicWidgets.renderSingleShadeWidget(graphics, -2, -2, width() + 4, height() + 4, ColorShade.DARK);
-                
+
                 CreateDynamicWidgets.renderTextSlotOverlay(graphics, 30, 1, 118, HEIGHT - 2);
                 CreateDynamicWidgets.renderGrabber(graphics, 8, 2);
                 GuiUtils.drawString(graphics, graphics.defaultFont(), 30 + 5, 6, stationName, DragonLib.VANILLA_BUTTON_ACTIVE_FONT_COLOR, ETextAlignment.LEFT, false);
@@ -436,6 +431,6 @@ public class PrioritizedDestinationInstructionSettingsWindow extends DLWindow {
                 }
             }
         }
-        
+
     }
 }

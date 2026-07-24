@@ -5,9 +5,7 @@ import java.util.regex.Pattern;
 
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.util.INumberFormatAdapter;
-import de.mrjulsen.mcdragonlib.util.time.ConfiguredTimeSystem;
 import de.mrjulsen.mcdragonlib.util.time.DLTime;
-import de.mrjulsen.mcdragonlib.util.time.DLTimeUnit;
 import de.mrjulsen.mcdragonlib.util.time.TimeContext;
 import de.mrjulsen.mcdragonlib.util.time.format.TimeFormaturVerboseDuration;
 

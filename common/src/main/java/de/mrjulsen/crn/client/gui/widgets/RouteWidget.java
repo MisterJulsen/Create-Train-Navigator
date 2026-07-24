@@ -1,6 +1,5 @@
 package de.mrjulsen.crn.client.gui.widgets;
 
-import com.google.common.collect.ImmutableList;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 
 import de.mrjulsen.crn.Constants;
@@ -11,9 +10,9 @@ import de.mrjulsen.crn.client.gui.windows.RouteDetailsWindow;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.config.ModCommonConfig;
-import de.mrjulsen.crn.navigator.route.RouteCall;
-import de.mrjulsen.crn.navigator.route.RouteJourney;
-import de.mrjulsen.crn.navigator.route.RouteLeg;
+import de.mrjulsen.crn.core.navigator.route.RouteCall;
+import de.mrjulsen.crn.core.navigator.route.RouteJourney;
+import de.mrjulsen.crn.core.navigator.route.RouteLeg;
 import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.client.gui.events.DLGuiStandardEvents;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLButton;

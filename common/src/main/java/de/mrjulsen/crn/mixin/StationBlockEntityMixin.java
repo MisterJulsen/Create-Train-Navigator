@@ -9,10 +9,9 @@ import org.spongepowered.asm.mixin.Mixin;
 import com.simibubi.create.content.trains.station.StationBlockEntity;
 
 import de.mrjulsen.crn.CRNPlatformSpecific;
-import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
-import de.mrjulsen.crn.backend.history.DepartureStats;
-import de.mrjulsen.crn.network.packets.pain.GetStationDepartureHistoryPacketData;
+import de.mrjulsen.crn.core.history.DepartureStats;
+import de.mrjulsen.crn.network.packets.GetStationDepartureHistoryPacketData;
 import de.mrjulsen.crn.registry.ModNetworkManager;
 import de.mrjulsen.mcdragonlib.network.NetworkDirection;
 import de.mrjulsen.mcdragonlib.util.TextUtils;

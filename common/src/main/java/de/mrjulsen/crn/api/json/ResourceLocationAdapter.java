@@ -11,7 +11,6 @@ import com.google.gson.JsonSerializer;
 
 import net.minecraft.resources.ResourceLocation;
 
-/** Writes a resource location as its {@code namespace:path} string rather than as two fields. */
 final class ResourceLocationAdapter implements JsonSerializer<ResourceLocation>, JsonDeserializer<ResourceLocation> {
 
     @Override

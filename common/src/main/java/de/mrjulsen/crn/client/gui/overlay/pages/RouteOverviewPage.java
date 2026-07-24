@@ -9,9 +9,9 @@ import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.journey.JourneyTracker;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.config.ModCommonConfig;
-import de.mrjulsen.crn.navigator.route.RouteCall;
-import de.mrjulsen.crn.navigator.route.RouteLeg;
-import de.mrjulsen.crn.navigator.route.RouteTransfer;
+import de.mrjulsen.crn.core.navigator.route.RouteCall;
+import de.mrjulsen.crn.core.navigator.route.RouteLeg;
+import de.mrjulsen.crn.core.navigator.route.RouteTransfer;
 import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
 import de.mrjulsen.mcdragonlib.client.util.DLSprite;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
@@ -77,10 +77,6 @@ public class RouteOverviewPage extends AbstractRouteDetailsPage {
         }
     }
 
-    /**
-     * One station row. {@code boarding} switches the row from the arrival to the departure side,
-     * which decides both the time shown and which deviation it is measured against.
-     */
     public static void renderStation(DLGuiGraphics graphics, int y, int width, Font font, RouteCall call, RoutePathIcons icon, boolean boarding, boolean isMissed) {
         final int precision = ModCommonConfig.REALTIME_PRECISION_THRESHOLD.get();
 

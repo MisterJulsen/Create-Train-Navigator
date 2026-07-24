@@ -1,10 +1,12 @@
 package de.mrjulsen.crn.data;
 
+import de.mrjulsen.crn.data.settings.TagName;
+
 import java.util.Optional;
 
 import com.simibubi.create.content.trains.station.GlobalStation;
 
-import de.mrjulsen.crn.data.storage.GlobalSettings;
+import de.mrjulsen.crn.data.settings.GlobalSettings;
 import net.minecraft.nbt.CompoundTag;
 
 public class NearestTrackStationResult {

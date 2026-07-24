@@ -21,15 +21,14 @@ import de.mrjulsen.crn.client.gui.widgets.AbstractFlyoutWidget.FlyoutPointer;
 import de.mrjulsen.crn.client.gui.widgets.autocomplete.StationTagsAutocomplete;
 import de.mrjulsen.crn.client.gui.widgets.create.CreateButton;
 import de.mrjulsen.crn.client.gui.widgets.create.CreateTextBox;
-import de.mrjulsen.crn.data.UserSettings;
-import de.mrjulsen.crn.network.packets.pain.GetNearestStationPacketData;
-import de.mrjulsen.crn.network.packets.pain.GetUserSettingsPacketData;
+import de.mrjulsen.crn.data.settings.UserSettings;
+import de.mrjulsen.crn.network.packets.GetNearestStationPacketData;
+import de.mrjulsen.crn.network.packets.GetUserSettingsPacketData;
 import de.mrjulsen.crn.registry.ModNetworkManager;
 import de.mrjulsen.mcdragonlib.client.gui.events.DLGuiStandardEvents;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLWindowManager;
 import de.mrjulsen.mcdragonlib.client.render.DLTextureSheet;
 import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
-import de.mrjulsen.mcdragonlib.client.util.DLSprite;
 import de.mrjulsen.mcdragonlib.network.NetworkDirection;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.math.Rectangle;
@@ -39,7 +38,7 @@ import net.minecraft.resources.ResourceLocation;
 public class NavigatorWindow extends AbstractNavigatorScreen {
 
     private static final DLTextureSheet GUI_SHEET = new DLTextureSheet(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/gui.png"));
-    
+
     private UserSettings userSettings = new UserSettings(Minecraft.getInstance().player.getUUID(), false);
 
     private RouteViewer routeViewer;
@@ -50,7 +49,7 @@ public class NavigatorWindow extends AbstractNavigatorScreen {
 
         CreateTextBox fromBox = addComponent(new CreateTextBox(40, 20, 150));
         fromBox.autocompleteManager.set(new StationTagsAutocomplete());
-        
+
         CreateTextBox toBox = addComponent(new CreateTextBox(40, fromBox.y() + fromBox.height() + 4, 150));
         toBox.autocompleteManager.set(new StationTagsAutocomplete());
 
@@ -88,7 +87,7 @@ public class NavigatorWindow extends AbstractNavigatorScreen {
             return false;
         });
 
-        
+
         CreateButton globalSettingsButton = addComponent(new CreateButton(30, 223, ModGuiIcons.SETTINGS.getAsCreateIcon()));
         globalSettingsButton.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
             getWindowManager().createModal(mgr -> new GlobalSettingsWindow(mgr));
@@ -107,7 +106,6 @@ public class NavigatorWindow extends AbstractNavigatorScreen {
 
 
 
-        // Filter Options
         final int btnCount = 3;
         int btnWidth = (GUI_WIDTH - 6 - 16) / btnCount;
         addComponent(new SearchOptionButton(3, 54 + FooterSize.DEFAULT.size() - 2, btnWidth, 18, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.departure_in"), () -> userSettings.navigationDepartureInTicks.toString(), (b) -> {
@@ -123,7 +121,7 @@ public class NavigatorWindow extends AbstractNavigatorScreen {
         reloadUserSettings();
 
 
-    }    
+    }
 
     private void reloadUserSettings() {
         ModNetworkManager.GET_USER_SETTINGS.send(NetworkDirection.toServer(), new GetUserSettingsPacketData.Request(Minecraft.getInstance().player.getUUID()), (response) -> {
@@ -144,10 +142,10 @@ public class NavigatorWindow extends AbstractNavigatorScreen {
         y += 52 + 22 - 2;
         CreateDynamicWidgets.renderContainer(graphics, 1, y, GUI_WIDTH - 2, GUI_HEIGHT - y - FooterSize.SMALL.size() + 1, ContainerColor.GRAY);
         CreateDynamicWidgets.renderVerticalSeparator(graphics, GUI_WIDTH - 18 - 14, 218, 27, BarColor.GRAY);
-        
+
         CRNGui.GUI_SPRITES.getSprite("route_start").render(graphics, 16, 16, 7, 24);
         CRNGui.GUI_SPRITES.getSprite("route_end").render(graphics, 16, 16 + 24, 7, 24);
 
 
-    }    
+    }
 }

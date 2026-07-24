@@ -11,10 +11,6 @@ import com.google.gson.JsonSerializer;
 
 import de.mrjulsen.mcdragonlib.util.DLColor;
 
-/**
- * Writes a colour as an {@code #AARRGGBB} string, which is what a consumer rendering it wants -
- * rather than the four channel fields the class happens to hold.
- */
 final class DLColorAdapter implements JsonSerializer<DLColor>, JsonDeserializer<DLColor> {
 
     @Override

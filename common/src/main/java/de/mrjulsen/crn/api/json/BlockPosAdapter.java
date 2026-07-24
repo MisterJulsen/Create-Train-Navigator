@@ -11,7 +11,6 @@ import com.google.gson.JsonSerializer;
 
 import net.minecraft.core.BlockPos;
 
-/** Writes a position as {@code {x, y, z}}, which survives being read by something that is not Java. */
 final class BlockPosAdapter implements JsonSerializer<BlockPos>, JsonDeserializer<BlockPos> {
 
     @Override

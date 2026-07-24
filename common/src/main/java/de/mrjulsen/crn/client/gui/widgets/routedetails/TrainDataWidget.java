@@ -3,7 +3,7 @@ package de.mrjulsen.crn.client.gui.widgets.routedetails;
 import com.simibubi.create.content.trains.entity.TrainIconType;
 
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
-import de.mrjulsen.crn.navigator.route.RouteLeg;
+import de.mrjulsen.crn.core.navigator.route.RouteLeg;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLGuiComponent;
 import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
@@ -14,16 +14,15 @@ import de.mrjulsen.mcdragonlib.util.math.Rectangle;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 
-/** Widget showing details about the train */
 public class TrainDataWidget extends DLGuiComponent {
-    
+
     private final RouteLeg part;
 
     public TrainDataWidget(RouteLeg part) {
         super(0, 0, 100, 26);
         this.part = part;
     }
-    
+
     @Override
     public void renderMainLayer(DLGuiGraphics graphics, double mouseX, double mouseY, Rectangle renderBounds) {
         final float scale = 0.75f;

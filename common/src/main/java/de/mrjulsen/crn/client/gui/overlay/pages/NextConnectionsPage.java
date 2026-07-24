@@ -3,11 +3,11 @@ package de.mrjulsen.crn.client.gui.overlay.pages;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.mrjulsen.crn.backend.api.BoardEntry;
+import de.mrjulsen.crn.api.core.BoardEntry;
 import de.mrjulsen.crn.client.journey.JourneyTracker;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
-import de.mrjulsen.crn.navigator.route.RouteCall;
-import de.mrjulsen.crn.network.packets.pain.GetStationBoardPacketData;
+import de.mrjulsen.crn.core.navigator.route.RouteCall;
+import de.mrjulsen.crn.network.packets.GetStationBoardPacketData;
 import de.mrjulsen.crn.registry.ModNetworkManager;
 import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;

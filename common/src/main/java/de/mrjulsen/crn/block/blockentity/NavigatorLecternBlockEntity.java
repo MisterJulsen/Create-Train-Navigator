@@ -82,8 +82,7 @@ public class NavigatorLecternBlockEntity extends SmartBlockEntity {
     }
 
     public static boolean playerInRange(Player player, Level world, BlockPos pos) {
-        //double modifier = world.isRemote ? 0 : 1.0;
-        double reach = 5;// + modifier;
+        double reach = 5;
         return player.distanceToSqr(Vec3.atCenterOf(pos)) < reach * reach;
     }
 

@@ -50,7 +50,7 @@ public final class AdvancedDisplaysRegistry {
         public static DisplayTypeResourceKey legacy_fromNbt(CompoundTag nbt) {
             return new DisplayTypeResourceKey(EDisplayType.getTypeById(nbt.getByte(LEGACY_NBT_CATEGORY)), new ResourceLocation(nbt.getString(LEGACY_NBT_ID)).getPath());
         }
-        
+
         public static DisplayTypeResourceKey fromNbt(CompoundTag nbt) {
             String id = nbt.getString(NBT_ID);
             String[] data = new ResourceLocation(id).getPath().split("/");
@@ -67,36 +67,16 @@ public final class AdvancedDisplaysRegistry {
         }
     }
 
-    /**
-     * Contains all information about the registered display.
-     */
     protected static record DisplayRegistrationData<S extends IDisplaySettings, R extends AbstractAdvancedDisplayRenderer<S>>(Supplier<S> customizationSettings, Supplier<R> renderer, DisplayProperties properties) {}
-    
-    /**
-     * Constant, server-side properties that define the display in more detail.
-     * @param singleLined Whether the display can be connected vertically or not.
-     * @param platformDisplayTrainsCount For Platform Displays only! Specifies how many trains can be shown on the display, depending on the properties of the display. If used correctly, this reduces network traffic, as data about trains that do not fit on the display are not transferred from the server.
-     */
+
     public static record DisplayProperties(boolean singleLined, @Nullable Function<AdvancedDisplayBlockEntity, Integer> platformDisplayTrainsCount) {}
 
-    //private static final Map<EDisplayType, Map<ResourceLocation, Pair<Supplier<AbstractAdvancedDisplayRenderer<?>>, DisplayProperties>>> displayTypes = new HashMap<>();
     private static final Map<EDisplayType, Map<String, DisplayRegistrationData<?, ?>>> newDisplayTypes = new HashMap<>();
 
-    /**
-     * Registers a new display type that can then be used in CRN.
-     * @param <S> The display settings type used by the renderer.
-     * @param <R> The type of the display renderer.
-     * @param category The display category to which the type should be assigned.
-     * @param name The name of the display type. Must be unique in each category!
-     * @param settings A class containing all customization options for this specific display type.
-     * @param renderer The reference of the renderer class that renders the contents of the display.
-     * @param properties Additional constant properties of the display type.
-     * @return The key of the registered display type.
-     */
     public static <S extends IDisplaySettings, R extends AbstractAdvancedDisplayRenderer<S>> DisplayTypeResourceKey register(EDisplayType category, String name, Supplier<S> settings, Supplier<R> renderer, DisplayProperties properties) {
         DisplayTypeResourceKey key = new DisplayTypeResourceKey(category, name);
         Map<String, DisplayRegistrationData<?, ?>> reg = newDisplayTypes.computeIfAbsent(category, x -> new HashMap<>());
-        
+
         if (reg.containsKey(name)) {
             throw new IllegalArgumentException("A display type with the id '" + key + "' is already registered!");
         }
@@ -114,7 +94,7 @@ public final class AdvancedDisplaysRegistry {
         }
         return newDisplayTypes.get(key.category()).get(key.name()).renderer().get();
     }
-    
+
     public static IDisplaySettings createSettings(DisplayTypeResourceKey key) {
         if (!isRegietered(key)) {
             return new BasicDisplaySettings();

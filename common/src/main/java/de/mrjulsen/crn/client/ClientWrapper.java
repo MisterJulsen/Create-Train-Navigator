@@ -3,12 +3,10 @@ package de.mrjulsen.crn.client;
 import java.util.List;
 import com.simibubi.create.foundation.utility.CreateLang;
 import de.mrjulsen.crn.client.gui.windows.*;
-import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLScreen;
 import net.createmod.catnip.data.Pair;
 import net.minecraft.core.SectionPos;
 import org.joml.Vector3f;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
@@ -32,7 +30,7 @@ import de.mrjulsen.crn.data.schedule.instruction.TravelSectionInstruction;
 import de.mrjulsen.crn.item.NavigatorItem;
 import de.mrjulsen.crn.mixin.ModularGuiLineBuilderAccessor;
 import de.mrjulsen.crn.mixin.ScheduleScreenAccessor;
-import de.mrjulsen.crn.network.packets.stc.ServerErrorPacketData;
+import de.mrjulsen.crn.network.packets.ServerErrorPacketData;
 import de.mrjulsen.crn.util.Owner;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLWindow;
 import de.mrjulsen.mcdragonlib.client.util.DLGraphics;
@@ -65,12 +63,12 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 public class ClientWrapper {
-    
+
     public static final ModelResourceLocation NAVIGATOR_WORLD_MODEL = new ModelResourceLocation(CreateRailwaysNavigator.MOD_ID, "navigator_world", "inventory");
-    
+
     private static CustomLanguage currentLanguage;
     private static Language currentClientLanguage;
-    
+
     public static void showNavigatorGui() {
         Screens.showNavigatorScreen(null, false);
     }
@@ -86,10 +84,10 @@ public class ClientWrapper {
         return Minecraft.getInstance().level;
     }
 
-    public static void handleErrorMessagePacket(ServerErrorPacketData packet, NetworkPacketContext ctx) {        
-        Minecraft.getInstance().getToasts().addToast(new SystemToast(SystemToastIds.PERIODIC_NOTIFICATION, Constants.TEXT_SERVER_ERROR, TextUtils.text(packet.message)));   
+    public static void handleErrorMessagePacket(ServerErrorPacketData packet, NetworkPacketContext ctx) {
+        Minecraft.getInstance().getToasts().addToast(new SystemToast(SystemToastIds.PERIODIC_NOTIFICATION, Constants.TEXT_SERVER_ERROR, TextUtils.text(packet.message)));
     }
-    
+
     public static void showAdvancedDisplaySettingsScreen(AdvancedDisplayBlockEntity blockEntity, AbstractContraptionEntity contraption) {
         DLWindow.openWindow(mgr -> new AdvancedDisplaySettingsWindow(mgr, blockEntity, contraption));
     }
@@ -117,7 +115,7 @@ public class ClientWrapper {
         return currentClientLanguage == null ? Language.getInstance() : currentClientLanguage;
     }
 
-    
+
     public static void sendCRNNotification(Component title, Component description) {
         if (ModClientConfig.ROUTE_NOTIFICATIONS.get()) {
             Minecraft.getInstance().getToasts().addToast(NavigatorToast.multiline(title, description));
@@ -135,17 +133,11 @@ public class ClientWrapper {
         return lines * font.lineHeight;
     }
 
-    public static void showTrainDebugScreen() {
-        RenderSystem.recordRenderCall(() -> {
-            DLWindow.openWindow(TrainStatsWindow::new);
-        });
-    }
-
     public static void initPrioritizedDestinationInstruction(PrioritizedDestinationInstruction instruction, ModularGuiLineBuilder builder) {
-        
+
         ModularGuiLineBuilderAccessor accessor = (ModularGuiLineBuilderAccessor)builder;
 
-        ResizableButton btn = new ResizableButton(accessor.crn$getX(), accessor.crn$getY() - 4, 121, 16, TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule.instruction.configure"), 
+        ResizableButton btn = new ResizableButton(accessor.crn$getX(), accessor.crn$getY() - 4, 121, 16, TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule.instruction.configure"),
         (b) -> {
             if (Minecraft.getInstance().screen instanceof ScheduleScreen scheduleScreen) {
                 ((ScheduleScreenAccessor)scheduleScreen).crn$getOnEditorClose().accept(true);
@@ -153,23 +145,14 @@ public class ClientWrapper {
                 DLWindow.openWindow(mgr -> new PrioritizedDestinationInstructionSettingsWindow(mgr, instruction, instruction.getData()));
             }
         }) {
-            /*
-            @Override
-            public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-                Graphics graphics = new Graphics(guiGraphics, guiGraphics.pose());
-				DynamicGuiRenderer.renderArea(graphics, getX(), getY(), width, height, AreaStyle.GRAY, isActive() ? (isFocused() || isMouseOver(mouseX, mouseY) ? ButtonState.SELECTED : ButtonState.BUTTON) : ButtonState.DISABLED);
-                int j = isActive() ? DragonLib.NATIVE_BUTTON_FONT_COLOR_ACTIVE : DragonLib.NATIVE_BUTTON_FONT_COLOR_DISABLED;
-                GuiUtils.drawString(graphics, Minecraft.getInstance().font, getX() + width / 2, getY() + (height - 8) / 2, this.getMessage(), j, ETextAlignment.CENTER, true);
-            }
-                */
         };
 		accessor.crn$getTarget().add(Pair.of(btn, "config_btn"));
     }
 
     public static void initScheduleSectionInstruction(TravelSectionInstruction instruction, ModularGuiLineBuilder builder) {
-        
+
         ModularGuiLineBuilderAccessor accessor = (ModularGuiLineBuilderAccessor)builder;
-        ResizableButton btn = new ResizableButton(accessor.crn$getX(), accessor.crn$getY() - 4, 121, 16, TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule.instruction.configure"), 
+        ResizableButton btn = new ResizableButton(accessor.crn$getX(), accessor.crn$getY() - 4, 121, 16, TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule.instruction.configure"),
         (b) -> {
             if (Minecraft.getInstance().screen instanceof ScheduleScreen scheduleScreen) {
                 ((ScheduleScreenAccessor)scheduleScreen).crn$getOnEditorClose().accept(true);
@@ -181,25 +164,10 @@ public class ClientWrapper {
     }
 
     public static void initResetTimingsInstruction(ResetTimingsInstruction instruction, ModularGuiLineBuilder builder) {
-        /*
-        ModularGuiLineBuilderAccessor accessor = (ModularGuiLineBuilderAccessor)builder;
-        ResizableButton btn = new ResizableButton(accessor.crn$getX(), accessor.crn$getY() - 4, 16, 16, TextUtils.empty(), 
-        (b) -> {
-			Util.getPlatform().openUri(Constants.HELP_PAGE_SCHEDULED_TIMES_AND_REAL_TIME);
-        }) {
-			@Override
-            public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-                Graphics graphics = new Graphics(guiGraphics, guiGraphics.pose());
-				DynamicGuiRenderer.renderArea(graphics, getX(), getY(), width, height, AreaStyle.GRAY, isActive() ? (isFocused() || isMouseOver(mouseX, mouseY) ? ButtonState.SELECTED : ButtonState.BUTTON) : ButtonState.DISABLED);
-				ModGuiIcons.HELP.render(graphics, getX(), getY());
-            }
-        };
-		accessor.crn$getTarget().add(Pair.of(btn, "help_btn"));
-        */
     }
 
     public static void initDynamicDelayCondition(DynamicDelayCondition condition, ModularGuiLineBuilder builder) {
-        
+
         builder.addScrollInput(0, 26, (i, l) -> {
 			i.titled(TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule.condition." + condition.getId().getPath() + ".min_duration"))
 				.withShiftStep(15)
@@ -221,29 +189,15 @@ public class ClientWrapper {
 				.titled(CreateLang.translateDirect("generic.timeUnit"));
 		}, "TimeUnit");
 
-		
+
         ModularGuiLineBuilderAccessor accessor = (ModularGuiLineBuilderAccessor)builder;
-        /*
-        ResizableButton btn = new ResizableButton(accessor.crn$getX() + 110, accessor.crn$getY() - 4, 16, 16, TextUtils.empty(), 
-        (b) -> {
-			Util.getPlatform().openUri(Constants.HELP_PAGE_DYNAMIC_DELAYS);
-        }) {
-			@Override
-            public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-                Graphics graphics = new Graphics(guiGraphics, guiGraphics.pose());
-				DynamicGuiRenderer.renderArea(graphics, getX(), getY(), width, height, AreaStyle.GRAY, isActive() ? (isFocused() || isMouseOver(mouseX, mouseY) ? ButtonState.SELECTED : ButtonState.BUTTON) : ButtonState.DISABLED);
-				ModGuiIcons.HELP.render(graphics, getX(), getY());
-            }
-        };
-		accessor.crn$getTarget().add(Pair.of(btn, "help_btn"));
-        */
     }
 
     @SuppressWarnings("resource")
     public static void initTimingAdjustmentGui(TrainSeparationCondition condition, ModularGuiLineBuilder builder) {
 
         ModularGuiLineBuilderAccessor accessor = (ModularGuiLineBuilderAccessor)builder;
-        ResizableButton btn = new ResizableButton(accessor.crn$getX(), accessor.crn$getY() - 4, 121, 16, TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule.instruction.configure"), 
+        ResizableButton btn = new ResizableButton(accessor.crn$getX(), accessor.crn$getY() - 4, 121, 16, TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule.instruction.configure"),
         (b) -> {
             if (Minecraft.getInstance().screen instanceof ScheduleScreen scheduleScreen) {
                 ((ScheduleScreenAccessor)scheduleScreen).crn$getOnEditorClose().accept(true);
@@ -258,7 +212,7 @@ public class ClientWrapper {
         if (context != ItemDisplayContext.FIRST_PERSON_LEFT_HAND && context != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND && context != ItemDisplayContext.FIXED) {
             return;
         }
-        
+
 
         int backgroundId = itemStack.getOrCreateTag().getInt(NavigatorItem.NBT_BACKGROUND_ID);
         DLTime time = new DLTime(Minecraft.getInstance().level, DLTime.defaultTimeSystem());
@@ -267,14 +221,14 @@ public class ClientWrapper {
         poseStack.mulPose(Axis.XP.rotationDegrees(90F));
         poseStack.translate(4, 2, -1.26f);
         RenderUtils.renderTexture(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, String.format("textures/item/navigator_backgrounds/%s.png", backgroundId)), graphics, new Vector3f(0), 8, 12, 0, 0, 1F / 12F * 8, 1F, Direction.UP, DLColor.WHITE, LightTexture.FULL_BRIGHT, false);
-        
+
         poseStack.translate(0, 0, -0.01f);
         poseStack.pushPose();
         poseStack.translate(4, 0.8f, 0);
         poseStack.scale(0.075f, 0.075f, 0.075f);
         RenderUtils.drawString(graphics, font, 0, 0, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".journey_info.date", (long)time.toGameDays(DLTime.defaultTimeSystem())), DLColor.WHITE, ETextAlignment.CENTER, false, LightTexture.FULL_BRIGHT);
         poseStack.popPose();
-        
+
         poseStack.pushPose();
         poseStack.translate(4, 2, 0);
         poseStack.scale(0.2f, 0.2f, 0.2f);

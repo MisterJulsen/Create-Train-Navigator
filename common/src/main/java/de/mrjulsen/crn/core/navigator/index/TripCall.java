@@ -1,0 +1,18 @@
+package de.mrjulsen.crn.core.navigator.index;
+
+import de.mrjulsen.crn.api.core.StationRef;
+import de.mrjulsen.crn.core.timing.StopTimes;
+
+public record TripCall(int node, StationRef station, StationRef scheduledStation, int entryIndex, int stopIndex,
+                       StopTimes scheduled, long arrival, long departure, int visits, TripSection section,
+                       String title) {
+
+    public boolean startsNewLap(TripCall previous) {
+        return previous != null && stopIndex <= previous.stopIndex();
+    }
+
+    public TripCall shifted(long ticks) {
+        return new TripCall(node, station, scheduledStation, entryIndex, stopIndex, scheduled.shifted(ticks),
+            arrival + ticks, departure + ticks, visits, section, title);
+    }
+}

@@ -1,6 +1,6 @@
 package de.mrjulsen.crn.client.gui.widgets.routedetails;
 
-import de.mrjulsen.crn.backend.delay.DelayInstance;
+import de.mrjulsen.crn.core.delay.DelayInstance;
 import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.mcdragonlib.client.gui.events.DLGuiStandardEvents;
@@ -13,11 +13,6 @@ import de.mrjulsen.mcdragonlib.util.math.Rectangle;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 
-/**
- * Widget showing one reason a train is delayed or out of service, named and nothing more. What is
- * specific to the occurrence - the train in the way, the blocked platform - is deliberately left out
- * and stays available on the {@link DelayInstance} for a view that wants to spell it out.
- */
 public class TrainStatusInfoWidget extends DLGuiComponent {
 
     private static final int MIN_HEIGHT = 9;

@@ -12,23 +12,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 
 /**
- * Turns the backend and navigator API records into JSON, for consumers outside the game - a REST
- * API, a log, an export.
+ * Converts API snapshots to and from JSON, for interfaces that carry data out of the game.
  * <p>
- * The records are read by reflection, so a record is serializable by virtue of being a record and
- * nothing has to be registered here. Only types Gson cannot describe on its own get an adapter
- * below: the Minecraft and DragonLib value types that would otherwise be written as their internal
- * fields.
- *
- * <h2>What the JSON contains</h2>
- * Exactly the record components, and only those. Derived values - how late a train is, how long a
- * journey takes, what to display as its name - are methods rather than fields and do not appear.
- * A consumer computes them from the raw times the same way the game does.
- *
- * <h2>Field names</h2>
- * Component names are converted to {@code snake_case}, so {@code arrivalDeviation} is written as
- * {@code arrival_deviation}. The names therefore follow the Java component names: renaming a record
- * component changes the JSON and breaks consumers relying on the old name.
+ * Field names become snake_case, nulls are written out rather than omitted, and Minecraft types
+ * that Gson cannot handle on its own are supported: a resource location becomes its string form, a
+ * colour an {@code #AARRGGBB} string, and a block position an object with {@code x}, {@code y} and
+ * {@code z}.
  */
 public final class CrnJson {
 
@@ -37,7 +26,10 @@ public final class CrnJson {
 
     private CrnJson() {}
 
-    /** A Gson configured for the API records, for callers needing their own instance. */
+    /**
+     * A builder configured as described above, for callers needing their own settings or further
+     * type adapters. Each call returns a new builder.
+     */
     public static GsonBuilder builder() {
         return new GsonBuilder()
             .setFieldNamingStrategy(SNAKE_CASE)
@@ -47,30 +39,23 @@ public final class CrnJson {
             .registerTypeAdapter(BlockPos.class, new BlockPosAdapter());
     }
 
-    /** The given API object as compact JSON. */
     public static String toJson(Object value) {
         return GSON.toJson(value);
     }
 
-    /** The given API object as indented JSON, for logs and manual inspection. */
+    /** The same as {@link #toJson(Object)}, but indented for reading. */
     public static String toPrettyJson(Object value) {
         return PRETTY.toJson(value);
     }
 
-    /** The given API object as a JSON tree, for embedding into a larger response. */
     public static JsonElement toJsonTree(Object value) {
         return GSON.toJsonTree(value);
     }
 
-    /** Reads an API object of the given type back from JSON. */
     public static <T> T fromJson(String json, Class<T> type) {
         return GSON.fromJson(json, type);
     }
 
-    /**
-     * Converts {@code camelCase} component names to {@code snake_case}. Gson's built-in policy of
-     * the same name is not used, so the exact spelling stays under this class's control.
-     */
     private static final FieldNamingStrategy SNAKE_CASE = new FieldNamingStrategy() {
         @Override
         public String translateName(Field field) {

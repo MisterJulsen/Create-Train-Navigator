@@ -47,15 +47,14 @@ public abstract class AbstractNavigatorScreen extends DLWindow {
         });
 
         addEventListener(DLGuiStandardEvents.ScreenLayoutUpdatedEvent.class, (s, e) -> {
-            //setPosition(getWindowManager().getScreenWidth() / 2 - width() / 2, getWindowManager().getScreenHeight() / 2 - height() / 2);
             return false;
         });
 
     }
-    
+
     @Override
     public void renderMainLayer(DLGuiGraphics graphics, double mouseX, double mouseY, Rectangle renderBounds) {
-        CreateDynamicWidgets.renderWindow(graphics, 0, 0, GUI_WIDTH, GUI_HEIGHT, containerColor, primaryColoring, FooterSize.DEFAULT.size(), FooterSize.SMALL.size(), true);        
+        CreateDynamicWidgets.renderWindow(graphics, 0, 0, GUI_WIDTH, GUI_HEIGHT, containerColor, primaryColoring, FooterSize.DEFAULT.size(), FooterSize.SMALL.size(), true);
         GuiUtils.drawString(graphics, graphics.defaultFont(), 6, 4, title, DLColor.fromInt(0xFF4F4F4F), ETextAlignment.LEFT, false);
         String timeString = new DLTime(Minecraft.getInstance().level, DLTime.defaultTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem());
         GuiUtils.drawString(graphics, graphics.defaultFont(), GUI_WIDTH - 6, 4, TextUtils.text(timeString), DLColor.fromInt(0xFF4F4F4F), ETextAlignment.RIGHT, false);

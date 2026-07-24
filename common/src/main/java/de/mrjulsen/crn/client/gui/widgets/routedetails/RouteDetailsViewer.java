@@ -7,9 +7,9 @@ import java.util.function.Predicate;
 
 import de.mrjulsen.crn.client.journey.JourneyTracker;
 import de.mrjulsen.crn.client.gui.widgets.skins.ModernScrollbarComponentRenderer;
-import de.mrjulsen.crn.navigator.route.RouteJourney;
-import de.mrjulsen.crn.navigator.route.RouteLeg;
-import de.mrjulsen.crn.navigator.route.RouteTransfer;
+import de.mrjulsen.crn.core.navigator.route.RouteJourney;
+import de.mrjulsen.crn.core.navigator.route.RouteLeg;
+import de.mrjulsen.crn.core.navigator.route.RouteTransfer;
 import de.mrjulsen.mcdragonlib.client.gui.events.DLGuiStandardEvents;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLGuiComponent;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLPanel;

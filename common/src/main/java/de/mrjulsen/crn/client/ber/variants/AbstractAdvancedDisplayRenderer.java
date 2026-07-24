@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
-import de.mrjulsen.crn.backend.api.BoardEntry;
-import de.mrjulsen.crn.backend.api.CallDirection;
-import de.mrjulsen.crn.backend.delay.DelayInstance;
+import de.mrjulsen.crn.api.core.BoardEntry;
+import de.mrjulsen.crn.api.core.CallDirection;
+import de.mrjulsen.crn.core.delay.DelayInstance;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.block.display.properties.IDisplaySettings;
 import de.mrjulsen.crn.block.display.properties.components.ITimeDisplaySetting;
@@ -35,18 +35,6 @@ public interface AbstractAdvancedDisplayRenderer<T extends IDisplaySettings> ext
         }
     }
 
-    /**
-     * Everything worth announcing about one call, in the order a traveller wants to hear it: that the
-     * train is not running at all, that it ends here, how late it is, that it is going somewhere else,
-     * and why.
-     * <p>
-     * Returned rather than rendered, so whether an info line appears at all follows from there being
-     * something to say - a condition kept apart from the announcements themselves is a condition that
-     * drifts out of step with them, which is how a delay without a known reason used to go unmentioned.
-     *
-     * @param direction Which half of the call is being shown, since an arrival is late by its arrival
-     *                  and a departure by its departure.
-     */
     default List<Component> announcements(AdvancedDisplayBlockEntity blockEntity, BoardEntry entry, CallDirection direction) {
         List<Component> content = new ArrayList<>();
         if (entry.isCancelled()) {
@@ -72,8 +60,6 @@ public interface AbstractAdvancedDisplayRenderer<T extends IDisplaySettings> ext
             content.add(delayComponent);
         }
 
-        // Only worth saying where the display cannot show it anyway: one that speaks for the platform
-        // the train has moved to has nothing to announce.
         if (entry.isDiverted() && !blockEntity.isAllowedOnDisplay(entry.station())) {
             content.add(entry.hasChangedTag()
                 ? CustomLanguage.translate(key("platform_and_station_changed"), entry.station().displayName(), entry.station().platform())

@@ -11,13 +11,9 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 import com.simibubi.create.content.trains.schedule.DestinationSuggestions;
 import com.simibubi.create.content.trains.schedule.IScheduleInput;
 import com.simibubi.create.content.trains.schedule.ScheduleScreen;
-//import com.simibubi.create.foundation.gui.ModularGuiLine;
 
 @Mixin(ScheduleScreen.class)
 public interface ScheduleScreenAccessor {
-
-    //@Accessor("editorSubWidgets")
-    //ModularGuiLine crn$getEditorSubWidgets();
 
     @Accessor("destinationSuggestions")
     DestinationSuggestions crn$getDestinationSuggestions();
@@ -28,7 +24,7 @@ public interface ScheduleScreenAccessor {
     @Accessor("onEditorClose")
     Consumer<Boolean> crn$getOnEditorClose();
 
- 
+
     @Invoker("onDestinationEdited")
     void crn$onDestinationEdited(String text);
 

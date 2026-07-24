@@ -12,10 +12,10 @@ import com.simibubi.create.foundation.gui.ModularGuiLineBuilder;
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.ClientWrapper;
-import de.mrjulsen.crn.data.TrainCategory;
-import de.mrjulsen.crn.data.TrainLine;
-import de.mrjulsen.crn.network.packets.pain.GetTrainCategoryPacketData;
-import de.mrjulsen.crn.network.packets.pain.GetTrainLinePacketData;
+import de.mrjulsen.crn.data.settings.TrainCategory;
+import de.mrjulsen.crn.data.settings.TrainLine;
+import de.mrjulsen.crn.network.packets.GetTrainCategoryPacketData;
+import de.mrjulsen.crn.network.packets.GetTrainLinePacketData;
 import de.mrjulsen.crn.registry.ModBlocks;
 import de.mrjulsen.crn.registry.ModNetworkManager;
 import de.mrjulsen.mcdragonlib.network.NetworkDirection;
@@ -32,7 +32,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 public class TravelSectionInstruction extends ScheduleInstruction {
-    
+
     @Deprecated
     public static final String LEGACY_NBT_TRAIN_CATEGORY = "TrainGroup";
 
@@ -54,7 +54,7 @@ public class TravelSectionInstruction extends ScheduleInstruction {
 
     @Override
     protected void readAdditional(CompoundTag tag) {
-        super.readAdditional(tag);        
+        super.readAdditional(tag);
         if (!tag.contains(NBT_INCLUDE_PREVIOUS_STATION)) tag.putBoolean(NBT_INCLUDE_PREVIOUS_STATION, false);
         if (!tag.contains(NBT_USABLE)) tag.putBoolean(NBT_USABLE, true);
     }
@@ -85,7 +85,7 @@ public class TravelSectionInstruction extends ScheduleInstruction {
         this.lastCategoryId = null;
         this.category = null;
         if (categoryId == null) return;
-        
+
         ModNetworkManager.GET_TRAIN_CATEGORY.send(NetworkDirection.toServer(), new GetTrainCategoryPacketData.Request(categoryId), (response) -> {
             this.lastCategoryId = categoryId;
             this.category = response.getCategory().orElse(null);
@@ -96,7 +96,7 @@ public class TravelSectionInstruction extends ScheduleInstruction {
         this.lastLineId = null;
         this.line = null;
         if (lineId == null) return;
-        
+
         ModNetworkManager.GET_TRAIN_LINE.send(NetworkDirection.toServer(), new GetTrainLinePacketData.Request(lineId), (response) -> {
             this.lastLineId = lineId;
             this.line = response.getLine().orElse(null);
@@ -147,13 +147,11 @@ public class TravelSectionInstruction extends ScheduleInstruction {
         return lines;
 	}
 
-    /** HERE BE DRAGONS! This code is very illegal, but it works... */
 	@Override
-	public void initConfigurationWidgets(ModularGuiLineBuilder builder) {   
+	public void initConfigurationWidgets(ModularGuiLineBuilder builder) {
         ClientWrapper.initScheduleSectionInstruction(this, builder);
 	}
 
-    /** The id of the train category assigned to this section, or {@code null}. Handles legacy data formats. */
     public UUID getTrainCategoryId() {
         String categoryNbtKey = this.data.contains(LEGACY_NBT_TRAIN_CATEGORY) ? LEGACY_NBT_TRAIN_CATEGORY : NBT_TRAIN_CATEGORY;
         if (!this.data.contains(categoryNbtKey)) {
@@ -168,7 +166,6 @@ public class TravelSectionInstruction extends ScheduleInstruction {
         return null;
     }
 
-    /** The id of the train line assigned to this section, or {@code null}. Handles legacy data formats. */
     public UUID getTrainLineId() {
         if (!this.data.contains(NBT_TRAIN_LINE)) {
             return null;
@@ -182,12 +179,10 @@ public class TravelSectionInstruction extends ScheduleInstruction {
         return null;
     }
 
-    /** Whether the first station of the following section should still be displayed as part of this section. */
     public boolean shouldIncludePreviousStationStop() {
         return this.data.getBoolean(NBT_INCLUDE_PREVIOUS_STATION);
     }
 
-    /** Whether this section may be used for navigation. */
     public boolean isSectionUsable() {
         return !this.data.contains(NBT_USABLE) || this.data.getBoolean(NBT_USABLE);
     }

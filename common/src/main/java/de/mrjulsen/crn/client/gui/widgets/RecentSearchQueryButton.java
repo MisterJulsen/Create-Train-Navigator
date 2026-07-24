@@ -7,7 +7,7 @@ import org.lwjgl.glfw.GLFW;
 
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.client.gui.widgets.skins.CRNFlatButtonRenderer;
-import de.mrjulsen.crn.data.storage.RecentSearchQueries.RecentSearchQuery;
+import de.mrjulsen.crn.data.settings.RecentSearchQueries.RecentSearchQuery;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.gui.events.DLGuiStandardEvents;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLButton;
@@ -43,15 +43,13 @@ public class RecentSearchQueryButton extends DLButton {
         DLContextMenu contextMenu = new DLContextMenu((pX, pY) -> {
             List<DLContextMenu.ItemEntry> entries = new ArrayList<>();
             entries.add(new DLContextMenu.ItemEntry(Constants.TEXT_SEARCH, DLSprite.empty(), true, () -> {
-                viewer.search(query.getStartStation(), query.getDestinationStation(), () -> {});                
+                viewer.search(query.getStartStation(), query.getDestinationStation(), () -> {});
             }, null));
             entries.add(DLContextMenu.ItemEntry.SEPARATOR);
             entries.add(new DLContextMenu.ItemEntry(Constants.TEXT_REMOVE, DLSprite.empty(), true, () -> {
                 DLUtils.doIfNotNull(viewer.getUserSettings(), a -> {
                     a.recentSearchQueries.getValue().remove(query);
                     a.clientSave(() -> {
-                        //viewer.hasSearched = false;
-                        //viewer.refresh(viewer.userSettings);
                     });
                 });
             }, null));
@@ -81,13 +79,13 @@ public class RecentSearchQueryButton extends DLButton {
         graphics.poseStack().scale(0.75f, 0.75f, 0.75f);
         GuiUtils.drawString(graphics, graphics.defaultFont(), 0, 0, text, DragonLib.VANILLA_BUTTON_ACTIVE_FONT_COLOR, ETextAlignment.LEFT, false);
         graphics.poseStack().popPose();
-        
+
         graphics.poseStack().pushPose();
         graphics.poseStack().translate(width() - 3, 3, 0);
         graphics.poseStack().scale(0.75f, 0.75f, 0.75f);
         GuiUtils.drawString(graphics, graphics.defaultFont(), 0, 0, subText, DragonLib.VANILLA_BUTTON_ACTIVE_FONT_COLOR, ETextAlignment.RIGHT, false);
         graphics.poseStack().popPose();
-        
+
     }
-    
+
 }

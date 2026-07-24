@@ -4,7 +4,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.content.trains.entity.Train;
@@ -18,7 +17,6 @@ import com.simibubi.create.foundation.gui.ModularGuiLineBuilder;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.data.schedule.INavigationExtension;
-import de.mrjulsen.crn.data.train.TrainUtils;
 import de.mrjulsen.crn.mixin.ScheduleRuntimeAccessor;
 import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.crn.util.PenaltyResult;

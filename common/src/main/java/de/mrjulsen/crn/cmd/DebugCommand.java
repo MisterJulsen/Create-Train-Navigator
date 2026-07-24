@@ -1,20 +1,17 @@
 package de.mrjulsen.crn.cmd;
 
+import java.util.Optional;
+
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.simibubi.create.Create;
-import com.simibubi.create.content.trains.entity.Train;
+import com.mojang.brigadier.suggestion.SuggestionProvider;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
-import de.mrjulsen.crn.backend.schedule.TrainJourney;
-import de.mrjulsen.crn.backend.TrainManager;
-import de.mrjulsen.crn.backend.debug.BackendDebugOverlay;
-import de.mrjulsen.crn.backend.debug.BackendDiagnosticsRecorder;
-import de.mrjulsen.crn.data.train.TrainListener;
-import de.mrjulsen.crn.debug.DebugOverlay;
-import de.mrjulsen.crn.network.packets.pain.ShowTrainDebugScreenPacketData;
-import de.mrjulsen.crn.registry.ModNetworkManager;
-import de.mrjulsen.mcdragonlib.network.NetworkDirection;
+import de.mrjulsen.crn.core.TrainManager;
+import de.mrjulsen.crn.core.train.TrackedTrain;
+import de.mrjulsen.crn.core.debug.BackendDebugOverlay;
+import de.mrjulsen.crn.core.debug.BackendDiagnosticsRecorder;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import dev.architectury.platform.Platform;
 import dev.architectury.utils.Env;
@@ -22,7 +19,7 @@ import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.Commands.CommandSelection;
-import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.commands.SharedSuggestionProvider;
 
 public class DebugCommand {
 
@@ -32,48 +29,40 @@ public class DebugCommand {
     private static final String SUB_DISCORD = "discord";
     private static final String SUB_GITHUB = "github";
 
-    private static final String SUB_TRAIN_SCHEDULES = "trainSchedules";
-
-    private static final String SUB_RESET = "resetTrainPredictions";
-    private static final String SUB_HARD_RESET = "hardResetTrainPredictions";
-    private static final String SUB_TRAIN_DEBUG_OVERLAY = "trainDebugOverlay";
     private static final String SUB_BACKEND_DEBUG_OVERLAY = "backendDebugOverlay";
     private static final String SUB_BACKEND_RESET = "resetBackendTimetables";
     private static final String SUB_BACKEND_HARD_RESET = "hardResetBackendData";
-    private static final String SUB_TRAIN_OVERVIEW = "trainOverview";
     private static final String SUB_CLEAR_DEPARTURE_HISTORY = "clearDepartureHistory";
     private static final String SUB_BACKEND_DATA_DUMP = "backendDataDump";
-    
+
+    private static final String ARG_TRAIN = "train";
+
+    private static final SuggestionProvider<CommandSourceStack> TRAIN_SUGGESTIONS = (context, builder) ->
+        SharedSuggestionProvider.suggest(TrainManager.getInstance().getAllTrains().stream().map(TrackedTrain::getTrainName), builder);
+
+
     @SuppressWarnings("all")
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandSelection selection) {        
         
         LiteralArgumentBuilder<CommandSourceStack> builder = Commands.literal(CMD_NAME)
             .then(Commands.literal(SUB_DEBUG)
                 .requires(x -> x.hasPermission(3))
-                .then(Commands.literal(SUB_HARD_RESET)
-                    .executes(x -> hardReset(x.getSource()))
-                )
-                .then(Commands.literal(SUB_RESET)
-                    .executes(x -> reset(x.getSource()))
-                )
-
-                .then(Commands.literal(SUB_TRAIN_SCHEDULES)
-                        .executes(x -> showTrainSchedules(x.getSource()))
-                )
-                .then(Commands.literal(SUB_TRAIN_DEBUG_OVERLAY)
-                    .executes(x -> showTrainObservationOverlay(x.getSource()))
-                )
                 .then(Commands.literal(SUB_BACKEND_DEBUG_OVERLAY)
                     .executes(x -> showBackendDebugOverlay(x.getSource()))
                 )
                 .then(Commands.literal(SUB_BACKEND_RESET)
                     .executes(x -> resetBackend(x.getSource()))
+                    .then(Commands.argument(ARG_TRAIN, StringArgumentType.greedyString())
+                        .suggests(TRAIN_SUGGESTIONS)
+                        .executes(x -> resetBackendTrain(x.getSource(), StringArgumentType.getString(x, ARG_TRAIN)))
+                    )
                 )
                 .then(Commands.literal(SUB_BACKEND_HARD_RESET)
                     .executes(x -> hardResetBackend(x.getSource()))
-                )
-                .then(Commands.literal(SUB_TRAIN_OVERVIEW)
-                    .executes(x -> showTrainDebugScreen(x.getSource()))
+                    .then(Commands.argument(ARG_TRAIN, StringArgumentType.greedyString())
+                        .suggests(TRAIN_SUGGESTIONS)
+                        .executes(x -> hardResetBackendTrain(x.getSource(), StringArgumentType.getString(x, ARG_TRAIN)))
+                    )
                 )
                 .then(Commands.literal(SUB_CLEAR_DEPARTURE_HISTORY)
                     .executes(x -> clearDepartureHistory(x.getSource()))
@@ -108,29 +97,6 @@ public class DebugCommand {
         return 1;
     }
 
-    private static int hardReset(CommandSourceStack cmd) throws CommandSyntaxException {
-        cmd.sendSuccess(() -> TextUtils.text("All train predictions have been deleted."), false);
-        TrainListener.resetTrainData();
-        return 1;
-    }
-
-    private static int reset(CommandSourceStack cmd) throws CommandSyntaxException {
-        cmd.sendSuccess(() -> TextUtils.text("All train predictions have been reset."), false);
-        TrainListener.getAllTrainData().forEach(x -> x.softResetPredictions());
-        return 1;
-    }
-
-    private static int showTrainObservationOverlay(CommandSourceStack cmd) throws CommandSyntaxException {
-        if (Platform.getEnvironment() == Env.CLIENT) {            
-            cmd.sendSuccess(() -> TextUtils.text("Visibility of the train debug overlay has been toggled."), false);
-            DebugOverlay.toggle();
-            return 1;
-        } else {            
-            cmd.sendFailure(TextUtils.text("Cannot open the train debug overlay in multiplayer."));  
-        }
-        return 0;
-    }
-
     private static int showBackendDebugOverlay(CommandSourceStack cmd) throws CommandSyntaxException {
         if (Platform.getEnvironment() == Env.CLIENT) {
             cmd.sendSuccess(() -> TextUtils.text("Visibility of the backend debug overlay has been toggled."), false);
@@ -148,16 +114,38 @@ public class DebugCommand {
         return 1;
     }
 
+    private static int resetBackendTrain(CommandSourceStack cmd, String trainName) throws CommandSyntaxException {
+        Optional<TrackedTrain> train = findTrain(trainName);
+        if (train.isEmpty()) {
+            cmd.sendFailure(TextUtils.text("No tracked train named '" + trainName + "'."));
+            return 0;
+        }
+        TrainManager.getInstance().softReset(train.get().getTrainId());
+        cmd.sendSuccess(() -> TextUtils.text("The timetable of '" + train.get().getTrainName() + "' has been reset to the current real-time data."), false);
+        return 1;
+    }
+
     private static int hardResetBackend(CommandSourceStack cmd) throws CommandSyntaxException {
         cmd.sendSuccess(() -> TextUtils.text("All learned backend data has been deleted."), false);
         TrainManager.getInstance().hardResetAll();
         return 1;
     }
 
-    private static int showTrainDebugScreen(CommandSourceStack cmd) throws CommandSyntaxException {
-        cmd.sendSuccess(() -> TextUtils.empty(), false);
-        ModNetworkManager.SHOW_TRAIN_DEBUG_SCREEN.send(NetworkDirection.toPlayer(cmd.getPlayerOrException()), new ShowTrainDebugScreenPacketData());
+    private static int hardResetBackendTrain(CommandSourceStack cmd, String trainName) throws CommandSyntaxException {
+        Optional<TrackedTrain> train = findTrain(trainName);
+        if (train.isEmpty()) {
+            cmd.sendFailure(TextUtils.text("No tracked train named '" + trainName + "'."));
+            return 0;
+        }
+        TrainManager.getInstance().hardReset(train.get().getTrainId());
+        cmd.sendSuccess(() -> TextUtils.text("All learned data of '" + train.get().getTrainName() + "' has been deleted."), false);
         return 1;
+    }
+
+    private static Optional<TrackedTrain> findTrain(String trainName) {
+        return TrainManager.getInstance().getAllTrains().stream()
+            .filter(x -> x.getTrainName().equalsIgnoreCase(trainName))
+            .findFirst();
     }
 
     private static int clearDepartureHistory(CommandSourceStack cmd) throws CommandSyntaxException {
@@ -185,17 +173,4 @@ public class DebugCommand {
     }
 
 
-    private static int showTrainSchedules(CommandSourceStack cmd) throws CommandSyntaxException {
-        cmd.sendSuccess(() -> {
-            MutableComponent text = TextUtils.empty();
-            try {
-            } catch (Throwable t) {
-                System.err.println(t);
-                t.printStackTrace();
-            }
-            return text;
-        }, false);
-        TrainManager.getInstance().softResetAll();
-        return 1;
-    }
 }

@@ -1,7 +1,7 @@
 package de.mrjulsen.crn.client.gui.overlay.pages;
 
 import de.mrjulsen.crn.client.journey.JourneyTracker;
-import de.mrjulsen.crn.navigator.route.RouteJourney;
+import de.mrjulsen.crn.core.navigator.route.RouteJourney;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLGuiComponent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;

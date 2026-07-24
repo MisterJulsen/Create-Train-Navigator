@@ -7,7 +7,7 @@ import java.util.Objects;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.gui.widgets.skins.ModernScrollbarComponentRenderer;
-import de.mrjulsen.crn.data.ISavableNavigatorData;
+import de.mrjulsen.crn.data.settings.ISavableNavigatorData;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.gui.events.DLGuiStandardEvents;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLGuiComponent;

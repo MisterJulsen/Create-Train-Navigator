@@ -15,49 +15,26 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 
-import de.mrjulsen.crn.backend.api.CategorySnapshot;
-import de.mrjulsen.crn.backend.api.LineSnapshot;
-import de.mrjulsen.crn.backend.api.RailwayBackendApi;
-import de.mrjulsen.crn.navigator.NavigationQuery;
-import de.mrjulsen.crn.navigator.NavigationResult;
-import de.mrjulsen.crn.navigator.NavigationStatus;
-import de.mrjulsen.crn.navigator.Navigator;
-import de.mrjulsen.crn.navigator.RouteOptimization;
-import de.mrjulsen.crn.navigator.debug.NavigatorDiagnosticsDump;
-import de.mrjulsen.crn.navigator.Waypoint;
-import de.mrjulsen.crn.navigator.index.TimetableIndex;
-import de.mrjulsen.crn.navigator.route.RouteCall;
-import de.mrjulsen.crn.navigator.route.RouteJourney;
-import de.mrjulsen.crn.navigator.route.RouteLeg;
-import de.mrjulsen.crn.navigator.route.RouteTransfer;
-import de.mrjulsen.crn.data.train.TrainUtils;
+import de.mrjulsen.crn.api.core.CategorySnapshot;
+import de.mrjulsen.crn.api.core.LineSnapshot;
+import de.mrjulsen.crn.api.core.RailwayBackendApi;
+import de.mrjulsen.crn.core.navigator.NavigationQuery;
+import de.mrjulsen.crn.core.navigator.NavigationResult;
+import de.mrjulsen.crn.core.navigator.NavigationStatus;
+import de.mrjulsen.crn.core.navigator.Navigator;
+import de.mrjulsen.crn.core.navigator.RouteOptimization;
+import de.mrjulsen.crn.core.navigator.debug.NavigatorDiagnosticsDump;
+import de.mrjulsen.crn.core.navigator.Waypoint;
+import de.mrjulsen.crn.core.navigator.index.TimetableIndex;
+import de.mrjulsen.crn.core.navigator.route.RouteCall;
+import de.mrjulsen.crn.core.navigator.route.RouteJourney;
+import de.mrjulsen.crn.core.navigator.route.RouteLeg;
+import de.mrjulsen.crn.core.navigator.route.RouteTransfer;
+import de.mrjulsen.crn.util.TrainUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 
-/**
- * Drives the route search from the chat, so it can be exercised without a screen in front of it.
- * <p>
- * The interesting part of a search is not the route but how it was arrived at, so this prints the
- * timings, the size of what was searched and every leg with its times, rather than a tidy summary.
- *
- * <pre>
- * /createrailwaysnavigator debug navigate "Berlin" "Munich"
- * /createrailwaysnavigator debug navigate "Berlin" "Munich" via=Leipzig; stay=6000; max=2
- * /createrailwaysnavigator debug navigate "Berlin" "Munich" direct; in=3000
- * </pre>
- *
- * Options are separated by {@code ;} and are either a flag or {@code key=value}:
- * <ul>
- *   <li>{@code in=<ticks>} / {@code at=<ticks>} - when to leave, from now or absolute</li>
- *   <li>{@code via=<station>} - travel via, repeatable; {@code stay=<ticks>} applies to the last one</li>
- *   <li>{@code avoid=<station>} - do not use this station, repeatable</li>
- *   <li>{@code transfer=<ticks>}, {@code max=<changes>}, {@code results=<n>}, {@code horizon=<ticks>}</li>
- *   <li>{@code line=<name>} / {@code !line=<name>}, {@code cat=<name>} / {@code !cat=<name>}</li>
- *   <li>{@code direct} - only routes without a change</li>
- *   <li>{@code comfort} - present the route with the fewest changes first</li>
- * </ul>
- */
 public final class NavigatorDebugCommand {
 
     private static final String SUB_NAVIGATE = "navigate";
@@ -70,7 +47,6 @@ public final class NavigatorDebugCommand {
 
     private NavigatorDebugCommand() {}
 
-    /** The {@code navigate} subcommand, to be attached to the mod's debug command. */
     public static LiteralArgumentBuilder<CommandSourceStack> navigate() {
         RequiredArgumentBuilder<CommandSourceStack, String> to = Commands.argument(ARG_TO, StringArgumentType.string())
             .suggests((context, builder) -> suggestStations(builder))
@@ -84,15 +60,6 @@ public final class NavigatorDebugCommand {
                 .then(to));
     }
 
-    /**
-     * Offers station names already in quotes, since most of them contain spaces and the argument
-     * would otherwise end at the first one.
-     * <p>
-     * The completion has to do the quoting rather than leave it to whoever is typing: a suggestion
-     * inserted as bare text turns a station into two arguments and the command stops parsing where
-     * the name begins. Matching ignores the opening quote the player has usually typed by then, so a
-     * name can be found by typing into it either way.
-     */
     private static CompletableFuture<Suggestions> suggestStations(SuggestionsBuilder builder) {
         String typed = builder.getRemaining();
         if (typed.startsWith("\"") || typed.startsWith("'")) {
@@ -108,20 +75,14 @@ public final class NavigatorDebugCommand {
         return builder.buildFuture();
     }
 
-    /** A station name as a single command argument, whatever characters it contains. */
     private static String quote(String name) {
         return '"' + name.replace("\\", "\\\\").replace("\"", "\\\"") + '"';
     }
 
-    /** The {@code navigatorIndex} subcommand, which reports and drops the cached timetable index. */
     public static LiteralArgumentBuilder<CommandSourceStack> index() {
         return Commands.literal(SUB_INDEX).executes(x -> showIndex(x.getSource()));
     }
 
-    /**
-     * The {@code navigatorDump} subcommand, which writes everything the search works from to a file.
-     * Given a station pair it runs that query as well and records what came of it.
-     */
     public static LiteralArgumentBuilder<CommandSourceStack> dump() {
         RequiredArgumentBuilder<CommandSourceStack, String> to = Commands.argument(ARG_TO, StringArgumentType.string())
             .suggests((context, builder) -> suggestStations(builder))
@@ -222,13 +183,6 @@ public final class NavigatorDebugCommand {
         return 1;
     }
 
-    /**
-     * Says which of the named places could not be found, and what was probably meant.
-     * <p>
-     * A name that lost everything after its first space parses as a perfectly valid argument and
-     * fails only later, as a station nobody has heard of - so saying which name failed, and offering
-     * the ones that start with it, is usually the whole answer.
-     */
     private static void reportUnknownStations(CommandSourceStack source, NavigationQuery query) {
         List<String> named = new ArrayList<>();
         named.add(query.origin());
@@ -251,7 +205,6 @@ public final class NavigatorDebugCommand {
         }
     }
 
-    /** Whether a name refers to something the search can start from or travel to. */
     private static boolean isKnown(String name) {
         Set<String> stations = RailwayBackendApi.getKnownStations();
         if (stations.contains(name)) {
@@ -351,7 +304,6 @@ public final class NavigatorDebugCommand {
             .excludingCategories(excludedCategories);
     }
 
-    /** Replaces the most recently named waypoint with one the traveller wants time at. */
     private static Waypoint withStay(List<Waypoint> waypoints, long stay) {
         if (waypoints.isEmpty()) {
             throw new IllegalArgumentException("'stay' has to follow a 'via'.");

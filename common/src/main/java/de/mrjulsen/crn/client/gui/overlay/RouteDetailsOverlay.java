@@ -26,10 +26,10 @@ import de.mrjulsen.crn.client.journey.JourneyPhase;
 import de.mrjulsen.crn.client.journey.JourneyTracker;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
-import de.mrjulsen.crn.data.SavedRoutesManager;
-import de.mrjulsen.crn.navigator.route.RouteCall;
-import de.mrjulsen.crn.navigator.route.RouteJourney;
-import de.mrjulsen.crn.navigator.route.RouteLeg;
+import de.mrjulsen.crn.data.settings.SavedRoutesManager;
+import de.mrjulsen.crn.core.navigator.route.RouteCall;
+import de.mrjulsen.crn.core.navigator.route.RouteJourney;
+import de.mrjulsen.crn.core.navigator.route.RouteLeg;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.gui.events.DLGuiStandardEvents;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLWindow;
@@ -56,14 +56,6 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
-/**
- * The in-game overlay following a journey the player is travelling.
- * <p>
- * Which page is shown follows straight from {@link JourneyPhase}; the ticker text follows from the
- * phase and from which call is next. The old overlay subscribed to fourteen separate route events
- * and had to keep its own idea of the journey's state in sync with them - here there is one source
- * of truth, and every page reads from it rather than being handed a frozen copy.
- */
 public class RouteDetailsOverlay extends DLWindow {
 
     private static final Component title = TextUtils.translate("gui.createrailwaysnavigator.route_overview.title");
@@ -192,7 +184,6 @@ public class RouteDetailsOverlay extends DLWindow {
         tracker.start();
     }
 
-    /** Everything the overlay shows follows from the phase, so this is the only place pages change. */
     private void applyPhase(JourneyPhase phase) {
         switch (phase) {
             case BEFORE_DEPARTURE -> {
@@ -253,10 +244,6 @@ public class RouteDetailsOverlay extends DLWindow {
         }
     }
 
-    /**
-     * A journey that has been travelled is no longer a plan worth keeping, so it drops off the saved
-     * list the moment it completes.
-     */
     private void forgetSavedRoute() {
         if (SavedRoutesManager.isSaved(tracker.journey())) {
             SavedRoutesManager.removeRoute(tracker.journey());
@@ -273,7 +260,6 @@ public class RouteDetailsOverlay extends DLWindow {
             : CustomLanguage.translate(keyJourneyBeginsWithPlatform, leg.displayName(), leg.destinationText(), departureTimeText, platform);
     }
 
-    /** The toast body when the journey starts. Its key takes the same values but without the lead-in. */
     private Component journeyBeginsNotification() {
         RouteLeg leg = tracker.journey().firstLeg();
         String platform = leg.boarding().realtimePlatform();
@@ -315,7 +301,6 @@ public class RouteDetailsOverlay extends DLWindow {
         yPos.tickChaser();
     }
 
-    /** The ticker text. {@link SlidingTextComponent} scrolls it on its own if it does not fit. */
     private void setSlidingText(Component component) {
         slidingTextComponent.text.set(component);
     }

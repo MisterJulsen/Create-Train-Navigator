@@ -6,7 +6,7 @@ import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.ContainerColor;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.FooterSize;
 import de.mrjulsen.crn.client.gui.widgets.SavedRouteData;
 import de.mrjulsen.crn.client.gui.widgets.SavedRoutesViewer;
-import de.mrjulsen.crn.data.SavedRoutesManager;
+import de.mrjulsen.crn.data.settings.SavedRoutesManager;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLWindowManager;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 

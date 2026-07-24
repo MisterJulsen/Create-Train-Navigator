@@ -5,9 +5,6 @@ import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
 import de.mrjulsen.mcdragonlib.util.DLColor;
 import net.minecraft.nbt.CompoundTag;
 
-/**
- * General settings that all displays share.
- */
 public class BasicDisplaySettings extends AbstractDisplaySettings implements IColorSetting {
 
     protected DLColor fontColor = DLColor.WHITE;
@@ -54,5 +51,5 @@ public class BasicDisplaySettings extends AbstractDisplaySettings implements ICo
     public void onChangeSettings(IDisplaySettings oldSettings) {
         this.copyColorSetting(oldSettings);
     }
-    
+
 }

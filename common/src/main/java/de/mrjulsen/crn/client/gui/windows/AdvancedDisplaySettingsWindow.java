@@ -31,7 +31,7 @@ import de.mrjulsen.crn.client.gui.widgets.create.CreateButton;
 import de.mrjulsen.crn.client.gui.widgets.create.CreateItemPicker;
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
 import de.mrjulsen.crn.client.gui.widgets.skins.CRNFlatButtonRenderer;
-import de.mrjulsen.crn.network.packets.cts.AdvancedDisplayUpdatePacketData;
+import de.mrjulsen.crn.network.packets.AdvancedDisplayUpdatePacketData;
 import de.mrjulsen.crn.registry.ModNetworkManager;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.gui.events.DLGuiStandardEvents;
@@ -74,14 +74,13 @@ public class AdvancedDisplaySettingsWindow extends DLWindow {
 
     private static final MutableComponent title = TextUtils.translate("gui.createrailwaysnavigator.advanced_display_settings.title");
     private static final int GUI_WIDTH = 212;
-    
+
     private static final FooterSize headerSize = FooterSize.DEFAULT;
     private static final FooterSize footerSize = FooterSize.SMALL;
     private static final int BASIC_GUI_HEIGHT = headerSize.size() + footerSize.size() + 76 + 5 + CreateButton.HEIGHT;
 
 	private final ItemStack renderedItem;
 
-    // Settings
     private final AbstractContraptionEntity contraption;
     private final Level level;
     private final BlockPos pos;
@@ -91,7 +90,7 @@ public class AdvancedDisplaySettingsWindow extends DLWindow {
     private EDisplayType type;
     private IDisplaySettings settings;
     private boolean doubleSided;
-    
+
     private CreateButton globalSettingsButton;
     private final MutableComponent tooltipGlobalSettings = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.global_settings.tooltip");
     private final MutableComponent tooltipDisplayType = TextUtils.translate("gui.createrailwaysnavigator.advanced_display_settings.display_type");
@@ -116,7 +115,7 @@ public class AdvancedDisplaySettingsWindow extends DLWindow {
     private final Cache<List<DisplayTypeResourceKey>> displayTypes = new Cache<>(() -> AdvancedDisplaysRegistry.getAllOfTypeAsKey(type), ECachingPriority.ALWAYS);
 
     private final AdvancedDisplayBlockEntity blockEntity;
-    
+
     public AdvancedDisplaySettingsWindow(DLWindowManager manager, AdvancedDisplayBlockEntity blockEntity, AbstractContraptionEntity contraption) {
         super(manager);
         setSize(GUI_WIDTH, BASIC_GUI_HEIGHT);
@@ -153,13 +152,13 @@ public class AdvancedDisplaySettingsWindow extends DLWindow {
         }
     }
 
-    protected void init() {        
+    protected void init() {
         backButton = addComponent(new CreateButton(GUI_WIDTH - 7 - CreateButton.WIDTH, height() - 6 - CreateButton.HEIGHT, AllIcons.I_CONFIRM));
         backButton.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
             getWindowManager().closeWindow(this);
             return false;
         });
-        
+
         CreateButton helpButton = addComponent(new CreateButton(GUI_WIDTH - 17 - CreateButton.WIDTH * 2, height() - 6 - CreateButton.HEIGHT, ModGuiIcons.HELP.getAsCreateIcon()));
         helpButton.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
             Util.getPlatform().openUri(Constants.HELP_PAGE_ADVANCED_DISPLAYS);
@@ -174,10 +173,6 @@ public class AdvancedDisplaySettingsWindow extends DLWindow {
         });
         globalSettingsButton.tooltip.set(new DLTooltip(List.of(tooltipGlobalSettings), 200));
 
-        //ModularWidgetContainer commonSettingsContainer = addComponent(new ModularWidgetContainer(3, headerSize.size()))
-        //workingArea = new GuiAreaDefinition(1, headerSize.size(), width() - 2, guiHeight() - headerSize.size() - footerSize.size());
-
-        // Content
         commonSettingsContainer = addComponent(new ModularWidgetContainer(3, headerSize.size() + 1, width() - 6, 1));
         if (commonSettingsContainer.contentPanel.layout.get() instanceof FlowLayout fl) {
             fl.padding.set(new Padding(6, 16, 6, 16));
@@ -186,7 +181,7 @@ public class AdvancedDisplaySettingsWindow extends DLWindow {
             commonSettingsContainer.setHeight(e.layoutResult().contentHeight());
             return false;
         });
-        
+
         DLPanel displayTypeLine = commonSettingsContainer.addLine("displayType");
         IconSlotWidget displayTypeIcon = displayTypeLine.addComponent(new IconSlotWidget(0, 0));
         displayTypeIcon.icon.set(type.getIcon().getAsSprite(16, 16));
@@ -213,25 +208,15 @@ public class AdvancedDisplaySettingsWindow extends DLWindow {
         displayVariantPicker.items.addAll(displayTypes.get());
         displayVariantPicker.selectedItem.set(Optional.ofNullable(typeKey));
         displayVariantPicker.layoutContraint.set(FlowLayout.FlowConstraint.FILL);
-        
+
         displayTypePicker.addEventListener(DLCycleButton.SelectedItemChanged.class, (s, e) -> {
             displayTypePicker.selectedItem.get().ifPresent(item -> type = item);
             displayTypeIcon.icon.set(type.getIcon().getAsSprite(16, 16));
             displayTypes.clear();
-            
+
             displayVariantPicker.items.set(displayTypes.get());
             displayVariantPicker.selectedItem.set(Optional.ofNullable(typeKey));
 
-            /*            
-            type = EDisplayType.getTypeById(i);
-            displayTypes.clear();
-            displayTypeInput.addHint(TextUtils.translate(type.getValueInfoTranslationKey(CreateRailwaysNavigator.MOD_ID)));
-
-            DLUtils.doIfNotNull((SelectionScrollInput)infoTypeInput, x -> {
-                x.setState(0);
-                x.forOptions(displayTypes.get().stream().map(a -> TextUtils.translate(a.getTranslationKey())).toList());
-                x.onChanged();
-            }); */
             return false;
         });
         displayVariantPicker.addEventListener(DLCycleButton.SelectedItemChanged.class, (s, e) -> {
@@ -246,7 +231,7 @@ public class AdvancedDisplaySettingsWindow extends DLWindow {
             return false;
         });
 
-        
+
         DLPanel doubleSidedLine = commonSettingsContainer.addLine("doubleSided");
         IconSlotWidget doubleSidedIcon = doubleSidedLine.addComponent(new IconSlotWidget(0, 0));
         doubleSidedIcon.icon.set(ModGuiIcons.DOUBLE_SIDED.getAsSprite(16, 16));
@@ -262,7 +247,6 @@ public class AdvancedDisplaySettingsWindow extends DLWindow {
         });
 
 
-        // Advanced Settings
         advancedSettingsPanel = addComponent(new DLPanel(commonSettingsContainer.x(), commonSettingsContainer.y() + commonSettingsContainer.height() + 3, commonSettingsContainer.width(), CreateButton.HEIGHT));
         FlowLayout advancedSettingsPanelLayout = new FlowLayout();
         advancedSettingsPanelLayout.flowDirection.set(Direction.HORIZONTAL);
@@ -275,7 +259,7 @@ public class AdvancedDisplaySettingsWindow extends DLWindow {
             return false;
         });
         copyBtn.tooltip.set(new DLTooltip(List.of(Constants.TEXT_COPY), 200));
-        
+
         FlatIconButton pasteBtn = advancedSettingsPanel.addComponent(new FlatIconButton(0, 0, ModGuiIcons.PASTE.getAsSprite(ModGuiIcons.ICON_SIZE, ModGuiIcons.ICON_SIZE)));
         pasteBtn.layoutContraint.set(FlowLayout.FlowConstraint.END);
         pasteBtn.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
@@ -289,7 +273,7 @@ public class AdvancedDisplaySettingsWindow extends DLWindow {
             return false;
         });
         pasteBtn.tooltip.set(new DLTooltip(List.of(Constants.TEXT_PASTE), 200));
-        
+
         FlatIconButton resetBtn = advancedSettingsPanel.addComponent(new FlatIconButton(0, 0, ModGuiIcons.REFRESH.getAsSprite(ModGuiIcons.ICON_SIZE, ModGuiIcons.ICON_SIZE)));
         resetBtn.layoutContraint.set(FlowLayout.FlowConstraint.END);
         resetBtn.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
@@ -300,8 +284,8 @@ public class AdvancedDisplaySettingsWindow extends DLWindow {
             return false;
         });
         resetBtn.tooltip.set(new DLTooltip(List.of(Constants.TEXT_RESET), 200));
-        
-        
+
+
         DLButton expandBtn = advancedSettingsPanel.addComponent(new DLButton(0, 0, 0, CreateButton.HEIGHT));
         expandBtn.icon.set((advancedSettingsExpanded ? GuiIcons.ARROW_DOWN : GuiIcons.ARROW_RIGHT).getAsSprite(ModGuiIcons.ICON_SIZE, ModGuiIcons.ICON_SIZE));
         expandBtn.text.set(textAdvancedSettings(200));
@@ -316,7 +300,6 @@ public class AdvancedDisplaySettingsWindow extends DLWindow {
         });
 
 
-        // Advanced Settings section        
         advancedSettingsContainer = addComponent(new ModularWidgetContainer(advancedSettingsPanel.x(), advancedSettingsPanel.y() + advancedSettingsPanel.height(), advancedSettingsPanel.width(), 100));
         if (advancedSettingsContainer.contentPanel.layout.get() instanceof FlowLayout fl) {
             fl.padding.set(new Padding(2, 16, 6, 16));
@@ -324,7 +307,7 @@ public class AdvancedDisplaySettingsWindow extends DLWindow {
 
         reinit();
 
-        
+
 
         addEventListener(DLGuiStandardEvents.ComponentPosAndSizeChanged.class, (s, e) -> {
             backButton.setPosition(GUI_WIDTH - 7 - CreateButton.WIDTH, height() - 6 - CreateButton.HEIGHT);
@@ -334,7 +317,7 @@ public class AdvancedDisplaySettingsWindow extends DLWindow {
         });
 
     }
-    
+
     @Override
     public void renderMainLayer(DLGuiGraphics graphics, double mouseX, double mouseY, Rectangle renderBounds) {
         CreateDynamicWidgets.renderWindow(graphics, 0, 0, GUI_WIDTH, height(), ContainerColor.PURPLE, BarColor.GOLD, BarColor.GRAY, headerSize.size(), footerSize.size(), false);

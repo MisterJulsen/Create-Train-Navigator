@@ -10,9 +10,9 @@ import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.BarColor;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.ContainerColor;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.FooterSize;
 import de.mrjulsen.crn.client.gui.widgets.routedetails.RouteDetailsViewer;
-import de.mrjulsen.crn.navigator.route.RouteJourney;
-import de.mrjulsen.crn.navigator.route.RouteLeg;
-import de.mrjulsen.crn.network.packets.pain.GetTrainRealtimePacketData;
+import de.mrjulsen.crn.core.navigator.route.RouteJourney;
+import de.mrjulsen.crn.core.navigator.route.RouteLeg;
+import de.mrjulsen.crn.network.packets.GetTrainRealtimePacketData;
 import de.mrjulsen.crn.registry.ModNetworkManager;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLWindowManager;
@@ -34,15 +34,10 @@ public class TrainJourneyWindow extends AbstractNavigatorScreen {
 
     private Optional<RouteLeg> journey = Optional.empty();
 
-    /**
-     * The full run of the service the given leg is part of. The leg says which section to show and
-     * which cycle of it the traveller is on, so the run shown is the one they are actually riding.
-     */
     public TrainJourneyWindow(DLWindowManager manager, RouteLeg ridden) {
         this(manager, ridden.trainId(), ridden);
     }
 
-    /** The full run of the section the train is working through right now. */
     public TrainJourneyWindow(DLWindowManager manager, UUID trainId) {
         this(manager, trainId, null);
     }
@@ -61,12 +56,6 @@ public class TrainJourneyWindow extends AbstractNavigatorScreen {
         requestJourney();
     }
 
-    /**
-     * Fetches the train's journey and shows one section of it end to end. Not the whole schedule:
-     * what a traveller wants to see is the service they are on, from where it starts out to where it
-     * terminates, and the rest of the train's day is a different service that happens to use the
-     * same carriages.
-     */
     private void requestJourney() {
         ModNetworkManager.GET_TRAIN_REALTIME.send(NetworkDirection.toServer(), new GetTrainRealtimePacketData.Request(trainId, true), (response) -> {
             response.getTrain().ifPresent(train -> response.getJourney().ifPresent(snapshot -> {

@@ -69,7 +69,7 @@ public class TrainSeparationSettingsWindow extends DLWindow {
     private ETimeSource timeSource = ETimeSource.REAL_LIFE;
     private String stationFilterText = "";
 
-    
+
     public TrainSeparationSettingsWindow(DLWindowManager manager, CompoundTag nbt) {
         super(manager);
         setWidth(GUI_WIDTH);
@@ -82,13 +82,12 @@ public class TrainSeparationSettingsWindow extends DLWindow {
         this.stationFilterText = nbt.getString(TrainSeparationCondition.NBT_STATION_FILTER);
 
 
-        // Content
         CreateButton backButton = addComponent(new CreateButton(width() - 7 - CreateButton.WIDTH, height() - 6 - CreateButton.HEIGHT, AllIcons.I_CONFIRM));
         backButton.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
             getWindowManager().closeWindow(this);
             return false;
         });
-        
+
         CreateButton helpButton = addComponent(new CreateButton(width() - 17 - CreateButton.WIDTH * 2, height() - 6 - CreateButton.HEIGHT, ModGuiIcons.HELP.getAsCreateIcon()));
         helpButton.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
             Util.getPlatform().openUri(Constants.HELP_PAGE_TRAIN_SEPARATION);
@@ -218,22 +217,9 @@ public class TrainSeparationSettingsWindow extends DLWindow {
                     return false;
                 });
 
-                /*
-                CreateScrollNumberInput ticksBox = lineTimes.addComponent(new CreateScrollNumberInput(0, 0, 22));
-                ticksBox.title.set(CreateLang.translateDirect("generic.unit.ticks"));
-                ticksBox.shiftStep.set(5D);
-                ticksBox.min.set(0D);
-                ticksBox.max.set(19D);
-                ticksBox.value.set((double)pool.e);
-                ticksBox.addEventListener(DLNumberPicker.ValueChangedEvent.class, (s, e) -> {
-
-                    return false;
-                });
-
-                 */
             }
         }
-        
+
         CreateItemPicker<ETimeSource> timeSourcePicker = lineTimes.addComponent(new CreateItemPicker<>(0, 0, 80));
         timeSourcePicker.title.set(ETimeSource.IN_GAME.getEnumTranslation());
         timeSourcePicker.hint.set(ETimeSource.IN_GAME.getEnumDescriptionTranslation());
@@ -249,7 +235,7 @@ public class TrainSeparationSettingsWindow extends DLWindow {
 
 
 
-        
+
         DLPanel lineFilter = commonSettingsContainer.addLine("filter");
         IconSlotWidget filterIcon = lineFilter.addComponent(new IconSlotWidget(0, 0));
         filterIcon.icon.set(ModGuiIcons.TRAIN.getAsSprite(16, 16));
@@ -300,7 +286,7 @@ public class TrainSeparationSettingsWindow extends DLWindow {
         CreateDynamicWidgets.renderWindow(graphics, 0, 0, width(), height(), ContainerColor.PURPLE, BarColor.GOLD, BarColor.GRAY, headerSize.size(), footerSize.size(), true);
         CreateDynamicWidgets.renderVerticalSeparator(graphics, width() - 31, height() - footerSize.size() + 2, footerSize.size() - 4, BarColor.GRAY);
         GuiUtils.drawString(graphics, graphics.defaultFont(), 6, 4, title, DragonLib.VANILLA_UI_FONT_COLOR, ETextAlignment.LEFT, false);
-        
+
         GuiUtils.drawTexture(CRNGui.GUI, graphics, width() - 3, height() - 24, 11, 18, 0, 12);
         GuiGameElement.of(DISPLAY_ITEM).<GuiGameElement
 			.GuiRenderBuilder>at(width() + 11, height() - 48, -200)

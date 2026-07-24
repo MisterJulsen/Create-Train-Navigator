@@ -1,9 +1,9 @@
 package de.mrjulsen.crn.registry;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
-import de.mrjulsen.crn.network.packets.cts.AdvancedDisplayUpdatePacketData;
-import de.mrjulsen.crn.network.packets.pain.*;
-import de.mrjulsen.crn.network.packets.stc.ServerErrorPacketData;
+import de.mrjulsen.crn.network.packets.AdvancedDisplayUpdatePacketData;
+import de.mrjulsen.crn.network.packets.*;
+import de.mrjulsen.crn.network.packets.ServerErrorPacketData;
 import de.mrjulsen.mcdragonlib.network.DLNetworkManager;
 import de.mrjulsen.mcdragonlib.network.NetworkDirection;
 import de.mrjulsen.mcdragonlib.network.NetworkPacketType;
@@ -32,7 +32,6 @@ public final class ModNetworkManager {
     public static final NetworkPacketType.SendAndReceive<NetworkDirection.C2S, RemoveStationFromBlacklistPacketData.Request, RemoveStationFromBlacklistPacketData.Response> REMOVE_STATION_FROM_BLACKLIST = NETWORK.registerSendAndReceivePacket("remove_station_from_blacklist", NetworkDirection.C2S, RemoveStationFromBlacklistPacketData::handle, RemoveStationFromBlacklistPacketData.Request::new, RemoveStationFromBlacklistPacketData.Response::new);
     public static final NetworkPacketType.SendAndReceive<NetworkDirection.C2S, AddTrainToBlacklistPacketData.Request, AddTrainToBlacklistPacketData.Response> ADD_TRAIN_TO_BLACKLIST = NETWORK.registerSendAndReceivePacket("add_train_to_blacklist", NetworkDirection.C2S, AddTrainToBlacklistPacketData::handle, AddTrainToBlacklistPacketData.Request::new, AddTrainToBlacklistPacketData.Response::new);
     public static final NetworkPacketType.SendAndReceive<NetworkDirection.C2S, RemoveTrainFromBlacklistPacketData.Request, RemoveTrainFromBlacklistPacketData.Response> REMOVE_TRAIN_FROM_BLACKLIST = NETWORK.registerSendAndReceivePacket("remove_train_from_blacklist", NetworkDirection.C2S, RemoveTrainFromBlacklistPacketData::handle, RemoveTrainFromBlacklistPacketData.Request::new, RemoveTrainFromBlacklistPacketData.Response::new);
-    public static final NetworkPacketType.SendAndReceive<NetworkDirection.C2S, UpdateRealtimePacketData.Request, UpdateRealtimePacketData.Response> UPDATE_REALTIME = NETWORK.registerSendAndReceivePacket("update_realtime", NetworkDirection.C2S, UpdateRealtimePacketData::handle, UpdateRealtimePacketData.Request::new, UpdateRealtimePacketData.Response::new);
     public static final NetworkPacketType.SendAndReceive<NetworkDirection.C2S, GetStationBoardPacketData.Request, GetStationBoardPacketData.Response> GET_STATION_BOARD = NETWORK.registerSendAndReceivePacket("get_station_board", NetworkDirection.C2S, GetStationBoardPacketData::handle, GetStationBoardPacketData.Request::new, GetStationBoardPacketData.Response::new);
     public static final NetworkPacketType.SendAndReceive<NetworkDirection.C2S, GetTrainRealtimePacketData.Request, GetTrainRealtimePacketData.Response> GET_TRAIN_REALTIME = NETWORK.registerSendAndReceivePacket("get_train_realtime", NetworkDirection.C2S, GetTrainRealtimePacketData::handle, GetTrainRealtimePacketData.Request::new, GetTrainRealtimePacketData.Response::new);
     public static final NetworkPacketType.SendAndReceive<NetworkDirection.C2S, GetUserSettingsPacketData.Request, GetUserSettingsPacketData.Response> GET_USER_SETTINGS = NETWORK.registerSendAndReceivePacket("get_user_settings", NetworkDirection.C2S, GetUserSettingsPacketData::handle, GetUserSettingsPacketData.Request::new, GetUserSettingsPacketData.Response::new);
@@ -55,8 +54,6 @@ public final class ModNetworkManager {
     public static final NetworkPacketType.SendAndReceive<NetworkDirection.C2S, UpdateTrainLineColorPacketData, EmptyNetworkPacketData> UPDATE_TRAIN_LINE_COLOR = NETWORK.registerSendAndReceivePacket("update_train_line_color", NetworkDirection.C2S, UpdateTrainLineColorPacketData::handle, UpdateTrainLineColorPacketData::new, EmptyNetworkPacketData::new);
     public static final NetworkPacketType.SendAndReceive<NetworkDirection.C2S, SaveUserSettingsPacketData, EmptyNetworkPacketData> SAVE_USER_SETTINGS = NETWORK.registerSendAndReceivePacket("save_user_settings", NetworkDirection.C2S, SaveUserSettingsPacketData::handle, SaveUserSettingsPacketData::new, EmptyNetworkPacketData::new);
 
-    public static final NetworkPacketType.Send<NetworkDirection.C2S, TrainSoftResetPacketData> TRAIN_SOFT_RESET = NETWORK.registerSendOnlyPacket("train_soft_reset", NetworkDirection.C2S, TrainSoftResetPacketData::handle, TrainSoftResetPacketData::new);
-    public static final NetworkPacketType.Send<NetworkDirection.C2S, TrainHardResetPacketData> TRAIN_HARD_RESET = NETWORK.registerSendOnlyPacket("train_hard_reset", NetworkDirection.C2S, TrainHardResetPacketData::handle, TrainHardResetPacketData::new);
     public static final NetworkPacketType.Send<NetworkDirection.C2S, AdvancedDisplayUpdatePacketData> ADVANCED_DISPLAY_UPDATE_PACKET = NETWORK.registerSendOnlyPacket("advanced_display_update_packet", NetworkDirection.C2S, AdvancedDisplayUpdatePacketData::handle, AdvancedDisplayUpdatePacketData::new);
     public static final NetworkPacketType.Send<NetworkDirection.C2S, TeleportPlayerPacket> TELEPORT_PLAYER = NETWORK.registerSendOnlyPacket("teleport_player", NetworkDirection.C2S, TeleportPlayerPacket::handle, TeleportPlayerPacket::new);
 
@@ -67,12 +64,9 @@ public final class ModNetworkManager {
     public static final NetworkPacketType.Receive<NetworkDirection.C2S, GetAllBlacklistedTrainsPacketData> GET_ALL_BLACKLISTED_TRAINS = NETWORK.registerReceiveOnlyPacket("get_all_blacklisted_trains", NetworkDirection.C2S, GetAllBlacklistedTrainsPacketData::handle, GetAllBlacklistedTrainsPacketData::new);
     public static final NetworkPacketType.Receive<NetworkDirection.C2S, GetAllTrainNamesPacketData> GET_ALL_TRAIN_NAMES = NETWORK.registerReceiveOnlyPacket("get_all_train_names", NetworkDirection.C2S, GetAllTrainNamesPacketData::handle, GetAllTrainNamesPacketData::new);
     public static final NetworkPacketType.Receive<NetworkDirection.C2S, GetAllStationNamesPacketData> GET_ALL_STATION_NAMES = NETWORK.registerReceiveOnlyPacket("get_all_station_names", NetworkDirection.C2S, GetAllStationNamesPacketData::handle, GetAllStationNamesPacketData::new);
-    public static final NetworkPacketType.Receive<NetworkDirection.C2S, AllTrainsInitializedPacketData> ALL_TRAINS_INITIALIZED = NETWORK.registerReceiveOnlyPacket("all_trains_initialized", NetworkDirection.C2S, AllTrainsInitializedPacketData::handle, AllTrainsInitializedPacketData::new);
-    public static final NetworkPacketType.Receive<NetworkDirection.C2S, GetAllTrainsDebugPacketData> GET_ALL_TRAINS_DEBUG_DATA = NETWORK.registerReceiveOnlyPacket("get_all_trains_debug_data", NetworkDirection.C2S, GetAllTrainsDebugPacketData::handle, GetAllTrainsDebugPacketData::new);
     public static final NetworkPacketType.Receive<NetworkDirection.C2S, GetOnlinePlayersPacketData> GET_ONLINE_PLAYERS = NETWORK.registerReceiveOnlyPacket("get_online_players", NetworkDirection.C2S, GetOnlinePlayersPacketData::handle, GetOnlinePlayersPacketData::new);
 
 
-    public static final NetworkPacketType.Send<NetworkDirection.S2C, ShowTrainDebugScreenPacketData> SHOW_TRAIN_DEBUG_SCREEN = NETWORK.registerSendOnlyPacket("show_train_debug_screen", NetworkDirection.S2C, ShowTrainDebugScreenPacketData::handle, ShowTrainDebugScreenPacketData::new);
     public static final NetworkPacketType.Send<NetworkDirection.S2C, ServerErrorPacketData> SERVER_ERROR = NETWORK.registerSendOnlyPacket("server_error", NetworkDirection.S2C, ServerErrorPacketData::handle, ServerErrorPacketData::new);
 
 

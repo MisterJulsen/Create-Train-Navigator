@@ -6,8 +6,8 @@ import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.ColorShade;
 import de.mrjulsen.crn.client.gui.windows.RouteDetailsWindow;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
-import de.mrjulsen.crn.data.ISavableNavigatorData;
-import de.mrjulsen.crn.data.ISavableNavigatorData.SavableNavigatorDataLine;
+import de.mrjulsen.crn.data.settings.ISavableNavigatorData;
+import de.mrjulsen.crn.data.settings.ISavableNavigatorData.SavableNavigatorDataLine;
 import de.mrjulsen.mcdragonlib.client.gui.events.DLGuiStandardEvents;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLButton;
 import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
@@ -42,25 +42,6 @@ public class SavedRouteWidget extends DLButton {
         super(x, y, WIDTH, 50);
         this.data = data;
         setHeight(HEADER_HEIGHT + 10 + data.getOverviewData().stream().mapToInt(a -> (int)(Math.max(DEFAULT_LINE_HEIGHT, ClientWrapper.getTextBlockHeight(Minecraft.getInstance().font, a.text(), (int)(DISPLAY_WIDTH / DEFAULT_SCALE))) * DEFAULT_SCALE)).sum());
-
-        /*
-        setMenu(new DLContextMenu(() -> GuiAreaDefinition.of(this), () -> new DLContextMenuItem.Builder()
-            .add(new ContextMenuItemData(textShowDetails, Sprite.empty(), true, (b) -> onPress.onPress(b), null))
-            .addSeparator()
-            .add(new ContextMenuItemData(textRemove, Sprite.empty(), true, (b) -> {
-                SavedRoutesManager.removeRoute((ClientRoute)data);
-                SavedRoutesManager.push(true, null);
-                parent.displayRoutes(SavedRoutesManager.getAllSavedRoutes());
-            }, null))
-            //.add(new ContextMenuItemData(textShare, Sprite.empty(), true, (b) -> {}, null))
-            .addSeparator()
-            .add(new ContextMenuItemData(textShowNotifications, data instanceof ClientRoute route && route.shouldShowNotifications() ? GuiIcons.CHECKMARK.getAsSprite(8, 8) : Sprite.empty(), data instanceof Route, (b) -> {
-                if (data instanceof ClientRoute route) {
-                    route.setShowNotifications(!route.shouldShowNotifications());
-                }
-            }, null))
-        ));
-        */
 
         addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
             if (data instanceof SavedRouteData saved) {

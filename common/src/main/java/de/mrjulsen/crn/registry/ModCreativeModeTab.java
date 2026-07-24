@@ -14,10 +14,10 @@ public class ModCreativeModeTab {
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(CreateRailwaysNavigator.MOD_ID, Registries.CREATIVE_MODE_TAB);
 
     public static final RegistrySupplier<CreativeModeTab> MAIN_TAB = CREATIVE_MODE_TABS.register(
-        "createrailwaysnavigatortab", // Tab ID
+        "createrailwaysnavigatortab",
         () -> CreativeTabRegistry.create(
-                TextUtils.translate("itemGroup.createrailwaysnavigator.tab"), // Tab Name
-                () -> new ItemStack(ModItems.NAVIGATOR.get()) // Icon
+                TextUtils.translate("itemGroup.createrailwaysnavigator.tab"),
+                () -> new ItemStack(ModItems.NAVIGATOR.get())
         )
     );
 

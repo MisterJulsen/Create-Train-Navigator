@@ -19,7 +19,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 public class CreateDynamicWidgets {
-    
+
 
     private static final int BORDER_HEIGHT = 2;
     private static final int TEXTBOX_HEIGHT = 18;
@@ -34,12 +34,12 @@ public class CreateDynamicWidgets {
     private static final DLColor COLOR_TEXTBOX_COLOR_ACCENT = DLColor.fromInt(0xFF8b8b8b);
 
     public static void renderWidgetInner(DLGuiGraphics graphics, int x, int y, int w, int h, DLColor color) {
-        GuiUtils.fill(graphics, x, y, w, h, color); // plane
-        
-        GuiUtils.fill(graphics, x, y, 1, h, ColorShade.LIGHT.getColor()); // left border
-        GuiUtils.fill(graphics, x + 1, y, 1, h, COLOR_BORDER); // left border
-        GuiUtils.fill(graphics, x + w - 1, y, 1, h, ColorShade.LIGHT.getColor()); // right border
-        GuiUtils.fill(graphics, x + w - 2, y, 1, h, COLOR_BORDER); // right border
+        GuiUtils.fill(graphics, x, y, w, h, color);
+
+        GuiUtils.fill(graphics, x, y, 1, h, ColorShade.LIGHT.getColor());
+        GuiUtils.fill(graphics, x + 1, y, 1, h, COLOR_BORDER);
+        GuiUtils.fill(graphics, x + w - 1, y, 1, h, ColorShade.LIGHT.getColor());
+        GuiUtils.fill(graphics, x + w - 2, y, 1, h, COLOR_BORDER);
     }
 
     public static void renderWidgetInner(DLGuiGraphics graphics, int x, int y, int w, int h, ColorShade color) {
@@ -47,15 +47,15 @@ public class CreateDynamicWidgets {
     }
 
     public static void renderWidgetTopBorder(DLGuiGraphics graphics, int x, int y, int w) {
-        GuiUtils.fill(graphics, x + 1, y, w - 2, 1, ColorShade.LIGHT.getColor()); // left border
-        GuiUtils.fill(graphics, x, y + 1, w, 1, ColorShade.LIGHT.getColor()); // left border
-        GuiUtils.fill(graphics, x + 1, y + 1, w - 2, BORDER_HEIGHT - 1, COLOR_BORDER); // left border
+        GuiUtils.fill(graphics, x + 1, y, w - 2, 1, ColorShade.LIGHT.getColor());
+        GuiUtils.fill(graphics, x, y + 1, w, 1, ColorShade.LIGHT.getColor());
+        GuiUtils.fill(graphics, x + 1, y + 1, w - 2, BORDER_HEIGHT - 1, COLOR_BORDER);
     }
 
     public static void renderWidgetBottomBorder(DLGuiGraphics graphics, int x, int y, int w) {
-        GuiUtils.fill(graphics, x, y, w, 1, ColorShade.LIGHT.getColor()); // left border
-        GuiUtils.fill(graphics, x + 1, y + 1, w - 2, 1, ColorShade.LIGHT.getColor()); // left border
-        GuiUtils.fill(graphics, x + 1, y, w - 2, 1, COLOR_BORDER); // left border
+        GuiUtils.fill(graphics, x, y, w, 1, ColorShade.LIGHT.getColor());
+        GuiUtils.fill(graphics, x + 1, y + 1, w - 2, 1, ColorShade.LIGHT.getColor());
+        GuiUtils.fill(graphics, x + 1, y, w - 2, 1, COLOR_BORDER);
     }
 
     public static void renderSingleShadeWidget(DLGuiGraphics DLGuiGraphics, int x, int y, int w, int h, DLColor color) {
@@ -70,7 +70,7 @@ public class CreateDynamicWidgets {
 
     public static void renderDuoShadeWidget(DLGuiGraphics graphics, int x, int y, int w, int h1, DLColor color1, int h2, DLColor color2) {
         renderWidgetInner(graphics, x, y + 2, w, h1 - 2, color1);
-        renderWidgetInner(graphics, x, y + h1, w, h2 - 2, color2);        
+        renderWidgetInner(graphics, x, y + h1, w, h2 - 2, color2);
         renderWidgetTopBorder(graphics, x, y, w);
         renderWidgetBottomBorder(graphics, x, y + h1 + h2 - BORDER_HEIGHT, w);
     }
@@ -89,28 +89,28 @@ public class CreateDynamicWidgets {
     }
 
     public static void renderTextSlotOverlay(DLGuiGraphics graphics, int x, int y, int w, int h) {
-        GuiUtils.fill(graphics, x, y, w, 1, COLOR_3D_SHADOW); // top line
-        GuiUtils.fill(graphics, x, y + h - 1, w, 1, COLOR_3D_HIGHLIGHT); // bottom line        
-        GuiUtils.fill(graphics, x, y + h - 1, 1, 1, COLOR_3D_NEUTRAL); // bottom left corner
-        GuiUtils.fill(graphics, x + w - 1, y + h - 1, 1, 1, COLOR_3D_NEUTRAL); // bottom right corner
-        
-        GuiUtils.fill(graphics, x + 1, y + 2, 1, 1, COLOR_3D_SHADOW); // top left dot
-        GuiUtils.fill(graphics, x + w - 2, y + 2, 1, 1, COLOR_3D_NEUTRAL); // top right dot
-        GuiUtils.fill(graphics, x + 1, y + h - 3, 1, 1, COLOR_3D_NEUTRAL); // bottom left dot
-        GuiUtils.fill(graphics, x + w - 2, y + h - 3, 1, 1, COLOR_3D_HIGHLIGHT); // bottom right dot
+        GuiUtils.fill(graphics, x, y, w, 1, COLOR_3D_SHADOW);
+        GuiUtils.fill(graphics, x, y + h - 1, w, 1, COLOR_3D_HIGHLIGHT);
+        GuiUtils.fill(graphics, x, y + h - 1, 1, 1, COLOR_3D_NEUTRAL);
+        GuiUtils.fill(graphics, x + w - 1, y + h - 1, 1, 1, COLOR_3D_NEUTRAL);
+
+        GuiUtils.fill(graphics, x + 1, y + 2, 1, 1, COLOR_3D_SHADOW);
+        GuiUtils.fill(graphics, x + w - 2, y + 2, 1, 1, COLOR_3D_NEUTRAL);
+        GuiUtils.fill(graphics, x + 1, y + h - 3, 1, 1, COLOR_3D_NEUTRAL);
+        GuiUtils.fill(graphics, x + w - 2, y + h - 3, 1, 1, COLOR_3D_HIGHLIGHT);
     }
-    
+
     public static void renderTextBox(DLGuiGraphics graphics, int x, int y, int w) {
         int h = TEXTBOX_HEIGHT;
-        GuiUtils.fill(graphics, x, y, w, h, COLOR_TEXTBOX_COLOR_ACCENT); // bg
+        GuiUtils.fill(graphics, x, y, w, h, COLOR_TEXTBOX_COLOR_ACCENT);
         GuiUtils.fill(graphics, x, y + 2, w, 2, COLOR_TEXTBOX_COLOR_BG);
         GuiUtils.fill(graphics, x, y + h - 4, w, 2, COLOR_TEXTBOX_COLOR_BG);
-        GuiUtils.fill(graphics, x, y, w, 1, COLOR_TEXTBOX_3D_SHADOW); // top
-        GuiUtils.fill(graphics, x, y + h - 1, w, 1, COLOR_TEXTBOX_3D_LIGHT); // bottom
-        GuiUtils.fill(graphics, x, y, 1, h, COLOR_TEXTBOX_3D_SHADOW); // left
-        GuiUtils.fill(graphics, x + w - 1, y, 1, h, COLOR_TEXTBOX_3D_LIGHT); // right
-        GuiUtils.fill(graphics, x + w - 1, y, 1, 1, COLOR_TEXTBOX_3D_NEUTRAL); // top right
-        GuiUtils.fill(graphics, x, y + h - 1, 1, 1, COLOR_TEXTBOX_3D_NEUTRAL); // bottom left
+        GuiUtils.fill(graphics, x, y, w, 1, COLOR_TEXTBOX_3D_SHADOW);
+        GuiUtils.fill(graphics, x, y + h - 1, w, 1, COLOR_TEXTBOX_3D_LIGHT);
+        GuiUtils.fill(graphics, x, y, 1, h, COLOR_TEXTBOX_3D_SHADOW);
+        GuiUtils.fill(graphics, x + w - 1, y, 1, h, COLOR_TEXTBOX_3D_LIGHT);
+        GuiUtils.fill(graphics, x + w - 1, y, 1, 1, COLOR_TEXTBOX_3D_NEUTRAL);
+        GuiUtils.fill(graphics, x, y + h - 1, 1, 1, COLOR_TEXTBOX_3D_NEUTRAL);
     }
 
     public static void renderHorizontalSeparator(DLGuiGraphics graphics, int x, int y, int w) {
@@ -118,7 +118,7 @@ public class CreateDynamicWidgets {
         GuiUtils.fill(graphics, x, y + 1, w - 1, 1, COLOR_BORDER);
     }
 
-    public static void renderContainerBackground(DLGuiGraphics graphics, int x, int y, int w, int h, ContainerColor color) {        
+    public static void renderContainerBackground(DLGuiGraphics graphics, int x, int y, int w, int h, ContainerColor color) {
         Tesselator tesselator = Tesselator.getInstance();
         BufferBuilder bufferbuilder = tesselator.getBuilder();
         RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
@@ -134,15 +134,15 @@ public class CreateDynamicWidgets {
     }
 
     protected static void renderNineSliced(DLGuiGraphics graphics, int x, int y, int w, int h, int u, int v, int textureWidth, int textureHeight, int cornerSliceSize, ResourceLocation location, boolean renderCenter) {
-        GuiUtils.drawTexture(location, graphics, x, y, cornerSliceSize, cornerSliceSize, u, v, cornerSliceSize, cornerSliceSize, TextureFillMode.STRETCH, textureWidth, textureHeight); // Top left
-        GuiUtils.drawTexture(location, graphics, x + w - cornerSliceSize, y, cornerSliceSize, cornerSliceSize, u + 1 + cornerSliceSize, v, cornerSliceSize, cornerSliceSize, TextureFillMode.STRETCH, textureWidth, textureHeight); // Top right
-        GuiUtils.drawTexture(location, graphics, x, y + h - cornerSliceSize, cornerSliceSize, cornerSliceSize, u, v + 1 + cornerSliceSize, cornerSliceSize, cornerSliceSize, TextureFillMode.STRETCH, textureWidth, textureHeight); // bottom left
-        GuiUtils.drawTexture(location, graphics, x + w - cornerSliceSize, y + h - cornerSliceSize, cornerSliceSize, cornerSliceSize, u + 1 + cornerSliceSize, v + 1 + cornerSliceSize, cornerSliceSize, cornerSliceSize, TextureFillMode.STRETCH, textureWidth, textureHeight); // bottom right
+        GuiUtils.drawTexture(location, graphics, x, y, cornerSliceSize, cornerSliceSize, u, v, cornerSliceSize, cornerSliceSize, TextureFillMode.STRETCH, textureWidth, textureHeight);
+        GuiUtils.drawTexture(location, graphics, x + w - cornerSliceSize, y, cornerSliceSize, cornerSliceSize, u + 1 + cornerSliceSize, v, cornerSliceSize, cornerSliceSize, TextureFillMode.STRETCH, textureWidth, textureHeight);
+        GuiUtils.drawTexture(location, graphics, x, y + h - cornerSliceSize, cornerSliceSize, cornerSliceSize, u, v + 1 + cornerSliceSize, cornerSliceSize, cornerSliceSize, TextureFillMode.STRETCH, textureWidth, textureHeight);
+        GuiUtils.drawTexture(location, graphics, x + w - cornerSliceSize, y + h - cornerSliceSize, cornerSliceSize, cornerSliceSize, u + 1 + cornerSliceSize, v + 1 + cornerSliceSize, cornerSliceSize, cornerSliceSize, TextureFillMode.STRETCH, textureWidth, textureHeight);
 
-        GuiUtils.drawTexture(location, graphics, x + cornerSliceSize, y, w - cornerSliceSize * 2, cornerSliceSize, u + cornerSliceSize, v, 1, cornerSliceSize, TextureFillMode.STRETCH, textureWidth, textureHeight); // top
-        GuiUtils.drawTexture(location, graphics, x + cornerSliceSize, y + h - cornerSliceSize, w - cornerSliceSize * 2, cornerSliceSize, u + cornerSliceSize, v + 1 + cornerSliceSize, 1, cornerSliceSize, TextureFillMode.STRETCH, textureWidth, textureHeight); // bottom
-        GuiUtils.drawTexture(location, graphics, x, y + cornerSliceSize, cornerSliceSize, h - cornerSliceSize * 2, u, v + cornerSliceSize, cornerSliceSize, 1, TextureFillMode.STRETCH, textureWidth, textureHeight); // left
-        GuiUtils.drawTexture(location, graphics, x + w - cornerSliceSize, y + cornerSliceSize, cornerSliceSize, h - cornerSliceSize * 2, u + 1 + cornerSliceSize, v + cornerSliceSize, cornerSliceSize, 1, TextureFillMode.STRETCH, textureWidth, textureHeight); // right
+        GuiUtils.drawTexture(location, graphics, x + cornerSliceSize, y, w - cornerSliceSize * 2, cornerSliceSize, u + cornerSliceSize, v, 1, cornerSliceSize, TextureFillMode.STRETCH, textureWidth, textureHeight);
+        GuiUtils.drawTexture(location, graphics, x + cornerSliceSize, y + h - cornerSliceSize, w - cornerSliceSize * 2, cornerSliceSize, u + cornerSliceSize, v + 1 + cornerSliceSize, 1, cornerSliceSize, TextureFillMode.STRETCH, textureWidth, textureHeight);
+        GuiUtils.drawTexture(location, graphics, x, y + cornerSliceSize, cornerSliceSize, h - cornerSliceSize * 2, u, v + cornerSliceSize, cornerSliceSize, 1, TextureFillMode.STRETCH, textureWidth, textureHeight);
+        GuiUtils.drawTexture(location, graphics, x + w - cornerSliceSize, y + cornerSliceSize, cornerSliceSize, h - cornerSliceSize * 2, u + 1 + cornerSliceSize, v + cornerSliceSize, cornerSliceSize, 1, TextureFillMode.STRETCH, textureWidth, textureHeight);
 
         if (renderCenter) {
             GuiUtils.drawTexture(location, graphics, x + cornerSliceSize, y + cornerSliceSize, w - cornerSliceSize * 2, h - cornerSliceSize * 2, u + cornerSliceSize, v + cornerSliceSize, 1, 1, TextureFillMode.STRETCH, textureWidth, textureHeight);
@@ -156,8 +156,6 @@ public class CreateDynamicWidgets {
             case BLUE -> CRNGui.GUI_SPRITES.getSprite("content_blue").render(graphics, x, y, w, h);
             default -> CRNGui.GUI_SPRITES.getSprite("content_gray").render(graphics, x, y, w, h);
         }
-        //renderContainerBackground(graphics, x + 2, y + 2, w - 4, h - 4, color);
-        //renderNineSliced(graphics, x, y, w, h, 0, 7, CRNGui.GUI.width(), CRNGui.GUI.height(), 2, CRNGui.GUI.getTexture().get(), false);
     }
 
     public static void renderTitleBar(DLGuiGraphics graphics, int x, int y, int w, int h, BarColor color) {
@@ -166,18 +164,17 @@ public class CreateDynamicWidgets {
             case PURPLE -> CRNGui.GUI_SPRITES.getSprite("header_purple").render(graphics, x, y, w, h);
             default -> CRNGui.GUI_SPRITES.getSprite("header_gray").render(graphics, x, y, w, h);
         }
-        //renderNineSliced(graphics, x, y, w, h, color.u, color.v, CRNGui.GUI.width(), CRNGui.GUI.height(), 3, CRNGui.GUI.getTexture().get(), true);
     }
 
-    
+
     public static void renderWindow(DLGuiGraphics graphics, int x, int y, int w, int h, ContainerColor color, BarColor bar, int headerSize, int footerSize, boolean renderContent) {
         renderWindow(graphics, x, y, w, h, color, bar, bar, headerSize, footerSize, renderContent);
     }
-    
+
     public static void renderWindow(DLGuiGraphics graphics, int x, int y, int w, int h, ContainerColor color, BarColor header, BarColor footer, int headerSize, int footerSize, boolean renderContent) {
         renderTitleBar(graphics, x, y, w, headerSize, header);
         renderTitleBar(graphics, x, y + h - footerSize, w, footerSize, footer);
-        
+
         if (renderContent) {
             renderContainer(graphics, x + 1, y + headerSize - 1, w - 2, h - headerSize - footerSize + 2, color);
         }
@@ -225,7 +222,7 @@ public class CreateDynamicWidgets {
         }
     }
 
-    
+
     public static enum ContainerColor {
         GRAY(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/container_gray.png")),
         PURPLE(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/container_purple.png")),
@@ -252,9 +249,9 @@ public class CreateDynamicWidgets {
             this.v = v;
         }
     }
-    
 
-    
+
+
     public static enum FooterSize {
         DEFAULT(15),
         SMALL(30),

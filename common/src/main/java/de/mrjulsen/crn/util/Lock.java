@@ -36,7 +36,6 @@ public class Lock {
 
     public static enum LockState implements ITranslatableEnum, IIterableEnum<LockState> {
         UNLOCKED("unlocked", (byte)0, ModGuiIcons.UNLOCKED, (key) -> key.withStyle(ChatFormatting.GREEN)),
-        //TRUSTED("trusted", (byte)1, ModGuiIcons.TRUSTED, (key) -> TextUtils.translate(key).withStyle(ChatFormatting.GOLD)),
         LOCKED("locked", Byte.MAX_VALUE, ModGuiIcons.LOCKED, (key) -> key.withStyle(ChatFormatting.RED));
 
         private final String name;
@@ -87,7 +86,7 @@ public class Lock {
 
     public static final String TRANSLATION_KEY_TRUSTED_PLAYERS = "gui." + CreateRailwaysNavigator.MOD_ID + ".lock.trusted_players";
     public static final String TRANSLATION_KEY_TRANSFER_OWNERSHIP = "gui." + CreateRailwaysNavigator.MOD_ID + ".lock.transfer_ownership";
-    
+
     private final MutableComponent charAllowed = TextUtils.text("\u2714").withStyle(ChatFormatting.GREEN);
     private final MutableComponent charTrusted = TextUtils.text("\u2714").withStyle(ChatFormatting.GOLD);
     private final MutableComponent charLocked = TextUtils.text("\u274C").withStyle(ChatFormatting.RED);
@@ -97,7 +96,7 @@ public class Lock {
     private final MutableComponent txtNoOwner = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".lock.no_owner");
     private final String keyStatus = "gui." + CreateRailwaysNavigator.MOD_ID + ".lock.state";
     private final String keyOwner = "gui." + CreateRailwaysNavigator.MOD_ID + ".lock.owner";
-    
+
     private Owner owner;
     private LockState state = LockState.UNLOCKED;
     private final Set<Owner> trusted = new HashSet<>();
@@ -125,9 +124,6 @@ public class Lock {
         return state;
     }
 
-    /**
-     * @throws RuntimeSideException Server-side only!
-     */
     public boolean isAllowed(Owner target) throws RuntimeSideException {
         if (!DragonLib.hasServer()) {
             throw new RuntimeSideException(false);
@@ -137,10 +133,7 @@ public class Lock {
             default -> true;
         });
     }
-    
-    /**
-     * @throws RuntimeSideException Server-side only!
-     */
+
     public boolean isAdmin(Owner target) throws RuntimeSideException {
         if (!DragonLib.hasServer()) {
             throw new RuntimeSideException(false);
@@ -148,9 +141,6 @@ public class Lock {
         return this.owner != null && (this.owner.equals(target) || (ModCommonConfig.GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL.get() >= 0 && GameInstance.getServer().getPlayerList().getPlayer(target.uuid()).hasPermissions(ModCommonConfig.GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL.get())));
     }
 
-    /**
-     * @throws RuntimeSideException Client-side only!
-     */
     public boolean isAllowed() throws RuntimeSideException {
         if (Platform.getEnvironment() != Env.CLIENT) {
             throw new RuntimeSideException(true);
@@ -161,10 +151,7 @@ public class Lock {
             default -> true;
         });
     }
-    
-    /**
-     * @throws RuntimeSideException Client-side only!
-     */
+
     public boolean isAdmin() throws RuntimeSideException {
         if (Platform.getEnvironment() != Env.CLIENT) {
             throw new RuntimeSideException(true);
@@ -201,12 +188,12 @@ public class Lock {
     public void setOwner(Owner newOwner) {
         this.owner = newOwner;
     }
-    
+
     public List<FormattedText> asText(Owner target) {
         List<FormattedText> texts = new ArrayList<>(4);
         texts.add(TextUtils.empty().append(txtPermissions).append(" ").append(isTrusted(target) ? charTrusted : (isAllowed() ? charAllowed : charLocked)));
         texts.add(TextUtils.translate(keyStatus, get().getFormattedText()).withStyle(ChatFormatting.GRAY));
-        texts.add(TextUtils.translate(keyOwner, getOwner().map(x -> x.name().isBlank() ? txtNoOwner : TextUtils.text(x.name()).withStyle(ChatFormatting.GREEN)).orElse(txtNoOwner)).withStyle(ChatFormatting.GRAY));        
+        texts.add(TextUtils.translate(keyOwner, getOwner().map(x -> x.name().isBlank() ? txtNoOwner : TextUtils.text(x.name()).withStyle(ChatFormatting.GREEN)).orElse(txtNoOwner)).withStyle(ChatFormatting.GRAY));
         if (isAdmin()) {
             texts.add(txtRightClickOptions);
         }

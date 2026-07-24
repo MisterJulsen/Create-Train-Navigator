@@ -1,16 +1,9 @@
 package de.mrjulsen.crn.compat.tramways;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
-import de.mrjulsen.crn.backend.api.SpeedLimitProviderRegistry;
+import de.mrjulsen.crn.api.core.SpeedLimitProviderRegistry;
 import net.minecraft.resources.ResourceLocation;
 
-/**
- * Registers CRN's Tramways speed-limit integration.
- * <p>
- * Only call {@link #init()} behind a {@code Platform.isModLoaded("tramways")} check - this class
- * and {@link TramwaysSpeedLimitProvider} reference Tramways types directly, so they must never be
- * loaded when the mod isn't present.
- */
 public final class TramwaysCompat {
 
     private TramwaysCompat() {}

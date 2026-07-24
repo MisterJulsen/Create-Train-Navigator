@@ -18,10 +18,10 @@ import de.mrjulsen.crn.client.gui.widgets.IconSlotWidget;
 import de.mrjulsen.crn.client.gui.widgets.ModularWidgetContainer;
 import de.mrjulsen.crn.client.gui.widgets.create.CreateButton;
 import de.mrjulsen.crn.client.gui.widgets.create.CreateItemPicker;
-import de.mrjulsen.crn.data.TrainCategory;
-import de.mrjulsen.crn.data.TrainLine;
+import de.mrjulsen.crn.data.settings.TrainCategory;
+import de.mrjulsen.crn.data.settings.TrainLine;
 import de.mrjulsen.crn.data.schedule.instruction.TravelSectionInstruction;
-import de.mrjulsen.crn.data.storage.GlobalSettingsClient;
+import de.mrjulsen.crn.data.settings.GlobalSettingsClient;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.gui.events.DLGuiStandardEvents;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLWindow;
@@ -47,13 +47,12 @@ public class TrainSectionSettingsWindow extends DLWindow {
 
 	private static final ItemStack DISPLAY_ITEM = new ItemStack(AllItems.SCHEDULE.get());
     private static final int GUI_WIDTH = 212;
-    
+
     private static final FooterSize headerSize = FooterSize.DEFAULT;
     private static final FooterSize footerSize = FooterSize.SMALL;
 
     private final CompoundTag nbt;
 
-    // Settings
     private boolean includePreviousStation = false;
     private boolean usable = true;
     private UUID trainCategoryId;
@@ -62,7 +61,6 @@ public class TrainSectionSettingsWindow extends DLWindow {
     private Map<UUID, TrainCategory> categoriesById;
     private Map<UUID, TrainLine> linesById;
 
-    // GUI
     private ModularWidgetContainer commonSettingsContainer;
 
     private final MutableComponent title = TextUtils.translate("gui.createrailwaysnavigator.section_settings.title");
@@ -82,32 +80,32 @@ public class TrainSectionSettingsWindow extends DLWindow {
 
         this.includePreviousStation = nbt.contains(TravelSectionInstruction.NBT_INCLUDE_PREVIOUS_STATION) ? nbt.getBoolean(TravelSectionInstruction.NBT_INCLUDE_PREVIOUS_STATION) : false;
         this.usable = nbt.contains(TravelSectionInstruction.NBT_USABLE) ? nbt.getBoolean(TravelSectionInstruction.NBT_USABLE) : true;
-        
+
         if (nbt.contains(TravelSectionInstruction.LEGACY_NBT_TRAIN_CATEGORY)) {
             this.trainCategoryId = nbt.getTagType(TravelSectionInstruction.LEGACY_NBT_TRAIN_CATEGORY) == Tag.TAG_STRING ? TrainCategory.genMD5Uuid(nbt.getString(TravelSectionInstruction.LEGACY_NBT_TRAIN_CATEGORY)) : nbt.getUUID(TravelSectionInstruction.LEGACY_NBT_TRAIN_CATEGORY);
         } else if (nbt.contains(TravelSectionInstruction.NBT_TRAIN_CATEGORY)) {
             this.trainCategoryId = nbt.getTagType(TravelSectionInstruction.NBT_TRAIN_CATEGORY) == Tag.TAG_STRING ? TrainCategory.genMD5Uuid(nbt.getString(TravelSectionInstruction.NBT_TRAIN_CATEGORY)) : nbt.getUUID(TravelSectionInstruction.NBT_TRAIN_CATEGORY);
         }
-        
+
         if (nbt.contains(TravelSectionInstruction.NBT_TRAIN_LINE)) {
             this.trainLineId = nbt.getTagType(TravelSectionInstruction.NBT_TRAIN_LINE) == Tag.TAG_STRING ? TrainLine.genMD5Uuid(nbt.getString(TravelSectionInstruction.NBT_TRAIN_LINE)) : nbt.getUUID(TravelSectionInstruction.NBT_TRAIN_LINE);
         }
 
 
-        
+
         CreateButton backButton = addComponent(new CreateButton(width() - 7 - CreateButton.WIDTH, height() - 6 - CreateButton.HEIGHT, AllIcons.I_CONFIRM));
         backButton.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
             getWindowManager().closeWindow(this);
             return false;
         });
-        
+
         CreateButton helpButton = addComponent(new CreateButton(width() - 17 - CreateButton.WIDTH * 2, height() - 6 - CreateButton.HEIGHT, ModGuiIcons.HELP.getAsCreateIcon()));
         helpButton.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
             Util.getPlatform().openUri(Constants.HELP_PAGE_SCHEDULE_SECTIONS);
             return false;
         });
         helpButton.tooltip.set(new DLTooltip(List.of(Constants.TEXT_HELP), 200));
-        
+
         CreateButton globalSettingsButton = addComponent(new CreateButton(7, 119, ModGuiIcons.SETTINGS.getAsCreateIcon()));
         globalSettingsButton.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
             getWindowManager().createModal(mgr -> new GlobalSettingsWindow(mgr));
@@ -120,7 +118,7 @@ public class TrainSectionSettingsWindow extends DLWindow {
         int minHeight = headerSize.size() + footerSize.size() + 2;
 
         initGui();
-        
+
         setHeight(minHeight);
         commonSettingsContainer.addEventListener(ModularWidgetContainer.ContentLayoutUpdatedEvent.class, (s, e) -> {
             commonSettingsContainer.setHeight(e.layoutResult().contentHeight());
@@ -159,23 +157,12 @@ public class TrainSectionSettingsWindow extends DLWindow {
             GlobalSettingsClient.getTrainLines((trainLines) -> {
                 List<TrainLine> orderedLines = trainLines.stream().sorted((a, b) -> a.getLineName().compareToIgnoreCase(b.getLineName())).toList();
                 this.linesById = orderedLines.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
-                
+
 
                 DLPanel lineTrainCategory = commonSettingsContainer.addLine("category");
                 IconSlotWidget trainCategoryIcon = lineTrainCategory.addComponent(new IconSlotWidget(0, 0));
                 trainCategoryIcon.icon.set(ModGuiIcons.TRAIN.getAsSprite(16, 16));
 
-                /*
-                CreateItemPicker<TrainCategory> trainCategoryPicker = lineTrainCategory.addComponent(new CreateItemPicker<>(0, 0, 150));
-                trainCategoryPicker.title.set(tooltipTrainCatrgory);
-                trainCategoryPicker.formatter.set(item -> item == null ? textNone : TextUtils.text(item.getCategoryName()));
-                trainCategoryPicker.items.addAll(orderedCategories);
-                trainCategoryPicker.selectedItem.set(Optional.ofNullable(categoriesById.get(trainCategoryId)));
-                trainCategoryPicker.addEventListener(DLCycleButton.SelectedItemChanged.class, (s, e) -> {
-                    trainCategoryPicker.selectedItem.get().ifPresent(i -> trainCategoryId = i.getId());
-                    return false;
-                });
-                */
                 CreateItemPicker<String> trainCategoryPicker = lineTrainCategory.addComponent(new CreateItemPicker<>(0, 0, 150));
                 trainCategoryPicker.title.set(tooltipTrainCatrgory);
                 trainCategoryPicker.formatter.set(item -> item == null ? textNone : TextUtils.text(item));

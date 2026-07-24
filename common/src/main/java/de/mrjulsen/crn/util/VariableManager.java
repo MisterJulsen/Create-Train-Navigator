@@ -3,10 +3,10 @@ package de.mrjulsen.crn.util;
 import java.util.List;
 import java.util.function.Function;
 
-import de.mrjulsen.crn.backend.api.BoardEntry;
-import de.mrjulsen.crn.backend.api.StationRef;
-import de.mrjulsen.crn.backend.api.StopSnapshot;
-import de.mrjulsen.crn.backend.api.TrainSnapshot;
+import de.mrjulsen.crn.api.core.BoardEntry;
+import de.mrjulsen.crn.api.core.StationRef;
+import de.mrjulsen.crn.api.core.StopSnapshot;
+import de.mrjulsen.crn.api.core.TrainSnapshot;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.block.display.properties.components.ITrainStopTypeSetting;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
@@ -30,14 +30,11 @@ public class VariableManager {
         if (i < 0 || i >= list.size()) return handleStopover(null, variable);
         return handleStopover(list.get(i), variable);
     }
-    
+
     private static String handleStopover(@Nullable StopSnapshot data, String variable) {
         boolean eta = variable.endsWith("_eta");
         long ticksDelayed = data == null ? 0 : data.departureDeviation();
 
-        // this should only return null if the variable is invalid so don't anyone
-        // dare replace the tertiary statements with a single guard statement
-        // - C1200
         return switch (variable) {
             case "station_name" -> data == null ? "" : data.realtimeStation().displayName();
             case "platform" -> data == null ? "" : data.realtimeStation().platform();
@@ -55,8 +52,6 @@ public class VariableManager {
 
     private static String handleTrainEntry(@Nullable BoardEntry data, String variable) {
         boolean eta = variable.endsWith("_eta");
-
-        // same rule as above applies
 
         if (variable.matches("^stop\\d+$")) {
             int n = Integer.parseInt(variable.substring(4));
@@ -89,7 +84,6 @@ public class VariableManager {
     }
 
     private static String formatDelay(long ticks) {
-        // similar logic used as in the DynamicDelayCondition class
         if (ticks <= 0) return "";
 
         boolean showInMinutes = ticks >= 20 * 60;
@@ -110,7 +104,6 @@ public class VariableManager {
     }
 
     private static String getReplacement(AdvancedDisplayBlockEntity blockEntity, String variable) {
-        // generic
         DLTime time = new DLTime(DragonLib.getCurrentWorldTime(), DLTime.defaultTimeSystem());
         if (variable.equals("time")) {
             return time.format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem());
@@ -118,12 +111,9 @@ public class VariableManager {
             return "" + (long)time.toGameDays(DLTime.defaultTimeSystem());
         }
 
-        // on-board
         if (blockEntity.assembledOnContraption) {
             if (blockEntity.getElevatorData() != null) {
-                // elevator
                 if (variable.equals("elevator.current.short")) {
-                    // Used only because the format %elevator.current.short% %elevator.current.sign% fails because short is often an integer.
                     return blockEntity.getElevatorData().currentShortName() + "\u200C";
                 } else if (variable.equals("elevator.current.long")) {
                     return blockEntity.getElevatorData().currentLongName() + "\u200C";
@@ -135,7 +125,7 @@ public class VariableManager {
                     return blockEntity.getElevatorData().sign().getArrow();
                 } else if (variable.equals("elevator.sign.triangle")) {
                     return blockEntity.getElevatorData().sign().getTriangle();
-                } 
+                }
             }
 
             List<StopSnapshot> service = blockEntity.getServiceStops();
@@ -166,7 +156,6 @@ public class VariableManager {
             }
         }
 
-        // station
         if (!blockEntity.assembledOnContraption) {
             if (variable.matches("^train\\d+\\..+")) {
                 int dot = variable.indexOf(".");
@@ -185,7 +174,6 @@ public class VariableManager {
         for (int i = 0; i < length; i++) {
             char c = text.charAt(i);
 
-            // escaped placeholder \%
             if (c == '\\' && i + 1 < length && text.charAt(i + 1) == '%') {
                 result.append('%');
                 i++;
@@ -200,7 +188,6 @@ public class VariableManager {
                     if (replacement != null) {
                         result.append(replacement);
                     } else {
-                        // Key nicht gefunden: lasse Platzhalter unverändert
                         result.append('%').append(key).append('%');
                     }
                     i = end;
@@ -214,33 +201,4 @@ public class VariableManager {
     }
 
 
-    /*
-    public static boolean hasValidPlaceholders(String text) {
-        int length = text.length();
-        for (int i = 0; i < length; i++) {
-            char c = text.charAt(i);
-
-            if (c == '\\' && i + 1 < length && text.charAt(i + 1) == '%') {
-                i++;
-                continue;
-            }
-
-            if (c == '%') {
-                int end = text.indexOf('%', i + 1);
-                if (end == -1) {
-                    return false;
-                }
-                if (end == i + 1) {
-                    return false;
-                }
-                String key = text.substring(i + 1, end);
-                if (!variables.containsKey(key)) {
-                    return false;
-                }
-                i = end;
-            }
-        }
-        return true;
-    }
-    */
 }

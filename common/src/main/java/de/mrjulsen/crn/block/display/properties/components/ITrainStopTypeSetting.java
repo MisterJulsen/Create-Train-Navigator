@@ -1,8 +1,8 @@
 package de.mrjulsen.crn.block.display.properties.components;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
-import de.mrjulsen.crn.backend.api.BoardEntry;
-import de.mrjulsen.crn.backend.api.CallDirection;
+import de.mrjulsen.crn.api.core.BoardEntry;
+import de.mrjulsen.crn.api.core.CallDirection;
 import de.mrjulsen.crn.block.display.properties.IDisplaySettings;
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
 import de.mrjulsen.crn.config.ModCommonConfig;
@@ -31,7 +31,7 @@ public interface ITrainStopTypeSetting {
 
         public byte getId() {
             return this.id;
-        }	
+        }
 
         public static ETrainStopType getById(int id) {
             return Arrays.stream(values()).filter(x -> x.getId() == (byte)id).findFirst().orElse(DEF_VALUE);
@@ -67,7 +67,7 @@ public interface ITrainStopTypeSetting {
     default void buildTrainStopTypeGui(GuiBuilderContext context) {
         GuiBuilderWrapper.buildTrainStopTypeGui(this, context);
     }
-    
+
     default void copyTrainStopTypeSetting(IDisplaySettings oldSettings) {
         if (oldSettings instanceof ITrainStopTypeSetting o) {
             setTrainStopType(o.getTrainStopType());
@@ -75,14 +75,6 @@ public interface ITrainStopTypeSetting {
     }
 
 
-    /**
-     * Which half of a call a board with these settings shows: the train coming in, or going out.
-     * <p>
-     * Where both would do, the arrival is shown while the train is still on its way and the departure
-     * once it is standing at the platform - at that point what a traveller wants to know is when it
-     * leaves again. A call nobody can board is only ever an arrival, and one nobody can have arrived
-     * on is only ever a departure.
-     */
     public static CallDirection resolveDirection(BoardEntry entry, ITrainStopTypeSetting settings) {
         ETrainStopType type = settings.getTrainStopType();
         return resolveDirection(entry, type.showDepartures(entry.originating()), type.showArrivals(entry.terminus()));
@@ -94,21 +86,12 @@ public interface ITrainStopTypeSetting {
         return showArrival && (!showDeparture || !entry.isWaiting()) ? CallDirection.ARRIVAL : CallDirection.DEPARTURE;
     }
 
-    /** Whether a board with these settings lists the given call at all. */
     public static boolean shows(BoardEntry entry, ETrainStopType type) {
         boolean showDeparture = type.showDepartures(entry.originating()) && !entry.terminus();
         boolean showArrival = type.showArrivals(entry.terminus()) && !entry.originating();
         return showArrival || showDeparture;
     }
 
-    /**
-     * Whether the given call is worth a line on a board with these settings, at the given time.
-     * <p>
-     * A cancelled train keeps its line for a while so travellers waiting for it find out that it is
-     * not coming, but only until it would have gone anyway. This is the one and only place that
-     * decides it: the server builds a board with it and the display re-checks it as time moves on, so
-     * the two must be the same question rather than two similar ones.
-     */
     public static boolean accepts(BoardEntry entry, ETrainStopType type, long now) {
         if (!shows(entry, type)) {
             return false;

@@ -5,9 +5,9 @@ import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.overlay.pages.RouteOverviewPage.RoutePathIcons;
 import de.mrjulsen.crn.client.journey.JourneyTracker;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
-import de.mrjulsen.crn.navigator.route.RouteCall;
-import de.mrjulsen.crn.navigator.route.RouteLeg;
-import de.mrjulsen.crn.navigator.route.RouteTransfer;
+import de.mrjulsen.crn.core.navigator.route.RouteCall;
+import de.mrjulsen.crn.core.navigator.route.RouteLeg;
+import de.mrjulsen.crn.core.navigator.route.RouteTransfer;
 import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
@@ -41,7 +41,6 @@ public class TransferPage extends AbstractRouteDetailsPage {
         this.messageLabel = MultiLineLabel.create(font, transferMessage(connectingLeg), width() - (15 + ModGuiIcons.ICON_SIZE));
     }
 
-    /** The "change to <train> towards <destination>" line, with the platform when one is known. */
     static Component transferMessage(RouteLeg connectingLeg) {
         String platform = connectingLeg.boarding().realtimePlatform();
         return platform == null || platform.isBlank()

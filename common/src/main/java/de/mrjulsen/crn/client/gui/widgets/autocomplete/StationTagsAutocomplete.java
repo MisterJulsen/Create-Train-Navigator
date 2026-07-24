@@ -3,8 +3,8 @@ package de.mrjulsen.crn.client.gui.widgets.autocomplete;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.mrjulsen.crn.data.StationTag;
-import de.mrjulsen.crn.network.packets.pain.GetAllStationsAsTagsPacketData;
+import de.mrjulsen.crn.data.settings.StationTag;
+import de.mrjulsen.crn.network.packets.GetAllStationsAsTagsPacketData;
 import de.mrjulsen.crn.registry.ModNetworkManager;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLWindowManager;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLRichTextEditBox;
