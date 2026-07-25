@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.PriorityQueue;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import com.simibubi.create.content.trains.graph.DiscoveredPath;
 import net.createmod.catnip.data.Couple;
@@ -19,7 +17,6 @@ import org.spongepowered.asm.mixin.injection.Coerce;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.Slice;
-import org.spongepowered.asm.mixin.injection.At.Shift;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
@@ -35,19 +32,13 @@ import com.simibubi.create.content.trains.signal.SignalEdgeGroup;
 import com.simibubi.create.content.trains.station.GlobalStation;
 
 import de.mrjulsen.crn.data.schedule.INavigationExtension;
-import de.mrjulsen.crn.data.schedule.condition.IDelayedWaitCondition;
-import de.mrjulsen.crn.data.schedule.condition.IDelayedWaitCondition.DelayedWaitConditionContext;
 import de.mrjulsen.crn.data.schedule.instruction.PrioritizedDestinationInstruction;
 import de.mrjulsen.crn.util.IFrontierEntry;
 import de.mrjulsen.crn.util.PenaltyResult;
-import de.mrjulsen.mcdragonlib.util.Pair;
-import net.minecraft.world.level.Level;
 
 @Mixin(Navigation.class)
 public abstract class NavigationMixin implements INavigationExtension {
 
-    public Queue<Pair<IDelayedWaitCondition, DelayedWaitConditionContext>> delayedWaitConditions = new ConcurrentLinkedQueue<>();
-    
     public PenaltyResult currentReasons;
     public boolean forward;
     public Map<Boolean, PenaltyResult> finalReasonByDirection;
@@ -59,37 +50,6 @@ public abstract class NavigationMixin implements INavigationExtension {
 
 
 
-    @Override
-    public void addDelayedWaitCondition(Pair<IDelayedWaitCondition, DelayedWaitConditionContext> pair) {
-        delayedWaitConditions.add(pair);
-    }
-
-    @Override
-    public boolean isDelayedWaitConditionPending() {
-        return !delayedWaitConditions.isEmpty();
-    }
-    
-    @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lcom/simibubi/create/content/trains/entity/Train;leaveStation()V", shift = Shift.BEFORE), remap = false, cancellable = true)
-    public void onTick(Level level, CallbackInfo ci) {
-        if (!delayedWaitConditions.isEmpty()) {
-            Pair<IDelayedWaitCondition, DelayedWaitConditionContext> p = delayedWaitConditions.peek();
-            if (!p.getSecond().nbt().contains(IDelayedWaitCondition.NBT_DELAY)) {
-                p.getSecond().nbt().putInt(IDelayedWaitCondition.NBT_DELAY, 0);
-            }
-            if (p.getFirst().runDelayed(p.getSecond())) {
-                delayedWaitConditions.poll().getSecond().nbt().remove(IDelayedWaitCondition.NBT_DELAY);
-            } else {                
-                p.getSecond().nbt().putInt(IDelayedWaitCondition.NBT_DELAY, p.getSecond().nbt().getInt(IDelayedWaitCondition.NBT_DELAY) + 1);
-            }
-            ci.cancel();
-        }
-    }
-
-    @Inject(method = "cancelNavigation", at = @At(value = "HEAD"), remap = false)
-    public void resetOnCancel(CallbackInfo ci) {
-        delayedWaitConditions.clear();
-    }
-    
     private boolean shouldCheckPenalties = false;
     private boolean isForwardSelected = false;
 

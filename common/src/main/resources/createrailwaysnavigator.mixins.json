@@ -18,6 +18,7 @@
     "NavigationMixin",
     "ScheduleEntryMixin",
     "ScheduleRuntimeAccessor",
+    "ScheduleRuntimeMixin",
     "TrainPenaltyAccessor",
     "TrainStatusAccessor",
     "extensions.ScheduledDelayMixin",
