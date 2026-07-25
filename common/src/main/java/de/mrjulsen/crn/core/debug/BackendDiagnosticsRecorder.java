@@ -169,6 +169,8 @@ public final class BackendDiagnosticsRecorder {
         json.add("legHistory", history);
 
         json.addProperty("dwellDuration", timing.dwellDuration());
+        json.addProperty("dwellResidual", timing.dwellResidualTicks());
+        json.addProperty("dwellResidualLastMeasurement", timing.dwellResidual().lastMeasurement());
         json.addProperty("completedVisits", timing.getCompletedVisits());
         json.addProperty("lastActualArrival", timing.getLastActualArrival());
         json.addProperty("lastActualDeparture", timing.getLastActualDeparture());
@@ -201,6 +203,10 @@ public final class BackendDiagnosticsRecorder {
         JsonObject json = eventBase(train, now, "departure");
         json.addProperty("entryIndex", entryIndex);
         json.addProperty("dwellTicks", dwellTicks);
+        train.getTimings(entryIndex).ifPresent(timing -> {
+            json.addProperty("dwellResidual", timing.dwellResidualTicks());
+            json.addProperty("dwellResidualLastMeasurement", timing.dwellResidual().lastMeasurement());
+        });
         writeLine(json);
     }
 

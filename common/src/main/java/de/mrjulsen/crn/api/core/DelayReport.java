@@ -32,6 +32,10 @@ import net.minecraft.nbt.CompoundTag;
  * @param signalWaitTicks            How long the train has been held at signals.
  * @param stalledTicks               How long the train has been unable to move.
  * @param dwellTicks                 How long the train has been standing at its current stop.
+ * @param separationHoldTicks        How much longer the train is being held at its current stop to
+ *                                   keep the configured distance to the train before it, or zero
+ *                                   when nothing is holding it. This is a hard constraint: the train
+ *                                   will not leave earlier, however late it is running.
  * @param blockingTrains             The names of the trains observed to be in the way.
  * @param causes                     The attributed reasons, most important first.
  */
@@ -47,6 +51,7 @@ public record DelayReport(
     int signalWaitTicks,
     int stalledTicks,
     int dwellTicks,
+    long separationHoldTicks,
     List<String> blockingTrains,
     List<DelayInstance> causes
 ) {
@@ -72,6 +77,7 @@ public record DelayReport(
             realtime.getTotalSignalWaitTicks(),
             realtime.getStalledTicks(),
             realtime.getDwellTicks(),
+            train.getSeparationHoldTicksRemaining(),
             List.copyOf(realtime.getBlockingTrainNames()),
             train.getActiveDelays()
         );
@@ -128,6 +134,7 @@ public record DelayReport(
         nbt.putInt(NBT_SIGNAL_WAIT, signalWaitTicks);
         nbt.putInt(NBT_STALLED, stalledTicks);
         nbt.putInt(NBT_DWELL, dwellTicks);
+        nbt.putLong(NBT_SEPARATION_HOLD, separationHoldTicks);
         nbt.put(NBT_BLOCKING_TRAINS, NbtHelper.writeStrings(blockingTrains));
         nbt.put(NBT_CAUSES, NbtHelper.writeList(causes, DelayInstance::toNbt));
         return nbt;
@@ -146,6 +153,7 @@ public record DelayReport(
             nbt.getInt(NBT_SIGNAL_WAIT),
             nbt.getInt(NBT_STALLED),
             nbt.getInt(NBT_DWELL),
+            nbt.getLong(NBT_SEPARATION_HOLD),
             NbtHelper.readStrings(nbt, NBT_BLOCKING_TRAINS),
             NbtHelper.readList(nbt, NBT_CAUSES, DelayInstance::fromNbt)
         );
@@ -162,6 +170,7 @@ public record DelayReport(
     private static final String NBT_SIGNAL_WAIT = "SignalWaitTicks";
     private static final String NBT_STALLED = "StalledTicks";
     private static final String NBT_DWELL = "DwellTicks";
+    private static final String NBT_SEPARATION_HOLD = "SeparationHoldTicks";
     private static final String NBT_BLOCKING_TRAINS = "BlockingTrains";
     private static final String NBT_CAUSES = "Causes";
 }

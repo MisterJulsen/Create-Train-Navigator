@@ -148,6 +148,7 @@ public class BackendDebugOverlay extends DLWindow {
             .append(TextUtils.text(", stalled: " + rt.getStalledTicks() + "t").withStyle(rt.getStalledTicks() > 0 ? ChatFormatting.RED : ChatFormatting.WHITE))
             .append(TextUtils.text(", speed: " + (int)ModUtils.calcSpeed(train.getTrain().speed, ESpeedUnit.MS) + "/" + (int)ModUtils.calcSpeed(train.getTrain().targetSpeed, ESpeedUnit.MS) + " " + ESpeedUnit.MS).withStyle(ChatFormatting.WHITE))
             .append(TextUtils.text(", cycle: " + train.getTotalDuration() + "t").withStyle(ChatFormatting.WHITE))
+            .append(TextUtils.text(", separation: " + train.getSeparationHoldTicksRemaining() + "t").withStyle(train.getSeparationHoldTicksRemaining() > 0 ? ChatFormatting.YELLOW : ChatFormatting.WHITE))
         );
 
         for (SignalWait wait : rt.getSignalWaits()) {
@@ -195,14 +196,15 @@ public class BackendDebugOverlay extends DLWindow {
             String leg = timing == null ? "?" : timing.legDuration().get() + " (" + timing.legDuration().lastMeasurement() + " | "
                 + String.join(",", timing.legDuration().getHistory().stream().map(String::valueOf).toList()) + ")";
             String visits = timing == null ? "?" : "x" + timing.getCompletedVisits();
+            String residual = timing == null || timing.dwellResidualTicks() <= 0 ? "" : " +" + timing.dwellResidualTicks() + "t";
 
             ChatFormatting color = timing != null && timing.isDelayed(500) ? (isCurrent ? ChatFormatting.GOLD : ChatFormatting.RED)
                 : isCurrent ? ChatFormatting.YELLOW
                 : timing != null && timing.legDuration().isInitialized() ? ChatFormatting.WHITE
                 : ChatFormatting.DARK_GRAY;
 
-            drawLine(graphics, TextUtils.text(String.format("%s[%3d] %s  %-16s %-16s %-12s %-26s %s",
-                marker, stop.entryIndex(), station, sched, real, dev, leg, visits)).withStyle(color));
+            drawLine(graphics, TextUtils.text(String.format("%s[%3d] %s  %-16s %-16s %-12s %-26s %s%s",
+                marker, stop.entryIndex(), station, sched, real, dev, leg, visits, residual)).withStyle(color));
         }
     }
 
