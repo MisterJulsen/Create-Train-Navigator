@@ -8,6 +8,7 @@ public final class StopTimings {
 
     private static final String NBT_LEG = "Leg";
     private static final String NBT_DWELL = "Dwell";
+    private static final String NBT_DWELL_RESIDUAL = "DwellResidual";
     private static final String NBT_SCHEDULED = "Scheduled";
     private static final String NBT_LAST_ARRIVAL = "LastArrival";
     private static final String NBT_LAST_DEPARTURE = "LastDeparture";
@@ -20,6 +21,7 @@ public final class StopTimings {
     private final int entryIndex;
 
     private final MedianDurationTracker legDuration;
+    private final MedianDurationTracker dwellResidual;
     private long dwellDuration = 0;
 
     private final FrequencyStringSelector stationGuess = new FrequencyStringSelector(STATION_GUESS_WINDOW);
@@ -39,6 +41,8 @@ public final class StopTimings {
     public StopTimings(int entryIndex) {
         this.entryIndex = entryIndex;
         this.legDuration = new MedianDurationTracker(ModCommonConfig.TOTAL_DURATION_BUFFER_SIZE.get(), ModCommonConfig.TOTAL_DURATION_DEVIATION_THRESHOLD.get());
+        this.dwellResidual = new MedianDurationTracker(ModCommonConfig.TOTAL_DURATION_BUFFER_SIZE.get(), ModCommonConfig.TOTAL_DURATION_DEVIATION_THRESHOLD.get());
+        this.dwellResidual.seed(0);
     }
 
     public int getEntryIndex() {
@@ -51,6 +55,14 @@ public final class StopTimings {
 
     public long dwellDuration() {
         return dwellDuration;
+    }
+
+    public MedianDurationTracker dwellResidual() {
+        return dwellResidual;
+    }
+
+    public int dwellResidualTicks() {
+        return Math.max(0, dwellResidual.get());
     }
 
     public StopTimes getScheduled() {
@@ -140,6 +152,10 @@ public final class StopTimings {
         return stationGuess.getPrimary();
     }
 
+    public void recordDwellResidual(int measuredResidualTicks) {
+        dwellResidual.record(measuredResidualTicks);
+    }
+
     public synchronized void recordDeparture(long time, long measuredDwellTicks) {
         this.lastActualDeparture = time;
         this.dwellDuration = measuredDwellTicks;
@@ -193,6 +209,7 @@ public final class StopTimings {
     public CompoundTag toNbt(String stationName) {
         CompoundTag nbt = new CompoundTag();
         nbt.put(NBT_LEG, legDuration.toNbt());
+        nbt.put(NBT_DWELL_RESIDUAL, dwellResidual.toNbt());
         nbt.putLong(NBT_DWELL, dwellDuration);
         if (scheduled.isKnown()) nbt.put(NBT_SCHEDULED, scheduled.toNbt());
         nbt.putLong(NBT_LAST_ARRIVAL, lastActualArrival);
@@ -205,6 +222,10 @@ public final class StopTimings {
 
     public void loadNbt(CompoundTag nbt) {
         legDuration.loadNbt(nbt.getCompound(NBT_LEG));
+        if (nbt.contains(NBT_DWELL_RESIDUAL)) {
+            dwellResidual.loadNbt(nbt.getCompound(NBT_DWELL_RESIDUAL));
+        }
+        dwellResidual.seed(0);
         this.dwellDuration = nbt.getLong(NBT_DWELL);
         if (nbt.contains(NBT_SCHEDULED)) {
             this.scheduled = StopTimes.fromNbt(nbt.getCompound(NBT_SCHEDULED));

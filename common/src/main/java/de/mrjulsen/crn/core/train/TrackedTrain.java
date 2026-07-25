@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.simibubi.create.content.trains.entity.Train;
+import com.simibubi.create.content.trains.schedule.ScheduleEntry;
 import com.simibubi.create.content.trains.schedule.ScheduleRuntime;
 import com.simibubi.create.content.trains.station.GlobalStation;
 
@@ -26,10 +27,12 @@ import de.mrjulsen.crn.core.schedule.JourneyParser;
 import de.mrjulsen.crn.core.schedule.JourneySection;
 import de.mrjulsen.crn.core.schedule.JourneyStop;
 import de.mrjulsen.crn.core.schedule.TrainJourney;
+import de.mrjulsen.crn.core.timing.DepartureEstimator;
 import de.mrjulsen.crn.core.timing.StopTimes;
 import de.mrjulsen.crn.core.timing.StopTimings;
 import de.mrjulsen.crn.core.timing.TimetableCalculator;
 import de.mrjulsen.crn.config.ModCommonConfig;
+import de.mrjulsen.crn.data.schedule.condition.TrainSeparationCondition;
 import de.mrjulsen.crn.data.settings.GlobalSettings;
 import de.mrjulsen.crn.data.TrainExitSide;
 import de.mrjulsen.crn.util.TrainUtils;
@@ -426,6 +429,7 @@ public final class TrackedTrain implements RealtimeTracker.Listener {
                     timetableDirty = true;
                     BackendDiagnosticsRecorder.recordReferenceChanged(this, ModUtils.getTransformedWorldTime(), idx, created);
                 });
+                created.dwellResidual().setOnReferenceChanged(() -> timetableDirty = true);
                 return created;
             });
             if (!timing.legDuration().isInitialized() && createEstimates != null && stop.entryIndex() < createEstimates.size()) {
@@ -564,6 +568,7 @@ public final class TrackedTrain implements RealtimeTracker.Listener {
                     return;
                 }
 
+                recordDwellResidual(stop, timing, now);
                 timing.recordDeparture(now, dwellTicks);
                 owner.recordDeparture(this, stop);
                 BackendDiagnosticsRecorder.recordDeparture(this, now, entryIndex, dwellTicks);
@@ -584,6 +589,25 @@ public final class TrackedTrain implements RealtimeTracker.Listener {
                 RailwayBackendEvents.fireDeparture(this, stop);
             });
         }
+    }
+
+    private void recordDwellResidual(JourneyStop stop, StopTimings timing, long departureTime) {
+        ScheduleEntry entry = stop.getScheduleEntry();
+        long arrival = timing.getLastActualArrival();
+        if (arrival < 0 || !service.isActive() || !TrainSeparationCondition.isPresentIn(entry)) {
+            return;
+        }
+        long baseline = Math.max(arrival, DepartureEstimator.estimate(entry, arrival).departure());
+        timing.recordDwellResidual((int)Math.max(0, departureTime - baseline));
+    }
+
+    public long getSeparationHoldTicksRemaining() {
+        if (train.runtime == null || getLiveState() != LiveTrainState.AT_STATION) {
+            return 0;
+        }
+        return getCurrentStop()
+            .map(stop -> TrainSeparationCondition.remainingHoldTicks(train, stop.getScheduleEntry()))
+            .orElse(0L);
     }
 
     @Override

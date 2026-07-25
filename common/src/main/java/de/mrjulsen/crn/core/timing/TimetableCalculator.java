@@ -55,17 +55,19 @@ public final class TimetableCalculator {
                 nominalArrival = nominalTime + leg;
             }
 
+            int residual = timing.dwellResidualTicks();
+
             DepartureEstimator.Result estimate = DepartureEstimator.estimate(stop.getScheduleEntry(), arrival);
-            long departure = resolveDeparture(timing, estimate, arrival);
+            long departure = resolveDeparture(timing, estimate, arrival) + residual;
             if (i == 0 && atStation) {
                 departure = Math.max(departure, now);
             }
-            timing.setRealtime(new StopTimes(arrival, departure, estimate.minDeparture()));
+            timing.setRealtime(new StopTimes(arrival, departure, estimate.minDeparture() + residual));
             time = departure;
 
             DepartureEstimator.Result nominalEstimate = DepartureEstimator.estimate(stop.getScheduleEntry(), nominalArrival);
-            timing.setNominalTimes(new StopTimes(nominalArrival, nominalEstimate.departure(), nominalEstimate.minDeparture()));
-            nominalTime = nominalEstimate.departure();
+            timing.setNominalTimes(new StopTimes(nominalArrival, nominalEstimate.departure() + residual, nominalEstimate.minDeparture() + residual));
+            nominalTime = nominalEstimate.departure() + residual;
         }
     }
 
