@@ -3,6 +3,7 @@ package de.mrjulsen.crn.client.gui.windows;
 import java.util.List;
 import java.util.Optional;
 
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
 import com.simibubi.create.foundation.gui.AllIcons;
 import de.mrjulsen.crn.Constants;
@@ -31,6 +32,7 @@ import de.mrjulsen.crn.client.gui.widgets.create.CreateButton;
 import de.mrjulsen.crn.client.gui.widgets.create.CreateItemPicker;
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
 import de.mrjulsen.crn.client.gui.widgets.skins.CRNFlatButtonRenderer;
+import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.network.packets.cts.AdvancedDisplayUpdatePacketData;
 import de.mrjulsen.crn.registry.ModNetworkManager;
 import de.mrjulsen.mcdragonlib.DragonLib;
@@ -63,6 +65,8 @@ import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.SnbtPrinterTagVisitor;
+import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -271,7 +275,7 @@ public class AdvancedDisplaySettingsWindow extends DLWindow {
         FlatIconButton copyBtn = advancedSettingsPanel.addComponent(new FlatIconButton(0, 0, ModGuiIcons.COPY.getAsSprite(ModGuiIcons.ICON_SIZE, ModGuiIcons.ICON_SIZE)));
         copyBtn.layoutContraint.set(FlowLayout.FlowConstraint.END);
         copyBtn.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
-            Clipboard.put(AdvancedDisplaySettingsData.class, new AdvancedDisplaySettingsData(typeKey, settings, doubleSided));
+            toClipboard(new AdvancedDisplaySettingsData(typeKey, settings, doubleSided));
             return false;
         });
         copyBtn.tooltip.set(new DLTooltip(List.of(Constants.TEXT_COPY), 200));
@@ -279,7 +283,7 @@ public class AdvancedDisplaySettingsWindow extends DLWindow {
         FlatIconButton pasteBtn = advancedSettingsPanel.addComponent(new FlatIconButton(0, 0, ModGuiIcons.PASTE.getAsSprite(ModGuiIcons.ICON_SIZE, ModGuiIcons.ICON_SIZE)));
         pasteBtn.layoutContraint.set(FlowLayout.FlowConstraint.END);
         pasteBtn.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
-            Clipboard.get(AdvancedDisplaySettingsData.class).ifPresent(x -> {
+            fromClipboard().ifPresent(x -> {
                 this.typeKey = x.getKey();
                 this.type = x.getKey().category();
                 this.settings = x.getSettings();
@@ -333,6 +337,28 @@ public class AdvancedDisplaySettingsWindow extends DLWindow {
             return false;
         });
 
+    }
+
+    private static Optional<AdvancedDisplaySettingsData> fromClipboard() {
+        if (ModClientConfig.USE_NATIVE_CLIPBOARD.get()) {
+            AdvancedDisplaySettingsData data = new AdvancedDisplaySettingsData();
+            try {
+                data.deserializeNbt(TagParser.parseTag(Minecraft.getInstance().keyboardHandler.getClipboard()));
+            } catch (CommandSyntaxException e) {
+                return Optional.empty();
+            }
+            return Optional.of(data);
+        } else {
+            return Clipboard.get(AdvancedDisplaySettingsData.class);
+        }
+    }
+
+    private static void toClipboard(AdvancedDisplaySettingsData data) {
+        if (ModClientConfig.USE_NATIVE_CLIPBOARD.get()) {
+            Minecraft.getInstance().keyboardHandler.setClipboard((new SnbtPrinterTagVisitor()).visit(data.serializeNbt()));
+        } else {
+            Clipboard.put(AdvancedDisplaySettingsData.class, data);
+        }
     }
     
     @Override
