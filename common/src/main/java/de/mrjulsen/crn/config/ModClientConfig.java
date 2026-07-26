@@ -17,6 +17,7 @@ public class ModClientConfig {
     public static final ForgeConfigSpec.ConfigValue<ETimeFormat> TIME_FORMAT;
     public static final ForgeConfigSpec.ConfigValue<CustomLanguage> LANGUAGE;
     public static final ForgeConfigSpec.ConfigValue<ESpeedUnit> SPEED_UNIT;
+    public static final ForgeConfigSpec.ConfigValue<Boolean> USE_NATIVE_CLIPBOARD;
 
     public static final double MIN_SCALE = 0.25f;
     public static final double MAX_SCALE = 2.0f;
@@ -41,6 +42,9 @@ public class ModClientConfig {
             .defineEnum("speed_unit", ESpeedUnit.KMH);
         TIME_FORMAT = BUILDER.comment("Display Time Format. (Default: Hours 24)")
             .defineEnum("time_format", ETimeFormat.HOURS_24);
+
+        USE_NATIVE_CLIPBOARD = BUILDER.comment("If active, copied display configurations will be placed in the computer-wide clipboard and when pasting display configurations will be taken from the computer-wide clipboard.")
+            .define("use_native_clipboard", false);
 
         BUILDER.pop();
         SPEC = BUILDER.build();
