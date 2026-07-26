@@ -19,6 +19,10 @@ public final class PlatformOccupiedCause extends DelayCause {
 
     @Override
     public Collection<DelayInstance> detect(DelayContext ctx) {
+        if (ctx.train().isWaitingForPlatform()) {
+            return present(ctx, DelayArgument.trainName(ctx.train().getPlatformWaitOccupant()));
+        }
+
         Train train = ctx.createTrain();
         if (train.navigation == null || train.navigation.destination == null) {
             return absent();

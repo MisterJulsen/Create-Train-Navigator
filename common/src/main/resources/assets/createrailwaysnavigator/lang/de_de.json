@@ -392,9 +392,14 @@
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.priorities": "Elemente weiter oben haben eine höhere Priorität und werden zuerst gewählt.",
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.priority_pos": "Position: %s",
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.avoid_signals": "Vermeide Rote Signale",
-    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.avoid_signals_description": "Wähle eine Station mit den wenigsten durch Redstone rot geschalteten Signalen.",
-    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.avoid_trains": "Vermeide Andere Züge",
-    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.avoid_trains_description": "Wählt eine Station aus der Liste mit möglichst wenig anderen Zügen auf der Strecke.",
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.avoid_signals_description": "Der Zug meidet durch Redstone rot geschaltene Signale und wählt eine andere Priorität. Ist diese Option deaktiviert, wartet der Zug vor dem Signal bis es wieder frei wird.",
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.avoid_trains": "Vermeide andere Züge",
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.avoid_trains_description": "Wenn eine Station von einem anderen Zug belegt oder reserviert ist, wird eine andere Priorität gewählt. Ist diese Option deaktiviert, wird hinter dem Zug gewartet, bis das Gleis geräumt wird.",
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.wait_instead": "Warten statt weiterfahren",
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.wait_instead_description": "Wenn kein Gleis frei ist, wird bei der letzten Station gewartet, anstatt die bestmögliche Option zu wählen.",
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.detour": "Umwegsschwelle",
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.detour_description": "Um wie viel länger die alternative Route maximal sein darf. Dies soll vermeiden, dass Züge wild durch das gesamte Netzwerk fahren, um die gewünschte Station zu erreichen.",
+
     "goggles.createrailwaysnavigator.train_listener.departures.title": "Abfahrtverlauf",
     "goggles.createrailwaysnavigator.train_listener.departures.any": "Letzte Abfahrt:",
     "goggles.createrailwaysnavigator.train_listener.departures.line": "Abfahrten nach Zuglinie:",
@@ -476,7 +481,7 @@
     "gui.createrailwaysnavigator.delay_cause.priority_other_train": "Vorfahrt eines anderen Zuges",
     "gui.createrailwaysnavigator.delay_cause.signal_malfunction": "Signalstörung",
     "gui.createrailwaysnavigator.delay_cause.stalled": "Technische Störung am Zug",
-    "gui.createrailwaysnavigator.delay_cause.extended_stop": "Längerer Aufenthalt am Bahnhof",
+    "gui.createrailwaysnavigator.delay_cause.extended_stop": "Längerer Aufenthalt im Bahnhof",
     "gui.createrailwaysnavigator.delay_cause.broken_track": "Streckenstörung",
     "gui.createrailwaysnavigator.delay_cause.no_route": "Betriebsstörung",
     "gui.createrailwaysnavigator.delay_cause.staff_shortage": "Kurzfristiger Personalausfall",
@@ -494,6 +499,5 @@
     "gui.createrailwaysnavigator.global_settings.train_line.color": "Farbe auswählen",
     "gui.createrailwaysnavigator.global_settings.train_line.description": "Erstelle Linien, um mehrere Züge zu Linienzügen zusammenzufassen, deren Anzeigename zu überschreiben oder um weitere Einstellungen anzupassen. (Kann nur im Fahrplan zugewiesen werden)",
     "create.generic.unit.days": "Tage",
-    "create.generic.unit.hours": "Stunden",
-    "createrailwaysnavigator.moin": "moin"
+    "create.generic.unit.hours": "Stunden"
 }

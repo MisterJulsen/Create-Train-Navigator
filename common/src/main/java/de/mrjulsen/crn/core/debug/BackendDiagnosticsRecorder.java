@@ -236,6 +236,29 @@ public final class BackendDiagnosticsRecorder {
         writeLine(json);
     }
 
+    public static void recordRouteChoice(UUID trainId, String trainName, String chosenStation, int chosenIndex,
+        boolean waiting, Collection<String> passed, Collection<String> notes) {
+        if (!active) {
+            return;
+        }
+        JsonObject json = new JsonObject();
+        json.addProperty("event", "routeChoice");
+        json.addProperty("trainId", trainId == null ? "" : trainId.toString());
+        json.addProperty("trainName", trainName == null ? "" : trainName);
+        json.addProperty("chosenIndex", chosenIndex);
+        json.addProperty("chosenStation", chosenStation == null ? "" : chosenStation);
+        json.addProperty("waiting", waiting);
+
+        JsonArray skipped = new JsonArray();
+        passed.forEach(skipped::add);
+        json.add("passed", skipped);
+
+        JsonArray detail = new JsonArray();
+        notes.forEach(detail::add);
+        json.add("notes", detail);
+        writeLine(json);
+    }
+
     private static JsonObject eventBase(TrackedTrain train, long now, String event) {
         JsonObject json = new JsonObject();
         json.addProperty("event", event);

@@ -12,14 +12,11 @@
   "mixins": [
     "ContraptionAccessor",
     "CreateAccessor",
-    "FrontierEntryMixin",
     "ItemMixin",
     "MountedStorageManagerMixin",
-    "NavigationMixin",
     "ScheduleEntryMixin",
     "ScheduleRuntimeAccessor",
     "ScheduleRuntimeMixin",
-    "TrainPenaltyAccessor",
     "TrainStatusAccessor",
     "extensions.ScheduledDelayMixin",
     "extensions.TimeOfDayConditionMixin"

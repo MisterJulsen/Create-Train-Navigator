@@ -78,6 +78,10 @@ public final class TrackedTrain implements RealtimeTracker.Listener {
     private volatile int sectionsSinceReset = 0;
 
     private static final int EXIT_SIDE_RETRY_TICKS = 20;
+    private static final int PLATFORM_WAIT_GRACE = 100;
+
+    private volatile long platformWaitUntil = -1;
+    private volatile String platformWaitOccupant = "";
 
     private volatile TrainExitSide exitSide = TrainExitSide.UNKNOWN;
     private UUID exitSideStation;
@@ -599,6 +603,19 @@ public final class TrackedTrain implements RealtimeTracker.Listener {
         }
         long baseline = Math.max(arrival, DepartureEstimator.estimate(entry, arrival).departure());
         timing.recordDwellResidual((int)Math.max(0, departureTime - baseline));
+    }
+
+    public void markWaitingForPlatform(String occupantName) {
+        this.platformWaitUntil = ModUtils.getTransformedWorldTime() + PLATFORM_WAIT_GRACE;
+        this.platformWaitOccupant = occupantName == null ? "" : occupantName;
+    }
+
+    public boolean isWaitingForPlatform() {
+        return platformWaitUntil >= ModUtils.getTransformedWorldTime();
+    }
+
+    public String getPlatformWaitOccupant() {
+        return platformWaitOccupant;
     }
 
     public long getSeparationHoldTicksRemaining() {

@@ -2,32 +2,24 @@ package de.mrjulsen.crn.data.schedule.instruction;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Pattern;
 
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.content.trains.entity.Train;
 import com.simibubi.create.content.trains.graph.DiscoveredPath;
-import com.simibubi.create.content.trains.graph.EdgePointType;
 import com.simibubi.create.content.trains.schedule.ScheduleRuntime;
 import com.simibubi.create.content.trains.schedule.destination.DestinationInstruction;
-import com.simibubi.create.content.trains.station.GlobalStation;
 import com.simibubi.create.foundation.gui.ModularGuiLineBuilder;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.api.core.RailwayBackendApi;
 import de.mrjulsen.crn.client.ClientWrapper;
-import de.mrjulsen.crn.data.schedule.INavigationExtension;
+import de.mrjulsen.crn.config.ModCommonConfig;
+import de.mrjulsen.crn.core.debug.BackendDiagnosticsRecorder;
 import de.mrjulsen.crn.mixin.ScheduleRuntimeAccessor;
-import de.mrjulsen.crn.util.ModUtils;
-import de.mrjulsen.crn.util.PenaltyResult;
-import de.mrjulsen.crn.util.PenaltyResult.Category;
-import de.mrjulsen.crn.util.PenaltyResult.Type;
-import de.mrjulsen.mcdragonlib.util.MapCache;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.createmod.catnip.data.Pair;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
@@ -41,7 +33,12 @@ public class PrioritizedDestinationInstruction extends DestinationInstruction {
 	public static final String NBT_FILTERS = "Filters";
 	public static final String NBT_AVOID_RED_SIGNAL = "AvoidRedSignal";
 	public static final String NBT_AVOID_TRAINS = "AvoidTrains";
+	public static final String NBT_WAIT_INSTEAD = "WaitInstead";
+	public static final String NBT_DETOUR_ALLOWANCE = "DetourAllowance";
+
 	public static final byte MAX_ENTRIES = 20;
+	public static final int DEFAULT_DETOUR_ALLOWANCE = 500;
+	public static final int DETOUR_CHECK_OFF = -1;
 
 	public final Component txtIsEmpty = TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule.instruction." + getId().getPath() + ".empty").withStyle(ChatFormatting.GRAY);
 	public final Component txtPrimary = TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule.instruction." + getId().getPath() + ".primary").withStyle(ChatFormatting.AQUA);
@@ -51,13 +48,6 @@ public class PrioritizedDestinationInstruction extends DestinationInstruction {
 	public Pair<ItemStack, Component> getSummary() {
 		return Pair.of(AllBlocks.TRACK_STATION.asStack(), TextUtils.text(getLabelText()));
 	}	
-
-	@Override
-	protected void readAdditional(CompoundTag tag) {
-		super.readAdditional(tag);
-        if (!tag.contains(NBT_AVOID_RED_SIGNAL)) tag.putBoolean(NBT_AVOID_RED_SIGNAL, true);
-        if (!tag.contains(NBT_AVOID_TRAINS)) tag.putBoolean(NBT_AVOID_TRAINS, true);
-	}
 
 	@Override
 	public List<Component> getTitleAs(String type) {
@@ -107,11 +97,19 @@ public class PrioritizedDestinationInstruction extends DestinationInstruction {
 
 
 	public boolean shouldAvoidRedSignals() {
-		return data.getBoolean(NBT_AVOID_RED_SIGNAL);
+		return !data.contains(NBT_AVOID_RED_SIGNAL) || data.getBoolean(NBT_AVOID_RED_SIGNAL);
 	}
 
 	public boolean shouldAvoidTrains() {
-		return data.getBoolean(NBT_AVOID_TRAINS);
+		return !data.contains(NBT_AVOID_TRAINS) || data.getBoolean(NBT_AVOID_TRAINS);
+	}
+
+	public boolean shouldWaitInstead() {
+		return data.getBoolean(NBT_WAIT_INSTEAD);
+	}
+
+	public int getDetourAllowance() {
+		return data.contains(NBT_DETOUR_ALLOWANCE) ? data.getInt(NBT_DETOUR_ALLOWANCE) : DEFAULT_DETOUR_ALLOWANCE;
 	}
 
 	public List<String> getFilters() {
@@ -142,18 +140,6 @@ public class PrioritizedDestinationInstruction extends DestinationInstruction {
 	public @Nullable DiscoveredPath start(ScheduleRuntime runtime, Level level) {
 		ScheduleRuntimeAccessor accessor = (ScheduleRuntimeAccessor) runtime;
 		Train train = accessor.crn$getTrain();
-		List<String> filters = getFilters();
-		List<Pattern> patterns = filters.stream()
-				.map(ModUtils::buildPattern)
-				.toList();
-		INavigationExtension ext = (INavigationExtension)train.navigation;
-
-		DiscoveredPath selectedDestination = null;
-		int selectedPainCount = Integer.MAX_VALUE;
-		boolean anyMatch = false;
-
-
-		MapCache<DiscoveredPath, GlobalStation, GlobalStation> navigationCache = new MapCache<>((station) -> train.navigation.findPathTo(station, Double.MAX_VALUE), GlobalStation::hashCode);
 
 		if (!train.hasForwardConductor() && !train.hasBackwardConductor()) {
 			train.status.missingConductor();
@@ -161,73 +147,59 @@ public class PrioritizedDestinationInstruction extends DestinationInstruction {
 			return null;
 		}
 
-		for (Pattern regex : patterns) {
-			AtomicInteger painCount = new AtomicInteger(0);
-			GlobalStation bestStation = null;
-			DiscoveredPath bestPath = null;
-			double bestCost = Double.MAX_VALUE;
-
-			for (GlobalStation globalStation : train.graph.getPoints(EdgePointType.STATION)) {
-				if (!regex.matcher(globalStation.name).matches()) {
-					continue;
-				}
-				DiscoveredPath discoveredPath = navigationCache.get(globalStation, globalStation);
-
-				if (discoveredPath == null) {
-					continue;
-				}
-
-				if (discoveredPath.cost < 0)
-					continue;
-				if (discoveredPath.cost > bestCost)
-					continue;
-				bestStation = globalStation;
-				bestPath = discoveredPath;
-				bestCost = discoveredPath.cost;
-			}
-
-			if (bestStation == null) {
-				continue;
-			}
-			anyMatch = true;			
-
-			if (shouldAvoidTrains() && (
-				(bestStation.getImminentTrain() != null && bestStation.getImminentTrain() != train) ||
-				(bestStation.getPresentTrain() != null && bestStation.getPresentTrain() != train) ||
-				(bestStation.getNearestTrain() != null && bestStation.getNearestTrain() != train)
-			)) {
-				painCount.addAndGet(1);
-			}
-
-			ext.getPenaltiesByDirection().ifPresent(x -> {
-				for (PenaltyResult.Type type : x.getPenalties().keySet()) {
-					if (shouldAvoidRedSignals() && type == Type.REDSTONE_RED_SIGNAL) {
-						painCount.addAndGet(1);
-					} else if (shouldAvoidTrains() && (type.getCategory() == Category.TRAINS || type == Type.RED_SIGNAL)) {
-						painCount.addAndGet(1);
-					}
-				}
-			});
-
-			if (painCount.get() < selectedPainCount) {
-				selectedPainCount = painCount.get();
-				selectedDestination = bestPath;
-
-				if (painCount.get() <= 0)
-					break;
-			}
+		boolean explain = shouldExplain();
+		PriorityChoice.Result result = PriorityChoice.select(train, this, explain);
+		if (explain) {
+			reportChoice(train, result);
 		}
 
-		if (selectedDestination == null) {
-			if (anyMatch) {
-				train.status.failedNavigation();
-			} else {
-				train.status.failedNavigationNoTarget(String.join(", ", filters));
-			}
-			accessor.crn$setCooldown(accessor.crn$getInterval());
-			return null;
+		if (result.hasPath()) {
+			return result.path();
 		}
 
-		return selectedDestination;
+		if (result.waiting()) {
+			RailwayBackendApi.getTrackedTrain(train.id).ifPresent(x -> x.markWaitingForPlatform(blockingTrainName(result)));
+		} else if (result.passed().stream().anyMatch(x -> x.reason() != PriorityChoice.Skip.NO_STATION)) {
+			train.status.failedNavigation();
+		} else {
+			train.status.failedNavigationNoTarget(String.join(", ", getFilters()));
+		}
+		accessor.crn$setCooldown(accessor.crn$getInterval());
+		return null;
+	}
+
+	private static String blockingTrainName(PriorityChoice.Result result) {
+		return result.passed().stream()
+			.map(PriorityChoice.Passed::blockedBy)
+			.filter(x -> x != null && !x.isBlank())
+			.findFirst()
+			.orElse("");
+	}
+
+	private static boolean shouldExplain() {
+		return ModCommonConfig.ADVANCED_LOGGING.get()
+			|| CreateRailwaysNavigator.isDebug()
+			|| BackendDiagnosticsRecorder.isActive();
+	}
+
+	private void reportChoice(Train train, PriorityChoice.Result result) {
+		boolean logging = ModCommonConfig.ADVANCED_LOGGING.get() || CreateRailwaysNavigator.isDebug();
+		List<String> filters = getFilters();
+		List<String> passed = result.passed().stream()
+			.map(x -> String.format("%d (%s): %s", x.index() + 1, x.filter(), x.reason()))
+			.toList();
+		String chosen = result.hasPath() ? result.path().destination.name : "";
+
+		BackendDiagnosticsRecorder.recordRouteChoice(train.id, train.name.getString(), chosen, result.index(), result.waiting(), passed, result.notes());
+
+		if (logging) {
+			CreateRailwaysNavigator.LOGGER.info("[Route] '{}' -> {} | passed over: {} | {}",
+				train.name.getString(),
+				result.hasPath()
+					? (result.index() < 0 ? "fallback " + chosen : "priority " + (result.index() + 1) + " " + chosen)
+					: result.waiting() ? "waiting, nothing free of " + filters.size() + " entries" : "no route",
+				passed.isEmpty() ? "-" : String.join("; ", passed),
+				String.join(" | ", result.notes()));
+		}
 	}
 }

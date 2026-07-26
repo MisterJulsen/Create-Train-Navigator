@@ -3,9 +3,14 @@ package de.mrjulsen.crn.client.gui.windows;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import de.mrjulsen.crn.client.gui.widgets.create.CreateScrollNumberInput;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLNumberPicker;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.util.INumberFormatAdapter;
+import net.minecraft.network.chat.CommonComponents;
 import org.lwjgl.glfw.GLFW;
 
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -52,6 +57,7 @@ import de.mrjulsen.mcdragonlib.util.math.MathUtils;
 import de.mrjulsen.mcdragonlib.util.math.Point;
 import de.mrjulsen.mcdragonlib.util.math.Rectangle;
 import net.createmod.catnip.gui.element.GuiGameElement;
+import net.createmod.catnip.gui.element.ScreenElement;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.nbt.CompoundTag;
@@ -78,19 +84,21 @@ public class PrioritizedDestinationInstructionSettingsWindow extends DLWindow {
 
     private DLScrollBar scrollBar;
     private ListBox list;
-    private CreateButton backButton;
     private CreateButton addBtn;
     private CreateTextBox addTextBox;
-    private CreateButton avoidSignalsButton;
-    private CreateIndicator avoidSignalsIndicator;
-    private CreateButton avoidTrainsButton;
-    private CreateIndicator avoidTrainsIndicator;
+    private CreateScrollNumberInput detourMaxPenaltyInput;
 
     private final PrioritizedDestinationInstruction instruction;
     private final CompoundTag nbt;
     private final List<String> stationFilters = new ArrayList<>();
     private boolean shouldAvoidSignals;
     private boolean shouldAvoidTrains;
+    private boolean shouldWaitInstead;
+    private int detourMaxPenalty;
+
+    private static final int[] DETOUR_PRESETS = {
+        PrioritizedDestinationInstruction.DETOUR_CHECK_OFF, 2000, PrioritizedDestinationInstruction.DEFAULT_DETOUR_ALLOWANCE, 150
+    };
 
     private final List<String> stationNames = new ArrayList<>();
 
@@ -98,6 +106,10 @@ public class PrioritizedDestinationInstructionSettingsWindow extends DLWindow {
     private final MutableComponent txtAvoidSignalsDescription = TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule.instruction.prioritized_destination_instruction.settings.avoid_signals_description").withStyle(ChatFormatting.GRAY);
     private final MutableComponent txtAvoidTrainsTitle = TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule.instruction.prioritized_destination_instruction.settings.avoid_trains");
     private final MutableComponent txtAvoidTrainsDescription = TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule.instruction.prioritized_destination_instruction.settings.avoid_trains_description").withStyle(ChatFormatting.GRAY);
+    private final MutableComponent txtWaitInsteadTitle = TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule.instruction.prioritized_destination_instruction.settings.wait_instead");
+    private final MutableComponent txtWaitInsteadDescription = TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule.instruction.prioritized_destination_instruction.settings.wait_instead_description").withStyle(ChatFormatting.GRAY);
+    private final MutableComponent txtDetourTitle = TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule.instruction.prioritized_destination_instruction.settings.detour");
+    private final MutableComponent txtDetourDescription = TextUtils.translate(CreateRailwaysNavigator.MOD_ID + ".schedule.instruction.prioritized_destination_instruction.settings.detour_description").withStyle(ChatFormatting.GRAY);
 
     public PrioritizedDestinationInstructionSettingsWindow(DLWindowManager manager, PrioritizedDestinationInstruction instruction, CompoundTag nbt) {
         super(manager);
@@ -109,6 +121,10 @@ public class PrioritizedDestinationInstructionSettingsWindow extends DLWindow {
         this.stationFilters.addAll(nbt.getList(PrioritizedDestinationInstruction.NBT_FILTERS, Tag.TAG_STRING).stream().map(x -> x.getAsString()).toList());
         this.shouldAvoidSignals = nbt.contains(PrioritizedDestinationInstruction.NBT_AVOID_RED_SIGNAL) ? nbt.getBoolean(PrioritizedDestinationInstruction.NBT_AVOID_RED_SIGNAL) : true;
         this.shouldAvoidTrains = nbt.contains(PrioritizedDestinationInstruction.NBT_AVOID_TRAINS) ? nbt.getBoolean(PrioritizedDestinationInstruction.NBT_AVOID_TRAINS) : true;
+        this.shouldWaitInstead = nbt.getBoolean(PrioritizedDestinationInstruction.NBT_WAIT_INSTEAD);
+        this.detourMaxPenalty = nbt.contains(PrioritizedDestinationInstruction.NBT_DETOUR_ALLOWANCE)
+            ? nbt.getInt(PrioritizedDestinationInstruction.NBT_DETOUR_ALLOWANCE)
+            : PrioritizedDestinationInstruction.DEFAULT_DETOUR_ALLOWANCE;
 
         init();
     }
@@ -162,27 +178,28 @@ public class PrioritizedDestinationInstructionSettingsWindow extends DLWindow {
         addEventListener(DLGuiStandardEvents.ScrollEvent.class, scrollBar::invokeEvent);
 
 
-        avoidSignalsButton = addComponent(new CreateButton(7, GUI_HEIGHT - 6 - CreateButton.HEIGHT, GuiGameElement.of(AllBlocks.TRACK_SIGNAL.asStack())));
-        avoidSignalsIndicator = addComponent(new CreateIndicator(avoidSignalsButton.x(), avoidSignalsButton.y() - 6));
-        avoidSignalsIndicator.state.set(this.shouldAvoidSignals ? State.ON : State.OFF);
-        avoidSignalsButton.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
-            shouldAvoidSignals = !shouldAvoidSignals;
-            avoidSignalsIndicator.state.set(this.shouldAvoidSignals ? State.ON : State.OFF);
+        addToggle(0, GuiGameElement.of(AllBlocks.TRACK_SIGNAL.asStack()), shouldAvoidSignals,
+            v -> shouldAvoidSignals = v, txtAvoidSignalsTitle, txtAvoidSignalsDescription);
+        addToggle(1, GuiGameElement.of(AllBlocks.TRAIN_CONTROLS.asStack()), shouldAvoidTrains,
+            v -> shouldAvoidTrains = v, txtAvoidTrainsTitle, txtAvoidTrainsDescription);
+        addToggle(2, ModGuiIcons.TIME.getAsCreateIcon(), shouldWaitInstead,
+            v -> shouldWaitInstead = v, txtWaitInsteadTitle, txtWaitInsteadDescription);
+
+        detourMaxPenaltyInput = addComponent(new CreateScrollNumberInput(footerSlotX(3) + 5, footerSlotY(), 40));
+        detourMaxPenaltyInput.title.set(txtDetourTitle);
+        detourMaxPenaltyInput.hint.set(txtDetourDescription);
+        detourMaxPenaltyInput.format.set(new DetourFormat());
+        detourMaxPenaltyInput.shiftStep.set(500D);
+        detourMaxPenaltyInput.step.set(100D);
+        detourMaxPenaltyInput.min.set(-1D);
+        detourMaxPenaltyInput.max.set((double)Short.MAX_VALUE);
+        detourMaxPenaltyInput.value.set((double)detourMaxPenalty);
+        detourMaxPenaltyInput.addEventListener(DLNumberPicker.ValueChangedEvent.class, (s, e) -> {
+            this.detourMaxPenalty = (int)e.value();
             return false;
         });
-        avoidSignalsButton.tooltip.set(new DLTooltip(List.of(txtAvoidSignalsTitle, txtAvoidSignalsDescription), 200));
 
-        avoidTrainsButton = addComponent(new CreateButton(7 + CreateButton.WIDTH, GUI_HEIGHT - 6 - CreateButton.HEIGHT, GuiGameElement.of(AllBlocks.TRAIN_CONTROLS.asStack())));
-        avoidTrainsIndicator = addComponent(new CreateIndicator(avoidTrainsButton.x(), avoidTrainsButton.y() - 6));
-        avoidTrainsIndicator.state.set(this.shouldAvoidTrains ? State.ON : State.OFF);
-        avoidTrainsButton.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
-            shouldAvoidTrains = !shouldAvoidTrains;
-            avoidTrainsIndicator.state.set(this.shouldAvoidTrains ? State.ON : State.OFF);
-            return false;
-        });
-        avoidTrainsButton.tooltip.set(new DLTooltip(List.of(txtAvoidTrainsTitle, txtAvoidTrainsDescription), 200));
-
-        backButton = addComponent(new CreateButton(GUI_WIDTH - 7 - DEFAULT_ICON_BUTTON_WIDTH, GUI_HEIGHT - 6 - DEFAULT_ICON_BUTTON_HEIGHT, AllIcons.I_CONFIRM));
+        CreateButton backButton = addComponent(new CreateButton(GUI_WIDTH - 7 - DEFAULT_ICON_BUTTON_WIDTH, GUI_HEIGHT - 6 - DEFAULT_ICON_BUTTON_HEIGHT, AllIcons.I_CONFIRM));
         backButton.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
             getWindowManager().closeWindow(this);
             return false;
@@ -209,6 +226,31 @@ public class PrioritizedDestinationInstructionSettingsWindow extends DLWindow {
         nbt.put(PrioritizedDestinationInstruction.NBT_FILTERS, list);
         nbt.putBoolean(PrioritizedDestinationInstruction.NBT_AVOID_RED_SIGNAL, shouldAvoidSignals);
         nbt.putBoolean(PrioritizedDestinationInstruction.NBT_AVOID_TRAINS, shouldAvoidTrains);
+        nbt.putBoolean(PrioritizedDestinationInstruction.NBT_WAIT_INSTEAD, shouldWaitInstead);
+        nbt.putInt(PrioritizedDestinationInstruction.NBT_DETOUR_ALLOWANCE, detourMaxPenalty);
+    }
+
+    private static int footerSlotX(int slot) {
+        return 7 + CreateButton.WIDTH * slot;
+    }
+
+    private static int footerSlotY() {
+        return GUI_HEIGHT - 6 - CreateButton.HEIGHT;
+    }
+
+    /** An on/off button in the footer, with the indicator above it holding the state. */
+    private void addToggle(int slot, ScreenElement icon, boolean initial, Consumer<Boolean> onChange,
+        Component title, Component description) {
+        CreateButton button = addComponent(new CreateButton(footerSlotX(slot), footerSlotY(), icon));
+        CreateIndicator indicator = addComponent(new CreateIndicator(button.x(), button.y() - 6));
+        indicator.state.set(initial ? State.ON : State.OFF);
+        button.tooltip.set(new DLTooltip(List.of(title, description), 200));
+        button.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
+            boolean enabled = indicator.state.get() != State.ON;
+            indicator.state.set(enabled ? State.ON : State.OFF);
+            onChange.accept(enabled);
+            return false;
+        });
     }
 
     private void reloadList() {
@@ -432,5 +474,30 @@ public class PrioritizedDestinationInstructionSettingsWindow extends DLWindow {
             }
         }
 
+    }
+
+
+    private static final class DetourFormat extends INumberFormatAdapter.DecimalNumberFormat {
+
+        public DetourFormat() {
+            super(0);
+        }
+
+        @Override
+        public String format(double value) {
+            if (value < 0) {
+                return CommonComponents.OPTION_OFF.getString();
+            }
+            return super.format(value);
+        }
+
+        @Override
+        public double parse(String input) throws NumberFormatException {
+            String trimmedInput = input.trim();
+            if (trimmedInput.equalsIgnoreCase(TextUtils.translate("gui.createrailwaysnavigator.common.auto").getString())) {
+                return -1;
+            }
+            return Double.parseDouble(input);
+        }
     }
 }

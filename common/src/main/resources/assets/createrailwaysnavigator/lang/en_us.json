@@ -388,9 +388,13 @@
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.priorities": "Elements higher up have a higher priority and are selected first.",
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.priority_pos": "Position: %s",
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.avoid_signals": "Avoid Red Signals",
-    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.avoid_signals_description": "Select the station with the fewest signals turned red by Redstone.",
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.avoid_signals_description": "The train avoids signals set to red via Redstone and then selects a different priority. If this option is disabled, the train waits at the signal until it turns green again.",
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.avoid_trains": "Avoid Other Trains",
-    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.avoid_trains_description": "Selects the station with the fewest trains on the route.",
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.avoid_trains_description": "If a station is occupied or reserved by another train, a different priority is selected. If this option is disabled, the train waits for other trains to leave the station.",
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.wait_instead": "Wait Instead Of Diverting",
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.wait_instead_description": "If no entry is free, stay at the station before and wait instead of taking the least bad one.",
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.detour": "Detour Threshold",
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.detour_description": "How much longer an alternative route may be. Stops a train from circling the network to reach the desired track station.",
 
     "goggles.createrailwaysnavigator.train_listener.departures.title": "Departure History",
     "goggles.createrailwaysnavigator.train_listener.departures.any": "Last departure:",
@@ -479,6 +483,6 @@
     "gui.createrailwaysnavigator.global_settings.train_line.description": "Create train lines to group different trains together, overwrite their display name and adjust other settings for each line. (Can only be assigned to the trains in the schedule)",
 
     "create.generic.unit.days": "Days",
-    "create.generic.unit.hours": "Hours",
+    "create.generic.unit.hours": "Hours"
     
 }
