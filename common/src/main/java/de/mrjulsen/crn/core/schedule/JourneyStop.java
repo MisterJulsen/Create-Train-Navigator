@@ -12,6 +12,7 @@ public final class JourneyStop implements IJourneyEntry<JourneyStop> {
     private JourneySection section;
     private String title;
     private volatile String stationName;
+    private volatile boolean stationResolved;
     private final transient ScheduleEntry entry;
 
 
@@ -46,6 +47,19 @@ public final class JourneyStop implements IJourneyEntry<JourneyStop> {
 
     public String getStationName() {
         return stationName;
+    }
+
+    public boolean isStationResolved() {
+        return stationResolved;
+    }
+
+    public void resolveStationName(String stationName) {
+        updateStationName(stationName);
+        this.stationResolved = true;
+    }
+
+    public void unresolveStation() {
+        this.stationResolved = false;
     }
 
     public void updateStationName(String stationName) {

@@ -139,7 +139,7 @@ public final class NavigatorDiagnosticsDump {
             json.addProperty("current", section.current());
 
             JsonArray stops = new JsonArray();
-            section.stops().forEach(stop -> stops.add(stop.realtimeStation().name()));
+            section.stops().forEach(stop -> stops.add(stop.station().name()));
             json.add("stops", stops);
             sections.add(json);
         }
@@ -154,10 +154,10 @@ public final class NavigatorDiagnosticsDump {
             json.addProperty("entryIndex", stop.entryIndex());
             json.addProperty("sectionIndex", stop.sectionIndex());
             json.addProperty("filter", stop.stationFilter());
-            json.addProperty("station", stop.realtimeStation().name());
+            json.addProperty("station", stop.station().name());
             json.addProperty("scheduledStation", stop.scheduledStation().name());
-            json.addProperty("tag", stop.realtimeStation().tagName());
-            json.addProperty("platform", stop.realtimeStation().platform());
+            json.addProperty("tag", stop.station().tagName());
+            json.addProperty("platform", stop.station().platform());
             json.addProperty("hasTimes", stop.hasTimes());
             json.addProperty("completedVisits", stop.completedVisits());
             json.add("scheduled", describeTimes(stop.scheduled()));
@@ -296,8 +296,8 @@ public final class NavigatorDiagnosticsDump {
                 JsonArray calls = new JsonArray();
                 for (RouteCall call : leg.calls()) {
                     JsonObject callJson = new JsonObject();
-                    callJson.addProperty("station", call.realtimeStationName());
-                    callJson.addProperty("platform", call.realtimePlatform());
+                    callJson.addProperty("station", call.stationName());
+                    callJson.addProperty("platform", call.platform());
                     callJson.addProperty("entryIndex", call.entryIndex());
                     callJson.addProperty("cycle", call.cycle());
                     callJson.addProperty("arrivalClock", clock(call.realtime().arrival()));

@@ -105,7 +105,7 @@ public record JourneySnapshot(
 
     /** The name to show for this train: its line name where it has one, otherwise its own name. */
     public String displayName() {
-        return line.hasName() ? line.name() : trainName;
+        return line.nameOr(trainName);
     }
 
     /**
@@ -384,7 +384,7 @@ public record JourneySnapshot(
     public Optional<StopSnapshot> nextCallAt(String stationNameOrFilter, long notBefore) {
         StopSnapshot best = null;
         for (StopSnapshot stop : stops) {
-            if (!stop.realtimeStation().matches(stationNameOrFilter) || !stop.hasTimes()) {
+            if (!stop.station().matches(stationNameOrFilter) || !stop.hasTimes()) {
                 continue;
             }
             StopSnapshot candidate = repeats() ? stop.atOrAfter(notBefore, totalDuration) : stop;

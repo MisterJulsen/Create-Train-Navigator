@@ -170,7 +170,7 @@ public record TrainSnapshot(
 
     /** The name to show for this train: its line name where it has one, otherwise its own name. */
     public String displayName() {
-        return line.hasName() ? line.name() : trainName;
+        return line.nameOr(trainName);
     }
 
     /** Whether the train's delay reaches the given number of ticks. */

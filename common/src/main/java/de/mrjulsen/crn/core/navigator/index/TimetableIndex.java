@@ -241,8 +241,8 @@ public final class TimetableIndex {
                 TripSection section = tripSections.computeIfAbsent(stop.sectionIndex(),
                     x -> toTripSection(x, sections.get(x)));
                 laid[i] = new TripCall(
-                    nodeOf(stop.realtimeStation()),
-                    stop.realtimeStation(),
+                    nodeOf(stop.station()),
+                    stop.station(),
                     stop.scheduledStation(),
                     stop.entryIndex(),
                     stop.stopIndex(),

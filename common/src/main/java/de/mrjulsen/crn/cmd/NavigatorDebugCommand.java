@@ -244,7 +244,7 @@ public final class NavigatorDebugCommand {
     }
 
     private static String platform(RouteCall call) {
-        return call.realtimeStation().hasPlatform() ? "§7[" + call.realtimePlatform() + "]§f" : "";
+        return call.station().hasPlatform() ? "§7[" + call.platform() + "]§f" : "";
     }
 
     private static String clock(long ticks) {

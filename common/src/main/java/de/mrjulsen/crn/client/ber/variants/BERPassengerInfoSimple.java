@@ -128,9 +128,9 @@ public class BERPassengerInfoSimple implements AbstractAdvancedDisplayRenderer<P
         } else if (!blockEntity.getNextStop().isPresent()) {
             label.text.set(settings.getTrainTextComponents().showTrainName() ? TextUtils.text(blockEntity.getTrainDisplayName()) : TextUtils.empty());
         } else if (blockEntity.isWaitingAtStation()) {
-            label.text.set(TextUtils.text(blockEntity.getNextStop().get().realtimeStation().displayName()));
+            label.text.set(TextUtils.text(blockEntity.getNextStop().get().station().displayName()));
         } else if (blockEntity.getNextStop().get().realtime().arrival() - ModUtils.getTransformedWorldTime() < ModCommonConfig.NEXT_STOP_ANNOUNCEMENT.get()) {
-            MutableComponent txt = CustomLanguage.translate(keyNextStop, blockEntity.getNextStop().get().realtimeStation().displayName());
+            MutableComponent txt = CustomLanguage.translate(keyNextStop, blockEntity.getNextStop().get().station().displayName());
             if (blockEntity.getStage().isTerminating(getDisplaySettings(blockEntity).showDoNotBoardText())) {
                 txt = TextUtils.concatSimple(txt, textTrainTerminatesHere);
             }

@@ -177,7 +177,7 @@ public class RouteDetailsOverlay extends DLWindow {
             @Override
             public void onNextCallChanged(RouteCall call, JourneyTracker source) {
                 if (source.phase() == JourneyPhase.RIDING) {
-                    setSlidingText(CustomLanguage.translate(keyNextStop, call.realtimeStation().displayName()));
+                    setSlidingText(CustomLanguage.translate(keyNextStop, call.station().displayName()));
                 }
             }
         });
@@ -253,7 +253,7 @@ public class RouteDetailsOverlay extends DLWindow {
 
     private Component journeyBeginsText() {
         RouteLeg leg = tracker.journey().firstLeg();
-        String platform = leg.boarding().realtimePlatform();
+        String platform = leg.boarding().platform();
         String departureTimeText = clockTime(leg.boarding().scheduled().departure());
         return platform == null || platform.isBlank()
             ? CustomLanguage.translate(keyJourneyBegins, leg.displayName(), leg.destinationText(), departureTimeText)
@@ -262,7 +262,7 @@ public class RouteDetailsOverlay extends DLWindow {
 
     private Component journeyBeginsNotification() {
         RouteLeg leg = tracker.journey().firstLeg();
-        String platform = leg.boarding().realtimePlatform();
+        String platform = leg.boarding().platform();
         String departureTimeText = clockTime(leg.boarding().scheduled().departure());
         return platform == null || platform.isBlank()
             ? CustomLanguage.translate(keyNotificationJourneyBegins, leg.displayName(), leg.destinationText(), departureTimeText)
@@ -270,7 +270,7 @@ public class RouteDetailsOverlay extends DLWindow {
     }
 
     private Component transferText(RouteLeg connectingLeg) {
-        String platform = connectingLeg.boarding().realtimePlatform();
+        String platform = connectingLeg.boarding().platform();
         return platform == null || platform.isBlank()
             ? CustomLanguage.translate(keyTransfer, connectingLeg.displayName(), connectingLeg.destinationText())
             : CustomLanguage.translate(keyTransferWithPlatform, connectingLeg.displayName(), connectingLeg.destinationText(), platform);

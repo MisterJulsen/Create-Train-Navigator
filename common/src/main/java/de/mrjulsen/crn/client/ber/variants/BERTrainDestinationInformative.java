@@ -167,13 +167,13 @@ public class BERTrainDestinationInformative implements AbstractAdvancedDisplayRe
                 
         fromLabel.position.set(Point.of(6, 6));
         fromLabel.preferredWidth.set((float)(blockEntity.getXSizeScaled() * 16 - 9));
-        fromLabel.text.set(TextUtils.text(!blockEntity.getServiceStops().isEmpty() ? blockEntity.getServiceStops().get(0).realtimeStation().displayName() : ""));
+        fromLabel.text.set(TextUtils.text(!blockEntity.getServiceStops().isEmpty() ? blockEntity.getServiceStops().get(0).station().displayName() : ""));
         fromLabel.horizontalScrollMode.set(EScrollMode.WHEN_NEEDED);
         fromLabel.color.set(getDisplaySettings(blockEntity).getFontColor());
         
         stopoversLabel.position.set(Point.of(6, 8.75f));
         stopoversLabel.preferredWidth.set((float)(blockEntity.getXSizeScaled() * 16 - 9));
-        stopoversLabel.text.set(TextUtils.concat(TextUtils.text(" \u25CF "), blockEntity.getStopovers().stream().map(x -> (Component)TextUtils.text(x.realtimeStation().displayName())).toList()));
+        stopoversLabel.text.set(TextUtils.concat(TextUtils.text(" \u25CF "), blockEntity.getStopovers().stream().map(x -> (Component)TextUtils.text(x.station().displayName())).toList()));
         stopoversLabel.horizontalScrollMode.set(EScrollMode.WHEN_NEEDED);
         stopoversLabel.color.set(getDisplaySettings(blockEntity).getFontColor());
         

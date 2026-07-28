@@ -254,7 +254,7 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
     public String getDestinationText() {
         return getCurrentStop().map(StopSnapshot::title).filter(x -> !x.isBlank())
             .or(() -> getOperatingSection().map(x -> x.destination().displayName()).filter(x -> !x.isBlank()))
-            .or(() -> getFinalStop().map(x -> x.realtimeStation().displayName()))
+            .or(() -> getFinalStop().map(x -> x.station().displayName()))
             .orElse("");
     }
 

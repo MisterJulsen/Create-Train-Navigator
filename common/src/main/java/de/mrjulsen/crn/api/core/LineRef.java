@@ -42,6 +42,14 @@ public record LineRef(UUID id, String name, DLColor color) {
         return !name.isBlank();
     }
 
+    /**
+     * The line's name, or the given fallback where it has none. What a train is called to
+     * travellers: the line it works, and only failing that its own name.
+     */
+    public String nameOr(String fallback) {
+        return hasName() ? name : fallback;
+    }
+
     public CompoundTag toNbt() {
         CompoundTag nbt = new CompoundTag();
         if (id != null) {

@@ -101,8 +101,8 @@ public record RouteJourney(List<RouteLeg> legs, List<RouteTransfer> transfers) {
         List<StationRef> stations = new ArrayList<>();
         for (RouteLeg leg : legs) {
             for (RouteCall call : leg.calls()) {
-                if (stations.isEmpty() || !stations.get(stations.size() - 1).name().equals(call.realtimeStationName())) {
-                    stations.add(call.realtimeStation());
+                if (stations.isEmpty() || !stations.get(stations.size() - 1).name().equals(call.stationName())) {
+                    stations.add(call.station());
                 }
             }
         }
@@ -110,7 +110,7 @@ public record RouteJourney(List<RouteLeg> legs, List<RouteTransfer> transfers) {
     }
 
     public boolean callsAt(String stationName) {
-        return legs.stream().anyMatch(leg -> leg.calls().stream().anyMatch(x -> x.realtimeStationName().equals(stationName)));
+        return legs.stream().anyMatch(leg -> leg.calls().stream().anyMatch(x -> x.stationName().equals(stationName)));
     }
 
     public List<UUID> trainIds() {

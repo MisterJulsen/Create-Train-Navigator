@@ -6,19 +6,14 @@ import de.mrjulsen.crn.core.schedule.JourneyStop;
 import de.mrjulsen.crn.core.timing.CycleProjector;
 import de.mrjulsen.crn.core.timing.StopTimes;
 import de.mrjulsen.crn.core.timing.StopTimings;
-import de.mrjulsen.crn.config.ModCommonConfig;
 import net.minecraft.nbt.CompoundTag;
 
 /**
  * One stop of a train's run, with its times.
  * <p>
- * A stop is written in the schedule as a station filter, which may match several stations. The
- * station the train is actually taking is therefore reported separately from the one it was
- * expected to take, and the two can differ.
- * <p>
- * All times are in the unit described by {@link RailwayBackendApi#currentTime()}. Times are not
- * always known: a stop the train has not yet learned reports {@link StopTimes#UNKNOWN}, so check
- * {@link #hasTimes()} before relying on them.
+ * A stop is written in the schedule as a station filter, which may match several stations, so the
+ * station the train is really taking can differ from the timetabled one; see {@link StationCall}
+ * for what both sides answer.
  *
  * @param entryIndex        The stop's position among the schedule's entries.
  * @param stopIndex         The stop's position among the run's stops, counting stops only.
@@ -26,7 +21,7 @@ import net.minecraft.nbt.CompoundTag;
  * @param stationFilter     The station filter as written in the schedule.
  * @param scheduledStation  The station the timetable expects, which is what the times were learned
  *                          against.
- * @param realtimeStation   The station the train is actually taking.
+ * @param station           The station the train is actually taking.
  * @param title             The schedule title in force at this stop, or empty.
  * @param scheduled         The timetable times. Where no timetable has been established yet, the
  *                          projection stands in, so a consumer never sees a known projected time
@@ -44,7 +39,7 @@ public record StopSnapshot(
     int sectionIndex,
     String stationFilter,
     StationRef scheduledStation,
-    StationRef realtimeStation,
+    StationRef station,
     String title,
     StopTimes scheduled,
     StopTimes realtime,
@@ -52,7 +47,7 @@ public record StopSnapshot(
     int legDurationTicks,
     long dwellDurationTicks,
     int completedVisits
-) {
+) implements StationCall {
 
     private static final String NBT_ENTRY_INDEX = "EntryIndex";
     private static final String NBT_STOP_INDEX = "StopIndex";
@@ -71,7 +66,7 @@ public record StopSnapshot(
     public StopSnapshot {
         stationFilter = stationFilter == null ? "" : stationFilter;
         scheduledStation = scheduledStation == null ? StationRef.NONE : scheduledStation;
-        realtimeStation = realtimeStation == null ? StationRef.NONE : realtimeStation;
+        station = station == null ? StationRef.NONE : station;
         title = title == null ? "" : title;
         scheduled = scheduled == null ? StopTimes.UNKNOWN : scheduled;
         realtime = realtime == null ? StopTimes.UNKNOWN : realtime;
@@ -100,79 +95,6 @@ public record StopSnapshot(
     }
 
     /**
-     * How much later than scheduled the train arrives here, in ticks. Negative when it is early,
-     * zero where either time is unknown.
-     */
-    public long arrivalDeviation() {
-        return scheduled.isKnown() && realtime.isKnown() ? realtime.arrival() - scheduled.arrival() : 0;
-    }
-
-    /** The same for the departure. */
-    public long departureDeviation() {
-        return scheduled.isKnown() && realtime.isKnown() ? realtime.departure() - scheduled.departure() : 0;
-    }
-
-    /** Whether either deviation reaches the given number of ticks. */
-    public boolean isDelayed(long thresholdTicks) {
-        return arrivalDeviation() >= thresholdTicks || departureDeviation() >= thresholdTicks;
-    }
-
-    /** Whether this stop counts as late by the server's configured threshold. */
-    public boolean isDelayed() {
-        return isDelayed(ModCommonConfig.SCHEDULE_DEVIATION_THRESHOLD.get());
-    }
-
-    /** How long until the train arrives, in ticks, given the current time. */
-    public long arrivalIn(long now) {
-        return realtime.arrivalIn(now);
-    }
-
-    /** How long until the train departs, in ticks, given the current time. */
-    public long departureIn(long now) {
-        return realtime.departureIn(now);
-    }
-
-    /** How long the train is timetabled to stand here, in ticks. */
-    public long scheduledStayDuration() {
-        return scheduled.stayDuration();
-    }
-
-    /** Whether a projection exists for this stop, without which the times mean nothing. */
-    public boolean hasTimes() {
-        return realtime.isKnown();
-    }
-
-    public String realtimeStationName() {
-        return realtimeStation.name();
-    }
-
-    public String scheduledStationName() {
-        return scheduledStation.name();
-    }
-
-    /** Whether the train is taking a different station than the timetable expected. */
-    public boolean isDiverted() {
-        return scheduledStation.isKnown() && realtimeStation.isKnown()
-            && !scheduledStation.name().equals(realtimeStation.name());
-    }
-
-    /**
-     * Whether the diversion is one a traveller would notice, meaning the displayed name changes
-     * rather than only the underlying station within the same tag.
-     */
-    public boolean hasChangedTag() {
-        return isDiverted() && !scheduledStation.displayName().equals(realtimeStation.displayName());
-    }
-
-    public String realtimePlatform() {
-        return realtimeStation.platform();
-    }
-
-    public String scheduledPlatform() {
-        return scheduledStation.platform();
-    }
-
-    /**
      * The same stop as it falls the given number of schedule cycles later. Only meaningful for a
      * cyclic schedule; returns this stop unchanged where the arguments do not permit projection.
      */
@@ -181,7 +103,7 @@ public record StopSnapshot(
             return this;
         }
         return new StopSnapshot(
-            entryIndex, stopIndex, sectionIndex, stationFilter, scheduledStation, realtimeStation, title,
+            entryIndex, stopIndex, sectionIndex, stationFilter, scheduledStation, station, title,
             CycleProjector.advancedBy(scheduled, cycleDuration, cycles),
             CycleProjector.advancedBy(realtime, cycleDuration, cycles),
             previousActual,
@@ -204,7 +126,7 @@ public record StopSnapshot(
         nbt.putInt(NBT_SECTION_INDEX, sectionIndex);
         nbt.putString(NBT_STATION_FILTER, stationFilter);
         nbt.put(NBT_SCHEDULED_STATION, scheduledStation.toNbt());
-        nbt.put(NBT_REALTIME_STATION, realtimeStation.toNbt());
+        nbt.put(NBT_REALTIME_STATION, station.toNbt());
         nbt.putString(NBT_TITLE, title);
         nbt.put(NBT_SCHEDULED, scheduled.toNbt());
         nbt.put(NBT_REALTIME, realtime.toNbt());

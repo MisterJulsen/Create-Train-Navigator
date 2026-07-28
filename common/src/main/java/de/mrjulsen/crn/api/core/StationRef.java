@@ -59,11 +59,6 @@ public record StationRef(String name, String tagName, UUID tagId, StationInfo in
         );
     }
 
-    /** The station's own name. Same as {@link #name()}. */
-    public String stationName() {
-        return name;
-    }
-
     public boolean hasTag() {
         return !tagName.isBlank();
     }

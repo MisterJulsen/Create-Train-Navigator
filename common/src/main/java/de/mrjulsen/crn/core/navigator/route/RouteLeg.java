@@ -63,7 +63,7 @@ public record RouteLeg(
     }
 
     public String displayName() {
-        return line.hasName() ? line.name() : trainName;
+        return line.nameOr(trainName);
     }
 
     public DLColor displayColor() {
@@ -79,11 +79,11 @@ public record RouteLeg(
     }
 
     public StationRef from() {
-        return boarding().realtimeStation();
+        return boarding().station();
     }
 
     public StationRef to() {
-        return alighting().realtimeStation();
+        return alighting().station();
     }
 
     public long departure() {
@@ -194,7 +194,7 @@ public record RouteLeg(
         int cyclesAhead = cycle - stop.completedVisits();
         if (cyclesAhead >= 0) {
             StopSnapshot projected = stop.advancedBy(cyclesAhead, cycleDuration);
-            return new RouteCall(projected.scheduledStation(), projected.realtimeStation(),
+            return new RouteCall(projected.scheduledStation(), projected.station(),
                 projected.entryIndex(), cycle, projected.scheduled(), projected.realtime());
         }
 
@@ -203,7 +203,7 @@ public record RouteLeg(
             ? stop.previousActual()
             : stop.realtime().shifted(shift);
 
-        RouteCall call = new RouteCall(stop.scheduledStation(), stop.realtimeStation(), stop.entryIndex(),
+        RouteCall call = new RouteCall(stop.scheduledStation(), stop.station(), stop.entryIndex(),
             cycle, stop.scheduled().shifted(shift), actual);
         call.markPassed();
         return call;

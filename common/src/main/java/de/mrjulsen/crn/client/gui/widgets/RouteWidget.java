@@ -2,6 +2,7 @@ package de.mrjulsen.crn.client.gui.widgets;
 
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 
+import de.mrjulsen.crn.api.core.CallDirection;
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
@@ -101,7 +102,7 @@ public class RouteWidget extends DLButton {
         graphics.poseStack().popPose();
 
         int routePartWidth = DISPLAY_WIDTH / parts.size();
-        String endStationName = route.lastLeg().alighting().realtimeStation().displayName();
+        String endStationName = route.lastLeg().alighting().station().displayName();
         int textW = shadowlessFont.width(endStationName);
 
         for (int i = 0; i < parts.size(); i++) {
@@ -121,13 +122,13 @@ public class RouteWidget extends DLButton {
             GuiUtils.drawString(graphics, graphics.defaultFont(), (int)((5 + (i * routePartWidth) + (routePartWidth / 2)) / 0.75f), (int)(30 / 0.75f), trainName, fontColor, ETextAlignment.CENTER, false);
         }
 
-        GuiUtils.drawString(graphics, graphics.defaultFont(), (int)(6 / scale), (int)(43 / scale), TextUtils.text(route.firstLeg().boarding().realtimeStation().displayName()), DLColor.fromInt(0xFFDBDBDB), ETextAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, graphics.defaultFont(), (int)(6 / scale), (int)(43 / scale), TextUtils.text(route.firstLeg().boarding().station().displayName()), DLColor.fromInt(0xFFDBDBDB), ETextAlignment.LEFT, false);
         GuiUtils.drawString(graphics, graphics.defaultFont(), (int)((WIDTH - 6) / scale) - textW, (int)(43 / scale), TextUtils.text(endStationName), DLColor.fromInt(0xFFDBDBDB), ETextAlignment.LEFT, false);
-        if (start.hasRealtime()) {
-            GuiUtils.drawString(graphics, graphics.defaultFont(), (int)((6 + graphics.defaultFont().width(timeStart) * localScale / 2.0f) / scale) - graphics.defaultFont().width(timeStart) / 2, (int)(15 / scale), TextUtils.text(new DLTime(start.scheduled().departure() + (start.departureDeviation() / precision * precision), VanillaTimeSystem.INSTANCE).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem())), start.isDepartureDelayed() ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME, ETextAlignment.LEFT, false);
+        if (start.hasTimes()) {
+            GuiUtils.drawString(graphics, graphics.defaultFont(), (int)((6 + graphics.defaultFont().width(timeStart) * localScale / 2.0f) / scale) - graphics.defaultFont().width(timeStart) / 2, (int)(15 / scale), TextUtils.text(new DLTime(start.scheduled().departure() + (start.departureDeviation() / precision * precision), VanillaTimeSystem.INSTANCE).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem())), start.isDelayed(CallDirection.DEPARTURE) ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME, ETextAlignment.LEFT, false);
         }
-        if (end.hasRealtime()) {
-            GuiUtils.drawString(graphics, graphics.defaultFont(), (int)((6 + graphics.defaultFont().width(timeEnd) * localScale * 1.5f + (graphics.defaultFont().width(dash)) * localScale) / scale) - graphics.defaultFont().width(timeEnd) / 2, (int)(15 / scale), TextUtils.text(new DLTime(end.scheduled().arrival() + (end.arrivalDeviation() / precision * precision), VanillaTimeSystem.INSTANCE).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem())), end.isArrivalDelayed() ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME, ETextAlignment.LEFT, false);
+        if (end.hasTimes()) {
+            GuiUtils.drawString(graphics, graphics.defaultFont(), (int)((6 + graphics.defaultFont().width(timeEnd) * localScale * 1.5f + (graphics.defaultFont().width(dash)) * localScale) / scale) - graphics.defaultFont().width(timeEnd) / 2, (int)(15 / scale), TextUtils.text(new DLTime(end.scheduled().arrival() + (end.arrivalDeviation() / precision * precision), VanillaTimeSystem.INSTANCE).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem())), end.isDelayed(CallDirection.ARRIVAL) ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME, ETextAlignment.LEFT, false);
         }
 
         if (route.isAnyCancelled()) {

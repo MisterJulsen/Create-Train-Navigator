@@ -3,6 +3,7 @@ package de.mrjulsen.crn.client.gui.overlay.pages;
 import java.util.Arrays;
 import java.util.List;
 
+import de.mrjulsen.crn.api.core.CallDirection;
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.client.CRNGui;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
@@ -82,18 +83,18 @@ public class RouteOverviewPage extends AbstractRouteDetailsPage {
 
         long scheduledTime = boarding ? call.scheduled().departure() : call.scheduled().arrival();
         long deviation = boarding ? call.departureDeviation() : call.arrivalDeviation();
-        boolean delayed = boarding ? call.isDepartureDelayed() : call.isArrivalDelayed();
+        boolean delayed = boarding ? call.isDelayed(CallDirection.DEPARTURE) : call.isDelayed(CallDirection.ARRIVAL);
 
         String scheduledTimeText = clockTime(scheduledTime);
         String currentTimeText = clockTime(scheduledTime + (deviation / precision * precision));
-        String platform = call.realtimePlatform();
+        String platform = call.platform();
 
         GuiUtils.drawString(graphics, font, 7, y + ENTRY_HEIGHT - 2 - font.lineHeight / 2, TextUtils.text(scheduledTimeText).withStyle(isMissed ? ChatFormatting.STRIKETHROUGH : ChatFormatting.RESET), isMissed ? Constants.COLOR_DELAYED : DLColor.fromInt(0xFFDBDBDB), ETextAlignment.LEFT, false);
-        if (call.hasRealtime() && !isMissed) {
+        if (call.hasTimes() && !isMissed) {
             GuiUtils.drawString(graphics, font, 7 + 32, y + ENTRY_HEIGHT - 2 - font.lineHeight / 2, TextUtils.text(currentTimeText), delayed ? Constants.COLOR_DELAYED : Constants.COLOR_ON_TIME, ETextAlignment.LEFT, false);
         }
         icon.getAsSprite().render(graphics, 10 + 64, y);
-        GuiUtils.drawString(graphics, font, 17 + 64 + RoutePathIcons.SPRITE_WIDTH, y + ENTRY_HEIGHT - 2 - font.lineHeight / 2, TextUtils.truncateWithEllipsis(font, TextUtils.text(call.realtimeStation().displayName()), width - (17 + 64 + RoutePathIcons.SPRITE_WIDTH) - font.width(platform) - 10), DLColor.fromInt(0xFFDBDBDB), ETextAlignment.LEFT, false);
+        GuiUtils.drawString(graphics, font, 17 + 64 + RoutePathIcons.SPRITE_WIDTH, y + ENTRY_HEIGHT - 2 - font.lineHeight / 2, TextUtils.truncateWithEllipsis(font, TextUtils.text(call.station().displayName()), width - (17 + 64 + RoutePathIcons.SPRITE_WIDTH) - font.width(platform) - 10), DLColor.fromInt(0xFFDBDBDB), ETextAlignment.LEFT, false);
         GuiUtils.drawString(graphics, font, width - 4, y + ENTRY_HEIGHT - 2 - font.lineHeight / 2, platform, call.isDiverted() ? Constants.COLOR_DELAYED : DLColor.fromInt(0xFFDBDBDB), ETextAlignment.RIGHT, false);
     }
 

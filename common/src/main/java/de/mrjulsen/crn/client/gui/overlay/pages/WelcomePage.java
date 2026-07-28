@@ -52,11 +52,11 @@ public class WelcomePage extends AbstractRouteDetailsPage {
         final int detailsLineHeight = 12;
         RouteCall destination = route().lastLeg().alighting();
 
-        Component platformText = TextUtils.text(destination.realtimePlatform());
+        Component platformText = TextUtils.text(destination.platform());
         int platformTextWidth = font.width(platformText);
         final int maxStationNameWidth = width() - platformTextWidth - 10 - 5;
         String timeText = RouteOverviewPage.clockTime(destination.realtime().arrival());
-        MutableComponent stationText = TextUtils.text(timeText).append(TextUtils.text(" " + destination.realtimeStation().displayName()));
+        MutableComponent stationText = TextUtils.text(timeText).append(TextUtils.text(" " + destination.station().displayName()));
         if (font.width(stationText) > maxStationNameWidth) {
             stationText = TextUtils.text(font.substrByWidth(stationText, maxStationNameWidth).getString()).append(TextUtils.text("...")).withStyle(stationText.getStyle());
         }

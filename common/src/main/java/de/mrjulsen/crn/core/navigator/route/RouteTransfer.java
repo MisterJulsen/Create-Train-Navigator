@@ -24,11 +24,11 @@ public record RouteTransfer(RouteCall from, RouteCall to, long minTransferTime, 
     }
 
     public StationRef arrivalStation() {
-        return from.realtimeStation();
+        return from.station();
     }
 
     public StationRef departureStation() {
-        return to.realtimeStation();
+        return to.station();
     }
 
     public long arrival() {

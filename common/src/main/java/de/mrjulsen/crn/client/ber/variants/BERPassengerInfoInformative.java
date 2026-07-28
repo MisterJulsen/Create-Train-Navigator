@@ -346,7 +346,7 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
         }
 
         if (getDisplaySettings(blockEntity).showConnections() && blockEntity.getXSizeScaled() > 1 && nextStopAnnounced && !wasNextStopAnnounced && blockEntity.getNextStop().isPresent()) {
-            ModNetworkManager.GET_NEXT_CONNECTIONS_DISPLAY_DATA.send(NetworkDirection.toServer(), new GetNextConnectionsDisplayDataPacketData.Request(new NextConnectionsRequestData(blockEntity.getNextStop().get().realtimeStation().name(), blockEntity.getTrain().map(TrainSnapshot::trainId).orElse(null), getDisplaySettings(blockEntity).showTrainMultipleTimes())), (response) -> {
+            ModNetworkManager.GET_NEXT_CONNECTIONS_DISPLAY_DATA.send(NetworkDirection.toServer(), new GetNextConnectionsDisplayDataPacketData.Request(new NextConnectionsRequestData(blockEntity.getNextStop().get().station().name(), blockEntity.getTrain().map(TrainSnapshot::trainId).orElse(null), getDisplaySettings(blockEntity).showTrainMultipleTimes())), (response) -> {
                 nextConnections = response.getData();
                 updateLayout(blockEntity);
                 updateContent(blockEntity);
@@ -410,7 +410,7 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
         if (atTerminus) {
             labelText = textTrainTerminates;
         } else if (nextStopAnnounced) {
-            labelText = CustomLanguage.translate(keyNextStop, blockEntity.getNextStop().get().realtimeStation().displayName());
+            labelText = CustomLanguage.translate(keyNextStop, blockEntity.getNextStop().get().station().displayName());
         } else {
             StringBuilder sb = new StringBuilder();
             boolean showTrainName = settings.getTrainTextComponents().showTrainName();
@@ -549,7 +549,7 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
                     DLUtils.doIfNotNull(scheduleLines[i], a -> {
                         StopSnapshot stop = blockEntity.getRemainingStops().get(k);
                         BERLabel destinationLabel = a[LineComponent.DESTINATION.i()];
-                        destinationLabel.text.set(TextUtils.text(stop.realtimeStation().displayName()).withStyle(j >= linesCount - 1 ? ChatFormatting.BOLD : ChatFormatting.RESET));
+                        destinationLabel.text.set(TextUtils.text(stop.station().displayName()).withStyle(j >= linesCount - 1 ? ChatFormatting.BOLD : ChatFormatting.RESET));
                         destinationLabel.position.set(Point.of(listDestinationLabelX, 6 + j * 2));
                         destinationLabel.preferredWidth.set(blockEntity.getXSizeScaled() * 16 - 3 - listDestinationLabelX);
                         destinationLabel.horizontalScrollMode.set(EScrollMode.WHEN_NEEDED);

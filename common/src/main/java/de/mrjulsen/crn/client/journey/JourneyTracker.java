@@ -178,7 +178,7 @@ public final class JourneyTracker implements AutoCloseable {
             return;
         }
         RouteCall projected = RealtimeTrains.liveCall(leg, call);
-        call.applyRealtime(projected.realtimeStation(), projected.realtime());
+        call.applyRealtime(projected.station(), projected.realtime());
     }
 
     private void recomputeProgress() {

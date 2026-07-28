@@ -15,7 +15,6 @@ import de.mrjulsen.crn.core.schedule.JourneyStop;
 import de.mrjulsen.crn.core.schedule.TrainJourney;
 import de.mrjulsen.crn.core.timing.CycleProjector;
 import de.mrjulsen.crn.core.timing.StopTimes;
-import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.data.settings.GlobalSettings;
 import de.mrjulsen.crn.util.NbtHelper;
 import de.mrjulsen.mcdragonlib.util.DLColor;
@@ -29,8 +28,8 @@ import net.minecraft.nbt.CompoundTag;
  * and the methods taking a {@link CallDirection} pick the side wanted. The plain
  * {@code line}/{@code category} components and the no-argument methods describe the departure.
  * <p>
- * Times are in the unit described by {@link RailwayBackendApi#currentTime()} and may be unknown; see
- * {@link StopTimes#isKnown()}.
+ * The station and time sides of the call, and everything derived from them, are described by
+ * {@link StationCall}.
  *
  * @param trainId          The calling train.
  * @param sessionId        The train's tracking session, which together with {@code entryIndex}
@@ -84,7 +83,7 @@ public record BoardEntry(
     boolean originating,
     List<StationRef> stopovers,
     List<DelayInstance> delays
-) {
+) implements StationCall {
 
     private static final String NBT_TRAIN_ID = "TrainId";
     private static final String NBT_SESSION_ID = "SessionId";
@@ -144,7 +143,7 @@ public record BoardEntry(
             CategoryRef.of(section == null ? null : section.getTrainCategory().orElse(null)),
             LineRef.of(arrivalSection == null ? null : arrivalSection.getTrainLine().orElse(null)),
             CategoryRef.of(arrivalSection == null ? null : arrivalSection.getTrainCategory().orElse(null)),
-            snapshot.realtimeStation(),
+            snapshot.station(),
             snapshot.scheduledStation(),
             journey.getOriginOf(stop).map(x -> StationRef.of(train.getDisplayStationName(x))).orElse(StationRef.NONE),
             stop.getTitle() == null ? "" : stop.getTitle(),
@@ -191,7 +190,7 @@ public record BoardEntry(
         }
         return train.getJourney().getNextStop(stop)
             .map(x -> StationRef.of(train.getDisplayStationName(x)))
-            .orElse(snapshot.realtimeStation());
+            .orElse(snapshot.station());
     }
 
     private static List<StationRef> collectStopovers(TrackedTrain train, JourneyStop stop, JourneySection section) {
@@ -220,54 +219,6 @@ public record BoardEntry(
      */
     public String destinationText() {
         return title.isBlank() ? destination.displayName() : title;
-    }
-
-    /** The name of the station actually being called at. */
-    public String stationName() {
-        return station.name();
-    }
-
-    /**
-     * How much later than scheduled the train arrives, in ticks. Negative when it is early, zero
-     * where either time is unknown.
-     */
-    public long arrivalDeviation() {
-        return scheduled.isKnown() && realtime.isKnown() ? realtime.arrival() - scheduled.arrival() : 0;
-    }
-
-    /** The same for the departure. */
-    public long departureDeviation() {
-        return scheduled.isKnown() && realtime.isKnown() ? realtime.departure() - scheduled.departure() : 0;
-    }
-
-    /** Whether either deviation reaches the given number of ticks. */
-    public boolean isDelayed(long thresholdTicks) {
-        return arrivalDeviation() >= thresholdTicks || departureDeviation() >= thresholdTicks;
-    }
-
-    /** Whether this call counts as late by the server's configured threshold. */
-    public boolean isDelayed() {
-        return isDelayed(ModCommonConfig.SCHEDULE_DEVIATION_THRESHOLD.get());
-    }
-
-    /** The deviation on the chosen side of the call, in ticks. */
-    public long deviation(CallDirection direction) {
-        return direction.isArrival() ? arrivalDeviation() : departureDeviation();
-    }
-
-    /** Whether the chosen side of the call is late by the configured threshold. */
-    public boolean isDelayed(CallDirection direction) {
-        return deviation(direction) >= ModCommonConfig.SCHEDULE_DEVIATION_THRESHOLD.get();
-    }
-
-    /** The timetable time for the chosen side of the call. */
-    public long scheduledTime(CallDirection direction) {
-        return direction.isArrival() ? scheduled.arrival() : scheduled.departure();
-    }
-
-    /** The projected time for the chosen side of the call. */
-    public long realtimeTime(CallDirection direction) {
-        return direction.isArrival() ? realtime.arrival() : realtime.departure();
     }
 
     public boolean hasLine() {
@@ -299,7 +250,7 @@ public record BoardEntry(
      */
     public String displayName(CallDirection direction) {
         LineRef serving = line(direction);
-        return serving.hasName() ? serving.name() : trainName;
+        return serving.nameOr(trainName);
     }
 
     /** The colour to show the departing service in. */
@@ -318,20 +269,6 @@ public record BoardEntry(
      */
     public boolean hasColor(CallDirection direction) {
         return line(direction).isKnown() || category(direction).isKnown();
-    }
-
-    /** Whether the train is calling at a different station than the timetable expected. */
-    public boolean isDiverted() {
-        return scheduledStation.isKnown() && station.isKnown()
-            && !scheduledStation.name().equals(station.name());
-    }
-
-    /**
-     * Whether the diversion is one a traveller would notice, meaning the displayed name changes
-     * rather than only the underlying station within the same tag.
-     */
-    public boolean hasChangedTag() {
-        return isDiverted() && !scheduledStation.displayName().equals(station.displayName());
     }
 
     /** Whether the train is standing at this station now. */
@@ -380,16 +317,6 @@ public record BoardEntry(
     /** The projected departure time. */
     public long realtimeDeparture() {
         return realtime.departure();
-    }
-
-    /** How long until the train arrives, in ticks, given the current time. */
-    public long arrivalIn(long now) {
-        return realtime.arrivalIn(now);
-    }
-
-    /** How long until the train departs, in ticks, given the current time. */
-    public long departureIn(long now) {
-        return realtime.departureIn(now);
     }
 
     /** Whether any stations are served onward from here. */

@@ -2,37 +2,39 @@ package de.mrjulsen.crn.core.navigator.route;
 
 import java.util.Objects;
 
+import de.mrjulsen.crn.api.core.StationCall;
 import de.mrjulsen.crn.api.core.StationRef;
 import de.mrjulsen.crn.core.timing.StopTimes;
-import de.mrjulsen.crn.config.ModCommonConfig;
 import net.minecraft.nbt.CompoundTag;
 
-public final class RouteCall {
+public final class RouteCall implements StationCall {
 
     private final StationRef scheduledStation;
     private final int entryIndex;
     private final int cycle;
     private final StopTimes scheduled;
 
-    private StationRef realtimeStation;
+    private StationRef station;
     private StopTimes realtime;
     private boolean passed;
 
-    public RouteCall(StationRef scheduledStation, StationRef realtimeStation, int entryIndex, int cycle, StopTimes scheduled, StopTimes realtime) {
+    public RouteCall(StationRef scheduledStation, StationRef station, int entryIndex, int cycle, StopTimes scheduled, StopTimes realtime) {
         this.scheduledStation = scheduledStation == null ? StationRef.NONE : scheduledStation;
-        this.realtimeStation = realtimeStation == null ? StationRef.NONE : realtimeStation;
+        this.station = station == null ? StationRef.NONE : station;
         this.entryIndex = entryIndex;
         this.cycle = cycle;
         this.scheduled = scheduled == null ? StopTimes.UNKNOWN : scheduled;
         this.realtime = realtime == null ? StopTimes.UNKNOWN : realtime;
     }
 
+    @Override
     public StationRef scheduledStation() {
         return scheduledStation;
     }
 
-    public StationRef realtimeStation() {
-        return realtimeStation;
+    @Override
+    public StationRef station() {
+        return station;
     }
 
     public int entryIndex() {
@@ -43,10 +45,12 @@ public final class RouteCall {
         return cycle;
     }
 
+    @Override
     public StopTimes scheduled() {
         return scheduled;
     }
 
+    @Override
     public StopTimes realtime() {
         return realtime;
     }
@@ -60,7 +64,7 @@ public final class RouteCall {
             return;
         }
         if (station != null) {
-            this.realtimeStation = station;
+            this.station = station;
         }
         if (times != null) {
             this.realtime = times;
@@ -71,59 +75,10 @@ public final class RouteCall {
         this.passed = true;
     }
 
-    public String realtimeStationName() {
-        return realtimeStation.name();
-    }
-
-    public String scheduledStationName() {
-        return scheduledStation.name();
-    }
-
-    public String realtimePlatform() {
-        return realtimeStation.platform();
-    }
-
-    public String scheduledPlatform() {
-        return scheduledStation.platform();
-    }
-
-    public boolean isDiverted() {
-        return scheduledStation.isKnown() && realtimeStation.isKnown()
-            && !scheduledStation.name().equals(realtimeStation.name());
-    }
-
-    public boolean hasChangedTag() {
-        return isDiverted() && !scheduledStation.displayName().equals(realtimeStation.displayName());
-    }
-
-    public long stayDuration() {
-        return realtime.stayDuration();
-    }
-
-    public long arrivalDeviation() {
-        return scheduled.isKnown() ? realtime.arrival() - scheduled.arrival() : 0;
-    }
-
-    public long departureDeviation() {
-        return scheduled.isKnown() ? realtime.departure() - scheduled.departure() : 0;
-    }
-
-    public boolean hasRealtime() {
-        return scheduled.isKnown();
-    }
-
-    public boolean isArrivalDelayed() {
-        return arrivalDeviation() >= ModCommonConfig.SCHEDULE_DEVIATION_THRESHOLD.get();
-    }
-
-    public boolean isDepartureDelayed() {
-        return departureDeviation() >= ModCommonConfig.SCHEDULE_DEVIATION_THRESHOLD.get();
-    }
-
     public CompoundTag toNbt() {
         CompoundTag nbt = new CompoundTag();
         nbt.put(NBT_SCHEDULED_STATION, scheduledStation.toNbt());
-        nbt.put(NBT_REALTIME_STATION, realtimeStation.toNbt());
+        nbt.put(NBT_REALTIME_STATION, station.toNbt());
         nbt.putInt(NBT_ENTRY_INDEX, entryIndex);
         nbt.putInt(NBT_CYCLE, cycle);
         nbt.put(NBT_SCHEDULED, scheduled.toNbt());
@@ -167,6 +122,6 @@ public final class RouteCall {
 
     @Override
     public String toString() {
-        return realtimeStation.name() + "@" + realtime.arrival() + (passed ? " (passed)" : "");
+        return station.name() + "@" + realtime.arrival() + (passed ? " (passed)" : "");
     }
 }

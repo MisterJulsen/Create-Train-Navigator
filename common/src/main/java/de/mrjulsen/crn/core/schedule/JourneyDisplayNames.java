@@ -17,17 +17,20 @@ public final class JourneyDisplayNames {
             return filter;
         }
         String guess = timings == null ? null : timings.getEstimatedStationName();
-        return StationLookup.exists(guess) ? guess : filter;
+        return StationLookup.exists(guess) ? guess : "";
     }
 
     public static String realtimeStationName(JourneyStop stop, StopTimings timings) {
         String live = stop.getStationName();
-        if (StationLookup.exists(live)) {
+        if (stop.isStationResolved() && StationLookup.exists(live)) {
             return live;
         }
         String scheduled = scheduledStationName(stop, timings);
         if (StationLookup.exists(scheduled)) {
             return scheduled;
+        }
+        if (StationLookup.exists(live)) {
+            return live;
         }
         return live != null && !live.isBlank() ? live : stop.getStationFilter();
     }
@@ -45,11 +48,6 @@ public final class JourneyDisplayNames {
             .orElse("");
     }
 
-    /**
-     * The stop a section's travellers ride to. Where the section carries them onward, that is the
-     * first stop of the following section, which on a cyclic run with a single section is the
-     * section's own first stop again.
-     */
     public static Optional<JourneyStop> terminusStop(TrainJourney journey, JourneySection section) {
         if (section.includesNextSectionStart()) {
             return journey.nextSectionOf(section)

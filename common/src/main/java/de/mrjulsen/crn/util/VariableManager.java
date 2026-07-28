@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.function.Function;
 
 import de.mrjulsen.crn.api.core.BoardEntry;
+import de.mrjulsen.crn.api.core.StationCall;
 import de.mrjulsen.crn.api.core.StationRef;
 import de.mrjulsen.crn.api.core.StopSnapshot;
 import de.mrjulsen.crn.api.core.TrainSnapshot;
@@ -27,20 +28,18 @@ public class VariableManager {
     }
 
     private static String handleStopover(List<StopSnapshot> list, int i, String variable) {
-        if (i < 0 || i >= list.size()) return handleStopover(null, variable);
-        return handleStopover(list.get(i), variable);
+        return handleCall(i < 0 || i >= list.size() ? null : list.get(i), variable);
     }
 
-    private static String handleStopover(@Nullable StopSnapshot data, String variable) {
+    /** The variables every station call answers, whatever it is a call of. */
+    private static String handleCall(@Nullable StationCall data, String variable) {
         boolean eta = variable.endsWith("_eta");
-        long ticksDelayed = data == null ? 0 : data.departureDeviation();
-
         return switch (variable) {
-            case "station_name" -> data == null ? "" : data.realtimeStation().displayName();
-            case "platform" -> data == null ? "" : data.realtimeStation().platform();
+            case "station_name" -> data == null ? "" : data.station().displayName();
+            case "platform" -> data == null ? "" : data.platform();
             case "arrival", "arrival_eta" -> data == null ? "" : ModUtils.formatTime(data.scheduled().arrival(), eta);
             case "departure", "departure_eta" -> data == null ? "" : ModUtils.formatTime(data.scheduled().departure(), eta);
-            case "delay_time" -> ticksDelayed <= 0 ? "" : formatDelay(ticksDelayed);
+            case "delay_time" -> data == null || data.departureDeviation() <= 0 ? "" : formatDelay(data.departureDeviation());
             default -> null;
         };
     }
@@ -51,8 +50,6 @@ public class VariableManager {
     }
 
     private static String handleTrainEntry(@Nullable BoardEntry data, String variable) {
-        boolean eta = variable.endsWith("_eta");
-
         if (variable.matches("^stop\\d+$")) {
             int n = Integer.parseInt(variable.substring(4));
             if (data == null || n < 0 || n >= data.stopovers().size()) return "";
@@ -64,12 +61,12 @@ public class VariableManager {
             return join(data.stopovers(), StationRef::displayName, variable.substring("via:".length()));
         }
 
+        String shared = handleCall(data, variable);
+        if (shared != null) {
+            return shared;
+        }
+
         return switch (variable) {
-            case "station_name" -> data == null ? "" : data.station().displayName();
-            case "platform" -> data == null ? "" : data.station().platform();
-            case "arrival", "arrival_eta" -> data == null ? "" : ModUtils.formatTime(data.scheduled().arrival(), eta);
-            case "departure", "departure_eta" -> data == null ? "" : ModUtils.formatTime(data.scheduled().departure(), eta);
-            case "delay_time" -> data == null || data.departureDeviation() <= 0 ? "" : formatDelay(data.departureDeviation());
             case "via" -> data == null ? "" : join(data.stopovers(), StationRef::displayName, ", ");
             case "line" -> data == null ? "" : data.displayName(ITrainStopTypeSetting.resolveDirection(data, true, true));
             case "origin" -> data == null ? "" : data.origin().displayName();
@@ -132,9 +129,9 @@ public class VariableManager {
             List<StopSnapshot> stopovers = blockEntity.getStopovers();
 
             if (variable.equals("via")) {
-                return join(stopovers, s -> s.realtimeStation().displayName(), ", ");
+                return join(stopovers, s -> s.station().displayName(), ", ");
             } else if (variable.startsWith("via:")) {
-                return join(stopovers, s -> s.realtimeStation().displayName(), variable.substring("via:".length()));
+                return join(stopovers, s -> s.station().displayName(), variable.substring("via:".length()));
             } else if (variable.equals("line")) {
                 return blockEntity.getTrainDisplayName();
             } else if (variable.equals("carriages")) {

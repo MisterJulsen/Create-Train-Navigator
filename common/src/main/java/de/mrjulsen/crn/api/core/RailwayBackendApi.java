@@ -169,7 +169,7 @@ public final class RailwayBackendApi {
     /** The train's next call at the given station among its upcoming stops. */
     public static Optional<StopSnapshot> getNextCallAt(UUID trainId, String stationName) {
         return getUpcomingStops(trainId).stream()
-            .filter(x -> TrainUtils.stationMatches(x.realtimeStationName(), stationName))
+            .filter(x -> TrainUtils.stationMatches(x.stationName(), stationName))
             .findFirst();
     }
 
@@ -270,25 +270,25 @@ public final class RailwayBackendApi {
 
     /** Departures from the station with this exact name, earliest first. */
     public static List<BoardEntry> getDepartures(String stationName, BoardQuery query) {
-        return board(manager().getCallIndex().callsAt(stationName), query,
+        return board(manager().getCallIndex().callsAt(stationName, query.includeDivertedAway()), query,
             Comparator.comparingLong(BoardEntry::realtimeDeparture));
     }
 
     /** Departures from every station covered by the given tag, earliest first. */
     public static List<BoardEntry> getDepartures(StationTag stationTag, BoardQuery query) {
-        return board(manager().getCallIndex().callsAt(stationTag), query,
+        return board(manager().getCallIndex().callsAt(stationTag, query.includeDivertedAway()), query,
             Comparator.comparingLong(BoardEntry::realtimeDeparture));
     }
 
     /** Arrivals at the station with this exact name, earliest first. */
     public static List<BoardEntry> getArrivals(String stationName, BoardQuery query) {
-        return board(manager().getCallIndex().callsAt(stationName), query,
+        return board(manager().getCallIndex().callsAt(stationName, query.includeDivertedAway()), query,
             Comparator.comparingLong(BoardEntry::realtimeArrival));
     }
 
     /** Arrivals at every station covered by the given tag, earliest first. */
     public static List<BoardEntry> getArrivals(StationTag stationTag, BoardQuery query) {
-        return board(manager().getCallIndex().callsAt(stationTag), query,
+        return board(manager().getCallIndex().callsAt(stationTag, query.includeDivertedAway()), query,
             Comparator.comparingLong(BoardEntry::realtimeArrival));
     }
 
@@ -467,7 +467,7 @@ public final class RailwayBackendApi {
             if (!query.includeUnreliable() && !train.getLifecycleState().isUsable()) {
                 continue;
             }
-            if (settings.isStationBlacklisted(stop.getStationName())) {
+            if (settings.isStationBlacklisted(train.getDisplayStationName(stop))) {
                 continue;
             }
             if (!isServiceable(train.getJourney(), stop)) {
@@ -521,7 +521,7 @@ public final class RailwayBackendApi {
         Set<UUID> categoryIds = new LinkedHashSet<>();
         Set<UUID> trainIds = new LinkedHashSet<>();
 
-        for (StationCallIndex.Call call : manager().getCallIndex().callsAt(stationName)) {
+        for (StationCallIndex.Call call : manager().getCallIndex().callsAt(stationName, false)) {
             if (!call.train().isReportable() || call.train().isBlacklisted()) {
                 continue;
             }

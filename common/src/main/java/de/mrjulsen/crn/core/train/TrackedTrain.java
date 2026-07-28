@@ -456,7 +456,7 @@ public final class TrackedTrain implements RealtimeTracker.Listener {
                 ? train.navigation.destination
                 : train.getCurrentStation();
             if (target != null) {
-                stop.updateStationName(target.name);
+                stop.resolveStationName(target.name);
             }
         });
     }
@@ -549,7 +549,7 @@ public final class TrackedTrain implements RealtimeTracker.Listener {
 
                 GlobalStation station = train.getCurrentStation();
                 if (station != null) {
-                    stop.updateStationName(station.name);
+                    stop.resolveStationName(station.name);
                     timing.recordVisitedStation(station.name);
                 }
 
@@ -570,6 +570,8 @@ public final class TrackedTrain implements RealtimeTracker.Listener {
         long now = ModUtils.getTransformedWorldTime();
         synchronized (updateLock) {
             journey.getStopAtEntry(entryIndex).ifPresent(stop -> {
+                stop.unresolveStation();
+
                 StopTimings timing = getTimings(stop);
                 if (timing == null) {
                     return;

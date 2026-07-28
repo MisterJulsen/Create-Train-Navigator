@@ -42,7 +42,7 @@ public class TransferPage extends AbstractRouteDetailsPage {
     }
 
     static Component transferMessage(RouteLeg connectingLeg) {
-        String platform = connectingLeg.boarding().realtimePlatform();
+        String platform = connectingLeg.boarding().platform();
         return platform == null || platform.isBlank()
             ? CustomLanguage.translate(keyTransfer, connectingLeg.displayName(), connectingLeg.destinationText())
             : CustomLanguage.translate(keyTransferWithPlatform, connectingLeg.displayName(), connectingLeg.destinationText(), platform);

@@ -41,12 +41,12 @@ public class NextConnectionsPage extends AbstractRouteDetailsPage {
         this.afterFirstCycle = afterFirstCycle;
 
         RouteCall call = tracker.nextCall();
-        if (call.realtimeStation().tagId() == null) {
+        if (call.station().tagId() == null) {
             DLUtils.doIfNotNull(afterFirstCycle, Runnable::run);
             return;
         }
 
-        ModNetworkManager.GET_STATION_BOARD.send(NetworkDirection.toServer(), new GetStationBoardPacketData.Request(call.realtimeStation().tagId(), tracker.currentLeg().trainId(), MAX_CONNECTIONS), (response) -> {
+        ModNetworkManager.GET_STATION_BOARD.send(NetworkDirection.toServer(), new GetStationBoardPacketData.Request(call.station().tagId(), tracker.currentLeg().trainId(), MAX_CONNECTIONS), (response) -> {
             if (response.getEntries().isEmpty()) {
                 DLUtils.doIfNotNull(afterFirstCycle, Runnable::run);
                 return;

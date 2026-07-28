@@ -94,7 +94,7 @@ public final class RealtimeTrains {
             .findFirst()
             .map(stop -> {
                 StopSnapshot projected = stop.advancedBy(call.cycle() - stop.completedVisits(), snapshot.totalDuration());
-                return new RouteCall(projected.scheduledStation(), projected.realtimeStation(),
+                return new RouteCall(projected.scheduledStation(), projected.station(),
                     projected.entryIndex(), call.cycle(), projected.scheduled(), projected.realtime());
             })
             .orElse(call);
