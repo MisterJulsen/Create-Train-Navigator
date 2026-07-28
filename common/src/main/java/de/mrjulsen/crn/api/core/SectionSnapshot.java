@@ -24,7 +24,10 @@ import net.minecraft.nbt.CompoundTag;
  * @param line                     The line worked in this section, or {@link LineRef#NONE}.
  * @param category                 The category worked in this section, or {@link CategoryRef#NONE}.
  * @param origin                   The section's first stop.
- * @param destination              The section's destination, as it should be shown to travellers.
+ * @param destination              The stop this section runs to, as it should be shown to travellers:
+ *                                 its own last stop, or the following section's first one where it
+ *                                 carries them onward. Where the train goes after that is not part
+ *                                 of this section's service.
  * @param stops                    The section's stops in order.
  * @param currentStopIndex         Where the train stands within {@code stops}, or {@code -1} if it
  *                                 is not currently in this section.
@@ -88,7 +91,7 @@ public record SectionSnapshot(
             LineRef.of(section.getTrainLine().orElse(null)),
             CategoryRef.of(section.getTrainCategory().orElse(null)),
             section.getFirstStop().map(x -> StationRef.of(train.getDisplayStationName(x))).orElse(StationRef.NONE),
-            section.getLastStop().map(x -> StationRef.of(train.getSectionDestination(x))).orElse(StationRef.NONE),
+            train.getSectionTerminus(section).map(StationRef::of).orElse(StationRef.NONE),
             stops,
             currentStopIndex,
             section.isUsable(),

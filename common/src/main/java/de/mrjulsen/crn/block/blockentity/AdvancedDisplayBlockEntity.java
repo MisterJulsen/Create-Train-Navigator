@@ -119,7 +119,9 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
     private TrainSnapshot trainSnapshot;
     private JourneySnapshot journeySnapshot;
     private final Cache<List<StopSnapshot>> serviceStops = new Cache<>(() ->
-        getJourney().map(x -> x.servedStops(getOperatingSection().orElse(null))).orElse(List.of()));
+        getJourney().map(x -> x.servedStops(getOperatingSection().orElse(null), isWaitingAtStation())).orElse(List.of()));
+    private final Cache<Integer> currentServiceStopIndex = new Cache<>(() ->
+        getJourney().map(x -> x.servedStopIndex(getOperatingSection().orElse(null), isWaitingAtStation())).orElse(-1));
     private CarriageData carriageData = new CarriageData(0, Direction.NORTH, false);
     private ElevatorData elevatorData = new ElevatorData("", "", "", "", ElevatorMovementType.STANDING_STILL);
 
@@ -265,17 +267,7 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
     }
 
     private int indexOfCurrentStop() {
-        Optional<StopSnapshot> current = getCurrentStop();
-        if (current.isEmpty()) {
-            return -1;
-        }
-        List<StopSnapshot> service = getServiceStops();
-        for (int i = 0; i < service.size(); i++) {
-            if (service.get(i).entryIndex() == current.get().entryIndex()) {
-                return i;
-            }
-        }
-        return -1;
+        return currentServiceStopIndex.get();
     }
 
     private boolean sameNextStop(JourneySnapshot incoming) {
@@ -689,6 +681,7 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
                     incoming != null && incoming.position().backwards());
                 this.relativeExitDirection.clear();
                 this.serviceStops.clear();
+                this.currentServiceStopIndex.clear();
 
                 getRenderer().update(level, pos, state, this, shouldUpdate ? EUpdateReason.LAYOUT_CHANGED : EUpdateReason.DATA_CHANGED);
             }, () -> {});

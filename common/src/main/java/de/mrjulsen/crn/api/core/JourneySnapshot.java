@@ -276,19 +276,66 @@ public record JourneySnapshot(
 
     /**
      * The stops travellers can reach aboard the given section, which includes the first stop of the
-     * following section where the train carries them onward.
+     * following section where the train carries them onward. On a cyclic run whose only section
+     * carries travellers back into itself, that closing stop is the section's own first one again,
+     * listed a second time with the times of the coming cycle.
+     *
+     * @param arrived Whether the train has come to a stand at its current stop.
      */
-    public List<StopSnapshot> servedStops(SectionSnapshot section) {
+    public List<StopSnapshot> servedStops(SectionSnapshot section, boolean arrived) {
         if (section == null) {
             return List.of();
         }
         if (!carriesPassengersOnward(section)) {
             return section.stops();
         }
-        List<StopSnapshot> served = new ArrayList<>(section.stops().size() + 1);
-        served.addAll(section.stops());
-        nextSection(section).flatMap(next -> next.stops().stream().findFirst()).ifPresent(served::add);
+        List<StopSnapshot> own = section.stops();
+        List<StopSnapshot> served = new ArrayList<>(own.size() + 1);
+        served.addAll(own);
+        nextSection(section).flatMap(next -> next.stops().stream().findFirst())
+            .map(onward -> closesItsOwnRun(own, onward, arrived) ? onward.advancedBy(1, totalDuration) : onward)
+            .ifPresent(served::add);
         return List.copyOf(served);
+    }
+
+    /**
+     * Whether the stop closing the service is the very one it opened with and the train still stands
+     * there, about to drive the whole run. A stop holds the times of its next call, so in that one
+     * case the closing call is a whole cycle later than what the stop reports; at every other point
+     * of the run the reported call is already the closing one.
+     */
+    private boolean closesItsOwnRun(List<StopSnapshot> own, StopSnapshot onward, boolean arrived) {
+        if (!arrived || own.stream().noneMatch(x -> x.entryIndex() == onward.entryIndex())) {
+            return false;
+        }
+        return currentStop().map(x -> x.entryIndex() == onward.entryIndex()).orElse(false);
+    }
+
+    /**
+     * Where the train stands within {@link #servedStops(SectionSnapshot, boolean)}, or {@code -1} where it
+     * stands at none of them. A run that wraps around into itself lists its first stop twice, once
+     * as the start of the service and once as its end; which of the two the train is at depends on
+     * whether it has already come to a stand there.
+     *
+     * @param arrived Whether the train has come to a stand at its current stop.
+     */
+    public int servedStopIndex(SectionSnapshot section, boolean arrived) {
+        StopSnapshot current = currentStop().orElse(null);
+        if (current == null) {
+            return -1;
+        }
+        List<StopSnapshot> served = servedStops(section, arrived);
+        int found = -1;
+        for (int i = 0; i < served.size(); i++) {
+            if (served.get(i).entryIndex() != current.entryIndex()) {
+                continue;
+            }
+            found = i;
+            if (arrived) {
+                break;
+            }
+        }
+        return found;
     }
 
     /** Whether the stop is the first of its section. */

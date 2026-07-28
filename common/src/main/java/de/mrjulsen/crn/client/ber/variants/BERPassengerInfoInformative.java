@@ -523,7 +523,7 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
                     int k = i >= linesCount - 1 ? totalStationsCount - 1 : i;
                     DLUtils.doIfNotNull(scheduleLines[i], a -> {
                         StopSnapshot stop = blockEntity.getRemainingStops().get(k);
-                        boolean showDeparture = blockEntity.isWaitingAtStation() && blockEntity.getCurrentStop().map(StopSnapshot::entryIndex).orElse(-1) == stop.entryIndex();
+                        boolean showDeparture = blockEntity.isWaitingAtStation() && k == 0;
 
                         BERLabel scheduledTimeLabel = a[LineComponent.SCHEDULED_TIME.i()];
                         BERLabel realTimeLabel = a[LineComponent.REAL_TIME.i()];
