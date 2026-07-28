@@ -157,20 +157,6 @@ public final class TrainJourney {
         return result;
     }
 
-    public JourneySection getNextSection(JourneySection section) {
-        if (sections.size() <= 1) {
-            return section;
-        }
-        return sections.get((section.getSectionIndex() + 1) % sections.size());
-    }
-
-    public JourneySection getPreviousSection(JourneySection section) {
-        if (sections.size() <= 1) {
-            return section;
-        }
-        return sections.get((section.getSectionIndex() - 1 + sections.size()) % sections.size());
-    }
-
     public Optional<JourneySection> nextSectionOf(JourneySection section) {
         if (section == null || sections.isEmpty()) {
             return Optional.empty();

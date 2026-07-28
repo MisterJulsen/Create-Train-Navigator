@@ -38,19 +38,23 @@ public final class JourneyDisplayNames {
             return "";
         }
         JourneySection destinationSection = section.isLastStop(stop) && !section.includesNextSectionStart()
-            ? journey.getNextSection(section)
+            ? journey.nextSectionOf(section).orElse(section)
             : section;
         return terminusStop(journey, destinationSection)
             .map(terminus -> realtimeStationName(terminus, timings.apply(terminus)))
             .orElse("");
     }
 
+    /**
+     * The stop a section's travellers ride to. Where the section carries them onward, that is the
+     * first stop of the following section, which on a cyclic run with a single section is the
+     * section's own first stop again.
+     */
     public static Optional<JourneyStop> terminusStop(TrainJourney journey, JourneySection section) {
         if (section.includesNextSectionStart()) {
-            JourneySection next = journey.getNextSection(section);
-            if (next != section) {
-                return next.getFirstStop().or(section::getLastStop);
-            }
+            return journey.nextSectionOf(section)
+                .flatMap(JourneySection::getFirstStop)
+                .or(section::getLastStop);
         }
         return section.getLastStop();
     }

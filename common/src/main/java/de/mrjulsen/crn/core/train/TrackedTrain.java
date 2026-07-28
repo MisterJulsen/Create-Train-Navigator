@@ -188,9 +188,10 @@ public final class TrackedTrain implements RealtimeTracker.Listener {
         }
         JourneySection section = currentStop.get().getSection();
         if (section != null && getLiveState() != LiveTrainState.AT_STATION && section.isFirstStop(currentStop.get())) {
-            JourneySection previous = journey.getPreviousSection(section);
-            if (previous != section && previous.includesNextSectionStart()) {
-                return Optional.of(previous);
+            Optional<JourneySection> previous = journey.previousSectionOf(section)
+                .filter(x -> x != section && x.includesNextSectionStart());
+            if (previous.isPresent()) {
+                return previous;
             }
         }
         return Optional.ofNullable(section);
@@ -549,11 +550,9 @@ public final class TrackedTrain implements RealtimeTracker.Listener {
                 }
 
                 JourneySection section = stop.getSection();
-                if (section != null && section.isFirstStop(stop)) {
-                    JourneySection previous = journey.getPreviousSection(section);
-                    if (previous != section && previous.includesNextSectionStart()) {
-                        onSectionChange();
-                    }
+                if (section != null && section.isFirstStop(stop)
+                        && journey.previousSectionOf(section).filter(x -> x != section && x.includesNextSectionStart()).isPresent()) {
+                    onSectionChange();
                 }
 
                 RailwayBackendEvents.fireArrival(this, stop);
