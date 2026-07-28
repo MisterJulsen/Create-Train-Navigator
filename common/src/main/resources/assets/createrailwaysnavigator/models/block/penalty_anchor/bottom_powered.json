@@ -1,0 +1,6 @@
+{
+  "parent": "createrailwaysnavigator:block/penalty_anchor/bottom",
+  "textures": {
+    "bottom": "createrailwaysnavigator:block/penalty_anchor/bottom_powered"
+  }
+}

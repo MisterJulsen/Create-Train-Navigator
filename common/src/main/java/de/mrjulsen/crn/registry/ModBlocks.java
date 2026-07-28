@@ -5,8 +5,11 @@ import java.util.function.Supplier;
 import com.simibubi.create.api.behaviour.display.DisplayTarget;
 import com.simibubi.create.api.behaviour.interaction.MovingInteractionBehaviour;
 import com.simibubi.create.api.behaviour.movement.MovementBehaviour;
+
 import com.simibubi.create.foundation.block.connected.ConnectedTextureBehaviour;
+
 import com.simibubi.create.foundation.data.SharedProperties;
+import com.simibubi.create.content.trains.track.TrackTargetingBlockItem;
 import com.simibubi.create.foundation.data.TagGen;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import com.tterrag.registrate.util.nullness.NonNullConsumer;
@@ -17,12 +20,17 @@ import de.mrjulsen.crn.block.blockentity.AdvancedDisplayInteractionBehaviour;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayMovementBehaviour;
 import de.mrjulsen.crn.block.connected.AdvancedDisplayCTBehaviour;
 import de.mrjulsen.crn.block.connected.AdvancedDisplaySmallCTBehaviour;
+import de.mrjulsen.crn.block.penalty.PenaltyAnchorBlock;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.material.MapColor;
+
+import static com.simibubi.create.foundation.data.TagGen.pickaxeOnly;
 
 public class ModBlocks {	
 
@@ -131,13 +139,22 @@ public class ModBlocks {
 			.register();
 	
     public static final BlockEntry<TrainStationClockBlock> TRAIN_STATION_CLOCK = CreateRailwaysNavigator.REGISTRATE.block("train_station_clock", TrainStationClockBlock::new)
-		.addLayer(() -> RenderType::cutout)
-		.initialProperties(SharedProperties::softMetal)
-		.transform(TagGen.pickaxeOnly())
-		.item()
-		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
-		.build()
-		.register();
+			.addLayer(() -> RenderType::cutout)
+			.initialProperties(SharedProperties::softMetal)
+			.transform(TagGen.pickaxeOnly())
+			.item()
+			.tab(ModCreativeModeTab.MAIN_TAB.getKey())
+			.build()
+			.register();
+
+	public static final BlockEntry<PenaltyAnchorBlock> PENALTY_BLOCK = CreateRailwaysNavigator.REGISTRATE.block("penalty_anchor", PenaltyAnchorBlock::new)
+			.initialProperties(SharedProperties::softMetal)
+			.properties(properties -> properties.mapColor(MapColor.COLOR_GRAY).sound(SoundType.NETHERITE_BLOCK))
+			.transform(pickaxeOnly())
+			.item(TrackTargetingBlockItem.ofType(ModExtras.PENALTY_ANCHOR))
+			.tab(ModCreativeModeTab.MAIN_TAB.getKey())
+			.build()
+			.register();
 
 	public static final BlockEntry<NavigatorLecternBlock> NAVIGATOR_LECTERN = CreateRailwaysNavigator.REGISTRATE.block("navigator_lectern", NavigatorLecternBlock::new)
 			.initialProperties(() -> Blocks.LECTERN)

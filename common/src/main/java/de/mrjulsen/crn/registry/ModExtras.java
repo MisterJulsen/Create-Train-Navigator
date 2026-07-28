@@ -4,13 +4,16 @@ import com.simibubi.create.AllBlocks;
 import com.simibubi.create.api.behaviour.display.DisplaySource;
 import com.simibubi.create.api.registry.CreateBuiltInRegistries;
 import com.simibubi.create.api.registry.CreateRegistries;
+import com.simibubi.create.content.trains.graph.EdgePointType;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.display.AdvancedDisplaySource;
 import de.mrjulsen.crn.block.display.AdvancedDisplayTarget;
+import de.mrjulsen.crn.block.penalty.PenaltyAnchor;
 import de.mrjulsen.crn.mixin.CreateAccessor;
+import de.mrjulsen.mcdragonlib.util.DLUtils;
 import net.createmod.catnip.data.Pair;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -22,6 +25,8 @@ public class ModExtras {
             
     public static final RegistryEntry<AdvancedDisplayTarget> ADVANCED_DISPLAY_BOARD_TARGET = CreateRailwaysNavigator.REGISTRATE.displayTarget("advanced_display", AdvancedDisplayTarget::new)
         .register();
+
+    public static final EdgePointType<PenaltyAnchor> PENALTY_ANCHOR = EdgePointType.register(DLUtils.resourceLocation(CreateRailwaysNavigator.MOD_ID, "penalty_anchor"), PenaltyAnchor::new);
 
     private static void checkAndAssignSource(Pair<Block, DisplaySource> pair) {
         if (pair.getFirst() == null || pair.getSecond() == null) return;

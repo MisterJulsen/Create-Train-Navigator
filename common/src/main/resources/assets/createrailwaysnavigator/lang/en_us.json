@@ -44,6 +44,16 @@
     "block.createrailwaysnavigator.train_station_clock.tooltip.condition2": "When R-Clicked on another Train Station Clock",
 	"block.createrailwaysnavigator.train_station_clock.tooltip.behaviour2": "Changes the clock to display the time on _all four sides_.",
     "block.createrailwaysnavigator.navigator_lectern": "Lectern with Navigator",
+    "block.createrailwaysnavigator.penalty_anchor": "Penalty Anchor",
+    "block.createrailwaysnavigator.penalty_anchor.filter": "Affected Trains",
+    "block.createrailwaysnavigator.penalty_anchor.penalty": "Navigation Penalty",
+    "block.createrailwaysnavigator.penalty_anchor.tooltip.summary": "Used as an _obstacle_ for trains on the track. Trains try to navigate along the path _with the lowest resistance_. By adjusting the _penalty value_, you can better control which routes a train chooses by making unwanted sections less attractive through high penalty values.",
+    "block.createrailwaysnavigator.penalty_anchor.tooltip.condition1": "When using a Wrench",
+    "block.createrailwaysnavigator.penalty_anchor.tooltip.behaviour1": "Adjust the _penalty value_ on the _block's side_.",
+    "block.createrailwaysnavigator.penalty_anchor.tooltip.condition2": "When powered from above or below",
+    "block.createrailwaysnavigator.penalty_anchor.tooltip.behaviour2": "_Weakens the penalty_ the stronger the signal gets. At _full strength_ the anchor is _switched off_ entirely. A _Comparator_ reads the resulting penalty.",
+    "block.createrailwaysnavigator.penalty_anchor.tooltip.condition3": "When a train passes",
+    "block.createrailwaysnavigator.penalty_anchor.tooltip.behaviour3": "Emits a _redstone signal_ from its _four sides_, like a Train Observer.",
 
     "block.createrailwaysnavigator.advanced_display.ber.not_in_service": "Out of service!",
     "block.createrailwaysnavigator.advanced_display.ber.do_not_board": "Do not board!",
@@ -102,7 +112,8 @@
     "gui.createrailwaysnavigator.common.read_only": "(Read Only)",
     "gui.createrailwaysnavigator.common.server": "Server",
     "gui.createrailwaysnavigator.common.are_you_sure": "Are you sure?",
-    
+    "gui.createrailwaysnavigator.common.value": "Value",
+
     "gui.createrailwaysnavigator.navigator.title": "Create Railways Navigator",
     "gui.createrailwaysnavigator.navigator.no_connections": "No connections found.",
     "gui.createrailwaysnavigator.navigator.not_searched": "Nothing searched yet.",

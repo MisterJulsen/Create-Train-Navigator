@@ -12,8 +12,18 @@ import net.minecraftforge.server.ServerLifecycleHooks;
 import java.nio.file.Path;
 
 import com.simibubi.create.content.contraptions.Contraption;
+import com.simibubi.create.content.logistics.filter.FilterItemStack;
+import com.simibubi.create.content.trains.entity.Carriage;
+import com.simibubi.create.content.trains.entity.Train;
 import com.simibubi.create.content.trains.station.GlobalStation;
 import com.simibubi.create.content.trains.station.StationBlockEntity;
+
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.minecraftforge.fluids.capability.IFluidHandler.FluidAction;
+import net.minecraftforge.items.IItemHandlerModifiable;
 
 import java.util.Map;
 import java.util.Optional;
@@ -57,6 +67,32 @@ public class CRNPlatformSpecificImpl {
 
     public static BlockEntity getClientContraptionBlockEntity(Contraption contraption, BlockPos localPos) {
         return contraption.getBlockEntityClientSide(localPos);
+    }
+
+    public static boolean trainCarriesFilteredCargo(Level level, FilterItemStack filter, Train train) {
+        for (Carriage carriage : train.carriages) {
+            if (carriage.storage == null)
+                continue;
+
+            IItemHandlerModifiable inv = carriage.storage.getAllItems();
+            if (inv != null) {
+                for (int slot = 0; slot < inv.getSlots(); slot++) {
+                    ItemStack stack = inv.extractItem(slot, 1, true);
+                    if (!stack.isEmpty() && filter.test(level, stack))
+                        return true;
+                }
+            }
+
+            IFluidHandler tank = carriage.storage.getFluids();
+            if (tank != null) {
+                for (int slot = 0; slot < tank.getTanks(); slot++) {
+                    FluidStack drain = tank.drain(1, FluidAction.SIMULATE);
+                    if (!drain.isEmpty() && filter.test(level, drain))
+                        return true;
+                }
+            }
+        }
+        return false;
     }
 }
  

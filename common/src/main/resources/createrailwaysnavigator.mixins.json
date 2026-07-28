@@ -7,16 +7,19 @@
     "ModularGuiLineBuilderAccessor",
     "ScheduleScreenAccessor",
     "ScheduleScreenMixin",
-    "StationBlockEntityMixin"
+    "StationBlockEntityMixin",
+    "TrackTargetingClientMixin"
   ],
   "mixins": [
     "ContraptionAccessor",
     "CreateAccessor",
     "ItemMixin",
     "MountedStorageManagerMixin",
+    "NavigationMixin",
     "ScheduleEntryMixin",
     "ScheduleRuntimeAccessor",
     "ScheduleRuntimeMixin",
+    "TrainMixin",
     "TrainStatusAccessor",
     "extensions.ScheduledDelayMixin",
     "extensions.TimeOfDayConditionMixin"

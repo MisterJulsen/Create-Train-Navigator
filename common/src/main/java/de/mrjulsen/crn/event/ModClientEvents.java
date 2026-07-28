@@ -2,6 +2,7 @@ package de.mrjulsen.crn.event;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.ClientWrapper;
+import de.mrjulsen.crn.client.ModPartials;
 import de.mrjulsen.crn.client.RealtimeTrains;
 import de.mrjulsen.crn.client.input.ModKeys;
 import de.mrjulsen.crn.config.ModClientConfig;
@@ -20,6 +21,8 @@ public class ModClientEvents {
     private static int langCheckerTicks = 0;
 
     public static void init() {
+
+        ModPartials.init();
 
         ClientLifecycleEvent.CLIENT_SETUP.register((mc) -> {
             ModKeys.init();
