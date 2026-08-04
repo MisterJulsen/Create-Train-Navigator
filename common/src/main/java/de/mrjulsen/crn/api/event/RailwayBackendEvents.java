@@ -8,8 +8,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
-import de.mrjulsen.crn.api.core.StopSnapshot;
-import de.mrjulsen.crn.api.core.TrainSnapshot;
+import de.mrjulsen.crn.api.core.snapshot.StopSnapshot;
+import de.mrjulsen.crn.api.core.snapshot.TrainSnapshot;
 import de.mrjulsen.crn.core.train.ServiceState;
 import de.mrjulsen.crn.core.train.TrackedTrain;
 import de.mrjulsen.crn.core.schedule.JourneyStop;

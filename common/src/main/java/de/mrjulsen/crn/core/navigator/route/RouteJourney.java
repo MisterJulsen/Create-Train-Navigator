@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import de.mrjulsen.crn.api.core.StationRef;
+import de.mrjulsen.crn.api.core.ref.StationRef;
 import de.mrjulsen.crn.util.NbtHelper;
 import net.minecraft.nbt.CompoundTag;
 

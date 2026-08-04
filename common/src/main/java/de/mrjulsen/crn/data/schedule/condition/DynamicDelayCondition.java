@@ -10,7 +10,7 @@ import com.simibubi.create.foundation.gui.ModularGuiLineBuilder;
 
 import com.simibubi.create.foundation.utility.CreateLang;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
-import de.mrjulsen.crn.api.IPredictableWaitCondition;
+import de.mrjulsen.crn.data.schedule.IPredictableWaitCondition;
 import de.mrjulsen.crn.api.core.RailwayBackendApi;
 import de.mrjulsen.crn.core.timing.StopTimings;
 import de.mrjulsen.crn.client.ClientWrapper;

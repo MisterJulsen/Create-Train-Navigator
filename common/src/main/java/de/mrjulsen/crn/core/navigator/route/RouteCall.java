@@ -3,7 +3,7 @@ package de.mrjulsen.crn.core.navigator.route;
 import java.util.Objects;
 
 import de.mrjulsen.crn.api.core.StationCall;
-import de.mrjulsen.crn.api.core.StationRef;
+import de.mrjulsen.crn.api.core.ref.StationRef;
 import de.mrjulsen.crn.core.timing.StopTimes;
 import net.minecraft.nbt.CompoundTag;
 

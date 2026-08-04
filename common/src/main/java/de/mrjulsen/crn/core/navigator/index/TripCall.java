@@ -1,6 +1,6 @@
 package de.mrjulsen.crn.core.navigator.index;
 
-import de.mrjulsen.crn.api.core.StationRef;
+import de.mrjulsen.crn.api.core.ref.StationRef;
 import de.mrjulsen.crn.core.timing.StopTimes;
 
 public record TripCall(int node, StationRef station, StationRef scheduledStation, int entryIndex, int stopIndex,

@@ -3,9 +3,9 @@ package de.mrjulsen.crn.network.packets;
 import java.util.Optional;
 import java.util.UUID;
 
-import de.mrjulsen.crn.api.core.JourneySnapshot;
+import de.mrjulsen.crn.api.core.snapshot.JourneySnapshot;
 import de.mrjulsen.crn.api.core.RailwayBackendApi;
-import de.mrjulsen.crn.api.core.TrainSnapshot;
+import de.mrjulsen.crn.api.core.snapshot.TrainSnapshot;
 import de.mrjulsen.mcdragonlib.data.DLStatus;
 import de.mrjulsen.mcdragonlib.network.NetworkPacketContext;
 import de.mrjulsen.mcdragonlib.network.NetworkPacketData;

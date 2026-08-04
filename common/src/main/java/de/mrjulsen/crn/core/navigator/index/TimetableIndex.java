@@ -5,14 +5,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import de.mrjulsen.crn.api.core.CategoryRef;
-import de.mrjulsen.crn.api.core.JourneySnapshot;
-import de.mrjulsen.crn.api.core.LineRef;
+import de.mrjulsen.crn.api.core.ref.CategoryRef;
+import de.mrjulsen.crn.api.core.snapshot.JourneySnapshot;
+import de.mrjulsen.crn.api.core.ref.LineRef;
 import de.mrjulsen.crn.api.core.RailwayBackendApi;
-import de.mrjulsen.crn.api.core.SectionSnapshot;
-import de.mrjulsen.crn.api.core.StationRef;
-import de.mrjulsen.crn.api.core.StopSnapshot;
-import de.mrjulsen.crn.api.core.TrainSnapshot;
+import de.mrjulsen.crn.api.core.snapshot.SectionSnapshot;
+import de.mrjulsen.crn.api.core.ref.StationRef;
+import de.mrjulsen.crn.api.core.snapshot.StopSnapshot;
+import de.mrjulsen.crn.api.core.snapshot.TrainSnapshot;
 import de.mrjulsen.crn.core.util.StationLookup;
 import de.mrjulsen.crn.data.settings.StationTag;
 import de.mrjulsen.crn.util.TrainUtils;
@@ -57,7 +57,7 @@ public final class TimetableIndex {
 
     public static TimetableIndex obtain(long from, long until) {
         synchronized (CACHE_LOCK) {
-            long now = RailwayBackendApi.currentTime();
+            long now = RailwayBackendApi.getCurrentTime();
             TimetableIndex index = cached;
             if (index != null && index.covers(from, until) && Math.abs(now - index.builtAt) <= MAX_AGE) {
                 return index;
@@ -84,7 +84,7 @@ public final class TimetableIndex {
             RailwayBackendApi.getJourney(train.trainId()).ifPresent(journey -> builder.add(train, journey));
         }
 
-        return builder.finish(RailwayBackendApi.currentTime(), System.currentTimeMillis() - startedAt);
+        return builder.finish(RailwayBackendApi.getCurrentTime(), System.currentTimeMillis() - startedAt);
     }
 
     public boolean covers(long from, long until) {

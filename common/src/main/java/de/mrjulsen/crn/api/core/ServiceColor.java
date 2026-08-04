@@ -1,6 +1,8 @@
 package de.mrjulsen.crn.api.core;
 
 import de.mrjulsen.crn.Constants;
+import de.mrjulsen.crn.api.core.ref.CategoryRef;
+import de.mrjulsen.crn.api.core.ref.LineRef;
 import de.mrjulsen.mcdragonlib.util.DLColor;
 
 /** Picks the colour a service should be shown in. */

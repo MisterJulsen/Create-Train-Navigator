@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import de.mrjulsen.crn.api.core.JourneySnapshot;
-import de.mrjulsen.crn.api.core.StopSnapshot;
-import de.mrjulsen.crn.api.core.TrainSnapshot;
+import de.mrjulsen.crn.api.core.snapshot.JourneySnapshot;
+import de.mrjulsen.crn.api.core.snapshot.StopSnapshot;
+import de.mrjulsen.crn.api.core.snapshot.TrainSnapshot;
 import de.mrjulsen.crn.client.RealtimeTrains;
 import de.mrjulsen.crn.core.navigator.route.RouteCall;
 import de.mrjulsen.crn.core.navigator.route.RouteJourney;

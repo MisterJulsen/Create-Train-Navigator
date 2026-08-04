@@ -2,8 +2,8 @@ package de.mrjulsen.crn.network.packets;
 
 import java.util.List;
 
-import de.mrjulsen.crn.api.core.BoardEntry;
-import de.mrjulsen.crn.api.core.BoardQuery;
+import de.mrjulsen.crn.api.core.snapshot.BoardEntry;
+import de.mrjulsen.crn.api.core.query.BoardQuery;
 import de.mrjulsen.crn.api.core.RailwayBackendApi;
 import de.mrjulsen.crn.util.NbtHelper;
 import de.mrjulsen.crn.registry.data.NextConnectionsRequestData;
@@ -71,9 +71,9 @@ public class GetNextConnectionsDisplayDataPacketData {
         BoardQuery query = BoardQuery.defaults()
             .matching(x -> !x.trainId().equals(packet.data.selfTrainId()));
         if (packet.data.allowDuplicates()) {
-            query = query.withDuplicates();
+            query = query.withDuplicates(true);
         }
-        return new Response(RailwayBackendApi.getDepartures(packet.data.stationName(), query));
+        return new Response(RailwayBackendApi.getBoard(packet.data.stationName(), query));
     }
 
 }

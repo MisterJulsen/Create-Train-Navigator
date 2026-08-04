@@ -6,10 +6,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import de.mrjulsen.crn.api.core.CategoryRef;
-import de.mrjulsen.crn.api.core.LineRef;
+import de.mrjulsen.crn.api.core.ref.CategoryRef;
+import de.mrjulsen.crn.api.core.ref.LineRef;
 import de.mrjulsen.crn.api.core.RailwayBackendApi;
+import de.mrjulsen.crn.web.annotation.RestQueryModel;
+import de.mrjulsen.crn.web.annotation.RestQueryParam;
 
+@RestQueryModel
 public record NavigationQuery(
     String origin,
     String destination,
@@ -60,6 +63,7 @@ public record NavigationQuery(
         searchHorizon = Math.max(1, searchHorizon);
     }
 
+    @RestQueryParam(value = "from", required = true)
     public static NavigationQuery from(String origin) {
         return new NavigationQuery(origin, "", List.of(), NOW, DEFAULT_TRANSFER_TIME,
             DEFAULT_MAX_TRANSFERS, false, RouteOptimization.FASTEST,
@@ -67,6 +71,7 @@ public record NavigationQuery(
             DEFAULT_TRANSFER_RISK_BUFFER, DEFAULT_MAX_RESULTS, DEFAULT_SEARCH_HORIZON);
     }
 
+    @RestQueryParam(value = "to", required = true)
     public NavigationQuery to(String destination) {
         return new NavigationQuery(origin, destination, waypoints, departAfter, minTransferTime,
             maxTransfers, directOnly, optimization, excludedCategories, includedCategories,
@@ -87,6 +92,7 @@ public record NavigationQuery(
         return withWaypoints(combined);
     }
 
+    @RestQueryParam(value = "via")
     public NavigationQuery withWaypoints(List<Waypoint> waypoints) {
         return new NavigationQuery(origin, destination, waypoints, departAfter, minTransferTime,
             maxTransfers, directOnly, optimization, excludedCategories, includedCategories,
@@ -99,10 +105,12 @@ public record NavigationQuery(
             excludedLines, includedLines, avoidedStations, transferRiskBuffer, maxResults, searchHorizon);
     }
 
+    @RestQueryParam(value = "departure_in")
     public NavigationQuery departingIn(long ticksFromNow) {
-        return departingAfter(RailwayBackendApi.currentTime() + Math.max(0, ticksFromNow));
+        return departingAfter(RailwayBackendApi.getCurrentTime() + Math.max(0, ticksFromNow));
     }
 
+    @RestQueryParam(value = "transfer_time")
     public NavigationQuery withMinTransferTime(long ticks) {
         return new NavigationQuery(origin, destination, waypoints, departAfter, ticks,
             maxTransfers, directOnly, optimization, excludedCategories, includedCategories,
@@ -119,42 +127,49 @@ public record NavigationQuery(
         return withDirectOnly(true);
     }
 
+    @RestQueryParam(value = "direct")
     public NavigationQuery withDirectOnly(boolean directOnly) {
         return new NavigationQuery(origin, destination, waypoints, departAfter, minTransferTime,
             maxTransfers, directOnly, optimization, excludedCategories, includedCategories,
             excludedLines, includedLines, avoidedStations, transferRiskBuffer, maxResults, searchHorizon);
     }
 
+    @RestQueryParam(value = "optimization")
     public NavigationQuery preferring(RouteOptimization optimization) {
         return new NavigationQuery(origin, destination, waypoints, departAfter, minTransferTime,
             maxTransfers, directOnly, optimization, excludedCategories, includedCategories,
             excludedLines, includedLines, avoidedStations, transferRiskBuffer, maxResults, searchHorizon);
     }
 
+    @RestQueryParam(value = "excluding_categories")
     public NavigationQuery excludingCategories(Set<UUID> categoryIds) {
         return new NavigationQuery(origin, destination, waypoints, departAfter, minTransferTime,
             maxTransfers, directOnly, optimization, categoryIds, includedCategories,
             excludedLines, includedLines, avoidedStations, transferRiskBuffer, maxResults, searchHorizon);
     }
 
+    @RestQueryParam(value = "only_categories")
     public NavigationQuery onlyCategories(Set<UUID> categoryIds) {
         return new NavigationQuery(origin, destination, waypoints, departAfter, minTransferTime,
             maxTransfers, directOnly, optimization, excludedCategories, categoryIds,
             excludedLines, includedLines, avoidedStations, transferRiskBuffer, maxResults, searchHorizon);
     }
 
+    @RestQueryParam(value = "excluding_lines")
     public NavigationQuery excludingLines(Set<UUID> lineIds) {
         return new NavigationQuery(origin, destination, waypoints, departAfter, minTransferTime,
             maxTransfers, directOnly, optimization, excludedCategories, includedCategories,
             lineIds, includedLines, avoidedStations, transferRiskBuffer, maxResults, searchHorizon);
     }
 
+    @RestQueryParam(value = "only_lines")
     public NavigationQuery onlyLines(Set<UUID> lineIds) {
         return new NavigationQuery(origin, destination, waypoints, departAfter, minTransferTime,
             maxTransfers, directOnly, optimization, excludedCategories, includedCategories,
             excludedLines, lineIds, avoidedStations, transferRiskBuffer, maxResults, searchHorizon);
     }
 
+    @RestQueryParam(value = "avoid_stations")
     public NavigationQuery avoidingStations(Set<String> stationNames) {
         return new NavigationQuery(origin, destination, waypoints, departAfter, minTransferTime,
             maxTransfers, directOnly, optimization, excludedCategories, includedCategories,
@@ -167,6 +182,7 @@ public record NavigationQuery(
             excludedLines, includedLines, avoidedStations, ticks, maxResults, searchHorizon);
     }
 
+    @RestQueryParam(value = "max_results")
     public NavigationQuery withMaxResults(int maxResults) {
         return new NavigationQuery(origin, destination, waypoints, departAfter, minTransferTime,
             maxTransfers, directOnly, optimization, excludedCategories, includedCategories,
@@ -180,7 +196,7 @@ public record NavigationQuery(
     }
 
     public long resolvedDepartAfter() {
-        return departAfter < 0 ? RailwayBackendApi.currentTime() : departAfter;
+        return departAfter < 0 ? RailwayBackendApi.getCurrentTime() : departAfter;
     }
 
     public int maxLegs() {

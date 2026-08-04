@@ -5,7 +5,7 @@ import java.util.List;
 import com.simibubi.create.content.trains.schedule.ScheduleEntry;
 import com.simibubi.create.content.trains.schedule.condition.ScheduleWaitCondition;
 
-import de.mrjulsen.crn.api.IPredictableWaitCondition;
+import de.mrjulsen.crn.data.schedule.IPredictableWaitCondition;
 
 public final class DepartureEstimator {
 

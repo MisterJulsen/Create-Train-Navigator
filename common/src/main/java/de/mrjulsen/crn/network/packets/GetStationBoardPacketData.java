@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.UUID;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
-import de.mrjulsen.crn.api.core.BoardEntry;
-import de.mrjulsen.crn.api.core.BoardQuery;
+import de.mrjulsen.crn.api.core.snapshot.BoardEntry;
+import de.mrjulsen.crn.api.core.query.BoardQuery;
 import de.mrjulsen.crn.api.core.RailwayBackendApi;
 import de.mrjulsen.crn.data.settings.UserSettings;
 import de.mrjulsen.crn.util.NbtHelper;
@@ -94,7 +94,7 @@ public class GetStationBoardPacketData {
 
     public static Response handle(Request packet, NetworkPacketContext context) {
         try {
-            BoardQuery query = BoardQuery.defaults().withDuplicates();
+            BoardQuery query = BoardQuery.defaults().withDuplicates(true);
             if (packet.limit > UNLIMITED) {
                 query = query.withLimit(packet.limit);
             }
@@ -104,10 +104,10 @@ public class GetStationBoardPacketData {
             if (packet.playerId != null) {
                 UserSettings settings = UserSettings.getSettingsFor(packet.playerId, true);
                 query = query
-                    .from(RailwayBackendApi.currentTime() + settings.searchDepartureInTicks.getValue())
+                    .from(RailwayBackendApi.getCurrentTime() + settings.searchDepartureInTicks.getValue())
                     .matching(entry -> !settings.searchExcludedTrainCaegories.getValue().contains(entry.category().id()));
             }
-            return new Response(RailwayBackendApi.getDepartures(packet.stationTagId, query));
+            return new Response(RailwayBackendApi.getBoard(packet.stationTagId, query));
         } catch (Exception e) {
             CreateRailwaysNavigator.LOGGER.error("Station board generation error.", e);
         }

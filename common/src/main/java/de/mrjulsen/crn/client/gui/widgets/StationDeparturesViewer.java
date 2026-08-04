@@ -7,7 +7,7 @@ import java.util.UUID;
 import de.mrjulsen.crn.client.gui.widgets.skins.ModernScrollbarComponentRenderer;
 import de.mrjulsen.crn.data.settings.UserSettings;
 import de.mrjulsen.crn.util.EDepartureBoardTrainFilter;
-import de.mrjulsen.crn.api.core.BoardEntry;
+import de.mrjulsen.crn.api.core.snapshot.BoardEntry;
 import de.mrjulsen.crn.api.core.CallDirection;
 import de.mrjulsen.crn.network.packets.GetStationBoardPacketData;
 import de.mrjulsen.crn.registry.ModNetworkManager;

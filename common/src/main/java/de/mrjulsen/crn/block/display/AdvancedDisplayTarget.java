@@ -17,8 +17,8 @@ import de.mrjulsen.crn.block.display.properties.SimpleStaticTextDisplaySettings;
 import de.mrjulsen.crn.block.display.properties.StaticTextDisplaySettings;
 import de.mrjulsen.crn.block.display.properties.components.IShowTrainMultipleTimes;
 import de.mrjulsen.crn.block.display.properties.components.ITrainStopTypeSetting;
-import de.mrjulsen.crn.api.core.BoardEntry;
-import de.mrjulsen.crn.api.core.BoardQuery;
+import de.mrjulsen.crn.api.core.snapshot.BoardEntry;
+import de.mrjulsen.crn.api.core.query.BoardQuery;
 import de.mrjulsen.crn.api.core.RailwayBackendApi;
 import de.mrjulsen.crn.data.settings.GlobalSettings;
 import de.mrjulsen.crn.event.ModCommonEvents;
@@ -170,15 +170,15 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 		long now = ModUtils.getTransformedWorldTime();
 
 		BoardQuery query = BoardQuery.defaults()
-				.withCancelled()
+				.withCancelled(true)
 				.withLimit(Math.max(0, maxLines))
 				.matching(entry -> ITrainStopTypeSetting.accepts(entry, type, now));
 
 		if (controller.getSettingsAs(IShowTrainMultipleTimes.class).map(IShowTrainMultipleTimes::showTrainMultipleTimes).orElse(false)) {
-			query = query.withDuplicates();
+			query = query.withDuplicates(true);
 		}
 
-		return RailwayBackendApi.getDepartures(filter, query);
+		return RailwayBackendApi.getBoard(filter, query);
 	}
 
 	@Override

@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 import de.mrjulsen.crn.api.core.RailwayBackendApi;
-import de.mrjulsen.crn.api.core.TrainSnapshot;
+import de.mrjulsen.crn.api.core.snapshot.TrainSnapshot;
 import de.mrjulsen.crn.core.timing.StopTimes;
 import de.mrjulsen.crn.core.navigator.NavigationQuery;
 import de.mrjulsen.crn.core.navigator.index.TimetableIndex;

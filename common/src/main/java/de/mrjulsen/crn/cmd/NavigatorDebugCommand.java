@@ -15,8 +15,8 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 
-import de.mrjulsen.crn.api.core.CategorySnapshot;
-import de.mrjulsen.crn.api.core.LineSnapshot;
+import de.mrjulsen.crn.api.core.snapshot.CategorySnapshot;
+import de.mrjulsen.crn.api.core.snapshot.LineSnapshot;
 import de.mrjulsen.crn.api.core.RailwayBackendApi;
 import de.mrjulsen.crn.core.navigator.NavigationQuery;
 import de.mrjulsen.crn.core.navigator.NavigationResult;
@@ -136,7 +136,7 @@ public final class NavigatorDebugCommand {
             return 0;
         }
 
-        long now = RailwayBackendApi.currentTime();
+        long now = RailwayBackendApi.getCurrentTime();
         TimetableIndex index = TimetableIndex.build(now, now + NavigationQuery.DEFAULT_SEARCH_HORIZON);
         TimetableIndex.invalidate();
 

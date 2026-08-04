@@ -5,7 +5,7 @@ import java.util.List;
 import com.simibubi.create.foundation.gui.AllIcons;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
-import de.mrjulsen.crn.api.core.StationRef;
+import de.mrjulsen.crn.api.core.ref.StationRef;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.BarColor;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.ColorShade;

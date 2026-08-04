@@ -5,9 +5,9 @@ import java.util.UUID;
 
 import com.simibubi.create.content.trains.entity.Train;
 
-import de.mrjulsen.crn.api.core.JourneySnapshot;
+import de.mrjulsen.crn.api.core.snapshot.JourneySnapshot;
 import de.mrjulsen.crn.api.core.RailwayBackendApi;
-import de.mrjulsen.crn.api.core.TrainSnapshot;
+import de.mrjulsen.crn.api.core.snapshot.TrainSnapshot;
 import de.mrjulsen.crn.data.settings.GlobalSettings;
 import de.mrjulsen.crn.util.TrainUtils;
 import de.mrjulsen.mcdragonlib.data.DLStatus;

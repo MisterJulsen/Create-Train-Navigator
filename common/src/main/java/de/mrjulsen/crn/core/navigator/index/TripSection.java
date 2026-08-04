@@ -1,8 +1,8 @@
 package de.mrjulsen.crn.core.navigator.index;
 
-import de.mrjulsen.crn.api.core.CategoryRef;
-import de.mrjulsen.crn.api.core.LineRef;
-import de.mrjulsen.crn.api.core.StationRef;
+import de.mrjulsen.crn.api.core.ref.CategoryRef;
+import de.mrjulsen.crn.api.core.ref.LineRef;
+import de.mrjulsen.crn.api.core.ref.StationRef;
 
 public record TripSection(int sectionIndex, LineRef line, CategoryRef category, StationRef destination, boolean includesNextSectionStart) {
 

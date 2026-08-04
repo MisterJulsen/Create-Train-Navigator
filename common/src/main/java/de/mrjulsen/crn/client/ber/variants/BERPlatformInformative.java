@@ -6,7 +6,7 @@ import de.mrjulsen.crn.block.display.properties.components.ITrainStopTypeSetting
 import org.joml.Vector3f;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
-import de.mrjulsen.crn.api.core.BoardEntry;
+import de.mrjulsen.crn.api.core.snapshot.BoardEntry;
 import de.mrjulsen.crn.api.core.CallDirection;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity.EUpdateReason;

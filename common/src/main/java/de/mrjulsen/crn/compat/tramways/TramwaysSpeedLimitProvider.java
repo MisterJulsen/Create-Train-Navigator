@@ -8,10 +8,10 @@ import com.simibubi.create.content.trains.entity.Train;
 import com.simibubi.create.content.trains.entity.TravellingPoint;
 import com.simibubi.create.content.trains.graph.TrackNode;
 
-import de.mrjulsen.crn.api.core.ISpeedLimitProvider;
-import de.mrjulsen.crn.api.core.SpeedLimitKind;
-import de.mrjulsen.crn.api.core.SpeedLimitQuery;
-import de.mrjulsen.crn.api.core.SpeedLimitSegment;
+import de.mrjulsen.crn.api.core.speed.ISpeedLimitProvider;
+import de.mrjulsen.crn.api.core.speed.SpeedLimitKind;
+import de.mrjulsen.crn.api.core.speed.SpeedLimitQuery;
+import de.mrjulsen.crn.api.core.speed.SpeedLimitSegment;
 import purplecreate.tramways.content.signs.TramSignPoint;
 import purplecreate.tramways.content.signs.demands.SignDemand;
 import purplecreate.tramways.mixinInterfaces.ITram;

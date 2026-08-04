@@ -9,9 +9,9 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import de.mrjulsen.crn.api.core.JourneySnapshot;
-import de.mrjulsen.crn.api.core.StopSnapshot;
-import de.mrjulsen.crn.api.core.TrainSnapshot;
+import de.mrjulsen.crn.api.core.snapshot.JourneySnapshot;
+import de.mrjulsen.crn.api.core.snapshot.StopSnapshot;
+import de.mrjulsen.crn.api.core.snapshot.TrainSnapshot;
 import de.mrjulsen.crn.network.packets.GetTrainRealtimePacketData;
 import de.mrjulsen.crn.registry.ModNetworkManager;
 import de.mrjulsen.crn.core.navigator.route.RouteCall;

@@ -9,7 +9,7 @@ import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.ColorShade;
 import de.mrjulsen.crn.client.gui.windows.TrainJourneyWindow;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
-import de.mrjulsen.crn.api.core.BoardEntry;
+import de.mrjulsen.crn.api.core.snapshot.BoardEntry;
 import de.mrjulsen.crn.api.core.CallDirection;
 import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.client.gui.events.DLGuiStandardEvents;

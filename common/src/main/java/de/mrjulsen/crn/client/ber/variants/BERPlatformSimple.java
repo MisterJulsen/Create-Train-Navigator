@@ -12,7 +12,7 @@ import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.config.ModCommonConfig;
-import de.mrjulsen.crn.api.core.BoardEntry;
+import de.mrjulsen.crn.api.core.snapshot.BoardEntry;
 import de.mrjulsen.crn.api.core.CallDirection;
 import de.mrjulsen.crn.block.display.properties.components.ITrainStopTypeSetting;
 import de.mrjulsen.crn.block.display.properties.components.ITrainStopTypeSetting.ETrainStopType;

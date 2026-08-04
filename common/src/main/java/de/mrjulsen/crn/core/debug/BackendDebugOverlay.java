@@ -9,8 +9,8 @@ import org.lwjgl.glfw.GLFW;
 
 import de.mrjulsen.crn.core.RailwayBackend;
 import de.mrjulsen.crn.core.TrainManager;
-import de.mrjulsen.crn.api.core.BoardEntry;
-import de.mrjulsen.crn.api.core.BoardQuery;
+import de.mrjulsen.crn.api.core.snapshot.BoardEntry;
+import de.mrjulsen.crn.api.core.query.BoardQuery;
 import de.mrjulsen.crn.api.core.RailwayBackendApi;
 import de.mrjulsen.crn.core.train.LiveTrainState;
 import de.mrjulsen.crn.core.train.TrackedTrain;
@@ -232,7 +232,7 @@ public class BackendDebugOverlay extends DLWindow {
         String station = current.get().getStationName();
         drawLine(graphics, TextUtils.text("API sample - departures at '" + station + "':").withStyle(ChatFormatting.UNDERLINE));
         try {
-            List<BoardEntry> board = RailwayBackendApi.getDepartures(station, BoardQuery.defaults().withLimit(4));
+            List<BoardEntry> board = RailwayBackendApi.getBoard(station, BoardQuery.defaults().withLimit(4));
             if (board.isEmpty()) {
                 drawLine(graphics, TextUtils.text("   (none)").withStyle(ChatFormatting.DARK_GRAY));
             }

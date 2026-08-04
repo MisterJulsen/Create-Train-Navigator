@@ -20,14 +20,14 @@ import com.google.gson.JsonObject;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.core.RailwayBackend;
-import de.mrjulsen.crn.api.core.CategoryRef;
-import de.mrjulsen.crn.api.core.JourneySnapshot;
-import de.mrjulsen.crn.api.core.LineRef;
+import de.mrjulsen.crn.api.core.ref.CategoryRef;
+import de.mrjulsen.crn.api.core.snapshot.JourneySnapshot;
+import de.mrjulsen.crn.api.core.ref.LineRef;
 import de.mrjulsen.crn.api.core.RailwayBackendApi;
-import de.mrjulsen.crn.api.core.SectionSnapshot;
-import de.mrjulsen.crn.api.core.StationRef;
-import de.mrjulsen.crn.api.core.StopSnapshot;
-import de.mrjulsen.crn.api.core.TrainSnapshot;
+import de.mrjulsen.crn.api.core.snapshot.SectionSnapshot;
+import de.mrjulsen.crn.api.core.ref.StationRef;
+import de.mrjulsen.crn.api.core.snapshot.StopSnapshot;
+import de.mrjulsen.crn.api.core.snapshot.TrainSnapshot;
 import de.mrjulsen.crn.core.timing.StopTimes;
 import de.mrjulsen.crn.core.navigator.NavigationQuery;
 import de.mrjulsen.crn.core.navigator.NavigationResult;
@@ -52,7 +52,7 @@ public final class NavigatorDiagnosticsDump {
             return Optional.empty();
         }
 
-        long now = RailwayBackendApi.currentTime();
+        long now = RailwayBackendApi.getCurrentTime();
         long horizon = query == null ? NavigationQuery.DEFAULT_SEARCH_HORIZON : query.searchHorizon();
 
         TimetableIndex.invalidate();

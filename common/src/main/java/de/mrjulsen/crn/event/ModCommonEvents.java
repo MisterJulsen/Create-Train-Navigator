@@ -6,6 +6,7 @@ import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.display.AdvancedDisplayTarget;
 import de.mrjulsen.crn.cmd.DebugCommand;
 import de.mrjulsen.crn.data.settings.GlobalSettings;
+import de.mrjulsen.crn.web.WebServer;
 import de.mrjulsen.mcdragonlib.internal.ClientWrapper;
 import dev.architectury.event.events.common.CommandRegistrationEvent;
 import dev.architectury.event.events.common.LifecycleEvent;
@@ -25,11 +26,13 @@ public class ModCommonEvents {
         LifecycleEvent.SERVER_STARTED.register((server) -> {
             currentServer = server;
             AdvancedDisplayTarget.start();
+            WebServer.start();
         });
 
         LifecycleEvent.SERVER_STOPPING.register((server) -> {
             GlobalSettings.clearInstance();
             AdvancedDisplayTarget.stop();
+            WebServer.stop();
         });
 
         LifecycleEvent.SERVER_STOPPED.register((server) -> {

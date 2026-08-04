@@ -16,7 +16,7 @@ public final class Navigator {
 
     public static NavigationResult search(NavigationQuery query) {
         long startedAt = System.currentTimeMillis();
-        long now = RailwayBackendApi.currentTime();
+        long now = RailwayBackendApi.getCurrentTime();
 
         if (!RailwayBackendApi.isActive()) {
             return NavigationResult.failed(NavigationStatus.BACKEND_INACTIVE, now, elapsed(startedAt));

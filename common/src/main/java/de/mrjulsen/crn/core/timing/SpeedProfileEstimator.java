@@ -6,10 +6,10 @@ import java.util.List;
 
 import com.simibubi.create.content.trains.entity.Train;
 
-import de.mrjulsen.crn.api.core.SpeedLimitProviderRegistry;
-import de.mrjulsen.crn.api.core.SpeedLimitQuery;
-import de.mrjulsen.crn.api.core.SpeedLimitSegment;
-import de.mrjulsen.crn.api.core.SpeedProfileSnapshot;
+import de.mrjulsen.crn.api.core.speed.SpeedLimitProviderRegistry;
+import de.mrjulsen.crn.api.core.speed.SpeedLimitQuery;
+import de.mrjulsen.crn.api.core.speed.SpeedLimitSegment;
+import de.mrjulsen.crn.api.core.speed.SpeedProfileSnapshot;
 
 public final class SpeedProfileEstimator {
 

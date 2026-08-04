@@ -1,5 +1,6 @@
 package de.mrjulsen.crn.api.core;
 
+import de.mrjulsen.crn.api.core.ref.StationRef;
 import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.core.timing.StopTimes;
 
@@ -12,7 +13,7 @@ import de.mrjulsen.crn.core.timing.StopTimes;
  * values, everything derived from them is answered here, so a board entry, a stop of a run and a
  * call of a saved route all answer these questions the same way.
  * <p>
- * Times are in the unit described by {@link RailwayBackendApi#currentTime()} and are not always
+ * Times are in the unit described by {@link RailwayBackendApi#getCurrentTime()} and are not always
  * known; see {@link #hasTimes()}.
  */
 public interface StationCall {

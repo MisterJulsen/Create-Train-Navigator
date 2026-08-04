@@ -1,7 +1,7 @@
 package de.mrjulsen.crn.compat.tramways;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
-import de.mrjulsen.crn.api.core.SpeedLimitProviderRegistry;
+import de.mrjulsen.crn.api.core.speed.SpeedLimitProviderRegistry;
 import net.minecraft.resources.ResourceLocation;
 
 public final class TramwaysCompat {

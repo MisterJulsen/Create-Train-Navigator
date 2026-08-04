@@ -3,7 +3,7 @@ package de.mrjulsen.crn.client.gui.overlay.pages;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.mrjulsen.crn.api.core.BoardEntry;
+import de.mrjulsen.crn.api.core.snapshot.BoardEntry;
 import de.mrjulsen.crn.client.journey.JourneyTracker;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.core.navigator.route.RouteCall;

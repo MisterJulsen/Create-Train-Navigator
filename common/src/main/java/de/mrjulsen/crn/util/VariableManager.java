@@ -3,11 +3,11 @@ package de.mrjulsen.crn.util;
 import java.util.List;
 import java.util.function.Function;
 
-import de.mrjulsen.crn.api.core.BoardEntry;
+import de.mrjulsen.crn.api.core.snapshot.BoardEntry;
 import de.mrjulsen.crn.api.core.StationCall;
-import de.mrjulsen.crn.api.core.StationRef;
-import de.mrjulsen.crn.api.core.StopSnapshot;
-import de.mrjulsen.crn.api.core.TrainSnapshot;
+import de.mrjulsen.crn.api.core.ref.StationRef;
+import de.mrjulsen.crn.api.core.snapshot.StopSnapshot;
+import de.mrjulsen.crn.api.core.snapshot.TrainSnapshot;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.block.display.properties.components.ITrainStopTypeSetting;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
