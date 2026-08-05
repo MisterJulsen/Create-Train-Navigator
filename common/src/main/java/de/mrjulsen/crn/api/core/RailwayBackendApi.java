@@ -10,9 +10,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
 
-import de.mrjulsen.crn.api.core.query.BoardQuery;
-import de.mrjulsen.crn.api.core.query.StationQuery;
-import de.mrjulsen.crn.api.core.query.TrainQuery;
+import de.mrjulsen.crn.api.core.query.*;
 import de.mrjulsen.crn.api.core.ref.CategoryRef;
 import de.mrjulsen.crn.api.core.ref.LineRef;
 import de.mrjulsen.crn.api.core.ref.StationRef;
@@ -112,38 +110,6 @@ public final class RailwayBackendApi {
         return TrainManager.getInstance().getTrain(trainId).map(TrainSnapshot::of);
     }
 
-
-
-/*
-    public static Optional<TrainSnapshot> getTrainByName(String trainName) {
-        return TrainManager.getInstance().getAllTrains().stream()
-                .filter(x -> x.getTrainName().equals(trainName))
-                .findFirst()
-                .map(TrainSnapshot::of);
-    }
-
-    public static List<TrainSnapshot> getTrains(Predicate<TrainSnapshot> filter) {
-        return getTrackedTrains().map(TrainSnapshot::of).filter(filter).toList();
-    }
-
-    public static List<TrainSnapshot> getDelayedTrains() {
-        return getTrackedTrains().filter(TrackedTrain::isDelayed).map(TrainSnapshot::of).toList();
-    }
-
-    public static List<TrainSnapshot> getCancelledTrains() {
-        return getTrackedTrains().filter(TrackedTrain::isCancelled).map(TrainSnapshot::of).toList();
-    }
-
-    public static List<TrainSnapshot> getTrainsOfLine(UUID lineId) {
-        return filterBySection(section -> lineId != null && lineId.equals(section.getTrainLineId()));
-    }
-
-    public static List<TrainSnapshot> getTrainsOfCategory(UUID categoryId) {
-        return filterBySection(section -> categoryId != null && categoryId.equals(section.getTrainCategoryId()));
-    }
-
- */
-
     public static int getTrackedTrainCount() {
         return TrainManager.getInstance().getAllTrains().size();
     }
@@ -168,8 +134,6 @@ public final class RailwayBackendApi {
         return getJourney(trainId).flatMap(JourneySnapshot::nextStop);
     }
 
-
-
     public static List<StopSnapshot> getPassedStops(UUID trainId) {
         return getJourney(trainId).map(JourneySnapshot::passedStops).orElse(List.of());
     }
@@ -181,7 +145,6 @@ public final class RailwayBackendApi {
     public static List<StopSnapshot> getRecentStops(UUID trainId) {
         return getJourney(trainId).map(JourneySnapshot::recentStops).orElse(List.of());
     }
-
 
     public static Optional<StopSnapshot> getPreviousCallAt(UUID trainId, String stationName) {
         List<StopSnapshot> stops = getPassedStops(trainId);
@@ -214,7 +177,14 @@ public final class RailwayBackendApi {
     }
 
     public static List<TrainPositionSnapshot> getAllPositions() {
-        return getTrackedTrains().map(x -> TrainPositionSnapshot.of(x.getTrain(), x.getExitSide())).toList();
+        return getAllPositions(TrainPositionQuery.all());
+    }
+
+    public static List<TrainPositionSnapshot> getAllPositions(TrainPositionQuery query) {
+        return getTrackedTrains()
+                .map(x -> TrainPositionSnapshot.of(x.getTrain(), x.getExitSide()))
+                .filter(query::accept)
+                .toList();
     }
 
     public static Optional<TrainCompositionSnapshot> getComposition(UUID trainId) {
@@ -322,7 +292,15 @@ public final class RailwayBackendApi {
     }
 
     public static List<LineSnapshot> getAllLines() {
-        return GlobalSettings.getInstance().getAllTrainLines().stream().map(RailwayBackendApi::buildLine).toList();
+        return getAllLines(LineQuery.all());
+    }
+
+    public static List<LineSnapshot> getAllLines(LineQuery query) {
+        return GlobalSettings.getInstance().getAllTrainLines()
+                .stream()
+                .map(RailwayBackendApi::buildLine)
+                .filter(query::accept)
+                .toList();
     }
 
     public static Optional<CategorySnapshot> getCategory(UUID categoryId) {
@@ -330,7 +308,15 @@ public final class RailwayBackendApi {
     }
 
     public static List<CategorySnapshot> getAllCategories() {
-        return GlobalSettings.getInstance().getAllTrainCategories().stream().map(RailwayBackendApi::buildCategory).toList();
+        return getAllCategories(CategoryQuery.all());
+    }
+
+    public static List<CategorySnapshot> getAllCategories(CategoryQuery query) {
+        return GlobalSettings.getInstance().getAllTrainCategories()
+                .stream()
+                .map(RailwayBackendApi::buildCategory)
+                .filter(query::accept)
+                .toList();
     }
 
     public static long getLastDepartureTime(String stationFilter, ETrainFilter filter, UUID trainId, String trainName) {

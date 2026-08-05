@@ -9,7 +9,7 @@ import com.simibubi.create.content.trains.entity.Train;
 
 import de.mrjulsen.crn.data.TrainExitSide;
 import de.mrjulsen.crn.util.NbtHelper;
-import de.mrjulsen.crn.web.annotation.RestAlwaysInclude;
+import de.mrjulsen.crn.web.annotation.ResponseAlwaysInclude;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -41,7 +41,7 @@ import net.minecraft.world.level.Level;
  * @param exitSide           Which side of the train the doors face at its destination.
  */
 public record TrainPositionSnapshot(
-    @RestAlwaysInclude UUID trainId,
+    @ResponseAlwaysInclude UUID trainId,
     ResourceLocation dimension,
     BlockPos position,
     List<ResourceLocation> dimensions,

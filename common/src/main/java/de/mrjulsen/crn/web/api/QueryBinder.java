@@ -18,8 +18,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import de.mrjulsen.crn.web.annotation.RestQueryModel;
-import de.mrjulsen.crn.web.annotation.RestQueryParam;
+import de.mrjulsen.crn.web.annotation.QueryModel;
+import de.mrjulsen.crn.web.annotation.QueryParam;
 
 public final class QueryBinder {
 
@@ -27,15 +27,9 @@ public final class QueryBinder {
 
     private QueryBinder() {}
 
-    /**
-     * Binds a query model whose absent parameters take the JVM zero-defaults of its record
-     * components (empty, {@code false}, {@code null}). Suitable for models where an unset parameter
-     * means "no restriction". For models that carry meaningful defaults, prefer
-     * {@link #bind(Request, Supplier)} with a seed factory such as {@code BoardQuery::all}.
-     */
     public static <T> T bind(Request request, Class<T> model) {
         Binding binding = analyze(model);
-        int minParams = model.getAnnotation(RestQueryModel.class).requiredParams();
+        int minParams = model.getAnnotation(QueryModel.class).requiredParams();
         int totalParams = (binding.factory() != null ? 1 : 0) + binding.refiners().size();
         if (minParams > totalParams) {
             throw new IllegalStateException(model.getName() + " requires minParams=" + minParams + " but only declares " + totalParams + " query parameter(s)");
@@ -59,18 +53,13 @@ public final class QueryBinder {
         return result;
     }
 
-    /**
-     * Binds a query model onto a seed instance the caller supplies, so every parameter keeps the
-     * seed's value until the request overrides it. This is how a model expresses meaningful per-field
-     * defaults: pass a factory such as {@code BoardQuery::all} or {@code Foo::new}.
-     */
     public static <T> T bind(Request request, Supplier<T> seed) {
         Objects.requireNonNull(seed, "seed");
         T instance = seed.get();
         Objects.requireNonNull(instance, "seed supplier returned null");
         Class<?> model = instance.getClass();
         Binding binding = analyze(model);
-        int minParams = model.getAnnotation(RestQueryModel.class).requiredParams();
+        int minParams = model.getAnnotation(QueryModel.class).requiredParams();
         if (minParams > binding.refiners().size()) {
             throw new IllegalStateException(model.getName() + " requires minParams=" + minParams + " but only declares " + binding.refiners().size() + " refinable query parameter(s)");
         }
@@ -86,13 +75,13 @@ public final class QueryBinder {
     private record Binding(Method factory, List<Method> refiners) {}
 
     private static Binding analyze(Class<?> model) {
-        if (!model.isAnnotationPresent(RestQueryModel.class)) {
+        if (!model.isAnnotationPresent(QueryModel.class)) {
             throw new IllegalStateException(model.getName() + " is not annotated with @RestQueryModel");
         }
         Method factory = null;
         List<Method> refiners = new ArrayList<>();
         for (Method method : model.getMethods()) {
-            if (!method.isAnnotationPresent(RestQueryParam.class)) {
+            if (!method.isAnnotationPresent(QueryParam.class)) {
                 continue;
             }
             if (method.getParameterCount() != 1) {
@@ -127,13 +116,13 @@ public final class QueryBinder {
     private static Object seedArgument(Request request, Method factory) {
         Object argument = argument(request, factory);
         if (argument == SKIP) {
-            throw new BadRequestException("Missing required query parameter: " + factory.getAnnotation(RestQueryParam.class).value());
+            throw new BadRequestException("Missing required query parameter: " + factory.getAnnotation(QueryParam.class).value());
         }
         return argument;
     }
 
     private static Object argument(Request request, Method method) {
-        RestQueryParam param = method.getAnnotation(RestQueryParam.class);
+        QueryParam param = method.getAnnotation(QueryParam.class);
         String name = param.value();
         Parameter parameter = method.getParameters()[0];
         Class<?> type = parameter.getType();

@@ -13,7 +13,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import de.mrjulsen.crn.api.json.JsonConvert;
-import de.mrjulsen.crn.web.annotation.RestAlwaysInclude;
+import de.mrjulsen.crn.web.annotation.ResponseAlwaysInclude;
 
 public final class JsonProjector {
     private JsonProjector() {}
@@ -98,7 +98,7 @@ public final class JsonProjector {
         Map<String, Component> shape = new LinkedHashMap<>();
         for (RecordComponent component : type.getRecordComponents()) {
             String name = JsonConvert.toSnakeCase(component.getName());
-            boolean always = component.isAnnotationPresent(RestAlwaysInclude.class);
+            boolean always = component.isAnnotationPresent(ResponseAlwaysInclude.class);
             shape.put(name, new Component(component.getGenericType(), always));
         }
         return shape;

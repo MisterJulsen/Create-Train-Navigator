@@ -13,7 +13,7 @@ import de.mrjulsen.crn.core.schedule.JourneyStop;
 import de.mrjulsen.crn.core.schedule.TrainJourney;
 import de.mrjulsen.crn.data.settings.GlobalSettings;
 import de.mrjulsen.crn.util.NbtHelper;
-import de.mrjulsen.crn.web.annotation.RestAlwaysInclude;
+import de.mrjulsen.crn.web.annotation.ResponseAlwaysInclude;
 import net.minecraft.nbt.CompoundTag;
 
 /**
@@ -37,7 +37,7 @@ import net.minecraft.nbt.CompoundTag;
  * @param currentSectionIndex The section being worked now, or {@code -1}.
  */
 public record JourneySnapshot(
-    @RestAlwaysInclude UUID trainId,
+    @ResponseAlwaysInclude UUID trainId,
     String trainName,
     LineRef line,
     boolean cyclic,

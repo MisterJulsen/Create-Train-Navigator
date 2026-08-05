@@ -8,8 +8,8 @@ import de.mrjulsen.crn.api.core.RailwayBackendApi;
 import de.mrjulsen.crn.api.core.ref.StationRef;
 import de.mrjulsen.crn.data.settings.TrainCategory;
 import de.mrjulsen.crn.data.settings.TrainLine;
-import de.mrjulsen.crn.web.annotation.RestQueryModel;
-import de.mrjulsen.crn.web.annotation.RestQueryParam;
+import de.mrjulsen.crn.web.annotation.QueryModel;
+import de.mrjulsen.crn.web.annotation.QueryParam;
 
 /**
  * What a departure or arrival board should contain. Instances are immutable; every method that
@@ -37,7 +37,7 @@ import de.mrjulsen.crn.web.annotation.RestQueryParam;
  * @param destination       If set, only entries whose destination text matches, ignoring case.
  * @param filter            An additional test every entry must pass.
  */
-@RestQueryModel
+@QueryModel
 public record BoardQuery(
     int limit,
     long fromTime,
@@ -75,13 +75,13 @@ public record BoardQuery(
     }
 
     /** Starts the board at the given time instead of now. */
-    @RestQueryParam(value = "time")
+    @QueryParam(value = "time")
     public BoardQuery from(long fromTime) {
         return new BoardQuery(limit, fromTime, withinTicks, includeUnreliable, includeCancelled, deduplicateTrains, includeDivertedAway, lineId, categoryId, destination, filter);
     }
 
     /** Ends the board this many ticks after its start time. */
-    @RestQueryParam(value = "timespan")
+    @QueryParam(value = "timespan")
     public BoardQuery within(long withinTicks) {
         return new BoardQuery(limit, fromTime, withinTicks, includeUnreliable, includeCancelled, deduplicateTrains, includeDivertedAway, lineId, categoryId, destination, filter);
     }
@@ -92,13 +92,13 @@ public record BoardQuery(
     }
 
     /** Also includes trains that are out of service. */
-    @RestQueryParam(value = "show_cancelled")
+    @QueryParam(value = "show_cancelled")
     public BoardQuery withCancelled(boolean b) {
         return new BoardQuery(limit, fromTime, withinTicks, includeUnreliable, b, deduplicateTrains, includeDivertedAway, lineId, categoryId, destination, filter);
     }
 
     /** Keeps every call of a train rather than only its earliest. */
-    @RestQueryParam(value = "allow_duplicates")
+    @QueryParam(value = "allow_duplicates")
     public BoardQuery withDuplicates(boolean b) {
         return new BoardQuery(limit, fromTime, withinTicks, includeUnreliable, includeCancelled, !b, includeDivertedAway, lineId, categoryId, destination, filter);
     }
@@ -107,13 +107,13 @@ public record BoardQuery(
      * Keeps only the trains really calling at the station, dropping those merely timetabled there
      * and diverted elsewhere.
      */
-    @RestQueryParam(value = "no_platform_changes")
+    @QueryParam(value = "no_platform_changes")
     public BoardQuery withoutDivertedAway(boolean b) {
         return new BoardQuery(limit, fromTime, withinTicks, includeUnreliable, includeCancelled, deduplicateTrains, !b, lineId, categoryId, destination, filter);
     }
 
     /** Restricts the board to one line. Passing {@code null} lifts the restriction. */
-    @RestQueryParam(value = "only_line")
+    @QueryParam(value = "only_line")
     public BoardQuery onlyLine(UUID lineId) {
         return new BoardQuery(limit, fromTime, withinTicks, includeUnreliable, includeCancelled, deduplicateTrains, includeDivertedAway, lineId, categoryId, destination, filter);
     }
@@ -124,7 +124,7 @@ public record BoardQuery(
     }
 
     /** Restricts the board to one category. Passing {@code null} lifts the restriction. */
-    @RestQueryParam(value = "only_category")
+    @QueryParam(value = "only_category")
     public BoardQuery onlyCategory(UUID categoryId) {
         return new BoardQuery(limit, fromTime, withinTicks, includeUnreliable, includeCancelled, deduplicateTrains, includeDivertedAway, lineId, categoryId, destination, filter);
     }

@@ -1,4 +1,4 @@
-package de.mrjulsen.crn.api.core;
+package de.mrjulsen.crn.api.core.snapshot;
 
 import java.util.List;
 import java.util.Optional;
@@ -10,6 +10,7 @@ import de.mrjulsen.crn.core.delay.DelaySeverity;
 import de.mrjulsen.crn.core.realtime.RealtimeTracker;
 import de.mrjulsen.crn.core.timing.StopTimings;
 import de.mrjulsen.crn.util.NbtHelper;
+import de.mrjulsen.crn.web.annotation.ResponseAlwaysInclude;
 import net.minecraft.nbt.CompoundTag;
 
 /**
@@ -40,7 +41,7 @@ import net.minecraft.nbt.CompoundTag;
  * @param causes                     The attributed reasons, most important first.
  */
 public record DelayReport(
-    UUID trainId,
+    @ResponseAlwaysInclude UUID trainId,
     String trainName,
     boolean delayed,
     boolean cancelled,

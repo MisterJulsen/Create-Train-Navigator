@@ -21,7 +21,7 @@ import de.mrjulsen.crn.core.timing.CycleProjector;
 import de.mrjulsen.crn.core.timing.StopTimes;
 import de.mrjulsen.crn.data.settings.GlobalSettings;
 import de.mrjulsen.crn.util.NbtHelper;
-import de.mrjulsen.crn.web.annotation.RestAlwaysInclude;
+import de.mrjulsen.crn.web.annotation.ResponseAlwaysInclude;
 import de.mrjulsen.mcdragonlib.util.DLColor;
 import net.minecraft.nbt.CompoundTag;
 
@@ -65,15 +65,15 @@ import net.minecraft.nbt.CompoundTag;
  * @param delays           Why the train is late or disrupted, most important first.
  */
 public record BoardEntry(
-    @RestAlwaysInclude UUID trainId,
-    @RestAlwaysInclude UUID sessionId,
+    @ResponseAlwaysInclude UUID trainId,
+    @ResponseAlwaysInclude UUID sessionId,
     String trainName,
     int carriageCount,
     LineRef line,
     CategoryRef category,
     LineRef arrivalLine,
     CategoryRef arrivalCategory,
-    @RestAlwaysInclude StationRef station,
+    @ResponseAlwaysInclude StationRef station,
     StationRef scheduledStation,
     StationRef origin,
     String title,

@@ -19,7 +19,7 @@ import de.mrjulsen.crn.core.schedule.JourneySection;
 import de.mrjulsen.crn.core.schedule.JourneyStop;
 import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.util.NbtHelper;
-import de.mrjulsen.crn.web.annotation.RestAlwaysInclude;
+import de.mrjulsen.crn.web.annotation.ResponseAlwaysInclude;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 
@@ -61,8 +61,8 @@ import net.minecraft.resources.ResourceLocation;
  * @param delays        Why the train is late or disrupted, most important first.
  */
 public record TrainSnapshot(
-    @RestAlwaysInclude UUID trainId,
-    @RestAlwaysInclude UUID sessionId,
+    @ResponseAlwaysInclude UUID trainId,
+    @ResponseAlwaysInclude UUID sessionId,
     String trainName,
     UUID ownerId,
     ResourceLocation iconId,

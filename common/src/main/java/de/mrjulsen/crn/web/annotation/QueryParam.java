@@ -6,7 +6,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface RestQueryModel {
-    int requiredParams() default 0;
+@Target(ElementType.METHOD)
+public @interface QueryParam {
+    String value();
+    boolean required() default false;
 }

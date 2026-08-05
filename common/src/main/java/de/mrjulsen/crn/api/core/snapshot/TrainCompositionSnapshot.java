@@ -8,6 +8,7 @@ import com.simibubi.create.content.trains.entity.Carriage;
 import com.simibubi.create.content.trains.entity.Train;
 
 import de.mrjulsen.crn.util.NbtHelper;
+import de.mrjulsen.crn.web.annotation.ResponseAlwaysInclude;
 import net.minecraft.nbt.CompoundTag;
 
 /**
@@ -22,7 +23,7 @@ import net.minecraft.nbt.CompoundTag;
  *                          relation between carriage order and direction of travel.
  */
 public record TrainCompositionSnapshot(
-    UUID trainId,
+    @ResponseAlwaysInclude UUID trainId,
     List<CarriageSnapshot> carriages,
     int totalLengthBlocks,
     boolean doubleEnded,

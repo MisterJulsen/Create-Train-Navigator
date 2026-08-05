@@ -16,4 +16,4 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.RECORD_COMPONENT, ElementType.FIELD, ElementType.METHOD})
-public @interface RestAlwaysInclude {}
+public @interface ResponseAlwaysInclude {}

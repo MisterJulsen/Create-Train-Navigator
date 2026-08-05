@@ -1,6 +1,7 @@
 package de.mrjulsen.crn.util;
 
 import java.util.*;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
@@ -404,5 +405,22 @@ public class ModUtils {
             map.put(keyDeserializer.apply(k), valueDeserializer.apply(mapNbt.getCompound(k)));
         }
         return map;
+    }
+
+
+
+    public static <T, S> boolean listContains(Collection<T> searchFor, Collection<S> searchIn, BiPredicate<T, S> test) {
+        if (searchFor.isEmpty()) {
+            return true;
+        }
+
+        for (S s : searchIn) {
+            for (T t : searchFor) {
+                if (test.test(t, s)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

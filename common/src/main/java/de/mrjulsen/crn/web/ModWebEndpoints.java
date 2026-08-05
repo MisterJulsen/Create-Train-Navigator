@@ -9,6 +9,7 @@ import de.mrjulsen.crn.web.endpoint.*;
 public final class ModWebEndpoints {
     private ModWebEndpoints() {}
 
+    @SuppressWarnings("unused") // Used by auto query binder
     public static final ParamType<Waypoint> WAYPOINT_PARAM = ParamType.register(Waypoint.class, "waypoint", v -> {
         try {
             return JsonConvert.fromJson(v, Waypoint.class);
@@ -23,8 +24,11 @@ public final class ModWebEndpoints {
 
     public static void init() {
         EndpointRegistry.registerGet("ping", new PingEndpoint()).alias("hello");
+        EndpointRegistry.registerGet("about", new AboutEndpoint()).alias("info");
+
         EndpointRegistry.registerGet("navigate", new NavigateEndpoint());
         EndpointRegistry.registerGet("trains", new TrainsEndpoint());
+        EndpointRegistry.registerGet("trains/positions", new TrainsPositionsEndpoint());
         EndpointRegistry.registerGet("train/{id}", new TrainEndpoint());
         EndpointRegistry.registerGet("train/{id}/journey", new TrainJourneyEndpoint());
         EndpointRegistry.registerGet("train/{id}/section", new TrainSectionEndpoint());
@@ -34,7 +38,9 @@ public final class ModWebEndpoints {
         EndpointRegistry.registerGet("train/{id}/stop", new TrainJourneyStopEndpoint());
         EndpointRegistry.registerGet("train/{id}/delay-report", new TrainDelayReportEndpoint());
         EndpointRegistry.registerGet("board/{station}", new BoardEndpoint());
+        EndpointRegistry.registerGet("lines", new LinesEndpoint());
         EndpointRegistry.registerGet("line/{id}", new LineEndpoint());
+        EndpointRegistry.registerGet("categories", new CategoriesEndpoint());
         EndpointRegistry.registerGet("category/{id}", new CategoryEndpoint());
         EndpointRegistry.registerGet("stations", new StationsEndpoint());
         EndpointRegistry.registerGet("station/{name}", new StationEndpoint());

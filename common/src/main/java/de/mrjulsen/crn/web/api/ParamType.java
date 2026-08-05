@@ -1,5 +1,8 @@
 package de.mrjulsen.crn.web.api;
 
+import de.mrjulsen.mcdragonlib.util.DLUtils;
+import net.minecraft.resources.ResourceLocation;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -15,6 +18,7 @@ public final class ParamType<T> implements Function<String, T> {
     public static final ParamType<Double> DOUBLE = register(Double.class, "double", Double::parseDouble);
     public static final ParamType<Boolean> BOOL = register(Boolean.class, "boolean", ParamType::parseBool);
     public static final ParamType<UUID> UUID = register(UUID.class, "uuid", java.util.UUID::fromString);
+    public static final ParamType<ResourceLocation> RESOURCE_LOCATION = register(ResourceLocation.class, "resource_location", DLUtils::resourceLocation);
 
     static {
         INT.registerAlias(int.class);
