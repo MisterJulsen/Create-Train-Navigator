@@ -461,7 +461,7 @@ public class GlobalSettings implements INBTSerializable {
     }
 
     public void blacklistTrain(String trainName) {
-        trainBlacklist.addAll(ModUtils.wildcardMatches(trainName, TrainUtils.getTrainNames()));
+        trainBlacklist.addAll(ModUtils.wildcardMatches(trainName, TrainUtils.getAllTrainNames()));
     }
 
     public boolean removeTrainFromBlacklist(Train train) {

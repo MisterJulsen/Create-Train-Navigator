@@ -5,6 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import de.mrjulsen.mcdragonlib.util.MapCache;
 import org.joml.Vector3f;
 
 import com.simibubi.create.Create;
@@ -35,73 +36,81 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 
 public final class TrainUtils {
+    private TrainUtils() {}
 
     private static final int MAX_CACHED_PATTERNS = 1024;
 
     private static final Map<String, Pattern> patternCache = new ConcurrentHashMap<>();
 
-    private static final Cache<Map<UUID, SignalBoundary>> signalsByIdCache = new Cache<>(() -> {
-        Map<UUID, SignalBoundary> byId = new HashMap<>();
-        for (SignalBoundary signal : getAllSignals()) {
-            byId.put(signal.getId(), signal);
-        }
-        return byId;
-    }, ECachingPriority.LOWEST);
-
-    private static final Cache<Collection<GlobalStation>> allStationsCache = new Cache<>(() -> {
-        final Collection<GlobalStation> stations = new ArrayList<>();
-        getRailwayManager().trackNetworks.forEach((uuid, graph) -> {
-            Collection<GlobalStation> foundStations = graph.getPoints(EdgePointType.STATION);
-            stations.addAll(foundStations);
-        });
-        return stations;
-    }, ECachingPriority.LOWEST);
-
-    private static final Cache<Set<String>> allStationNamesCache = new Cache<>(() -> {
-        return getAllStations().stream().map(x -> x.name).collect(Collectors.toSet());
-    }, ECachingPriority.LOWEST);
-
-    private static final Cache<Set<String>> allTrainNames = new Cache<>(() -> {
-        return getTrains(false).stream().map(x -> x.name.getString()).collect(Collectors.toSet());
-    }, ECachingPriority.LOWEST);
-
-    private static final Cache<Set<SignalBoundary>> allSignalsCache = new Cache<>(() -> {
-        Set<SignalBoundary> signals = new HashSet<>();
-        for (TrackGraph graph : getRailwayManager().trackNetworks.values()) {
-            signals.addAll(graph.getPoints(EdgePointType.SIGNAL));
-        }
-        return signals;
-    }, ECachingPriority.LOWEST);
-
     public static void refreshCache() {
         allStationsCache.clear();
-        allSignalsCache.clear();
+        allEdgePointsCache.clearAll();
         signalsByIdCache.clear();
         allStationNamesCache.clear();
         allTrainNames.clear();
     }
 
-    private TrainUtils() {}
-
     public static GlobalRailwayManager getRailwayManager() {
         return Create.RAILWAYS;
     }
 
+
+    private static final Cache<Collection<GlobalStation>> allStationsCache = new Cache<>(() -> {
+        Collection<GlobalStation> stations = new LinkedList<>();
+        getRailwayManager().trackNetworks.forEach((uuid, graph) -> {
+            Collection<GlobalStation> foundStations = graph.getPoints(EdgePointType.STATION);
+            stations.addAll(foundStations);
+        });
+        return List.copyOf(stations);
+    }, ECachingPriority.LOWEST);
+    public static Collection<GlobalStation> getAllStations() {
+        return allStationsCache.get();
+    }
+
+
+    private static final Cache<Set<String>> allStationNamesCache = new Cache<>(() -> {
+        return getAllStations().stream().map(x -> x.name).collect(Collectors.toSet());
+    }, ECachingPriority.LOWEST);
+    public static Set<String> getAllStationNames() {
+        return allStationNamesCache.get();
+    }
+
+
     public static boolean stationExists(String stationName) {
+        return stationExists(stationName, false);
+    }
+
+    public static boolean stationExists(String stationName, boolean isFilter) {
         for (GlobalStation station : getAllStations()) {
-            if (station.name.equals(stationName)) {
+            if (station.name.equals(stationName) ||(isFilter && stationMatches(station.name, stationName))) {
                 return true;
             }
         }
         return false;
     }
 
-    public static Collection<GlobalStation> getAllStations() {
-        return allStationsCache.get();
+
+
+    public static Collection<Train> getAllTrains(boolean onlyValid) {
+        Collection<Train> trains = new ArrayList<>(getRailwayManager().trains.size());
+        for (Train train : getRailwayManager().trains.values()) {
+            if (onlyValid && !isTrainValid(train)) {
+                continue;
+            }
+            trains.add(train);
+        }
+        return List.copyOf(trains);
     }
 
-    public static Set<String> getAllStationNames() {
-        return allStationNamesCache.get();
+    public static Set<UUID> getAllTrainIds() {
+        return Set.copyOf(getRailwayManager().trains.keySet());
+    }
+
+    private static final Cache<Set<String>> allTrainNames = new Cache<>(() -> {
+        return getAllTrains(false).stream().map(x -> x.name.getString()).collect(Collectors.toSet());
+    }, ECachingPriority.LOWEST);
+    public static Set<String> getAllTrainNames() {
+        return allTrainNames.get();
     }
 
     public static Optional<Train> getTrain(UUID trainId) {
@@ -111,30 +120,33 @@ public final class TrainUtils {
         return Optional.ofNullable(getRailwayManager().trains.get(trainId));
     }
 
-    public static Set<UUID> getTrainIds() {
-        return new HashSet<>(getRailwayManager().trains.keySet());
-    }
 
-    public static Set<String> getTrainNames() {
-        return allTrainNames.get();
-    }
 
-    public static Set<Train> getTrains(boolean onlyValid) {
-        Set<Train> trains = new HashSet<>();
-        for (Train train : getRailwayManager().trains.values()) {
-            if (onlyValid && !isTrainValid(train)) {
-                continue;
-            }
-            trains.add(train);
+    private static final MapCache<Collection<TrackEdgePoint>, EdgePointType<?>, EdgePointType<?>> allEdgePointsCache = new MapCache<>((p) -> {
+        Collection<TrackEdgePoint> signals = new LinkedHashSet<>();
+        for (TrackGraph graph : getRailwayManager().trackNetworks.values()) {
+            signals.addAll(graph.getPoints(p));
         }
-        return trains;
+        return List.copyOf(signals);
+    }, EdgePointType::hashCode, ECachingPriority.LOWEST);
+    @SuppressWarnings("unchecked")
+    public static <T extends TrackEdgePoint> Collection<T> getAllEdgePointsOfType(EdgePointType<T> edgePointType) {
+        return (Collection<T>)allEdgePointsCache.get(edgePointType, edgePointType);
     }
 
-    public static Set<SignalBoundary> getAllSignals() {
-        return allSignalsCache.get();
+    public static Collection<SignalBoundary> getAllSignals() {
+        return getAllEdgePointsOfType(EdgePointType.SIGNAL);
     }
 
-    public static Set<Train> isSignalOccupied(UUID signalId, Set<UUID> excludedTrains) {
+
+    private static final Cache<Map<UUID, SignalBoundary>> signalsByIdCache = new Cache<>(() -> {
+        Map<UUID, SignalBoundary> byId = new HashMap<>();
+        for (SignalBoundary signal : getAllSignals()) {
+            byId.put(signal.getId(), signal);
+        }
+        return byId;
+    }, ECachingPriority.LOWEST);
+    public static Set<Train> isSignalOccupied(UUID signalId, Set<UUID> ignoreTrains) {
         SignalBoundary signal = signalsByIdCache.get().get(signalId);
         if (signal == null) {
             return Set.of();
@@ -144,8 +156,8 @@ public final class TrainUtils {
         UUID secondGroup = signal.groups.getSecond();
 
         Set<Train> occupyingTrains = new HashSet<>();
-        for (Train train : getTrains(false)) {
-            if (excludedTrains.contains(train.id)) {
+        for (Train train : getAllTrains(false)) {
+            if (ignoreTrains.contains(train.id)) {
                 continue;
             }
 
@@ -156,25 +168,24 @@ public final class TrainUtils {
                     break;
                 }
             }
-
             if (!isOccupyingSignal) {
                 continue;
             }
-
             occupyingTrains.add(train);
         }
-
         return occupyingTrains;
     }
 
 
     public static NearestTrackStationResult getNearestTrackStation(Level level, Vec3i pos) {
+        Objects.requireNonNull(level);
+        Objects.requireNonNull(pos);
         Optional<GlobalStation> station = getAllStations().stream().filter(x ->
             x.getBlockEntityDimension().equals(level.dimension()) &&
             !GlobalSettings.getInstance().isStationBlacklisted(x.name)
-        ).min((a, b) -> Double.compare(a.getBlockEntityPos().distSqr(pos), b.getBlockEntityPos().distSqr(pos)));
+        ).min(Comparator.comparingDouble(a -> a.getBlockEntityPos().distSqr(pos)));
 
-        double distance = station.isPresent() ? station.get().getBlockEntityPos().distSqr(pos) : 0;
+        double distance = station.map(globalStation -> globalStation.getBlockEntityPos().distSqr(pos)).orElse(0D);
         return new NearestTrackStationResult(station, distance);
     }
 

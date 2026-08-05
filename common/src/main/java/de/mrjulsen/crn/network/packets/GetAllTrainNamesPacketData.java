@@ -45,6 +45,6 @@ public class GetAllTrainNamesPacketData extends NetworkPacketData {
     
 
     public static GetAllTrainNamesPacketData handle(NetworkPacketContext context) {
-        return new GetAllTrainNamesPacketData(TrainUtils.getTrains(false).stream().map(x -> x.name.getString()).toList());
+        return new GetAllTrainNamesPacketData(TrainUtils.getAllTrains(false).stream().map(x -> x.name.getString()).toList());
     }
 }
