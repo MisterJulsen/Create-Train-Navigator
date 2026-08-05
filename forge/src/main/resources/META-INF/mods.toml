@@ -7,9 +7,9 @@ license = "${license}"
 modId = "${modid}"
 version = "${version}"
 displayName = "${display_name}"
-displayUrl="${homepage}"
+displayURL = "${homepage}"
 authors = "${authors}"
-description = '''${description}'''
+description = "${description}"
 logoFile = "${icon}"
 
 [[dependencies.${modid}]]

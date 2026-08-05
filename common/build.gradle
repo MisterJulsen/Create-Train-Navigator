@@ -2,8 +2,13 @@ architectury {
     common rootProject.enabled_platforms.split(',')
 }
 
+def refmapName = "${rootProject.archives_name}-refmap.json"
+
 loom {
     accessWidenerPath = file("src/main/resources/createrailwaysnavigator.accesswidener")
+    mixin {
+        defaultRefmapName = refmapName
+    }
 }
 
 dependencies {

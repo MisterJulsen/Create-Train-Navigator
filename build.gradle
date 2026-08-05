@@ -85,6 +85,8 @@ subprojects {
             "icon": rootProject.icon,
             "discord": rootProject.discord,
             "next_unsupported_minecraft_version": rootProject.next_unsupported_minecraft_version,
+            "resourcepack_version": rootProject.resourcepack_version,
+            "datapack_version": rootProject.datapack_version,
             "dragonlib_version": "$rootProject.minecraft_version-$rootProject.dragonlib_version",
             "forge_dependency_version": rootProject.forge_dependency_version,
             "forge_loader_version": rootProject.forge_loader_version,
@@ -122,10 +124,12 @@ subprojects {
                     "Specification-Title"     : "${rootProject.display_name}",
                     "Specification-Vendor"    : "${rootProject.authors}",
                     "Specification-Version"   : "1",
-                    "Implementation-Title"    : project.name,
-                    "Implementation-Version"  : project.jar.archiveVersion,
+                    "Implementation-Title"    : "${rootProject.display_name}",
+                    "Implementation-Version"  : "${project.version}",
                     "Implementation-Vendor"   : "${rootProject.authors}",
-                    "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+                    "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
+                    "Built-On"                : "${rootProject.minecraft_version}",
+                    "Build-Jdk"               : "${System.getProperty('java.version')} (${System.getProperty('java.vendor')})"
             ])
         }
     }

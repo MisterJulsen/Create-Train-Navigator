@@ -50,6 +50,8 @@ processResources {
 shadowJar {
     configurations = [project.configurations.shadowBundle]
     archiveClassifier = 'dev-shadow'
+
+    from(rootProject.file('LICENSE'))
 }
 
 remapJar {
