@@ -23,15 +23,10 @@ import net.minecraft.world.level.storage.LevelResource;
 public final class RailwayBackend {
 
     private static final String FILENAME = CreateRailwaysNavigator.MOD_ID + "_backend.nbt";
-
     private static final String WORKER_THREAD_NAME = "CRN Railway Backend";
-
     private static final int FULL_UPDATE_INTERVAL = 100;
-
     private static final long WORKER_SHUTDOWN_TIMEOUT_SECONDS = 10;
-
     private static final long REGULAR_TIME_ADVANCE = 1;
-
     private static final long TIME_JUMP_LOG_THRESHOLD = 40;
 
     private static volatile boolean active = false;

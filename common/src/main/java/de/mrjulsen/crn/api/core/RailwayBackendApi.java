@@ -1,13 +1,6 @@
 package de.mrjulsen.crn.api.core;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Predicate;
 
 import de.mrjulsen.crn.api.core.query.*;
@@ -223,11 +216,11 @@ public final class RailwayBackendApi {
     }
 
     public static List<BoardEntry> getBoard(String stationName, BoardQuery query) {
-        return board(TrainManager.getInstance().getCallIndex().callsAt(stationName, query.includeDivertedAway()), query, Comparator.comparingLong(BoardEntry::realtimeArrival));
+        return buildBoard(TrainManager.getInstance().getCallIndex().callsAt(stationName, query.includeDivertedAway()), query, Comparator.comparingLong(BoardEntry::realtimeArrival));
     }
 
     public static List<BoardEntry> getBoard(StationTag stationTag, BoardQuery query) {
-        return board(TrainManager.getInstance().getCallIndex().callsAt(stationTag, query.includeDivertedAway()), query, Comparator.comparingLong(BoardEntry::realtimeArrival));
+        return buildBoard(TrainManager.getInstance().getCallIndex().callsAt(stationTag, query.includeDivertedAway()), query, Comparator.comparingLong(BoardEntry::realtimeArrival));
     }
 
     public static List<BoardEntry> getBoard(UUID stationTagId, BoardQuery query) {
@@ -237,13 +230,13 @@ public final class RailwayBackendApi {
     }
 
     public static Optional<BoardEntry> getNextArrival(String stationName, BoardQuery query) {
-        return board(TrainManager.getInstance().getCallIndex().callsAt(stationName, query.includeDivertedAway()), query.withLimit(1), Comparator.comparingLong(BoardEntry::realtimeArrival))
+        return buildBoard(TrainManager.getInstance().getCallIndex().callsAt(stationName, query.includeDivertedAway()), query.withLimit(1), Comparator.comparingLong(BoardEntry::realtimeArrival))
                 .stream()
                 .findFirst();
     }
 
     public static Optional<BoardEntry> getNextDeparture(String stationName, BoardQuery query) {
-        return board(TrainManager.getInstance().getCallIndex().callsAt(stationName, query.includeDivertedAway()), query.withLimit(1), Comparator.comparingLong(BoardEntry::realtimeDeparture))
+        return buildBoard(TrainManager.getInstance().getCallIndex().callsAt(stationName, query.includeDivertedAway()), query.withLimit(1), Comparator.comparingLong(BoardEntry::realtimeDeparture))
                 .stream()
                 .findFirst();
     }
@@ -361,22 +354,20 @@ public final class RailwayBackendApi {
 
 
 
-
+    /*
+     * ############# INTERNAL #############
+     */
 
     private static java.util.stream.Stream<TrackedTrain> getTrackedTrains() {
         return TrainManager.getInstance().getAllTrains().stream()
-            .filter(TrackedTrain::isReportable)
-            .filter(x -> !x.isBlacklisted());
+            .filter(x -> x.isReportable() && !x.isBlacklisted());
     }
 
-    private static List<TrainSnapshot> filterBySection(Predicate<JourneySection> filter) {
-        return getTrackedTrains()
-            .filter(x -> x.getCurrentSection().map(filter::test).orElse(false))
-            .map(TrainSnapshot::of)
-            .toList();
-    }
+    private static List<BoardEntry> buildBoard(List<StationCallIndex.Call> calls, BoardQuery query, Comparator<BoardEntry> order) {
+        if (query.limit() <= 0) {
+            return Collections.emptyList();
+        }
 
-    private static List<BoardEntry> board(List<StationCallIndex.Call> calls, BoardQuery query, Comparator<BoardEntry> order) {
         List<BoardEntry> entries = new ArrayList<>();
         GlobalSettings settings = GlobalSettings.getInstance();
 
@@ -419,7 +410,7 @@ public final class RailwayBackendApi {
             entries.removeIf(x -> !seen.add(x.trainId()));
         }
         if (entries.size() > query.limit()) {
-            entries = entries.subList(0, Math.max(0, query.limit()));
+            entries = entries.subList(0, query.limit());
         }
         return List.copyOf(entries);
     }
@@ -523,12 +514,22 @@ public final class RailwayBackendApi {
 
     private static List<LineRef> resolveLines(Set<UUID> lineIds) {
         GlobalSettings settings = GlobalSettings.getInstance();
-        return lineIds.stream().map(settings::getTrainLine).filter(Optional::isPresent).map(Optional::get).map(LineRef::of).toList();
+        List<LineRef> lines = new ArrayList<>(lineIds.size());
+        for (UUID id : lineIds) {
+            Optional<TrainLine> line = settings.getTrainLine(id);
+            line.ifPresent(x -> lines.add(LineRef.of(x)));
+        }
+        return lines;
     }
 
     private static List<CategoryRef> resolveCategories(Set<UUID> categoryIds) {
         GlobalSettings settings = GlobalSettings.getInstance();
-        return categoryIds.stream().map(settings::getTrainCategory).filter(Optional::isPresent).map(Optional::get).map(CategoryRef::of).toList();
+        List<CategoryRef> categories = new ArrayList<>(categoryIds.size());
+        for (UUID id : categoryIds) {
+            Optional<TrainCategory> category = settings.getTrainCategory(id);
+            category.ifPresent(x -> categories.add(CategoryRef.of(x)));
+        }
+        return categories;
     }
 
     private static boolean operatesOn(TrackedTrain train, UUID lineId) {
