@@ -146,6 +146,13 @@ public final class TrainUtils {
         }
         return byId;
     }, ECachingPriority.LOWEST);
+    public static Optional<SignalBoundary> getSignal(UUID signalId) {
+        if (signalId == null) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(signalsByIdCache.get().get(signalId));
+    }
+
     public static Set<Train> isSignalOccupied(UUID signalId, Set<UUID> ignoreTrains) {
         SignalBoundary signal = signalsByIdCache.get().get(signalId);
         if (signal == null) {
