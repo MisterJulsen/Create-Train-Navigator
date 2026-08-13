@@ -20,7 +20,7 @@ import com.google.gson.JsonObject;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.core.RailwayBackend;
-import de.mrjulsen.crn.api.core.ref.CategoryRef;
+import de.mrjulsen.crn.api.core.ref.TrainCategoryRef;
 import de.mrjulsen.crn.api.core.snapshot.JourneySnapshot;
 import de.mrjulsen.crn.api.core.ref.LineRef;
 import de.mrjulsen.crn.api.core.RailwayBackendApi;
@@ -342,7 +342,7 @@ public final class NavigatorDiagnosticsDump {
         return line.isKnown() ? line.name() : "-";
     }
 
-    private static String name(CategoryRef category) {
+    private static String name(TrainCategoryRef category) {
         return category.isKnown() ? category.name() : "-";
     }
 

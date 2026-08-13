@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import de.mrjulsen.crn.api.core.ref.CategoryRef;
+import de.mrjulsen.crn.api.core.ref.TrainCategoryRef;
 import de.mrjulsen.crn.api.core.ref.LineRef;
 import de.mrjulsen.crn.api.core.RailwayBackendApi;
 import de.mrjulsen.crn.web.annotation.QueryModel;
@@ -211,7 +211,7 @@ public record NavigationQuery(
         return !origin.isBlank() && !destination.isBlank();
     }
 
-    public boolean accepts(LineRef line, CategoryRef category) {
+    public boolean accepts(LineRef line, TrainCategoryRef category) {
         return acceptsId(line == null ? null : line.id(), includedLines, excludedLines)
             && acceptsId(category == null ? null : category.id(), includedCategories, excludedCategories);
     }

@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import de.mrjulsen.crn.api.core.ref.CategoryRef;
+import de.mrjulsen.crn.api.core.ref.TrainCategoryRef;
 import de.mrjulsen.crn.api.core.snapshot.JourneySnapshot;
 import de.mrjulsen.crn.api.core.ref.LineRef;
 import de.mrjulsen.crn.api.core.RailwayBackendApi;
@@ -316,7 +316,7 @@ public final class TimetableIndex {
 
         private static TripSection toTripSection(int index, SectionSnapshot section) {
             if (section == null) {
-                return new TripSection(index, LineRef.NONE, CategoryRef.NONE, StationRef.NONE, false);
+                return new TripSection(index, LineRef.NONE, TrainCategoryRef.NONE, StationRef.NONE, false);
             }
             return new TripSection(index, section.line(), section.category(),
                 section.destination(), section.includesNextSectionStart());

@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import de.mrjulsen.crn.api.core.*;
-import de.mrjulsen.crn.api.core.ref.CategoryRef;
+import de.mrjulsen.crn.api.core.ref.TrainCategoryRef;
 import de.mrjulsen.crn.api.core.ref.LineRef;
 import de.mrjulsen.crn.api.core.ref.StationRef;
 import de.mrjulsen.crn.core.train.TrackedTrain;
@@ -26,7 +26,7 @@ import net.minecraft.nbt.CompoundTag;
  * @param index                    The section's position within the run.
  * @param entryIndex               The schedule entry the section begins at.
  * @param line                     The line worked in this section, or {@link LineRef#NONE}.
- * @param category                 The category worked in this section, or {@link CategoryRef#NONE}.
+ * @param category                 The category worked in this section, or {@link TrainCategoryRef#NONE}.
  * @param origin                   The section's first stop.
  * @param destination              The stop this section runs to, as it should be shown to travellers:
  *                                 its own last stop, or the following section's first one where it
@@ -46,7 +46,7 @@ public record SectionSnapshot(
     int index,
     int entryIndex,
     LineRef line,
-    CategoryRef category,
+    TrainCategoryRef category,
     StationRef origin,
     StationRef destination,
     List<StopSnapshot> stops,
@@ -71,7 +71,7 @@ public record SectionSnapshot(
     public SectionSnapshot {
         stops = stops == null ? List.of() : List.copyOf(stops);
         line = line == null ? LineRef.NONE : line;
-        category = category == null ? CategoryRef.NONE : category;
+        category = category == null ? TrainCategoryRef.NONE : category;
         origin = origin == null ? StationRef.NONE : origin;
         destination = destination == null ? StationRef.NONE : destination;
     }
@@ -93,7 +93,7 @@ public record SectionSnapshot(
             section.getSectionIndex(),
             section.entryIndex(),
             LineRef.of(section.getTrainLine().orElse(null)),
-            CategoryRef.of(section.getTrainCategory().orElse(null)),
+            TrainCategoryRef.of(section.getTrainCategory().orElse(null)),
             section.getFirstStop().map(x -> StationRef.of(train.getDisplayStationName(x))).orElse(StationRef.NONE),
             train.getSectionTerminus(section).map(StationRef::of).orElse(StationRef.NONE),
             stops,
@@ -157,7 +157,7 @@ public record SectionSnapshot(
 
     /** The colour this section should be shown in, taken from its line or category. */
     public DLColor displayColor() {
-        return ServiceColor.of(line, category);
+        return RailwayBackendApi.getServiceColor(line, category);
     }
 
     /**
@@ -198,7 +198,7 @@ public record SectionSnapshot(
             nbt.getInt(NBT_INDEX),
             nbt.getInt(NBT_ENTRY_INDEX),
             LineRef.fromNbt(nbt.getCompound(NBT_LINE)),
-            CategoryRef.fromNbt(nbt.getCompound(NBT_CATEGORY)),
+            TrainCategoryRef.fromNbt(nbt.getCompound(NBT_CATEGORY)),
             StationRef.fromNbt(nbt.getCompound(NBT_ORIGIN)),
             StationRef.fromNbt(nbt.getCompound(NBT_DESTINATION)),
             NbtHelper.readList(nbt, NBT_STOPS, StopSnapshot::fromNbt),

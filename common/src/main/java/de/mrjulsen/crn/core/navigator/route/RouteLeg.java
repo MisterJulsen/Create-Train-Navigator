@@ -6,11 +6,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-import de.mrjulsen.crn.api.core.ref.CategoryRef;
+import de.mrjulsen.crn.api.core.RailwayBackendApi;
+import de.mrjulsen.crn.api.core.ref.TrainCategoryRef;
 import de.mrjulsen.crn.api.core.snapshot.JourneySnapshot;
 import de.mrjulsen.crn.api.core.ref.LineRef;
 import de.mrjulsen.crn.api.core.snapshot.SectionSnapshot;
-import de.mrjulsen.crn.api.core.ServiceColor;
 import de.mrjulsen.crn.api.core.ref.StationRef;
 import de.mrjulsen.crn.api.core.snapshot.StopSnapshot;
 import de.mrjulsen.crn.api.core.snapshot.TrainSnapshot;
@@ -26,7 +26,7 @@ public record RouteLeg(
     String trainName,
     ResourceLocation iconId,
     LineRef line,
-    CategoryRef category,
+    TrainCategoryRef category,
     String destinationText,
     int sectionIndex,
     boolean cancelled,
@@ -50,13 +50,13 @@ public record RouteLeg(
         calls = calls == null ? List.of() : List.copyOf(calls);
         trainName = trainName == null ? "" : trainName;
         line = line == null ? LineRef.NONE : line;
-        category = category == null ? CategoryRef.NONE : category;
+        category = category == null ? TrainCategoryRef.NONE : category;
         destinationText = destinationText == null ? "" : destinationText;
         delays = delays == null ? new DelayLog() : delays;
     }
 
     public RouteLeg(UUID trainId, UUID sessionId, String trainName, ResourceLocation iconId, LineRef line,
-                    CategoryRef category, String destinationText, int sectionIndex, boolean cancelled,
+                    TrainCategoryRef category, String destinationText, int sectionIndex, boolean cancelled,
                     List<RouteCall> calls) {
         this(trainId, sessionId, trainName, iconId, line, category, destinationText, sectionIndex, cancelled,
             calls, new DelayLog());
@@ -67,7 +67,7 @@ public record RouteLeg(
     }
 
     public DLColor displayColor() {
-        return ServiceColor.of(line, category);
+        return RailwayBackendApi.getServiceColor(line, category);
     }
 
     public RouteCall boarding() {
@@ -234,7 +234,7 @@ public record RouteLeg(
             nbt.getString(NBT_TRAIN_NAME),
             nbt.contains(NBT_ICON_ID) ? new ResourceLocation(nbt.getString(NBT_ICON_ID)) : null,
             LineRef.fromNbt(nbt.getCompound(NBT_LINE)),
-            CategoryRef.fromNbt(nbt.getCompound(NBT_CATEGORY)),
+            TrainCategoryRef.fromNbt(nbt.getCompound(NBT_CATEGORY)),
             nbt.getString(NBT_DESTINATION_TEXT),
             nbt.getInt(NBT_SECTION_INDEX),
             nbt.getBoolean(NBT_CANCELLED),

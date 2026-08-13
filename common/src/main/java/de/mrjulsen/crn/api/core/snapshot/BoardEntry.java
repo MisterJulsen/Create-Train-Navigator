@@ -6,7 +6,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import de.mrjulsen.crn.api.core.*;
-import de.mrjulsen.crn.api.core.ref.CategoryRef;
+import de.mrjulsen.crn.api.core.ref.TrainCategoryRef;
 import de.mrjulsen.crn.api.core.ref.LineRef;
 import de.mrjulsen.crn.api.core.ref.StationRef;
 import de.mrjulsen.crn.core.train.LiveTrainState;
@@ -70,9 +70,9 @@ public record BoardEntry(
     String trainName,
     int carriageCount,
     LineRef line,
-    CategoryRef category,
+    TrainCategoryRef category,
     LineRef arrivalLine,
-    CategoryRef arrivalCategory,
+    TrainCategoryRef arrivalCategory,
     @ResponseAlwaysInclude StationRef station,
     StationRef scheduledStation,
     StationRef origin,
@@ -119,7 +119,7 @@ public record BoardEntry(
         delays = delays == null ? List.of() : List.copyOf(delays);
         trainName = trainName == null ? "" : trainName;
         line = line == null ? LineRef.NONE : line;
-        category = category == null ? CategoryRef.NONE : category;
+        category = category == null ? TrainCategoryRef.NONE : category;
         arrivalLine = arrivalLine == null ? line : arrivalLine;
         arrivalCategory = arrivalCategory == null ? category : arrivalCategory;
         station = station == null ? StationRef.NONE : station;
@@ -145,9 +145,9 @@ public record BoardEntry(
             train.getTrainName(),
             train.getTrain() == null || train.getTrain().carriages == null ? 0 : train.getTrain().carriages.size(),
             LineRef.of(section == null ? null : section.getTrainLine().orElse(null)),
-            CategoryRef.of(section == null ? null : section.getTrainCategory().orElse(null)),
+            TrainCategoryRef.of(section == null ? null : section.getTrainCategory().orElse(null)),
             LineRef.of(arrivalSection == null ? null : arrivalSection.getTrainLine().orElse(null)),
-            CategoryRef.of(arrivalSection == null ? null : arrivalSection.getTrainCategory().orElse(null)),
+            TrainCategoryRef.of(arrivalSection == null ? null : arrivalSection.getTrainCategory().orElse(null)),
             snapshot.station(),
             snapshot.scheduledStation(),
             journey.getOriginOf(stop).map(x -> StationRef.of(train.getDisplayStationName(x))).orElse(StationRef.NONE),
@@ -240,7 +240,7 @@ public record BoardEntry(
     }
 
     /** The category on the chosen side of the call. */
-    public CategoryRef category(CallDirection direction) {
+    public TrainCategoryRef category(CallDirection direction) {
         return direction.isArrival() ? arrivalCategory : category;
     }
 
@@ -265,7 +265,7 @@ public record BoardEntry(
 
     /** The colour to show the chosen side of the call in, taken from its line or category. */
     public DLColor displayColor(CallDirection direction) {
-        return ServiceColor.of(line(direction), category(direction));
+        return RailwayBackendApi.getServiceColor(line(direction), category(direction));
     }
 
     /**
@@ -369,9 +369,9 @@ public record BoardEntry(
             nbt.getString(NBT_TRAIN_NAME),
             nbt.getInt(NBT_CARRIAGE_COUNT),
             LineRef.fromNbt(nbt.getCompound(NBT_LINE)),
-            CategoryRef.fromNbt(nbt.getCompound(NBT_CATEGORY)),
+            TrainCategoryRef.fromNbt(nbt.getCompound(NBT_CATEGORY)),
             LineRef.fromNbt(nbt.getCompound(NBT_ARRIVAL_LINE)),
-            CategoryRef.fromNbt(nbt.getCompound(NBT_ARRIVAL_CATEGORY)),
+            TrainCategoryRef.fromNbt(nbt.getCompound(NBT_ARRIVAL_CATEGORY)),
             StationRef.fromNbt(nbt.getCompound(NBT_STATION)),
             StationRef.fromNbt(nbt.getCompound(NBT_SCHEDULED_STATION)),
             StationRef.fromNbt(nbt.getCompound(NBT_ORIGIN)),

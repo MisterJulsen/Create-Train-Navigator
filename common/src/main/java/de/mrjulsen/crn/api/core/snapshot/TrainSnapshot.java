@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import com.simibubi.create.content.trains.entity.Train;
 
-import de.mrjulsen.crn.api.core.ref.CategoryRef;
+import de.mrjulsen.crn.api.core.ref.TrainCategoryRef;
 import de.mrjulsen.crn.api.core.ref.LineRef;
 import de.mrjulsen.crn.api.core.RailwayBackendApi;
 import de.mrjulsen.crn.api.core.ref.StationRef;
@@ -39,7 +39,7 @@ import net.minecraft.resources.ResourceLocation;
  * @param iconId        The train's icon, or {@code null} if it has none.
  * @param mapColorIndex The train's colour index as used on maps.
  * @param line          The line of the current section, or {@link LineRef#NONE}.
- * @param category      The category of the current section, or {@link CategoryRef#NONE}.
+ * @param category      The category of the current section, or {@link TrainCategoryRef#NONE}.
  * @param lifecycle     How far along the backend is in learning this train, and hence how far its
  *                      times can be trusted.
  * @param liveState     What the train is doing at this moment.
@@ -68,7 +68,7 @@ public record TrainSnapshot(
     ResourceLocation iconId,
     int mapColorIndex,
     LineRef line,
-    CategoryRef category,
+    TrainCategoryRef category,
     TrainLifecycleState lifecycle,
     LiveTrainState liveState,
     ServiceState serviceState,
@@ -114,7 +114,7 @@ public record TrainSnapshot(
         delays = delays == null ? List.of() : List.copyOf(delays);
         trainName = trainName == null ? "" : trainName;
         line = line == null ? LineRef.NONE : line;
-        category = category == null ? CategoryRef.NONE : category;
+        category = category == null ? TrainCategoryRef.NONE : category;
         currentTitle = currentTitle == null ? "" : currentTitle;
         destination = destination == null ? StationRef.NONE : destination;
         currentStation = currentStation == null ? StationRef.NONE : currentStation;
@@ -138,7 +138,7 @@ public record TrainSnapshot(
             train.icon == null ? null : train.icon.getId(),
             train.mapColorIndex,
             LineRef.of(section == null ? null : section.getTrainLine().orElse(null)),
-            CategoryRef.of(section == null ? null : section.getTrainCategory().orElse(null)),
+            TrainCategoryRef.of(section == null ? null : section.getTrainCategory().orElse(null)),
             tracked.getLifecycleState(),
             tracked.getLiveState(),
             tracked.getServiceState(),
@@ -263,7 +263,7 @@ public record TrainSnapshot(
             nbt.contains(NBT_ICON_ID) ? new ResourceLocation(nbt.getString(NBT_ICON_ID)) : null,
             nbt.getInt(NBT_MAP_COLOR),
             LineRef.fromNbt(nbt.getCompound(NBT_LINE)),
-            CategoryRef.fromNbt(nbt.getCompound(NBT_CATEGORY)),
+            TrainCategoryRef.fromNbt(nbt.getCompound(NBT_CATEGORY)),
             NbtHelper.readEnum(nbt.getString(NBT_LIFECYCLE), TrainLifecycleState.class, TrainLifecycleState.PREPARING),
             NbtHelper.readEnum(nbt.getString(NBT_LIVE_STATE), LiveTrainState.class, LiveTrainState.NO_SCHEDULE),
             NbtHelper.readEnum(nbt.getString(NBT_SERVICE_STATE), ServiceState.class, ServiceState.IN_SERVICE),

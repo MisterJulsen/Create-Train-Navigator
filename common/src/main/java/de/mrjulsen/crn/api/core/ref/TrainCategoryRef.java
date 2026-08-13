@@ -15,22 +15,22 @@ import net.minecraft.nbt.CompoundTag;
  * @param name  The category's name, never {@code null} but possibly empty.
  * @param color The category's colour, transparent if none was configured.
  */
-public record CategoryRef(UUID id, String name, DLColor color) {
+public record TrainCategoryRef(UUID id, String name, DLColor color) {
 
     /** Stands for "no category". {@link #isKnown()} is false. */
-    public static final CategoryRef NONE = new CategoryRef(null, "", DLColor.TRANSPARENT);
+    public static final TrainCategoryRef NONE = new TrainCategoryRef(null, "", DLColor.TRANSPARENT);
 
     private static final String NBT_ID = "Id";
     private static final String NBT_NAME = "Name";
     private static final String NBT_COLOR = "Color";
 
-    public CategoryRef {
+    public TrainCategoryRef {
         name = name == null ? "" : name;
         color = color == null ? DLColor.TRANSPARENT : color;
     }
 
-    public static CategoryRef of(TrainCategory category) {
-        return category == null ? NONE : new CategoryRef(category.getId(), category.getCategoryName(), category.getColor());
+    public static TrainCategoryRef of(TrainCategory category) {
+        return category == null ? NONE : new TrainCategoryRef(category.getId(), category.getCategoryName(), category.getColor());
     }
 
     /** Whether this refers to a category at all, as opposed to being {@link #NONE}. */
@@ -52,11 +52,11 @@ public record CategoryRef(UUID id, String name, DLColor color) {
         return nbt;
     }
 
-    public static CategoryRef fromNbt(CompoundTag nbt) {
+    public static TrainCategoryRef fromNbt(CompoundTag nbt) {
         if (nbt == null || nbt.isEmpty() || !nbt.hasUUID(NBT_ID)) {
             return NONE;
         }
-        return new CategoryRef(nbt.getUUID(NBT_ID), nbt.getString(NBT_NAME), DLColor.fromInt(nbt.getInt(NBT_COLOR)));
+        return new TrainCategoryRef(nbt.getUUID(NBT_ID), nbt.getString(NBT_NAME), DLColor.fromInt(nbt.getInt(NBT_COLOR)));
     }
 
     @Override

@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import de.mrjulsen.crn.api.core.ref.CategoryRef;
+import de.mrjulsen.crn.api.core.ref.TrainCategoryRef;
 import de.mrjulsen.crn.api.core.ref.LineRef;
 import de.mrjulsen.crn.api.core.ref.StationRef;
 import de.mrjulsen.crn.api.core.ref.StationTagRef;
@@ -26,7 +26,7 @@ public record StationSnapshot(
     StationRef station,
     List<StationTagRef> tags,
     List<LineRef> lines,
-    List<CategoryRef> categories,
+    List<TrainCategoryRef> categories,
     Set<UUID> trainIds,
     boolean blacklisted
 ) {
@@ -64,7 +64,7 @@ public record StationSnapshot(
         nbt.put(NBT_STATION, station.toNbt());
         nbt.put(NBT_TAGS, NbtHelper.writeList(tags, StationTagRef::toNbt));
         nbt.put(NBT_LINES, NbtHelper.writeList(lines, LineRef::toNbt));
-        nbt.put(NBT_CATEGORIES, NbtHelper.writeList(categories, CategoryRef::toNbt));
+        nbt.put(NBT_CATEGORIES, NbtHelper.writeList(categories, TrainCategoryRef::toNbt));
         nbt.put(NBT_TRAIN_IDS, NbtHelper.writeUuids(trainIds));
         nbt.putBoolean(NBT_BLACKLISTED, blacklisted);
         return nbt;
@@ -75,7 +75,7 @@ public record StationSnapshot(
             StationRef.fromNbt(nbt.getCompound(NBT_STATION)),
             NbtHelper.readList(nbt, NBT_TAGS, StationTagRef::fromNbt),
             NbtHelper.readList(nbt, NBT_LINES, LineRef::fromNbt),
-            NbtHelper.readList(nbt, NBT_CATEGORIES, CategoryRef::fromNbt),
+            NbtHelper.readList(nbt, NBT_CATEGORIES, TrainCategoryRef::fromNbt),
             NbtHelper.readUuids(nbt, NBT_TRAIN_IDS),
             nbt.getBoolean(NBT_BLACKLISTED)
         );

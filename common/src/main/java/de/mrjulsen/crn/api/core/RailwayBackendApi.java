@@ -3,8 +3,9 @@ package de.mrjulsen.crn.api.core;
 import java.util.*;
 import java.util.function.Predicate;
 
+import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.api.core.query.*;
-import de.mrjulsen.crn.api.core.ref.CategoryRef;
+import de.mrjulsen.crn.api.core.ref.TrainCategoryRef;
 import de.mrjulsen.crn.api.core.ref.LineRef;
 import de.mrjulsen.crn.api.core.ref.StationRef;
 import de.mrjulsen.crn.api.core.ref.StationTagRef;
@@ -33,6 +34,7 @@ import de.mrjulsen.crn.data.schedule.condition.ETrainFilter;
 import de.mrjulsen.crn.data.settings.GlobalSettings;
 import de.mrjulsen.crn.util.TrainUtils;
 import de.mrjulsen.crn.util.ModUtils;
+import de.mrjulsen.mcdragonlib.util.DLColor;
 import net.minecraft.resources.ResourceLocation;
 
 /**
@@ -350,6 +352,16 @@ public final class RailwayBackendApi {
     }
 
 
+    public static DLColor getServiceColor(LineRef line, TrainCategoryRef category) {
+        if (line != null && !line.color().isTransparent()) {
+            return line.color();
+        }
+        if (category != null && !category.color().isTransparent()) {
+            return category.color();
+        }
+        return Constants.COLOR_TRAIN_BACKGROUND;
+    }
+
 
 
 
@@ -509,7 +521,7 @@ public final class RailwayBackendApi {
             }
         }
 
-        return new CategorySnapshot(CategoryRef.of(category), trainIds, resolveLines(lineIds), delayed);
+        return new CategorySnapshot(TrainCategoryRef.of(category), trainIds, resolveLines(lineIds), delayed);
     }
 
     private static List<LineRef> resolveLines(Set<UUID> lineIds) {
@@ -522,12 +534,12 @@ public final class RailwayBackendApi {
         return lines;
     }
 
-    private static List<CategoryRef> resolveCategories(Set<UUID> categoryIds) {
+    private static List<TrainCategoryRef> resolveCategories(Set<UUID> categoryIds) {
         GlobalSettings settings = GlobalSettings.getInstance();
-        List<CategoryRef> categories = new ArrayList<>(categoryIds.size());
+        List<TrainCategoryRef> categories = new ArrayList<>(categoryIds.size());
         for (UUID id : categoryIds) {
             Optional<TrainCategory> category = settings.getTrainCategory(id);
-            category.ifPresent(x -> categories.add(CategoryRef.of(x)));
+            category.ifPresent(x -> categories.add(TrainCategoryRef.of(x)));
         }
         return categories;
     }

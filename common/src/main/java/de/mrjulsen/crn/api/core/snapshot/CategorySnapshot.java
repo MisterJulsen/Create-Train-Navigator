@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import de.mrjulsen.crn.api.core.ref.CategoryRef;
+import de.mrjulsen.crn.api.core.ref.TrainCategoryRef;
 import de.mrjulsen.crn.api.core.ref.LineRef;
 import de.mrjulsen.crn.util.NbtHelper;
 import net.minecraft.nbt.CompoundTag;
@@ -19,7 +19,7 @@ import net.minecraft.nbt.CompoundTag;
  * @param delayedTrains How many of those trains are running late.
  */
 public record CategorySnapshot(
-    CategoryRef category,
+    TrainCategoryRef category,
     Set<UUID> trainIds,
     List<LineRef> lines,
     int delayedTrains
@@ -31,7 +31,7 @@ public record CategorySnapshot(
     private static final String NBT_DELAYED_TRAINS = "DelayedTrains";
 
     public CategorySnapshot {
-        category = category == null ? CategoryRef.NONE : category;
+        category = category == null ? TrainCategoryRef.NONE : category;
         trainIds = trainIds == null ? Set.of() : Set.copyOf(trainIds);
         lines = lines == null ? List.of() : List.copyOf(lines);
     }
@@ -67,7 +67,7 @@ public record CategorySnapshot(
 
     public static CategorySnapshot fromNbt(CompoundTag nbt) {
         return new CategorySnapshot(
-            CategoryRef.fromNbt(nbt.getCompound(NBT_CATEGORY)),
+            TrainCategoryRef.fromNbt(nbt.getCompound(NBT_CATEGORY)),
             NbtHelper.readUuids(nbt, NBT_TRAIN_IDS),
             NbtHelper.readList(nbt, NBT_LINES, LineRef::fromNbt),
             nbt.getInt(NBT_DELAYED_TRAINS)
