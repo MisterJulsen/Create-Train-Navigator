@@ -42,7 +42,12 @@ public record NavigationQuery(
 
     public static final int DEFAULT_MAX_RESULTS = 6;
 
-    public static final long DEFAULT_SEARCH_HORIZON = 24000;
+    /**
+     * By default the search looks arbitrarily far into the future, so a connection is always found no
+     * matter how rarely its train runs. A smaller value may be supplied as a relevance cap that hides
+     * later alternatives (never the best result, which is always returned).
+     */
+    public static final long DEFAULT_SEARCH_HORIZON = Long.MAX_VALUE / 4;
 
     public static final long NOW = -1;
 

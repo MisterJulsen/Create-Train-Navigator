@@ -10,9 +10,4 @@ public record TripCall(int node, StationRef station, StationRef scheduledStation
     public boolean startsNewLap(TripCall previous) {
         return previous != null && stopIndex <= previous.stopIndex();
     }
-
-    public TripCall shifted(long ticks) {
-        return new TripCall(node, station, scheduledStation, entryIndex, stopIndex, scheduled.shifted(ticks),
-            arrival + ticks, departure + ticks, visits, section, title);
-    }
 }

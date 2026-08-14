@@ -26,8 +26,10 @@ public final class Navigator {
         }
 
         long departAfter = query.resolvedDepartAfter();
-        long until = departAfter + query.searchHorizon();
-        TimetableIndex index = TimetableIndex.obtain(departAfter, until);
+        long relevanceUntil = query.searchHorizon() >= Long.MAX_VALUE - departAfter
+            ? Long.MAX_VALUE
+            : departAfter + query.searchHorizon();
+        TimetableIndex index = TimetableIndex.obtain(departAfter);
 
         int origin = index.resolveNode(query.origin());
         int destination = index.resolveNode(query.destination());
@@ -48,7 +50,7 @@ public final class Navigator {
         }
 
         WaypointPlanner planner = WaypointPlanner.of(index, query, origin, destination, waypoints);
-        List<RouteJourney> found = collect(planner, query, departAfter, until);
+        List<RouteJourney> found = collect(planner, query, departAfter, relevanceUntil);
 
         if (found.isEmpty()) {
             NavigationStatus status = query.directOnly() ? NavigationStatus.NO_DIRECT_ROUTE : NavigationStatus.NO_ROUTE;
@@ -65,7 +67,13 @@ public final class Navigator {
         Set<String> seen = new HashSet<>();
         long cursor = departAfter;
 
-        while (found.size() < query.maxResults() && cursor <= until) {
+        // The index projects boardings analytically, so a repeating network always offers a next
+        // departure; the profile loop is bounded by the result count and a hard scan cap rather than
+        // by a time horizon, which keeps far-future connections reachable without looping forever.
+        int scans = 0;
+        int maxScans = Math.max(query.maxResults() * 4, 32);
+
+        while (found.size() < query.maxResults() && cursor <= until && scans++ < maxScans) {
             List<RouteJourney> batch = planner.plan(cursor);
             if (batch.isEmpty()) {
                 break;

@@ -53,10 +53,9 @@ public final class NavigatorDiagnosticsDump {
         }
 
         long now = RailwayBackendApi.getCurrentTime();
-        long horizon = query == null ? NavigationQuery.DEFAULT_SEARCH_HORIZON : query.searchHorizon();
 
         TimetableIndex.invalidate();
-        TimetableIndex index = TimetableIndex.build(now, now + horizon);
+        TimetableIndex index = TimetableIndex.build(now);
 
         JsonObject root = new JsonObject();
         root.addProperty("writtenAt", now);
@@ -87,10 +86,8 @@ public final class NavigatorDiagnosticsDump {
 
     private static JsonObject describeIndex(TimetableIndex index) {
         JsonObject json = new JsonObject();
-        json.addProperty("from", index.from());
-        json.addProperty("until", index.until());
-        json.addProperty("fromClock", clock(index.from()));
-        json.addProperty("untilClock", clock(index.until()));
+        json.addProperty("builtAt", index.builtAt());
+        json.addProperty("builtAtClock", clock(index.builtAt()));
         json.addProperty("buildDurationMs", index.buildDurationMs());
         json.addProperty("nodeCount", index.nodeCount());
         json.addProperty("tripCount", index.tripCount());
@@ -177,7 +174,7 @@ public final class NavigatorDiagnosticsDump {
             json.addProperty("trip", i);
             json.addProperty("trainId", String.valueOf(trip.trainId()));
             json.addProperty("displayName", trip.displayName());
-            json.addProperty("cycle", trip.cycle());
+            json.addProperty("period", trip.period());
             json.addProperty("callCount", trip.size());
             json.addProperty("boardableCalls", trip.boardableCalls());
             json.addProperty("sections", sectionsOf(trip));

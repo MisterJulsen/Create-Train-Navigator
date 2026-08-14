@@ -56,23 +56,24 @@ public final class JourneyBuilder {
             if (call.section() == section && !call.startsNewLap(trip.call(i - 1))) {
                 continue;
             }
-            legs.add(slice(trip, section, start, i, cancelled));
+            legs.add(slice(trip, section, start, i, ride.cycles(), cancelled));
             transfers.add(connect(true));
             start = i;
             section = call.section();
         }
 
         if (start < ride.alightCall()) {
-            legs.add(slice(trip, section, start, ride.alightCall(), cancelled));
+            legs.add(slice(trip, section, start, ride.alightCall(), ride.cycles(), cancelled));
         } else if (!transfers.isEmpty()) {
             transfers.remove(transfers.size() - 1);
         }
     }
 
-    private static RouteLeg slice(Trip trip, TripSection section, int from, int to, boolean cancelled) {
+    private static RouteLeg slice(Trip trip, TripSection section, int from, int to, int cycles, boolean cancelled) {
+        long shift = trip.shiftFor(cycles);
         List<RouteCall> calls = new ArrayList<>(to - from + 1);
         for (int i = from; i <= to; i++) {
-            calls.add(toRouteCall(trip.call(i), trip.cycle(), i == from, i == to));
+            calls.add(toRouteCall(trip.call(i), shift, cycles, i == from, i == to));
         }
 
         String title = trip.call(from).title();
@@ -81,12 +82,12 @@ public final class JourneyBuilder {
             section.line(), section.category(), destination, section.sectionIndex(), cancelled, calls);
     }
 
-    private static RouteCall toRouteCall(TripCall call, int cycle, boolean boarding, boolean alighting) {
-        long arrival = boarding ? call.departure() : call.arrival();
-        long departure = alighting ? call.arrival() : call.departure();
+    private static RouteCall toRouteCall(TripCall call, long shift, int cycles, boolean boarding, boolean alighting) {
+        long arrival = (boarding ? call.departure() : call.arrival()) + shift;
+        long departure = (alighting ? call.arrival() : call.departure()) + shift;
         StopTimes realtime = new StopTimes(arrival, Math.max(arrival, departure), Math.max(arrival, departure));
-        return new RouteCall(call.scheduledStation(), call.station(), call.entryIndex(), call.visits() + cycle,
-            call.scheduled(), realtime);
+        return new RouteCall(call.scheduledStation(), call.station(), call.entryIndex(), call.visits() + cycles,
+            call.scheduled().shifted(shift), realtime);
     }
 
     public RouteTransfer connect(boolean staysSeated) {

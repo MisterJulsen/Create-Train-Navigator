@@ -16,7 +16,12 @@ public final class RaptorSearch {
 
     static final long UNREACHABLE = Long.MAX_VALUE;
 
-    public record Ride(int fromNode, int trip, int boardCall, int alightCall) {}
+    /**
+     * One ridden segment: board {@code trip} at {@code boardCall}, alight at {@code alightCall}, with
+     * every base time of the trip shifted by {@code cycles} whole periods so the ride falls at the
+     * queried time rather than the train's current cycle.
+     */
+    public record Ride(int fromNode, int trip, int boardCall, int alightCall, int cycles) {}
 
     private final TimetableIndex index;
     private final NavigationQuery query;
@@ -72,7 +77,8 @@ public final class RaptorSearch {
 
             for (Ride boarding : boardings) {
                 Trip trip = index.trip(boarding.trip());
-                if (trip.call(boarding.boardCall()).departure() >= best[destination]) {
+                long shift = trip.shiftFor(boarding.cycles());
+                if (trip.call(boarding.boardCall()).departure() + shift >= best[destination]) {
                     break;
                 }
                 tripsScanned++;
@@ -82,7 +88,7 @@ public final class RaptorSearch {
                     if (!query.accepts(tripCall.section().line(), tripCall.section().category())) {
                         break;
                     }
-                    long arrival = tripCall.arrival();
+                    long arrival = tripCall.arrival() + shift;
                     if (arrival >= best[destination]) {
                         break;
                     }
@@ -93,7 +99,8 @@ public final class RaptorSearch {
 
                     best[node] = arrival;
                     roundArrival[round][node] = arrival;
-                    rides[round][node] = new Ride(boarding.fromNode(), boarding.trip(), boarding.boardCall(), call);
+                    rides[round][node] = new Ride(boarding.fromNode(), boarding.trip(),
+                        boarding.boardCall(), call, boarding.cycles());
                     if (!marked[node]) {
                         marked[node] = true;
                         markedNodes[markedCount++] = node;
@@ -107,33 +114,41 @@ public final class RaptorSearch {
 
     private List<Ride> collectBoardings(int[] markedNodes, int markedCount, long[] previousArrival, int round) {
         Map<Integer, Ride> earliest = new HashMap<>();
+        Map<Integer, Long> earliestDeparture = new HashMap<>();
         long transferTime = round >= 2 ? query.minTransferTime() : 0;
 
         for (int i = 0; i < markedCount; i++) {
             int node = markedNodes[i];
             long readyAt = previousArrival[node] + transferTime;
-            List<Boarding> available = index.boardingsAt(node);
 
-            for (int b = index.firstBoardingAtOrAfter(node, readyAt); b < available.size(); b++) {
-                Boarding boarding = available.get(b);
+            for (Boarding boarding : index.boardingsAt(node)) {
                 Trip trip = index.trip(boarding.trip());
                 TripCall call = trip.call(boarding.call());
                 if (!query.accepts(call.section().line(), call.section().category())) {
                     continue;
                 }
-                Ride existing = earliest.get(boarding.trip());
-                if (existing != null && existing.boardCall() <= boarding.call()) {
+                int cycles = trip.cyclesAhead(boarding.call(), readyAt);
+                if (cycles == Trip.UNREACHABLE) {
                     continue;
                 }
-                earliest.put(boarding.trip(), new Ride(node, boarding.trip(), boarding.call(), boarding.call()));
+                long departure = call.departure() + trip.shiftFor(cycles);
+                Long best = earliestDeparture.get(boarding.trip());
+                if (best != null && best <= departure) {
+                    continue;
+                }
+                earliestDeparture.put(boarding.trip(), departure);
+                earliest.put(boarding.trip(), new Ride(node, boarding.trip(), boarding.call(), boarding.call(), cycles));
             }
         }
 
         List<Ride> boardings = new ArrayList<>(earliest.values());
-        boardings.sort((a, b) -> Long.compare(
-            index.trip(a.trip()).call(a.boardCall()).departure(),
-            index.trip(b.trip()).call(b.boardCall()).departure()));
+        boardings.sort((a, b) -> Long.compare(departureOf(a), departureOf(b)));
         return boardings;
+    }
+
+    private long departureOf(Ride ride) {
+        Trip trip = index.trip(ride.trip());
+        return trip.call(ride.boardCall()).departure() + trip.shiftFor(ride.cycles());
     }
 
     private List<List<Ride>> collectResults(Ride[][] rides, long[][] roundArrival, int destination, int maxRounds,
@@ -163,18 +178,19 @@ public final class RaptorSearch {
 
         for (Ride ride : chain) {
             Trip trip = index.trip(ride.trip());
+            long shift = trip.shiftFor(ride.cycles());
             int node = trip.call(ride.boardCall()).node();
             int board = ride.boardCall();
 
             for (int call = board + 1; call < ride.alightCall(); call++) {
                 TripCall candidate = trip.call(call);
-                if (candidate.node() == node && candidate.departure() >= readyAt) {
+                if (candidate.node() == node && candidate.departure() + shift >= readyAt) {
                     board = call;
                 }
             }
 
-            adjusted.add(new Ride(ride.fromNode(), ride.trip(), board, ride.alightCall()));
-            readyAt = trip.call(ride.alightCall()).arrival() + query.minTransferTime();
+            adjusted.add(new Ride(ride.fromNode(), ride.trip(), board, ride.alightCall(), ride.cycles()));
+            readyAt = trip.call(ride.alightCall()).arrival() + shift + query.minTransferTime();
         }
 
         return adjusted;

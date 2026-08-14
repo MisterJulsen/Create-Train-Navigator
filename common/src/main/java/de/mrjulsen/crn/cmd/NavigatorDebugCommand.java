@@ -137,12 +137,12 @@ public final class NavigatorDebugCommand {
         }
 
         long now = RailwayBackendApi.getCurrentTime();
-        TimetableIndex index = TimetableIndex.build(now, now + NavigationQuery.DEFAULT_SEARCH_HORIZON);
+        TimetableIndex index = TimetableIndex.build(now);
         TimetableIndex.invalidate();
 
         source.sendSuccess(() -> TextUtils.text(String.format(
-            "Timetable index rebuilt in %dms: %d station nodes, %d trips over %d ticks. Cache dropped.",
-            index.buildDurationMs(), index.nodeCount(), index.tripCount(), index.until() - index.from())), false);
+            "Timetable index rebuilt in %dms: %d station nodes, %d trips (time-independent). Cache dropped.",
+            index.buildDurationMs(), index.nodeCount(), index.tripCount())), false);
         return 1;
     }
 

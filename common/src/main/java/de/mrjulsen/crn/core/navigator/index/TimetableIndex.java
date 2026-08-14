@@ -21,9 +21,8 @@ public final class TimetableIndex {
 
     private static final long MAX_AGE = 100;
 
-    private static final int MAX_TRIPS_PER_STRETCH = 128;
-
-    public record Boarding(int trip, int call, long departure) {}
+    /** A boarding opportunity: the {@code call}-th call of {@code trip}, catchable in any future cycle. */
+    public record Boarding(int trip, int call) {}
 
     private static final Object CACHE_LOCK = new Object();
     private static TimetableIndex cached;
@@ -34,36 +33,48 @@ public final class TimetableIndex {
     private final Map<String, Integer> nodeByTagName;
     private final List<Trip> trips;
     private final List<List<Boarding>> boardings;
-    private final long from;
-    private final long until;
     private final long builtAt;
     private final long buildDurationMs;
 
     private TimetableIndex(List<StationRef> stations, Map<String, Integer> nodeByKey,
                            Map<String, Integer> nodeByStation, Map<String, Integer> nodeByTagName,
                            List<Trip> trips, List<List<Boarding>> boardings,
-                           long from, long until, long builtAt, long buildDurationMs) {
+                           long builtAt, long buildDurationMs) {
         this.stations = stations;
         this.nodeByKey = nodeByKey;
         this.nodeByStation = nodeByStation;
         this.nodeByTagName = nodeByTagName;
         this.trips = trips;
         this.boardings = boardings;
-        this.from = from;
-        this.until = until;
         this.builtAt = builtAt;
         this.buildDurationMs = buildDurationMs;
     }
 
-    public static TimetableIndex obtain(long from, long until) {
+    /**
+     * The current index, reused while it is fresh. The index is time-independent - it holds each
+     * train's cycle once and lets the search project boardings analytically - so a single build
+     * serves every query at every time until the schedules themselves move on.
+     */
+    public static TimetableIndex obtain(long now) {
         synchronized (CACHE_LOCK) {
-            long now = RailwayBackendApi.getCurrentTime();
             TimetableIndex index = cached;
-            if (index != null && index.covers(from, until) && Math.abs(now - index.builtAt) <= MAX_AGE) {
+            if (index != null && Math.abs(now - index.builtAt) <= MAX_AGE) {
                 return index;
             }
-            cached = build(from, until);
+            cached = build(now);
             return cached;
+        }
+    }
+
+    /**
+     * Rebuilds the cache only if it is already in use, so an idle server never pays for it. Meant to
+     * be called from the backend worker after a full update, keeping searches off the server thread.
+     */
+    public static void refreshIfWarm(long now) {
+        synchronized (CACHE_LOCK) {
+            if (cached != null) {
+                cached = build(now);
+            }
         }
     }
 
@@ -73,9 +84,9 @@ public final class TimetableIndex {
         }
     }
 
-    public static TimetableIndex build(long from, long until) {
+    public static TimetableIndex build(long now) {
         long startedAt = System.currentTimeMillis();
-        Builder builder = new Builder(from, until);
+        Builder builder = new Builder(now);
 
         for (TrainSnapshot train : RailwayBackendApi.getAllTrains()) {
             if (!train.isUsable() || train.isCancelled()) {
@@ -85,10 +96,6 @@ public final class TimetableIndex {
         }
 
         return builder.finish(RailwayBackendApi.getCurrentTime(), System.currentTimeMillis() - startedAt);
-    }
-
-    public boolean covers(long from, long until) {
-        return this.from <= from && this.until >= until;
     }
 
     public StationRef station(int node) {
@@ -101,21 +108,6 @@ public final class TimetableIndex {
 
     public List<Boarding> boardingsAt(int node) {
         return node < 0 || node >= boardings.size() ? List.of() : boardings.get(node);
-    }
-
-    public int firstBoardingAtOrAfter(int node, long time) {
-        List<Boarding> list = boardingsAt(node);
-        int low = 0;
-        int high = list.size();
-        while (low < high) {
-            int mid = (low + high) >>> 1;
-            if (list.get(mid).departure() < time) {
-                low = mid + 1;
-            } else {
-                high = mid;
-            }
-        }
-        return low;
     }
 
     public int resolveNode(String stationOrTagName) {
@@ -150,14 +142,6 @@ public final class TimetableIndex {
         return trips.size();
     }
 
-    public long from() {
-        return from;
-    }
-
-    public long until() {
-        return until;
-    }
-
     public long builtAt() {
         return builtAt;
     }
@@ -168,8 +152,7 @@ public final class TimetableIndex {
 
     private static final class Builder {
 
-        private final long from;
-        private final long until;
+        private final long now;
 
         private final List<StationRef> stations = new ArrayList<>();
         private final Map<String, Integer> nodeByKey = new HashMap<>();
@@ -177,38 +160,29 @@ public final class TimetableIndex {
         private final Map<String, Integer> nodeByTagName = new HashMap<>();
         private final List<Trip> trips = new ArrayList<>();
 
-        private Builder(long from, long until) {
-            this.from = from;
-            this.until = until;
+        private Builder(long now) {
+            this.now = now;
         }
 
         private record Template(List<TripCall> calls, int boardableCalls) {}
 
         private void add(TrainSnapshot train, JourneySnapshot journey) {
+            long period = journey.repeats() ? journey.totalDuration() : 0;
             for (Template template : buildTemplates(journey)) {
-                Trip base = new Trip(train.trainId(), train.sessionId(), train.trainName(),
-                    train.displayName(), train.iconId(), 0, template.calls(), template.boardableCalls());
-
-                if (!journey.repeats()) {
-                    addTrip(base);
-                    continue;
-                }
-
-                long cycleDuration = journey.totalDuration();
-                for (int cycle = 0; cycle < MAX_TRIPS_PER_STRETCH; cycle++) {
-                    long shift = cycle * cycleDuration;
-                    if (base.firstDeparture() + shift > until) {
-                        break;
-                    }
-                    addTrip(cycle == 0 ? base : base.shifted(shift, cycle));
-                }
+                addTrip(new Trip(train.trainId(), train.sessionId(), train.trainName(),
+                    train.displayName(), train.iconId(), period, template.calls(), template.boardableCalls()));
             }
         }
 
         private void addTrip(Trip trip) {
-            if (trip.isUsable() && trip.lastArrival() >= from && trip.boardableCalls() > 0) {
-                trips.add(trip);
+            if (!trip.isUsable() || trip.boardableCalls() <= 0) {
+                return;
             }
+            // A repeating trip can always be caught in some future cycle; a one-off only while it has not fully run.
+            if (!trip.repeats() && trip.lastArrival() < now) {
+                return;
+            }
+            trips.add(trip);
         }
 
         private List<Template> buildTemplates(JourneySnapshot journey) {
@@ -358,23 +332,18 @@ public final class TimetableIndex {
             for (int tripIndex = 0; tripIndex < trips.size(); tripIndex++) {
                 Trip trip = trips.get(tripIndex);
                 for (int call = 0; call < trip.boardableCalls(); call++) {
-                    TripCall tripCall = trip.call(call);
-                    if (tripCall.departure() < from || tripCall.departure() > until) {
-                        continue;
-                    }
-                    boardings.get(tripCall.node()).add(new Boarding(tripIndex, call, tripCall.departure()));
+                    boardings.get(trip.call(call).node()).add(new Boarding(tripIndex, call));
                 }
             }
 
-            List<List<Boarding>> sorted = new ArrayList<>(boardings.size());
+            List<List<Boarding>> byNode = new ArrayList<>(boardings.size());
             for (List<Boarding> list : boardings) {
-                list.sort((a, b) -> Long.compare(a.departure(), b.departure()));
-                sorted.add(List.copyOf(list));
+                byNode.add(List.copyOf(list));
             }
 
             return new TimetableIndex(List.copyOf(stations), Map.copyOf(nodeByKey),
                 Map.copyOf(nodeByStation), Map.copyOf(nodeByTagName), List.copyOf(trips),
-                List.copyOf(sorted), from, until, builtAt, buildDurationMs);
+                List.copyOf(byNode), builtAt, buildDurationMs);
         }
     }
 }

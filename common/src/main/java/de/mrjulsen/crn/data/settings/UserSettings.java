@@ -45,6 +45,7 @@ public class UserSettings {
     private static final String NBT_VERSION = "Version";
     private static final String NBT_DEPARTURE_IN = "DepartureIn";
     private static final String NBT_TRANSFER_TIME = "TransferTime";
+    private static final String NBT_MAX_RESULTS = "MaxResults";
     private static final String NBT_TRAIN_CATEGORIES = "ExcludedTrainCategories";
     private static final String NBT_SAVED_ROUTES = "SavedRoutes";
     private static final String NBT_SEARCH_DEPARTURE_TIME = "SearchDepartureIn";
@@ -60,6 +61,7 @@ public class UserSettings {
 
     public final UserSetting<Integer> navigationDepartureInTicks = registerSetting(new UserSetting<>(() -> 0, NBT_DEPARTURE_IN, (nbt, val, name) -> nbt.putInt(name, val), (nbt, name) -> nbt.getInt(name), (val) -> new DLTime(val, VanillaTimeSystem.INSTANCE).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME, VanillaTimeSystem.INSTANCE)));
     public final UserSetting<Integer> navigationTransferTime = registerSetting(new UserSetting<>(() -> 1000, NBT_TRANSFER_TIME, (nbt, val, name) -> nbt.putInt(name, val), (nbt, name) -> nbt.getInt(name), (val) -> new DLTime(val, VanillaTimeSystem.INSTANCE).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME, VanillaTimeSystem.INSTANCE)));
+    public final UserSetting<Integer> navigationMaxResults = registerSetting(new UserSetting<>(() -> 6, NBT_MAX_RESULTS, (nbt, val, name) -> nbt.putInt(name, Math.max(1, val)), (nbt, name) -> nbt.contains(name) ? Math.max(1, nbt.getInt(name)) : 6, (val) -> String.valueOf(val)));
     public final UserSetting<Set<UUID>> navigationExcludedTrainCategories = registerSetting(new UserSetting<>(() -> new HashSet<>(), NBT_TRAIN_CATEGORIES,
     (nbt, val, name) -> {
         ListTag list = new ListTag();

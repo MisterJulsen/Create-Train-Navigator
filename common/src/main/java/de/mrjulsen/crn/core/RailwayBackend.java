@@ -11,6 +11,7 @@ import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.core.debug.BackendDiagnosticsRecorder;
 import de.mrjulsen.crn.api.event.RailwayBackendEvents;
 import de.mrjulsen.crn.core.delay.ExternalDelayReports;
+import de.mrjulsen.crn.core.navigator.index.TimetableIndex;
 import de.mrjulsen.crn.core.util.StationLookup;
 import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.DragonLib;
@@ -156,6 +157,7 @@ public final class RailwayBackend {
             worker.execute(() -> {
                 try {
                     manager.runFullUpdate(now);
+                    TimetableIndex.refreshIfWarm(now);
                     BackendDiagnosticsRecorder.recordSnapshot(manager.getAllTrains(), now);
                 } catch (Exception e) {
                     CreateRailwaysNavigator.LOGGER.error("[Backend] Full update failed.", e);

@@ -99,6 +99,7 @@ public class NavigatePacketData {
                     .to(settings.getTagByName(TagName.of(packet.end)).orElse(settings.getOrCreateStationTagFor(packet.end)).getTagName().get())
                     .departingIn(userSettings.navigationDepartureInTicks.getValue())
                     .withMinTransferTime(userSettings.navigationTransferTime.getValue())
+                    .withMaxResults(userSettings.navigationMaxResults.getValue())
                     .excludingCategories(userSettings.navigationExcludedTrainCategories.getValue())
                     .preferring(RouteOptimization.FEWEST_TRANSFERS);
 
