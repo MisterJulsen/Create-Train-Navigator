@@ -12,6 +12,11 @@ import de.mrjulsen.crn.core.delay.DelayInstance;
 import de.mrjulsen.crn.util.NbtHelper;
 import net.minecraft.nbt.CompoundTag;
 
+/**
+ * The delay reasons recorded against a route leg over its life, kept even once they no longer apply
+ * so that a journey's history stays complete. The log is filled while the journey is tracked and
+ * frozen once the leg has been travelled.
+ */
 public final class DelayLog {
 
     private final Map<String, RecordedDelay> entries = new LinkedHashMap<>();
@@ -45,30 +50,37 @@ public final class DelayLog {
         entries.replaceAll((key, entry) -> entry.closedAt(now));
     }
 
+    /** Whether the log has been closed and takes no further changes. */
     public boolean isFrozen() {
         return frozen;
     }
 
+    /** Every recorded reason, whether or not it still applies, in the order first seen. */
     public List<RecordedDelay> entries() {
         return List.copyOf(entries.values());
     }
 
+    /** The recorded reasons themselves, in the order first seen. */
     public List<DelayInstance> instances() {
         return entries.values().stream().map(RecordedDelay::instance).toList();
     }
 
+    /** The recorded reasons collapsed so that each cause appears only once. */
     public List<DelayInstance> reasons() {
         return DelayInstance.collapseByCause(instances());
     }
 
+    /** Only the reasons that still apply. */
     public List<RecordedDelay> active() {
         return entries.values().stream().filter(RecordedDelay::isActive).toList();
     }
 
+    /** Whether nothing has been recorded. */
     public boolean isEmpty() {
         return entries.isEmpty();
     }
 
+    /** How many reasons have been recorded. */
     public int size() {
         return entries.size();
     }

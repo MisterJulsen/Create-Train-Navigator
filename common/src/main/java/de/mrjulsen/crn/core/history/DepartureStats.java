@@ -5,6 +5,15 @@ import java.util.Map;
 
 import net.minecraft.nbt.CompoundTag;
 
+/**
+ * Summary figures about the departures recorded at a station: when trains of each line, category and
+ * name last left. Times are in game ticks on the backend's time base.
+ *
+ * @param lastDeparture       When any train last departed, or a negative value if none has.
+ * @param departuresByCategory The last departure time keyed by category name.
+ * @param departuresByLine     The last departure time keyed by line name.
+ * @param departuresByName     The last departure time keyed by train name.
+ */
 public record DepartureStats(
     long lastDeparture,
     Map<String, Long> departuresByCategory,
@@ -21,6 +30,7 @@ public record DepartureStats(
         return new DepartureStats(-1, Map.of(), Map.of(), Map.of());
     }
 
+    /** Whether nothing has been recorded. */
     public boolean isEmpty() {
         return lastDeparture < 0 && departuresByCategory.isEmpty() && departuresByLine.isEmpty() && departuresByName.isEmpty();
     }

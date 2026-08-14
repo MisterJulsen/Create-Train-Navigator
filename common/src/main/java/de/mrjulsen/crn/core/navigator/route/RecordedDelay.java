@@ -3,8 +3,16 @@ package de.mrjulsen.crn.core.navigator.route;
 import de.mrjulsen.crn.core.delay.DelayInstance;
 import net.minecraft.nbt.CompoundTag;
 
+/**
+ * One delay reason recorded against a route leg, kept even after it stops applying so that a
+ * journey's history stays complete.
+ *
+ * @param instance The delay reason.
+ * @param until    When the reason stopped applying, or {@link #ACTIVE} while it still does.
+ */
 public record RecordedDelay(DelayInstance instance, long until) {
 
+    /** The value of {@link #until} while the reason still applies. */
     public static final long ACTIVE = -1;
 
     private static final String NBT_INSTANCE = "Instance";
@@ -14,6 +22,7 @@ public record RecordedDelay(DelayInstance instance, long until) {
         return new RecordedDelay(instance, ACTIVE);
     }
 
+    /** Whether the reason still applies. */
     public boolean isActive() {
         return until == ACTIVE;
     }
@@ -22,6 +31,7 @@ public record RecordedDelay(DelayInstance instance, long until) {
         return isActive() ? new RecordedDelay(instance, time) : this;
     }
 
+    /** How long the reason applied for, counting up to the given time while it still applies, in ticks. */
     public long duration(long now) {
         return Math.max(0, (isActive() ? now : until) - instance.since());
     }

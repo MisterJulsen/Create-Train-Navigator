@@ -20,6 +20,24 @@ import de.mrjulsen.mcdragonlib.util.DLColor;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 
+/**
+ * One leg of a journey: a stretch travelled aboard a single train, from where travellers board to
+ * where they alight, with every call in between.
+ * <p>
+ * Times are in game ticks on the backend's time base.
+ *
+ * @param trainId         The id of the train worked on this leg.
+ * @param sessionId       The train's tracking session at the time the leg was planned.
+ * @param trainName       The train's own name.
+ * @param iconId          The train's icon, or {@code null}.
+ * @param line            The line the leg runs under, or {@link LineRef#NONE}.
+ * @param category        The category the leg runs under, or {@link TrainCategoryRef#NONE}.
+ * @param destinationText The destination to show for the leg.
+ * @param sectionIndex    The section of the train's run this leg covers.
+ * @param cancelled       Whether the train is out of service.
+ * @param calls           The calls the leg makes, from boarding to alighting.
+ * @param delays          The delays recorded against this leg.
+ */
 public record RouteLeg(
     UUID trainId,
     UUID sessionId,
@@ -62,54 +80,67 @@ public record RouteLeg(
             calls, new DelayLog());
     }
 
+    /** The name to show for this leg's train: its line name, or its own name where it has none. */
     public String displayName() {
         return line.nameOr(trainName);
     }
 
+    /** The colour to show this leg in, taken from its line or category. */
     public DLColor displayColor() {
         return RailwayBackendApi.getServiceColor(line, category);
     }
 
+    /** The call where travellers board this leg. */
     public RouteCall boarding() {
         return calls.get(0);
     }
 
+    /** The call where travellers alight from this leg. */
     public RouteCall alighting() {
         return calls.get(calls.size() - 1);
     }
 
+    /** The station travellers board at. */
     public StationRef from() {
         return boarding().station();
     }
 
+    /** The station travellers alight at. */
     public StationRef to() {
         return alighting().station();
     }
 
+    /** When the leg departs its boarding stop. */
     public long departure() {
         return boarding().realtime().departure();
     }
 
+    /** When the leg reaches its alighting stop. */
     public long arrival() {
         return alighting().realtime().arrival();
     }
 
+    /** How long the leg takes, in ticks. */
     public long duration() {
         return Math.max(0, arrival() - departure());
     }
 
+    /** The calls between boarding and alighting, both ends excluded. */
     public List<RouteCall> intermediateCalls() {
         return calls.size() < 3 ? List.of() : calls.subList(1, calls.size() - 1);
     }
 
+    /** How many stops lie between boarding and alighting. */
     public int intermediateStopCount() {
         return Math.max(0, calls.size() - 2);
     }
 
+    /** Whether the leg runs under a named line. */
     public boolean hasLine() {
         return line.isKnown();
     }
 
+    /** Whether the leg runs under a named category. */
     public boolean hasCategory() {
         return category.isKnown();
     }

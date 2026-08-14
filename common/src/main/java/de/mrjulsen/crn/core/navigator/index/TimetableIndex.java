@@ -21,7 +21,6 @@ public final class TimetableIndex {
 
     private static final long MAX_AGE = 100;
 
-    /** A boarding opportunity: the {@code call}-th call of {@code trip}, catchable in any future cycle. */
     public record Boarding(int trip, int call) {}
 
     private static final Object CACHE_LOCK = new Object();
@@ -50,11 +49,6 @@ public final class TimetableIndex {
         this.buildDurationMs = buildDurationMs;
     }
 
-    /**
-     * The current index, reused while it is fresh. The index is time-independent - it holds each
-     * train's cycle once and lets the search project boardings analytically - so a single build
-     * serves every query at every time until the schedules themselves move on.
-     */
     public static TimetableIndex obtain(long now) {
         synchronized (CACHE_LOCK) {
             TimetableIndex index = cached;
@@ -66,10 +60,6 @@ public final class TimetableIndex {
         }
     }
 
-    /**
-     * Rebuilds the cache only if it is already in use, so an idle server never pays for it. Meant to
-     * be called from the backend worker after a full update, keeping searches off the server thread.
-     */
     public static void refreshIfWarm(long now) {
         synchronized (CACHE_LOCK) {
             if (cached != null) {
@@ -178,7 +168,7 @@ public final class TimetableIndex {
             if (!trip.isUsable() || trip.boardableCalls() <= 0) {
                 return;
             }
-            // A repeating trip can always be caught in some future cycle; a one-off only while it has not fully run.
+
             if (!trip.repeats() && trip.lastArrival() < now) {
                 return;
             }

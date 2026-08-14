@@ -7,7 +7,23 @@ import de.mrjulsen.crn.api.core.ref.StationRef;
 import de.mrjulsen.crn.core.timing.StopTimes;
 import net.minecraft.nbt.CompoundTag;
 
+/**
+ * One call of a train at a station within a route leg. The live side of the call, the station really
+ * taken and its projected times, is updated as the journey is tracked, while the scheduled side stays
+ * fixed.
+ * <p>
+ * The station and time sides of the call, and everything derived from them, are described by
+ * {@link StationCall}.
+ */
 public final class RouteCall implements StationCall {
+
+    private static final String NBT_SCHEDULED_STATION = "ScheduledStation";
+    private static final String NBT_REALTIME_STATION = "RealtimeStation";
+    private static final String NBT_ENTRY_INDEX = "EntryIndex";
+    private static final String NBT_CYCLE = "Cycle";
+    private static final String NBT_SCHEDULED = "Scheduled";
+    private static final String NBT_REALTIME = "Realtime";
+    private static final String NBT_PASSED = "Passed";
 
     private final StationRef scheduledStation;
     private final int entryIndex;
@@ -37,10 +53,12 @@ public final class RouteCall implements StationCall {
         return station;
     }
 
+    /** The call's position among the schedule's entries. */
     public int entryIndex() {
         return entryIndex;
     }
 
+    /** Which cycle of a repeating run this call belongs to. */
     public int cycle() {
         return cycle;
     }
@@ -55,6 +73,7 @@ public final class RouteCall implements StationCall {
         return realtime;
     }
 
+    /** Whether the train has already made this call. */
     public boolean passed() {
         return passed;
     }
@@ -101,14 +120,6 @@ public final class RouteCall implements StationCall {
         }
         return call;
     }
-
-    private static final String NBT_SCHEDULED_STATION = "ScheduledStation";
-    private static final String NBT_REALTIME_STATION = "RealtimeStation";
-    private static final String NBT_ENTRY_INDEX = "EntryIndex";
-    private static final String NBT_CYCLE = "Cycle";
-    private static final String NBT_SCHEDULED = "Scheduled";
-    private static final String NBT_REALTIME = "Realtime";
-    private static final String NBT_PASSED = "Passed";
 
     @Override
     public boolean equals(Object obj) {

@@ -11,6 +11,21 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 
+/**
+ * One reason a train is delayed or disrupted, as it stands at a moment. Several instances of the same
+ * cause can be merged so a train reports each reason once; see {@link #collapseByCause(Collection)}.
+ * <p>
+ * Times are in game ticks on the backend's time base.
+ *
+ * @param causeId             The id of the cause behind this delay.
+ * @param severity            How the delay should be weighed against others.
+ * @param since               When the delay began.
+ * @param estimatedDelayTicks The time this cause is estimated to account for, or
+ *                            {@link #UNKNOWN_DELAY} where no estimate is known.
+ * @param args                Values filled into the cause's description, such as a blocking train's
+ *                            name.
+ * @param origin              Whether the delay was detected by the backend or reported from outside.
+ */
 public record DelayInstance(
     ResourceLocation causeId,
     DelaySeverity severity,
@@ -20,6 +35,7 @@ public record DelayInstance(
     DelayOrigin origin
 ) {
 
+    /** The value of {@code estimatedDelayTicks} when no estimate is known. */
     public static final long UNKNOWN_DELAY = -1;
 
     private static final String NBT_CAUSE = "Cause";
@@ -46,28 +62,34 @@ public record DelayInstance(
         return new DelayInstance(causeId, severity, since, ticks, args, origin);
     }
 
+    /** The translation key naming this cause, for showing it to a player. */
     public String translationKey() {
         return DelayCauseRegistry.get(causeId)
             .map(DelayCause::translationKey)
             .orElse("gui." + causeId.getNamespace() + ".delay_cause." + causeId.getPath());
     }
 
+    /** Whether the description takes any values. */
     public boolean hasArgs() {
         return !args.isEmpty();
     }
 
+    /** The values to fill into the description, in order. */
     public List<String> argValues() {
         return args.stream().map(DelayArgument::value).toList();
     }
 
+    /** Whether an estimate of the time this cause accounts for is known. */
     public boolean hasEstimatedDelay() {
         return estimatedDelayTicks > UNKNOWN_DELAY;
     }
 
+    /** How long the delay has lasted up to the given time, in ticks. */
     public long durationUntil(long now) {
         return Math.max(0, now - since);
     }
 
+    /** The given delays merged so that each cause appears once, its arguments and estimates combined. */
     public static List<DelayInstance> collapseByCause(Collection<DelayInstance> instances) {
         Map<ResourceLocation, DelayInstance> byCause = new LinkedHashMap<>();
         for (DelayInstance instance : instances) {

@@ -10,10 +10,22 @@ import de.mrjulsen.crn.core.navigator.index.TimetableIndex;
 import de.mrjulsen.crn.core.navigator.route.RouteJourney;
 import de.mrjulsen.crn.core.navigator.search.WaypointPlanner;
 
+/**
+ * Searches the timetable for journeys between stations. This is the entry point for route finding:
+ * build a {@link NavigationQuery} describing what is wanted and pass it here.
+ * <p>
+ * Times are in the unit described by {@link RailwayBackendApi#getCurrentTime()}. The search reads the
+ * backend, so it returns an empty result while no server is running.
+ */
 public final class Navigator {
 
     private Navigator() {}
 
+    /**
+     * Finds the journeys matching the query, best first according to its
+     * {@link NavigationQuery#optimization()}. Where none are found, the result carries the reason
+     * instead; see {@link NavigationStatus}.
+     */
     public static NavigationResult search(NavigationQuery query) {
         long startedAt = System.currentTimeMillis();
         long now = RailwayBackendApi.getCurrentTime();
@@ -67,9 +79,6 @@ public final class Navigator {
         Set<String> seen = new HashSet<>();
         long cursor = departAfter;
 
-        // The index projects boardings analytically, so a repeating network always offers a next
-        // departure; the profile loop is bounded by the result count and a hard scan cap rather than
-        // by a time horizon, which keeps far-future connections reachable without looping forever.
         int scans = 0;
         int maxScans = Math.max(query.maxResults() * 4, 32);
 

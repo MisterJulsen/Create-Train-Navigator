@@ -16,11 +16,6 @@ public final class RaptorSearch {
 
     static final long UNREACHABLE = Long.MAX_VALUE;
 
-    /**
-     * One ridden segment: board {@code trip} at {@code boardCall}, alight at {@code alightCall}, with
-     * every base time of the trip shifted by {@code cycles} whole periods so the ride falls at the
-     * queried time rather than the train's current cycle.
-     */
     public record Ride(int fromNode, int trip, int boardCall, int alightCall, int cycles) {}
 
     private final TimetableIndex index;
