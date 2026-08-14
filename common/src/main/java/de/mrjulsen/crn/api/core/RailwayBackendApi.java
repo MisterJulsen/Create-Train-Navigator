@@ -84,12 +84,12 @@ public final class RailwayBackendApi {
     }
 
     /** Every train fit to be shown publicly. */
-    public static synchronized List<TrainSnapshot> getAllTrains() {
+    public static List<TrainSnapshot> getAllTrains() {
         return getTrackedTrains().map(TrainSnapshot::of).toList();
     }
 
     /** The trains matching the given query. */
-    public static synchronized List<TrainSnapshot> getTrains(TrainQuery query) {
+    public static List<TrainSnapshot> getTrains(TrainQuery query) {
         return getTrains(query, x -> true);
     }
 
@@ -97,7 +97,7 @@ public final class RailwayBackendApi {
      * The trains matching the given query, narrowed further by a filter on the finished snapshot for
      * conditions the query cannot express.
      */
-    public static synchronized List<TrainSnapshot> getTrains(TrainQuery query, Predicate<TrainSnapshot> filter) {
+    public static List<TrainSnapshot> getTrains(TrainQuery query, Predicate<TrainSnapshot> filter) {
         List<TrainSnapshot> trains = new ArrayList<>(TrainManager.getInstance().getAllTrains().size());
         for (TrackedTrain train : TrainManager.getInstance().getAllTrains()) {
             if (!query.accept(train)) {
@@ -112,7 +112,7 @@ public final class RailwayBackendApi {
     }
 
     /** One train by its id, whether or not it would be shown publicly, if it is being tracked. */
-    public static synchronized Optional<TrainSnapshot> getTrain(UUID trainId) {
+    public static Optional<TrainSnapshot> getTrain(UUID trainId) {
         return TrainManager.getInstance().getTrain(trainId).map(TrainSnapshot::of);
     }
 

@@ -220,12 +220,15 @@ public final class TrainManager {
         callIndex.clear();
     }
 
+    private static final String NBT_VERSION = "Version";
     private static final String NBT_TRAINS = "Trains";
     private static final String NBT_DEPARTURE_LOG = "DepartureLog";
     private static final String NBT_RETIRED = "RetiredTrains";
+    private static final int VERSION = 1;
 
     public CompoundTag toNbt() {
         CompoundTag nbt = new CompoundTag();
+        nbt.putInt(NBT_VERSION, VERSION);
 
         CompoundTag trainsNbt = new CompoundTag();
         for (Map.Entry<UUID, TrackedTrain> entry : trains.entrySet()) {
@@ -247,6 +250,11 @@ public final class TrainManager {
     }
 
     public void loadNbt(CompoundTag nbt) {
+        int version = nbt.getInt(NBT_VERSION);
+        if (version > VERSION) {
+            CreateRailwaysNavigator.LOGGER.warn("[Backend] Backend data was written by a newer format (version {} > {}); loading it may be incomplete.", version, VERSION);
+        }
+
         stagedTrainData.clear();
         retired.clear();
 
