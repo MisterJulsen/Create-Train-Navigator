@@ -10,6 +10,22 @@ import net.minecraft.world.phys.Vec3;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * A plain data view of one of Create's trains, taken straight from the train entity.
+ *
+ * @param id             The train's id.
+ * @param name           The train's name.
+ * @param owner          The id of the player who owns the train, or {@code null}.
+ * @param graph          The id of the track graph the train is on, or {@code null}.
+ * @param dimension      The dimension the train's leading point is in, or {@code null}.
+ * @param position       Where the train's leading point is, or {@code null} if it cannot be located.
+ * @param speed          The train's current speed, in blocks per tick.
+ * @param backwards      Whether the train is running in reverse.
+ * @param derailed       Whether the train has derailed.
+ * @param status         Create's own status flags for the train.
+ * @param carriages      The train's carriages, ordered from the front.
+ * @param currentStation The id of the station the train is at, or {@code null}.
+ */
 public record CreateTrainSnapshot(
         @ResponseAlwaysInclude UUID id,
         String name,
@@ -58,6 +74,7 @@ public record CreateTrainSnapshot(
         return point.getPosition(train.graph);
     }
 
+    /** The dimension the train's leading point sits in, or {@code null} if it cannot be determined. */
     public static ResourceLocation dimensionOf(Train train) {
         TravellingPoint point = leadingPointOf(train);
         if (point == null || point.node1 == null) {

@@ -147,10 +147,12 @@ public record SectionSnapshot(
         return position < currentStopIndex ? StopVisitState.PASSED : StopVisitState.UPCOMING;
     }
 
+    /** Whether this section is worked under a named line. */
     public boolean hasLine() {
         return line.isKnown();
     }
 
+    /** Whether this section is worked under a named category. */
     public boolean hasCategory() {
         return category.isKnown();
     }
@@ -173,6 +175,7 @@ public record SectionSnapshot(
         return currentStopIndex <= 0 ? List.of() : stops.subList(0, currentStopIndex);
     }
 
+    /** How many stops this section has that are shown publicly. */
     public int stopCount() {
         return stops.size();
     }

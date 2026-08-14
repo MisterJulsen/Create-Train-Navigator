@@ -12,6 +12,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * A plain data view of one of Create's track graphs: its nodes and the edges between them.
+ *
+ * @param id    The graph's id.
+ * @param nodes The graph's nodes.
+ * @param edges The edges connecting those nodes.
+ */
 public record CreateTrackGraphSnapshot(
         @ResponseAlwaysInclude java.util.UUID id,
         List<CreateTrackNodeSnapshot> nodes,

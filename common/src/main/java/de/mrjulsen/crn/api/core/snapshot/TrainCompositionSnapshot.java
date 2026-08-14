@@ -30,6 +30,12 @@ public record TrainCompositionSnapshot(
     boolean backwards
 ) {
 
+    private static final String NBT_TRAIN_ID = "TrainId";
+    private static final String NBT_CARRIAGES = "Carriages";
+    private static final String NBT_TOTAL_LENGTH = "TotalLengthBlocks";
+    private static final String NBT_DOUBLE_ENDED = "DoubleEnded";
+    private static final String NBT_BACKWARDS = "Backwards";
+
     public TrainCompositionSnapshot {
         carriages = carriages == null ? List.of() : List.copyOf(carriages);
     }
@@ -57,6 +63,7 @@ public record TrainCompositionSnapshot(
         return new TrainCompositionSnapshot(train.id, carriages, length, train.doubleEnded, train.currentlyBackwards);
     }
 
+    /** How many carriages the train has. */
     public int carriageCount() {
         return carriages.size();
     }
@@ -95,10 +102,4 @@ public record TrainCompositionSnapshot(
             nbt.getBoolean(NBT_BACKWARDS)
         );
     }
-
-    private static final String NBT_TRAIN_ID = "TrainId";
-    private static final String NBT_CARRIAGES = "Carriages";
-    private static final String NBT_TOTAL_LENGTH = "TotalLengthBlocks";
-    private static final String NBT_DOUBLE_ENDED = "DoubleEnded";
-    private static final String NBT_BACKWARDS = "Backwards";
 }

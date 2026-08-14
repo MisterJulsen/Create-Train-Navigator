@@ -211,10 +211,12 @@ public record TrainSnapshot(
         return Math.max(0, maxDeviation - delayOffset);
     }
 
+    /** Whether the train is working under a named line right now. */
     public boolean hasLine() {
         return line.isKnown();
     }
 
+    /** Whether the train is working under a named category right now. */
     public boolean hasCategory() {
         return category.isKnown();
     }

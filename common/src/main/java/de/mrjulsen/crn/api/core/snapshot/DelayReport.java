@@ -92,6 +92,7 @@ public record DelayReport(
         return Math.max(0, maxDeviation - delayOffset);
     }
 
+    /** Whether any reason has been attributed at all. */
     public boolean hasCauses() {
         return !causes.isEmpty();
     }

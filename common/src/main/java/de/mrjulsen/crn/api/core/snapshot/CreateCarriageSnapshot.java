@@ -5,6 +5,15 @@ import com.simibubi.create.content.trains.entity.TravellingPoint;
 import com.simibubi.create.content.trains.graph.TrackGraph;
 import net.minecraft.world.phys.Vec3;
 
+/**
+ * A plain data view of one carriage in Create's train network.
+ *
+ * @param id           The carriage's id.
+ * @param leading      Where the carriage's leading point is, or {@code null} if it cannot be located.
+ * @param trailing     Where the carriage's trailing point is, or {@code null} if it cannot be located.
+ * @param length       The distance between the leading and trailing points, in blocks.
+ * @param bogeySpacing The spacing between the carriage's bogeys, in blocks.
+ */
 public record CreateCarriageSnapshot(
         int id,
         Vec3Snapshot leading,

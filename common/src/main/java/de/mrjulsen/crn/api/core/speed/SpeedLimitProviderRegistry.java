@@ -48,6 +48,7 @@ public final class SpeedLimitProviderRegistry {
         PROVIDERS.keySet().removeIf(id -> id.getNamespace().equals(modid));
     }
 
+    /** The provider registered under the given id, if any. */
     public static synchronized Optional<ISpeedLimitProvider> get(ResourceLocation id) {
         return Optional.ofNullable(PROVIDERS.get(id));
     }
@@ -57,6 +58,7 @@ public final class SpeedLimitProviderRegistry {
         return List.copyOf(PROVIDERS.keySet());
     }
 
+    /** Whether no provider is registered. */
     public static synchronized boolean isEmpty() {
         return PROVIDERS.isEmpty();
     }

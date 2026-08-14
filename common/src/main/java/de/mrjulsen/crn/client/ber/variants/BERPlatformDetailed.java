@@ -126,7 +126,7 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
                 continue;
             }
             lineTexts.add(CustomLanguage
-                .translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.information_about_train", entry.displayName())
+                .translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.information_about_train", entry.displayName(CallDirection.DEPARTURE))
                 .append(TextUtils.text(": "))
                 .append(TextUtils.concat(TextUtils.text(" - "), content)));
         }

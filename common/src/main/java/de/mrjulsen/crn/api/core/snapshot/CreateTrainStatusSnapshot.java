@@ -6,6 +6,22 @@ import com.simibubi.create.content.trains.entity.TrainStatus;
 import com.simibubi.create.content.trains.schedule.ScheduleRuntime;
 import com.simibubi.create.content.trains.station.GlobalStation;
 
+/**
+ * A plain data view of the status Create keeps for a train: its schedule, navigation and problems.
+ *
+ * @param navigationFailed      Whether the train could not find a way to its destination.
+ * @param trackProblem          Whether the train has reported a problem with the track.
+ * @param conductorMissing      Whether the train is missing a conductor it needs.
+ * @param stalled               Whether any carriage cannot move.
+ * @param hasSchedule           Whether the train is running a schedule.
+ * @param paused                Whether the schedule is paused.
+ * @param completed             Whether the schedule has run to its end.
+ * @param scheduleState         The schedule runtime's state, or {@code null} if it has no schedule.
+ * @param title                 The schedule title in force now, or {@code null}.
+ * @param destination           The name of the station the train is heading for, or {@code null}.
+ * @param distanceToDestination How far the train still has to travel, in blocks.
+ * @param waitingForSignal      Whether the train is being held at a signal.
+ */
 public record CreateTrainStatusSnapshot(
         boolean navigationFailed,
         boolean trackProblem,

@@ -2,6 +2,7 @@ package de.mrjulsen.crn.api.core;
 
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.api.core.query.*;
@@ -38,143 +39,112 @@ import de.mrjulsen.mcdragonlib.util.DLColor;
 import net.minecraft.resources.ResourceLocation;
 
 /**
- * Read access to the train data backend. This is the entry point for addons; the classes behind it
- * are internal and may change between versions.
+ * The entry point for reading the train data backend. Everything behind it is internal and may
+ * change between versions.
  *
  * <h2>Return values</h2>
- * Every query returns an immutable snapshot of the state at the moment of the call. Snapshots are
- * never updated afterwards, so a caller that needs current data must query again. Queries that
- * cannot answer return an empty {@link Optional} or an empty list rather than {@code null}.
+ * Every query returns an immutable snapshot of the state at the moment it was called. A snapshot is
+ * never updated afterwards, so query again for fresh data. A query that cannot answer returns an
+ * empty {@link Optional} or an empty list, never {@code null}.
  *
  * <h2>Time</h2>
- * All times and durations in this API are game ticks on the backend's own time base, which is the
- * world time adjusted by the configured time settings. Use {@link #getCurrentTime()} to obtain a value
- * comparable to the timestamps in the returned snapshots; do not mix them with raw level times.
+ * Every time and duration is measured in game ticks on the backend's own time base, the world time
+ * adjusted by the configured time settings. Compare snapshot timestamps against {@link #getCurrentTime()}
+ * rather than against the raw world time.
  *
  * <h2>Filtering</h2>
- * Queries that <em>list</em> trains, calls or stops omit blacklisted trains, blacklisted stations
- * and trains whose data is not yet reliable, so their results are safe to display publicly. Queries
- * that look up a single object <em>by id</em> do not filter, so a caller that already knows which
- * train it wants always gets it.
+ * A query that lists things leaves out blacklisted trains and stations and trains whose data is not
+ * yet reliable, so its results are safe to show publicly. A query that looks a single thing up by its
+ * id does no such filtering, so a caller that already knows what it wants always gets it.
  *
  * <h2>Threading</h2>
- * Queries may be called from any thread. A single returned snapshot is internally consistent, but
- * two snapshots obtained from separate calls may not be, because the backend can update in between.
- * Prefer one {@link JourneySnapshot} over assembling a run from individual stop queries.
+ * Queries may be called from any thread. A single snapshot is consistent in itself, but two snapshots
+ * from separate calls need not agree, since the backend can update in between. Prefer one
+ * {@link JourneySnapshot} over piecing a run together from separate stop queries.
  *
  * <h2>Availability</h2>
- * The backend exists only while a server is running. Check {@link #isActive()} before querying;
- * otherwise queries return empty results.
+ * The backend exists only while a server is running. Check {@link #isActive()} first; otherwise
+ * queries return empty results.
  */
 public final class RailwayBackendApi {
 
     private RailwayBackendApi() {}
 
+    /** Whether a server is running and the backend is available to answer queries. */
     public static boolean isActive() {
         return RailwayBackend.isActive();
     }
 
+    /**
+     * The current time on the backend's own time base. Compare snapshot timestamps against this value
+     * rather than against the raw world time.
+     */
     public static long getCurrentTime() {
         return ModUtils.getTransformedWorldTime();
     }
 
-    public synchronized static List<TrainSnapshot> getAllTrains() {
+    /** Every train fit to be shown publicly. */
+    public static synchronized List<TrainSnapshot> getAllTrains() {
         return getTrackedTrains().map(TrainSnapshot::of).toList();
     }
 
-    public synchronized static List<TrainSnapshot> getTrains(TrainQuery query) {
+    /** The trains matching the given query. */
+    public static synchronized List<TrainSnapshot> getTrains(TrainQuery query) {
         return getTrains(query, x -> true);
     }
 
-    public synchronized static List<TrainSnapshot> getTrains(TrainQuery query, Predicate<TrainSnapshot> filter) {
+    /**
+     * The trains matching the given query, narrowed further by a filter on the finished snapshot for
+     * conditions the query cannot express.
+     */
+    public static synchronized List<TrainSnapshot> getTrains(TrainQuery query, Predicate<TrainSnapshot> filter) {
         List<TrainSnapshot> trains = new ArrayList<>(TrainManager.getInstance().getAllTrains().size());
         for (TrackedTrain train : TrainManager.getInstance().getAllTrains()) {
-            if (!query.accept(train))
+            if (!query.accept(train)) {
                 continue;
-
+            }
             TrainSnapshot snapshot = TrainSnapshot.of(train);
-            if (!filter.test(snapshot))
-                continue;
-
-            trains.add(snapshot);
+            if (filter.test(snapshot)) {
+                trains.add(snapshot);
+            }
         }
         return trains;
     }
 
-    public synchronized static Optional<TrainSnapshot> getTrain(UUID trainId) {
+    /** One train by its id, whether or not it would be shown publicly, if it is being tracked. */
+    public static synchronized Optional<TrainSnapshot> getTrain(UUID trainId) {
         return TrainManager.getInstance().getTrain(trainId).map(TrainSnapshot::of);
     }
 
+    /** How many trains the backend is tracking, including those hidden from public display. */
     public static int getTrackedTrainCount() {
         return TrainManager.getInstance().getAllTrains().size();
     }
 
+    /** The full run of one train, stop by stop, if it is being tracked. */
     public static Optional<JourneySnapshot> getJourney(UUID trainId) {
         return TrainManager.getInstance().getTrain(trainId).map(JourneySnapshot::of);
     }
 
+    /**
+     * The run of one train as it will fall a number of whole schedule cycles from now. Meaningful only
+     * for a repeating schedule; the run is returned unchanged where it cannot be projected.
+     */
     public static Optional<JourneySnapshot> getJourneyIn(UUID trainId, int cycles) {
         return getJourney(trainId).map(x -> x.advancedBy(cycles));
     }
 
-    public static Optional<SectionSnapshot> getCurrentSection(UUID trainId) {
-        return getJourney(trainId).flatMap(JourneySnapshot::currentSection);
-    }
-
-    public static Optional<StopSnapshot> getCurrentStop(UUID trainId) {
-        return getJourney(trainId).flatMap(JourneySnapshot::currentStop);
-    }
-
-    public static Optional<StopSnapshot> getNextStop(UUID trainId) {
-        return getJourney(trainId).flatMap(JourneySnapshot::nextStop);
-    }
-
-    public static List<StopSnapshot> getPassedStops(UUID trainId) {
-        return getJourney(trainId).map(JourneySnapshot::passedStops).orElse(List.of());
-    }
-
-    public static List<StopSnapshot> getUpcomingStops(UUID trainId) {
-        return getJourney(trainId).map(JourneySnapshot::upcomingStops).orElse(List.of());
-    }
-
-    public static List<StopSnapshot> getRecentStops(UUID trainId) {
-        return getJourney(trainId).map(JourneySnapshot::recentStops).orElse(List.of());
-    }
-
-    public static Optional<StopSnapshot> getPreviousCallAt(UUID trainId, String stationName) {
-        List<StopSnapshot> stops = getPassedStops(trainId);
-        for (int i = stops.size() - 1; i >= 0; i--) {
-            StopSnapshot stop = stops.get(i);
-            if (TrainUtils.stationMatches(stop.stationName(), stationName)) {
-                return Optional.of(stop);
-            }
-        }
-        return Optional.empty();
-    }
-
-    public static Optional<StopSnapshot> getNextCallAt(UUID trainId, String stationName) {
-        List<StopSnapshot> stops = getPassedStops(trainId);
-        for (StopSnapshot stop : stops) {
-            if (TrainUtils.stationMatches(stop.stationName(), stationName)) {
-                return Optional.of(stop);
-            }
-        }
-        return Optional.empty();
-    }
-
-    public static Optional<StopSnapshot> getNextCallAt(UUID trainId, String stationName, long notBefore) {
-        return getJourney(trainId).flatMap(x -> x.nextCallAt(stationName, notBefore));
-    }
-
-
+    /** Where one train is and how fast it is going, if it is being tracked. */
     public static Optional<TrainPositionSnapshot> getPosition(UUID trainId) {
         return TrainManager.getInstance().getTrain(trainId).map(x -> TrainPositionSnapshot.of(x.getTrain(), x.getExitSide()));
     }
 
+    /** The positions of every train fit to be shown publicly. */
     public static List<TrainPositionSnapshot> getAllPositions() {
         return getAllPositions(TrainPositionQuery.all());
     }
 
+    /** The positions of the trains matching the given query. */
     public static List<TrainPositionSnapshot> getAllPositions(TrainPositionQuery query) {
         return getTrackedTrains()
                 .map(x -> TrainPositionSnapshot.of(x.getTrain(), x.getExitSide()))
@@ -182,10 +152,16 @@ public final class RailwayBackendApi {
                 .toList();
     }
 
+    /** What one train is made of, carriage by carriage, if it is being tracked. */
     public static Optional<TrainCompositionSnapshot> getComposition(UUID trainId) {
         return TrainManager.getInstance().getTrain(trainId).map(x -> TrainCompositionSnapshot.of(x.getTrain()));
     }
 
+    /**
+     * The projected speed of one train over the stretch ahead. The horizon is the distance to look
+     * ahead in blocks; pass a value of zero or less to use the train's remaining distance to its
+     * destination.
+     */
     public static SpeedProfileSnapshot getSpeedProfile(UUID trainId, double horizon) {
         return TrainManager.getInstance().getTrain(trainId).map(tracked -> {
             var train = tracked.getTrain();
@@ -198,10 +174,12 @@ public final class RailwayBackendApi {
         }).orElse(SpeedProfileSnapshot.NONE);
     }
 
+    /** Why one train is late or out of service, and by how much, if it is being tracked. */
     public static Optional<DelayReport> getDelayReport(UUID trainId) {
         return TrainManager.getInstance().getTrain(trainId).map(DelayReport::of);
     }
 
+    /** A report for every train that is currently running late or out of service. */
     public static List<DelayReport> getDisruptions() {
         return getTrackedTrains()
             .filter(x -> x.isDelayed() || x.isCancelled())
@@ -209,44 +187,60 @@ public final class RailwayBackendApi {
             .toList();
     }
 
+    /**
+     * Reports an external reason for a train's delay, which the backend takes into account until it
+     * expires after the given number of ticks. Returns whether the train was found and the reason
+     * recorded.
+     */
     public static boolean reportDelay(UUID trainId, ResourceLocation causeId, long expiresInTicks, DelayArgument... args) {
         return ExternalDelayReports.report(trainId, causeId, expiresInTicks, -1, args);
     }
 
+    /**
+     * Withdraws a reason previously reported through {@link #reportDelay}. Returns whether such a
+     * reason was in force.
+     */
     public static boolean withdrawDelay(UUID trainId, ResourceLocation causeId) {
         return ExternalDelayReports.withdraw(trainId, causeId);
     }
 
+    /** The calls at a station, ordered by arrival, as a board would show them. */
     public static List<BoardEntry> getBoard(String stationName, BoardQuery query) {
-        return buildBoard(TrainManager.getInstance().getCallIndex().callsAt(stationName, query.includeDivertedAway()), query, Comparator.comparingLong(BoardEntry::realtimeArrival));
+        return buildBoard(TrainManager.getInstance().getCallIndex().callsAt(stationName, query.includeDivertedAway()), query, Comparator.comparingLong(x -> x.realtime().arrival()));
     }
 
+    /** The calls at every station covered by a tag, ordered by arrival, as one shared board. */
     public static List<BoardEntry> getBoard(StationTag stationTag, BoardQuery query) {
-        return buildBoard(TrainManager.getInstance().getCallIndex().callsAt(stationTag, query.includeDivertedAway()), query, Comparator.comparingLong(BoardEntry::realtimeArrival));
+        return buildBoard(TrainManager.getInstance().getCallIndex().callsAt(stationTag, query.includeDivertedAway()), query, Comparator.comparingLong(x -> x.realtime().arrival()));
     }
 
+    /** The same as {@link #getBoard(StationTag, BoardQuery)}, looking up the tag by its id. */
     public static List<BoardEntry> getBoard(UUID stationTagId, BoardQuery query) {
         return GlobalSettings.getInstance().getStationTag(stationTagId)
             .map(tag -> getBoard(tag, query))
             .orElse(List.of());
     }
 
+    /** The next train to arrive at a station, if any is expected. */
     public static Optional<BoardEntry> getNextArrival(String stationName, BoardQuery query) {
-        return buildBoard(TrainManager.getInstance().getCallIndex().callsAt(stationName, query.includeDivertedAway()), query.withLimit(1), Comparator.comparingLong(BoardEntry::realtimeArrival))
+        return buildBoard(TrainManager.getInstance().getCallIndex().callsAt(stationName, query.includeDivertedAway()), query.withLimit(1), Comparator.comparingLong(x -> x.realtime().arrival()))
                 .stream()
                 .findFirst();
     }
 
+    /** The next train to depart from a station, if any is expected. */
     public static Optional<BoardEntry> getNextDeparture(String stationName, BoardQuery query) {
-        return buildBoard(TrainManager.getInstance().getCallIndex().callsAt(stationName, query.includeDivertedAway()), query.withLimit(1), Comparator.comparingLong(BoardEntry::realtimeDeparture))
+        return buildBoard(TrainManager.getInstance().getCallIndex().callsAt(stationName, query.includeDivertedAway()), query.withLimit(1), Comparator.comparingLong(x -> x.realtime().departure()))
                 .stream()
                 .findFirst();
     }
 
+    /** The names of every station the backend knows about. */
     public static Set<String> getKnownStations() {
         return TrainUtils.getAllStationNames();
     }
 
+    /** What is known about one station, if a station of that name exists. */
     public static Optional<StationSnapshot> getStation(String stationName) {
         if (stationName == null || !TrainUtils.getAllStationNames().contains(stationName)) {
             return Optional.empty();
@@ -254,10 +248,12 @@ public final class RailwayBackendApi {
         return Optional.of(buildStation(stationName));
     }
 
+    /** Every station, in name order. */
     public static List<StationSnapshot> getAllStations() {
         return getAllStations(StationQuery.all());
     }
 
+    /** The stations matching the given query, in name order. */
     public static List<StationSnapshot> getAllStations(StationQuery query) {
         List<StationSnapshot> stations = new ArrayList<>(TrainUtils.getAllStationNames().size());
         for (String station : TrainUtils.getAllStationNames()) {
@@ -270,26 +266,27 @@ public final class RailwayBackendApi {
         return stations;
     }
 
-    public static StationRef getStationRef(String stationName) {
-        return StationRef.of(stationName);
-    }
-
+    /** Every station tag configured on the server. */
     public static List<StationTag> getAllStationTags() {
         return GlobalSettings.getInstance().getAllStationTags();
     }
 
+    /** One station tag by its id, if it exists. */
     public static Optional<StationTag> getStationTag(UUID stationTagId) {
         return GlobalSettings.getInstance().getStationTag(stationTagId);
     }
 
+    /** One line together with the trains working it, if a line with that id exists. */
     public static Optional<LineSnapshot> getLine(UUID lineId) {
         return GlobalSettings.getInstance().getTrainLine(lineId).map(RailwayBackendApi::buildLine);
     }
 
+    /** Every line together with the trains working it. */
     public static List<LineSnapshot> getAllLines() {
         return getAllLines(LineQuery.all());
     }
 
+    /** The lines matching the given query. */
     public static List<LineSnapshot> getAllLines(LineQuery query) {
         return GlobalSettings.getInstance().getAllTrainLines()
                 .stream()
@@ -298,14 +295,17 @@ public final class RailwayBackendApi {
                 .toList();
     }
 
+    /** One category together with the trains running under it, if a category with that id exists. */
     public static Optional<CategorySnapshot> getCategory(UUID categoryId) {
         return GlobalSettings.getInstance().getTrainCategory(categoryId).map(RailwayBackendApi::buildCategory);
     }
 
+    /** Every category together with the trains running under it. */
     public static List<CategorySnapshot> getAllCategories() {
         return getAllCategories(CategoryQuery.all());
     }
 
+    /** The categories matching the given query. */
     public static List<CategorySnapshot> getAllCategories(CategoryQuery query) {
         return GlobalSettings.getInstance().getAllTrainCategories()
                 .stream()
@@ -314,6 +314,11 @@ public final class RailwayBackendApi {
                 .toList();
     }
 
+    /**
+     * When a train last departed from a station, chosen by how the departure should relate to a given
+     * train: the same line, the same category, the same name, or any train at all. Returns
+     * {@link DepartureLog#NEVER} where no such departure has been recorded.
+     */
     public static long getLastDepartureTime(String stationFilter, ETrainFilter filter, UUID trainId, String trainName) {
         DepartureLog log = TrainManager.getInstance().getDepartureLog();
         return switch (filter) {
@@ -332,6 +337,7 @@ public final class RailwayBackendApi {
         return TrainManager.getInstance().getTrain(trainId).flatMap(TrackedTrain::getCurrentSection);
     }
 
+    /** Summary figures about the departures recorded at a station, such as how punctual they run. */
     public static DepartureStats getDepartureStats(String stationName) {
         GlobalSettings settings = GlobalSettings.getInstance();
         return TrainManager.getInstance().getDepartureLog().getStats(stationName,
@@ -339,19 +345,29 @@ public final class RailwayBackendApi {
             categoryId -> settings.getTrainCategory(categoryId).map(TrainCategory::getCategoryName).orElse(null));
     }
 
+    /** Registers a listener to be notified of backend events. */
     public static void addListener(RailwayBackendListener listener) {
         RailwayBackendEvents.register(listener);
     }
 
+    /** Removes a previously registered listener. Returns whether it was registered. */
     public static boolean removeListener(RailwayBackendListener listener) {
         return RailwayBackendEvents.unregister(listener);
     }
 
+    /**
+     * The live tracking object behind a train. This exposes backend internals that are not part of
+     * the stable snapshot contract and may change between versions; prefer the snapshot queries where
+     * they suffice.
+     */
     public static Optional<TrackedTrain> getTrackedTrain(UUID trainId) {
         return TrainManager.getInstance().getTrain(trainId);
     }
 
-
+    /**
+     * The colour a service should be shown in: its line's colour where set, otherwise its category's,
+     * otherwise a neutral default.
+     */
     public static DLColor getServiceColor(LineRef line, TrainCategoryRef category) {
         if (line != null && !line.color().isTransparent()) {
             return line.color();
@@ -363,14 +379,7 @@ public final class RailwayBackendApi {
     }
 
 
-
-
-
-    /*
-     * ############# INTERNAL #############
-     */
-
-    private static java.util.stream.Stream<TrackedTrain> getTrackedTrains() {
+    private static Stream<TrackedTrain> getTrackedTrains() {
         return TrainManager.getInstance().getAllTrains().stream()
             .filter(x -> x.isReportable() && !x.isBlacklisted());
     }
@@ -407,7 +416,7 @@ public final class RailwayBackendApi {
                 continue;
             }
             BoardEntry entry = BoardEntry.of(train, stop).atOrAfter(query.fromTime(), train.getTotalDuration());
-            if (!query.acceptsTime(entry.realtimeDeparture())) {
+            if (!query.acceptsTime(entry.realtime().departure())) {
                 continue;
             }
             if (query.accepts(entry)) {

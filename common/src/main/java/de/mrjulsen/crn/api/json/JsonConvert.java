@@ -10,6 +10,11 @@ import de.mrjulsen.mcdragonlib.util.DLColor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 
+/**
+ * Converts API objects to and from JSON. Field names become snake_case, and the Minecraft types the
+ * snapshots carry ({@link ResourceLocation}, {@link DLColor}, {@link BlockPos}) are written as plain
+ * values rather than as their nested object form.
+ */
 public final class JsonConvert {
 
     private static final Gson GSON = builder().create();

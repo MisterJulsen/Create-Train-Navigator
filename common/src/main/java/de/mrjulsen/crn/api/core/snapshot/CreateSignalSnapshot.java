@@ -11,6 +11,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * A plain data view of one of Create's signals, taken straight from the track network.
+ *
+ * @param id             The signal's id.
+ * @param edgeLocation   The two track nodes of the edge the signal sits on.
+ * @param position       How far along that edge the signal sits.
+ * @param dimension      The dimension the signal is in.
+ * @param types          The signal type on each side of the boundary.
+ * @param groups         The id of the signal group on each side of the boundary.
+ * @param states         The current signal state on each side of the boundary.
+ * @param blockPositions The block positions of the signal's parts in the world.
+ */
 public record CreateSignalSnapshot(
         @ResponseAlwaysInclude UUID id,
         TrackNodeLocationSnapshot[] edgeLocation,
@@ -41,6 +53,7 @@ public record CreateSignalSnapshot(
         );
     }
 
+    /** The dimension the signal sits in, or {@code null} if it cannot be determined. */
     public static ResourceLocation dimensionOf(SignalBoundary signal) {
         if (signal.edgeLocation == null || signal.edgeLocation.getFirst() == null) {
             return null;

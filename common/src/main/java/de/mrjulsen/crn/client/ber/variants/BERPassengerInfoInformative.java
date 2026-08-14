@@ -7,6 +7,7 @@ import org.joml.Vector3f;
 
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.api.core.CallDirection;
 import de.mrjulsen.crn.api.core.snapshot.BoardEntry;
 import de.mrjulsen.crn.api.core.snapshot.StopSnapshot;
 import de.mrjulsen.crn.api.core.snapshot.TrainSnapshot;
@@ -500,7 +501,7 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
                         }
 
                         float pX = scheduledTimeLabel.x.get() + scheduledTimeLabel.getRenderedWidth() + 1 + (realTimeLabel == null ? 0 : realTimeLabel.getRenderedWidth() + 1);
-                        trainNameLabel.text.set(TextUtils.text(stop.displayName()));
+                        trainNameLabel.text.set(TextUtils.text(stop.displayName(CallDirection.DEPARTURE)));
                         trainNameLabel.position.set(Point.of(pX, 7.5f + k * 1.7f));
                         trainNameLabel.preferredWidth.set(6f);
                         trainNameLabel.color.set(getDisplaySettings(blockEntity).getFontColor());

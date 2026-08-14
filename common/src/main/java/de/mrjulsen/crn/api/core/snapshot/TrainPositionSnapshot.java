@@ -54,7 +54,19 @@ public record TrainPositionSnapshot(
     TrainExitSide exitSide
 ) {
 
-    /** A snapshot for a train whose whereabouts cannot be determined. */
+    private static final String NBT_TRAIN_ID = "TrainId";
+    private static final String NBT_DIMENSION = "Dimension";
+    private static final String NBT_POSITION = "Position";
+    private static final String NBT_DIMENSIONS = "Dimensions";
+    private static final String NBT_SPEED = "Speed";
+    private static final String NBT_TARGET_SPEED = "TargetSpeed";
+    private static final String NBT_MAX_SPEED = "MaxSpeed";
+    private static final String NBT_THROTTLE = "Throttle";
+    private static final String NBT_BACKWARDS = "Backwards";
+    private static final String NBT_DISTANCE = "DistanceToNextStop";
+    private static final String NBT_EXIT_SIDE = "ExitSide";
+
+    /** A placeholder for a train whose whereabouts cannot be determined. */
     public static TrainPositionSnapshot unknown(UUID trainId) {
         return new TrainPositionSnapshot(trainId, null, null, List.of(), 0, 0, 0, 0, false, -1, TrainExitSide.UNKNOWN);
     }
@@ -149,16 +161,4 @@ public record TrainPositionSnapshot(
             TrainExitSide.getFromByte(nbt.getByte(NBT_EXIT_SIDE))
         );
     }
-
-    private static final String NBT_TRAIN_ID = "TrainId";
-    private static final String NBT_DIMENSION = "Dimension";
-    private static final String NBT_POSITION = "Position";
-    private static final String NBT_DIMENSIONS = "Dimensions";
-    private static final String NBT_SPEED = "Speed";
-    private static final String NBT_TARGET_SPEED = "TargetSpeed";
-    private static final String NBT_MAX_SPEED = "MaxSpeed";
-    private static final String NBT_THROTTLE = "Throttle";
-    private static final String NBT_BACKWARDS = "Backwards";
-    private static final String NBT_DISTANCE = "DistanceToNextStop";
-    private static final String NBT_EXIT_SIDE = "ExitSide";
 }

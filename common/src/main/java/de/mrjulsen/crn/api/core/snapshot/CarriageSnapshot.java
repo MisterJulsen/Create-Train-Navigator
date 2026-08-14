@@ -41,6 +41,17 @@ public record CarriageSnapshot(
     boolean inMultipleDimensions
 ) {
 
+    private static final String NBT_INDEX = "Index";
+    private static final String NBT_LENGTH = "LengthBlocks";
+    private static final String NBT_TWO_BOGEYS = "OnTwoBogeys";
+    private static final String NBT_DIMENSION = "Dimension";
+    private static final String NBT_POSITION = "Position";
+    private static final String NBT_BLOCKED = "Blocked";
+    private static final String NBT_STALLED = "Stalled";
+    private static final String NBT_CONDUCTOR = "HasConductor";
+    private static final String NBT_STORAGE = "HasStorage";
+    private static final String NBT_MULTI_DIMENSION = "InMultipleDimensions";
+
     public static CarriageSnapshot of(Carriage carriage, int index) {
         ResourceLocation dimension = null;
         BlockPos position = null;
@@ -104,15 +115,4 @@ public record CarriageSnapshot(
             nbt.getBoolean(NBT_MULTI_DIMENSION)
         );
     }
-
-    private static final String NBT_INDEX = "Index";
-    private static final String NBT_LENGTH = "LengthBlocks";
-    private static final String NBT_TWO_BOGEYS = "OnTwoBogeys";
-    private static final String NBT_DIMENSION = "Dimension";
-    private static final String NBT_POSITION = "Position";
-    private static final String NBT_BLOCKED = "Blocked";
-    private static final String NBT_STALLED = "Stalled";
-    private static final String NBT_CONDUCTOR = "HasConductor";
-    private static final String NBT_STORAGE = "HasStorage";
-    private static final String NBT_MULTI_DIMENSION = "InMultipleDimensions";
 }

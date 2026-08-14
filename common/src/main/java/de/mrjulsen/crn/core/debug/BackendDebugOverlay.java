@@ -9,6 +9,7 @@ import org.lwjgl.glfw.GLFW;
 
 import de.mrjulsen.crn.core.RailwayBackend;
 import de.mrjulsen.crn.core.TrainManager;
+import de.mrjulsen.crn.api.core.CallDirection;
 import de.mrjulsen.crn.api.core.snapshot.BoardEntry;
 import de.mrjulsen.crn.api.core.query.BoardQuery;
 import de.mrjulsen.crn.api.core.RailwayBackendApi;
@@ -237,9 +238,9 @@ public class BackendDebugOverlay extends DLWindow {
                 drawLine(graphics, TextUtils.text("   (none)").withStyle(ChatFormatting.DARK_GRAY));
             }
             for (BoardEntry entry : board) {
-                drawLine(graphics, TextUtils.text("   " + fit(entry.displayName(), 20)
+                drawLine(graphics, TextUtils.text("   " + fit(entry.displayName(CallDirection.DEPARTURE), 20)
                     + " -> " + fit(entry.destinationText(), 24)
-                    + "  dep " + rel(entry.realtimeDeparture(), now)
+                    + "  dep " + rel(entry.realtime().departure(), now)
                     + (entry.isDelayed() ? " (+" + entry.departureDeviation() + ")" : "")
                 ).withStyle(entry.isDelayed() ? ChatFormatting.RED : ChatFormatting.GREEN));
             }

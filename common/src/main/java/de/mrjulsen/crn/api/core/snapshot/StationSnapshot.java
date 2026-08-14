@@ -46,6 +46,7 @@ public record StationSnapshot(
         trainIds = trainIds == null ? Set.of() : Set.copyOf(trainIds);
     }
 
+    /** The station's own name. */
     public String name() {
         return station.name();
     }
@@ -55,6 +56,7 @@ public record StationSnapshot(
         return !trainIds.isEmpty();
     }
 
+    /** Whether the station belongs to at least one tag. */
     public boolean isTagged() {
         return !tags.isEmpty();
     }

@@ -36,22 +36,27 @@ public record CategorySnapshot(
         lines = lines == null ? List.of() : List.copyOf(lines);
     }
 
+    /** The category's id. */
     public UUID id() {
         return category.id();
     }
 
+    /** The category's name. */
     public String name() {
         return category.name();
     }
 
+    /** How many trains are currently running under this category. */
     public int trainCount() {
         return trainIds.size();
     }
 
+    /** Whether any train is currently running under this category. */
     public boolean isOperating() {
         return !trainIds.isEmpty();
     }
 
+    /** Whether any of those trains is running late. */
     public boolean hasDelays() {
         return delayedTrains > 0;
     }

@@ -166,6 +166,10 @@ public record JourneySnapshot(
         return currentStopIndex <= 0 ? List.of() : stops.subList(0, currentStopIndex);
     }
 
+    /**
+     * The stops the train has most recently departed from, newest first, going back through the run
+     * and wrapping around on a cyclic one. Only stops it has actually called at are included.
+     */
     public List<StopSnapshot> recentStops() {
         if (stops.isEmpty() || currentStopIndex < 0) {
             return List.of();
@@ -420,6 +424,23 @@ public record JourneySnapshot(
             }
         }
         return Optional.ofNullable(best);
+    }
+
+    /**
+     * The train's most recent call at the given station among the stops it has already left behind
+     * on this run, or empty where it has not called there yet.
+     *
+     * @param stationNameOrFilter A station name, or a filter using the schedule's wildcard syntax.
+     */
+    public Optional<StopSnapshot> previousCallAt(String stationNameOrFilter) {
+        List<StopSnapshot> passed = passedStops();
+        for (int i = passed.size() - 1; i >= 0; i--) {
+            StopSnapshot stop = passed.get(i);
+            if (stop.station().matches(stationNameOrFilter)) {
+                return Optional.of(stop);
+            }
+        }
+        return Optional.empty();
     }
 
     /**

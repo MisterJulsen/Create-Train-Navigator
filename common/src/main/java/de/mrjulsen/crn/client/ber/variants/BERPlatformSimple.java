@@ -90,9 +90,9 @@ public class BERPlatformSimple implements AbstractAdvancedDisplayRenderer<Platfo
             String platform = x.station().platform();
             MutableComponent text = TextUtils.empty();
             if (platform == null || platform.isBlank()) {
-                text.append(CustomLanguage.translate(keyTrainDeparture, x.displayName(), x.destinationText(), timeString));
+                text.append(CustomLanguage.translate(keyTrainDeparture, x.displayName(CallDirection.DEPARTURE), x.destinationText(), timeString));
             } else {
-                text.append(CustomLanguage.translate(keyTrainDepartureWithPlatform, x.displayName(), x.destinationText(), timeString, platform));
+                text.append(CustomLanguage.translate(keyTrainDepartureWithPlatform, x.displayName(CallDirection.DEPARTURE), x.destinationText(), timeString, platform));
             }
 
             if (x.isCancelled()) {

@@ -37,22 +37,27 @@ public record LineSnapshot(
         stations = stations == null ? List.of() : List.copyOf(stations);
     }
 
+    /** The line's id. */
     public UUID id() {
         return line.id();
     }
 
+    /** The line's name. */
     public String name() {
         return line.name();
     }
 
+    /** How many trains are currently working this line. */
     public int trainCount() {
         return trainIds.size();
     }
 
+    /** Whether any train is currently working this line. */
     public boolean isOperating() {
         return !trainIds.isEmpty();
     }
 
+    /** Whether any of those trains is running late. */
     public boolean hasDelays() {
         return delayedTrains > 0;
     }

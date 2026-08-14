@@ -38,6 +38,7 @@ public record TrainCategoryRef(UUID id, String name, DLColor color) {
         return id != null;
     }
 
+    /** Whether the category has a name of its own. */
     public boolean hasName() {
         return !name.isBlank();
     }

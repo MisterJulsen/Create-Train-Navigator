@@ -32,8 +32,8 @@ public class TrainJourneyStopEndpoint implements IEndpointHandler {
 
         JourneySnapshot journey = TrainManager.getInstance().getTrain(trainId).map(JourneySnapshot::of).orElseThrow();
         Optional<StopSnapshot> stop = switch (timeline) {
-            case PREVIOUS -> station.map(q -> RailwayBackendApi.getPreviousCallAt(trainId, q)).orElse(journey.lastStop());
-            case NEXT -> station.map(q -> RailwayBackendApi.getNextCallAt(trainId, q)).orElse(journey.nextStop());
+            case PREVIOUS -> station.map(journey::previousCallAt).orElse(journey.lastStop());
+            case NEXT -> station.map(q -> journey.nextCallAt(q, RailwayBackendApi.getCurrentTime())).orElse(journey.nextStop());
             default -> journey.currentStop();
         };
         return Response.json(stop.orElse(null));

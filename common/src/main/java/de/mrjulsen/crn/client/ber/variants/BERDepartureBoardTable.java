@@ -179,7 +179,7 @@ public class BERDepartureBoardTable implements AbstractAdvancedDisplayRenderer<D
         if (singleTrain) {
             return Optional.ofNullable(TextUtils.concat(content));
         }
-        return Optional.of(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.information_about_train", data.displayName())
+        return Optional.of(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.information_about_train", data.displayName(CallDirection.DEPARTURE))
             .append(": ")
             .append(TextUtils.concat(TextUtils.text(" - "), content))
         );

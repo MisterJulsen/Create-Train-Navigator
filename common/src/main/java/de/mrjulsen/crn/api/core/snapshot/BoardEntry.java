@@ -226,10 +226,12 @@ public record BoardEntry(
         return title.isBlank() ? destination.displayName() : title;
     }
 
+    /** Whether the train departs under a named line. */
     public boolean hasLine() {
         return line.isKnown();
     }
 
+    /** Whether the train departs under a named category. */
     public boolean hasCategory() {
         return category.isKnown();
     }
@@ -244,11 +246,6 @@ public record BoardEntry(
         return direction.isArrival() ? arrivalCategory : category;
     }
 
-    /** The name to show for the departing service. */
-    public String displayName() {
-        return displayName(CallDirection.DEPARTURE);
-    }
-
     /**
      * The name to show on the chosen side of the call: the line name where it has one, otherwise
      * the train's own name.
@@ -256,11 +253,6 @@ public record BoardEntry(
     public String displayName(CallDirection direction) {
         LineRef serving = line(direction);
         return serving.nameOr(trainName);
-    }
-
-    /** The colour to show the departing service in. */
-    public DLColor displayColor() {
-        return displayColor(CallDirection.DEPARTURE);
     }
 
     /** The colour to show the chosen side of the call in, taken from its line or category. */
@@ -312,16 +304,6 @@ public record BoardEntry(
     /** Whether the train is out of service because of a disruption. */
     public boolean isCancelled() {
         return serviceState == ServiceState.DISRUPTED;
-    }
-
-    /** The projected arrival time. */
-    public long realtimeArrival() {
-        return realtime.arrival();
-    }
-
-    /** The projected departure time. */
-    public long realtimeDeparture() {
-        return realtime.departure();
     }
 
     /** Whether any stations are served onward from here. */

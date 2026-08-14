@@ -33,10 +33,12 @@ public record SpeedProfileSnapshot(
         segments = segments == null ? List.of() : List.copyOf(segments);
     }
 
+    /** Whether the profile holds no restrictions. */
     public boolean isEmpty() {
         return segments.isEmpty();
     }
 
+    /** Whether a travel time could be estimated. */
     public boolean hasEstimate() {
         return estimatedTicks > NO_ESTIMATE;
     }

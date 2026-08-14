@@ -49,6 +49,7 @@ public record SpeedLimitSegment(
         return new SpeedLimitSegment(startDistance, speedLimit, kind, source, descriptionKey);
     }
 
+    /** Whether a reason is named for this restriction. */
     public boolean hasDescription() {
         return descriptionKey != null && !descriptionKey.isBlank();
     }

@@ -3,6 +3,7 @@ package de.mrjulsen.crn.client.gui.overlay.pages;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.mrjulsen.crn.api.core.CallDirection;
 import de.mrjulsen.crn.api.core.snapshot.BoardEntry;
 import de.mrjulsen.crn.client.journey.JourneyTracker;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
@@ -97,7 +98,7 @@ public class NextConnectionsPage extends AbstractRouteDetailsPage {
             Component departureTimeText = TextUtils.text(RouteOverviewPage.clockTime(entry.scheduled().departure()));
 
             GuiUtils.drawString(graphics, font, 5, y, departureTimeText, DLColor.fromInt(0xFFDBDBDB), ETextAlignment.LEFT, false);
-            GuiUtils.drawString(graphics, font, 5 + timeWidth + spacing, y, TextUtils.truncateWithEllipsis(font, TextUtils.text(entry.displayName()), trainNameWidth), DLColor.fromInt(0xFFDBDBDB), ETextAlignment.LEFT, false);
+            GuiUtils.drawString(graphics, font, 5 + timeWidth + spacing, y, TextUtils.truncateWithEllipsis(font, TextUtils.text(entry.displayName(CallDirection.DEPARTURE)), trainNameWidth), DLColor.fromInt(0xFFDBDBDB), ETextAlignment.LEFT, false);
             GuiUtils.drawString(graphics, font, width() - 5, y, platform, DLColor.fromInt(0xFFDBDBDB), ETextAlignment.RIGHT, false);
             int terminusWidth = width() - 10 - timeWidth - trainNameWidth - spacing * 3 - font.width(platform);
             GuiUtils.drawString(graphics, font, 5 + timeWidth + trainNameWidth + spacing * 2, y, TextUtils.truncateWithEllipsis(font, TextUtils.text(entry.destinationText()), terminusWidth), DLColor.fromInt(0xFFDBDBDB), ETextAlignment.LEFT, false);

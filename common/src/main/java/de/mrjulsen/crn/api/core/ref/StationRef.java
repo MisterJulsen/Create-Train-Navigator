@@ -59,6 +59,7 @@ public record StationRef(String name, String tagName, UUID tagId, StationInfo in
         );
     }
 
+    /** Whether the station belongs to a tag. */
     public boolean hasTag() {
         return !tagName.isBlank();
     }
@@ -73,6 +74,7 @@ public record StationRef(String name, String tagName, UUID tagId, StationInfo in
         return info.platform();
     }
 
+    /** Whether a platform is configured for this station. */
     public boolean hasPlatform() {
         return info.isPlatformKnown();
     }

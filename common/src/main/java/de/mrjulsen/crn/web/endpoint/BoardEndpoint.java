@@ -17,7 +17,7 @@ public class BoardEndpoint implements IEndpointHandler {
         BoardQuery query = QueryBinder.bind(request, () -> BoardQuery.defaults().withDuplicates(true));
 
         List<BoardEntry> entries = new ArrayList<>(RailwayBackendApi.getBoard(station, query));
-        entries.sort(Comparator.comparingLong(BoardEntry::realtimeArrival));
+        entries.sort(Comparator.comparingLong(x -> x.realtime().arrival()));
         return Response.json(entries);
     }
 }

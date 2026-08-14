@@ -4,6 +4,11 @@ import com.simibubi.create.content.trains.entity.Train;
 import com.simibubi.create.content.trains.graph.TrackEdge;
 import com.simibubi.create.content.trains.signal.TrackEdgePoint;
 
+/**
+ * Implemented by a track point that makes the stretch of track it sits on costlier for the
+ * pathfinder, so trains route around it where they can. The penalty is added into Create's own path
+ * cost, and may depend on the train so that a point applies to some trains only.
+ */
 public interface INavigationPenaltyProvider {
 
     /**
