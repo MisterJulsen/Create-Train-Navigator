@@ -365,7 +365,7 @@ public final class RailwayBackendApi {
     }
 
     /**
-     * The colour a service should be shown in: its line's colour where set, otherwise its category's,
+     * The color a service should be shown in: its line's color where set, otherwise its category's,
      * otherwise a neutral default.
      */
     public static DLColor getServiceColor(LineRef line, TrainCategoryRef category) {
