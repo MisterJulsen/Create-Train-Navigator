@@ -2,6 +2,8 @@ package de.mrjulsen.crn.core;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -17,16 +19,19 @@ import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import dev.architectury.event.events.common.LifecycleEvent;
 import dev.architectury.event.events.common.TickEvent;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.storage.LevelResource;
 
 public final class RailwayBackend {
 
-    private static final String FILENAME = CreateRailwaysNavigator.MOD_ID + "_backend.nbt";
+    private static final String FILENAME = CreateRailwaysNavigator.MOD_ID + "_train_data.nbt";
     private static final String WORKER_THREAD_NAME = "CRN Railway Backend";
+    private static final String SAVE_THREAD_NAME = "CRN Railway Backend Save";
     private static final int FULL_UPDATE_INTERVAL = 100;
     private static final long WORKER_SHUTDOWN_TIMEOUT_SECONDS = 10;
+    private static final long SAVE_SHUTDOWN_TIMEOUT_SECONDS = 30;
     private static final long REGULAR_TIME_ADVANCE = 1;
     private static final long TIME_JUMP_LOG_THRESHOLD = 40;
 
@@ -36,6 +41,7 @@ public final class RailwayBackend {
     private static long lastRawWorldTime = Long.MIN_VALUE;
 
     private static ExecutorService worker;
+    private static ExecutorService saveExecutor;
 
     private static final AtomicBoolean fullUpdateRunning = new AtomicBoolean(false);
 
@@ -69,7 +75,7 @@ public final class RailwayBackend {
                 manager.loadNbt(NbtIo.readCompressed(file));
             }
         } catch (Exception e) {
-            CreateRailwaysNavigator.LOGGER.error("[Backend] Unable to load backend data.", e);
+            CreateRailwaysNavigator.LOGGER.error("[{}] Unable to load backend data.", WORKER_THREAD_NAME, e);
         }
 
         shutdownWorker();
@@ -80,9 +86,16 @@ public final class RailwayBackend {
         });
         fullUpdateRunning.set(false);
 
+        shutdownSaveExecutor();
+        saveExecutor = Executors.newSingleThreadExecutor(task -> {
+            Thread thread = new Thread(task, SAVE_THREAD_NAME);
+            thread.setDaemon(true);
+            return thread;
+        });
+
         active = true;
         manager.synchronizeWithWorld();
-        CreateRailwaysNavigator.LOGGER.info("[Backend] Train data backend started.");
+        CreateRailwaysNavigator.LOGGER.info("[{}] Train data backend started.", WORKER_THREAD_NAME);
     }
 
     private static void stop() {
@@ -91,15 +104,16 @@ public final class RailwayBackend {
         }
         active = false;
         shutdownWorker();
+        shutdownSaveExecutor();
 
-        writeData();
+        writeFinal();
         BackendDiagnosticsRecorder.stop();
         ExternalDelayReports.clear();
         StationLookup.invalidate();
         RailwayBackendEvents.clear();
         server = null;
         TrainManager.closeInstance();
-        CreateRailwaysNavigator.LOGGER.info("[Backend] Train data backend stopped.");
+        CreateRailwaysNavigator.LOGGER.info("[{}] Train data backend stopped.", WORKER_THREAD_NAME);
     }
 
     private static void shutdownWorker() {
@@ -109,7 +123,7 @@ public final class RailwayBackend {
         worker.shutdown();
         try {
             if (!worker.awaitTermination(WORKER_SHUTDOWN_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
-                CreateRailwaysNavigator.LOGGER.warn("[Backend] Full update did not finish in time and was abandoned.");
+                CreateRailwaysNavigator.LOGGER.warn("[{}] Full update did not finish in time and was abandoned.", WORKER_THREAD_NAME);
                 worker.shutdownNow();
             }
         } catch (InterruptedException e) {
@@ -118,6 +132,23 @@ public final class RailwayBackend {
         }
         worker = null;
         fullUpdateRunning.set(false);
+    }
+
+    private static void shutdownSaveExecutor() {
+        if (saveExecutor == null) {
+            return;
+        }
+        saveExecutor.shutdown();
+        try {
+            if (!saveExecutor.awaitTermination(SAVE_SHUTDOWN_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
+                CreateRailwaysNavigator.LOGGER.warn("[{}] A background save did not finish in time.", WORKER_THREAD_NAME);
+                saveExecutor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            saveExecutor.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
+        saveExecutor = null;
     }
 
     private static void tick() {
@@ -149,7 +180,7 @@ public final class RailwayBackend {
             manager.prepareFullUpdate(now);
         } catch (Exception e) {
             fullUpdateRunning.set(false);
-            CreateRailwaysNavigator.LOGGER.error("[Backend] Preparation of the full update failed.", e);
+            CreateRailwaysNavigator.LOGGER.error("[{}] Preparation of the full update failed.", WORKER_THREAD_NAME, e);
             return;
         }
 
@@ -160,7 +191,7 @@ public final class RailwayBackend {
                     TimetableIndex.refreshIfWarm(now);
                     BackendDiagnosticsRecorder.recordSnapshot(manager.getAllTrains(), now);
                 } catch (Exception e) {
-                    CreateRailwaysNavigator.LOGGER.error("[Backend] Full update failed.", e);
+                    CreateRailwaysNavigator.LOGGER.error("[{}] Full update failed.", WORKER_THREAD_NAME, e);
                 } finally {
                     fullUpdateRunning.set(false);
                 }
@@ -180,9 +211,9 @@ public final class RailwayBackend {
                 if (diff != 0) {
                     TrainManager.getInstance().shiftTimes(diff);
                     if (Math.abs(diff) >= TIME_JUMP_LOG_THRESHOLD) {
-                        CreateRailwaysNavigator.LOGGER.info("[Backend] World time jumped by {} ticks. All timestamps have been corrected.", diff);
+                        CreateRailwaysNavigator.LOGGER.info("[{}] World time jumped by {} ticks. All timestamps have been corrected.", WORKER_THREAD_NAME, diff);
                     } else {
-                        CreateRailwaysNavigator.LOGGER.debug("[Backend] World time jumped by {} ticks. All timestamps have been corrected.", diff);
+                        CreateRailwaysNavigator.LOGGER.debug("[{}] World time jumped by {} ticks. All timestamps have been corrected.", WORKER_THREAD_NAME, diff);
                     }
                 }
             }
@@ -190,22 +221,36 @@ public final class RailwayBackend {
         lastRawWorldTime = rawNow;
     }
 
-    public static synchronized void save() {
-        if (!active) {
+    public static void save() {
+        if (!active || server == null) {
             return;
         }
-        writeData();
+        CompoundTag data = TrainManager.getInstance().toNbt();
+        File file = getDataFile();
+        ExecutorService executor = saveExecutor;
+        if (executor == null || executor.isShutdown()) {
+            writeData(data, file);
+            return;
+        }
+        executor.execute(() -> writeData(data, file));
     }
 
-    private static synchronized void writeData() {
+    private static void writeFinal() {
         if (server == null) {
             return;
         }
+        writeData(TrainManager.getInstance().toNbt(), getDataFile());
+    }
+
+    private static void writeData(CompoundTag data, File file) {
+        long ms = System.currentTimeMillis();
         try {
-            NbtIo.writeCompressed(TrainManager.getInstance().toNbt(), getDataFile());
-            CreateRailwaysNavigator.LOGGER.debug("[Backend] Saved backend data.");
+            File temp = new File(file.getParentFile(), file.getName() + ".tmp");
+            NbtIo.writeCompressed(data, temp);
+            Files.move(temp.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            CreateRailwaysNavigator.LOGGER.debug("[{}] Saved {} train backend data. Took {}ms.", WORKER_THREAD_NAME, CreateRailwaysNavigator.SHORT_MOD_ID, System.currentTimeMillis() - ms);
         } catch (IOException e) {
-            CreateRailwaysNavigator.LOGGER.error("[Backend] Unable to save backend data.", e);
+            CreateRailwaysNavigator.LOGGER.error("[{}] Unable to save {} train backend data. Took {}ms.", WORKER_THREAD_NAME, CreateRailwaysNavigator.SHORT_MOD_ID, System.currentTimeMillis() - ms, e);
         }
     }
 
