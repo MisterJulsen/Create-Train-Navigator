@@ -11,6 +11,7 @@ public final class MedianDurationTracker {
 
     private static final String NBT_REFERENCE = "Reference";
     private static final String NBT_HISTORY = "History";
+    private static final String NBT_SEEDED = "Seeded";
 
     private final int capacity;
     private final int threshold;
@@ -18,6 +19,7 @@ public final class MedianDurationTracker {
     private final ConcurrentLinkedDeque<Integer> history = new ConcurrentLinkedDeque<>();
     private volatile int reference = -1;
     private volatile int lastMeasurement = -1;
+    private volatile boolean seeded = false;
 
     private Runnable onReferenceChanged;
 
@@ -49,6 +51,7 @@ public final class MedianDurationTracker {
     public void seed(int estimatedDuration) {
         if (!isInitialized() && estimatedDuration >= 0) {
             this.reference = estimatedDuration;
+            this.seeded = true;
         }
     }
 
@@ -60,6 +63,18 @@ public final class MedianDurationTracker {
 
         if (reference < 0) {
             this.reference = measuredDuration;
+            return;
+        }
+
+        if (seeded) {
+            this.seeded = false;
+            history.clear();
+            if (measuredDuration != reference) {
+                this.reference = measuredDuration;
+                if (onReferenceChanged != null) {
+                    onReferenceChanged.run();
+                }
+            }
             return;
         }
 
@@ -88,6 +103,7 @@ public final class MedianDurationTracker {
     public synchronized void force(int duration) {
         this.reference = duration;
         this.lastMeasurement = duration;
+        this.seeded = false;
         history.clear();
         if (duration >= 0) {
             history.add(duration);
@@ -97,6 +113,7 @@ public final class MedianDurationTracker {
     public synchronized void reset() {
         this.reference = -1;
         this.lastMeasurement = -1;
+        this.seeded = false;
         history.clear();
     }
 
@@ -114,11 +131,13 @@ public final class MedianDurationTracker {
         CompoundTag nbt = new CompoundTag();
         nbt.putInt(NBT_REFERENCE, reference);
         nbt.putIntArray(NBT_HISTORY, history.stream().mapToInt(Integer::intValue).toArray());
+        nbt.putBoolean(NBT_SEEDED, seeded);
         return nbt;
     }
 
     public synchronized void loadNbt(CompoundTag nbt) {
         this.reference = nbt.contains(NBT_REFERENCE) ? nbt.getInt(NBT_REFERENCE) : -1;
+        this.seeded = nbt.getBoolean(NBT_SEEDED);
         history.clear();
         for (int value : nbt.getIntArray(NBT_HISTORY)) {
             if (history.size() >= capacity) break;

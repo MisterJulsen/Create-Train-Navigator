@@ -79,6 +79,7 @@ public final class TrackedTrain implements RealtimeTracker.Listener {
 
     private static final int EXIT_SIDE_RETRY_TICKS = 20;
     private static final int PLATFORM_WAIT_GRACE = 100;
+    private static final int MIN_LEG_TRANSIT_TICKS = 10;
 
     private volatile long platformWaitUntil = -1;
     private volatile String platformWaitOccupant = "";
@@ -540,7 +541,7 @@ public final class TrackedTrain implements RealtimeTracker.Listener {
                     return;
                 }
 
-                boolean countMeasurement = traveled && hasArrivedOnce && service.isActive();
+                boolean countMeasurement = traveled && hasArrivedOnce && service.isActive() && transitTicks >= MIN_LEG_TRANSIT_TICKS;
                 timing.recordArrival(now, transitTicks, countMeasurement);
                 BackendDiagnosticsRecorder.recordArrival(this, now, entryIndex, transitTicks, traveled);
 
