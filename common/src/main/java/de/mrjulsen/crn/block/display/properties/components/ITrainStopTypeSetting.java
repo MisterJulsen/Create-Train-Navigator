@@ -42,12 +42,12 @@ public interface ITrainStopTypeSetting {
             return name;
         }
 
-        public boolean showArrivals(boolean isTerminus) {
-            return this == ALL || this == ARRIVALS_ONLY || this == ARRIVALS_PREFERRED || (isTerminus && this == DEPARTURES_PREFERRED);
+        public boolean showArrivals(boolean isTerminus, boolean changesService) {
+            return this == ALL || this == ARRIVALS_ONLY || this == ARRIVALS_PREFERRED || ((isTerminus || changesService) && this == DEPARTURES_PREFERRED);
         }
 
-        public boolean showDepartures(boolean isStart) {
-            return this == ALL || this == DEPARTURES_ONLY || this == DEPARTURES_PREFERRED || (isStart && this == ARRIVALS_PREFERRED);
+        public boolean showDepartures(boolean isStart, boolean changesService) {
+            return this == ALL || this == DEPARTURES_ONLY || this == DEPARTURES_PREFERRED || ((isStart || changesService) && this == ARRIVALS_PREFERRED);
         }
 
         @Override
@@ -77,7 +77,7 @@ public interface ITrainStopTypeSetting {
 
     public static CallDirection resolveDirection(BoardEntry entry, ITrainStopTypeSetting settings) {
         ETrainStopType type = settings.getTrainStopType();
-        return resolveDirection(entry, type.showDepartures(entry.originating()), type.showArrivals(entry.terminus()));
+        return resolveDirection(entry, type.showDepartures(entry.originating(), entry.sectionChange()), type.showArrivals(entry.terminus(), entry.sectionChange()));
     }
 
     public static CallDirection resolveDirection(BoardEntry entry, boolean allowDepartures, boolean allowArrivals) {
@@ -87,8 +87,8 @@ public interface ITrainStopTypeSetting {
     }
 
     public static boolean shows(BoardEntry entry, ETrainStopType type) {
-        boolean showDeparture = type.showDepartures(entry.originating()) && !entry.terminus();
-        boolean showArrival = type.showArrivals(entry.terminus()) && !entry.originating();
+        boolean showDeparture = type.showDepartures(entry.originating(), entry.sectionChange()) && !entry.terminus();
+        boolean showArrival = type.showArrivals(entry.terminus(), entry.sectionChange()) && !entry.originating();
         return showArrival || showDeparture;
     }
 

@@ -61,6 +61,8 @@ import net.minecraft.nbt.CompoundTag;
  * @param sectionIndex     The section this call belongs to, or {@code -1}.
  * @param terminus         Whether the service ends here, so travellers must leave the train.
  * @param originating      Whether the service begins here.
+ * @param sectionChange    Whether the train changes section here, arriving as one service and
+ *                         departing as another, without the stop being a plain terminus or origin.
  * @param stopovers        The stations the train will serve onward from here, in order.
  * @param delays           Why the train is late or disrupted, most important first.
  */
@@ -86,6 +88,7 @@ public record BoardEntry(
     int sectionIndex,
     boolean terminus,
     boolean originating,
+    boolean sectionChange,
     List<StationRef> stopovers,
     List<DelayInstance> delays
 ) implements StationCall {
@@ -111,6 +114,7 @@ public record BoardEntry(
     private static final String NBT_SECTION_INDEX = "SectionIndex";
     private static final String NBT_TERMINUS = "Terminus";
     private static final String NBT_ORIGINATING = "Originating";
+    private static final String NBT_SECTION_CHANGE = "SectionChange";
     private static final String NBT_STOPOVERS = "Stopovers";
     private static final String NBT_DELAYS = "Delays";
 
@@ -161,6 +165,7 @@ public record BoardEntry(
             snapshot.sectionIndex(),
             journey.isTerminus(stop),
             journey.isOrigin(stop),
+            arrivalSection != null && arrivalSection != section,
             collectStopovers(train, stop, section),
             train.getActiveDelays()
         );
@@ -287,7 +292,7 @@ public record BoardEntry(
             arrivalLine, arrivalCategory, station, scheduledStation, origin, title, destination,
             CycleProjector.advancedBy(scheduled, cycleDuration, cycles),
             CycleProjector.advancedBy(realtime, cycleDuration, cycles),
-            serviceState, visitState, entryIndex, sectionIndex, terminus, originating, stopovers, delays);
+            serviceState, visitState, entryIndex, sectionIndex, terminus, originating, sectionChange, stopovers, delays);
     }
 
     /**
@@ -339,6 +344,7 @@ public record BoardEntry(
         nbt.putInt(NBT_SECTION_INDEX, sectionIndex);
         nbt.putBoolean(NBT_TERMINUS, terminus);
         nbt.putBoolean(NBT_ORIGINATING, originating);
+        nbt.putBoolean(NBT_SECTION_CHANGE, sectionChange);
         nbt.put(NBT_STOPOVERS, NbtHelper.writeList(stopovers, StationRef::toNbt));
         nbt.put(NBT_DELAYS, NbtHelper.writeList(delays, DelayInstance::toNbt));
         return nbt;
@@ -367,6 +373,7 @@ public record BoardEntry(
             nbt.getInt(NBT_SECTION_INDEX),
             nbt.getBoolean(NBT_TERMINUS),
             nbt.getBoolean(NBT_ORIGINATING),
+            nbt.getBoolean(NBT_SECTION_CHANGE),
             NbtHelper.readList(nbt, NBT_STOPOVERS, StationRef::fromNbt),
             NbtHelper.readList(nbt, NBT_DELAYS, DelayInstance::fromNbt)
         );
