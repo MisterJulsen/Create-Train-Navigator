@@ -174,16 +174,30 @@ public record RouteLeg(
     }
 
     private static List<Integer> sectionStopPositions(JourneySnapshot journey, int sectionIndex) {
-        List<Integer> positions = new ArrayList<>();
-        for (int i = 0; i < journey.stops().size(); i++) {
-            if (journey.stops().get(i).sectionIndex() == sectionIndex) {
-                positions.add(i);
-            }
-        }
+        List<Integer> positions = orderedSectionPositions(journey, sectionIndex);
         if (journey.section(sectionIndex).map(SectionSnapshot::includesNextSectionStart).orElse(false)) {
             nextSectionStart(journey, sectionIndex).ifPresent(positions::add);
         }
         return positions;
+    }
+
+    private static List<Integer> orderedSectionPositions(JourneySnapshot journey, int sectionIndex) {
+        int sectionEntry = journey.section(sectionIndex).map(SectionSnapshot::entryIndex).orElse(0);
+        List<Integer> main = new ArrayList<>();
+        List<Integer> wrapped = new ArrayList<>();
+        for (int i = 0; i < journey.stops().size(); i++) {
+            StopSnapshot stop = journey.stops().get(i);
+            if (stop.sectionIndex() != sectionIndex) {
+                continue;
+            }
+            if (stop.entryIndex() >= sectionEntry) {
+                main.add(i);
+            } else {
+                wrapped.add(i);
+            }
+        }
+        main.addAll(wrapped);
+        return main;
     }
 
     private static Optional<Integer> nextSectionStart(JourneySnapshot journey, int sectionIndex) {
@@ -194,12 +208,8 @@ public record RouteLeg(
             }
             next = 0;
         }
-        for (int i = 0; i < journey.stops().size(); i++) {
-            if (journey.stops().get(i).sectionIndex() == next) {
-                return Optional.of(i);
-            }
-        }
-        return Optional.empty();
+        List<Integer> positions = orderedSectionPositions(journey, next);
+        return positions.isEmpty() ? Optional.empty() : Optional.of(positions.get(0));
     }
 
     private static int runVisit(JourneySnapshot journey, int position, StopSnapshot stop) {

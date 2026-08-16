@@ -70,13 +70,29 @@ public final class JourneyParser {
             sectionMarkers.add(JourneySection.def());
         }
 
-        assignStops(stops, sectionMarkers, titleMarkers);
+        assignStops(stops, sectionMarkers, titleMarkers, schedule.cyclic);
 
         return new TrainJourney(train.id, schedule, stops, sectionMarkers, resetTimingEntries, schedule.cyclic, flexibleDwellTimes);
     }
 
-    private static void assignStops(List<JourneyStop> stops, List<JourneySection> sectionMarkers, List<TitleMarker> titleMarkers) {
-        for (JourneyStop stop : stops) {
+    private static void assignStops(List<JourneyStop> stops, List<JourneySection> sectionMarkers, List<TitleMarker> titleMarkers, boolean cyclic) {
+        if (stops.isEmpty()) {
+            return;
+        }
+
+        int startOffset = 0;
+        if (cyclic) {
+            int firstMarkerEntry = sectionMarkers.get(0).entryIndex();
+            for (int i = 0; i < stops.size(); i++) {
+                if (stops.get(i).entryIndex() >= firstMarkerEntry) {
+                    startOffset = i;
+                    break;
+                }
+            }
+        }
+
+        for (int k = 0; k < stops.size(); k++) {
+            JourneyStop stop = stops.get((startOffset + k) % stops.size());
             JourneySection selectedSection = sectionMarkers.get(sectionMarkers.size() - 1);
             for (JourneySection section : sectionMarkers) {
                 if (section.entryIndex() > stop.entryIndex()) {
