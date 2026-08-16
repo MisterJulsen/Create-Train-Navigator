@@ -12,7 +12,7 @@ public final class TimetableCalculator {
 
     private TimetableCalculator() {}
 
-    public static void projectRealtime(TrainJourney journey, Function<JourneyStop, StopTimings> timings, int currentEntry, boolean atStation, long now, int remainingTransitTicks) {
+    public static void projectRealtime(TrainJourney journey, Function<JourneyStop, StopTimings> timings, int currentEntry, boolean atStation, long now, int remainingTransitTicks, long separationHoldTicks) {
         if (journey.isEmpty()) {
             return;
         }
@@ -61,7 +61,7 @@ public final class TimetableCalculator {
             DepartureEstimator.Result estimate = DepartureEstimator.estimate(stop.getScheduleEntry(), arrival);
             long departure = resolveDeparture(timing, estimate, arrival) + residual;
             if (i == 0 && atStation) {
-                departure = Math.max(departure, now);
+                departure = Math.max(departure, now + Math.max(0, separationHoldTicks));
             }
             timing.setRealtime(new StopTimes(arrival, departure, estimate.minDeparture() + residual));
             time = departure;

@@ -25,6 +25,7 @@ public final class ExtendedStopCause extends DelayCause {
             return absent();
         }
         long normalStay = Math.max(timing.getScheduled().stayDuration(), timing.dwellDuration());
-        return ctx.dwellTicks() > normalStay + ctx.delayThreshold() ? present(ctx) : absent();
+        long projectedDwell = ctx.dwellTicks() + Math.max(0, ctx.separationHoldTicks());
+        return projectedDwell > normalStay + ctx.delayThreshold() ? present(ctx) : absent();
     }
 }

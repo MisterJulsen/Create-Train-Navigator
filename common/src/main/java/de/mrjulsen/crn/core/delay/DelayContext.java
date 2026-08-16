@@ -111,6 +111,11 @@ public final class DelayContext {
         return realtime().getDwellTicks();
     }
 
+    /** How much longer the train is known to be held for train separation, in ticks. */
+    public long separationHoldTicks() {
+        return train.getLiveSeparationHoldTicks();
+    }
+
     /** The names of the trains observed to be in the way. */
     public Set<String> blockingTrainNames() {
         if (blockingTrainNames == null) {

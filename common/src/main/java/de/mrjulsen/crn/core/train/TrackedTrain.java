@@ -351,12 +351,17 @@ public final class TrackedTrain implements RealtimeTracker.Listener {
             && train.runtime.state == ScheduleRuntime.State.POST_TRANSIT;
 
         int remainingTransit = 0;
+        long separationHold = 0;
         if (!atStation) {
             StopTimings currentTiming = journey.getCurrentStop(train.runtime.currentEntry).map(this::getTimings).orElse(null);
             if (currentTiming != null) {
                 int nonMovingTicks = realtime.getTotalSignalWaitTicks() + realtime.getStalledTicks() + realtime.getNoPathTicks();
                 remainingTransit = TimetableCalculator.estimateRemainingTransit(train, currentTiming, legKinematics, realtime.getTransitTicks(), nonMovingTicks);
             }
+        } else {
+            separationHold = journey.getCurrentStop(train.runtime.currentEntry)
+                .map(stop -> TrainSeparationCondition.remainingHoldTicks(train, stop.getScheduleEntry()))
+                .orElse(0L);
         }
 
         return new LiveUpdateState(
@@ -364,7 +369,8 @@ public final class TrackedTrain implements RealtimeTracker.Listener {
             ServiceState.IN_SERVICE,
             train.runtime.currentEntry,
             atStation,
-            remainingTransit
+            remainingTransit,
+            separationHold
         );
     }
 
@@ -384,7 +390,7 @@ public final class TrackedTrain implements RealtimeTracker.Listener {
             }
             this.reportable = true;
 
-            TimetableCalculator.projectRealtime(journey, this::getTimings, live.currentEntry(), live.atStation(), now, live.remainingTransitTicks());
+            TimetableCalculator.projectRealtime(journey, this::getTimings, live.currentEntry(), live.atStation(), now, live.remainingTransitTicks(), live.separationHoldTicks());
 
             updateLifecycle();
             updateTimetable(now);
@@ -667,6 +673,10 @@ public final class TrackedTrain implements RealtimeTracker.Listener {
         return getCurrentStop()
             .map(stop -> TrainSeparationCondition.remainingHoldTicks(train, stop.getScheduleEntry()))
             .orElse(0L);
+    }
+
+    public long getLiveSeparationHoldTicks() {
+        return liveUpdateState.separationHoldTicks();
     }
 
     @Override
