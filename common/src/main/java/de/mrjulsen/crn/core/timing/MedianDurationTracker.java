@@ -55,6 +55,12 @@ public final class MedianDurationTracker {
         }
     }
 
+    public void reseed(int estimatedDuration) {
+        if (seeded && estimatedDuration >= 0) {
+            this.reference = estimatedDuration;
+        }
+    }
+
     public synchronized void record(int measuredDuration) {
         if (measuredDuration < 0) {
             return;

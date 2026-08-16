@@ -18,6 +18,7 @@ import com.google.gson.JsonObject;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.core.RailwayBackend;
+import de.mrjulsen.crn.core.timing.LegKinematics;
 import de.mrjulsen.crn.core.train.TrackedTrain;
 import de.mrjulsen.crn.core.delay.DelayInstance;
 import de.mrjulsen.crn.core.realtime.RealtimeTracker;
@@ -121,6 +122,14 @@ public final class BackendDiagnosticsRecorder {
         live.addProperty("signalWaitTicks", rt.getTotalSignalWaitTicks());
         UUID signalId = rt.getCurrentSignalId();
         live.addProperty("currentSignalId", signalId == null ? null : signalId.toString());
+        LegKinematics kin = train.getLegKinematics();
+        if (kin != null && train.getTrain().navigation != null && train.getTrain().navigation.destination != null) {
+            double dtd = train.getTrain().navigation.distanceToDestination;
+            live.addProperty("distanceToDestination", dtd);
+            live.addProperty("physicsLegLength", kin.length());
+            live.addProperty("physicsTotalTicks", kin.totalTicks());
+            live.addProperty("physicsRemainingTicks", kin.remainingTicks(dtd));
+        }
         root.add("live", live);
 
         JsonArray delays = new JsonArray();
@@ -161,6 +170,9 @@ public final class BackendDiagnosticsRecorder {
         json.addProperty("departureDeviation", timing.getDepartureDeviation());
         json.addProperty("legReference", timing.legDuration().get());
         json.addProperty("legLastMeasurement", timing.legDuration().lastMeasurement());
+        json.addProperty("legWaitReference", timing.legWait().get());
+        json.addProperty("legWaitLastMeasurement", timing.legWait().lastMeasurement());
+        json.addProperty("scheduledWaitTicks", timing.scheduledWaitTicks());
 
         JsonArray history = new JsonArray();
         for (int value : timing.legDuration().getHistory()) {

@@ -22,6 +22,7 @@ public class ModCommonConfig {
     public static final ForgeConfigSpec.ConfigValue<Integer> DISRUPTION_DISPLAY_DURATION_DERAILED;
     public static final ForgeConfigSpec.ConfigValue<Integer> TRANSFER_COST;
     public static final ForgeConfigSpec.ConfigValue<Integer> TOTAL_DURATION_DEVIATION_THRESHOLD;
+    public static final ForgeConfigSpec.ConfigValue<Boolean> SCHEDULE_INCLUDES_WAITING;
     public static final ForgeConfigSpec.ConfigValue<Boolean> CUSTOM_TRANSIT_TIME_CALCULATION;
     public static final ForgeConfigSpec.ConfigValue<Boolean> USE_CREATE_TRANSIT_TIMES_ON_INIT;
     public static final ForgeConfigSpec.ConfigValue<Boolean> EXCLUDE_TRAINS;
@@ -77,6 +78,8 @@ public class ModCommonConfig {
             .defineInRange("train_data_calculation.total_duration_deviation_threshold", 50, 0, 1000);
         SCHEDULE_DEVIATION_THRESHOLD = BUILDER.comment(new String[] {"[in Ticks]", "How many ticks the real-time can deviate from the scheduled time before the train is considered delayed. (Default: 500)"})
             .defineInRange("train_data_calculation.schedule_deviation_threshold", 500, 100, 24000);
+        SCHEDULE_INCLUDES_WAITING = BUILDER.comment(new String[] {"When on, the schedule budgets the typical total waiting each route section incurs (signals, congestion) in addition to the pure driving time. A train that only waits as much as usual then counts as on time, and only unusual waiting shows up as a delay - this matches how the schedule behaved before the backend rewrite and is usually what players expect on busy networks.", "When off, the schedule is the ideal unobstructed run and any waiting at all shows up as a delay (more honest, but stricter).", "Either way the live arrival prediction stays based on the physical free-flow time; this only affects what counts as 'on time'. (Default: ON)"})
+            .define("train_data_calculation.schedule_includes_waiting", true);
         AUTO_RESET_TIMINGS = BUILDER.comment(new String[] {"[In Cycles]", "(ONLY WORKS FOR TRAINS WITH DYNAMIC DELAYS! Trains without dynamic delays do this every new schedule section by default.)", " ", "Every X cycles the scheduled times are updated to the current real-time data. (Default: 2; Disabled: 0)"})
             .defineInRange("train_data_calculation.auto_reset_timings", 2, 0, Integer.MAX_VALUE);
 

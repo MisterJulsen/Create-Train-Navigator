@@ -51,8 +51,9 @@ public final class TimetableCalculator {
                     chainBroken = true;
                     continue;
                 }
-                arrival = time + leg;
-                nominalArrival = nominalTime + leg;
+                int legWithWait = leg + timing.scheduledWaitTicks();
+                arrival = time + legWithWait;
+                nominalArrival = nominalTime + legWithWait;
             }
 
             int residual = timing.dwellResidualTicks();
@@ -84,26 +85,38 @@ public final class TimetableCalculator {
     private static final double LIVE_CLAMP_LOWER = 0.5;
     private static final double LIVE_CLAMP_UPPER = 2.0;
 
-    /**
-     * Estimates how many ticks the train still needs to reach the next stop. Unlike the downstream
-     * legs (which chain over the learned durations), the current leg is anchored to the train's
-     * remaining path distance so the ETA tracks the train's real progress instead of counting a
-     * learned duration down at a fixed rate. The learned leg duration calibrates that anchor; Create's
-     * own {@code distanceStartedAt}/{@code distanceToDestination} give the remaining fraction of this
-     * exact run (correct across reroutes), and the live speed profile brackets the result so an
-     * unusually fast run or a temporary speed sign still shows through.
-     */
-    public static int estimateRemainingTransit(Train train, StopTimings timing, int elapsedTransitTicks, int nonMovingTicks) {
+    public static int estimateRemainingTransit(Train train, StopTimings timing, LegKinematics kinematics, int elapsedTransitTicks, int nonMovingTicks) {
         if (train.navigation == null) {
             return 0;
         }
 
+        int freeFlowRemaining = estimateFreeFlowRemaining(train, timing, kinematics, elapsedTransitTicks, nonMovingTicks);
+
+        // Give the live estimate the same waiting budget the schedule reserves for this leg, but spend
+        // it down as the train actually waits (wherever that happens). While the train still runs free
+        // the full budget keeps it on schedule instead of showing an early arrival for a wait it has not
+        // hit yet; once it has waited its usual amount the budget is gone and only extra waiting counts
+        // as a delay.
+        int waitBudget = Math.max(0, timing.scheduledWaitTicks() - nonMovingTicks);
+        return freeFlowRemaining + waitBudget;
+    }
+
+    private static int estimateFreeFlowRemaining(Train train, StopTimings timing, LegKinematics kinematics, int elapsedTransitTicks, int nonMovingTicks) {
         int leg = timing.legDuration().get();
         boolean navigating = train.navigation.destination != null;
         double remainingDistance = navigating ? train.navigation.distanceToDestination : -1;
-        double startDistance = train.navigation.distanceStartedAt;
+
+        if (navigating && kinematics != null && remainingDistance >= 0) {
+            int physicsRemaining = kinematics.remainingTicks(remainingDistance);
+            int physicsTotal = kinematics.totalTicks();
+            if (leg > 0 && physicsTotal > 0) {
+                return (int) Math.round((double) leg * physicsRemaining / physicsTotal);
+            }
+            return physicsRemaining;
+        }
 
         Integer live = estimateFromLiveConditions(train, remainingDistance);
+        double startDistance = train.navigation.distanceStartedAt;
 
         if (leg > 0 && navigating && startDistance > 0) {
             double fraction = Math.min(1.0, Math.max(0.0, remainingDistance / startDistance));
@@ -154,7 +167,7 @@ public final class TimetableCalculator {
             if (timing == null || !timing.legDuration().isInitialized()) {
                 return -1;
             }
-            total += timing.legDuration().get() + timing.getScheduled().stayDuration();
+            total += timing.legDuration().get() + timing.scheduledWaitTicks() + timing.getScheduled().stayDuration();
         }
         return total;
     }

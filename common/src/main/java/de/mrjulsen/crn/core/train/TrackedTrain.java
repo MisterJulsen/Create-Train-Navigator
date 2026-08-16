@@ -28,6 +28,7 @@ import de.mrjulsen.crn.core.schedule.JourneySection;
 import de.mrjulsen.crn.core.schedule.JourneyStop;
 import de.mrjulsen.crn.core.schedule.TrainJourney;
 import de.mrjulsen.crn.core.timing.DepartureEstimator;
+import de.mrjulsen.crn.core.timing.LegKinematics;
 import de.mrjulsen.crn.core.timing.StopTimes;
 import de.mrjulsen.crn.core.timing.StopTimings;
 import de.mrjulsen.crn.core.timing.TimetableCalculator;
@@ -35,8 +36,8 @@ import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.data.schedule.condition.TrainSeparationCondition;
 import de.mrjulsen.crn.data.settings.GlobalSettings;
 import de.mrjulsen.crn.data.TrainExitSide;
-import de.mrjulsen.crn.util.TrainUtils;
 import de.mrjulsen.crn.mixin.ScheduleRuntimeAccessor;
+import de.mrjulsen.crn.util.TrainUtils;
 import de.mrjulsen.crn.util.ModUtils;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -92,6 +93,9 @@ public final class TrackedTrain implements RealtimeTracker.Listener {
     private volatile boolean timetableDirty = false;
     private volatile boolean hasArrivedOnce = false;
 
+    private volatile LegKinematics legKinematics;
+    private volatile double legKinematicsAnchor = -1;
+
     public TrackedTrain(Train train, TrainManager owner) {
         this.train = train;
         this.owner = owner;
@@ -122,6 +126,10 @@ public final class TrackedTrain implements RealtimeTracker.Listener {
 
     public RealtimeTracker getRealtime() {
         return realtime;
+    }
+
+    public LegKinematics getLegKinematics() {
+        return legKinematics;
     }
 
     public TrainLifecycleState getLifecycleState() {
@@ -247,6 +255,20 @@ public final class TrackedTrain implements RealtimeTracker.Listener {
     public void tickLive(long now) {
         realtime.tick(train, this);
         updateExitSide();
+        updateLegKinematics();
+    }
+
+    private void updateLegKinematics() {
+        if (train.navigation == null || train.navigation.destination == null) {
+            return;
+        }
+        double anchor = train.navigation.distanceStartedAt;
+        if (anchor <= 0 || anchor == legKinematicsAnchor) {
+            return;
+        }
+        LegKinematics built = LegKinematics.build(train);
+        this.legKinematics = built;
+        this.legKinematicsAnchor = built != null ? anchor : -1;
     }
 
     public TrainExitSide getExitSide() {
@@ -333,7 +355,7 @@ public final class TrackedTrain implements RealtimeTracker.Listener {
             StopTimings currentTiming = journey.getCurrentStop(train.runtime.currentEntry).map(this::getTimings).orElse(null);
             if (currentTiming != null) {
                 int nonMovingTicks = realtime.getTotalSignalWaitTicks() + realtime.getStalledTicks() + realtime.getNoPathTicks();
-                remainingTransit = TimetableCalculator.estimateRemainingTransit(train, currentTiming, realtime.getTransitTicks(), nonMovingTicks);
+                remainingTransit = TimetableCalculator.estimateRemainingTransit(train, currentTiming, legKinematics, realtime.getTransitTicks(), nonMovingTicks);
             }
         }
 
@@ -431,7 +453,7 @@ public final class TrackedTrain implements RealtimeTracker.Listener {
     }
 
     private void ensureTimings() {
-        List<Integer> createEstimates = ((ScheduleRuntimeAccessor)train.runtime).crn$getTransitTicks();
+        List<Integer> createEstimates = ((ScheduleRuntimeAccessor) train.runtime).crn$getTransitTicks();
         for (JourneyStop stop : journey.getStops()) {
             StopTimings timing = timingsByEntry.computeIfAbsent(stop.entryIndex(), idx -> {
                 StopTimings created = new StopTimings(idx);
@@ -448,6 +470,18 @@ public final class TrackedTrain implements RealtimeTracker.Listener {
                     timing.legDuration().seed(estimate);
                 }
             }
+        }
+        seedCurrentLegFromPhysics();
+    }
+
+    private void seedCurrentLegFromPhysics() {
+        LegKinematics kin = this.legKinematics;
+        if (kin == null || train.runtime == null || kin.totalTicks() <= 0) {
+            return;
+        }
+        StopTimings current = timingsByEntry.get(train.runtime.currentEntry);
+        if (current != null) {
+            current.legDuration().reseed(kin.totalTicks());
         }
     }
 
@@ -542,7 +576,9 @@ public final class TrackedTrain implements RealtimeTracker.Listener {
                 }
 
                 boolean countMeasurement = traveled && hasArrivedOnce && service.isActive() && transitTicks >= MIN_LEG_TRANSIT_TICKS;
-                timing.recordArrival(now, transitTicks, countMeasurement);
+                int waitTicks = realtime.getTotalSignalWaitTicks() + realtime.getStalledTicks() + realtime.getNoPathTicks();
+                int freeFlowTicks = Math.max(0, transitTicks - waitTicks);
+                timing.recordArrival(now, freeFlowTicks, waitTicks, countMeasurement);
                 BackendDiagnosticsRecorder.recordArrival(this, now, entryIndex, transitTicks, traveled);
 
                 StopTimes current = timing.getRealtime();
