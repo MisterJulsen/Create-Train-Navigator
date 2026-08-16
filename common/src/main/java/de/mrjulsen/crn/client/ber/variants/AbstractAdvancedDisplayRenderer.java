@@ -14,6 +14,7 @@ import de.mrjulsen.crn.block.properties.ETimeDisplay;
 import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
 import de.mrjulsen.crn.client.ber.IBERRenderSubtype;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
+import de.mrjulsen.crn.core.delay.DelaySeverity;
 import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.util.DLColor;
 import de.mrjulsen.mcdragonlib.util.time.DLTime;
@@ -47,8 +48,7 @@ public interface AbstractAdvancedDisplayRenderer<T extends IDisplaySettings> ext
         }
 
         if (entry.isDelayed(direction)) {
-            boolean eta = blockEntity.getSettingsAs(ITimeDisplaySetting.class)
-                .map(x -> x.getTimeDisplay() == ETimeDisplay.ETA).orElse(false);
+            boolean eta = blockEntity.getSettingsAs(ITimeDisplaySetting.class).map(x -> x.getTimeDisplay() == ETimeDisplay.ETA).orElse(false);
             long deviation = entry.deviation(direction);
             String delay = eta
                 ? ModUtils.timeRemainingString(deviation)
@@ -67,7 +67,9 @@ public interface AbstractAdvancedDisplayRenderer<T extends IDisplaySettings> ext
         }
 
         for (DelayInstance cause : entry.delays()) {
-            content.add(CustomLanguage.translate(cause.translationKey()));
+            if (entry.isDelayed(direction) || cause.severity() != DelaySeverity.DELAY) {
+                content.add(CustomLanguage.translate(cause.translationKey()));
+            }
         }
         return content;
     }
