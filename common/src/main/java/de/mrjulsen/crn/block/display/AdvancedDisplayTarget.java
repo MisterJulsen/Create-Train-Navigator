@@ -1,5 +1,6 @@
 package de.mrjulsen.crn.block.display;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -18,6 +19,7 @@ import de.mrjulsen.crn.block.display.properties.StaticTextDisplaySettings;
 import de.mrjulsen.crn.block.display.properties.components.IShowTrainMultipleTimes;
 import de.mrjulsen.crn.block.display.properties.components.ITrainStopTypeSetting;
 import de.mrjulsen.crn.api.core.snapshot.BoardEntry;
+import de.mrjulsen.crn.api.core.CallDirection;
 import de.mrjulsen.crn.api.core.query.BoardQuery;
 import de.mrjulsen.crn.api.core.RailwayBackendApi;
 import de.mrjulsen.crn.data.settings.GlobalSettings;
@@ -99,7 +101,18 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 				if (advancedDisplaySource) {
 					String filter = context.sourceConfig().getString("Filter");
 
-					List<BoardEntry> preds = prepare(filter, controller.getDisplayProperties().platformDisplayTrainsCount().apply(controller), controller);
+					ITrainStopTypeSetting.ETrainStopType stopType = controller.getSettingsAs(ITrainStopTypeSetting.class)
+							.map(ITrainStopTypeSetting::getTrainStopType)
+							.orElse(ITrainStopTypeSetting.ETrainStopType.DEF_VALUE);
+
+					List<BoardEntry> preds = prepare(filter, controller.getDisplayProperties().platformDisplayTrainsCount().apply(controller), controller)
+							.stream()
+							.sorted(Comparator.comparingLong(entry -> {
+								CallDirection direction = ITrainStopTypeSetting.resolveDirection(entry, stopType.showDepartures(entry.originating(), entry.sectionChange()), stopType.showArrivals(entry.terminus(), entry.sectionChange()));
+								return entry.realtimeTime(direction);
+							}))
+							.toList();
+
 					controller.setData(
 							preds,
 							filter,
@@ -108,9 +121,7 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 					);
 					ModCommonEvents.getCurrentServer().ifPresent(x -> x.executeIfPossible(controller::notifyUpdate));
 				} else if (controller.getDisplayType().equals(ModDisplayTypes.SIMPLE_TEXT)) {
-					SimpleStaticTextDisplaySettings settings = controller
-							.getSettingsAs(SimpleStaticTextDisplaySettings.class)
-							.orElse(new SimpleStaticTextDisplaySettings());
+					SimpleStaticTextDisplaySettings settings = controller.getSettingsAs(SimpleStaticTextDisplaySettings.class).orElse(new SimpleStaticTextDisplaySettings());
 					settings.setStaticText(Component.Serializer.toJson((text.get(0))));
 					CreateRailwaysNavigator.LOGGER.debug(settings.getStaticText());
 					ModCommonEvents.getCurrentServer()
@@ -123,8 +134,7 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 						return;
 					}
 
-					StaticTextDisplaySettings settings = controller.getSettingsAs(StaticTextDisplaySettings.class)
-							.orElse(new StaticTextDisplaySettings());
+					StaticTextDisplaySettings settings = controller.getSettingsAs(StaticTextDisplaySettings.class).orElse(new StaticTextDisplaySettings());
 					for (int i = 0; i < controller.getYSize() * 3 - line - 1; i++) {
 						final int componentIndex = i + line;
 						if (i == 0)
@@ -135,14 +145,15 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 						while (componentIndex >= settings.getComponentsCount()) {
 							settings.addComponent(new StaticTextDisplaySettings.TextComponent("{\"text\":\"\"}"));
 						}
-						StaticTextDisplaySettings.TextComponent component = settings.getComponents()
-								.get(componentIndex);
+						StaticTextDisplaySettings.TextComponent component = settings.getComponents().get(componentIndex);
 						if (i >= text.size()) {
 							if (context.blockEntity().activeSource instanceof SingleLineDisplaySource)
 								break;
 							component.setStaticText("{\"text\":\"\"}");
-						} else
+						} else {
 							component.setStaticText(Component.Serializer.toJson(text.get(i)));
+						}
+
 						if (!component.shouldRetainScaleAndPos()) {
 							component.setTextAlignment(ETextAlignment.LEFT);
 							component.setXScale(0.4f);
@@ -185,8 +196,7 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 	public boolean isReserved(int line, BlockEntity target, DisplayLinkContext context) {
 		if (target instanceof AdvancedDisplayBlockEntity) {
 			AdvancedDisplayBlockEntity controller = (AdvancedDisplayBlockEntity) target;
-			if (controller.getDisplayType().equals(ModDisplayTypes.SIMPLE_TEXT)
-					|| controller.getDisplayType().equals(ModDisplayTypes.RICH_TEXT))
+			if (controller.getDisplayType().equals(ModDisplayTypes.SIMPLE_TEXT) || controller.getDisplayType().equals(ModDisplayTypes.RICH_TEXT))
 				return super.isReserved(line, target, context);
 			else
 				return true;
