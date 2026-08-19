@@ -356,9 +356,7 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
             trainNameLabel.color.set(getDisplaySettings(blockEntity).getFontColor());
         }
 
-        platformLabel.text.set(TextUtils.text(
-            blockEntity.isPlatformFixed() ? blockEntity.getStationInfo().platform() : stop.station().platform()
-        ).withStyle(ChatFormatting.BOLD));
+        platformLabel.text.set(TextUtils.text(getFocusPlatformLabelText(blockEntity, stop)).withStyle(ChatFormatting.BOLD));
 
 
         float x = 5 + Math.max(trainNameLabel.getRenderedWidth(), Math.max(timeLabel.getRenderedWidth(), realTimeLabel.getRenderedWidth()));
@@ -395,6 +393,15 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
         statusLabel.preferredWidth.set(w);
         statusLabel.horizontalScrollMode.set(EScrollMode.WHEN_NEEDED);
         statusLabel.color.set(DLColor.pickBasedOnBrightness(getDisplaySettings(blockEntity).getFontColor(), LIGHT_FONT_COLOR, DARK_FONT_COLOR, 0.5f));
+    }
+
+    private String getFocusPlatformLabelText(AdvancedDisplayBlockEntity blockEntity, BoardEntry stop) {
+        if (blockEntity.isPlatformFixed()) {
+            return blockEntity.getStationInfo().platform();
+        }
+        return blockEntity.isAllowedOnDisplay(stop.station())
+            ? stop.station().platform()
+            : stop.scheduledStation().platform();
     }
 
     private void updateTableContent(AdvancedDisplayBlockEntity blockEntity, BoardEntry stop, int index) {
