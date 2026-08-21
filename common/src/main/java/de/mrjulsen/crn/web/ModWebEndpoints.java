@@ -5,10 +5,10 @@ import de.mrjulsen.crn.core.navigator.Waypoint;
 import de.mrjulsen.crn.web.api.EndpointRegistry;
 import de.mrjulsen.crn.web.api.ParamType;
 import de.mrjulsen.crn.web.endpoint.*;
-import de.mrjulsen.crn.web.endpoint.create.AllSignalsEndpoint;
-import de.mrjulsen.crn.web.endpoint.create.AllStationsEndpoint;
-import de.mrjulsen.crn.web.endpoint.create.AllTracksEndpoint;
-import de.mrjulsen.crn.web.endpoint.create.AllTrainsEndpoint;
+import de.mrjulsen.crn.web.endpoint.StationEndpoint;
+import de.mrjulsen.crn.web.endpoint.TrainEndpoint;
+import de.mrjulsen.crn.web.endpoint.create.*;
+import de.mrjulsen.crn.web.endpoint.globalsettings.*;
 import de.mrjulsen.mcdragonlib.data.WorldLocation;
 
 public final class ModWebEndpoints {
@@ -54,11 +54,18 @@ public final class ModWebEndpoints {
         EndpointRegistry.registerGet("backend-stats", new TrainManagerStatsEndpoint());
 
         EndpointRegistry.registerGet("create/stations", new AllStationsEndpoint());
-        EndpointRegistry.registerGet("create/station/{id}", new de.mrjulsen.crn.web.endpoint.create.StationEndpoint());
+        EndpointRegistry.registerGet("create/station/{id}", new StationEndpoint());
         EndpointRegistry.registerGet("create/trains", new AllTrainsEndpoint());
-        EndpointRegistry.registerGet("create/train/{id}", new de.mrjulsen.crn.web.endpoint.create.TrainEndpoint());
+        EndpointRegistry.registerGet("create/train/{id}", new TrainEndpoint());
+        EndpointRegistry.registerGet("create/train/{id}/schedule", new TrainScheduleEndpoint());
         EndpointRegistry.registerGet("create/signals", new AllSignalsEndpoint());
-        EndpointRegistry.registerGet("create/signal/{id}", new de.mrjulsen.crn.web.endpoint.create.SignalEndpoint());
+        EndpointRegistry.registerGet("create/signal/{id}", new SignalEndpoint());
         EndpointRegistry.registerGet("create/tracks", new AllTracksEndpoint());
+
+        EndpointRegistry.registerGet("global-settings/blacklist/stations", new StationBlacklistEndpoint());
+        EndpointRegistry.registerGet("global-settings/blacklist/trains", new TrainBlacklistEndpoint());
+        EndpointRegistry.registerGet("global-settings/train-categories", new TrainCategoriesEndpoint());
+        EndpointRegistry.registerGet("global-settings/train-lines", new TrainLinesEndpoint());
+        EndpointRegistry.registerGet("global-settings/station-tags", new StationTagsEndpoint());
     }
 }

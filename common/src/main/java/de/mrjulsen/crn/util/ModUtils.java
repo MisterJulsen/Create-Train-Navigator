@@ -408,10 +408,16 @@ public class ModUtils {
     }
 
 
-
     public static <T, S> boolean listContains(Collection<T> searchFor, Collection<S> searchIn, BiPredicate<T, S> test) {
+        return listContains(searchFor, searchIn, true, false, test);
+    }
+
+    public static <T, S> boolean listContains(Collection<T> searchFor, Collection<S> searchIn, boolean ifSearchEmpty, boolean ifTargetEmpty, BiPredicate<T, S> test) {
         if (searchFor.isEmpty()) {
-            return true;
+            return ifSearchEmpty;
+        }
+        if (searchIn.isEmpty()) {
+            return ifTargetEmpty;
         }
 
         for (S s : searchIn) {
@@ -419,6 +425,23 @@ public class ModUtils {
                 if (test.test(t, s)) {
                     return true;
                 }
+            }
+        }
+        return false;
+    }
+
+    public static <T, S> boolean listContainsElement(T searchFor, Collection<S> searchIn, BiPredicate<T, S> test) {
+        return listContainsElement(searchFor, searchIn, false, test);
+    }
+
+    public static <T, S> boolean listContainsElement(T searchFor, Collection<S> searchIn, boolean ifTargetEmpty, BiPredicate<T, S> test) {
+        if (searchIn.isEmpty()) {
+            return ifTargetEmpty;
+        }
+
+        for (S s : searchIn) {
+            if (test.test(searchFor, s)) {
+                return true;
             }
         }
         return false;

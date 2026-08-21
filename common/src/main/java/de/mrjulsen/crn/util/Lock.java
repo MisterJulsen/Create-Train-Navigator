@@ -87,18 +87,17 @@ public class Lock {
     public static final String TRANSLATION_KEY_TRUSTED_PLAYERS = "gui." + CreateRailwaysNavigator.MOD_ID + ".lock.trusted_players";
     public static final String TRANSLATION_KEY_TRANSFER_OWNERSHIP = "gui." + CreateRailwaysNavigator.MOD_ID + ".lock.transfer_ownership";
 
-    private final MutableComponent charAllowed = TextUtils.text("\u2714").withStyle(ChatFormatting.GREEN);
-    private final MutableComponent charTrusted = TextUtils.text("\u2714").withStyle(ChatFormatting.GOLD);
-    private final MutableComponent charLocked = TextUtils.text("\u274C").withStyle(ChatFormatting.RED);
-
-    private final MutableComponent txtPermissions = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".lock.permissions");
-    private final MutableComponent txtRightClickOptions = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".lock.right_click_options").withStyle(ChatFormatting.DARK_GRAY).withStyle(ChatFormatting.ITALIC);
-    private final MutableComponent txtNoOwner = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".lock.no_owner");
-    private final String keyStatus = "gui." + CreateRailwaysNavigator.MOD_ID + ".lock.state";
-    private final String keyOwner = "gui." + CreateRailwaysNavigator.MOD_ID + ".lock.owners";
+    private transient final MutableComponent charAllowed = TextUtils.text("\u2714").withStyle(ChatFormatting.GREEN);
+    private transient final MutableComponent charTrusted = TextUtils.text("\u2714").withStyle(ChatFormatting.GOLD);
+    private transient final MutableComponent charLocked = TextUtils.text("\u274C").withStyle(ChatFormatting.RED);
+    private transient final MutableComponent txtPermissions = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".lock.permissions");
+    private transient final MutableComponent txtRightClickOptions = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".lock.right_click_options").withStyle(ChatFormatting.DARK_GRAY).withStyle(ChatFormatting.ITALIC);
+    private transient final MutableComponent txtNoOwner = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".lock.no_owner");
+    private transient final String keyStatus = "gui." + CreateRailwaysNavigator.MOD_ID + ".lock.state";
+    private transient final String keyOwner = "gui." + CreateRailwaysNavigator.MOD_ID + ".lock.owners";
 
     private Owner owner;
-    private LockState state = LockState.UNLOCKED;
+    private LockState state;
     private final Set<Owner> trusted = new HashSet<>();
 
 

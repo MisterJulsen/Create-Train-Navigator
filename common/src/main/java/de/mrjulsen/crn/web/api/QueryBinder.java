@@ -28,6 +28,10 @@ public final class QueryBinder {
     private QueryBinder() {}
 
     public static <T> T bind(Request request, Class<T> model) {
+        if (isRecordClass(model)) {
+            return bindRecord(request, model);
+        }
+
         Binding binding = analyze(model);
         int minParams = model.getAnnotation(QueryModel.class).requiredParams();
         int totalParams = (binding.factory() != null ? 1 : 0) + binding.refiners().size();
@@ -41,7 +45,7 @@ public final class QueryBinder {
             current = invoke(binding.factory(), null, seedArgument(request, binding.factory()));
             provided++;
         } else {
-            current = defaultInstance(model);
+            current = getDefaultInstance(model);
         }
         Applied applied = applyRefiners(request, current, binding.refiners());
         provided += applied.count();
@@ -99,12 +103,61 @@ public final class QueryBinder {
         return new Binding(factory, refiners);
     }
 
+    private static boolean isRecordClass(Class<?> model) {
+        if (!model.isRecord()) {
+            return false;
+        }
+        for (RecordComponent component : model.getRecordComponents()) {
+            if (component.isAnnotationPresent(QueryParam.class)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static <T> T bindRecord(Request request, Class<T> model) {
+        if (!model.isAnnotationPresent(QueryModel.class)) {
+            throw new IllegalStateException(model.getName() + " is not annotated with @QueryModel");
+        }
+
+        RecordComponent[] components = model.getRecordComponents();
+        Class<?>[] types = new Class<?>[components.length];
+        Object[] args = new Object[components.length];
+        int provided = 0;
+
+        for (int i = 0; i < components.length; i++) {
+            RecordComponent component = components[i];
+            types[i] = component.getType();
+            QueryParam param = component.getAnnotation(QueryParam.class);
+
+            if (param == null) {
+                args[i] = getDefaultValue(component.getType());
+                continue;
+            }
+            Object value = parseParam(request, component.getType(), component.getGenericType(), param);
+            if (value == SKIP) {
+                args[i] = getDefaultValue(component.getType());
+            } else {
+                args[i] = value;
+                provided++;
+            }
+        }
+
+        int minParams = model.getAnnotation(QueryModel.class).requiredParams();
+        if (provided < minParams) {
+            throw new BadRequestException("This query requires at least " + minParams + " query parameter(s), but " + provided + " were provided");
+        }
+        return buildInstance(model, types, args);
+    }
+
+
+
     private record Applied(Object instance, int count) {}
 
     private static Applied applyRefiners(Request request, Object current, List<Method> refiners) {
         int count = 0;
         for (Method refiner : refiners) {
-            Object argument = argument(request, refiner);
+            Object argument = getArg(request, refiner);
             if (argument != SKIP) {
                 current = invoke(refiner, current, argument);
                 count++;
@@ -114,21 +167,23 @@ public final class QueryBinder {
     }
 
     private static Object seedArgument(Request request, Method factory) {
-        Object argument = argument(request, factory);
+        Object argument = getArg(request, factory);
         if (argument == SKIP) {
             throw new BadRequestException("Missing required query parameter: " + factory.getAnnotation(QueryParam.class).value());
         }
         return argument;
     }
 
-    private static Object argument(Request request, Method method) {
-        QueryParam param = method.getAnnotation(QueryParam.class);
-        String name = param.value();
+    private static Object getArg(Request request, Method method) {
         Parameter parameter = method.getParameters()[0];
-        Class<?> type = parameter.getType();
+        return parseParam(request, parameter.getType(), parameter.getParameterizedType(), method.getAnnotation(QueryParam.class));
+    }
+
+    private static Object parseParam(Request request, Class<?> type, Type genericType, QueryParam param) {
+        String name = param.value();
 
         if (List.class.isAssignableFrom(type) || Set.class.isAssignableFrom(type)) {
-            Function<String, ?> parser = ParamType.forType(elementType(parameter));
+            Function<String, ?> parser = ParamType.forType(getElementType(genericType));
             List<?> values = param.required() ? request.requireValues(name, parser) : request.queryValues(name, parser);
             if (values.isEmpty()) {
                 return SKIP;
@@ -144,7 +199,7 @@ public final class QueryBinder {
         return value.isPresent() ? value.get() : SKIP;
     }
 
-    private static <T> T defaultInstance(Class<T> model) {
+    private static <T> T getDefaultInstance(Class<T> model) {
         if (!model.isRecord()) {
             throw new IllegalStateException("Query model without a static @RestQueryParam factory must be a record: " + model.getName());
         }
@@ -153,18 +208,22 @@ public final class QueryBinder {
         Object[] defaults = new Object[components.length];
         for (int i = 0; i < components.length; i++) {
             types[i] = components[i].getType();
-            defaults[i] = defaultValue(types[i]);
+            defaults[i] = getDefaultValue(types[i]);
         }
+        return buildInstance(model, types, defaults);
+    }
+
+    private static <T> T buildInstance(Class<T> model, Class<?>[] types, Object[] args) {
         try {
             Constructor<T> constructor = model.getDeclaredConstructor(types);
             constructor.setAccessible(true);
-            return constructor.newInstance(defaults);
+            return constructor.newInstance(args);
         } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("Failed to instantiate default " + model.getName(), e);
+            throw new IllegalStateException("Failed to instantiate " + model.getName(), e);
         }
     }
 
-    private static Object defaultValue(Class<?> type) {
+    private static Object getDefaultValue(Class<?> type) {
         if (type == boolean.class) {
             return false;
         }
@@ -201,12 +260,11 @@ public final class QueryBinder {
         return null;
     }
 
-    private static Class<?> elementType(Parameter parameter) {
-        Type generic = parameter.getParameterizedType();
+    private static Class<?> getElementType(Type generic) {
         if (generic instanceof ParameterizedType parameterized && parameterized.getActualTypeArguments()[0] instanceof Class<?> element) {
             return element;
         }
-        throw new IllegalStateException("Cannot resolve element type of " + parameter);
+        throw new IllegalStateException("Cannot resolve element type of " + generic);
     }
 
     private static Object invoke(Method method, Object target, Object argument) {

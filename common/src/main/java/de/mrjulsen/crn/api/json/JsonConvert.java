@@ -8,13 +8,10 @@ import com.google.gson.JsonElement;
 
 import de.mrjulsen.mcdragonlib.util.DLColor;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 
-/**
- * Converts API objects to and from JSON. Field names become snake_case, and the Minecraft types the
- * snapshots carry ({@link ResourceLocation}, {@link DLColor}, {@link BlockPos}) are written as plain
- * values rather than as their nested object form.
- */
 public final class JsonConvert {
 
     private static final Gson GSON = builder().create();
@@ -28,7 +25,9 @@ public final class JsonConvert {
             .serializeNulls()
             .registerTypeAdapter(ResourceLocation.class, new ResourceLocationAdapter())
             .registerTypeAdapter(DLColor.class, new DLColorAdapter())
-            .registerTypeAdapter(BlockPos.class, new BlockPosAdapter());
+            .registerTypeAdapter(BlockPos.class, new BlockPosAdapter())
+            .registerTypeAdapter(Component.class, new TextComponentAdapter())
+            .registerTypeAdapter(MutableComponent.class, new MutableTextComponentAdapter());
     }
 
     public static String toJson(Object value) {
@@ -51,10 +50,6 @@ public final class JsonConvert {
         return toSnakeCase(field.getName());
     }
 
-    /**
-     * Converts a Java field name to the snake_case form used in every JSON payload, so callers that
-     * work on the serialized tree (field selection, sorting) can match the names a client sees.
-     */
     public static String toSnakeCase(String name) {
         StringBuilder result = new StringBuilder(name.length() + 4);
         for (int i = 0; i < name.length(); i++) {
