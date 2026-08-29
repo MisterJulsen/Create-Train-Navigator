@@ -54,7 +54,7 @@ public record LineQuery(
     /** Whether the given line passes this query. */
     public boolean accept(LineSnapshot line) {
         return (stationFilter.isEmpty() || line.stations().stream().anyMatch(station -> TrainUtils.stationMatches(station.name(), stationFilter))) &&
-                ModUtils.listContains(stationTags, line.stations(), (id, v) -> v.tagId().equals(id)) &&
-                ModUtils.listContains(trains, line.trainIds(), (id, v) -> v.equals(id));
+                ModUtils.listContainsAny(stationTags, line.stations(), (id, v) -> v.tagId().equals(id)) &&
+                ModUtils.listContainsAny(trains, line.trainIds(), (id, v) -> v.equals(id));
     }
 }

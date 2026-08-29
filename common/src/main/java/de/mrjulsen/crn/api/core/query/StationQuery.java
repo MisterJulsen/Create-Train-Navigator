@@ -80,10 +80,10 @@ public record StationQuery(
     /** Whether the given station passes this query. */
     public boolean accept(StationSnapshot station) {
         return (filter.isEmpty() || TrainUtils.stationMatches(station.name(), filter)) &&
-                ModUtils.listContains(stationTags, station.tags(), (id, v) -> v.id().equals(id)) &&
-                ModUtils.listContains(trains, station.trainIds(), (id, v) -> v.equals(id)) &&
-                ModUtils.listContains(lines, station.lines(), (id, v) -> v.id().equals(id)) &&
-                ModUtils.listContains(categories, station.categories(), (id, v) -> v.id().equals(id)) &&
+                ModUtils.listContainsAny(stationTags, station.tags(), (id, v) -> v.id().equals(id)) &&
+                ModUtils.listContainsAny(trains, station.trainIds(), (id, v) -> v.equals(id)) &&
+                ModUtils.listContainsAny(lines, station.lines(), (id, v) -> v.id().equals(id)) &&
+                ModUtils.listContainsAny(categories, station.categories(), (id, v) -> v.id().equals(id)) &&
                 (!hideBlacklisted || !station.blacklisted());
     }
 }

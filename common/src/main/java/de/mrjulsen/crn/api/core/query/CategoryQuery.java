@@ -41,7 +41,7 @@ public record CategoryQuery(
 
     /** Whether the given category passes this query. */
     public boolean accept(CategorySnapshot category) {
-        return ModUtils.listContains(lines, category.lines(), (id, v) -> v.id().equals(id)) &&
-                ModUtils.listContains(trains, category.trainIds(), (id, v) -> v.equals(id));
+        return ModUtils.listContainsAny(lines, category.lines(), (id, v) -> v.id().equals(id)) &&
+                ModUtils.listContainsAny(trains, category.trainIds(), (id, v) -> v.equals(id));
     }
 }

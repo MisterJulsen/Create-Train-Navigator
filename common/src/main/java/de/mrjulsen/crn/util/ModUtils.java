@@ -408,11 +408,11 @@ public class ModUtils {
     }
 
 
-    public static <T, S> boolean listContains(Collection<T> searchFor, Collection<S> searchIn, BiPredicate<T, S> test) {
-        return listContains(searchFor, searchIn, true, false, test);
+    public static <T, S> boolean listContainsAny(Collection<T> searchFor, Collection<S> searchIn, BiPredicate<T, S> test) {
+        return listContainsAny(searchFor, searchIn, true, false, test);
     }
 
-    public static <T, S> boolean listContains(Collection<T> searchFor, Collection<S> searchIn, boolean ifSearchEmpty, boolean ifTargetEmpty, BiPredicate<T, S> test) {
+    public static <T, S> boolean listContainsAny(Collection<T> searchFor, Collection<S> searchIn, boolean ifSearchEmpty, boolean ifTargetEmpty, BiPredicate<T, S> test) {
         if (searchFor.isEmpty()) {
             return ifSearchEmpty;
         }
