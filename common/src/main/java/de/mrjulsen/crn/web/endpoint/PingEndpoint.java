@@ -8,6 +8,11 @@ public class PingEndpoint implements IEndpointHandler {
 
     @Override
     public Response handle(Request request) {
-        return Response.text("Pong!");
+        if (request.path().endsWith("ping")) {
+            return Response.text("Pong!");
+        } else if (request.path().endsWith("hello")) {
+            return Response.text("World!");
+        }
+        return Response.text("Hello World!");
     }
 }
