@@ -39,11 +39,11 @@ public class StationTagsEndpoint implements IEndpointHandler {
         public boolean accept(StationTag tag) {
             return (tagName.isEmpty() || tagName.contains(tag.getTagName().get())) &&
                     ModUtils.listContainsElement(tag.getId(), id, true, UUID::equals) &&
-                    ModUtils.listContains(tag.getAllStationNames(), containsStation, true, true, String::equals) &&
+                    ModUtils.listContainsAny(tag.getAllStationNames(), containsStation, true, true, String::equals) &&
                     ModUtils.listContainsElement(tag.getOwner().getOwner(), owner, true, (a, b) -> a.map(x -> x.name().equals(b)).orElse(false)) &&
                     ModUtils.listContainsElement(tag.getOwner().getOwner(), ownerId, true, (a, b) -> a.map(x -> x.uuid().equals(b)).orElse(false)) &&
-                    ModUtils.listContains(tag.getOwner().getTrusted(), trustedPlayerName, true, true, (a, b) -> a.name().equals(b)) &&
-                    ModUtils.listContains(tag.getOwner().getTrusted(), trustedPlayerId, true, true, (a, b) -> a.uuid().equals(b))
+                    ModUtils.listContainsAny(tag.getOwner().getTrusted(), trustedPlayerName, true, true, (a, b) -> a.name().equals(b)) &&
+                    ModUtils.listContainsAny(tag.getOwner().getTrusted(), trustedPlayerId, true, true, (a, b) -> a.uuid().equals(b))
                     ;
         }
     }

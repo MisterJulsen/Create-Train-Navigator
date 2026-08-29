@@ -65,7 +65,10 @@ public final class ModWebEndpoints {
         EndpointRegistry.registerGet("global-settings/blacklist/stations", new StationBlacklistEndpoint());
         EndpointRegistry.registerGet("global-settings/blacklist/trains", new TrainBlacklistEndpoint());
         EndpointRegistry.registerGet("global-settings/train-categories", new TrainCategoriesEndpoint());
+        EndpointRegistry.registerGet("global-settings/train-categories/{id}", new TrainCategoryEndpoint());
         EndpointRegistry.registerGet("global-settings/train-lines", new TrainLinesEndpoint());
+        EndpointRegistry.registerGet("global-settings/train-lines/{id}", new TrainLineEndpoint());
         EndpointRegistry.registerGet("global-settings/station-tags", new StationTagsEndpoint());
+        EndpointRegistry.registerGet("global-settings/station-tags/{id}", new StationTagEndpoint());
     }
 }
