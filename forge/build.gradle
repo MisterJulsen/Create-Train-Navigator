@@ -87,7 +87,8 @@ afterEvaluate {
             def newContent = lwjglPaths.inject(classpathFile.text) { content, key, newPath ->
                 def modName = key.replaceAll(/-(natives-.+)$/, "")
                 def classifier = key == modName ? "" : key.substring(modName.length() + 1)
-                def oldSuffix = classifier ? "${modName}-3.3.2-${classifier}.jar" : "${modName}-3.3.2.jar"
+                def bundledLwjglVersion = "3.3.1" // must match the LWJGL version Minecraft ships (1.20.1 -> 3.3.1)
+                def oldSuffix = classifier ? "${modName}-${bundledLwjglVersion}-${classifier}.jar" : "${modName}-${bundledLwjglVersion}.jar"
                 content.readLines().collect { line ->
                     line.contains(oldSuffix) ? newPath : line
                 }.join(System.lineSeparator())
