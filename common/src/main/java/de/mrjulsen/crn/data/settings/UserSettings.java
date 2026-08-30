@@ -96,7 +96,7 @@ public class UserSettings {
         nbt.put(name, val.toNbt());
     }, (nbt, name) -> {
         return RecentSearchQueries.fromNbt(nbt.getCompound(name));
-    },(val) -> String.valueOf(val.size())));
+    },(val) -> String.valueOf(val.queriesSize() + val.pinnedSize())));
 
 
     public UserSettings(UUID playerId, boolean readOnly) {

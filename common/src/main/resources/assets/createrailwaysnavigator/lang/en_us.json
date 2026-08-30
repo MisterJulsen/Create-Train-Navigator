@@ -92,6 +92,9 @@
     "gui.createrailwaysnavigator.common.true": "Yes",
     "gui.createrailwaysnavigator.common.false": "No",
     "gui.createrailwaysnavigator.common.search": "Search",
+    "gui.createrailwaysnavigator.common.pin": "Pin",
+    "gui.createrailwaysnavigator.common.unpin": "Unpin",
+    "gui.createrailwaysnavigator.common.more_options": "More Options",
     "gui.createrailwaysnavigator.common.auto": "Auto",
     "gui.createrailwaysnavigator.common.max": "Max",
     "gui.createrailwaysnavigator.common.server_error": "Server error while executing task. Look console for details.",
@@ -125,6 +128,7 @@
     "gui.createrailwaysnavigator.navigator.location.tooltip": "Nearest station from current position",
     "gui.createrailwaysnavigator.navigator.refresh.tooltip": "Refresh",
     "gui.createrailwaysnavigator.navigator.recently_searched": "Recently searched",
+    "gui.createrailwaysnavigator.navigator.recently_searched_pins": "Pinned searches",
 
     "gui.createrailwaysnavigator.route_details.title": "Route Details",
     "gui.createrailwaysnavigator.route_details.departure": "Departure in",

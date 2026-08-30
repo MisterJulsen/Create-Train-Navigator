@@ -27,6 +27,9 @@ public class Constants {
     public static final Component TEXT_FALSE = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.false");
     public static final Component TEXT_SERVER_ERROR = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.server_error");
     public static final Component TEXT_SEARCH = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.search");
+    public static final Component TEXT_PIN = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.pin");
+    public static final Component TEXT_UNPIN = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.unpin");
+    public static final Component TEXT_MORE_OPTIONS = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.more_options");
     public static final Component TEXT_HELP = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.help");
     public static final Component TEXT_COPY = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.copy");
     public static final Component TEXT_PASTE = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".common.paste");
