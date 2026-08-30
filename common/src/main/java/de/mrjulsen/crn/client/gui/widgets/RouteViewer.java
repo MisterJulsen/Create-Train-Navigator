@@ -99,7 +99,7 @@ public class RouteViewer extends DLGuiComponent {
 
         DLContextMenu recetlySearchedMenu = new DLContextMenu((pX, pY) -> {
             List<DLContextMenu.ItemEntry> entries = new ArrayList<>();
-            entries.add(new DLContextMenu.ItemEntry(TextUtils.text("Clear"), DLSprite.empty(), true, () -> {
+            entries.add(new DLContextMenu.ItemEntry(Constants.TEXT_CLEAR, DLSprite.empty(), true, () -> {
                 settings.recentSearchQueries.getValue().clearQueries();
                 clear();
             }, null));
@@ -108,7 +108,7 @@ public class RouteViewer extends DLGuiComponent {
 
         DLContextMenu routesViewMenu = new DLContextMenu((pX, pY) -> {
             List<DLContextMenu.ItemEntry> entries = new ArrayList<>();
-            entries.add(new DLContextMenu.ItemEntry(TextUtils.text("Clear"), DLSprite.empty(), true, () -> {
+            entries.add(new DLContextMenu.ItemEntry(Constants.TEXT_CLEAR, DLSprite.empty(), true, () -> {
                 clear();
             }, null));
             entries.add(DLContextMenu.ItemEntry.SEPARATOR);
@@ -228,11 +228,13 @@ public class RouteViewer extends DLGuiComponent {
                 }
             }
 
-            panel.addComponent(new Label(0, 0, txtRecentSearchQueries));
-            RecentSearchQuery[] queries = recent.getAll();
-            for (int i = 0; i < Math.min(queries.length, maxRecentEntries); i++) {
-                RecentSearchQuery query = queries[i];
-                RecentSearchQueryButton btn = panel.addComponent(new RecentSearchQueryButton(this, 0, 0, 1, query));
+            if (!recent.isEmpty()) {
+                panel.addComponent(new Label(0, 0, txtRecentSearchQueries));
+                RecentSearchQuery[] queries = recent.getAll();
+                for (int i = 0; i < Math.min(queries.length, maxRecentEntries); i++) {
+                    RecentSearchQuery query = queries[i];
+                    RecentSearchQueryButton btn = panel.addComponent(new RecentSearchQueryButton(this, 0, 0, 1, query));
+                }
             }
         } else if (this.routes.isEmpty()) {
             DLButton btn = new DLButton(contentPanel.width() / 2 - 10, contentPanel.height() / 2 + 25, 20, 20);
@@ -292,13 +294,15 @@ public class RouteViewer extends DLGuiComponent {
             if (this.hasSearched && routes.isEmpty()) {
                 GuiUtils.drawString(graphics, graphics.defaultFont(), width() / 2, height() / 2 + 15 - graphics.defaultFont().lineHeight - 10, noConnectionsText, DLColor.WHITE, ETextAlignment.CENTER, false);
                 AllIcons.I_ACTIVE.render(graphics.graphics(), (int)(width() / 2 - 8), (int)(height() / 2 - 15 - graphics.defaultFont().lineHeight - 10));
-            } else if (settings != null && this.displayRecentSearchQueries.get() && !this.hasSearched && !settings.recentSearchQueries.getValue().isEmpty()) {
-                //GuiUtils.drawString(graphics, graphics.defaultFont(), 10, 10, txtRecentSearchQueries, DLColor.WHITE, ETextAlignment.LEFT, true);
+            /*} else if (settings != null && this.displayRecentSearchQueries.get() && !this.hasSearched && !settings.recentSearchQueries.getValue().isEmpty()) {
+
                 if (this.settings == null) {
                     GuiUtils.drawString(graphics, graphics.defaultFont(), width() / 2, height() / 2 + 15 - graphics.defaultFont().lineHeight, Constants.TEXT_LOADING, DLColor.WHITE, ETextAlignment.CENTER, false);
                     AllIcons.I_MTD_SCAN.render(graphics.graphics(), (int)(width() / 2 - 8 + offsetX), (int)(height() / 2 - 15 - graphics.defaultFont().lineHeight + offsetY));
                 }
-            } else if (!this.hasSearched) {
+
+             */
+            } else if (!this.hasSearched && this.displayRecentSearchQueries.get() && (settings.recentSearchQueries.getValue().isEmpty() && !settings.recentSearchQueries.getValue().hasPins())) {
                 GuiUtils.drawString(graphics, graphics.defaultFont(), width() / 2, height() / 2 + 15 - graphics.defaultFont().lineHeight, notSearchedText, DLColor.WHITE, ETextAlignment.CENTER, false);
                 ModGuiIcons.INFO.render(graphics, (int)(width() / 2 - 8), (int)(height() / 2 - 15 - graphics.defaultFont().lineHeight));
             }
