@@ -22,6 +22,7 @@ import de.mrjulsen.crn.data.settings.RecentSearchQueries.RecentSearchQuery;
 import de.mrjulsen.crn.core.navigator.route.RouteJourney;
 import de.mrjulsen.crn.network.packets.NavigatePacketData;
 import de.mrjulsen.crn.registry.ModNetworkManager;
+import de.mrjulsen.mcdragonlib.annotations.SupportsEvents;
 import de.mrjulsen.mcdragonlib.client.gui.events.DLGuiStandardEvents;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLGuiComponent;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLButton;
@@ -36,6 +37,7 @@ import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
 import de.mrjulsen.mcdragonlib.client.util.DLSprite;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import de.mrjulsen.mcdragonlib.data.ETextAlignment;
+import de.mrjulsen.mcdragonlib.events.IEvent;
 import de.mrjulsen.mcdragonlib.network.NetworkDirection;
 import de.mrjulsen.mcdragonlib.util.DLColor;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
@@ -46,7 +48,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
+@SupportsEvents({
+        RouteViewer.NavigateEvent.class
+})
 public class RouteViewer extends DLGuiComponent {
+
+    public record NavigateEvent(String from, String to) implements IEvent {}
 
     private final MutableComponent searchingText = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.searching");
     private final MutableComponent noConnectionsText = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.no_connections");
@@ -139,6 +146,7 @@ public class RouteViewer extends DLGuiComponent {
         contentPanel.clearComponents();
         this.animPercentage = 0;
         this.renderOffsetX = -50;
+        invokeEvent(this, new NavigateEvent(start, end));
 
         settings.clientSave(() -> {
             animator.start(10, (poseStack, current, total, percentage) -> {

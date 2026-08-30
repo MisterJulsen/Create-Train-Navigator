@@ -71,6 +71,11 @@ public class NavigatorWindow extends AbstractNavigatorScreen {
 
         routeViewer = addComponent(new RouteViewer(3, 88, width() - 6, 128));
         routeViewer.displayRecentSearchQueries.set(true);
+        routeViewer.addEventListener(RouteViewer.NavigateEvent.class, (s, e) -> {
+            fromBox.text.get().set(e.from());
+            toBox.text.get().set(e.to());
+            return false;
+        });
 
         CreateButton positionBtn = addComponent(new CreateButton(fromBox.x() + fromBox.width() + 4, fromBox.y(), ModGuiIcons.POSITION.getAsCreateIcon()));
         positionBtn.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
