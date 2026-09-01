@@ -1,5 +1,6 @@
 package de.mrjulsen.crn.client.gui.windows;
 
+import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 
 import com.simibubi.create.foundation.gui.AllIcons;
@@ -27,13 +28,17 @@ import de.mrjulsen.crn.network.packets.GetUserSettingsPacketData;
 import de.mrjulsen.crn.registry.ModNetworkManager;
 import de.mrjulsen.mcdragonlib.client.gui.events.DLGuiStandardEvents;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLWindowManager;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLTooltip;
 import de.mrjulsen.mcdragonlib.client.render.DLTextureSheet;
 import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
 import de.mrjulsen.mcdragonlib.network.NetworkDirection;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.math.Rectangle;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+
+import java.util.List;
 
 public class NavigatorWindow extends AbstractNavigatorScreen {
 
@@ -42,6 +47,12 @@ public class NavigatorWindow extends AbstractNavigatorScreen {
     private UserSettings userSettings = new UserSettings(Minecraft.getInstance().player.getUUID(), false);
 
     private RouteViewer routeViewer;
+
+    private final Component txtGlobalSettings = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.global_settings.tooltip");
+    private final Component txtNearestStation = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.location.tooltip");
+    private final Component txtSwapInputs = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.swap.tooltip");
+    private final Component txtDepartureBoard = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".schedule_board.title");
+    private final Component txtSavedRoutes = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".saved_routes.title");
 
     public NavigatorWindow(DLWindowManager manager) {
         super(manager, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.title"), ContainerColor.GRAY, BarColor.GRAY);
@@ -68,6 +79,7 @@ public class NavigatorWindow extends AbstractNavigatorScreen {
             toBox.text.get().set(fromTxt);
             return false;
         });
+        swapInputs.tooltip.set(new DLTooltip(List.of(txtSwapInputs), 256));
 
         routeViewer = addComponent(new RouteViewer(3, 88, width() - 6, 128));
         routeViewer.displayRecentSearchQueries.set(true);
@@ -84,6 +96,7 @@ public class NavigatorWindow extends AbstractNavigatorScreen {
             }, () -> {});
             return false;
         });
+        positionBtn.tooltip.set(new DLTooltip(List.of(txtNearestStation), 256));
 
         CreateButton searchBtn = addComponent(new CreateButton(toBox.x() + toBox.width() + 4, toBox.y(), AllIcons.I_MTD_SCAN));
         searchBtn.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
@@ -91,6 +104,7 @@ public class NavigatorWindow extends AbstractNavigatorScreen {
             routeViewer.search(fromBox.text.get().getPlainText(), toBox.text.get().getPlainText(), () -> searchBtn.enabled.set(true));
             return false;
         });
+        searchBtn.tooltip.set(new DLTooltip(List.of(Constants.TEXT_SEARCH), 256));
 
 
         CreateButton globalSettingsButton = addComponent(new CreateButton(30, 223, ModGuiIcons.SETTINGS.getAsCreateIcon()));
@@ -98,16 +112,21 @@ public class NavigatorWindow extends AbstractNavigatorScreen {
             getWindowManager().createModal(mgr -> new GlobalSettingsWindow(mgr));
             return false;
         });
+        globalSettingsButton.tooltip.set(new DLTooltip(List.of(txtGlobalSettings), 256));
+
         CreateButton departureBoardBtn = addComponent(new CreateButton(width() - CreateButton.WIDTH - 8, 223, ModGuiIcons.VERY_DETAILED.getAsCreateIcon()));
         departureBoardBtn.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
             getWindowManager().createModal(mgr -> new ScheduleBoardWindow(mgr, null));
             return false;
         });
+        departureBoardBtn.tooltip.set(new DLTooltip(List.of(txtDepartureBoard), 256));
+
         CreateButton savedRoutesBtn = addComponent(new CreateButton(width() - CreateButton.WIDTH - 37, 223, ModGuiIcons.MAP_PATH.getAsCreateIcon()));
         savedRoutesBtn.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
             getWindowManager().createModal(mgr -> new SavedRoutesWindow(mgr));
             return false;
         });
+        savedRoutesBtn.tooltip.set(new DLTooltip(List.of(txtSavedRoutes), 256));
 
 
 

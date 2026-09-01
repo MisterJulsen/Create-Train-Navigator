@@ -126,6 +126,7 @@
     "gui.createrailwaysnavigator.navigator.global_settings.tooltip": "Global Settings",
     "gui.createrailwaysnavigator.navigator.search.tooltip": "Search",
     "gui.createrailwaysnavigator.navigator.location.tooltip": "Nearest station from current position",
+    "gui.createrailwaysnavigator.navigator.swap.tooltip": "Swap inputs",
     "gui.createrailwaysnavigator.navigator.refresh.tooltip": "Refresh",
     "gui.createrailwaysnavigator.navigator.recently_searched": "Recently searched",
     "gui.createrailwaysnavigator.navigator.recently_searched_pins": "Pinned searches",
