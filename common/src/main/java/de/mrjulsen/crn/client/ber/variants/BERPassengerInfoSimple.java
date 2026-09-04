@@ -1,6 +1,6 @@
 package de.mrjulsen.crn.client.ber.variants;
 
-import de.mrjulsen.crn.config.ModCommonConfig;
+import de.mrjulsen.crn.config.ModServerConfig;
 import org.joml.Vector3f;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
@@ -129,7 +129,7 @@ public class BERPassengerInfoSimple implements AbstractAdvancedDisplayRenderer<P
             label.text.set(settings.getTrainTextComponents().showTrainName() ? TextUtils.text(blockEntity.getTrainDisplayName()) : TextUtils.empty());
         } else if (blockEntity.isWaitingAtStation()) {
             label.text.set(TextUtils.text(blockEntity.getNextStop().get().station().displayName()));
-        } else if (blockEntity.getNextStop().get().realtime().arrival() - ModUtils.getTransformedWorldTime() < ModCommonConfig.NEXT_STOP_ANNOUNCEMENT.get()) {
+        } else if (blockEntity.getNextStop().get().realtime().arrival() - ModUtils.getTransformedWorldTime() < ModServerConfig.NEXT_STOP_ANNOUNCEMENT.get()) {
             MutableComponent txt = CustomLanguage.translate(keyNextStop, blockEntity.getNextStop().get().station().displayName());
             if (blockEntity.getStage().isTerminating(getDisplaySettings(blockEntity).showDoNotBoardText())) {
                 txt = TextUtils.concatSimple(txt, textTrainTerminatesHere);

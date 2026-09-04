@@ -14,6 +14,7 @@ import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.api.core.RailwayBackendApi;
 import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.config.ModCommonConfig;
+import de.mrjulsen.crn.config.ModServerConfig;
 import de.mrjulsen.crn.core.debug.BackendDiagnosticsRecorder;
 import de.mrjulsen.crn.mixin.ScheduleRuntimeAccessor;
 import de.mrjulsen.mcdragonlib.util.TextUtils;

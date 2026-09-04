@@ -5,7 +5,7 @@ import de.mrjulsen.crn.api.core.snapshot.BoardEntry;
 import de.mrjulsen.crn.api.core.CallDirection;
 import de.mrjulsen.crn.block.display.properties.IDisplaySettings;
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
-import de.mrjulsen.crn.config.ModCommonConfig;
+import de.mrjulsen.crn.config.ModServerConfig;
 import de.mrjulsen.mcdragonlib.data.ITranslatableEnum;
 
 import java.util.Arrays;
@@ -97,6 +97,6 @@ public interface ITrainStopTypeSetting {
             return false;
         }
         return !entry.isCancelled()
-            || now < entry.scheduled().departure() + ModCommonConfig.DISPLAY_LEAD_TIME.get();
+            || now < entry.scheduled().departure() + ModServerConfig.DISPLAY_LEAD_TIME.get();
     }
 }

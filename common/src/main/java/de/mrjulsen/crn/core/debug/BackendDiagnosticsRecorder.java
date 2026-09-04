@@ -25,7 +25,7 @@ import de.mrjulsen.crn.core.realtime.RealtimeTracker;
 import de.mrjulsen.crn.core.schedule.JourneyStop;
 import de.mrjulsen.crn.core.timing.StopTimes;
 import de.mrjulsen.crn.core.timing.StopTimings;
-import de.mrjulsen.crn.config.ModCommonConfig;
+import de.mrjulsen.crn.config.ModServerConfig;
 
 public final class BackendDiagnosticsRecorder {
 
@@ -287,10 +287,10 @@ public final class BackendDiagnosticsRecorder {
     private static JsonObject configHeader() {
         JsonObject json = new JsonObject();
         json.addProperty("event", "config");
-        json.addProperty("totalDurationBufferSize", ModCommonConfig.TOTAL_DURATION_BUFFER_SIZE.get());
-        json.addProperty("totalDurationDeviationThreshold", ModCommonConfig.TOTAL_DURATION_DEVIATION_THRESHOLD.get());
-        json.addProperty("scheduleDeviationThreshold", ModCommonConfig.SCHEDULE_DEVIATION_THRESHOLD.get());
-        json.addProperty("autoResetTimings", ModCommonConfig.AUTO_RESET_TIMINGS.get());
+        json.addProperty("totalDurationBufferSize", ModServerConfig.TOTAL_DURATION_BUFFER_SIZE.get());
+        json.addProperty("totalDurationDeviationThreshold", ModServerConfig.TOTAL_DURATION_DEVIATION_THRESHOLD.get());
+        json.addProperty("scheduleDeviationThreshold", ModServerConfig.SCHEDULE_DEVIATION_THRESHOLD.get());
+        json.addProperty("autoResetTimings", ModServerConfig.AUTO_RESET_TIMINGS.get());
         return json;
     }
 

@@ -14,7 +14,7 @@ import com.google.common.collect.ImmutableSet;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
-import de.mrjulsen.crn.config.ModCommonConfig;
+import de.mrjulsen.crn.config.ModServerConfig;
 import de.mrjulsen.crn.exceptions.RuntimeSideException;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.util.DLSprite;
@@ -137,7 +137,7 @@ public class Lock {
         if (!DragonLib.hasServer()) {
             throw new RuntimeSideException(false);
         }
-        return this.owner != null && (this.owner.equals(target) || (ModCommonConfig.GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL.get() >= 0 && GameInstance.getServer().getPlayerList().getPlayer(target.uuid()).hasPermissions(ModCommonConfig.GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL.get())));
+        return this.owner != null && (this.owner.equals(target) || (ModServerConfig.GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL.get() >= 0 && GameInstance.getServer().getPlayerList().getPlayer(target.uuid()).hasPermissions(ModServerConfig.GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL.get())));
     }
 
     public boolean isAllowed() throws RuntimeSideException {
@@ -156,7 +156,7 @@ public class Lock {
             throw new RuntimeSideException(true);
         }
         Owner self = ClientWrapper.getMe();
-        return this.owner != null && (this.owner.equals(self) || (ModCommonConfig.GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL.get() >= 0 && ClientWrapper.getClientPlayer().hasPermissions(ModCommonConfig.GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL.get())));
+        return this.owner != null && (this.owner.equals(self) || (ModServerConfig.GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL.get() >= 0 && ClientWrapper.getClientPlayer().hasPermissions(ModServerConfig.GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL.get())));
     }
 
     public Set<Owner> getTrusted() {

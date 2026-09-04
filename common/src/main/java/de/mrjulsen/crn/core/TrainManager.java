@@ -11,13 +11,14 @@ import com.simibubi.create.content.trains.entity.Train;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.api.event.RailwayBackendEvents;
+import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.core.train.ServiceState;
 import de.mrjulsen.crn.core.train.TrackedTrain;
 import de.mrjulsen.crn.core.history.DepartureLog;
 import de.mrjulsen.crn.core.index.StationCallIndex;
 import de.mrjulsen.crn.core.schedule.JourneyStop;
 import de.mrjulsen.crn.util.TrainUtils;
-import de.mrjulsen.crn.config.ModCommonConfig;
+import de.mrjulsen.crn.config.ModServerConfig;
 import de.mrjulsen.crn.event.ModCommonEvents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;

@@ -7,7 +7,7 @@ import de.mrjulsen.crn.core.delay.DelayContext;
 import de.mrjulsen.crn.core.delay.DelayInstance;
 import de.mrjulsen.crn.core.delay.DelaySeverity;
 import de.mrjulsen.crn.core.delay.DisruptionHandling;
-import de.mrjulsen.crn.config.ModCommonConfig;
+import de.mrjulsen.crn.config.ModServerConfig;
 
 public final class SchedulePausedCause extends DelayCause {
 
@@ -25,7 +25,7 @@ public final class SchedulePausedCause extends DelayCause {
 
     @Override
     public int displayDurationWhileOutOfService() {
-        return ModCommonConfig.DISRUPTION_DISPLAY_DURATION_PAUSED.get();
+        return ModServerConfig.DISRUPTION_DISPLAY_DURATION_PAUSED.get();
     }
 
     @Override

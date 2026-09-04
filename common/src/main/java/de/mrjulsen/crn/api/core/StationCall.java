@@ -1,7 +1,7 @@
 package de.mrjulsen.crn.api.core;
 
 import de.mrjulsen.crn.api.core.ref.StationRef;
-import de.mrjulsen.crn.config.ModCommonConfig;
+import de.mrjulsen.crn.config.ModServerConfig;
 import de.mrjulsen.crn.core.timing.StopTimes;
 
 /**
@@ -90,12 +90,12 @@ public interface StationCall {
 
     /** Whether this call counts as late by the server's configured threshold. */
     default boolean isDelayed() {
-        return isDelayed(ModCommonConfig.SCHEDULE_DEVIATION_THRESHOLD.get());
+        return isDelayed(ModServerConfig.SCHEDULE_DEVIATION_THRESHOLD.get());
     }
 
     /** Whether the chosen side of the call is late by the configured threshold. */
     default boolean isDelayed(CallDirection direction) {
-        return deviation(direction) >= ModCommonConfig.SCHEDULE_DEVIATION_THRESHOLD.get();
+        return deviation(direction) >= ModServerConfig.SCHEDULE_DEVIATION_THRESHOLD.get();
     }
 
     /** The timetable time for the chosen side of the call. */

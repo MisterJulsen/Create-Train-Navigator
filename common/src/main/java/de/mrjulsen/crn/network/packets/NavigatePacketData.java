@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.UUID;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.config.ModCommonConfig;
+import de.mrjulsen.crn.config.ModServerConfig;
 import de.mrjulsen.crn.data.settings.TagName;
 import de.mrjulsen.crn.data.settings.UserSettings;
 import de.mrjulsen.crn.data.settings.GlobalSettings;

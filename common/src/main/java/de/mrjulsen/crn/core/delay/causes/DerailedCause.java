@@ -6,7 +6,7 @@ import de.mrjulsen.crn.core.delay.DelayCause;
 import de.mrjulsen.crn.core.delay.DelayContext;
 import de.mrjulsen.crn.core.delay.DelayInstance;
 import de.mrjulsen.crn.core.delay.DelaySeverity;
-import de.mrjulsen.crn.config.ModCommonConfig;
+import de.mrjulsen.crn.config.ModServerConfig;
 
 public final class DerailedCause extends DelayCause {
 
@@ -22,6 +22,6 @@ public final class DerailedCause extends DelayCause {
 
     @Override
     public int displayDurationWhileOutOfService() {
-        return ModCommonConfig.DISRUPTION_DISPLAY_DURATION_DERAILED.get();
+        return ModServerConfig.DISRUPTION_DISPLAY_DURATION_DERAILED.get();
     }
 }

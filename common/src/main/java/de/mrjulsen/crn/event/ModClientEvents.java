@@ -7,6 +7,7 @@ import de.mrjulsen.crn.client.RealtimeTrains;
 import de.mrjulsen.crn.client.input.ModKeys;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.config.ModCommonConfig;
+import de.mrjulsen.crn.config.ModServerConfig;
 import de.mrjulsen.crn.data.settings.SavedRoutesManager;
 import de.mrjulsen.crn.network.InstanceManager;
 import dev.architectury.event.events.client.ClientGuiEvent;

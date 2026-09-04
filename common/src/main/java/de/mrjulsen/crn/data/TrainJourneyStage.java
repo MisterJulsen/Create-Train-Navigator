@@ -6,7 +6,7 @@ import de.mrjulsen.crn.api.core.snapshot.SectionSnapshot;
 import de.mrjulsen.crn.api.core.snapshot.StopSnapshot;
 import de.mrjulsen.crn.api.core.snapshot.TrainSnapshot;
 import de.mrjulsen.crn.core.train.LiveTrainState;
-import de.mrjulsen.crn.config.ModCommonConfig;
+import de.mrjulsen.crn.config.ModServerConfig;
 
 public enum TrainJourneyStage {
 
@@ -75,7 +75,7 @@ public enum TrainJourneyStage {
         if (arrived) {
             return terminus ? AT_TERMINUS : RUNNING;
         }
-        if (current.arrivalIn(now) > ModCommonConfig.NEXT_STOP_ANNOUNCEMENT.get()) {
+        if (current.arrivalIn(now) > ModServerConfig.NEXT_STOP_ANNOUNCEMENT.get()) {
             return BEFORE_TERMINUS;
         }
         return terminus ? TERMINUS_ANNOUNCED : SOFT_TERMINUS_ANNOUNCED;

@@ -7,7 +7,7 @@ import java.util.List;
 
 import de.mrjulsen.crn.api.event.RailwayBackendEvents;
 import de.mrjulsen.crn.core.train.TrackedTrain;
-import de.mrjulsen.crn.config.ModCommonConfig;
+import de.mrjulsen.crn.config.ModServerConfig;
 import de.mrjulsen.crn.registry.ModDelayCauses;
 import net.minecraft.resources.ResourceLocation;
 
@@ -125,7 +125,7 @@ public final class DelayTracker {
     }
 
     private boolean isDelayed() {
-        return train.isDelayed() || train.getDelayOffset() > ModCommonConfig.SCHEDULE_DEVIATION_THRESHOLD.get();
+        return train.isDelayed() || train.getDelayOffset() > ModServerConfig.SCHEDULE_DEVIATION_THRESHOLD.get();
     }
 
     private DelayInstance keepFirstSeen(DelayInstance instance) {
@@ -143,7 +143,7 @@ public final class DelayTracker {
     public record DisruptionOutcome(boolean visible, boolean discardWhenExpired) {}
 
     public DisruptionOutcome evaluateDisruption(long now) {
-        int fallback = ModCommonConfig.DISRUPTION_DISPLAY_DURATION.get();
+        int fallback = ModServerConfig.DISRUPTION_DISPLAY_DURATION.get();
         boolean deliberate = active.stream().anyMatch(x -> x.severity() == DelaySeverity.IMPORTANT && handlingOf(x) == DisruptionHandling.DELIBERATE);
         boolean anyReason = false;
 

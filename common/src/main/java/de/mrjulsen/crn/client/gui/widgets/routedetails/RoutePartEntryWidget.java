@@ -5,7 +5,7 @@ import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.gui.windows.ScheduleBoardWindow;
 import de.mrjulsen.crn.config.ModClientConfig;
-import de.mrjulsen.crn.config.ModCommonConfig;
+import de.mrjulsen.crn.config.ModServerConfig;
 import de.mrjulsen.crn.core.navigator.route.RouteCall;
 import de.mrjulsen.crn.core.navigator.route.RouteJourney;
 import de.mrjulsen.crn.core.navigator.route.RouteLeg;
@@ -80,7 +80,7 @@ public class RoutePartEntryWidget extends DLButton {
         graphics.poseStack().pushPose();
         graphics.poseStack().scale(scale, scale, 1);
 
-        int precision = ModCommonConfig.REALTIME_PRECISION_THRESHOLD.get();
+        int precision = ModServerConfig.REALTIME_PRECISION_THRESHOLD.get();
 
         if (this.type == TrainStopType.TRANSIT) {
             graphics.poseStack().translate((x() + 28) / scale, (y + 2) / scale, 0);

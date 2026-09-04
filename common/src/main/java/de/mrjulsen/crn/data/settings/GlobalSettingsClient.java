@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.Optional;
 
-import de.mrjulsen.crn.config.ModCommonConfig;
+import de.mrjulsen.crn.config.ModServerConfig;
 import de.mrjulsen.crn.data.settings.StationTag.StationInfo;
 import de.mrjulsen.crn.network.packets.AddStationTagEntryPacketData;
 import de.mrjulsen.crn.network.packets.AddStationToBlacklistPacketData;
@@ -41,7 +41,7 @@ import net.minecraft.client.Minecraft;
 public class GlobalSettingsClient {
 
     public static boolean modificationsAllowed() {
-        return Minecraft.getInstance().player.hasPermissions(ModCommonConfig.GLOBAL_SETTINGS_PERMISSION_LEVEL.get());
+        return Minecraft.getInstance().player.hasPermissions(ModServerConfig.GLOBAL_SETTINGS_PERMISSION_LEVEL.get());
     }
 
     public static void getStationTags(Consumer<Collection<StationTag>> result) {

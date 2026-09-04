@@ -3,7 +3,7 @@ package de.mrjulsen.crn.core.delay;
 import java.util.Collection;
 import java.util.List;
 
-import de.mrjulsen.crn.config.ModCommonConfig;
+import de.mrjulsen.crn.config.ModServerConfig;
 import net.minecraft.resources.ResourceLocation;
 
 /**
@@ -34,7 +34,7 @@ public abstract class DelayCause {
 
     /** How long to keep showing this cause after the train has gone out of service, in ticks. */
     public int displayDurationWhileOutOfService() {
-        return ModCommonConfig.DISRUPTION_DISPLAY_DURATION.get();
+        return ModServerConfig.DISRUPTION_DISPLAY_DURATION.get();
     }
 
     /** A retention duration meaning the cause is kept for as long as it applies, without limit. */

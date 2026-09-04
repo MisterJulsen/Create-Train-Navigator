@@ -11,7 +11,7 @@ import de.mrjulsen.crn.block.properties.ETimeDisplay;
 import de.mrjulsen.crn.block.display.properties.PlatformDisplayTableSettings;
 import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
-import de.mrjulsen.crn.config.ModCommonConfig;
+import de.mrjulsen.crn.config.ModServerConfig;
 import de.mrjulsen.crn.api.core.snapshot.BoardEntry;
 import de.mrjulsen.crn.api.core.CallDirection;
 import de.mrjulsen.crn.util.ModUtils;
@@ -113,7 +113,7 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
 
         for (int i = 0; i < blockEntity.getStops().size(); i++) {
             BoardEntry data = blockEntity.getStops().get(i);
-            boolean shouldShow = i == 0 || data.realtime().arrival() < now + ModCommonConfig.DISPLAY_LEAD_TIME.get();
+            boolean shouldShow = i == 0 || data.realtime().arrival() < now + ModServerConfig.DISPLAY_LEAD_TIME.get();
             if (shouldShow && ITrainStopTypeSetting.accepts(data, stopType, now)) {
                 preds.add(data);
             }

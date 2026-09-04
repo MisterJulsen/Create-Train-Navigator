@@ -11,7 +11,7 @@ import de.mrjulsen.crn.block.display.properties.PlatformDisplayScrollingTextSett
 import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
-import de.mrjulsen.crn.config.ModCommonConfig;
+import de.mrjulsen.crn.config.ModServerConfig;
 import de.mrjulsen.crn.api.core.snapshot.BoardEntry;
 import de.mrjulsen.crn.api.core.CallDirection;
 import de.mrjulsen.crn.block.display.properties.components.ITrainStopTypeSetting;
@@ -74,7 +74,7 @@ public class BERPlatformSimple implements AbstractAdvancedDisplayRenderer<Platfo
     public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason) {
         long now = ModUtils.getTransformedWorldTime();
         List<BoardEntry> preds = blockEntity.getStops().stream()
-            .filter(x -> x.realtime().arrival() < now + ModCommonConfig.DISPLAY_LEAD_TIME.get())
+            .filter(x -> x.realtime().arrival() < now + ModServerConfig.DISPLAY_LEAD_TIME.get())
             .filter(x -> ITrainStopTypeSetting.accepts(x, ETrainStopType.DEPARTURES_ONLY, now))
             .toList();
 

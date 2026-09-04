@@ -12,7 +12,7 @@ import de.mrjulsen.crn.core.train.TrackedTrain;
 import de.mrjulsen.crn.core.realtime.RealtimeTracker;
 import de.mrjulsen.crn.core.schedule.JourneyStop;
 import de.mrjulsen.crn.core.timing.StopTimings;
-import de.mrjulsen.crn.config.ModCommonConfig;
+import de.mrjulsen.crn.config.ModServerConfig;
 import de.mrjulsen.crn.mixin.TrainStatusAccessor;
 
 /**
@@ -88,7 +88,7 @@ public final class DelayContext {
 
     /** The deviation, in ticks, at which the server counts a train as late. */
     public long delayThreshold() {
-        return ModCommonConfig.SCHEDULE_DEVIATION_THRESHOLD.get();
+        return ModServerConfig.SCHEDULE_DEVIATION_THRESHOLD.get();
     }
 
     /** Whether the train is standing at a station. */

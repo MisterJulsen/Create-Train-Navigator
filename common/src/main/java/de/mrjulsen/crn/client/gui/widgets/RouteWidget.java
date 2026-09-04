@@ -10,7 +10,7 @@ import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.ColorShade;
 import de.mrjulsen.crn.client.gui.windows.RouteDetailsWindow;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.config.ModClientConfig;
-import de.mrjulsen.crn.config.ModCommonConfig;
+import de.mrjulsen.crn.config.ModServerConfig;
 import de.mrjulsen.crn.core.navigator.route.RouteCall;
 import de.mrjulsen.crn.core.navigator.route.RouteJourney;
 import de.mrjulsen.crn.core.navigator.route.RouteLeg;
@@ -65,7 +65,7 @@ public class RouteWidget extends DLButton {
 
     @Override
     public void renderMainLayer(DLGuiGraphics graphics, double mouseX, double mouseY, Rectangle renderBounds) {
-        final int precision = ModCommonConfig.REALTIME_PRECISION_THRESHOLD.get();
+        final int precision = ModServerConfig.REALTIME_PRECISION_THRESHOLD.get();
         
         CreateDynamicWidgets.renderSingleShadeWidget(graphics, 0, 0, WIDTH, HEIGHT, ColorShade.DARK.getColor());
         CreateDynamicWidgets.renderHorizontalSeparator(graphics, 6, 22, WIDTH - 12);

@@ -9,7 +9,7 @@ import de.mrjulsen.crn.client.CRNGui;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.journey.JourneyTracker;
 import de.mrjulsen.crn.config.ModClientConfig;
-import de.mrjulsen.crn.config.ModCommonConfig;
+import de.mrjulsen.crn.config.ModServerConfig;
 import de.mrjulsen.crn.core.navigator.route.RouteCall;
 import de.mrjulsen.crn.core.navigator.route.RouteLeg;
 import de.mrjulsen.crn.core.navigator.route.RouteTransfer;
@@ -79,7 +79,7 @@ public class RouteOverviewPage extends AbstractRouteDetailsPage {
     }
 
     public static void renderStation(DLGuiGraphics graphics, int y, int width, Font font, RouteCall call, RoutePathIcons icon, boolean boarding, boolean isMissed) {
-        final int precision = ModCommonConfig.REALTIME_PRECISION_THRESHOLD.get();
+        final int precision = ModServerConfig.REALTIME_PRECISION_THRESHOLD.get();
 
         long scheduledTime = boarding ? call.scheduled().departure() : call.scheduled().arrival();
         long deviation = boarding ? call.departureDeviation() : call.arrivalDeviation();

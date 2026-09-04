@@ -16,6 +16,7 @@ import com.simibubi.create.content.trains.schedule.ScheduleRuntime;
 import com.simibubi.create.content.trains.station.GlobalStation;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.config.ModCommonConfig;
 import de.mrjulsen.crn.core.TrainManager;
 import de.mrjulsen.crn.api.event.RailwayBackendEvents;
 import de.mrjulsen.crn.core.debug.BackendDiagnosticsRecorder;
@@ -32,7 +33,7 @@ import de.mrjulsen.crn.core.timing.LegKinematics;
 import de.mrjulsen.crn.core.timing.StopTimes;
 import de.mrjulsen.crn.core.timing.StopTimings;
 import de.mrjulsen.crn.core.timing.TimetableCalculator;
-import de.mrjulsen.crn.config.ModCommonConfig;
+import de.mrjulsen.crn.config.ModServerConfig;
 import de.mrjulsen.crn.data.schedule.condition.TrainSeparationCondition;
 import de.mrjulsen.crn.data.settings.GlobalSettings;
 import de.mrjulsen.crn.data.TrainExitSide;
@@ -246,7 +247,7 @@ public final class TrackedTrain implements RealtimeTracker.Listener {
         if (timing == null) {
             return false;
         }
-        long threshold = ModCommonConfig.SCHEDULE_DEVIATION_THRESHOLD.get();
+        long threshold = ModServerConfig.SCHEDULE_DEVIATION_THRESHOLD.get();
         return getLiveState() == LiveTrainState.AT_STATION
             ? timing.isDepartureDelayed(threshold)
             : timing.isArrivalDelayed(threshold);
@@ -546,7 +547,7 @@ public final class TrackedTrain implements RealtimeTracker.Listener {
             return;
         }
 
-        boolean wasDelayed = isDelayed() || delayOffset > ModCommonConfig.SCHEDULE_DEVIATION_THRESHOLD.get();
+        boolean wasDelayed = isDelayed() || delayOffset > ModServerConfig.SCHEDULE_DEVIATION_THRESHOLD.get();
         long deviationBeforeReset = getMaxDeviation();
         for (StopTimings timing : timingsByEntry.values()) {
             timing.anchorScheduleToRealtime();
@@ -711,7 +712,7 @@ public final class TrackedTrain implements RealtimeTracker.Listener {
         this.sectionsSinceReset++;
         this.delays.clear();
 
-        int autoReset = ModCommonConfig.AUTO_RESET_TIMINGS.get();
+        int autoReset = ModServerConfig.AUTO_RESET_TIMINGS.get();
         if (!journey.hasFlexibleDwellTimes() || (autoReset > 0 && sectionsSinceReset >= autoReset)) {
             requestSoftReset();
         }

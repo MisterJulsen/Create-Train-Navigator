@@ -1,5 +1,6 @@
 package de.mrjulsen.crn.forge;
 
+import de.mrjulsen.crn.config.ModCommonConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.UsernameCache;
@@ -30,7 +31,7 @@ import java.util.Optional;
 import java.util.UUID;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.config.ModClientConfig;
-import de.mrjulsen.crn.config.ModCommonConfig;
+import de.mrjulsen.crn.config.ModServerConfig;
 import dev.architectury.platform.Platform;
 import dev.architectury.utils.Env;
 
@@ -48,7 +49,8 @@ public class CRNPlatformSpecificImpl {
             ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ModClientConfig.SPEC, CreateRailwaysNavigator.MOD_ID + "-client.toml");
         }
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ModCommonConfig.SPEC, CreateRailwaysNavigator.MOD_ID + "-common.toml");
-    }    
+        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, ModServerConfig.SPEC, CreateRailwaysNavigator.MOD_ID + "-server.toml");
+    }
 
     public static Optional<String> getLastKnownPlayerName(UUID uuid) {
         return Optional.ofNullable(UsernameCache.getLastKnownUsername(uuid));

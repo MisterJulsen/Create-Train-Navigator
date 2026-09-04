@@ -17,7 +17,7 @@ import de.mrjulsen.crn.core.train.TrainLifecycleState;
 import de.mrjulsen.crn.core.delay.DelayInstance;
 import de.mrjulsen.crn.core.schedule.JourneySection;
 import de.mrjulsen.crn.core.schedule.JourneyStop;
-import de.mrjulsen.crn.config.ModCommonConfig;
+import de.mrjulsen.crn.config.ModServerConfig;
 import de.mrjulsen.crn.util.NbtHelper;
 import de.mrjulsen.crn.web.annotation.ResponseAlwaysInclude;
 import net.minecraft.nbt.CompoundTag;
@@ -185,7 +185,7 @@ public record TrainSnapshot(
 
     /** Whether the train counts as late by the server's configured threshold. */
     public boolean isDelayed() {
-        return isDelayed(ModCommonConfig.SCHEDULE_DEVIATION_THRESHOLD.get());
+        return isDelayed(ModServerConfig.SCHEDULE_DEVIATION_THRESHOLD.get());
     }
 
     /** Whether the train is out of service because of a disruption. */

@@ -1,5 +1,6 @@
 package de.mrjulsen.crn.fabric;
 
+import de.mrjulsen.crn.config.ModCommonConfig;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
@@ -30,7 +31,7 @@ import java.util.Optional;
 import java.util.UUID;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.config.ModClientConfig;
-import de.mrjulsen.crn.config.ModCommonConfig;
+import de.mrjulsen.crn.config.ModServerConfig;
 import de.mrjulsen.crn.mixin.ContraptionAccessor;
 import dev.architectury.platform.Platform;
 import dev.architectury.utils.Env;
@@ -52,6 +53,7 @@ public class CRNPlatformSpecificImpl {
             ForgeConfigRegistryImpl.INSTANCE.register(CreateRailwaysNavigator.MOD_ID, ModConfig.Type.CLIENT, ModClientConfig.SPEC, CreateRailwaysNavigator.MOD_ID + "-client.toml");
         }
         ForgeConfigRegistryImpl.INSTANCE.register(CreateRailwaysNavigator.MOD_ID, ModConfig.Type.COMMON, ModCommonConfig.SPEC, CreateRailwaysNavigator.MOD_ID + "-common.toml");
+        ForgeConfigRegistryImpl.INSTANCE.register(CreateRailwaysNavigator.MOD_ID, ModConfig.Type.SERVER, ModServerConfig.SPEC, CreateRailwaysNavigator.MOD_ID + "-server.toml");
     }
     
     public static GlobalStation getStationFromBlockEntity(BlockEntity be) {

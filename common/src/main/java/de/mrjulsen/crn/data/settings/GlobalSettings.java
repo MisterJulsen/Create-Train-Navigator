@@ -22,6 +22,7 @@ import java.util.Map;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.config.ModCommonConfig;
+import de.mrjulsen.crn.config.ModServerConfig;
 import de.mrjulsen.crn.data.settings.StationTag.StationInfo;
 import de.mrjulsen.crn.util.TrainUtils;
 import de.mrjulsen.crn.event.ModCommonEvents;
@@ -71,7 +72,7 @@ public class GlobalSettings implements INBTSerializable {
     }
 
     public static boolean modificationsAllowed(Player player) {
-        return player.hasPermissions(ModCommonConfig.GLOBAL_SETTINGS_PERMISSION_LEVEL.get());
+        return player.hasPermissions(ModServerConfig.GLOBAL_SETTINGS_PERMISSION_LEVEL.get());
     }
 
     public synchronized static GlobalSettings getInstance() {

@@ -1,7 +1,7 @@
 package de.mrjulsen.crn.core.timing;
 
 import de.mrjulsen.crn.core.util.FrequencyStringSelector;
-import de.mrjulsen.crn.config.ModCommonConfig;
+import de.mrjulsen.crn.config.ModServerConfig;
 import net.minecraft.nbt.CompoundTag;
 
 public final class StopTimings {
@@ -42,10 +42,10 @@ public final class StopTimings {
 
     public StopTimings(int entryIndex) {
         this.entryIndex = entryIndex;
-        this.legDuration = new MedianDurationTracker(ModCommonConfig.TOTAL_DURATION_BUFFER_SIZE.get(), ModCommonConfig.TOTAL_DURATION_DEVIATION_THRESHOLD.get());
-        this.legWait = new MedianDurationTracker(ModCommonConfig.TOTAL_DURATION_BUFFER_SIZE.get(), ModCommonConfig.TOTAL_DURATION_DEVIATION_THRESHOLD.get());
+        this.legDuration = new MedianDurationTracker(ModServerConfig.TOTAL_DURATION_BUFFER_SIZE.get(), ModServerConfig.TOTAL_DURATION_DEVIATION_THRESHOLD.get());
+        this.legWait = new MedianDurationTracker(ModServerConfig.TOTAL_DURATION_BUFFER_SIZE.get(), ModServerConfig.TOTAL_DURATION_DEVIATION_THRESHOLD.get());
         this.legWait.seed(0);
-        this.dwellResidual = new MedianDurationTracker(ModCommonConfig.TOTAL_DURATION_BUFFER_SIZE.get(), ModCommonConfig.TOTAL_DURATION_DEVIATION_THRESHOLD.get());
+        this.dwellResidual = new MedianDurationTracker(ModServerConfig.TOTAL_DURATION_BUFFER_SIZE.get(), ModServerConfig.TOTAL_DURATION_DEVIATION_THRESHOLD.get());
         this.dwellResidual.seed(0);
     }
 
@@ -62,7 +62,7 @@ public final class StopTimings {
     }
 
     public int scheduledWaitTicks() {
-        if (!ModCommonConfig.SCHEDULE_INCLUDES_WAITING.get() || !legWait.isInitialized()) {
+        if (!ModServerConfig.SCHEDULE_INCLUDES_WAITING.get() || !legWait.isInitialized()) {
             return 0;
         }
         return Math.max(0, legWait.get());
