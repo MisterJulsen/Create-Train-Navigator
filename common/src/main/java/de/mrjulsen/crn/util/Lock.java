@@ -31,6 +31,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.server.level.ServerPlayer;
 
 public class Lock {
 
@@ -127,28 +128,46 @@ public class Lock {
         if (!DragonLib.hasServer()) {
             throw new RuntimeSideException(false);
         }
-        return this.owner == null || isAdmin(target) || (this.owner.equals(target) || switch (state) {
-            case LOCKED -> isTrusted(target);
+        if (isAdmin(target)) {
+            return true;
+        }
+        return switch (state) {
+            case LOCKED -> (this.owner != null && this.owner.equals(target)) || isTrusted(target);
             default -> true;
-        });
+        };
     }
 
     public boolean isAdmin(Owner target) throws RuntimeSideException {
         if (!DragonLib.hasServer()) {
             throw new RuntimeSideException(false);
         }
-        return this.owner != null && (this.owner.equals(target) || (ModServerConfig.GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL.get() >= 0 && GameInstance.getServer().getPlayerList().getPlayer(target.uuid()).hasPermissions(ModServerConfig.GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL.get())));
+        if (this.owner != null && this.owner.equals(target)) {
+            return true;
+        }
+        return hasAdminPermission(target);
+    }
+
+    private static boolean hasAdminPermission(Owner target) {
+        int level = ModServerConfig.GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL.get();
+        if (level < 0 || target == null) {
+            return false;
+        }
+        ServerPlayer player = GameInstance.getServer().getPlayerList().getPlayer(target.uuid());
+        return player != null && player.hasPermissions(level);
     }
 
     public boolean isAllowed() throws RuntimeSideException {
         if (Platform.getEnvironment() != Env.CLIENT) {
             throw new RuntimeSideException(true);
         }
+        if (isAdmin()) {
+            return true;
+        }
         Owner self = ClientWrapper.getMe();
-        return this.owner == null || isAdmin() || (this.owner.equals(self) || switch (state) {
-            case LOCKED -> isTrusted(self);
+        return switch (state) {
+            case LOCKED -> (this.owner != null && this.owner.equals(self)) || isTrusted(self);
             default -> true;
-        });
+        };
     }
 
     public boolean isAdmin() throws RuntimeSideException {
@@ -156,7 +175,11 @@ public class Lock {
             throw new RuntimeSideException(true);
         }
         Owner self = ClientWrapper.getMe();
-        return this.owner != null && (this.owner.equals(self) || (ModServerConfig.GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL.get() >= 0 && ClientWrapper.getClientPlayer().hasPermissions(ModServerConfig.GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL.get())));
+        if (this.owner != null && this.owner.equals(self)) {
+            return true;
+        }
+        int level = ModServerConfig.GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL.get();
+        return level >= 0 && ClientWrapper.getClientPlayer().hasPermissions(level);
     }
 
     public Set<Owner> getTrusted() {

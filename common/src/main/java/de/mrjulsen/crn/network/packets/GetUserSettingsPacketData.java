@@ -3,6 +3,7 @@ package de.mrjulsen.crn.network.packets;
 import java.util.Optional;
 import java.util.UUID;
 
+import de.mrjulsen.crn.data.settings.GlobalSettings;
 import de.mrjulsen.crn.data.settings.UserSettings;
 import de.mrjulsen.mcdragonlib.data.DLStatus;
 import de.mrjulsen.mcdragonlib.network.NetworkPacketContext;
@@ -70,6 +71,9 @@ public class GetUserSettingsPacketData {
     }
 
     public static Response handle(Request packet, NetworkPacketContext context) {
+        if (!context.getPlayer().getUUID().equals(packet.id) && !GlobalSettings.hasAdminPermission(context.getPlayer())) {
+            return new Response(Optional.empty());
+        }
         return new Response(Optional.ofNullable(UserSettings.getSettingsFor(packet.id, false)));
     }
     

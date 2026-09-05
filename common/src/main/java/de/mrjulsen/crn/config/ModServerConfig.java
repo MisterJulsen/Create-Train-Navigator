@@ -34,8 +34,8 @@ public class ModServerConfig {
                 .defineInRange("general.display_lead_time", 1200, 100, 24000);
 
 
-        GLOBAL_SETTINGS_PERMISSION_LEVEL = BUILDER.comment("Minimum permission level required to edit the global navigator settings. 0 allows everyone to edit these settings. (Default: 0)")
-            .defineInRange("permissions.global_settings_permission_level", 0, 0, 4);
+        GLOBAL_SETTINGS_PERMISSION_LEVEL = BUILDER.comment("Minimum permission level required to edit the global navigator settings. 0 allows everyone to edit these settings, -1 disables editing for everyone (including admins). (Default: 0)")
+            .defineInRange("permissions.global_settings_permission_level", 0, -1, 4);
         GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL = BUILDER.comment("Minimum permission level required to use admin features in CRN. 0 gives everybody admin permissions in CRN (not recommended), -1 disables admin features. (Default: 3)")
             .defineInRange("permissions.admin_mode_permission_level", 3, -1, 4);
         

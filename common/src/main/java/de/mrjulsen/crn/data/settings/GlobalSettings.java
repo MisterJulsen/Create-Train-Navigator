@@ -72,7 +72,16 @@ public class GlobalSettings implements INBTSerializable {
     }
 
     public static boolean modificationsAllowed(Player player) {
-        return player.hasPermissions(ModServerConfig.GLOBAL_SETTINGS_PERMISSION_LEVEL.get());
+        int level = ModServerConfig.GLOBAL_SETTINGS_PERMISSION_LEVEL.get();
+        if (level < 0) {
+            return false;
+        }
+        return player.hasPermissions(level) || hasAdminPermission(player);
+    }
+
+    public static boolean hasAdminPermission(Player player) {
+        int level = ModServerConfig.GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL.get();
+        return level >= 0 && player.hasPermissions(level);
     }
 
     public synchronized static GlobalSettings getInstance() {

@@ -34,7 +34,9 @@ public class SaveUserSettingsPacketData extends NetworkPacketData {
     }
 
     public static EmptyNetworkPacketData handle(SaveUserSettingsPacketData packet, NetworkPacketContext context) {
-        packet.settings.save();
+        if (packet.settings != null && context.getPlayer().getUUID().equals(packet.settings.getOwnerId())) {
+            packet.settings.save();
+        }
         return new EmptyNetworkPacketData();
     }
     

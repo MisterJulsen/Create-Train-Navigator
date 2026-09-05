@@ -41,7 +41,13 @@ import net.minecraft.client.Minecraft;
 public class GlobalSettingsClient {
 
     public static boolean modificationsAllowed() {
-        return Minecraft.getInstance().player.hasPermissions(ModServerConfig.GLOBAL_SETTINGS_PERMISSION_LEVEL.get());
+        int level = ModServerConfig.GLOBAL_SETTINGS_PERMISSION_LEVEL.get();
+        if (level < 0) {
+            return false;
+        }
+        int adminLevel = ModServerConfig.GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL.get();
+        return Minecraft.getInstance().player.hasPermissions(level)
+            || (adminLevel >= 0 && Minecraft.getInstance().player.hasPermissions(adminLevel));
     }
 
     public static void getStationTags(Consumer<Collection<StationTag>> result) {
