@@ -1,11 +1,7 @@
 package de.mrjulsen.crn.web;
 
-import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -13,16 +9,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-
 import com.sun.net.httpserver.HttpServer;
-import com.sun.net.httpserver.HttpsConfigurator;
-import com.sun.net.httpserver.HttpsServer;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.web.api.EndpointRegistry;
-import dev.architectury.platform.Platform;
 import org.jetbrains.annotations.NotNull;
 
 public final class WebServer {
@@ -84,40 +74,12 @@ public final class WebServer {
         ApiRouter router = new ApiRouter(settings);
         InetAddress bindAddress = InetAddress.getByName(settings.bindAddress());
 
-        if (settings.httpEnabled()) {
-            HttpServer http = HttpServer.create(new InetSocketAddress(bindAddress, settings.httpPort()), 0);
-            configure(http, router);
-            http.start();
-            listeners.add(http);
-            CreateRailwaysNavigator.LOGGER.info("CRN web API (HTTP) listening on {}:{}{}", settings.bindAddress(), settings.httpPort(), basePathInfo());
-        }
-
-        if (settings.httpsEnabled()) {
-            startHttps(settings, router, bindAddress);
-        }
-
-        if (listeners.isEmpty()) {
-            CreateRailwaysNavigator.LOGGER.warn("CRN web API is enabled but neither HTTP nor HTTPS is active.");
-        } else {
-            CreateRailwaysNavigator.LOGGER.info("CRN web API serving {} endpoint(s).", EndpointRegistry.size());
-        }
-    }
-
-    private void startHttps(WebServerSettings settings, ApiRouter router, InetAddress bindAddress) {
-        if (settings.keystorePath().isBlank()) {
-            CreateRailwaysNavigator.LOGGER.warn("CRN web API HTTPS is enabled but no keystore path is set.");
-            return;
-        }
-        try {
-            HttpsServer https = HttpsServer.create(new InetSocketAddress(bindAddress, settings.httpsPort()), 0);
-            https.setHttpsConfigurator(new HttpsConfigurator(createSslContext(settings)));
-            configure(https, router);
-            https.start();
-            listeners.add(https);
-            CreateRailwaysNavigator.LOGGER.info("CRN web API (HTTPS) listening on {}:{}{}", settings.bindAddress(), settings.httpsPort(), basePathInfo());
-        } catch (Exception e) {
-            CreateRailwaysNavigator.LOGGER.error("Failed to start the HTTPS listener.", e);
-        }
+        HttpServer http = HttpServer.create(new InetSocketAddress(bindAddress, settings.port()), 0);
+        configure(http, router);
+        http.start();
+        listeners.add(http);
+        CreateRailwaysNavigator.LOGGER.info("CRN web API listening on {}:{}{}", settings.bindAddress(), settings.port(), basePathInfo());
+        CreateRailwaysNavigator.LOGGER.info("CRN web API serving {} endpoint(s).", EndpointRegistry.size());
     }
 
     private void configure(HttpServer server, ApiRouter router) {
@@ -129,22 +91,6 @@ public final class WebServer {
 
     private static String basePathInfo() {
         return "/{" + String.join("|", NAMESPACES) + "}/" + API_SEGMENT + "/<version>";
-    }
-
-    private SSLContext createSslContext(WebServerSettings settings) throws Exception {
-        Path keystoreFile = Platform.getGameFolder().resolve(settings.keystorePath());
-        char[] password = settings.keystorePassword().toCharArray();
-
-        KeyStore keyStore = KeyStore.getInstance("PKCS12");
-        try (InputStream in = Files.newInputStream(keystoreFile)) {
-            keyStore.load(in, password);
-        }
-        KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-        keyManagerFactory.init(keyStore, password);
-
-        SSLContext sslContext = SSLContext.getInstance("TLS");
-        sslContext.init(keyManagerFactory.getKeyManagers(), null, null);
-        return sslContext;
     }
 
     private void shutdown() {

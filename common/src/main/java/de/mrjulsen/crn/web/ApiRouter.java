@@ -33,7 +33,6 @@ import de.mrjulsen.crn.web.api.ResultShaper;
 final class ApiRouter implements HttpHandler {
 
     private static final int READ_CHUNK_BYTES = 8192;
-    private static final int GZIP_MIN_BYTES = 512;
 
     private final WebServerSettings settings;
 
@@ -54,10 +53,11 @@ final class ApiRouter implements HttpHandler {
             response = Response.error(HttpURLConnection.HTTP_INTERNAL_ERROR, "Internal server error");
         }
         Cors.apply(response, settings, origin);
-        try {
+        if (settings.requestLog()) {
+            CreateRailwaysNavigator.LOGGER.info("CRN web API {} {} -> {}", exchange.getRequestMethod(), exchange.getRequestURI().getPath(), response.status());
+        }
+        try (exchange) {
             write(exchange, response, settings);
-        } finally {
-            exchange.close();
         }
     }
 
@@ -185,7 +185,7 @@ final class ApiRouter implements HttpHandler {
             exchange.sendResponseHeaders(response.status(), -1);
             return;
         }
-        if (settings.gzipEnabled() && body.length >= GZIP_MIN_BYTES && acceptsGzip(exchange)) {
+        if (settings.gzipEnabled() && body.length >= settings.gzipMinBytes() && acceptsGzip(exchange)) {
             body = gzip(body);
             responseHeaders.set(HttpHeader.CONTENT_ENCODING, "gzip");
             responseHeaders.add(HttpHeader.VARY, HttpHeader.ACCEPT_ENCODING);
