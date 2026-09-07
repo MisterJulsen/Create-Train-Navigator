@@ -102,10 +102,10 @@ public class RouteDetailsWindow extends AbstractNavigatorScreen {
             long time = 0;
             if (route.hasDeparted(ModUtils.getTransformedWorldTime())) {
                 time = route.lastLeg().alighting().realtime().arrival() - ModUtils.getTransformedWorldTime();
-                GuiUtils.drawString(graphics, graphics.defaultFont(), (GUI_WIDTH / 2) / 2, (31) / 2, time < 0 ? timeNowText : TextUtils.text(new DLTime(time, VanillaTimeSystem.INSTANCE).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME, DLTime.defaultTimeSystem())), DLColor.WHITE, ETextAlignment.CENTER, false);
+                GuiUtils.drawString(graphics, graphics.defaultFont(), (GUI_WIDTH / 2) / 2, (31) / 2, time < 0 ? timeNowText : TextUtils.text(ModUtils.formatDuration(time)), DLColor.WHITE, ETextAlignment.CENTER, false);
             } else {
                 time = route.firstLeg().boarding().realtime().departure() - ModUtils.getTransformedWorldTime();
-                GuiUtils.drawString(graphics, graphics.defaultFont(), (GUI_WIDTH / 2) / 2, (31) / 2, time < 0 ? timeNowText : TextUtils.text(new DLTime(time, VanillaTimeSystem.INSTANCE).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME, DLTime.defaultTimeSystem())), DLColor.WHITE, ETextAlignment.CENTER, false);
+                GuiUtils.drawString(graphics, graphics.defaultFont(), (GUI_WIDTH / 2) / 2, (31) / 2, time < 0 ? timeNowText : TextUtils.text(ModUtils.formatDuration(time)), DLColor.WHITE, ETextAlignment.CENTER, false);
             }
             graphics.poseStack().popPose();
         }

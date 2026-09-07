@@ -94,7 +94,7 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 				return;
 			}
 
-			long dayTime = context.getTargetBlockEntity().getLevel().getDayTime();
+			long lastRefreshedTime = ModUtils.getTransformedWorldTime();
 			boolean advancedDisplaySource = context.blockEntity().activeSource instanceof AdvancedDisplaySource;
 
 			queueAdvancedDisplayWorkerTask(() -> {
@@ -117,7 +117,7 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 							preds,
 							filter,
 							GlobalSettings.getInstance().getOrCreateStationTagFor(filter).getInfoForStation(filter),
-							dayTime
+							lastRefreshedTime
 					);
 					ModCommonEvents.getCurrentServer().ifPresent(x -> x.executeIfPossible(controller::notifyUpdate));
 				} else if (controller.getDisplayType().equals(ModDisplayTypes.SIMPLE_TEXT)) {

@@ -44,6 +44,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
+import de.mrjulsen.mcdragonlib.util.time.DLTime;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -439,7 +440,7 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
         speedLabel.preferredWidth.set((float)speedLabel.clippingArea.get().width());
         speedLabel.color.set(getDisplaySettings(blockEntity).getFontColor());
 
-        dateLabel.text.set(CustomLanguage.translate(keyDate, blockEntity.getLevel().getDayTime() / Level.TICKS_PER_DAY, ModUtils.formatTime(ModUtils.getTransformedWorldTime(), getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA)));
+        dateLabel.text.set(CustomLanguage.translate(keyDate, blockEntity.getLevel().getDayTime() / DLTime.defaultTimeSystem().getTicksPerDay(), ModUtils.formatTime(ModUtils.getTransformedWorldTime(), getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA)));
         dateLabel.preferredWidth.set((float)dateLabel.clippingArea.get().width());
         dateLabel.color.set(getDisplaySettings(blockEntity).getFontColor());
 

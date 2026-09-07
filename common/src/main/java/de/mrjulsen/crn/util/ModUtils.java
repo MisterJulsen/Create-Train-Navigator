@@ -10,6 +10,7 @@ import java.util.regex.PatternSyntaxException;
 
 import com.simibubi.create.foundation.utility.CreateLang;
 
+import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.exceptions.RuntimeSideException;
@@ -382,6 +383,13 @@ public class ModUtils {
 
     public static long getTransformedWorldTime() {
         return transformWorldTime(DragonLib.getCurrentWorldTime());
+    }
+
+    public static String formatDuration(long durationTicks) {
+        if (ModClientConfig.REALTIME_DURATIONS.get()) {
+            return new DLTime(durationTicks, VanillaTimeSystem.INSTANCE).format(Constants.DEFAULT_VERBOSE_REAL_DURATION_FORMAT, TimeContext.REAL, VanillaTimeSystem.INSTANCE);
+        }
+        return new DLTime(durationTicks, VanillaTimeSystem.INSTANCE).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME, DLTime.defaultTimeSystem());
     }
 
     public static long transformWorldTime(long rawWorldTime) {

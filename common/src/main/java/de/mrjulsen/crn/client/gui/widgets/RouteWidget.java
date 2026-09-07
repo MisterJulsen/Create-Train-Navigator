@@ -90,7 +90,7 @@ public class RouteWidget extends DLButton {
             timeEnd,
             route.transferCount(),
             transferText.getString(),
-            new DLTime((int)route.duration(), VanillaTimeSystem.INSTANCE).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME, DLTime.defaultTimeSystem())
+            ModUtils.formatDuration(route.duration())
         ));
 
         final float scale = 0.75f;

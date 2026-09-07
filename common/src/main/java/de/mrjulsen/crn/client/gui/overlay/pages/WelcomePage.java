@@ -13,9 +13,6 @@ import de.mrjulsen.mcdragonlib.data.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.DLColor;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.math.Rectangle;
-import de.mrjulsen.mcdragonlib.util.time.DLTime;
-import de.mrjulsen.mcdragonlib.util.time.TimeContext;
-import de.mrjulsen.mcdragonlib.util.time.VanillaTimeSystem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -44,7 +41,7 @@ public class WelcomePage extends AbstractRouteDetailsPage {
 
         ModGuiIcons.TIME.render(graphics, 5, y + 3);
         long departureTicks = boarding.realtime().departure() - ModUtils.getTransformedWorldTime();
-        Component time = TextUtils.text(new DLTime(departureTicks, VanillaTimeSystem.INSTANCE).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME, DLTime.defaultTimeSystem()));
+        Component time = TextUtils.text(ModUtils.formatDuration(departureTicks));
 
         GuiUtils.drawString(graphics, font, 10 + ModGuiIcons.ICON_SIZE, y + 3 + ModGuiIcons.ICON_SIZE / 2 - font.lineHeight / 2, CustomLanguage.translate(keyDepartureIn).append(" ").append(departureTicks > 0 ? time : CustomLanguage.translate(keyTimeNow)).withStyle(ChatFormatting.BOLD), DLColor.WHITE, ETextAlignment.LEFT, false);
         y += 5 + ModGuiIcons.ICON_SIZE;
@@ -68,7 +65,7 @@ public class WelcomePage extends AbstractRouteDetailsPage {
         GuiUtils.drawString(graphics, font, 10 + ModGuiIcons.ICON_SIZE, y + detailsLineHeight, TextUtils.text(String.format("%s %s | %s",
             route().transferCount(),
             CustomLanguage.translate(keyTransferCount).getString(),
-            new DLTime(route().duration(), VanillaTimeSystem.INSTANCE).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME, DLTime.defaultTimeSystem())
+            ModUtils.formatDuration(route().duration())
         )), DLColor.fromInt(0xFFDBDBDB), ETextAlignment.LEFT, false);
     }
 }

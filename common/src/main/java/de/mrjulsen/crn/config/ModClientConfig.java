@@ -15,6 +15,7 @@ public class ModClientConfig {
     public static final ForgeConfigSpec.ConfigValue<Boolean> ROUTE_NOTIFICATIONS;
     public static final ForgeConfigSpec.ConfigValue<OverlayPosition> ROUTE_OVERLAY_POSITION;
     public static final ForgeConfigSpec.ConfigValue<ETimeFormat> TIME_FORMAT;
+    public static final ForgeConfigSpec.ConfigValue<Boolean> REALTIME_DURATIONS;
     public static final ForgeConfigSpec.ConfigValue<CustomLanguage> LANGUAGE;
     public static final ForgeConfigSpec.ConfigValue<ESpeedUnit> SPEED_UNIT;
 
@@ -40,6 +41,8 @@ public class ModClientConfig {
             .defineEnum("speed_unit", ESpeedUnit.KMH);
         TIME_FORMAT = BUILDER.comment("Display Time Format. (Default: Hours 24)")
             .defineEnum("time_format", ETimeFormat.HOURS_24);
+        REALTIME_DURATIONS = BUILDER.comment("Whether countdowns or durations in the UI (e.g. time until departure or transfer time) are shown as real time duration or in-game duration. OFF = in-game, ON = real life (Default: OFF)")
+            .define("general.realtime_durations", false);
 
         BUILDER.pop();
         SPEC = BUILDER.build();

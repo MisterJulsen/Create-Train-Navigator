@@ -63,7 +63,7 @@ public class TransferPage extends AbstractRouteDetailsPage {
 
         ModGuiIcons.WALK.render(graphics, 5, y + 3);
         long transferTime = boarding.realtime().departure() - ModUtils.getTransformedWorldTime();
-        Component transferTimeText = TextUtils.text(new DLTime(transferTime, VanillaTimeSystem.INSTANCE).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME, DLTime.defaultTimeSystem()));
+        Component transferTimeText = TextUtils.text(ModUtils.formatDuration(transferTime));
         GuiUtils.drawString(graphics, font, 10 + ModGuiIcons.ICON_SIZE, y + 3 + ModGuiIcons.ICON_SIZE / 2 - font.lineHeight / 2, CustomLanguage.translate(keyScheduleTransfer).append(" ").append(transferTime > 0 ? transferTimeText : CustomLanguage.translate(keyTimeNow)).withStyle(ChatFormatting.BOLD), DLColor.WHITE, ETextAlignment.LEFT, false);
         y += 5 + ModGuiIcons.ICON_SIZE;
 

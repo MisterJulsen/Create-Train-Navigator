@@ -13,6 +13,7 @@ import de.mrjulsen.crn.config.ModServerConfig;
 import de.mrjulsen.crn.core.navigator.route.RouteCall;
 import de.mrjulsen.crn.core.navigator.route.RouteLeg;
 import de.mrjulsen.crn.core.navigator.route.RouteTransfer;
+import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
 import de.mrjulsen.mcdragonlib.client.util.DLSprite;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
@@ -106,7 +107,7 @@ public class RouteOverviewPage extends AbstractRouteDetailsPage {
             ModGuiIcons.WARN.getAsSprite(16, 16).render(graphics, 5, y + ENTRY_HEIGHT - 2 - ModGuiIcons.ICON_SIZE / 2);
             GuiUtils.drawString(graphics, font, 17 + 64 + RoutePathIcons.SPRITE_WIDTH, y + ENTRY_HEIGHT - 2 - font.lineHeight / 2, textConnectionEndangered.copy().withStyle(ChatFormatting.BOLD).withStyle(ChatFormatting.GOLD), DLColor.WHITE, ETextAlignment.LEFT, false);
         } else {
-            String transferTimeText = new DLTime(transfer.duration(), VanillaTimeSystem.INSTANCE).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME, DLTime.defaultTimeSystem());
+            String transferTimeText = ModUtils.formatDuration(transfer.duration());
             GuiUtils.drawString(graphics, font, 7, y + ENTRY_HEIGHT - 2 - font.lineHeight / 2, TextUtils.text(transferTimeText).withStyle(ChatFormatting.ITALIC), DLColor.fromInt(0xFFDBDBDB), ETextAlignment.LEFT, false);
             GuiUtils.drawString(graphics, font, 17 + 64 + RoutePathIcons.SPRITE_WIDTH, y + ENTRY_HEIGHT - 2 - font.lineHeight / 2, textTransfer.copy().withStyle(ChatFormatting.ITALIC), DLColor.fromInt(0xFFDBDBDB), ETextAlignment.LEFT, false);
         }

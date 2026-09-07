@@ -155,7 +155,7 @@ public class BERPassengerInfoSimple implements AbstractAdvancedDisplayRenderer<P
                             ? blockEntity.getDestinationText()
                             : "")));
                 case 1 -> label.text.set(
-                            CustomLanguage.translate(keyDate, blockEntity.getLevel().getDayTime() / Level.TICKS_PER_DAY,
+                            CustomLanguage.translate(keyDate, blockEntity.getLevel().getDayTime() / DLTime.defaultTimeSystem().getTicksPerDay(),
                                 new DLTime(level, DLTime.defaultTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem())));
                 case 2 -> label.text.set(ModUtils.calcSpeedString(blockEntity.getTrainSpeed(),
                         ModClientConfig.SPEED_UNIT.get()));

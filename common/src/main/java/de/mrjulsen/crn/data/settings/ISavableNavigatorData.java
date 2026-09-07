@@ -6,6 +6,7 @@ import de.mrjulsen.mcdragonlib.client.util.DLSprite;
 import de.mrjulsen.mcdragonlib.util.Pair;
 import de.mrjulsen.mcdragonlib.util.time.DLTime;
 import de.mrjulsen.mcdragonlib.util.time.ITimeSystem;
+import de.mrjulsen.mcdragonlib.util.time.VanillaTimeSystem;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
@@ -16,7 +17,8 @@ public interface ISavableNavigatorData {
     long timeOrderValue();
     default long dayOrderValue() {
         ITimeSystem system = DLTime.defaultTimeSystem();
-        return (long)((timeOrderValue() + system.getDaytimeOffset()) / system.getTicksPerDay());
+        double clockTicks = DLTime.fromGameTicks(timeOrderValue(), VanillaTimeSystem.INSTANCE).toTicks(system);
+        return (long)((clockTicks + system.getDaytimeOffset()) / system.getTicksPerDay());
     }
     default Pair<String, MutableComponent> customGroup() {
         return null;

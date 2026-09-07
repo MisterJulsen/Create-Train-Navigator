@@ -33,6 +33,7 @@ public final class RailwayBackend {
     private static final long WORKER_SHUTDOWN_TIMEOUT_SECONDS = 10;
     private static final long SAVE_SHUTDOWN_TIMEOUT_SECONDS = 30;
     private static final long REGULAR_TIME_ADVANCE = 1;
+    private static final long TIME_JUMP_MIN_RAW_DELTA = 100;
     private static final long TIME_JUMP_LOG_THRESHOLD = 40;
 
     private static volatile boolean active = false;
@@ -203,18 +204,15 @@ public final class RailwayBackend {
 
     private static void handleTimeJump() {
         long rawNow = DragonLib.getCurrentWorldTime();
-        if (lastRawWorldTime != Long.MIN_VALUE) {
-            long rawDiff = rawNow - lastRawWorldTime;
-            if (rawDiff != REGULAR_TIME_ADVANCE && rawDiff != 0) {
-                long expected = ModUtils.transformWorldTime(lastRawWorldTime + REGULAR_TIME_ADVANCE);
-                long diff = ModUtils.transformWorldTime(rawNow) - expected;
-                if (diff != 0) {
-                    TrainManager.getInstance().shiftTimes(diff);
-                    if (Math.abs(diff) >= TIME_JUMP_LOG_THRESHOLD) {
-                        CreateRailwaysNavigator.LOGGER.info("[{}] World time jumped by {} ticks. All timestamps have been corrected.", WORKER_THREAD_NAME, diff);
-                    } else {
-                        CreateRailwaysNavigator.LOGGER.debug("[{}] World time jumped by {} ticks. All timestamps have been corrected.", WORKER_THREAD_NAME, diff);
-                    }
+        if (lastRawWorldTime != Long.MIN_VALUE && Math.abs(rawNow - lastRawWorldTime) >= TIME_JUMP_MIN_RAW_DELTA) {
+            long expected = ModUtils.transformWorldTime(lastRawWorldTime) + REGULAR_TIME_ADVANCE;
+            long diff = ModUtils.transformWorldTime(rawNow) - expected;
+            if (diff != 0) {
+                TrainManager.getInstance().shiftTimes(diff);
+                if (Math.abs(diff) >= TIME_JUMP_LOG_THRESHOLD) {
+                    CreateRailwaysNavigator.LOGGER.info("[{}] World time jumped by {} ticks. All timestamps have been corrected.", WORKER_THREAD_NAME, diff);
+                } else {
+                    CreateRailwaysNavigator.LOGGER.debug("[{}] World time jumped by {} ticks. All timestamps have been corrected.", WORKER_THREAD_NAME, diff);
                 }
             }
         }

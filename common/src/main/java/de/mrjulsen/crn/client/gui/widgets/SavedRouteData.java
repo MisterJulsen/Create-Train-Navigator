@@ -3,7 +3,6 @@ package de.mrjulsen.crn.client.gui.widgets;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.config.ModClientConfig;
@@ -80,7 +79,7 @@ public record SavedRouteData(RouteJourney journey) implements ISavableNavigatorD
     }
 
     private static MutableComponent duration(long ticks) {
-        return TextUtils.text(new DLTime(ticks, VanillaTimeSystem.INSTANCE).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME, DLTime.defaultTimeSystem()));
+        return TextUtils.text(ModUtils.formatDuration(ticks));
     }
 
     private static DLSprite icon(ModGuiIcons icon) {

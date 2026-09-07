@@ -1,10 +1,10 @@
 package de.mrjulsen.crn.client.gui.widgets.routedetails;
 
-import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
 import de.mrjulsen.crn.core.navigator.route.RouteTransfer;
+import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLGuiComponent;
 import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
 import de.mrjulsen.mcdragonlib.client.util.DLTexture;
@@ -15,9 +15,6 @@ import de.mrjulsen.mcdragonlib.util.DLColor;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.math.Rectangle;
-import de.mrjulsen.mcdragonlib.util.time.DLTime;
-import de.mrjulsen.mcdragonlib.util.time.TimeContext;
-import de.mrjulsen.mcdragonlib.util.time.VanillaTimeSystem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.MutableComponent;
 
@@ -49,7 +46,7 @@ public class RouteDetailsTransferWidget extends DLGuiComponent {
             ModGuiIcons.WARN.render(graphics, 24, 4);
             GuiUtils.drawString(graphics, graphics.defaultFont(), 28 + ModGuiIcons.ICON_SIZE + 2, 8, textConnectionEndangered, DLColor.WHITE, ETextAlignment.LEFT, false);
         } else {
-            GuiUtils.drawString(graphics, graphics.defaultFont(), 32, 8, TextUtils.text(textTransfer.getString() + " " + (time < 0 ? "" : "(" + new DLTime(time, VanillaTimeSystem.INSTANCE).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME, DLTime.defaultTimeSystem()) + ")")), DLColor.WHITE, ETextAlignment.LEFT, false);
+            GuiUtils.drawString(graphics, graphics.defaultFont(), 32, 8, TextUtils.text(textTransfer.getString() + " " + (time < 0 ? "" : "(" + ModUtils.formatDuration(time) + ")")), DLColor.WHITE, ETextAlignment.LEFT, false);
         }
     }    
 }
