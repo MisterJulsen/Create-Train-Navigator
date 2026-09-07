@@ -4,6 +4,7 @@ import java.util.List;
 
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.client.ClientDisplayClock;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.BarColor;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.ContainerColor;
@@ -92,7 +93,8 @@ public class RouteDetailsWindow extends AbstractNavigatorScreen {
         CreateDynamicWidgets.renderContainer(graphics, 1, y, GUI_WIDTH - 2, GUI_HEIGHT - y - FooterSize.SMALL.size() + 1, ContainerColor.GOLD);
         
         if (!route.isAnyCancelled()) {
-            if (route.hasDeparted(ModUtils.getTransformedWorldTime())) {
+            long now = ClientDisplayClock.now();
+            if (route.hasDeparted(now)) {
                 GuiUtils.drawString(graphics, graphics.defaultFont(), GUI_WIDTH / 2, 19, textArrival, DLColor.WHITE, ETextAlignment.CENTER, false);
             } else {
                 GuiUtils.drawString(graphics, graphics.defaultFont(), GUI_WIDTH / 2, 19, textDeparture, DLColor.WHITE, ETextAlignment.CENTER, false);
@@ -100,11 +102,11 @@ public class RouteDetailsWindow extends AbstractNavigatorScreen {
             graphics.poseStack().pushPose();
             graphics.poseStack().scale(2, 2, 2);
             long time = 0;
-            if (route.hasDeparted(ModUtils.getTransformedWorldTime())) {
-                time = route.lastLeg().alighting().realtime().arrival() - ModUtils.getTransformedWorldTime();
+            if (route.hasDeparted(now)) {
+                time = route.lastLeg().alighting().realtime().arrival() - now;
                 GuiUtils.drawString(graphics, graphics.defaultFont(), (GUI_WIDTH / 2) / 2, (31) / 2, time < 0 ? timeNowText : TextUtils.text(ModUtils.formatDuration(time)), DLColor.WHITE, ETextAlignment.CENTER, false);
             } else {
-                time = route.firstLeg().boarding().realtime().departure() - ModUtils.getTransformedWorldTime();
+                time = route.firstLeg().boarding().realtime().departure() - now;
                 GuiUtils.drawString(graphics, graphics.defaultFont(), (GUI_WIDTH / 2) / 2, (31) / 2, time < 0 ? timeNowText : TextUtils.text(ModUtils.formatDuration(time)), DLColor.WHITE, ETextAlignment.CENTER, false);
             }
             graphics.poseStack().popPose();

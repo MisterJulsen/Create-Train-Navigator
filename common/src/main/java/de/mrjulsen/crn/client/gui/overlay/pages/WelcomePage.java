@@ -1,6 +1,7 @@
 package de.mrjulsen.crn.client.gui.overlay.pages;
 
 import de.mrjulsen.crn.Constants;
+import de.mrjulsen.crn.client.ClientDisplayClock;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.overlay.pages.RouteOverviewPage.RoutePathIcons;
 import de.mrjulsen.crn.client.journey.JourneyTracker;
@@ -40,7 +41,7 @@ public class WelcomePage extends AbstractRouteDetailsPage {
         GuiUtils.fill(graphics, 0, y, width(), 1, DLColor.fromInt(0xFFDBDBDB));
 
         ModGuiIcons.TIME.render(graphics, 5, y + 3);
-        long departureTicks = boarding.realtime().departure() - ModUtils.getTransformedWorldTime();
+        long departureTicks = boarding.realtime().departure() - ClientDisplayClock.now();
         Component time = TextUtils.text(ModUtils.formatDuration(departureTicks));
 
         GuiUtils.drawString(graphics, font, 10 + ModGuiIcons.ICON_SIZE, y + 3 + ModGuiIcons.ICON_SIZE / 2 - font.lineHeight / 2, CustomLanguage.translate(keyDepartureIn).append(" ").append(departureTicks > 0 ? time : CustomLanguage.translate(keyTimeNow)).withStyle(ChatFormatting.BOLD), DLColor.WHITE, ETextAlignment.LEFT, false);

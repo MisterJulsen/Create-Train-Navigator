@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.client.ClientDisplayClock;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.data.settings.ISavableNavigatorData;
@@ -67,7 +68,7 @@ public record SavedRouteData(RouteJourney journey) implements ISavableNavigatorD
     }
 
     private long departureIn() {
-        return journey.departure() - ModUtils.getTransformedWorldTime();
+        return journey.departure() - ClientDisplayClock.now();
     }
 
     private static String clockTime(long ticks) {

@@ -1,6 +1,6 @@
 package de.mrjulsen.crn.client.gui.overlay.pages;
 
-import de.mrjulsen.crn.Constants;
+import de.mrjulsen.crn.client.ClientDisplayClock;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.overlay.pages.RouteOverviewPage.RoutePathIcons;
 import de.mrjulsen.crn.client.journey.JourneyTracker;
@@ -15,9 +15,6 @@ import de.mrjulsen.mcdragonlib.data.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.DLColor;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.math.Rectangle;
-import de.mrjulsen.mcdragonlib.util.time.DLTime;
-import de.mrjulsen.mcdragonlib.util.time.TimeContext;
-import de.mrjulsen.mcdragonlib.util.time.VanillaTimeSystem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.network.chat.Component;
@@ -62,7 +59,7 @@ public class TransferPage extends AbstractRouteDetailsPage {
         GuiUtils.fill(graphics, 0, y, width(), 1, DLColor.WHITE);
 
         ModGuiIcons.WALK.render(graphics, 5, y + 3);
-        long transferTime = boarding.realtime().departure() - ModUtils.getTransformedWorldTime();
+        long transferTime = boarding.realtime().departure() - ClientDisplayClock.now();
         Component transferTimeText = TextUtils.text(ModUtils.formatDuration(transferTime));
         GuiUtils.drawString(graphics, font, 10 + ModGuiIcons.ICON_SIZE, y + 3 + ModGuiIcons.ICON_SIZE / 2 - font.lineHeight / 2, CustomLanguage.translate(keyScheduleTransfer).append(" ").append(transferTime > 0 ? transferTimeText : CustomLanguage.translate(keyTimeNow)).withStyle(ChatFormatting.BOLD), DLColor.WHITE, ETextAlignment.LEFT, false);
         y += 5 + ModGuiIcons.ICON_SIZE;

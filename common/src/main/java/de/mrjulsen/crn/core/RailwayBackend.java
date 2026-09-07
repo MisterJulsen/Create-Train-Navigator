@@ -16,7 +16,6 @@ import de.mrjulsen.crn.core.delay.ExternalDelayReports;
 import de.mrjulsen.crn.core.navigator.index.TimetableIndex;
 import de.mrjulsen.crn.core.util.StationLookup;
 import de.mrjulsen.crn.util.ModUtils;
-import de.mrjulsen.mcdragonlib.DragonLib;
 import dev.architectury.event.events.common.LifecycleEvent;
 import dev.architectury.event.events.common.TickEvent;
 import net.minecraft.nbt.CompoundTag;
@@ -33,13 +32,13 @@ public final class RailwayBackend {
     private static final long WORKER_SHUTDOWN_TIMEOUT_SECONDS = 10;
     private static final long SAVE_SHUTDOWN_TIMEOUT_SECONDS = 30;
     private static final long REGULAR_TIME_ADVANCE = 1;
-    private static final long TIME_JUMP_MIN_RAW_DELTA = 100;
-    private static final long TIME_JUMP_LOG_THRESHOLD = 40;
+    private static final long TIME_JUMP_MIN_DELTA = 200;
+    private static final long TIME_JUMP_LOG_THRESHOLD = 1200;
 
     private static volatile boolean active = false;
     private static MinecraftServer server;
     private static int tickCounter = 0;
-    private static long lastRawWorldTime = Long.MIN_VALUE;
+    private static long expectedTransformedTime = Long.MIN_VALUE;
 
     private static ExecutorService worker;
     private static ExecutorService saveExecutor;
@@ -66,7 +65,7 @@ public final class RailwayBackend {
     private static void start(MinecraftServer currentServer) {
         server = currentServer;
         tickCounter = 0;
-        lastRawWorldTime = Long.MIN_VALUE;
+        expectedTransformedTime = Long.MIN_VALUE;
 
         TrainManager.closeInstance();
         TrainManager manager = TrainManager.getInstance();
@@ -203,20 +202,23 @@ public final class RailwayBackend {
     }
 
     private static void handleTimeJump() {
-        long rawNow = DragonLib.getCurrentWorldTime();
-        if (lastRawWorldTime != Long.MIN_VALUE && Math.abs(rawNow - lastRawWorldTime) >= TIME_JUMP_MIN_RAW_DELTA) {
-            long expected = ModUtils.transformWorldTime(lastRawWorldTime) + REGULAR_TIME_ADVANCE;
-            long diff = ModUtils.transformWorldTime(rawNow) - expected;
-            if (diff != 0) {
-                TrainManager.getInstance().shiftTimes(diff);
-                if (Math.abs(diff) >= TIME_JUMP_LOG_THRESHOLD) {
-                    CreateRailwaysNavigator.LOGGER.info("[{}] World time jumped by {} ticks. All timestamps have been corrected.", WORKER_THREAD_NAME, diff);
-                } else {
-                    CreateRailwaysNavigator.LOGGER.debug("[{}] World time jumped by {} ticks. All timestamps have been corrected.", WORKER_THREAD_NAME, diff);
-                }
+        long now = ModUtils.getTransformedWorldTime();
+        if (expectedTransformedTime == Long.MIN_VALUE) {
+            expectedTransformedTime = now;
+            return;
+        }
+
+        expectedTransformedTime += REGULAR_TIME_ADVANCE;
+        long diff = now - expectedTransformedTime;
+        if (Math.abs(diff) >= TIME_JUMP_MIN_DELTA) {
+            TrainManager.getInstance().shiftTimes(diff);
+            expectedTransformedTime = now;
+            if (Math.abs(diff) >= TIME_JUMP_LOG_THRESHOLD) {
+                CreateRailwaysNavigator.LOGGER.info("[{}] World time jumped by {} ticks. All timestamps have been corrected.", WORKER_THREAD_NAME, diff);
+            } else {
+                CreateRailwaysNavigator.LOGGER.debug("[{}] World time jumped by {} ticks. All timestamps have been corrected.", WORKER_THREAD_NAME, diff);
             }
         }
-        lastRawWorldTime = rawNow;
     }
 
     public static void save() {
