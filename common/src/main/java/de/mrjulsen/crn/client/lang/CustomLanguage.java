@@ -1,58 +1,45 @@
 package de.mrjulsen.crn.client.lang;
 
-import java.util.Arrays;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Supplier;
+
+import com.google.common.base.Suppliers;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import dev.architectury.platform.Platform;
 import dev.architectury.utils.Env;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.language.LanguageInfo;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.util.StringRepresentable;
 
-public enum CustomLanguage implements StringRepresentable {
-    DEFAULT("defaut", "def"),
-    ENGLISH("english", "en_us"),
-    GERMAN("german", "de_de"),
-    DUTCH("dutch", "nl_nl"),
-    POLISH("polish", "pl_pl"),
-    CHINESE_SIMPLIFIED("chinese_simplified", "zh_cn"),
-    SAXON("saxon", "sxu"),
-    BAVARIAN("bavarian", "bar"),
-    SPANISH("spanish", "es_es"),
-    RUSSIAN("russian", "ru_ru"),
-    FRENCH("french", "fr_fr"),
-    KOREAN("korean", "ko_kr"),
-    SWEDISH("swedish", "sv_se"),
-    PORTUGUESE("portuguese", "pt_pt"),
-    BASQUE("basque", "eu_es"),
-    ITALIAN("italian", "it_it"),
-    JAPANESE("japanese", "ja_jp"),
-    PORTUGUESE_BRAZILIAN("portuguese_brazilian", "pt_br"),
-    UKRAINIAN("ukrainian", "uk_ua"),
-    ARABIC("arabic", "ar_sa"),
-    CZECH("czech", "cs_cz"),
-    GERMAN_SWITZERLAND("german_switzerland", "de_ch"),
-    ROMANIAN("romanian", "ro_ro"),
-    TURKISH("turkish", "tr_tr"),
-    HUNGARIAN("hungarian", "hu_hu"),
-    HEBREW("hebrew", "he_il");
+public class CustomLanguage {
 
-    private String name;
-    private String code;
+    public static final String DEFAULT = "";
 
-    private CustomLanguage(String name, String code) {
-        this.name = name;
+    private final String code;
+    private final Supplier<LanguageInfo> info;
+
+    public CustomLanguage(String code) {
         this.code = code;
+        this.info = Suppliers.memoize(() -> {
+            try {
+                return Minecraft.getInstance().getLanguageManager().getLanguage(code);
+            } catch (Exception e) {
+                return null;
+            }
+        });
     }
 
-    public String getName() {
-        return name;
+    public Optional<LanguageInfo> getLanguageInfo() {
+        return Optional.ofNullable(info.get());
     }
 
     public String getCode() {
         return code;
     }
 
-    public static CustomLanguage getByCode(String code) {
-        return Arrays.stream(values()).filter(x -> x.getCode().equals(code)).findFirst().orElse(DEFAULT);
+    public boolean isDefault() {
+        return DEFAULT.equals(code);
     }
 
     public static MutableComponent translate(String key) {
@@ -78,10 +65,22 @@ public enum CustomLanguage implements StringRepresentable {
             return TextUtils.translate(key, args);
         }
     }
-    
+
     @Override
-    public String getSerializedName() {
-        return code;
+    public boolean equals(Object obj) {
+        if (obj instanceof CustomLanguage o) {
+            return code.equals(o.code);
+        }
+        return false;
     }
-    
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(code);
+    }
+
+    @Override
+    public String toString() {
+        return super.toString();
+    }
 }

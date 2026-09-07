@@ -92,22 +92,19 @@ public class ClientWrapper {
         DLWindow.openWindow(mgr -> new AdvancedDisplaySettingsWindow(mgr, blockEntity, contraption));
     }
 
-    public static void updateLanguage(CustomLanguage lang, boolean force) {
-        if (currentLanguage == lang && !force) {
+    public static void updateLanguage(String localeCode, boolean force) {
+        if (currentLanguage != null && currentLanguage.getCode().equals(localeCode) && !force) {
             return;
         }
 
-        LanguageInfo info = lang == CustomLanguage.DEFAULT ? null : Minecraft.getInstance().getLanguageManager().getLanguage(lang.getCode());
-        if (info == null) {
-            info = Minecraft.getInstance().getLanguageManager().getLanguage(Minecraft.getInstance().getLanguageManager().getSelected());
-        }
-        currentLanguage = lang;
-        if (lang == CustomLanguage.DEFAULT || info == null) {
+        currentLanguage = new CustomLanguage(localeCode);
+        LanguageInfo info = currentLanguage.getLanguageInfo().orElse(Minecraft.getInstance().getLanguageManager().getLanguage(Minecraft.getInstance().getLanguageManager().getSelected()));
+        if (currentLanguage.isDefault() || info == null) {
             currentClientLanguage = Language.getInstance();
             CreateRailwaysNavigator.LOGGER.info("Updated custom language to: (Default)");
         } else {
-            currentClientLanguage = ClientLanguage.loadFrom(Minecraft.getInstance().getResourceManager(), List.of(lang == CustomLanguage.DEFAULT ? Minecraft.getInstance().getLanguageManager().getSelected() : lang.getCode()), false);
-            CreateRailwaysNavigator.LOGGER.info("Updated custom language to: " + (info == null ? null : info.name()));
+            currentClientLanguage = ClientLanguage.loadFrom(Minecraft.getInstance().getResourceManager(), List.of(currentLanguage.getCode()), false);
+            CreateRailwaysNavigator.LOGGER.info("Updated custom language to: {}", info.name());
         }
     }
 

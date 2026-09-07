@@ -24,7 +24,7 @@ public class ModServerConfig {
     public static final ForgeConfigSpec.ConfigValue<Boolean> SCHEDULE_INCLUDES_WAITING;
 
     static {
-        BUILDER.push(CreateRailwaysNavigator.MOD_ID + "_common_config");
+        BUILDER.push(CreateRailwaysNavigator.MOD_ID + "_server_config");
 
         NEXT_STOP_ANNOUNCEMENT = BUILDER.comment("[in Ticks]", "The next stop or information about the start of the journey is announced in the specified number of ticks before the scheduled arrival at the next station. (Default: 600, 30 real life seconds)")
                 .defineInRange("general.next_stop_announcement", 600, 100, 1000);
