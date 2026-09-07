@@ -95,7 +95,7 @@ public class Lock {
     private transient final MutableComponent txtRightClickOptions = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".lock.right_click_options").withStyle(ChatFormatting.DARK_GRAY).withStyle(ChatFormatting.ITALIC);
     private transient final MutableComponent txtNoOwner = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".lock.no_owner");
     private transient final String keyStatus = "gui." + CreateRailwaysNavigator.MOD_ID + ".lock.state";
-    private transient final String keyOwner = "gui." + CreateRailwaysNavigator.MOD_ID + ".lock.owners";
+    private transient final String keyOwner = "gui." + CreateRailwaysNavigator.MOD_ID + ".lock.owner";
 
     private Owner owner;
     private LockState state;
