@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.flyout.FlyoutConfirmDialog;
 import de.mrjulsen.crn.client.gui.flyout.FlyoutTrustedPlayersWidget;
@@ -75,7 +76,7 @@ public class StationTagSettingsWindow extends AbstractNavigatorScreen {
         
         CreateButton helpButton = addComponent(new CreateButton(width() - CreateButton.WIDTH - 8, height() - CreateButton.HEIGHT - 6, ModGuiIcons.HELP.getAsCreateIcon()));
         helpButton.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> { 
-            Util.getPlatform().openUri(Constants.HELP_PAGE_STATION_TAGS);
+            ClientWrapper.openUrl(Constants.HELP_PAGE_STATION_TAGS);
             return false;
         });
         helpButton.tooltip.set(new DLTooltip(List.of(Constants.TEXT_HELP), 200));

@@ -7,6 +7,7 @@ import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.client.gui.widgets.create.CreateScrollNumberInput;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLNumberPicker;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.util.INumberFormatAdapter;
@@ -207,7 +208,7 @@ public class PrioritizedDestinationInstructionSettingsWindow extends DLWindow {
 
         CreateButton helpButton = addComponent(new CreateButton(GUI_WIDTH - 17 - DEFAULT_ICON_BUTTON_WIDTH * 2, GUI_HEIGHT - 6 - DEFAULT_ICON_BUTTON_HEIGHT, ModGuiIcons.HELP.getAsCreateIcon()));
         helpButton.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
-            Util.getPlatform().openUri(Constants.HELP_PAGE_PRIORITIZED_DESTINATION_INSTRUCTION);
+            ClientWrapper.openUrl(Constants.HELP_PAGE_PRIORITIZED_DESTINATION_INSTRUCTION);
             return false;
         });
         helpButton.tooltip.set(new DLTooltip(List.of(Constants.TEXT_HELP), 200));

@@ -9,6 +9,7 @@ import com.simibubi.create.AllItems;
 import com.simibubi.create.foundation.gui.AllIcons;
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.BarColor;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.ContainerColor;
@@ -101,7 +102,7 @@ public class TrainSectionSettingsWindow extends DLWindow {
 
         CreateButton helpButton = addComponent(new CreateButton(width() - 17 - CreateButton.WIDTH * 2, height() - 6 - CreateButton.HEIGHT, ModGuiIcons.HELP.getAsCreateIcon()));
         helpButton.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
-            Util.getPlatform().openUri(Constants.HELP_PAGE_SCHEDULE_SECTIONS);
+            ClientWrapper.openUrl(Constants.HELP_PAGE_SCHEDULE_SECTIONS);
             return false;
         });
         helpButton.tooltip.set(new DLTooltip(List.of(Constants.TEXT_HELP), 200));

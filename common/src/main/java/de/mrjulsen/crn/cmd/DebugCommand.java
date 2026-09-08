@@ -8,6 +8,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.core.TrainManager;
 import de.mrjulsen.crn.core.train.TrackedTrain;
 import de.mrjulsen.crn.core.debug.BackendDebugOverlay;
@@ -87,13 +88,13 @@ public class DebugCommand {
 
     private static int discord(CommandSourceStack cmd) throws CommandSyntaxException {
         cmd.sendSuccess(() -> TextUtils.text("Redirecting to the discord server..."), false);
-        Util.getPlatform().openUri(CreateRailwaysNavigator.DISCORD);
+        ClientWrapper.openUrl(CreateRailwaysNavigator.DISCORD);
         return 1;
     }
 
     private static int github(CommandSourceStack cmd) throws CommandSyntaxException {
         cmd.sendSuccess(() -> TextUtils.text("Redirecting to the github repository..."), false);
-        Util.getPlatform().openUri(CreateRailwaysNavigator.GITHUB);
+        ClientWrapper.openUrl(CreateRailwaysNavigator.GITHUB);
         return 1;
     }
 

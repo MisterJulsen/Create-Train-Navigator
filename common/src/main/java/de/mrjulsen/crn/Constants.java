@@ -12,6 +12,10 @@ import de.mrjulsen.mcdragonlib.util.time.VanillaTimeSystem;
 import de.mrjulsen.mcdragonlib.util.time.format.ITimeFormatter;
 import de.mrjulsen.mcdragonlib.util.time.format.TimeFormatDigitalDuration;
 import de.mrjulsen.mcdragonlib.util.time.format.TimeFormatVerboseDuration;
+import net.minecraft.Util;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.ConfirmLinkScreen;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 public class Constants {
@@ -65,9 +69,9 @@ public class Constants {
     public static final String HELP_PAGE_NAVIGATION_WARNING = WIKI + "other_topics/navigation_warning/";
     public static final String HELP_PAGE_SCHEDULE_SECTIONS = WIKI + "features/schedule_section/";
     public static final String HELP_PAGE_SCHEDULED_TIMES_AND_REAL_TIME = WIKI + "other_topics/scheduled_and_real_time/";
-    public static final String HELP_PAGE_STATION_BLACKLIST = WIKI + "features/blacklists/";
+    public static final String HELP_PAGE_STATION_BLACKLIST = WIKI + "features/blacklists/#station-blacklist";
     public static final String HELP_PAGE_STATION_TAGS = WIKI + "features/station_tag/";
-    public static final String HELP_PAGE_TRAIN_BLACKLIST = WIKI + "features/blacklists/";
+    public static final String HELP_PAGE_TRAIN_BLACKLIST = WIKI + "features/blacklists/#train-blacklist";
     public static final String HELP_PAGE_TRAIN_CATEGORIES = WIKI + "features/train_category/";
     public static final String HELP_PAGE_TRAIN_INITIALIZATION = WIKI + "other_topics/train_initialization/";
     public static final String HELP_PAGE_TRAIN_LINES = WIKI + "features/train_lines/";

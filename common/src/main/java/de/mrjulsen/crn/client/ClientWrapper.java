@@ -4,6 +4,9 @@ import java.util.List;
 import com.simibubi.create.foundation.utility.CreateLang;
 import de.mrjulsen.crn.client.gui.windows.*;
 import net.createmod.catnip.data.Pair;
+import net.minecraft.Util;
+import net.minecraft.client.gui.screens.ConfirmLinkScreen;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.SectionPos;
 import org.joml.Vector3f;
 
@@ -239,5 +242,15 @@ public class ClientWrapper {
 
     public static Player getClientPlayer() {
         return Minecraft.getInstance().player;
+    }
+
+    public static void openUrl(String url) {
+        Screen previous = Minecraft.getInstance().screen;
+        Minecraft.getInstance().setScreen(new ConfirmLinkScreen((b) -> {
+            if (b) {
+                Util.getPlatform().openUri(url);
+            }
+            Minecraft.getInstance().setScreen(previous);
+        }, url, true));
     }
 }

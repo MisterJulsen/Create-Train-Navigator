@@ -16,6 +16,7 @@ import de.mrjulsen.crn.block.properties.ESide;
 import de.mrjulsen.crn.client.AdvancedDisplaysRegistry;
 import de.mrjulsen.crn.client.AdvancedDisplaysRegistry.DisplayTypeResourceKey;
 import de.mrjulsen.crn.client.CRNGui;
+import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.BarColor;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.ColorShade;
@@ -161,7 +162,7 @@ public class AdvancedDisplaySettingsWindow extends DLWindow {
 
         CreateButton helpButton = addComponent(new CreateButton(GUI_WIDTH - 17 - CreateButton.WIDTH * 2, height() - 6 - CreateButton.HEIGHT, ModGuiIcons.HELP.getAsCreateIcon()));
         helpButton.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
-            Util.getPlatform().openUri(Constants.HELP_PAGE_ADVANCED_DISPLAYS);
+            ClientWrapper.openUrl(Constants.HELP_PAGE_ADVANCED_DISPLAYS);
             return false;
         });
         helpButton.tooltip.set(new DLTooltip(List.of(Constants.TEXT_HELP), 200));

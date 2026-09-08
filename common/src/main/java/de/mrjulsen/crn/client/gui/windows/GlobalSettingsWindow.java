@@ -5,6 +5,7 @@ import java.util.List;
 
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.flyout.FlyoutColorPickerWidget;
 import de.mrjulsen.crn.client.gui.flyout.FlyoutConfirmDialog;
@@ -62,6 +63,7 @@ import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 public class GlobalSettingsWindow extends AbstractNavigatorScreen {
@@ -86,7 +88,7 @@ public class GlobalSettingsWindow extends AbstractNavigatorScreen {
         
         CreateButton helpButton = addComponent(new CreateButton(width() - CreateButton.WIDTH - 8, height() - CreateButton.HEIGHT - 6, ModGuiIcons.HELP.getAsCreateIcon()));
         helpButton.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> { 
-            Util.getPlatform().openUri(Constants.HELP_PAGE_GLOBAL_SETTINGS);
+            ClientWrapper.openUrl(Constants.HELP_PAGE_GLOBAL_SETTINGS);
             return false;
         });
         helpButton.tooltip.set(new DLTooltip(List.of(Constants.TEXT_HELP), 200));
@@ -216,7 +218,7 @@ public class GlobalSettingsWindow extends AbstractNavigatorScreen {
         btnHelp.tooltip.set(new DLTooltip(List.of(Constants.TEXT_HELP), 200));
         btnHelp.layoutContraint.set("help");
         btnHelp.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
-            Util.getPlatform().openUri(Constants.HELP_PAGE_TRAIN_BLACKLIST);
+            ClientWrapper.openUrl(Constants.HELP_PAGE_TRAIN_BLACKLIST);
             return false;
         });
         trainLinesEntry.getHeader().addComponent(btnHelp);
@@ -305,7 +307,7 @@ public class GlobalSettingsWindow extends AbstractNavigatorScreen {
         btnHelp.tooltip.set(new DLTooltip(List.of(Constants.TEXT_HELP), 200));
         btnHelp.layoutContraint.set("help");
         btnHelp.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
-            Util.getPlatform().openUri(Constants.HELP_PAGE_STATION_BLACKLIST);
+            ClientWrapper.openUrl(Constants.HELP_PAGE_STATION_BLACKLIST);
             return false;
         });
         trainLinesEntry.getHeader().addComponent(btnHelp);
@@ -468,7 +470,7 @@ public class GlobalSettingsWindow extends AbstractNavigatorScreen {
         btnHelp.tooltip.set(new DLTooltip(List.of(Constants.TEXT_HELP), 200));
         btnHelp.layoutContraint.set("help");
         btnHelp.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
-            Util.getPlatform().openUri(Constants.HELP_PAGE_TRAIN_LINES);
+            ClientWrapper.openUrl(Constants.HELP_PAGE_TRAIN_LINES);
             return false;
         });
         trainLinesEntry.getHeader().addComponent(btnHelp);
@@ -636,7 +638,7 @@ public class GlobalSettingsWindow extends AbstractNavigatorScreen {
         btnHelp.tooltip.set(new DLTooltip(List.of(Constants.TEXT_HELP), 200));
         btnHelp.layoutContraint.set("help");
         btnHelp.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
-            Util.getPlatform().openUri(Constants.HELP_PAGE_TRAIN_CATEGORIES);
+            ClientWrapper.openUrl(Constants.HELP_PAGE_TRAIN_CATEGORIES);
             return false;
         });
         trainLinesEntry.getHeader().addComponent(btnHelp);
