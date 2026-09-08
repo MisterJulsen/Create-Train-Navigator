@@ -12,6 +12,7 @@ public class ModServerConfig {
     public static final ForgeConfigSpec.ConfigValue<Integer> REALTIME_PRECISION_THRESHOLD;
     public static final ForgeConfigSpec.ConfigValue<Integer> NEXT_STOP_ANNOUNCEMENT;
     public static final ForgeConfigSpec.ConfigValue<Integer> DISPLAY_LEAD_TIME;
+    public static final ForgeConfigSpec.ConfigValue<Boolean> SHOW_UNTAGGED_STATIONS;
     public static final ForgeConfigSpec.ConfigValue<Integer> GLOBAL_SETTINGS_PERMISSION_LEVEL;
     public static final ForgeConfigSpec.ConfigValue<Integer> GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL;
     public static final ForgeConfigSpec.ConfigValue<Integer> TOTAL_DURATION_BUFFER_SIZE;
@@ -32,6 +33,8 @@ public class ModServerConfig {
                 .defineInRange("general.realtime_precision_threshold", 167, 1, 1000);
         DISPLAY_LEAD_TIME = BUILDER.comment("[in Ticks]", "How early a train should be shown on the display. (Default: 1200, 1 real life minute)")
                 .defineInRange("general.display_lead_time", 1200, 100, 24000);
+        SHOW_UNTAGGED_STATIONS = BUILDER.comment("Whether stations, that are not part of any station tag, should be shown in the suggestions list of the navigator UI. (Default: ON)")
+                .define("general.show_untagged_stations", true);
 
 
         GLOBAL_SETTINGS_PERMISSION_LEVEL = BUILDER.comment("Minimum permission level required to edit the global navigator settings. 0 allows everyone to edit these settings, -1 disables editing for everyone (including admins). (Default: 0)")

@@ -1,6 +1,8 @@
 package de.mrjulsen.crn.network.packets;
 
 import java.util.Collection;
+
+import de.mrjulsen.crn.config.ModServerConfig;
 import de.mrjulsen.crn.data.settings.StationTag;
 import de.mrjulsen.crn.data.settings.GlobalSettings;
 import de.mrjulsen.crn.util.TrainUtils;
@@ -73,8 +75,9 @@ public class GetAllStationsAsTagsPacketData {
     }
 
     public static Response handle(Request packet, NetworkPacketContext context) {
+        GlobalSettings settings = GlobalSettings.getInstance();
         return new Response(TrainUtils.getAllStations().stream()
-                .filter(x -> !packet.excludeBlacklisted || !GlobalSettings.getInstance().isStationBlacklisted(x))
+                .filter(x -> !(packet.excludeBlacklisted && settings.isStationBlacklisted(x)) && (ModServerConfig.SHOW_UNTAGGED_STATIONS.get() || settings.hasStationTag(x.name)))
                 .map(x -> GlobalSettings.getInstance().getOrCreateStationTagFor(x)).distinct()
                 .sorted((a, b) -> a.getTagName().get().compareToIgnoreCase(b.getTagName().get())).toList());
     }
