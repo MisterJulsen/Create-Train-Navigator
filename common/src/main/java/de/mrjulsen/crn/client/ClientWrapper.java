@@ -1,6 +1,5 @@
 package de.mrjulsen.crn.client;
 
-import java.util.List;
 import com.simibubi.create.foundation.utility.CreateLang;
 import de.mrjulsen.crn.client.gui.windows.*;
 import net.createmod.catnip.data.Pair;
@@ -52,12 +51,10 @@ import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.components.toasts.SystemToast.SystemToastIds;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.resources.language.ClientLanguage;
 import net.minecraft.client.resources.language.LanguageInfo;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.Direction;
-import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
@@ -69,8 +66,7 @@ public class ClientWrapper {
 
     public static final ModelResourceLocation NAVIGATOR_WORLD_MODEL = new ModelResourceLocation(CreateRailwaysNavigator.MOD_ID, "navigator_world", "inventory");
 
-    private static CustomLanguage currentLanguage;
-    private static Language currentClientLanguage;
+    private static CustomLanguage currentLanguage = CustomLanguage.createDefault();
 
     public static void showNavigatorGui() {
         Screens.showNavigatorScreen(null, false);
@@ -96,23 +92,21 @@ public class ClientWrapper {
     }
 
     public static void updateLanguage(String localeCode, boolean force) {
-        if (currentLanguage != null && currentLanguage.getCode().equals(localeCode) && !force) {
+        if (currentLanguage.getCode().equals(localeCode) && !force) {
             return;
         }
 
-        currentLanguage = new CustomLanguage(localeCode);
-        LanguageInfo info = currentLanguage.getLanguageInfo().orElse(Minecraft.getInstance().getLanguageManager().getLanguage(Minecraft.getInstance().getLanguageManager().getSelected()));
-        if (currentLanguage.isDefault() || info == null) {
-            currentClientLanguage = Language.getInstance();
+        currentLanguage = CustomLanguage.load(localeCode);
+        if (currentLanguage.isDefault()) {
             CreateRailwaysNavigator.LOGGER.info("Updated custom language to: (Default)");
         } else {
-            currentClientLanguage = ClientLanguage.loadFrom(Minecraft.getInstance().getResourceManager(), List.of(currentLanguage.getCode()), false);
-            CreateRailwaysNavigator.LOGGER.info("Updated custom language to: {}", info.name());
+            String name = currentLanguage.getLanguageInfo().map(LanguageInfo::name).orElse(localeCode);
+            CreateRailwaysNavigator.LOGGER.info("Updated custom language to: {}", name);
         }
     }
 
-    public static Language getCurrentClientLanguage() {
-        return currentClientLanguage == null ? Language.getInstance() : currentClientLanguage;
+    public static CustomLanguage getCurrentLanguage() {
+        return currentLanguage;
     }
 
 
