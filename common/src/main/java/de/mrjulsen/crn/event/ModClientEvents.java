@@ -11,7 +11,6 @@ import de.mrjulsen.crn.config.ModServerConfig;
 import de.mrjulsen.crn.data.settings.SavedRoutesManager;
 import de.mrjulsen.crn.network.InstanceManager;
 import dev.architectury.event.events.client.ClientGuiEvent;
-import dev.architectury.event.events.client.ClientLifecycleEvent;
 import dev.architectury.event.events.client.ClientPlayerEvent;
 import dev.architectury.event.events.client.ClientTickEvent;
 
@@ -24,10 +23,7 @@ public class ModClientEvents {
     public static void init() {
 
         ModPartials.init();
-
-        ClientLifecycleEvent.CLIENT_SETUP.register((mc) -> {
-            ModKeys.init();
-        });
+        ModKeys.init();
 
         ClientTickEvent.CLIENT_LEVEL_POST.register((mc) -> {
             langCheckerTicks++;
