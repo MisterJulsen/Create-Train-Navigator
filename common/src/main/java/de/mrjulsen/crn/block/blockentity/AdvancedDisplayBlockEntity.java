@@ -585,6 +585,9 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
     public void lazyTick() {
         super.lazyTick();
         if (!level.isClientSide()) {
+            if (getBlockState().getBlock() instanceof AbstractAdvancedDisplayBlock block) {
+                block.refreshConnectionState(getLevel(), worldPosition);
+            }
             updateControllerStatus2(new IBlockGetter.WorldBlockGetter(getLevel()));
         }
     }

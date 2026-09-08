@@ -221,6 +221,15 @@ public abstract class AbstractAdvancedDisplayBlock extends CopycatBlock implemen
 		return state;
 	}
 
+	public void refreshConnectionState(Level level, BlockPos pos) {
+		BlockState state = level.getBlockState(pos);
+		if (state.getBlock() != this)
+			return;
+		BlockState updated = updateColumn(level, pos, state, true);
+		if (updated != state)
+			level.setBlock(pos, updated, Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
+	}
+
 	@Override
 	public void onPlace(BlockState pState, Level pLevel, BlockPos pPos, BlockState pOldState, boolean pIsMoving) {
 		if (pOldState.getBlock() == this)
