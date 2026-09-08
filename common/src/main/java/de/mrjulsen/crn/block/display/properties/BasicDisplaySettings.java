@@ -12,7 +12,9 @@ public class BasicDisplaySettings extends AbstractDisplaySettings implements ICo
 
     @Override
     public void deserializeNbt(CompoundTag nbt) {
-        if (nbt.contains(NBT_FONT_COLOR)) this.fontColor = DLColor.fromInt(nbt.getInt(NBT_FONT_COLOR));
+        this.fontColor = DLColor.WHITE;
+        this.backColor = DLColor.TRANSPARENT;
+        if (nbt.contains(NBT_FONT_COLOR)) this.fontColor = DLColor.fromInt(nbt.getInt(NBT_FONT_COLOR)).withAlpha(255);
         if (nbt.contains(NBT_BACK_COLOR)) this.backColor = DLColor.fromInt(nbt.getInt(NBT_BACK_COLOR));
     }
 
@@ -34,7 +36,7 @@ public class BasicDisplaySettings extends AbstractDisplaySettings implements ICo
 
     @Override
     public void setFontColor(DLColor fontColor) {
-        this.fontColor = fontColor;
+        this.fontColor = fontColor.withAlpha(255);
     }
 
     @Override
