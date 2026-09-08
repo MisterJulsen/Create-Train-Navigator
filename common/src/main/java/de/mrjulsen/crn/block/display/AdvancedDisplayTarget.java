@@ -99,13 +99,18 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 
 			queueAdvancedDisplayWorkerTask(() -> {
 				if (advancedDisplaySource) {
+					var trainsCount = controller.getDisplayProperties().platformDisplayTrainsCount();
+					if (trainsCount == null) {
+						return;
+					}
+
 					String filter = context.sourceConfig().getString("Filter");
 
 					ITrainStopTypeSetting.ETrainStopType stopType = controller.getSettingsAs(ITrainStopTypeSetting.class)
 							.map(ITrainStopTypeSetting::getTrainStopType)
 							.orElse(ITrainStopTypeSetting.ETrainStopType.DEF_VALUE);
 
-					List<BoardEntry> preds = prepare(filter, controller.getDisplayProperties().platformDisplayTrainsCount().apply(controller), controller)
+					List<BoardEntry> preds = prepare(filter, trainsCount.apply(controller), controller)
 							.stream()
 							.sorted(Comparator.comparingLong(entry -> {
 								CallDirection direction = ITrainStopTypeSetting.resolveDirection(entry, stopType.showDepartures(entry.originating(), entry.sectionChange()), stopType.showArrivals(entry.terminus(), entry.sectionChange()));
