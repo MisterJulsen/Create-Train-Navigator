@@ -16,7 +16,6 @@ import de.mrjulsen.crn.core.debug.BackendDiagnosticsRecorder;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import dev.architectury.platform.Platform;
 import dev.architectury.utils.Env;
-import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.Commands.CommandSelection;
@@ -27,12 +26,10 @@ public class DebugCommand {
     private static final String CMD_NAME = CreateRailwaysNavigator.MOD_ID;
     
     private static final String SUB_DEBUG = "debug";
-    private static final String SUB_DISCORD = "discord";
-    private static final String SUB_GITHUB = "github";
 
-    private static final String SUB_BACKEND_DEBUG_OVERLAY = "backendDebugOverlay";
-    private static final String SUB_BACKEND_RESET = "resetBackendTimetables";
-    private static final String SUB_BACKEND_HARD_RESET = "hardResetBackendData";
+    private static final String SUB_BACKEND_DEBUG_OVERLAY = "debugOverlay";
+    private static final String SUB_BACKEND_RESET = "resetTimetables";
+    private static final String SUB_BACKEND_HARD_RESET = "resetBackendData";
     private static final String SUB_CLEAR_DEPARTURE_HISTORY = "clearDepartureHistory";
     private static final String SUB_BACKEND_DATA_DUMP = "backendDataDump";
 
@@ -75,42 +72,24 @@ public class DebugCommand {
                 .then(NavigatorDebugCommand.index())
                 .then(NavigatorDebugCommand.dump())
             )
-            .then(Commands.literal(SUB_DISCORD)
-                .executes(x -> discord(x.getSource()))
-            )
-            .then(Commands.literal(SUB_GITHUB)
-                .executes(x -> github(x.getSource()))
-            )
         ;
 
         dispatcher.register(builder);
     }
 
-    private static int discord(CommandSourceStack cmd) throws CommandSyntaxException {
-        cmd.sendSuccess(() -> TextUtils.text("Redirecting to the discord server..."), false);
-        ClientWrapper.openUrl(CreateRailwaysNavigator.DISCORD);
-        return 1;
-    }
-
-    private static int github(CommandSourceStack cmd) throws CommandSyntaxException {
-        cmd.sendSuccess(() -> TextUtils.text("Redirecting to the github repository..."), false);
-        ClientWrapper.openUrl(CreateRailwaysNavigator.GITHUB);
-        return 1;
-    }
-
     private static int showBackendDebugOverlay(CommandSourceStack cmd) throws CommandSyntaxException {
         if (Platform.getEnvironment() == Env.CLIENT) {
-            cmd.sendSuccess(() -> TextUtils.text("Visibility of the backend debug overlay has been toggled."), false);
+            cmd.sendSuccess(() -> TextUtils.text("Visibility of the debug overlay has been toggled."), false);
             BackendDebugOverlay.toggle();
             return 1;
         } else {
-            cmd.sendFailure(TextUtils.text("Cannot open the backend debug overlay in multiplayer."));
+            cmd.sendFailure(TextUtils.text("Cannot open the debug overlay in multiplayer."));
         }
         return 0;
     }
 
     private static int resetBackend(CommandSourceStack cmd) throws CommandSyntaxException {
-        cmd.sendSuccess(() -> TextUtils.text("All backend timetables have been reset to the current real-time data."), false);
+        cmd.sendSuccess(() -> TextUtils.text("All timetables have been reset to the current real-time data."), false);
         TrainManager.getInstance().softResetAll();
         return 1;
     }
