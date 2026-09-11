@@ -446,6 +446,7 @@
     "gui.createrailwaysnavigator.search_options.transfer_time": "Transfer Time",
     "gui.createrailwaysnavigator.search_options.train_categories.all": "All",
     "gui.createrailwaysnavigator.search_options.train_categories.excluded": "%s excluded",
+    "gui.createrailwaysnavigator.search_options.more_options": "More Options",
     "gui.createrailwaysnavigator.new_entry.add": "Add new entry",
     "gui.createrailwaysnavigator.new_entry.new": "New:",
     "gui.createrailwaysnavigator.saved_routes.saved": "%s saved",

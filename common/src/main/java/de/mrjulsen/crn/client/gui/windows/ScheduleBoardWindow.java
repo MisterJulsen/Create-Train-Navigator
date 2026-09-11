@@ -12,8 +12,10 @@ import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.ColorShade;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.ContainerColor;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.FooterSize;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
-import de.mrjulsen.crn.client.gui.flyout.FlyoutDepartureInWidget;
-import de.mrjulsen.crn.client.gui.flyout.FlyoutTrainCategoriesWidget;
+import de.mrjulsen.crn.client.gui.flyout.SettingFlyout;
+import de.mrjulsen.crn.client.gui.flyout.content.FlyoutContent;
+import de.mrjulsen.crn.client.gui.flyout.content.TimeSettingContent;
+import de.mrjulsen.crn.client.gui.flyout.content.TrainCategoriesContent;
 import de.mrjulsen.crn.client.gui.widgets.AbstractFlyoutWidget.FlyoutPointer;
 import de.mrjulsen.crn.client.gui.widgets.autocomplete.StationTagsAutocomplete;
 import de.mrjulsen.crn.client.gui.widgets.create.CreateButton;
@@ -31,6 +33,7 @@ import de.mrjulsen.crn.network.packets.GetNearestStationPacketData;
 import de.mrjulsen.crn.network.packets.GetUserSettingsPacketData;
 import de.mrjulsen.crn.network.packets.StationTagRequestByTagPacketData;
 import de.mrjulsen.mcdragonlib.client.gui.events.DLGuiStandardEvents;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLGuiComponent;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLWindowManager;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLPanel;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLTooltip;
@@ -44,6 +47,7 @@ import de.mrjulsen.mcdragonlib.util.DLColor;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.math.Rectangle;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.MutableComponent;
 
@@ -119,19 +123,19 @@ public class ScheduleBoardWindow extends AbstractNavigatorScreen {
         optionsPanel.layout.set(layout);
         addComponent(optionsPanel);
 
-        SearchOptionButton departureInBtn = new SearchOptionButton(0, 0, 100, 18, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.departure_in"), () -> userSettings.searchDepartureInTicks.toString(), (b) -> {
-            getWindowManager().createModal((mgr) -> new FlyoutDepartureInWidget(mgr, b, FlyoutPointer.UP, ColorShade.DARK, userSettings, () -> userSettings.searchDepartureInTicks));
+        SearchOptionButton departureInBtn = new SearchOptionButton(0, 0, 100, optionLabel("departure_in"), () -> userSettings.searchDepartureInTicks.toString(), (b) -> {
+            openSetting(b, new TimeSettingContent(optionTitle("departure_in"), () -> userSettings.searchDepartureInTicks));
         });
         departureInBtn.layoutContraint.set("departure");
         optionsPanel.addComponent(departureInBtn);
-        
-        SearchOptionButton trainCategoriesBtn = new SearchOptionButton(0, 0, 100, 18, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.train_categories"), () -> userSettings.searchExcludedTrainCaegories.toString(), (b) -> {
-            getWindowManager().createModal((mgr) -> new FlyoutTrainCategoriesWidget(mgr, b, FlyoutPointer.UP, ColorShade.DARK, userSettings, () -> userSettings.searchExcludedTrainCaegories));
+
+        SearchOptionButton trainCategoriesBtn = new SearchOptionButton(0, 0, 100, optionLabel("train_categories"), () -> userSettings.searchExcludedTrainCaegories.toString(), (b) -> {
+            openSetting(b, new TrainCategoriesContent(optionTitle("train_categories"), () -> userSettings.searchExcludedTrainCaegories));
         });
         trainCategoriesBtn.layoutContraint.set("categories");
         optionsPanel.addComponent(trainCategoriesBtn);
                 
-        SearchOptionButton trainFilterBtn = new SearchOptionButton(0, 0, 100, 18, userSettings.searchTrainFilter.getValue().getEnumTranslation(), () -> userSettings.searchTrainFilter.toString(), (b) -> {
+        SearchOptionButton trainFilterBtn = new SearchOptionButton(0, 0, 100, userSettings.searchTrainFilter.getValue().getEnumTranslation(), () -> userSettings.searchTrainFilter.toString(), (b) -> {
             this.userSettings.searchTrainFilter.setValue(this.userSettings.searchTrainFilter.getValue().next());
             this.userSettings.clientSave(() -> {
                 reloadUserSettings(() -> this.viewer.displayDepartures(stationTagId, userSettings));
@@ -150,6 +154,18 @@ public class ScheduleBoardWindow extends AbstractNavigatorScreen {
         optionsPanel.addComponent(refreshBtn);
 
         reloadUserSettings(() -> this.viewer.displayDepartures(stationTagId, userSettings));
+    }
+
+    private MutableComponent optionLabel(String key) {
+        return TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options." + key);
+    }
+
+    private MutableComponent optionTitle(String key) {
+        return TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options." + key).withStyle(ChatFormatting.BOLD);
+    }
+
+    private void openSetting(DLGuiComponent anchor, FlyoutContent content) {
+        getWindowManager().createModal((mgr) -> new SettingFlyout(mgr, anchor, FlyoutPointer.UP, ColorShade.DARK, userSettings).open(content));
     }
 
     private void reloadUserSettings(Runnable andThen) {

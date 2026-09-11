@@ -12,9 +12,12 @@ import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.BarColor;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.ColorShade;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.ContainerColor;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.FooterSize;
-import de.mrjulsen.crn.client.gui.flyout.FlyoutDepartureInWidget;
-import de.mrjulsen.crn.client.gui.flyout.FlyoutTrainCategoriesWidget;
-import de.mrjulsen.crn.client.gui.flyout.FlyoutTransferTimeWidget;
+import de.mrjulsen.crn.client.gui.flyout.*;
+import de.mrjulsen.crn.client.gui.flyout.content.FlyoutContent;
+import de.mrjulsen.crn.client.gui.flyout.content.SettingEntry;
+import de.mrjulsen.crn.client.gui.flyout.content.SettingsMenuContent;
+import de.mrjulsen.crn.client.gui.flyout.content.TimeSettingContent;
+import de.mrjulsen.crn.client.gui.flyout.content.TrainCategoriesContent;
 import de.mrjulsen.crn.client.gui.widgets.FlatIconButton;
 import de.mrjulsen.crn.client.gui.widgets.RouteViewer;
 import de.mrjulsen.crn.client.gui.widgets.SearchOptionButton;
@@ -26,16 +29,25 @@ import de.mrjulsen.crn.data.settings.UserSettings;
 import de.mrjulsen.crn.network.packets.GetNearestStationPacketData;
 import de.mrjulsen.crn.network.packets.GetUserSettingsPacketData;
 import de.mrjulsen.crn.registry.ModNetworkManager;
+import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.gui.events.DLGuiStandardEvents;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLWindowManager;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLGuiComponent;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLPanel;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLTooltip;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.layout.TableLayout;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.util.RenderLayer;
 import de.mrjulsen.mcdragonlib.client.render.DLTextureSheet;
+import de.mrjulsen.mcdragonlib.client.render.GuiIcons;
 import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
+import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import de.mrjulsen.mcdragonlib.network.NetworkDirection;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.math.Rectangle;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
@@ -130,21 +142,89 @@ public class NavigatorWindow extends AbstractNavigatorScreen {
 
 
 
-        final int btnCount = 3;
-        int btnWidth = (GUI_WIDTH - 6 - 16) / btnCount;
-        addComponent(new SearchOptionButton(3, 54 + FooterSize.DEFAULT.size() - 2, btnWidth, 18, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.departure_in"), () -> userSettings.navigationDepartureInTicks.toString(), (b) -> {
-            getWindowManager().createModal((mgr) -> new FlyoutDepartureInWidget(mgr, b, FlyoutPointer.UP, ColorShade.DARK, userSettings, () -> userSettings.navigationDepartureInTicks));
-        }));
-        addComponent(new SearchOptionButton(3 + btnWidth, 54 + FooterSize.DEFAULT.size() - 2, btnWidth, 18, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.transfer_time"), () -> userSettings.navigationTransferTime.toString(), (b) -> {
-            getWindowManager().createModal((mgr) -> new FlyoutTransferTimeWidget(mgr, b, FlyoutPointer.UP, ColorShade.DARK, userSettings, () -> userSettings.navigationTransferTime));
-        }));
-        addComponent(new SearchOptionButton(3 + btnWidth * 2, 54 + FooterSize.DEFAULT.size() - 2, btnWidth, 18, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.train_categories"), () -> userSettings.navigationExcludedTrainCategories.toString(), (b) -> {
-            getWindowManager().createModal((mgr) -> new FlyoutTrainCategoriesWidget(mgr, b, FlyoutPointer.UP, ColorShade.DARK, userSettings, () -> userSettings.navigationExcludedTrainCategories));
-        }));
+
+
+        DLPanel optionsPanel = new DLPanel(3, 52 + FooterSize.DEFAULT.size(), width() - 6, 18);
+        TableLayout layout = new TableLayout();
+        layout.columnGap.set(1);
+        layout.addColumn("column1", 0.3333333f, TableLayout.ColumnSizeMode.PERCENTAGE);
+        layout.addColumn("column2", 0.3333333f, TableLayout.ColumnSizeMode.PERCENTAGE);
+        layout.addColumn("column3", 0.3333333f, TableLayout.ColumnSizeMode.PERCENTAGE);
+        layout.addColumn("more_options", 18, TableLayout.ColumnSizeMode.FIXED);
+        optionsPanel.layout.set(layout);
+        addComponent(optionsPanel);
+        optionsPanel.addEventListener(DLGuiStandardEvents.RenderEvent.class, (s, e) -> {
+            if (e.layer() == RenderLayer.MAIN) {
+                for (int i = 0; i < optionsPanel.componentsCount() - 1; i++) {
+                    try {
+                        DLGuiComponent c = optionsPanel.getComponents().get(i);
+                        if (c != null) {
+                            GuiUtils.fill(e.graphics(), c.x() + c.width(), 2, 1, optionsPanel.height() - 4, DragonLib.VANILLA_BUTTON_DISABLED_FONT_COLOR);
+                        }
+                    } catch (Exception ignored) {}
+                }
+            }
+            return false;
+        });
+
+        // Highlighted Options
+        SearchOptionButton departureInBtn = new SearchOptionButton(0, 0, 100, getOptionTitle("departure_in"), () -> userSettings.navigationDepartureInTicks.toString(), (b) -> {
+            createOptionSetting(b, new TimeSettingContent(getOptionTitle("departure_in").withStyle(ChatFormatting.BOLD), () -> userSettings.navigationDepartureInTicks));
+        });
+        departureInBtn.layoutContraint.set("column1");
+        optionsPanel.addComponent(departureInBtn);
+
+        SearchOptionButton transferTimeBtn = new SearchOptionButton(0, 0, 100, getOptionTitle("transfer_time"), () -> userSettings.navigationTransferTime.toString(), (b) -> {
+            createOptionSetting(b, new TimeSettingContent(getOptionTitle("transfer_time").withStyle(ChatFormatting.BOLD), () -> userSettings.navigationTransferTime));
+        });
+        transferTimeBtn.layoutContraint.set("column2");
+        optionsPanel.addComponent(transferTimeBtn);
+
+        SearchOptionButton trainCategoriesBtn = new SearchOptionButton(0, 0, 100, getOptionTitle("train_categories"), () -> userSettings.navigationExcludedTrainCategories.toString(), (b) -> {
+            createOptionSetting(b, new TrainCategoriesContent(getOptionTitle("train_categories").withStyle(ChatFormatting.BOLD), () -> userSettings.navigationExcludedTrainCategories));
+        });
+        trainCategoriesBtn.layoutContraint.set("column3");
+        optionsPanel.addComponent(trainCategoriesBtn);
+
+        // More Options
+        FlatIconButton moreOptionsBtn = new FlatIconButton(0, 0, GuiIcons.ARROW_DOWN.getAsSprite(16, 16));
+        moreOptionsBtn.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
+            List<SettingEntry> moreOptions = List.of(
+                new SettingEntry(
+                        getOptionTitle("departure_in"),
+                        () -> userSettings.navigationDepartureInTicks.toString(),
+                        () -> new TimeSettingContent(getOptionTitle("departure_in").withStyle(ChatFormatting.BOLD),
+                        () -> userSettings.navigationDepartureInTicks
+                )),
+                new SettingEntry(
+                        getOptionTitle("transfer_time"),
+                        () -> userSettings.navigationTransferTime.toString(),
+                        () -> new TimeSettingContent(getOptionTitle("transfer_time").withStyle(ChatFormatting.BOLD),
+                        () -> userSettings.navigationTransferTime
+                )),
+                new SettingEntry(
+                        getOptionTitle("train_categories"),
+                        () -> userSettings.navigationExcludedTrainCategories.toString(),
+                        () -> new TrainCategoriesContent(getOptionTitle("train_categories").withStyle(ChatFormatting.BOLD),
+                        () -> userSettings.navigationExcludedTrainCategories
+                ))
+            );
+            getWindowManager().createModal((mgr) -> new SettingFlyout(mgr, s, FlyoutPointer.UP, ColorShade.DARK, userSettings).open(new SettingsMenuContent(getOptionTitle("more_options").withStyle(ChatFormatting.BOLD), moreOptions)));
+            return false;
+        });
+        moreOptionsBtn.layoutContraint.set("more_options");
+        moreOptionsBtn.tooltip.set(new DLTooltip(List.of(), 200));
+        optionsPanel.addComponent(moreOptionsBtn);
 
         reloadUserSettings();
+    }
 
+    private MutableComponent getOptionTitle(String key) {
+        return TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options." + key);
+    }
 
+    private void createOptionSetting(DLGuiComponent anchor, FlyoutContent content) {
+        getWindowManager().createModal((mgr) -> new SettingFlyout(mgr, anchor, FlyoutPointer.UP, ColorShade.DARK, userSettings).open(content));
     }
 
     private void reloadUserSettings() {
