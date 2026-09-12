@@ -361,6 +361,12 @@
     "enum.createrailwaysnavigator.train_stop_type.departures_preferred": "Departures preferred",
     "enum.createrailwaysnavigator.train_stop_type.description.departures_preferred": "Shows only train departures, unless the train terminates at this station. In that case, the arrival is shown as well.",
 
+    "enum.createrailwaysnavigator.routing_strategy": "Routing Strategy",
+    "enum.createrailwaysnavigator.routing_strategy.fastest": "Fastest",
+    "enum.createrailwaysnavigator.routing_strategy.description.fastest": "Picks the fastest connection to your destination. You might have more transfers.",
+    "enum.createrailwaysnavigator.routing_strategy.fewest_transfers": "Fewest Transfers",
+    "enum.createrailwaysnavigator.routing_strategy.description.fewest_transfers": "Picks the best connection by avoiding transfers as much as possible. The travel time might be longer because of this.",
+
     "createrailwaysnavigator.display_source.advanced_display": "Advanced Displays",
     "createrailwaysnavigator.display_target.advanced_display.component": "Component %s",
 
@@ -446,6 +452,11 @@
     "gui.createrailwaysnavigator.search_options.transfer_time": "Transfer Time",
     "gui.createrailwaysnavigator.search_options.train_categories.all": "All",
     "gui.createrailwaysnavigator.search_options.train_categories.excluded": "%s excluded",
+    "gui.createrailwaysnavigator.search_options.direct_connection": "Direct Connections Only",
+    "gui.createrailwaysnavigator.search_options.direct_connection.description": "Shows only connections that are accessible without any transfers.",
+    "gui.createrailwaysnavigator.search_options.waypoints": "Waypoints",
+    "gui.createrailwaysnavigator.search_options.waypoints.none": "None",
+    "gui.createrailwaysnavigator.search_options.waypoints.count": "%s set",
     "gui.createrailwaysnavigator.search_options.more_options": "More Options",
     "gui.createrailwaysnavigator.new_entry.add": "Add new entry",
     "gui.createrailwaysnavigator.new_entry.new": "New:",

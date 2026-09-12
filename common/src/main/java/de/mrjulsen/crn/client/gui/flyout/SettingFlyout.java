@@ -132,15 +132,18 @@ public class SettingFlyout extends AbstractFlyoutWidget implements IFlyoutPageHo
         c.onShow();
     }
 
-    private void resizeToContent(FlyoutContent c) {
+    public int getRequiredWidth(FlyoutContent c) {
         int headerButtons = (pageStack.size() > 1 ? 1 : 0) + (c.isResettable() ? 1 : 0);
-        int minWidth = Math.max(MIN_WIDTH, Minecraft.getInstance().font.width(c.getTitle()) + (FlatIconButton.WIDTH) * headerButtons + 16);
+        return Math.max(MIN_WIDTH, Minecraft.getInstance().font.width(c.getTitle()) + (FlatIconButton.WIDTH) * headerButtons + 16);
+    }
 
+    public void resizeToContent(FlyoutContent c) {
+        int minWidth = getRequiredWidth(c);
         int borderW = (FlyoutPointer.WIDTH) * 2;
         int borderH = FlatIconButton.HEIGHT + 3 + (FlyoutPointer.HEIGHT) * 2;
 
-        setWidth(Math.max(minWidth, c.preferredWidth()) + borderW);
-        setHeight(c.preferredHeight() + borderH);
+        setWidth(Math.max(minWidth, c.width()) + borderW);
+        setHeight(c.height() + borderH);
         setPos();
     }
 

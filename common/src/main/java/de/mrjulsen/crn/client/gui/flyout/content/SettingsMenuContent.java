@@ -10,7 +10,7 @@ import net.minecraft.network.chat.MutableComponent;
 
 public class SettingsMenuContent extends FlyoutContent {
 
-    private static final int DEFAULT_WIDTH = 100;
+    private static final int DEFAULT_WIDTH = 120;
     private static final int DEFAULT_HEIGHT = 50;
 
     private final MutableComponent title;

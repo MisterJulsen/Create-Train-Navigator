@@ -53,12 +53,12 @@ public record NavigationResult(
 
     /** The journey that arrives earliest, or empty. */
     public Optional<RouteJourney> fastest() {
-        return journeys.stream().min(RouteOptimization.FASTEST.comparator());
+        return journeys.stream().min(RoutingStrategy.FASTEST.comparator());
     }
 
     /** The journey with the fewest transfers, or empty. */
     public Optional<RouteJourney> mostComfortable() {
-        return journeys.stream().min(RouteOptimization.FEWEST_TRANSFERS.comparator());
+        return journeys.stream().min(RoutingStrategy.FEWEST_TRANSFERS.comparator());
     }
 
     /** The found journeys ordered by departure time. */

@@ -22,7 +22,7 @@ import de.mrjulsen.crn.core.navigator.NavigationQuery;
 import de.mrjulsen.crn.core.navigator.NavigationResult;
 import de.mrjulsen.crn.core.navigator.NavigationStatus;
 import de.mrjulsen.crn.core.navigator.Navigator;
-import de.mrjulsen.crn.core.navigator.RouteOptimization;
+import de.mrjulsen.crn.core.navigator.RoutingStrategy;
 import de.mrjulsen.crn.core.navigator.debug.NavigatorDiagnosticsDump;
 import de.mrjulsen.crn.core.navigator.Waypoint;
 import de.mrjulsen.crn.core.navigator.index.TimetableIndex;
@@ -278,7 +278,7 @@ public final class NavigatorDebugCommand {
 
             switch (key) {
                 case "direct" -> query = query.onlyDirect();
-                case "comfort" -> query = query.preferring(RouteOptimization.FEWEST_TRANSFERS);
+                case "comfort" -> query = query.preferring(RoutingStrategy.FEWEST_TRANSFERS);
                 case "in" -> query = query.departingIn(number(key, value));
                 case "at" -> query = query.departingAfter(number(key, value));
                 case "transfer" -> query = query.withMinTransferTime(number(key, value));

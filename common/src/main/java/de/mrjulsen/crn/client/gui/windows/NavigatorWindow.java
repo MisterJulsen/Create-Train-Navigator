@@ -13,11 +13,7 @@ import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.ColorShade;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.ContainerColor;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.FooterSize;
 import de.mrjulsen.crn.client.gui.flyout.*;
-import de.mrjulsen.crn.client.gui.flyout.content.FlyoutContent;
-import de.mrjulsen.crn.client.gui.flyout.content.SettingEntry;
-import de.mrjulsen.crn.client.gui.flyout.content.SettingsMenuContent;
-import de.mrjulsen.crn.client.gui.flyout.content.TimeSettingContent;
-import de.mrjulsen.crn.client.gui.flyout.content.TrainCategoriesContent;
+import de.mrjulsen.crn.client.gui.flyout.content.*;
 import de.mrjulsen.crn.client.gui.widgets.FlatIconButton;
 import de.mrjulsen.crn.client.gui.widgets.RouteViewer;
 import de.mrjulsen.crn.client.gui.widgets.SearchOptionButton;
@@ -25,6 +21,7 @@ import de.mrjulsen.crn.client.gui.widgets.AbstractFlyoutWidget.FlyoutPointer;
 import de.mrjulsen.crn.client.gui.widgets.autocomplete.StationTagsAutocomplete;
 import de.mrjulsen.crn.client.gui.widgets.create.CreateButton;
 import de.mrjulsen.crn.client.gui.widgets.create.CreateTextBox;
+import de.mrjulsen.crn.core.navigator.RoutingStrategy;
 import de.mrjulsen.crn.data.settings.UserSettings;
 import de.mrjulsen.crn.network.packets.GetNearestStationPacketData;
 import de.mrjulsen.crn.network.packets.GetUserSettingsPacketData;
@@ -174,8 +171,8 @@ public class NavigatorWindow extends AbstractNavigatorScreen {
         departureInBtn.layoutContraint.set("column1");
         optionsPanel.addComponent(departureInBtn);
 
-        SearchOptionButton transferTimeBtn = new SearchOptionButton(0, 0, 100, getOptionTitle("transfer_time"), () -> userSettings.navigationTransferTime.toString(), (b) -> {
-            createOptionSetting(b, new TimeSettingContent(getOptionTitle("transfer_time").withStyle(ChatFormatting.BOLD), () -> userSettings.navigationTransferTime));
+        SearchOptionButton transferTimeBtn = new SearchOptionButton(0, 0, 100, getOptionTitle("waypoints"), () -> userSettings.navigationWaypoints.toString(), (b) -> {
+            createOptionSetting(b, new WaypointsContent(getOptionTitle("waypoints").withStyle(ChatFormatting.BOLD), () -> userSettings.navigationWaypoints));
         });
         transferTimeBtn.layoutContraint.set("column2");
         optionsPanel.addComponent(transferTimeBtn);
@@ -191,22 +188,22 @@ public class NavigatorWindow extends AbstractNavigatorScreen {
         moreOptionsBtn.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
             List<SettingEntry> moreOptions = List.of(
                 new SettingEntry(
-                        getOptionTitle("departure_in"),
-                        () -> userSettings.navigationDepartureInTicks.toString(),
-                        () -> new TimeSettingContent(getOptionTitle("departure_in").withStyle(ChatFormatting.BOLD),
-                        () -> userSettings.navigationDepartureInTicks
-                )),
-                new SettingEntry(
                         getOptionTitle("transfer_time"),
                         () -> userSettings.navigationTransferTime.toString(),
                         () -> new TimeSettingContent(getOptionTitle("transfer_time").withStyle(ChatFormatting.BOLD),
                         () -> userSettings.navigationTransferTime
                 )),
                 new SettingEntry(
-                        getOptionTitle("train_categories"),
-                        () -> userSettings.navigationExcludedTrainCategories.toString(),
-                        () -> new TrainCategoriesContent(getOptionTitle("train_categories").withStyle(ChatFormatting.BOLD),
-                        () -> userSettings.navigationExcludedTrainCategories
+                        RoutingStrategy.FASTEST.getEnumTranslation(),
+                        () -> userSettings.navigationRoutingStrategy.toString(),
+                        () -> new RoutingStrategyContent(TextUtils.empty().append(RoutingStrategy.FASTEST.getEnumTranslation()).withStyle(ChatFormatting.BOLD),
+                        () -> userSettings.navigationRoutingStrategy
+                )),
+                new SettingEntry(
+                        getOptionTitle("direct_connection"),
+                        () -> userSettings.navigationDirectOnly.toString(),
+                        () -> new DirectConnectionContent(getOptionTitle("direct_connection").withStyle(ChatFormatting.BOLD),
+                        () -> userSettings.navigationDirectOnly
                 ))
             );
             getWindowManager().createModal((mgr) -> new SettingFlyout(mgr, s, FlyoutPointer.UP, ColorShade.DARK, userSettings).open(new SettingsMenuContent(getOptionTitle("more_options").withStyle(ChatFormatting.BOLD), moreOptions)));

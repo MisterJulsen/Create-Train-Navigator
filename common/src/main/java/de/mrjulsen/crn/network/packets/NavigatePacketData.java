@@ -4,14 +4,13 @@ import java.util.List;
 import java.util.UUID;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.config.ModCommonConfig;
-import de.mrjulsen.crn.config.ModServerConfig;
 import de.mrjulsen.crn.data.settings.TagName;
 import de.mrjulsen.crn.data.settings.UserSettings;
 import de.mrjulsen.crn.data.settings.GlobalSettings;
 import de.mrjulsen.crn.core.navigator.NavigationQuery;
 import de.mrjulsen.crn.core.navigator.NavigationResult;
 import de.mrjulsen.crn.core.navigator.Navigator;
-import de.mrjulsen.crn.core.navigator.RouteOptimization;
+import de.mrjulsen.crn.core.navigator.RoutingStrategy;
 import de.mrjulsen.crn.core.navigator.route.RouteJourney;
 import de.mrjulsen.mcdragonlib.data.DLStatus;
 import de.mrjulsen.mcdragonlib.network.NetworkPacketContext;
@@ -99,10 +98,12 @@ public class NavigatePacketData {
                     .from(settings.getTagByName(TagName.of(packet.start)).orElse(settings.getOrCreateStationTagFor(packet.start)).getTagName().get())
                     .to(settings.getTagByName(TagName.of(packet.end)).orElse(settings.getOrCreateStationTagFor(packet.end)).getTagName().get())
                     .departingIn(userSettings.navigationDepartureInTicks.getValue())
+                    .withWaypoints(userSettings.navigationWaypoints.getValue())
                     .withMinTransferTime(userSettings.navigationTransferTime.getValue())
                     .withMaxResults(userSettings.navigationMaxResults.getValue())
                     .excludingCategories(userSettings.navigationExcludedTrainCategories.getValue())
-                    .preferring(RouteOptimization.FEWEST_TRANSFERS);
+                    .withDirectOnly(userSettings.navigationDirectOnly.getValue())
+                    .preferring(userSettings.navigationRoutingStrategy.getValue());
 
             NavigationResult result = Navigator.search(query);
             if (ModCommonConfig.ADVANCED_LOGGING.get()) {

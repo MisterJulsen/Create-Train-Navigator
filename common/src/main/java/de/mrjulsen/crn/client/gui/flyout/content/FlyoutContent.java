@@ -25,6 +25,7 @@ public abstract class FlyoutContent extends DLGuiComponent {
         return true;
     }
 
+    /*
     public int preferredWidth() {
         return preferredW;
     }
@@ -32,6 +33,8 @@ public abstract class FlyoutContent extends DLGuiComponent {
     public int preferredHeight() {
         return preferredH;
     }
+
+     */
 
     protected void onMount() {}
 

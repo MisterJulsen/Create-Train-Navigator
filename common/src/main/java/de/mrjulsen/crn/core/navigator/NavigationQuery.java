@@ -48,7 +48,7 @@ public record NavigationQuery(
     long minTransferTime,
     int maxTransfers,
     boolean directOnly,
-    RouteOptimization optimization,
+    RoutingStrategy optimization,
     Set<UUID> excludedCategories,
     Set<UUID> includedCategories,
     Set<UUID> excludedLines,
@@ -80,7 +80,7 @@ public record NavigationQuery(
         waypoints = waypoints == null ? List.of() : List.copyOf(waypoints);
         minTransferTime = Math.max(0, minTransferTime);
         maxTransfers = Math.max(0, Math.min(TRANSFER_LIMIT, maxTransfers));
-        optimization = optimization == null ? RouteOptimization.FASTEST : optimization;
+        optimization = optimization == null ? RoutingStrategy.FASTEST : optimization;
         excludedCategories = copyOf(excludedCategories);
         includedCategories = copyOf(includedCategories);
         excludedLines = copyOf(excludedLines);
@@ -95,7 +95,7 @@ public record NavigationQuery(
     @QueryParam(value = "from", required = true)
     public static NavigationQuery from(String origin) {
         return new NavigationQuery(origin, "", List.of(), NOW, DEFAULT_TRANSFER_TIME,
-            DEFAULT_MAX_TRANSFERS, false, RouteOptimization.FASTEST,
+            DEFAULT_MAX_TRANSFERS, false, RoutingStrategy.FASTEST,
             Set.of(), Set.of(), Set.of(), Set.of(), Set.of(),
             DEFAULT_TRANSFER_RISK_BUFFER, DEFAULT_MAX_RESULTS, DEFAULT_SEARCH_HORIZON);
     }
@@ -176,7 +176,7 @@ public record NavigationQuery(
 
     /** Sets how the found journeys are ordered. */
     @QueryParam(value = "optimization")
-    public NavigationQuery preferring(RouteOptimization optimization) {
+    public NavigationQuery preferring(RoutingStrategy optimization) {
         return new NavigationQuery(origin, destination, waypoints, departAfter, minTransferTime,
             maxTransfers, directOnly, optimization, excludedCategories, includedCategories,
             excludedLines, includedLines, avoidedStations, transferRiskBuffer, maxResults, searchHorizon);
