@@ -13,6 +13,7 @@ import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.ContainerColor;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.FooterSize;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.flyout.SettingFlyout;
+import de.mrjulsen.crn.client.gui.flyout.content.BoardFilterContent;
 import de.mrjulsen.crn.client.gui.flyout.content.FlyoutContent;
 import de.mrjulsen.crn.client.gui.flyout.content.TimeSettingContent;
 import de.mrjulsen.crn.client.gui.flyout.content.TrainCategoriesContent;
@@ -32,6 +33,7 @@ import de.mrjulsen.crn.data.settings.UserSettings;
 import de.mrjulsen.crn.network.packets.GetNearestStationPacketData;
 import de.mrjulsen.crn.network.packets.GetUserSettingsPacketData;
 import de.mrjulsen.crn.network.packets.StationTagRequestByTagPacketData;
+import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.gui.events.DLGuiStandardEvents;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLGuiComponent;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLWindowManager;
@@ -39,6 +41,7 @@ import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLPanel;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLTooltip;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.layout.TableLayout;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.layout.TableLayout.ColumnSizeMode;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.util.RenderLayer;
 import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import de.mrjulsen.mcdragonlib.data.ETextAlignment;
@@ -119,31 +122,44 @@ public class ScheduleBoardWindow extends AbstractNavigatorScreen {
         layout.addColumn("departure", 0.3333333f, ColumnSizeMode.PERCENTAGE);
         layout.addColumn("categories", 0.3333333f, ColumnSizeMode.PERCENTAGE);
         layout.addColumn("filter", 0.3333333f, ColumnSizeMode.PERCENTAGE);
-        layout.addColumn("refresh", 18, ColumnSizeMode.FIXED);
+        //layout.addColumn("refresh", 18, ColumnSizeMode.FIXED);
+        layout.columnGap.set(1);
         optionsPanel.layout.set(layout);
         addComponent(optionsPanel);
+        optionsPanel.addEventListener(DLGuiStandardEvents.RenderEvent.class, (s, e) -> {
+            if (e.layer() == RenderLayer.MAIN) {
+                for (int i = 0; i < optionsPanel.componentsCount() - 1; i++) {
+                    try {
+                        DLGuiComponent c = optionsPanel.getComponents().get(i);
+                        if (c != null) {
+                            GuiUtils.fill(e.graphics(), c.x() + c.width(), 2, 1, optionsPanel.height() - 4, DragonLib.VANILLA_BUTTON_DISABLED_FONT_COLOR);
+                        }
+                    } catch (Exception ignored) {}
+                }
+            }
+            return false;
+        });
 
         SearchOptionButton departureInBtn = new SearchOptionButton(0, 0, 100, optionLabel("departure_in"), () -> userSettings.searchDepartureInTicks.toString(), (b) -> {
-            openSetting(b, new TimeSettingContent(optionTitle("departure_in"), () -> userSettings.searchDepartureInTicks));
+            openSetting(b, new TimeSettingContent(optionLabel("departure_in").withStyle(ChatFormatting.BOLD), () -> userSettings.searchDepartureInTicks));
         });
         departureInBtn.layoutContraint.set("departure");
         optionsPanel.addComponent(departureInBtn);
 
         SearchOptionButton trainCategoriesBtn = new SearchOptionButton(0, 0, 100, optionLabel("train_categories"), () -> userSettings.searchExcludedTrainCaegories.toString(), (b) -> {
-            openSetting(b, new TrainCategoriesContent(optionTitle("train_categories"), () -> userSettings.searchExcludedTrainCaegories));
+            openSetting(b, new TrainCategoriesContent(optionLabel("train_categories").withStyle(ChatFormatting.BOLD), () -> userSettings.searchExcludedTrainCaegories));
         });
         trainCategoriesBtn.layoutContraint.set("categories");
         optionsPanel.addComponent(trainCategoriesBtn);
-                
+
+
         SearchOptionButton trainFilterBtn = new SearchOptionButton(0, 0, 100, userSettings.searchTrainFilter.getValue().getEnumTranslation(), () -> userSettings.searchTrainFilter.toString(), (b) -> {
-            this.userSettings.searchTrainFilter.setValue(this.userSettings.searchTrainFilter.getValue().next());
-            this.userSettings.clientSave(() -> {
-                reloadUserSettings(() -> this.viewer.displayDepartures(stationTagId, userSettings));
-            });
+            openSetting(b, new BoardFilterContent(TextUtils.empty().append(userSettings.searchTrainFilter.getValue().getEnumTranslation()).withStyle(ChatFormatting.BOLD), () -> userSettings.searchTrainFilter));
         });
         trainFilterBtn.layoutContraint.set("filter");
         optionsPanel.addComponent(trainFilterBtn);
 
+        /*
         FlatIconButton refreshBtn = new FlatIconButton(0, 0, ModGuiIcons.REFRESH.getAsSprite(16, 16));
         refreshBtn.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
             reloadUserSettings(() -> this.viewer.displayDepartures(stationTagId, userSettings));
@@ -153,15 +169,13 @@ public class ScheduleBoardWindow extends AbstractNavigatorScreen {
         refreshBtn.tooltip.set(new DLTooltip(List.of(tooltipRefresh), 200));
         optionsPanel.addComponent(refreshBtn);
 
+         */
+
         reloadUserSettings(() -> this.viewer.displayDepartures(stationTagId, userSettings));
     }
 
     private MutableComponent optionLabel(String key) {
         return TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options." + key);
-    }
-
-    private MutableComponent optionTitle(String key) {
-        return TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options." + key).withStyle(ChatFormatting.BOLD);
     }
 
     private void openSetting(DLGuiComponent anchor, FlyoutContent content) {
