@@ -1,6 +1,7 @@
 package de.mrjulsen.crn.api.core.query;
 
 import de.mrjulsen.crn.api.core.snapshot.TrainPositionSnapshot;
+import de.mrjulsen.crn.web.annotation.OpenApiDescription;
 import de.mrjulsen.crn.web.annotation.QueryModel;
 import de.mrjulsen.crn.web.annotation.QueryParam;
 import net.minecraft.resources.ResourceLocation;
@@ -32,6 +33,7 @@ public record TrainPositionQuery(
 
     /** Keeps only trains in one of the given dimensions. */
     @QueryParam(value = "dimensions")
+    @OpenApiDescription("Keep only trains in one of these dimensions, e.g. minecraft:overworld.")
     public TrainPositionQuery withDimensionIds(Set<ResourceLocation> dimensionIds) {
         Objects.requireNonNull(dimensionIds);
         return new TrainPositionQuery(dimensionIds, movingOnly, atStationOnly);
@@ -39,12 +41,14 @@ public record TrainPositionQuery(
 
     /** Keeps only trains that are, or are not, moving. */
     @QueryParam(value = "moving_only")
+    @OpenApiDescription("Keep only trains that are (true) or are not (false) moving.")
     public TrainPositionQuery withMovingOnly(@Nullable Boolean movingOnly) {
         return new TrainPositionQuery(dimensionIds, movingOnly, atStationOnly);
     }
 
     /** Keeps only trains that are, or are not, standing at a station. */
     @QueryParam(value = "at_station_only")
+    @OpenApiDescription("Keep only trains that are (true) or are not (false) standing at a station.")
     public TrainPositionQuery withAtStationOnly(@Nullable Boolean atStationOnly) {
         return new TrainPositionQuery(dimensionIds, movingOnly, atStationOnly);
     }

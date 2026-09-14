@@ -2,6 +2,7 @@ package de.mrjulsen.crn.web.endpoint;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.web.api.*;
+import de.mrjulsen.crn.web.openapi.EndpointDocumentation;
 import dev.architectury.platform.Mod;
 import dev.architectury.platform.Platform;
 
@@ -49,5 +50,16 @@ public class AboutEndpoint implements IEndpointHandler {
                 Platform.getEnv().name().toLowerCase(Locale.ROOT),
                 Platform.getMods().stream().map(x -> new SimpleModEntry(x.getModId(), x.getName(), x.getVersion())).toList()
         ));
+    }
+
+    @Override
+    public EndpointDocumentation getDocumentation() {
+        return EndpointDocumentation.builder()
+            .tag("Meta")
+            .summary("About this server")
+            .description("All information about the mod, the running game instance and the loaded mod list.")
+            .returns(About.class)
+            .shapeable()
+            .build();
     }
 }

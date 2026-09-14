@@ -7,6 +7,7 @@ import de.mrjulsen.crn.web.api.IEndpointHandler;
 import de.mrjulsen.crn.web.api.ParamType;
 import de.mrjulsen.crn.web.api.Request;
 import de.mrjulsen.crn.web.api.Response;
+import de.mrjulsen.crn.web.openapi.EndpointDocumentation;
 
 import java.net.HttpURLConnection;
 import java.util.Optional;
@@ -21,5 +22,17 @@ public class TrainEndpoint implements IEndpointHandler {
         return train
                 .map(value -> Response.json(CreateTrainSnapshot.of(value)))
                 .orElseGet(() -> Response.error(HttpURLConnection.HTTP_NOT_FOUND, "No train with id " + id));
+    }
+
+    @Override
+    public EndpointDocumentation getDocumentation() {
+        return EndpointDocumentation.builder()
+            .tag("Create")
+            .summary("Get a Create train")
+            .description("Raw Create train data by its id.")
+            .returns(CreateTrainSnapshot.class)
+            .shapeable()
+            .response(HttpURLConnection.HTTP_NOT_FOUND, "No train with that id exists.")
+            .build();
     }
 }

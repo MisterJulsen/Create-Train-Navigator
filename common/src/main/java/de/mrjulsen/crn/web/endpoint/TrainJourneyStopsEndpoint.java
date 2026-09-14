@@ -1,6 +1,5 @@
 package de.mrjulsen.crn.web.endpoint;
 
-import de.mrjulsen.crn.api.core.RailwayBackendApi;
 import de.mrjulsen.crn.api.core.snapshot.JourneySnapshot;
 import de.mrjulsen.crn.api.core.snapshot.StopSnapshot;
 import de.mrjulsen.crn.core.TrainManager;
@@ -8,10 +7,12 @@ import de.mrjulsen.crn.web.api.IEndpointHandler;
 import de.mrjulsen.crn.web.api.ParamType;
 import de.mrjulsen.crn.web.api.Request;
 import de.mrjulsen.crn.web.api.Response;
+import de.mrjulsen.crn.web.openapi.EndpointDocumentation;
 
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 public class TrainJourneyStopsEndpoint implements IEndpointHandler {
 
@@ -32,5 +33,17 @@ public class TrainJourneyStopsEndpoint implements IEndpointHandler {
             default -> journey.stops();
         };
         return Response.json(stops);
+    }
+
+    @Override
+    public EndpointDocumentation getDocumentation() {
+        return EndpointDocumentation.builder()
+            .tag("Trains")
+            .summary("List all train stops")
+            .description("All stops of one train.")
+            .queryParam("direction", "string", "The stops to list (ALL (default), PREVIOUS or NEXT).", Stream.of(Timeline.values()).map(Enum::name).toList(), Timeline.ALL.name())
+            .returnsList(StopSnapshot.class)
+            .shapeable()
+            .build();
     }
 }

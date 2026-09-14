@@ -6,6 +6,7 @@ import de.mrjulsen.crn.web.api.IEndpointHandler;
 import de.mrjulsen.crn.web.api.ParamType;
 import de.mrjulsen.crn.web.api.Request;
 import de.mrjulsen.crn.web.api.Response;
+import de.mrjulsen.crn.web.openapi.EndpointDocumentation;
 
 import java.net.HttpURLConnection;
 import java.util.Optional;
@@ -20,5 +21,17 @@ public class TrainCategoryEndpoint implements IEndpointHandler {
         return tag
                 .map(x -> Response.json(x))
                 .orElseGet(() -> Response.error(HttpURLConnection.HTTP_NOT_FOUND, "No train category with id " + id));
+    }
+
+    @Override
+    public EndpointDocumentation getDocumentation() {
+        return EndpointDocumentation.builder()
+            .tag("Global Settings")
+            .summary("Get a train category")
+            .description("A train category by its id.")
+            .returns(TrainCategory.class)
+            .shapeable()
+            .response(HttpURLConnection.HTTP_NOT_FOUND, "No train category with that id exists.")
+            .build();
     }
 }

@@ -1,12 +1,12 @@
 package de.mrjulsen.crn.web.endpoint.globalsettings;
 
 import de.mrjulsen.crn.data.settings.GlobalSettings;
-import de.mrjulsen.crn.data.settings.StationTag;
 import de.mrjulsen.crn.data.settings.TrainLine;
 import de.mrjulsen.crn.web.api.IEndpointHandler;
 import de.mrjulsen.crn.web.api.ParamType;
 import de.mrjulsen.crn.web.api.Request;
 import de.mrjulsen.crn.web.api.Response;
+import de.mrjulsen.crn.web.openapi.EndpointDocumentation;
 
 import java.net.HttpURLConnection;
 import java.util.Optional;
@@ -21,5 +21,17 @@ public class TrainLineEndpoint implements IEndpointHandler {
         return tag
                 .map(x -> Response.json(x))
                 .orElseGet(() -> Response.error(HttpURLConnection.HTTP_NOT_FOUND, "No train line with id " + id));
+    }
+
+    @Override
+    public EndpointDocumentation getDocumentation() {
+        return EndpointDocumentation.builder()
+            .tag("Global Settings")
+            .summary("Get a train line")
+            .description("A train line by its id.")
+            .returns(TrainLine.class)
+            .shapeable()
+            .response(HttpURLConnection.HTTP_NOT_FOUND, "No train line with that id exists.")
+            .build();
     }
 }

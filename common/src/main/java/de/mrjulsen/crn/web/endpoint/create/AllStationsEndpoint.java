@@ -7,6 +7,7 @@ import de.mrjulsen.crn.web.api.IEndpointHandler;
 import de.mrjulsen.crn.web.api.QueryBinder;
 import de.mrjulsen.crn.web.api.Request;
 import de.mrjulsen.crn.web.api.Response;
+import de.mrjulsen.crn.web.openapi.EndpointDocumentation;
 
 public class AllStationsEndpoint implements IEndpointHandler {
 
@@ -14,5 +15,17 @@ public class AllStationsEndpoint implements IEndpointHandler {
     public Response handle(Request request) {
         CreateStationQuery query = QueryBinder.bind(request, CreateStationQuery.class);
         return Response.json(TrainUtils.getAllStations().stream().filter(query::accept).map(CreateStationSnapshot::of).toList());
+    }
+
+    @Override
+    public EndpointDocumentation getDocumentation() {
+        return EndpointDocumentation.builder()
+            .tag("Create")
+            .summary("List Create stations")
+            .description("Raw station data from Create.")
+            .query(CreateStationQuery.class)
+            .returnsList(CreateStationSnapshot.class)
+            .shapeable()
+            .build();
     }
 }

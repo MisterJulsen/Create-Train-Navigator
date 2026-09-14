@@ -3,6 +3,7 @@ package de.mrjulsen.crn.api.core.query;
 import de.mrjulsen.crn.api.core.snapshot.StationSnapshot;
 import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.crn.util.TrainUtils;
+import de.mrjulsen.crn.web.annotation.OpenApiDescription;
 import de.mrjulsen.crn.web.annotation.QueryModel;
 import de.mrjulsen.crn.web.annotation.QueryParam;
 
@@ -38,6 +39,7 @@ public record StationQuery(
 
     /** Keeps only stations whose name matches the given filter. */
     @QueryParam(value = "filter")
+    @OpenApiDescription("Keep only stations whose name matches this filter, which may use the schedule's wildcard syntax.")
     public StationQuery withFilter(String filter) {
         Objects.requireNonNull(filter);
         return new StationQuery(filter, stationTags, trains, lines, categories, hideBlacklisted);
@@ -45,6 +47,7 @@ public record StationQuery(
 
     /** Keeps only stations belonging to one of the given tags. */
     @QueryParam(value = "station_tags")
+    @OpenApiDescription("Keep only stations belonging to one of these tag ids.")
     public StationQuery withTags(Set<UUID> stationTags) {
         Objects.requireNonNull(stationTags);
         return new StationQuery(filter, stationTags, trains, lines, categories, hideBlacklisted);
@@ -52,6 +55,7 @@ public record StationQuery(
 
     /** Keeps only stations served by one of the given trains. */
     @QueryParam(value = "trains")
+    @OpenApiDescription("Keep only stations served by one of these train ids.")
     public StationQuery withTrains(Set<UUID> trains) {
         Objects.requireNonNull(trains);
         return new StationQuery(filter, stationTags, trains, lines, categories, hideBlacklisted);
@@ -59,6 +63,7 @@ public record StationQuery(
 
     /** Keeps only stations served by one of the given lines. */
     @QueryParam(value = "lines")
+    @OpenApiDescription("Keep only stations served by one of these line ids.")
     public StationQuery withLines(Set<UUID> lines) {
         Objects.requireNonNull(lines);
         return new StationQuery(filter, stationTags, trains, lines, categories, hideBlacklisted);
@@ -66,6 +71,7 @@ public record StationQuery(
 
     /** Keeps only stations served by one of the given categories. */
     @QueryParam(value = "categories")
+    @OpenApiDescription("Keep only stations served by one of these category ids.")
     public StationQuery withCategories(Set<UUID> categories) {
         Objects.requireNonNull(categories);
         return new StationQuery(filter, stationTags, trains, lines, categories, hideBlacklisted);
@@ -73,6 +79,7 @@ public record StationQuery(
 
     /** Drops stations hidden from public display when set to {@code true}. */
     @QueryParam(value = "hide_blacklisted")
+    @OpenApiDescription("Drop stations hidden from public display when set to true.")
     public StationQuery withHideBlacklisted(boolean hideBlacklisted) {
         return new StationQuery(filter, stationTags, trains, lines, categories, hideBlacklisted);
     }

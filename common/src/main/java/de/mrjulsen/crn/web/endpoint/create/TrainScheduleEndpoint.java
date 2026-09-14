@@ -6,6 +6,7 @@ import de.mrjulsen.crn.web.api.IEndpointHandler;
 import de.mrjulsen.crn.web.api.ParamType;
 import de.mrjulsen.crn.web.api.Request;
 import de.mrjulsen.crn.web.api.Response;
+import de.mrjulsen.crn.web.openapi.EndpointDocumentation;
 
 import java.net.HttpURLConnection;
 import java.util.Optional;
@@ -20,5 +21,15 @@ public class TrainScheduleEndpoint implements IEndpointHandler {
         return train
                 .map(value -> Response.json(value.runtime.schedule))
                 .orElseGet(() -> Response.error(HttpURLConnection.HTTP_NOT_FOUND, "No train with id " + id));
+    }
+
+    @Override
+    public EndpointDocumentation getDocumentation() {
+        return EndpointDocumentation.builder()
+            .tag("Create")
+            .summary("Get a Create train's schedule")
+            .description("The raw Create schedule assigned to a train.")
+            .response(HttpURLConnection.HTTP_NOT_FOUND, "No train with that id exists.")
+            .build();
     }
 }

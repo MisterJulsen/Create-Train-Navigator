@@ -2,6 +2,7 @@ package de.mrjulsen.crn.api.core.query;
 
 import de.mrjulsen.crn.api.core.snapshot.CategorySnapshot;
 import de.mrjulsen.crn.util.ModUtils;
+import de.mrjulsen.crn.web.annotation.OpenApiDescription;
 import de.mrjulsen.crn.web.annotation.QueryModel;
 import de.mrjulsen.crn.web.annotation.QueryParam;
 
@@ -29,12 +30,14 @@ public record CategoryQuery(
 
     /** Keeps only categories run under by one of the given trains. */
     @QueryParam(value = "trains")
+    @OpenApiDescription("Keep only categories run under by one of these train ids.")
     public CategoryQuery withTrains(Set<UUID> trains) {
         return new CategoryQuery(trains, lines);
     }
 
     /** Keeps only categories covering one of the given lines. */
     @QueryParam(value = "lines")
+    @OpenApiDescription("Keep only categories covering one of these line ids.")
     public CategoryQuery withLines(Set<UUID> lines) {
         return new CategoryQuery(trains, lines);
     }

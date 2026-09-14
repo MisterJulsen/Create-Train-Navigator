@@ -7,6 +7,7 @@ import de.mrjulsen.crn.web.api.IEndpointHandler;
 import de.mrjulsen.crn.web.api.ParamType;
 import de.mrjulsen.crn.web.api.Request;
 import de.mrjulsen.crn.web.api.Response;
+import de.mrjulsen.crn.web.openapi.EndpointDocumentation;
 
 import java.net.HttpURLConnection;
 import java.util.Optional;
@@ -21,5 +22,17 @@ public class StationEndpoint implements IEndpointHandler {
         return station
                 .map(globalStation -> Response.json(CreateStationSnapshot.of(globalStation)))
                 .orElseGet(() -> Response.error(HttpURLConnection.HTTP_NOT_FOUND, "No station with id " + id));
+    }
+
+    @Override
+    public EndpointDocumentation getDocumentation() {
+        return EndpointDocumentation.builder()
+            .tag("Create")
+            .summary("Get a Create station")
+            .description("Raw Create station data by its id.")
+            .returns(CreateStationSnapshot.class)
+            .shapeable()
+            .response(HttpURLConnection.HTTP_NOT_FOUND, "No station with that id exists.")
+            .build();
     }
 }

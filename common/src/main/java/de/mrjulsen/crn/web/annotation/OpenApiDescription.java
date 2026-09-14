@@ -6,5 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.RECORD_COMPONENT, ElementType.FIELD, ElementType.METHOD})
-public @interface ResponseAlwaysInclude {}
+@Target({ ElementType.TYPE, ElementType.RECORD_COMPONENT, ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER })
+public @interface OpenApiDescription {
+    String value();
+}

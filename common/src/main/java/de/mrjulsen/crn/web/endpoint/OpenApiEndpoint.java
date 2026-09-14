@@ -1,0 +1,25 @@
+package de.mrjulsen.crn.web.endpoint;
+
+import de.mrjulsen.crn.web.api.ApiVersion;
+import de.mrjulsen.crn.web.api.IEndpointHandler;
+import de.mrjulsen.crn.web.api.Request;
+import de.mrjulsen.crn.web.api.Response;
+import de.mrjulsen.crn.web.openapi.EndpointDocumentation;
+import de.mrjulsen.crn.web.openapi.OpenApiGenerator;
+
+public class OpenApiEndpoint implements IEndpointHandler {
+
+    @Override
+    public Response handle(Request request) {
+        return Response.json(OpenApiGenerator.generate(ApiVersion.latest()));
+    }
+
+    @Override
+    public EndpointDocumentation getDocumentation() {
+        return EndpointDocumentation.builder()
+            .tag("Meta")
+            .summary("OpenAPI 3.1 specs")
+            .description("The OpenAPI document describing every endpoint of this API.")
+            .build();
+    }
+}

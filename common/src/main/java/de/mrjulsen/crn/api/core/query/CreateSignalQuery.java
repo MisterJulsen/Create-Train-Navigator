@@ -2,6 +2,7 @@ package de.mrjulsen.crn.api.core.query;
 
 import com.simibubi.create.content.trains.signal.SignalBoundary;
 import de.mrjulsen.crn.api.core.snapshot.CreateSignalSnapshot;
+import de.mrjulsen.crn.web.annotation.OpenApiDescription;
 import de.mrjulsen.crn.web.annotation.QueryModel;
 import de.mrjulsen.crn.web.annotation.QueryParam;
 import net.minecraft.resources.ResourceLocation;
@@ -33,18 +34,21 @@ public record CreateSignalQuery(
 
     /** Keeps only signals with one of the given ids. */
     @QueryParam(value = "id")
+    @OpenApiDescription("Keep only signals with one of these ids.")
     public CreateSignalQuery withId(Set<UUID> id) {
         return new CreateSignalQuery(id, dimension, group);
     }
 
     /** Keeps only signals in one of the given dimensions. */
     @QueryParam(value = "dimension")
+    @OpenApiDescription("Keep only signals in one of these dimensions.")
     public CreateSignalQuery withDimension(Set<ResourceLocation> dimension) {
         return new CreateSignalQuery(id, dimension, group);
     }
 
     /** Keeps only signals belonging to one of the given signal groups. */
     @QueryParam(value = "group")
+    @OpenApiDescription("Keep only signals of one of these signal group ids.")
     public CreateSignalQuery withGroup(Set<UUID> group) {
         return new CreateSignalQuery(id, dimension, group);
     }

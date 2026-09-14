@@ -3,6 +3,7 @@ package de.mrjulsen.crn.api.core.query;
 import de.mrjulsen.crn.api.core.snapshot.LineSnapshot;
 import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.crn.util.TrainUtils;
+import de.mrjulsen.crn.web.annotation.OpenApiDescription;
 import de.mrjulsen.crn.web.annotation.QueryModel;
 import de.mrjulsen.crn.web.annotation.QueryParam;
 
@@ -34,18 +35,21 @@ public record LineQuery(
 
     /** Keeps only lines worked by one of the given trains. */
     @QueryParam(value = "trains")
+    @OpenApiDescription("Keep only lines worked by one of these train ids.")
     public LineQuery withTrains(Set<UUID> trains) {
         return new LineQuery(trains, stationTags, stationFilter);
     }
 
     /** Keeps only lines calling at a station in one of the given tags. */
     @QueryParam(value = "station_tags")
+    @OpenApiDescription("Keep only lines calling at a station in one of these tag ids.")
     public LineQuery withStationTags(Set<UUID> stationTags) {
         return new LineQuery(trains, stationTags, stationFilter);
     }
 
     /** Keeps only lines calling at a station whose name matches the given filter. */
     @QueryParam(value = "stations")
+    @OpenApiDescription("Keep only lines calling at a station whose name matches this filter (wildcard syntax allowed).")
     public LineQuery withStationFilter(String stationFilter) {
         Objects.requireNonNull(stationFilter);
         return new LineQuery(trains, stationTags, stationFilter);

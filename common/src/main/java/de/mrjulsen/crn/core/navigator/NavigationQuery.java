@@ -9,6 +9,8 @@ import java.util.UUID;
 import de.mrjulsen.crn.api.core.ref.TrainCategoryRef;
 import de.mrjulsen.crn.api.core.ref.LineRef;
 import de.mrjulsen.crn.api.core.RailwayBackendApi;
+import de.mrjulsen.crn.web.annotation.OpenApiDescription;
+import de.mrjulsen.crn.web.annotation.OpenApiExample;
 import de.mrjulsen.crn.web.annotation.QueryModel;
 import de.mrjulsen.crn.web.annotation.QueryParam;
 
@@ -93,6 +95,8 @@ public record NavigationQuery(
 
     /** A query starting a journey at the given station, with default limits. */
     @QueryParam(value = "from", required = true)
+    @OpenApiDescription("The station the journey starts at.")
+    @OpenApiExample("Central Station")
     public static NavigationQuery from(String origin) {
         return new NavigationQuery(origin, "", List.of(), NOW, DEFAULT_TRANSFER_TIME,
             DEFAULT_MAX_TRANSFERS, false, RoutingStrategy.FASTEST,
@@ -102,6 +106,8 @@ public record NavigationQuery(
 
     /** Sets the destination. */
     @QueryParam(value = "to", required = true)
+    @OpenApiDescription("The station the journey ends at.")
+    @OpenApiExample("Airport")
     public NavigationQuery to(String destination) {
         return new NavigationQuery(origin, destination, waypoints, departAfter, minTransferTime,
             maxTransfers, directOnly, optimization, excludedCategories, includedCategories,
@@ -127,6 +133,8 @@ public record NavigationQuery(
 
     /** Replaces the waypoints. */
     @QueryParam(value = "via")
+    @OpenApiDescription("Waypoints the journey must pass through, in order. Each is a station name, optionally "
+        + "suffixed with ':<minStay>' in ticks.")
     public NavigationQuery withWaypoints(List<Waypoint> waypoints) {
         return new NavigationQuery(origin, destination, waypoints, departAfter, minTransferTime,
             maxTransfers, directOnly, optimization, excludedCategories, includedCategories,
@@ -142,12 +150,14 @@ public record NavigationQuery(
 
     /** Sets the earliest departure to the given number of ticks from now. */
     @QueryParam(value = "departure_in")
+    @OpenApiDescription("Earliest departure, given as a number of ticks from now.")
     public NavigationQuery departingIn(long ticksFromNow) {
         return departingAfter(RailwayBackendApi.getCurrentTime() + Math.max(0, ticksFromNow));
     }
 
     /** Sets the least time to allow for a transfer, in ticks. */
     @QueryParam(value = "transfer_time")
+    @OpenApiDescription("The least time to allow for a transfer, in ticks.")
     public NavigationQuery withMinTransferTime(long ticks) {
         return new NavigationQuery(origin, destination, waypoints, departAfter, ticks,
             maxTransfers, directOnly, optimization, excludedCategories, includedCategories,
@@ -168,6 +178,7 @@ public record NavigationQuery(
 
     /** Sets whether only direct journeys are accepted. */
     @QueryParam(value = "direct")
+    @OpenApiDescription("Whether to accept only journeys that need no transfer.")
     public NavigationQuery withDirectOnly(boolean directOnly) {
         return new NavigationQuery(origin, destination, waypoints, departAfter, minTransferTime,
             maxTransfers, directOnly, optimization, excludedCategories, includedCategories,
@@ -176,6 +187,7 @@ public record NavigationQuery(
 
     /** Sets how the found journeys are ordered. */
     @QueryParam(value = "optimization")
+    @OpenApiDescription("How the found journeys are ordered.")
     public NavigationQuery preferring(RoutingStrategy optimization) {
         return new NavigationQuery(origin, destination, waypoints, departAfter, minTransferTime,
             maxTransfers, directOnly, optimization, excludedCategories, includedCategories,
@@ -184,6 +196,7 @@ public record NavigationQuery(
 
     /** Excludes journeys using any of the given categories. */
     @QueryParam(value = "excluding_categories")
+    @OpenApiDescription("Category ids the journey must avoid.")
     public NavigationQuery excludingCategories(Set<UUID> categoryIds) {
         return new NavigationQuery(origin, destination, waypoints, departAfter, minTransferTime,
             maxTransfers, directOnly, optimization, categoryIds, includedCategories,
@@ -192,6 +205,7 @@ public record NavigationQuery(
 
     /** Restricts journeys to the given categories. */
     @QueryParam(value = "only_categories")
+    @OpenApiDescription("If set, the only category ids the journey may use.")
     public NavigationQuery onlyCategories(Set<UUID> categoryIds) {
         return new NavigationQuery(origin, destination, waypoints, departAfter, minTransferTime,
             maxTransfers, directOnly, optimization, excludedCategories, categoryIds,
@@ -200,6 +214,7 @@ public record NavigationQuery(
 
     /** Excludes journeys using any of the given lines. */
     @QueryParam(value = "excluding_lines")
+    @OpenApiDescription("Line ids the journey must avoid.")
     public NavigationQuery excludingLines(Set<UUID> lineIds) {
         return new NavigationQuery(origin, destination, waypoints, departAfter, minTransferTime,
             maxTransfers, directOnly, optimization, excludedCategories, includedCategories,
@@ -208,6 +223,7 @@ public record NavigationQuery(
 
     /** Restricts journeys to the given lines. */
     @QueryParam(value = "only_lines")
+    @OpenApiDescription("If set, the only line ids the journey may use.")
     public NavigationQuery onlyLines(Set<UUID> lineIds) {
         return new NavigationQuery(origin, destination, waypoints, departAfter, minTransferTime,
             maxTransfers, directOnly, optimization, excludedCategories, includedCategories,
@@ -216,6 +232,7 @@ public record NavigationQuery(
 
     /** Excludes journeys calling at any of the given stations. */
     @QueryParam(value = "avoid_stations")
+    @OpenApiDescription("Names of stations the journey must not call at.")
     public NavigationQuery avoidingStations(Set<String> stationNames) {
         return new NavigationQuery(origin, destination, waypoints, departAfter, minTransferTime,
             maxTransfers, directOnly, optimization, excludedCategories, includedCategories,
@@ -231,6 +248,7 @@ public record NavigationQuery(
 
     /** Sets the most journeys to return. */
     @QueryParam(value = "max_results")
+    @OpenApiDescription("The most journeys to return.")
     public NavigationQuery withMaxResults(int maxResults) {
         return new NavigationQuery(origin, destination, waypoints, departAfter, minTransferTime,
             maxTransfers, directOnly, optimization, excludedCategories, includedCategories,

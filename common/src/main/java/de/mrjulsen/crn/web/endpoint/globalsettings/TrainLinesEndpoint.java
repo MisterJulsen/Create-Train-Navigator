@@ -3,12 +3,14 @@ package de.mrjulsen.crn.web.endpoint.globalsettings;
 import de.mrjulsen.crn.data.settings.GlobalSettings;
 import de.mrjulsen.crn.data.settings.TrainLine;
 import de.mrjulsen.crn.util.ModUtils;
+import de.mrjulsen.crn.web.annotation.OpenApiDescription;
 import de.mrjulsen.crn.web.annotation.QueryModel;
 import de.mrjulsen.crn.web.annotation.QueryParam;
 import de.mrjulsen.crn.web.api.IEndpointHandler;
 import de.mrjulsen.crn.web.api.QueryBinder;
 import de.mrjulsen.crn.web.api.Request;
 import de.mrjulsen.crn.web.api.Response;
+import de.mrjulsen.crn.web.openapi.EndpointDocumentation;
 
 import java.util.Set;
 import java.util.UUID;
@@ -18,12 +20,12 @@ public class TrainLinesEndpoint implements IEndpointHandler {
 
     @QueryModel
     private record Query(
-            @QueryParam("name") Set<String> lineName,
-            @QueryParam("id") Set<UUID> id,
-            @QueryParam("by") Set<String> owner,
-            @QueryParam("by_id") Set<UUID> ownerId,
-            @QueryParam("trusted") Set<String> trustedPlayerName,
-            @QueryParam("trusted_id") Set<UUID> trustedPlayerId
+            @QueryParam("name") @OpenApiDescription("Keep only lines with one of these names.") Set<String> lineName,
+            @QueryParam("id") @OpenApiDescription("Keep only lines with one of these ids.") Set<UUID> id,
+            @QueryParam("by") @OpenApiDescription("Keep only lines owned by one of these players (by name).") Set<String> owner,
+            @QueryParam("by_id") @OpenApiDescription("Keep only lines owned by one of these players (by id).") Set<UUID> ownerId,
+            @QueryParam("trusted") @OpenApiDescription("Keep only lines that have one of these players as trusted members (by name).") Set<String> trustedPlayerName,
+            @QueryParam("trusted_id") @OpenApiDescription("Keep only lines that have one of these players as trusted members (by UUID).") Set<UUID> trustedPlayerId
     ) {
 
         public Query {
@@ -50,5 +52,17 @@ public class TrainLinesEndpoint implements IEndpointHandler {
     public Response handle(Request request) {
         Query query = QueryBinder.bind(request, Query.class);
         return Response.json(GlobalSettings.getInstance().getAllTrainLines().stream().filter(query::accept).toList());
+    }
+
+    @Override
+    public EndpointDocumentation getDocumentation() {
+        return EndpointDocumentation.builder()
+            .tag("Global Settings")
+            .summary("List train lines")
+            .description("All train lines matching the given query values.")
+            .query(Query.class)
+            .returnsList(TrainLine.class)
+            .shapeable()
+            .build();
     }
 }

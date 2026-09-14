@@ -1,18 +1,12 @@
 package de.mrjulsen.crn.web.endpoint.globalsettings;
 
-import com.simibubi.create.content.trains.signal.SignalBoundary;
-import de.mrjulsen.crn.api.core.snapshot.CreateSignalSnapshot;
 import de.mrjulsen.crn.data.settings.GlobalSettings;
 import de.mrjulsen.crn.data.settings.StationTag;
-import de.mrjulsen.crn.util.ModUtils;
-import de.mrjulsen.crn.util.TrainUtils;
-import de.mrjulsen.crn.web.annotation.QueryModel;
-import de.mrjulsen.crn.web.annotation.QueryParam;
 import de.mrjulsen.crn.web.api.*;
+import de.mrjulsen.crn.web.openapi.EndpointDocumentation;
 
 import java.net.HttpURLConnection;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 public class StationTagEndpoint implements IEndpointHandler {
@@ -22,7 +16,19 @@ public class StationTagEndpoint implements IEndpointHandler {
         UUID id = request.pathParameter("id", ParamType.UUID);
         Optional<StationTag> tag = GlobalSettings.getInstance().getStationTag(id);
         return tag
-                .map(x -> Response.json(x))
+                .map(Response::json)
                 .orElseGet(() -> Response.error(HttpURLConnection.HTTP_NOT_FOUND, "No station tag with id " + id));
+    }
+
+    @Override
+    public EndpointDocumentation getDocumentation() {
+        return EndpointDocumentation.builder()
+            .tag("Global Settings")
+            .summary("Get a station tag")
+            .description("A station tag by its id.")
+            .returns(StationTag.class)
+            .shapeable()
+            .response(HttpURLConnection.HTTP_NOT_FOUND, "No station tag with that id exists.")
+            .build();
     }
 }

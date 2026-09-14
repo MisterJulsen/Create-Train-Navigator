@@ -3,6 +3,7 @@ package de.mrjulsen.crn.api.core.query;
 import com.simibubi.create.content.trains.entity.Train;
 import de.mrjulsen.crn.api.core.snapshot.CreateTrainSnapshot;
 import de.mrjulsen.crn.util.TrainUtils;
+import de.mrjulsen.crn.web.annotation.OpenApiDescription;
 import de.mrjulsen.crn.web.annotation.QueryModel;
 import de.mrjulsen.crn.web.annotation.QueryParam;
 import net.minecraft.resources.ResourceLocation;
@@ -39,30 +40,35 @@ public record CreateTrainQuery(
 
     /** Keeps only trains with one of the given ids. */
     @QueryParam(value = "id")
+    @OpenApiDescription("Keep only trains with one of these ids.")
     public CreateTrainQuery withId(Set<UUID> id) {
         return new CreateTrainQuery(id, filter, dimension, graph, derailed);
     }
 
     /** Keeps only trains whose name matches the given filter. */
     @QueryParam(value = "filter")
+    @OpenApiDescription("Keep only trains whose name matches this filter (wildcard syntax allowed).")
     public CreateTrainQuery withFilter(String filter) {
         return new CreateTrainQuery(id, filter, dimension, graph, derailed);
     }
 
     /** Keeps only trains in one of the given dimensions. */
     @QueryParam(value = "dimension")
+    @OpenApiDescription("Keep only trains in one of these dimensions.")
     public CreateTrainQuery withDimension(Set<ResourceLocation> dimension) {
         return new CreateTrainQuery(id, filter, dimension, graph, derailed);
     }
 
     /** Keeps only trains on one of the given track graphs. */
     @QueryParam(value = "graph")
+    @OpenApiDescription("Keep only trains on one of these track graph ids.")
     public CreateTrainQuery withGraph(Set<UUID> graph) {
         return new CreateTrainQuery(id, filter, dimension, graph, derailed);
     }
 
     /** Keeps only trains that are, or are not, derailed. */
     @QueryParam(value = "derailed")
+    @OpenApiDescription("Keep only trains that are (true) or are not (false) derailed.")
     public CreateTrainQuery withDerailed(Boolean derailed) {
         return new CreateTrainQuery(id, filter, dimension, graph, derailed);
     }

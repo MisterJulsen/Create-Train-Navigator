@@ -7,6 +7,7 @@ import de.mrjulsen.crn.web.api.IEndpointHandler;
 import de.mrjulsen.crn.web.api.ParamType;
 import de.mrjulsen.crn.web.api.Request;
 import de.mrjulsen.crn.web.api.Response;
+import de.mrjulsen.crn.web.openapi.EndpointDocumentation;
 
 import java.net.HttpURLConnection;
 import java.util.Optional;
@@ -21,5 +22,17 @@ public class SignalEndpoint implements IEndpointHandler {
         return signal
                 .map(signalBoundary -> Response.json(CreateSignalSnapshot.of(signalBoundary)))
                 .orElseGet(() -> Response.error(HttpURLConnection.HTTP_NOT_FOUND, "No signal with id " + id));
+    }
+
+    @Override
+    public EndpointDocumentation getDocumentation() {
+        return EndpointDocumentation.builder()
+            .tag("Create")
+            .summary("Get a Create signal")
+            .description("Raw Create signal data by its id.")
+            .returns(CreateSignalSnapshot.class)
+            .shapeable()
+            .response(HttpURLConnection.HTTP_NOT_FOUND, "No signal with that id exists.")
+            .build();
     }
 }

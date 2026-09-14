@@ -4,6 +4,7 @@ import de.mrjulsen.crn.api.core.RailwayBackendApi;
 import de.mrjulsen.crn.api.core.query.BoardQuery;
 import de.mrjulsen.crn.api.core.snapshot.BoardEntry;
 import de.mrjulsen.crn.web.api.*;
+import de.mrjulsen.crn.web.openapi.EndpointDocumentation;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -19,5 +20,17 @@ public class BoardEndpoint implements IEndpointHandler {
         List<BoardEntry> entries = new ArrayList<>(RailwayBackendApi.getBoard(station, query));
         entries.sort(Comparator.comparingLong(x -> x.realtime().arrival()));
         return Response.json(entries);
+    }
+
+    @Override
+    public EndpointDocumentation getDocumentation() {
+        return EndpointDocumentation.builder()
+            .tag("Departures")
+            .summary("Station board")
+            .description("The calls at a station, ordered by arrival, just like a departure board would show them.")
+            .query(BoardQuery.class)
+            .returnsList(BoardEntry.class)
+            .shapeable()
+            .build();
     }
 }

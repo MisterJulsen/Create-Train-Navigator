@@ -8,6 +8,7 @@ import de.mrjulsen.crn.web.api.IEndpointHandler;
 import de.mrjulsen.crn.web.api.QueryBinder;
 import de.mrjulsen.crn.web.api.Request;
 import de.mrjulsen.crn.web.api.Response;
+import de.mrjulsen.crn.web.openapi.EndpointDocumentation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,5 +30,17 @@ public class AllTracksEndpoint implements IEndpointHandler {
             graphs.add(snapshot);
         }
         return Response.json(graphs);
+    }
+
+    @Override
+    public EndpointDocumentation getDocumentation() {
+        return EndpointDocumentation.builder()
+            .tag("Create")
+            .summary("List Create track graphs")
+            .description("The raw track network from Create, grouped by track graphs.")
+            .query(CreateTrackQuery.class)
+            .returnsList(CreateTrackGraphSnapshot.class)
+            .shapeable()
+            .build();
     }
 }

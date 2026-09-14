@@ -1,6 +1,7 @@
 package de.mrjulsen.crn.api.core.query;
 
 import com.simibubi.create.content.trains.graph.TrackGraph;
+import de.mrjulsen.crn.web.annotation.OpenApiDescription;
 import de.mrjulsen.crn.web.annotation.QueryModel;
 import de.mrjulsen.crn.web.annotation.QueryParam;
 import net.minecraft.resources.ResourceLocation;
@@ -30,12 +31,14 @@ public record CreateTrackQuery(
 
     /** Keeps only track graphs with one of the given ids. */
     @QueryParam(value = "id")
+    @OpenApiDescription("Keep only track graphs with one of these ids.")
     public CreateTrackQuery withId(Set<UUID> id) {
         return new CreateTrackQuery(id, dimension);
     }
 
     /** Restricts each returned graph to the nodes in the given dimensions. */
     @QueryParam(value = "dimension")
+    @OpenApiDescription("Restrict each returned graph to the nodes in these dimensions.")
     public CreateTrackQuery withDimension(Set<ResourceLocation> dimension) {
         return new CreateTrackQuery(id, dimension);
     }

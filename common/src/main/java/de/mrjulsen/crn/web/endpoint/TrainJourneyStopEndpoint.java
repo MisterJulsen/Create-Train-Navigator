@@ -1,6 +1,5 @@
 package de.mrjulsen.crn.web.endpoint;
 
-import com.google.common.base.Suppliers;
 import de.mrjulsen.crn.api.core.RailwayBackendApi;
 import de.mrjulsen.crn.api.core.snapshot.JourneySnapshot;
 import de.mrjulsen.crn.api.core.snapshot.StopSnapshot;
@@ -9,12 +8,12 @@ import de.mrjulsen.crn.web.api.IEndpointHandler;
 import de.mrjulsen.crn.web.api.ParamType;
 import de.mrjulsen.crn.web.api.Request;
 import de.mrjulsen.crn.web.api.Response;
+import de.mrjulsen.crn.web.openapi.EndpointDocumentation;
 
-import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 public class TrainJourneyStopEndpoint implements IEndpointHandler {
 
@@ -37,5 +36,18 @@ public class TrainJourneyStopEndpoint implements IEndpointHandler {
             default -> journey.currentStop();
         };
         return Response.json(stop.orElse(null));
+    }
+
+    @Override
+    public EndpointDocumentation getDocumentation() {
+        return EndpointDocumentation.builder()
+            .tag("Trains")
+            .summary("Get one train stop")
+            .description("A single stop of a train.")
+            .queryParam("direction", "string", "The stop to return (PREVIOUS, CURRENT (default) or NEXT).", Stream.of(Timeline.values()).map(Enum::name).toList(), Timeline.CURRENT.name())
+            .queryParam("station", "string", "The stop to be searched for in the selected direction, instead of the next one.")
+            .returns(StopSnapshot.class)
+            .shapeable()
+            .build();
     }
 }

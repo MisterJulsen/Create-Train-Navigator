@@ -2,6 +2,7 @@ package de.mrjulsen.crn.web;
 
 import de.mrjulsen.crn.api.json.JsonConvert;
 import de.mrjulsen.crn.core.navigator.Waypoint;
+import de.mrjulsen.crn.web.api.ApiTagRegistry;
 import de.mrjulsen.crn.web.api.EndpointRegistry;
 import de.mrjulsen.crn.web.api.ParamType;
 import de.mrjulsen.crn.web.endpoint.*;
@@ -9,7 +10,6 @@ import de.mrjulsen.crn.web.endpoint.StationEndpoint;
 import de.mrjulsen.crn.web.endpoint.TrainEndpoint;
 import de.mrjulsen.crn.web.endpoint.create.*;
 import de.mrjulsen.crn.web.endpoint.globalsettings.*;
-import de.mrjulsen.mcdragonlib.data.WorldLocation;
 
 public final class ModWebEndpoints {
     private ModWebEndpoints() {}
@@ -28,6 +28,17 @@ public final class ModWebEndpoints {
     });
 
     public static void init() {
+        ApiTagRegistry.register("Meta", "Service metadata, health checks and the API specification itself.");
+        ApiTagRegistry.register("Trains", "Live and scheduled data for individual trains.");
+        ApiTagRegistry.register("Stations", "Stations known to the backend and what calls at them.");
+        ApiTagRegistry.register("Lines & Categories", "Train lines and categories together with the trains that work them.");
+        ApiTagRegistry.register("Departures", "Station departure boards and departure statistics.");
+        ApiTagRegistry.register("Routing", "Route search between stations.");
+        ApiTagRegistry.register("Create", "Raw data straight from the Create mod, unfiltered by CRN's display rules.");
+        ApiTagRegistry.register("Global Settings", "Server-wide configuration: lines, categories, station tags and blacklists.");
+
+        EndpointRegistry.registerGet("openapi.json", new OpenApiEndpoint()).alias("openapi");
+
         EndpointRegistry.registerGet("ping", new PingEndpoint()).alias("hello");
         EndpointRegistry.registerGet("about", new AboutEndpoint()).alias("info");
 

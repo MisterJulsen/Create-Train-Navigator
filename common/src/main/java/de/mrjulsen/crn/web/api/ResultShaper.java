@@ -11,11 +11,6 @@ import de.mrjulsen.crn.api.json.JsonConvert;
 
 public final class ResultShaper {
 
-    public static final String FIELDS = "fields";
-    public static final String SORT = "sort";
-    public static final String LIMIT = "limit";
-    public static final String OFFSET = "offset";
-
     private ResultShaper() {}
 
     public static void apply(Request request, Response response) {
@@ -23,10 +18,10 @@ public final class ResultShaper {
             return;
         }
 
-        FieldMask mask = FieldMask.parse(request.query(FIELDS).orElse(null));
-        List<JsonSorter.Key> sortKeys = JsonSorter.parse(request.query(SORT).orElse(null));
-        Integer limit = pageValue(request, LIMIT);
-        Integer offset = pageValue(request, OFFSET);
+        FieldMask mask = FieldMask.parse(request.query(GlobalParameters.FIELDS.getKey()).orElse(null));
+        List<JsonSorter.Key> sortKeys = JsonSorter.parse(request.query(GlobalParameters.SORT.getKey()).orElse(null));
+        Integer limit = pageValue(request, GlobalParameters.LIMIT.getKey());
+        Integer offset = pageValue(request, GlobalParameters.OFFSET.getKey());
         boolean paginate = limit != null || offset != null;
 
         if (mask.isEmpty() && sortKeys.isEmpty() && !paginate) {
@@ -98,7 +93,7 @@ public final class ResultShaper {
     private static Integer pageValue(Request request, String name) {
         Optional<Integer> value = request.query(name, ParamType.INT);
         if (value.isPresent() && value.get() < 0) {
-            throw new BadRequestException("Query parameter '" + name + "' must not be negative, got: " + value.get());
+            throw new BadRequestException("Query parameter '" + name + "' must not be negative: " + value.get());
         }
         return value.orElse(null);
     }
