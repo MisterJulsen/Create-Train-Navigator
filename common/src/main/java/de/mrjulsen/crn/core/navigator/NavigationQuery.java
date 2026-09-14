@@ -10,7 +10,6 @@ import de.mrjulsen.crn.api.core.ref.TrainCategoryRef;
 import de.mrjulsen.crn.api.core.ref.LineRef;
 import de.mrjulsen.crn.api.core.RailwayBackendApi;
 import de.mrjulsen.crn.web.annotation.OpenApiDescription;
-import de.mrjulsen.crn.web.annotation.OpenApiExample;
 import de.mrjulsen.crn.web.annotation.QueryModel;
 import de.mrjulsen.crn.web.annotation.QueryParam;
 
@@ -95,8 +94,7 @@ public record NavigationQuery(
 
     /** A query starting a journey at the given station, with default limits. */
     @QueryParam(value = "from", required = true)
-    @OpenApiDescription("The station the journey starts at.")
-    @OpenApiExample("Central Station")
+    @OpenApiDescription(value = "The station the journey starts at.", example = "Central Station")
     public static NavigationQuery from(String origin) {
         return new NavigationQuery(origin, "", List.of(), NOW, DEFAULT_TRANSFER_TIME,
             DEFAULT_MAX_TRANSFERS, false, RoutingStrategy.FASTEST,
@@ -106,8 +104,7 @@ public record NavigationQuery(
 
     /** Sets the destination. */
     @QueryParam(value = "to", required = true)
-    @OpenApiDescription("The station the journey ends at.")
-    @OpenApiExample("Airport")
+    @OpenApiDescription(value = "The station the journey ends at.", example = "Airport")
     public NavigationQuery to(String destination) {
         return new NavigationQuery(origin, destination, waypoints, departAfter, minTransferTime,
             maxTransfers, directOnly, optimization, excludedCategories, includedCategories,

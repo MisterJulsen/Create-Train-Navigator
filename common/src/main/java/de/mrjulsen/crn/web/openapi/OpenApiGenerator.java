@@ -13,7 +13,6 @@ import java.util.Set;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.web.WebServer;
 import de.mrjulsen.crn.web.annotation.OpenApiDescription;
-import de.mrjulsen.crn.web.annotation.OpenApiExample;
 import de.mrjulsen.crn.web.annotation.QueryParam;
 import de.mrjulsen.crn.web.api.ApiTagRegistry;
 import de.mrjulsen.crn.web.api.ApiVersion;
@@ -132,7 +131,7 @@ public final class OpenApiGenerator {
         for (RecordComponent component : recordComponents(model)) {
             QueryParam param = component.getAnnotation(QueryParam.class);
             if (param != null && seen.add(param.value())) {
-                parameters.add(queryParameter(param, component.getGenericType(), component.getAnnotation(OpenApiDescription.class), component.getAnnotation(OpenApiExample.class), schemas));
+                parameters.add(queryParameter(param, component.getGenericType(), component.getAnnotation(OpenApiDescription.class), schemas));
             }
         }
         for (Method method : model.getMethods()) {
@@ -142,13 +141,12 @@ public final class OpenApiGenerator {
             }
             Parameter parameter = method.getParameters()[0];
             OpenApiDescription description = firstNonNull(method.getAnnotation(OpenApiDescription.class), parameter.getAnnotation(OpenApiDescription.class));
-            OpenApiExample example = firstNonNull(method.getAnnotation(OpenApiExample.class), parameter.getAnnotation(OpenApiExample.class));
-            parameters.add(queryParameter(param, parameter.getParameterizedType(), description, example, schemas));
+            parameters.add(queryParameter(param, parameter.getParameterizedType(), description, schemas));
         }
         return parameters;
     }
 
-    private static Map<String, Object> queryParameter(QueryParam param, java.lang.reflect.Type type, OpenApiDescription description, OpenApiExample example, SchemaGenerator schemas) {
+    private static Map<String, Object> queryParameter(QueryParam param, java.lang.reflect.Type type, OpenApiDescription description, SchemaGenerator schemas) {
         Map<String, Object> parameter = new LinkedHashMap<>();
         parameter.put(OpenApiKeys.NAME, param.value());
         parameter.put(OpenApiKeys.IN, OpenApiKeys.IN_QUERY);
@@ -156,8 +154,8 @@ public final class OpenApiGenerator {
         if (description != null && !description.value().isBlank()) {
             parameter.put(OpenApiKeys.DESCRIPTION, description.value());
         }
-        if (example != null && !example.value().isBlank()) {
-            parameter.put(OpenApiKeys.EXAMPLE, example.value());
+        if (description != null && !description.example().isBlank()) {
+            parameter.put(OpenApiKeys.EXAMPLE, description.example());
         }
         parameter.put(OpenApiKeys.SCHEMA, schemas.schema(type));
         return parameter;

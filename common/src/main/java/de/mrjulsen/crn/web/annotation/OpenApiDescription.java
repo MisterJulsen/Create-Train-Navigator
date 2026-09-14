@@ -9,4 +9,5 @@ import java.lang.annotation.Target;
 @Target({ ElementType.TYPE, ElementType.RECORD_COMPONENT, ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER })
 public @interface OpenApiDescription {
     String value();
+    String example() default "";
 }

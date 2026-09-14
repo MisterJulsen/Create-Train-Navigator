@@ -14,7 +14,6 @@ import java.util.Optional;
 
 import de.mrjulsen.crn.api.json.JsonConvert;
 import de.mrjulsen.crn.web.annotation.OpenApiDescription;
-import de.mrjulsen.crn.web.annotation.OpenApiExample;
 
 final class SchemaGenerator {
 
@@ -106,7 +105,6 @@ final class SchemaGenerator {
             for (RecordComponent component : type.getRecordComponents()) {
                 Map<String, Object> property = schema(component.getGenericType());
                 applyDescription(property, component.getAnnotation(OpenApiDescription.class));
-                applyExample(property, component.getAnnotation(OpenApiExample.class));
                 properties.put(JsonConvert.toSnakeCase(component.getName()), property);
             }
             return;
@@ -117,7 +115,6 @@ final class SchemaGenerator {
             }
             Map<String, Object> property = schema(field.getGenericType());
             applyDescription(property, field.getAnnotation(OpenApiDescription.class));
-            applyExample(property, field.getAnnotation(OpenApiExample.class));
             properties.put(JsonConvert.toSnakeCase(field.getName()), property);
         }
     }
@@ -146,15 +143,15 @@ final class SchemaGenerator {
     }
 
     private static void applyDescription(Map<String, Object> node, OpenApiDescription annotation) {
+        if (annotation == null || node.containsKey(OpenApiKeys.REF)) {
+            return;
+        }
         String text = description(annotation);
-        if (text != null && !node.containsKey(OpenApiKeys.REF)) {
+        if (text != null) {
             node.put(OpenApiKeys.DESCRIPTION, text);
         }
-    }
-
-    private static void applyExample(Map<String, Object> node, OpenApiExample annotation) {
-        if (annotation != null && !annotation.value().isBlank() && !node.containsKey(OpenApiKeys.REF)) {
-            node.put(OpenApiKeys.EXAMPLE, annotation.value());
+        if (!annotation.example().isBlank()) {
+            node.put(OpenApiKeys.EXAMPLE, annotation.example());
         }
     }
 
