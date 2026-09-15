@@ -130,8 +130,7 @@ public record NavigationQuery(
 
     /** Replaces the waypoints. */
     @QueryParam(value = "via")
-    @OpenApiDescription("Waypoints the journey must pass through, in order. Each is a station name, optionally "
-        + "suffixed with ':<minStay>' in ticks.")
+    @OpenApiDescription(value = "Waypoints the journey must pass through, in order. Repeat the parameter for each waypoint. Every value is a station name, optionally suffixed with ':<minStay>' (a minimum stay in ticks).", example = "Central Station:600", pattern = "^[^:]+(:[0-9]+)?$")
     public NavigationQuery withWaypoints(List<Waypoint> waypoints) {
         return new NavigationQuery(origin, destination, waypoints, departAfter, minTransferTime,
             maxTransfers, directOnly, optimization, excludedCategories, includedCategories,

@@ -10,4 +10,5 @@ import java.lang.annotation.Target;
 public @interface OpenApiDescription {
     String value();
     String example() default "";
+    String pattern() default "";
 }

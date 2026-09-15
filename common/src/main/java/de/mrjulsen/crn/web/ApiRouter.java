@@ -22,6 +22,7 @@ import com.sun.net.httpserver.HttpHandler;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.web.api.ApiVersion;
 import de.mrjulsen.crn.web.api.BadRequestException;
+import de.mrjulsen.crn.web.api.NotFoundException;
 import de.mrjulsen.crn.web.api.Request;
 import de.mrjulsen.crn.web.api.Response;
 import de.mrjulsen.crn.web.api.EndpointRegistry;
@@ -48,6 +49,8 @@ final class ApiRouter implements HttpHandler {
             response = process(exchange);
         } catch (BadRequestException e) {
             response = Response.error(HttpURLConnection.HTTP_BAD_REQUEST, e.getMessage());
+        } catch (NotFoundException e) {
+            response = Response.error(HttpURLConnection.HTTP_NOT_FOUND, e.getMessage());
         } catch (Exception e) {
             CreateRailwaysNavigator.LOGGER.error("Unhandled error in CRN web API", e);
             response = Response.error(HttpURLConnection.HTTP_INTERNAL_ERROR, "Internal server error");

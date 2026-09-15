@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 public enum GlobalParameters {
-    FIELDS("fields", "string", false, "Comma-separated list of fields that should be included in the response. Omitted fields are dropped. A nested field is written as 'parent.child'."),
+    FIELDS("fields", "string", false, "Comma-separated list of fields that should be included in the response. Omitted fields are dropped. A nested field is written as 'parent.child'. When this parameter is set, only the listed fields plus the ones the server always includes are returned, so a field otherwise marked as required in the schema may be missing."),
     SORT("sort", "string", true, "Comma-separated list of fields by which the array response should be sorted. Add the prefix '-' for descending order."),
     LIMIT("limit", "integer", true, "Maximum number of items to return from an array response."),
     OFFSET("offset", "integer", true, "Amount of items to skip from the start of an array response.");

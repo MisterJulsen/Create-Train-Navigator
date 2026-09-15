@@ -13,7 +13,7 @@ public class TrainEndpoint implements IEndpointHandler {
     @Override
     public Response handle(Request request) {
         UUID trainId = request.pathParameter("id", ParamType.UUID);
-        return Response.json(RailwayBackendApi.getTrain(trainId).orElseThrow());
+        return Response.json(RailwayBackendApi.getTrain(trainId).orElseThrow(() -> new NotFoundException("No train with id " + trainId)));
     }
 
     @Override
@@ -24,6 +24,7 @@ public class TrainEndpoint implements IEndpointHandler {
             .description("A train by its id.")
             .returns(TrainSnapshot.class)
             .shapeable()
+            .notFound("No train with that id exists.")
             .build();
     }
 }

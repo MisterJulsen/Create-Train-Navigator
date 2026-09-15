@@ -9,6 +9,7 @@ import de.mrjulsen.crn.api.core.ref.LineRef;
 import de.mrjulsen.crn.api.core.ref.StationRef;
 import de.mrjulsen.crn.api.core.ref.StationTagRef;
 import de.mrjulsen.crn.util.NbtHelper;
+import de.mrjulsen.crn.web.annotation.ResponseAlwaysInclude;
 import net.minecraft.nbt.CompoundTag;
 
 /**
@@ -23,7 +24,7 @@ import net.minecraft.nbt.CompoundTag;
  * @param blacklisted Whether the station is hidden from public boards and route searches.
  */
 public record StationSnapshot(
-    StationRef station,
+    @ResponseAlwaysInclude StationRef station,
     List<StationTagRef> tags,
     List<LineRef> lines,
     List<TrainCategoryRef> categories,

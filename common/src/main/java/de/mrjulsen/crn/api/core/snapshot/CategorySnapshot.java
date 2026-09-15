@@ -7,6 +7,7 @@ import java.util.UUID;
 import de.mrjulsen.crn.api.core.ref.TrainCategoryRef;
 import de.mrjulsen.crn.api.core.ref.LineRef;
 import de.mrjulsen.crn.util.NbtHelper;
+import de.mrjulsen.crn.web.annotation.ResponseAlwaysInclude;
 import net.minecraft.nbt.CompoundTag;
 
 /**
@@ -19,7 +20,7 @@ import net.minecraft.nbt.CompoundTag;
  * @param delayedTrains How many of those trains are running late.
  */
 public record CategorySnapshot(
-    TrainCategoryRef category,
+    @ResponseAlwaysInclude TrainCategoryRef category,
     Set<UUID> trainIds,
     List<LineRef> lines,
     int delayedTrains

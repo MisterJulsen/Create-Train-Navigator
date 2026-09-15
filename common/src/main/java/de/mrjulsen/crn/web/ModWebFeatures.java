@@ -20,6 +20,9 @@ public final class ModWebFeatures {
             return JsonConvert.fromJson(v, Waypoint.class);
         } catch (Exception e) {
             String[] split = v.split(":");
+            if (split.length == 1) {
+                return Waypoint.of(split[0]);
+            }
             if (split.length != 2) {
                 throw new IllegalArgumentException("Invalid waypoint: " + v);
             }

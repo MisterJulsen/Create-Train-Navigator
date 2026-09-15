@@ -154,6 +154,14 @@ public final class EndpointDocumentation {
             return this;
         }
 
+        public Builder notFound(String description) {
+            return response(java.net.HttpURLConnection.HTTP_NOT_FOUND, description);
+        }
+
+        public Builder badRequest(String description) {
+            return response(java.net.HttpURLConnection.HTTP_BAD_REQUEST, description);
+        }
+
         /** Documents an optional query parameter the handler reads directly, without a {@code @QueryModel}. */
         public Builder queryParam(String name, String type, String description) {
             this.queryParams.add(new QueryParameter(name, type, description, false, List.of(), null, null));

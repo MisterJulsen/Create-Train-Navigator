@@ -161,8 +161,26 @@ public final class OpenApiGenerator {
         if (description != null && !description.example().isBlank()) {
             parameter.put(OpenApiKeys.EXAMPLE, description.example());
         }
-        parameter.put(OpenApiKeys.SCHEMA, schemas.schema(type));
+        Map<String, Object> schema = schemas.querySchema(type);
+        if (description != null && !description.pattern().isBlank()) {
+            leafSchema(schema).put(OpenApiKeys.PATTERN, description.pattern());
+        }
+        applyArrayStyle(parameter, schema);
+        parameter.put(OpenApiKeys.SCHEMA, schema);
         return parameter;
+    }
+
+    private static void applyArrayStyle(Map<String, Object> parameter, Map<String, Object> schema) {
+        if (OpenApiKeys.TYPE_ARRAY.equals(schema.get(OpenApiKeys.TYPE))) {
+            parameter.put(OpenApiKeys.STYLE, OpenApiKeys.STYLE_FORM);
+            parameter.put(OpenApiKeys.EXPLODE, true);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> leafSchema(Map<String, Object> schema) {
+        Object items = schema.get(OpenApiKeys.ITEMS);
+        return items instanceof Map ? leafSchema((Map<String, Object>) items) : schema;
     }
 
     private static Map<String, Object> manualQueryParameter(EndpointDocumentation.QueryParameter spec) {
@@ -218,6 +236,9 @@ public final class OpenApiGenerator {
             doc.responses().forEach((status, description) -> {
                 Map<String, Object> response = new LinkedHashMap<>();
                 response.put(OpenApiKeys.DESCRIPTION, description);
+                if (status >= 400) {
+                    response.put(OpenApiKeys.CONTENT, jsonContent(Schemas.schemaRef(OpenApiKeys.ERROR_SCHEMA)));
+                }
                 responses.put(Integer.toString(status), response);
             });
         }

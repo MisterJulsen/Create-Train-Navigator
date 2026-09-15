@@ -31,6 +31,9 @@ public final class OpenApiKeys {
     public static final String IN = "in";
     public static final String REQUIRED = "required";
     public static final String SCHEMA = "schema";
+    public static final String STYLE = "style";
+    public static final String EXPLODE = "explode";
+    public static final String STYLE_FORM = "form";
 
     public static final String TYPE = "type";
     public static final String FORMAT = "format";
@@ -38,6 +41,7 @@ public final class OpenApiKeys {
     public static final String ITEMS = "items";
     public static final String ADDITIONAL_PROPERTIES = "additionalProperties";
     public static final String ENUM = "enum";
+    public static final String PATTERN = "pattern";
     public static final String REF = "$ref";
     public static final String DESCRIPTION = "description";
     public static final String EXAMPLE = "example";

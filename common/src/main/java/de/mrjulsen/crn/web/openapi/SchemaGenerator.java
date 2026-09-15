@@ -14,6 +14,7 @@ import java.util.Optional;
 
 import de.mrjulsen.crn.api.json.JsonConvert;
 import de.mrjulsen.crn.web.annotation.OpenApiDescription;
+import de.mrjulsen.crn.web.annotation.ResponseAlwaysInclude;
 
 final class SchemaGenerator {
 
@@ -34,6 +35,33 @@ final class SchemaGenerator {
             return forClass(clazz);
         }
         return Schemas.object();
+    }
+
+    Map<String, Object> querySchema(Type type) {
+        if (type instanceof ParameterizedType parameterized) {
+            Class<?> raw = (Class<?>) parameterized.getRawType();
+            if (Collection.class.isAssignableFrom(raw)) {
+                return Schemas.array(querySchema(parameterized.getActualTypeArguments()[0]));
+            }
+            if (Optional.class.isAssignableFrom(raw)) {
+                Map<String, Object> node = querySchema(parameterized.getActualTypeArguments()[0]);
+                node.put(OpenApiKeys.NULLABLE, true);
+                return node;
+            }
+        }
+        if (type instanceof Class<?> clazz) {
+            if (clazz.isArray()) {
+                return Schemas.array(querySchema(clazz.getComponentType()));
+            }
+            if (isStringParsed(clazz)) {
+                return Schemas.typed(OpenApiKeys.TYPE_STRING);
+            }
+        }
+        return schema(type);
+    }
+
+    private static boolean isStringParsed(Class<?> type) {
+        return type.getName().startsWith(MOD_PACKAGE) && !type.isEnum() && SchemaTypeRegistry.lookup(type).isEmpty();
     }
 
     private Map<String, Object> parameterized(ParameterizedType type) {
@@ -96,18 +124,26 @@ final class SchemaGenerator {
         Map<String, Object> properties = new LinkedHashMap<>();
         schema.put(OpenApiKeys.PROPERTIES, properties);
         components.put(name, schema);
-        populate(type, properties);
+        List<String> required = populate(type, properties);
+        if (!required.isEmpty()) {
+            schema.put(OpenApiKeys.REQUIRED, required);
+        }
         return name;
     }
 
-    private void populate(Class<?> type, Map<String, Object> properties) {
+    private List<String> populate(Class<?> type, Map<String, Object> properties) {
+        List<String> required = new ArrayList<>();
         if (type.isRecord()) {
             for (RecordComponent component : type.getRecordComponents()) {
                 Map<String, Object> property = schema(component.getGenericType());
                 applyDescription(property, component.getAnnotation(OpenApiDescription.class));
-                properties.put(JsonConvert.toSnakeCase(component.getName()), property);
+                String name = JsonConvert.toSnakeCase(component.getName());
+                properties.put(name, property);
+                if (component.isAnnotationPresent(ResponseAlwaysInclude.class)) {
+                    required.add(name);
+                }
             }
-            return;
+            return required;
         }
         for (Field field : type.getDeclaredFields()) {
             if (Modifier.isStatic(field.getModifiers()) || Modifier.isTransient(field.getModifiers()) || field.isSynthetic()) {
@@ -115,8 +151,13 @@ final class SchemaGenerator {
             }
             Map<String, Object> property = schema(field.getGenericType());
             applyDescription(property, field.getAnnotation(OpenApiDescription.class));
-            properties.put(JsonConvert.toSnakeCase(field.getName()), property);
+            String name = JsonConvert.toSnakeCase(field.getName());
+            properties.put(name, property);
+            if (field.isAnnotationPresent(ResponseAlwaysInclude.class)) {
+                required.add(name);
+            }
         }
+        return required;
     }
 
     private String uniqueName(Class<?> type) {
