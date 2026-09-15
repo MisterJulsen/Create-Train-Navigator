@@ -8,19 +8,58 @@ import java.util.Optional;
 public final class ApiTagRegistry {
     private ApiTagRegistry() {}
 
-    public record Tag(String name, String description) {}
+    public static class ApiTag {
+        private final String name;
+        private final String description;
 
-    private static final Map<String, Tag> TAGS = new LinkedHashMap<>();
+        private ApiTag(String name, String description) {
+            this.name = name;
+            this.description = description;
+        }
 
-    public static void register(String name, String description) {
-        TAGS.put(name, new Tag(name, description));
+        public String getName() {
+            return name;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof ApiTag o) {
+                return name.equals(o.name);
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return name.hashCode();
+        }
+
+        @Override
+        public String toString() {
+            return String.format("%s[name=%s, description=%s]", getClass().getSimpleName(), name, description);
+        }
     }
 
-    public static Optional<Tag> get(String name) {
+    private static final Map<String, ApiTag> TAGS = new LinkedHashMap<>();
+
+    public static ApiTag register(String name, String description) {
+        if (TAGS.containsKey(name)) {
+            throw new IllegalStateException("A tag with name '" + name + "' has already been registered.");
+        }
+        ApiTag tag = new ApiTag(name, description);
+        TAGS.put(name, tag);
+        return tag;
+    }
+
+    public static Optional<ApiTag> get(String name) {
         return Optional.ofNullable(TAGS.get(name));
     }
 
-    public static List<Tag> all() {
+    public static List<ApiTag> all() {
         return List.copyOf(TAGS.values());
     }
 }

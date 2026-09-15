@@ -2,6 +2,7 @@ package de.mrjulsen.crn.web.endpoint.globalsettings;
 
 import de.mrjulsen.crn.data.settings.GlobalSettings;
 import de.mrjulsen.crn.data.settings.StationTag;
+import de.mrjulsen.crn.web.ModWebFeatures;
 import de.mrjulsen.crn.web.api.*;
 import de.mrjulsen.crn.web.openapi.EndpointDocumentation;
 
@@ -23,7 +24,7 @@ public class StationTagEndpoint implements IEndpointHandler {
     @Override
     public EndpointDocumentation getDocumentation() {
         return EndpointDocumentation.builder()
-            .tag("Global Settings")
+            .tag(ModWebFeatures.TAG_GLOBAL_SETTINGS)
             .summary("Get a station tag")
             .description("A station tag by its id.")
             .returns(StationTag.class)

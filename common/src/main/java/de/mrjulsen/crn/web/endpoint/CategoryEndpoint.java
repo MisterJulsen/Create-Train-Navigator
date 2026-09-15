@@ -2,6 +2,7 @@ package de.mrjulsen.crn.web.endpoint;
 
 import de.mrjulsen.crn.api.core.RailwayBackendApi;
 import de.mrjulsen.crn.api.core.snapshot.CategorySnapshot;
+import de.mrjulsen.crn.web.ModWebFeatures;
 import de.mrjulsen.crn.web.api.IEndpointHandler;
 import de.mrjulsen.crn.web.api.ParamType;
 import de.mrjulsen.crn.web.api.Request;
@@ -21,7 +22,7 @@ public class CategoryEndpoint implements IEndpointHandler {
     @Override
     public EndpointDocumentation getDocumentation() {
         return EndpointDocumentation.builder()
-            .tag("Lines and Categories")
+            .tag(ModWebFeatures.TAG_LINES_AND_CATEGORIES)
             .summary("Get a category")
             .description("One category with the trains using it.")
             .returns(CategorySnapshot.class)

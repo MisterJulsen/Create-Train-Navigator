@@ -2,6 +2,7 @@ package de.mrjulsen.crn.web.endpoint.create;
 
 import com.simibubi.create.content.trains.entity.Train;
 import de.mrjulsen.crn.util.TrainUtils;
+import de.mrjulsen.crn.web.ModWebFeatures;
 import de.mrjulsen.crn.web.api.IEndpointHandler;
 import de.mrjulsen.crn.web.api.ParamType;
 import de.mrjulsen.crn.web.api.Request;
@@ -26,7 +27,7 @@ public class TrainScheduleEndpoint implements IEndpointHandler {
     @Override
     public EndpointDocumentation getDocumentation() {
         return EndpointDocumentation.builder()
-            .tag("Create")
+            .tag(ModWebFeatures.TAG_CREATE)
             .summary("Get a Create train's schedule")
             .description("The raw Create schedule assigned to a train.")
             .response(HttpURLConnection.HTTP_NOT_FOUND, "No train with that id exists.")

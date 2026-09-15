@@ -1,32 +1,38 @@
 package de.mrjulsen.crn.web.api;
 
-import com.google.common.net.MediaType;
-
 import java.util.Optional;
 
 public enum ApiVersion {
 
-    V1("v1", 1);
+    V1(1, "1.0.0");
 
-    private final String slug;
-    private final int version;
+    private final int majorVersion;
+    private final String minorVersion;
 
-    ApiVersion(String slug, int version) {
-        this.slug = slug;
-        this.version = version;
+    ApiVersion(int majorVersion, String minorVersion) {
+        this.majorVersion = majorVersion;
+        this.minorVersion = minorVersion;
     }
 
     public String slug() {
-        return slug;
+        return String.format("v%s", majorVersion);
     }
 
-    public int version() {
-        return version;
+    public int majorVersion() {
+        return majorVersion;
+    }
+
+    public String minorVersion() {
+        return minorVersion;
+    }
+
+    public String version() {
+        return String.format("%s.%s", majorVersion, minorVersion);
     }
 
     public static Optional<ApiVersion> fromSlug(String slug) {
         for (ApiVersion version : values()) {
-            if (version.slug.equalsIgnoreCase(slug)) {
+            if (version.slug().equalsIgnoreCase(slug)) {
                 return Optional.of(version);
             }
         }

@@ -1,6 +1,7 @@
 package de.mrjulsen.crn.web.endpoint;
 
 import de.mrjulsen.crn.util.ModUtils;
+import de.mrjulsen.crn.web.ModWebFeatures;
 import de.mrjulsen.crn.web.annotation.OpenApiDescription;
 import de.mrjulsen.crn.web.api.IEndpointHandler;
 import de.mrjulsen.crn.web.api.Request;
@@ -22,7 +23,7 @@ public class TimeNowEndpoint implements IEndpointHandler {
     @Override
     public EndpointDocumentation getDocumentation() {
         return EndpointDocumentation.builder()
-            .tag("Meta")
+            .tag(ModWebFeatures.TAG_COMMON)
             .summary("Current game time")
             .description("The current time on the server. Use this to Compare snapshot timestamps.")
             .returns(Data.class)

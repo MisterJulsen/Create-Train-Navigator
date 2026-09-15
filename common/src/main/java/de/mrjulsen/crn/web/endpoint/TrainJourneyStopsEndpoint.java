@@ -3,6 +3,7 @@ package de.mrjulsen.crn.web.endpoint;
 import de.mrjulsen.crn.api.core.snapshot.JourneySnapshot;
 import de.mrjulsen.crn.api.core.snapshot.StopSnapshot;
 import de.mrjulsen.crn.core.TrainManager;
+import de.mrjulsen.crn.web.ModWebFeatures;
 import de.mrjulsen.crn.web.api.IEndpointHandler;
 import de.mrjulsen.crn.web.api.ParamType;
 import de.mrjulsen.crn.web.api.Request;
@@ -38,7 +39,7 @@ public class TrainJourneyStopsEndpoint implements IEndpointHandler {
     @Override
     public EndpointDocumentation getDocumentation() {
         return EndpointDocumentation.builder()
-            .tag("Trains")
+            .tag(ModWebFeatures.TAG_TRAINS)
             .summary("List all train stops")
             .description("All stops of one train.")
             .queryParam("direction", "string", "The stops to list (ALL (default), PREVIOUS or NEXT).", Stream.of(Timeline.values()).map(Enum::name).toList(), Timeline.ALL.name())

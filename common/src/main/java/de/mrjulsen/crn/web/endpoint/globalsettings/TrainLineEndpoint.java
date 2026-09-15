@@ -2,6 +2,7 @@ package de.mrjulsen.crn.web.endpoint.globalsettings;
 
 import de.mrjulsen.crn.data.settings.GlobalSettings;
 import de.mrjulsen.crn.data.settings.TrainLine;
+import de.mrjulsen.crn.web.ModWebFeatures;
 import de.mrjulsen.crn.web.api.IEndpointHandler;
 import de.mrjulsen.crn.web.api.ParamType;
 import de.mrjulsen.crn.web.api.Request;
@@ -26,7 +27,7 @@ public class TrainLineEndpoint implements IEndpointHandler {
     @Override
     public EndpointDocumentation getDocumentation() {
         return EndpointDocumentation.builder()
-            .tag("Global Settings")
+            .tag(ModWebFeatures.TAG_GLOBAL_SETTINGS)
             .summary("Get a train line")
             .description("A train line by its id.")
             .returns(TrainLine.class)

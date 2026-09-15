@@ -4,6 +4,7 @@ import com.simibubi.create.content.trains.graph.TrackGraph;
 import de.mrjulsen.crn.api.core.query.CreateTrackQuery;
 import de.mrjulsen.crn.api.core.snapshot.CreateTrackGraphSnapshot;
 import de.mrjulsen.crn.util.TrainUtils;
+import de.mrjulsen.crn.web.ModWebFeatures;
 import de.mrjulsen.crn.web.api.IEndpointHandler;
 import de.mrjulsen.crn.web.api.QueryBinder;
 import de.mrjulsen.crn.web.api.Request;
@@ -35,7 +36,7 @@ public class AllTracksEndpoint implements IEndpointHandler {
     @Override
     public EndpointDocumentation getDocumentation() {
         return EndpointDocumentation.builder()
-            .tag("Create")
+            .tag(ModWebFeatures.TAG_CREATE)
             .summary("List Create track graphs")
             .description("The raw track network from Create, grouped by track graphs.")
             .query(CreateTrackQuery.class)

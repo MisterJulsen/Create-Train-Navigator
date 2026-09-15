@@ -3,6 +3,7 @@ package de.mrjulsen.crn.web.endpoint.globalsettings;
 import de.mrjulsen.crn.data.settings.GlobalSettings;
 import de.mrjulsen.crn.data.settings.TrainLine;
 import de.mrjulsen.crn.util.ModUtils;
+import de.mrjulsen.crn.web.ModWebFeatures;
 import de.mrjulsen.crn.web.annotation.OpenApiDescription;
 import de.mrjulsen.crn.web.annotation.QueryModel;
 import de.mrjulsen.crn.web.annotation.QueryParam;
@@ -57,7 +58,7 @@ public class TrainLinesEndpoint implements IEndpointHandler {
     @Override
     public EndpointDocumentation getDocumentation() {
         return EndpointDocumentation.builder()
-            .tag("Global Settings")
+            .tag(ModWebFeatures.TAG_GLOBAL_SETTINGS)
             .summary("List train lines")
             .description("All train lines matching the given query values.")
             .query(Query.class)

@@ -1,5 +1,6 @@
 package de.mrjulsen.crn.web.endpoint;
 
+import de.mrjulsen.crn.web.ModWebFeatures;
 import de.mrjulsen.crn.web.api.IEndpointHandler;
 import de.mrjulsen.crn.web.api.Request;
 import de.mrjulsen.crn.web.api.Response;
@@ -22,7 +23,7 @@ public class PingEndpoint implements IEndpointHandler {
     @Override
     public EndpointDocumentation getDocumentation() {
         return EndpointDocumentation.builder()
-            .tag("Meta")
+            .tag(ModWebFeatures.TAG_COMMON)
             .summary("Health check")
             .description("Returns a small plain-text response to check if the API is reachable.")
             .response(HttpURLConnection.HTTP_OK, "A short plain-text reply.")

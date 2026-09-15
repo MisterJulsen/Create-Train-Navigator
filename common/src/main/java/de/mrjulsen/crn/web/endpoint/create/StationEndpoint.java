@@ -3,6 +3,7 @@ package de.mrjulsen.crn.web.endpoint.create;
 import com.simibubi.create.content.trains.station.GlobalStation;
 import de.mrjulsen.crn.api.core.snapshot.CreateStationSnapshot;
 import de.mrjulsen.crn.util.TrainUtils;
+import de.mrjulsen.crn.web.ModWebFeatures;
 import de.mrjulsen.crn.web.api.IEndpointHandler;
 import de.mrjulsen.crn.web.api.ParamType;
 import de.mrjulsen.crn.web.api.Request;
@@ -27,7 +28,7 @@ public class StationEndpoint implements IEndpointHandler {
     @Override
     public EndpointDocumentation getDocumentation() {
         return EndpointDocumentation.builder()
-            .tag("Create")
+            .tag(ModWebFeatures.TAG_CREATE)
             .summary("Get a Create station")
             .description("Raw Create station data by its id.")
             .returns(CreateStationSnapshot.class)

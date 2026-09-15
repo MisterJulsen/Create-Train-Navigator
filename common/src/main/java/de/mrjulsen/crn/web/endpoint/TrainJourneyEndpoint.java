@@ -2,6 +2,7 @@ package de.mrjulsen.crn.web.endpoint;
 
 import de.mrjulsen.crn.api.core.RailwayBackendApi;
 import de.mrjulsen.crn.api.core.snapshot.JourneySnapshot;
+import de.mrjulsen.crn.web.ModWebFeatures;
 import de.mrjulsen.crn.web.api.IEndpointHandler;
 import de.mrjulsen.crn.web.api.ParamType;
 import de.mrjulsen.crn.web.api.Request;
@@ -23,7 +24,7 @@ public class TrainJourneyEndpoint implements IEndpointHandler {
     @Override
     public EndpointDocumentation getDocumentation() {
         return EndpointDocumentation.builder()
-            .tag("Trains")
+            .tag(ModWebFeatures.TAG_TRAINS)
             .summary("Get a train's journey")
             .description("The full run of one train.")
             .queryParam("in_cycles", "integer", "The number of cycles for which the train should be simulated to the future.")

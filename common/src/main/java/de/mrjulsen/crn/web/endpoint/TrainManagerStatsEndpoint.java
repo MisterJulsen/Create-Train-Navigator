@@ -1,6 +1,7 @@
 package de.mrjulsen.crn.web.endpoint;
 
 import de.mrjulsen.crn.api.core.RailwayBackendApi;
+import de.mrjulsen.crn.web.ModWebFeatures;
 import de.mrjulsen.crn.web.annotation.OpenApiDescription;
 import de.mrjulsen.crn.web.api.IEndpointHandler;
 import de.mrjulsen.crn.web.api.Request;
@@ -27,7 +28,7 @@ public class TrainManagerStatsEndpoint implements IEndpointHandler {
     @Override
     public EndpointDocumentation getDocumentation() {
         return EndpointDocumentation.builder()
-            .tag("Meta")
+            .tag(ModWebFeatures.TAG_COMMON)
             .summary("Backend status")
             .description("Whether the train data backend is active and how many trains are being tracked.")
             .returns(Data.class)

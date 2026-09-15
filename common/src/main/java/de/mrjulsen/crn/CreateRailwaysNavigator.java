@@ -20,7 +20,7 @@ import de.mrjulsen.crn.registry.ModItems;
 import de.mrjulsen.crn.registry.ModNetworkManager;
 import de.mrjulsen.crn.registry.ModDelayCauses;
 import de.mrjulsen.crn.registry.ModSchedule;
-import de.mrjulsen.crn.web.ModWebEndpoints;
+import de.mrjulsen.crn.web.ModWebFeatures;
 import dev.architectury.platform.Platform;
 import dev.architectury.utils.Env;
 import net.createmod.catnip.lang.FontHelper;
@@ -70,7 +70,7 @@ public final class CreateRailwaysNavigator {
         ModSchedule.init();
         ModNetworkManager.init();
         ModDelayCauses.init();
-        ModWebEndpoints.init();
+        ModWebFeatures.init();
         ModDisplayTypes.init();
         ModCreativeModeTab.setup();
         

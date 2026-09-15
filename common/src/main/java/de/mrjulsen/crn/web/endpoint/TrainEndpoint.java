@@ -2,6 +2,7 @@ package de.mrjulsen.crn.web.endpoint;
 
 import de.mrjulsen.crn.api.core.RailwayBackendApi;
 import de.mrjulsen.crn.api.core.snapshot.TrainSnapshot;
+import de.mrjulsen.crn.web.ModWebFeatures;
 import de.mrjulsen.crn.web.api.*;
 import de.mrjulsen.crn.web.openapi.EndpointDocumentation;
 
@@ -18,7 +19,7 @@ public class TrainEndpoint implements IEndpointHandler {
     @Override
     public EndpointDocumentation getDocumentation() {
         return EndpointDocumentation.builder()
-            .tag("Trains")
+            .tag(ModWebFeatures.TAG_TRAINS)
             .summary("Get a train")
             .description("A train by its id.")
             .returns(TrainSnapshot.class)

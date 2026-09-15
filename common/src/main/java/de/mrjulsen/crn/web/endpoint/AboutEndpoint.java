@@ -1,6 +1,7 @@
 package de.mrjulsen.crn.web.endpoint;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.web.ModWebFeatures;
 import de.mrjulsen.crn.web.api.*;
 import de.mrjulsen.crn.web.openapi.EndpointDocumentation;
 import dev.architectury.platform.Mod;
@@ -20,7 +21,7 @@ public class AboutEndpoint implements IEndpointHandler {
             String modIssueTracker,
             Collection<String> modLicense,
             String platform,
-            int apiVersion,
+            String apiVersion,
             boolean devEnv,
             String environment,
             Collection<SimpleModEntry> modlist
@@ -55,7 +56,7 @@ public class AboutEndpoint implements IEndpointHandler {
     @Override
     public EndpointDocumentation getDocumentation() {
         return EndpointDocumentation.builder()
-            .tag("Meta")
+            .tag(ModWebFeatures.TAG_COMMON)
             .summary("About this server")
             .description("All information about the mod, the running game instance and the loaded mod list.")
             .returns(About.class)

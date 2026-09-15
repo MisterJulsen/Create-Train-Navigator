@@ -1,5 +1,7 @@
 package de.mrjulsen.crn.web.openapi;
 
+import de.mrjulsen.crn.web.api.ApiTagRegistry;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -10,7 +12,7 @@ public final class EndpointDocumentation {
 
     private final String summary;
     private final String description;
-    private final List<String> tags;
+    private final List<ApiTagRegistry.ApiTag> tags;
     private final Class<?> queryModel;
     private final Class<?> requestBody;
     private final Class<?> responseType;
@@ -48,7 +50,7 @@ public final class EndpointDocumentation {
         return description;
     }
 
-    public List<String> tags() {
+    public List<ApiTagRegistry.ApiTag> tags() {
         return tags;
     }
 
@@ -88,7 +90,7 @@ public final class EndpointDocumentation {
 
         private String summary;
         private String description;
-        private final List<String> tags = new ArrayList<>();
+        private final List<ApiTagRegistry.ApiTag> tags = new ArrayList<>();
         private Class<?> queryModel;
         private Class<?> requestBody;
         private Class<?> responseType;
@@ -110,7 +112,7 @@ public final class EndpointDocumentation {
             return this;
         }
 
-        public Builder tag(String... tags) {
+        public Builder tag(ApiTagRegistry.ApiTag... tags) {
             Collections.addAll(this.tags, tags);
             return this;
         }

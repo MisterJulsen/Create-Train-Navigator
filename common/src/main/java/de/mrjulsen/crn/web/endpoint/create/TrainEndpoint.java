@@ -3,6 +3,7 @@ package de.mrjulsen.crn.web.endpoint.create;
 import com.simibubi.create.content.trains.entity.Train;
 import de.mrjulsen.crn.api.core.snapshot.CreateTrainSnapshot;
 import de.mrjulsen.crn.util.TrainUtils;
+import de.mrjulsen.crn.web.ModWebFeatures;
 import de.mrjulsen.crn.web.api.IEndpointHandler;
 import de.mrjulsen.crn.web.api.ParamType;
 import de.mrjulsen.crn.web.api.Request;
@@ -27,7 +28,7 @@ public class TrainEndpoint implements IEndpointHandler {
     @Override
     public EndpointDocumentation getDocumentation() {
         return EndpointDocumentation.builder()
-            .tag("Create")
+            .tag(ModWebFeatures.TAG_CREATE)
             .summary("Get a Create train")
             .description("Raw Create train data by its id.")
             .returns(CreateTrainSnapshot.class)

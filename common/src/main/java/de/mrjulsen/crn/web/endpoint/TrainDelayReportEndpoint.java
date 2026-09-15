@@ -2,6 +2,7 @@ package de.mrjulsen.crn.web.endpoint;
 
 import de.mrjulsen.crn.api.core.RailwayBackendApi;
 import de.mrjulsen.crn.api.core.snapshot.DelayReport;
+import de.mrjulsen.crn.web.ModWebFeatures;
 import de.mrjulsen.crn.web.api.IEndpointHandler;
 import de.mrjulsen.crn.web.api.ParamType;
 import de.mrjulsen.crn.web.api.Request;
@@ -21,7 +22,7 @@ public class TrainDelayReportEndpoint implements IEndpointHandler {
     @Override
     public EndpointDocumentation getDocumentation() {
         return EndpointDocumentation.builder()
-            .tag("Trains")
+            .tag(ModWebFeatures.TAG_TRAINS)
             .summary("Get a train's delay report")
             .description("Information about the delays of a train, like the reasons and the actual delay value.")
             .returns(DelayReport.class)

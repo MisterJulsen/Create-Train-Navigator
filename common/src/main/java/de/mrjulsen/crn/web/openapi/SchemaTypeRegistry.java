@@ -25,27 +25,17 @@ public final class SchemaTypeRegistry {
     private SchemaTypeRegistry() {}
 
     static {
-        SchemaFactory string = () -> Schemas.typed(OpenApiKeys.TYPE_STRING);
-        register(string, String.class, char.class, Character.class);
-
-        SchemaFactory bool = () -> Schemas.typed(OpenApiKeys.TYPE_BOOLEAN);
-        register(bool, boolean.class, Boolean.class);
-
-        SchemaFactory int32 = () -> Schemas.formatted(OpenApiKeys.TYPE_INTEGER, OpenApiKeys.FORMAT_INT32);
-        register(int32, int.class, Integer.class, short.class, Short.class, byte.class, Byte.class);
-
-        SchemaFactory int64 = () -> Schemas.formatted(OpenApiKeys.TYPE_INTEGER, OpenApiKeys.FORMAT_INT64);
-        register(int64, long.class, Long.class);
-
+        register(() -> Schemas.typed(OpenApiKeys.TYPE_STRING), String.class, char.class, Character.class);
+        register(() -> Schemas.typed(OpenApiKeys.TYPE_BOOLEAN), boolean.class, Boolean.class);
+        register(() -> Schemas.formatted(OpenApiKeys.TYPE_INTEGER, OpenApiKeys.FORMAT_INT32), int.class, Integer.class, short.class, Short.class, byte.class, Byte.class);
+        register(() -> Schemas.formatted(OpenApiKeys.TYPE_INTEGER, OpenApiKeys.FORMAT_INT64), long.class, Long.class);
         register(() -> Schemas.formatted(OpenApiKeys.TYPE_NUMBER, OpenApiKeys.FORMAT_FLOAT), float.class, Float.class);
         register(() -> Schemas.formatted(OpenApiKeys.TYPE_NUMBER, OpenApiKeys.FORMAT_DOUBLE), double.class, Double.class);
 
         register(() -> Schemas.formatted(OpenApiKeys.TYPE_STRING, OpenApiKeys.FORMAT_UUID), UUID.class);
-
         register(() -> string(null, "minecraft:overworld"), ResourceLocation.class);
         register(() -> string("ARGB color as #AARRGGBB.", "#FF3366CC"), DLColor.class);
         register(SchemaTypeRegistry::blockPos, BlockPos.class);
-
         registerAssignable(Component.class, () -> string("Serialized Minecraft text component (JSON string).", null));
     }
 

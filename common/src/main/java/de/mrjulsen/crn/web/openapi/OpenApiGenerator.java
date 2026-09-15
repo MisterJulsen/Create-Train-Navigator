@@ -30,7 +30,7 @@ public final class OpenApiGenerator {
 
     public static Map<String, Object> generate(ApiVersion version) {
         SchemaGenerator schemas = new SchemaGenerator();
-        Set<String> tags = new LinkedHashSet<>();
+        Set<ApiTagRegistry.ApiTag> tags = new LinkedHashSet<>();
         Set<String> operationIds = new LinkedHashSet<>();
         Map<String, Map<String, Object>> paths = new LinkedHashMap<>();
 
@@ -64,14 +64,18 @@ public final class OpenApiGenerator {
         return document;
     }
 
-    private static Map<String, Object> buildOperation(EndpointRegistry.Route route, PathPattern pattern, EndpointDocumentation doc, SchemaGenerator schemas, Set<String> tags, Set<String> operationIds) {
+    private static Map<String, Object> buildOperation(EndpointRegistry.Route route, PathPattern pattern, EndpointDocumentation doc, SchemaGenerator schemas, Set<ApiTagRegistry.ApiTag> tags, Set<String> operationIds) {
         Map<String, Object> operation = new LinkedHashMap<>();
         operation.put(OpenApiKeys.OPERATION_ID, operationId(route.method().name(), pattern, operationIds));
 
-        List<String> operationTags = doc != null ? doc.tags() : List.of();
+        List<ApiTagRegistry.ApiTag> operationTags = doc != null ? doc.tags() : List.of();
         tags.addAll(operationTags);
         if (!operationTags.isEmpty()) {
-            operation.put(OpenApiKeys.TAGS, operationTags);
+            List<String> tagNames = new ArrayList<>();
+            for (ApiTagRegistry.ApiTag tag : operationTags) {
+                tagNames.add(tag.getName());
+            }
+            operation.put(OpenApiKeys.TAGS, tagNames);
         }
 
         if (doc != null && doc.summary() != null) {
@@ -272,8 +276,8 @@ public final class OpenApiGenerator {
 
     private static Map<String, Object> getModInfo(ApiVersion version, Mod mod) {
         Map<String, Object> info = new LinkedHashMap<>();
-        info.put(OpenApiKeys.TITLE, mod.getName() + " Web API " + version.slug());
-        info.put(OpenApiKeys.VERSION, mod.getVersion());
+        info.put(OpenApiKeys.TITLE, mod.getName() + " Web API");
+        info.put(OpenApiKeys.VERSION, version.version());
         info.put(OpenApiKeys.DESCRIPTION, mod.getDescription());
         if (!mod.getLicense().isEmpty()) {
             info.put(OpenApiKeys.LICENSE, Map.of(OpenApiKeys.NAME, String.join(", ", mod.getLicense())));
@@ -301,24 +305,24 @@ public final class OpenApiGenerator {
         return servers;
     }
 
-    private static List<Object> getTags(Set<String> used) {
+    private static List<Object> getTags(Set<ApiTagRegistry.ApiTag> used) {
         List<Object> list = new ArrayList<>();
         Set<String> emitted = new LinkedHashSet<>();
-        for (ApiTagRegistry.Tag tag : ApiTagRegistry.all()) {
-            if (!used.contains(tag.name())) {
+        for (ApiTagRegistry.ApiTag tag : ApiTagRegistry.all()) {
+            if (!used.contains(tag)) {
                 continue;
             }
             Map<String, Object> node = new LinkedHashMap<>();
-            node.put(OpenApiKeys.NAME, tag.name());
-            if (tag.description() != null && !tag.description().isBlank()) {
-                node.put(OpenApiKeys.DESCRIPTION, tag.description());
+            node.put(OpenApiKeys.NAME, tag.getName());
+            if (tag.getDescription() != null && !tag.getDescription().isBlank()) {
+                node.put(OpenApiKeys.DESCRIPTION, tag.getDescription());
             }
             list.add(node);
-            emitted.add(tag.name());
+            emitted.add(tag.getName());
         }
-        for (String name : used) {
-            if (emitted.add(name)) {
-                list.add(Map.of(OpenApiKeys.NAME, name));
+        for (ApiTagRegistry.ApiTag tag : used) {
+            if (emitted.add(tag.getName())) {
+                list.add(Map.of(OpenApiKeys.NAME, tag.getName()));
             }
         }
         return list;

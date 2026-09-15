@@ -3,6 +3,7 @@ package de.mrjulsen.crn.web.endpoint;
 import de.mrjulsen.crn.core.navigator.NavigationQuery;
 import de.mrjulsen.crn.core.navigator.NavigationResult;
 import de.mrjulsen.crn.core.navigator.Navigator;
+import de.mrjulsen.crn.web.ModWebFeatures;
 import de.mrjulsen.crn.web.api.IEndpointHandler;
 import de.mrjulsen.crn.web.api.QueryBinder;
 import de.mrjulsen.crn.web.api.Request;
@@ -20,7 +21,7 @@ public class NavigateEndpoint implements IEndpointHandler {
     @Override
     public EndpointDocumentation getDocumentation() {
         return EndpointDocumentation.builder()
-            .tag("Routing")
+            .tag(ModWebFeatures.TAG_ROUTING)
             .summary("Search for routes")
             .description("Runs a route search between two stations and returns possible connection journeys. All times are in game ticks.")
             .query(NavigationQuery.class)
