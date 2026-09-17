@@ -67,6 +67,8 @@ public final class OpenApiKeys {
     public static final String IN_PATH = "path";
 
     public static final String MEDIA_JSON = "application/json";
+    public static final String MEDIA_TEXT = "text/plain";
+    public static final String MEDIA_HTML = "text/html";
     public static final String SCHEMA_REF_PREFIX = "#/components/schemas/";
     public static final String PARAMETER_REF_PREFIX = "#/components/parameters/";
     public static final String ERROR_SCHEMA = "Error";

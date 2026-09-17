@@ -26,6 +26,7 @@ public class PingEndpoint implements IEndpointHandler {
             .tag(ModWebFeatures.TAG_COMMON)
             .summary("Health check")
             .description("Returns a small plain-text response to check if the API is reachable.")
+            .returnsText()
             .response(HttpURLConnection.HTTP_OK, "A short plain-text reply.")
             .build();
     }

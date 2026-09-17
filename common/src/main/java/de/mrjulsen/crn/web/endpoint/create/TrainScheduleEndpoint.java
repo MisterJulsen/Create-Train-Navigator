@@ -7,7 +7,9 @@ import de.mrjulsen.crn.web.api.IEndpointHandler;
 import de.mrjulsen.crn.web.api.ParamType;
 import de.mrjulsen.crn.web.api.Request;
 import de.mrjulsen.crn.web.api.Response;
+import de.mrjulsen.crn.web.openapi.ContentSpec;
 import de.mrjulsen.crn.web.openapi.EndpointDocumentation;
+import de.mrjulsen.crn.web.openapi.SchemaSpec;
 
 import java.net.HttpURLConnection;
 import java.util.Optional;
@@ -30,6 +32,7 @@ public class TrainScheduleEndpoint implements IEndpointHandler {
             .tag(ModWebFeatures.TAG_CREATE)
             .summary("Get a Create train's schedule")
             .description("The raw Create schedule assigned to a train.")
+            .returns(ContentSpec.json(SchemaSpec.object()))
             .response(HttpURLConnection.HTTP_NOT_FOUND, "No train with that id exists.")
             .build();
     }

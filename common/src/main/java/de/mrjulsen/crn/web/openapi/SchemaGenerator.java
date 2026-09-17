@@ -5,8 +5,10 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.RecordComponent;
 import java.lang.reflect.Type;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -117,6 +119,7 @@ final class SchemaGenerator {
         String name = uniqueName(type);
         assignedNames.put(type, name);
         Map<String, Object> schema = Schemas.object();
+        schema.put(OpenApiKeys.TITLE, generateDisplayName(name));
         String typeDescription = description(type.getAnnotation(OpenApiDescription.class));
         if (typeDescription != null) {
             schema.put(OpenApiKeys.DESCRIPTION, typeDescription);
@@ -161,16 +164,24 @@ final class SchemaGenerator {
     }
 
     private String uniqueName(Class<?> type) {
-        String base = type.getSimpleName();
-        if (type.getEnclosingClass() != null) {
-            base = type.getEnclosingClass().getSimpleName() + base;
+        Deque<String> parts = new ArrayDeque<>();
+        for (Class<?> current = type; current != null; current = current.getEnclosingClass()) {
+            parts.addFirst(current.getSimpleName());
         }
+        String base = String.join("", parts);
         String candidate = base;
         int counter = 2;
         while (components.containsKey(candidate)) {
             candidate = base + counter++;
         }
         return candidate;
+    }
+
+    private static String generateDisplayName(String name) {
+        String spaced = name
+            .replaceAll("([a-z0-9])([A-Z])", "$1 $2")
+            .replaceAll("([A-Z]+)([A-Z][a-z])", "$1 $2");
+        return spaced.trim().replaceAll("\\s+", " ");
     }
 
     private Map<String, Object> enumeration(Class<?> type) {

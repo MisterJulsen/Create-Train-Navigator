@@ -42,7 +42,7 @@ public final class ModWebFeatures {
     public static void init() {
         EndpointRegistry.registerGet("openapi", new OpenApiEndpoint()).alias("openapi.json");
         EndpointRegistry.registerGet("ping", new PingEndpoint()).alias("hello");
-        EndpointRegistry.registerGet("about", new AboutEndpoint()).alias("info");
+        EndpointRegistry.registerGet("about", new AboutEndpoint());
 
         EndpointRegistry.registerGet("navigate", new NavigateEndpoint());
         EndpointRegistry.registerGet("trains", new TrainsEndpoint());
@@ -62,8 +62,8 @@ public final class ModWebFeatures {
         EndpointRegistry.registerGet("category/{id}", new CategoryEndpoint());
         EndpointRegistry.registerGet("stations", new StationsEndpoint());
         EndpointRegistry.registerGet("station/{name}", new StationEndpoint());
-        EndpointRegistry.registerGet("departure-stats/{station}", new DepartureStatsEndpoint()).alias("departure-history/{station}");
-        EndpointRegistry.registerGet("time", new TimeNowEndpoint()).alias("now");
+        EndpointRegistry.registerGet("departure-stats/{station}", new DepartureStatsEndpoint());
+        EndpointRegistry.registerGet("time", new TimeNowEndpoint());
         EndpointRegistry.registerGet("backend-stats", new TrainManagerStatsEndpoint());
 
         EndpointRegistry.registerGet("create/stations", new AllStationsEndpoint());

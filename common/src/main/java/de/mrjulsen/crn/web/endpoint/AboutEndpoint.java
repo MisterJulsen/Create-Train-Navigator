@@ -11,7 +11,7 @@ import java.util.*;
 
 public class AboutEndpoint implements IEndpointHandler {
 
-    private record About(
+    private record Data(
             String minecraftVersion,
             String modId,
             String modName,
@@ -36,7 +36,7 @@ public class AboutEndpoint implements IEndpointHandler {
     @Override
     public Response handle(Request request) {
         Mod mod = Platform.getMod(CreateRailwaysNavigator.MOD_ID);
-        return Response.json(new About(
+        return Response.json(new Data(
                 Platform.getMinecraftVersion(),
                 CreateRailwaysNavigator.MOD_ID,
                 mod.getName(),
@@ -59,7 +59,7 @@ public class AboutEndpoint implements IEndpointHandler {
             .tag(ModWebFeatures.TAG_COMMON)
             .summary("About this server")
             .description("All information about the mod, the running game instance and the loaded mod list.")
-            .returns(About.class)
+            .returns(Data.class)
             .shapeable()
             .build();
     }

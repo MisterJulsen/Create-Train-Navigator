@@ -209,45 +209,51 @@ public final class OpenApiGenerator {
         return a != null ? a : b;
     }
 
-    private static Map<String, Object> requestBody(Class<?> type, SchemaGenerator schemas) {
+    private static Map<String, Object> requestBody(RequestBodySpec spec, SchemaGenerator schemas) {
         Map<String, Object> body = new LinkedHashMap<>();
-        body.put(OpenApiKeys.REQUIRED, true);
-        body.put(OpenApiKeys.CONTENT, jsonContent(schemas.schema(type)));
+        if (spec.description() != null) {
+            body.put(OpenApiKeys.DESCRIPTION, spec.description());
+        }
+        body.put(OpenApiKeys.REQUIRED, spec.required());
+        body.put(OpenApiKeys.CONTENT, content(spec.contents(), schemas));
         return body;
     }
 
     private static Map<String, Object> responses(EndpointDocumentation doc, SchemaGenerator schemas) {
         Map<String, Object> responses = new LinkedHashMap<>();
+
         Map<String, Object> success = new LinkedHashMap<>();
-        success.put(OpenApiKeys.DESCRIPTION, doc != null && doc.summary() != null ? doc.summary() : "Successful response");
-        if (doc != null && doc.responseType() != null) {
-            Map<String, Object> schema = schemas.schema(doc.responseType());
-            if (doc.arrayResponse()) {
-                schema = Schemas.array(schema);
-            }
-            success.put(OpenApiKeys.CONTENT, jsonContent(schema));
-        }
+        String description = doc != null && doc.successDescription() != null
+            ? doc.successDescription()
+            : (doc != null && doc.summary() != null ? doc.summary() : "Successful response");
+        success.put(OpenApiKeys.DESCRIPTION, description);
+        List<ContentSpec> successContents = doc != null && !doc.successContents().isEmpty()
+            ? doc.successContents()
+            : List.of(ContentSpec.emptyJson());
+        success.put(OpenApiKeys.CONTENT, content(successContents, schemas));
         if (doc != null && doc.shapeable() && doc.arrayResponse()) {
             success.put(OpenApiKeys.HEADERS, paginationHeaders());
         }
         responses.put(OpenApiKeys.STATUS_OK, success);
 
         if (doc != null) {
-            doc.responses().forEach((status, description) -> {
-                Map<String, Object> response = new LinkedHashMap<>();
-                response.put(OpenApiKeys.DESCRIPTION, description);
-                if (status >= 400) {
-                    response.put(OpenApiKeys.CONTENT, jsonContent(Schemas.schemaRef(OpenApiKeys.ERROR_SCHEMA)));
-                }
-                responses.put(Integer.toString(status), response);
-            });
+            doc.extraResponses().forEach((status, spec) -> responses.put(status, response(spec, schemas)));
         }
 
-        Map<String, Object> error = new LinkedHashMap<>();
-        error.put(OpenApiKeys.DESCRIPTION, "Error response");
-        error.put(OpenApiKeys.CONTENT, jsonContent(Schemas.schemaRef(OpenApiKeys.ERROR_SCHEMA)));
-        responses.put(OpenApiKeys.STATUS_DEFAULT, error);
+        boolean hasDefault = doc != null && doc.extraResponses().containsKey(OpenApiKeys.STATUS_DEFAULT);
+        if ((doc == null || doc.autoDefaultResponse()) && !hasDefault) {
+            responses.put(OpenApiKeys.STATUS_DEFAULT, response(ResponseSpec.error("Error response"), schemas));
+        }
         return responses;
+    }
+
+    private static Map<String, Object> response(ResponseSpec spec, SchemaGenerator schemas) {
+        Map<String, Object> node = new LinkedHashMap<>();
+        node.put(OpenApiKeys.DESCRIPTION, spec.description());
+        if (!spec.contents().isEmpty()) {
+            node.put(OpenApiKeys.CONTENT, content(spec.contents(), schemas));
+        }
+        return node;
     }
 
     private static Map<String, Object> getComponents(SchemaGenerator schemas) {
@@ -386,11 +392,19 @@ public final class OpenApiGenerator {
         return model.isRecord() ? model.getRecordComponents() : new RecordComponent[0];
     }
 
-    private static Map<String, Object> jsonContent(Map<String, Object> schema) {
-        Map<String, Object> media = new LinkedHashMap<>();
-        media.put(OpenApiKeys.SCHEMA, schema);
+    private static Map<String, Object> content(List<ContentSpec> contents, SchemaGenerator schemas) {
         Map<String, Object> content = new LinkedHashMap<>();
-        content.put(OpenApiKeys.MEDIA_JSON, media);
+        for (ContentSpec spec : contents) {
+            Map<String, Object> media = new LinkedHashMap<>();
+            Map<String, Object> schema = spec.schema() == null ? null : spec.schema().resolve(schemas);
+            if (schema != null) {
+                media.put(OpenApiKeys.SCHEMA, schema);
+            }
+            if (spec.example() != null) {
+                media.put(OpenApiKeys.EXAMPLE, spec.example());
+            }
+            content.put(spec.mediaType(), media);
+        }
         return content;
     }
 

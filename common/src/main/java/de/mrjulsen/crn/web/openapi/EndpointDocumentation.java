@@ -2,6 +2,7 @@ package de.mrjulsen.crn.web.openapi;
 
 import de.mrjulsen.crn.web.api.ApiTagRegistry;
 
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -14,12 +15,14 @@ public final class EndpointDocumentation {
     private final String description;
     private final List<ApiTagRegistry.ApiTag> tags;
     private final Class<?> queryModel;
-    private final Class<?> requestBody;
-    private final Class<?> responseType;
+    private final RequestBodySpec requestBody;
     private final boolean arrayResponse;
     private final boolean shapeable;
     private final boolean deprecated;
-    private final Map<Integer, String> responses;
+    private final List<ContentSpec> successContents;
+    private final String successDescription;
+    private final Map<String, ResponseSpec> extraResponses;
+    private final boolean autoDefaultResponse;
     private final List<QueryParameter> queryParams;
 
     public record QueryParameter(String name, String type, String description, boolean required, List<String> enumValues, String example, String defaultValue) {}
@@ -30,11 +33,13 @@ public final class EndpointDocumentation {
         this.tags = List.copyOf(builder.tags);
         this.queryModel = builder.queryModel;
         this.requestBody = builder.requestBody;
-        this.responseType = builder.responseType;
         this.arrayResponse = builder.arrayResponse;
         this.shapeable = builder.shapeable;
         this.deprecated = builder.deprecated;
-        this.responses = Collections.unmodifiableMap(new LinkedHashMap<>(builder.responses));
+        this.successContents = List.copyOf(builder.successContents);
+        this.successDescription = builder.successDescription;
+        this.extraResponses = Collections.unmodifiableMap(new LinkedHashMap<>(builder.extraResponses));
+        this.autoDefaultResponse = builder.autoDefaultResponse;
         this.queryParams = List.copyOf(builder.queryParams);
     }
 
@@ -58,12 +63,8 @@ public final class EndpointDocumentation {
         return queryModel;
     }
 
-    public Class<?> requestBody() {
+    public RequestBodySpec requestBody() {
         return requestBody;
-    }
-
-    public Class<?> responseType() {
-        return responseType;
     }
 
     public boolean arrayResponse() {
@@ -78,8 +79,20 @@ public final class EndpointDocumentation {
         return deprecated;
     }
 
-    public Map<Integer, String> responses() {
-        return responses;
+    public List<ContentSpec> successContents() {
+        return successContents;
+    }
+
+    public String successDescription() {
+        return successDescription;
+    }
+
+    public Map<String, ResponseSpec> extraResponses() {
+        return extraResponses;
+    }
+
+    public boolean autoDefaultResponse() {
+        return autoDefaultResponse;
     }
 
     public List<QueryParameter> queryParams() {
@@ -92,12 +105,14 @@ public final class EndpointDocumentation {
         private String description;
         private final List<ApiTagRegistry.ApiTag> tags = new ArrayList<>();
         private Class<?> queryModel;
-        private Class<?> requestBody;
-        private Class<?> responseType;
+        private RequestBodySpec requestBody;
         private boolean arrayResponse;
         private boolean shapeable;
         private boolean deprecated;
-        private final Map<Integer, String> responses = new LinkedHashMap<>();
+        private List<ContentSpec> successContents = List.of();
+        private String successDescription;
+        private final Map<String, ResponseSpec> extraResponses = new LinkedHashMap<>();
+        private boolean autoDefaultResponse = true;
         private final List<QueryParameter> queryParams = new ArrayList<>();
 
         private Builder() {}
@@ -122,20 +137,33 @@ public final class EndpointDocumentation {
             return this;
         }
 
-        public Builder body(Class<?> requestBody) {
-            this.requestBody = requestBody;
-            return this;
-        }
-
         public Builder returns(Class<?> responseType) {
-            this.responseType = responseType;
+            this.successContents = List.of(ContentSpec.json(SchemaSpec.of(responseType)));
             this.arrayResponse = false;
             return this;
         }
 
         public Builder returnsList(Class<?> elementType) {
-            this.responseType = elementType;
+            this.successContents = List.of(ContentSpec.json(SchemaSpec.list(elementType)));
             this.arrayResponse = true;
+            return this;
+        }
+
+        public Builder returnsText() {
+            this.successContents = List.of(ContentSpec.text());
+            this.arrayResponse = false;
+            return this;
+        }
+
+        public Builder returnsHtml() {
+            this.successContents = List.of(ContentSpec.html());
+            this.arrayResponse = false;
+            return this;
+        }
+
+        public Builder returns(ContentSpec... contents) {
+            this.successContents = List.of(contents);
+            this.arrayResponse = false;
             return this;
         }
 
@@ -150,25 +178,59 @@ public final class EndpointDocumentation {
         }
 
         public Builder response(int status, String description) {
-            this.responses.put(status, description);
+            if (status == HttpURLConnection.HTTP_OK) {
+                this.successDescription = description;
+                return this;
+            }
+            return response(status, status >= 400 ? ResponseSpec.error(description) : ResponseSpec.description(description));
+        }
+
+        public Builder response(int status, ResponseSpec response) {
+            if (status == HttpURLConnection.HTTP_OK) {
+                this.successContents = response.contents();
+                if (response.description() != null) {
+                    this.successDescription = response.description();
+                }
+                return this;
+            }
+            this.extraResponses.put(Integer.toString(status), response);
             return this;
         }
 
         public Builder notFound(String description) {
-            return response(java.net.HttpURLConnection.HTTP_NOT_FOUND, description);
+            return response(HttpURLConnection.HTTP_NOT_FOUND, ResponseSpec.error(description));
         }
 
         public Builder badRequest(String description) {
-            return response(java.net.HttpURLConnection.HTTP_BAD_REQUEST, description);
+            return response(HttpURLConnection.HTTP_BAD_REQUEST, ResponseSpec.error(description));
         }
 
-        /** Documents an optional query parameter the handler reads directly, without a {@code @QueryModel}. */
+        public Builder defaultResponse(ResponseSpec response) {
+            this.extraResponses.put(OpenApiKeys.STATUS_DEFAULT, response);
+            this.autoDefaultResponse = false;
+            return this;
+        }
+
+        public Builder noDefaultResponse() {
+            this.autoDefaultResponse = false;
+            return this;
+        }
+
+        public Builder body(Class<?> requestBody) {
+            this.requestBody = RequestBodySpec.json(requestBody);
+            return this;
+        }
+
+        public Builder body(RequestBodySpec requestBody) {
+            this.requestBody = requestBody;
+            return this;
+        }
+
         public Builder queryParam(String name, String type, String description) {
             this.queryParams.add(new QueryParameter(name, type, description, false, List.of(), null, null));
             return this;
         }
 
-        /** As {@link #queryParam(String, String, String)}, with allowed enum values and a default. */
         public Builder queryParam(String name, String type, String description, List<String> enumValues, String defaultValue) {
             this.queryParams.add(new QueryParameter(name, type, description, false, List.copyOf(enumValues), null, defaultValue));
             return this;
