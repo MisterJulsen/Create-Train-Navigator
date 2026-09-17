@@ -1,6 +1,6 @@
 package de.mrjulsen.crn.block.display;
 
-import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -18,22 +18,17 @@ import de.mrjulsen.crn.block.display.properties.SimpleStaticTextDisplaySettings;
 import de.mrjulsen.crn.block.display.properties.StaticTextDisplaySettings;
 import de.mrjulsen.crn.block.display.properties.components.IShowTrainMultipleTimes;
 import de.mrjulsen.crn.block.display.properties.components.ITrainStopTypeSetting;
-import de.mrjulsen.crn.block.properties.EDisplayType;
-import de.mrjulsen.crn.block.properties.EDisplayType.EDisplayTypeDataSource;
-import de.mrjulsen.crn.client.AdvancedDisplaysRegistry;
-import de.mrjulsen.crn.config.ModClientConfig;
-import de.mrjulsen.crn.config.ModCommonConfig;
-import de.mrjulsen.crn.data.storage.GlobalSettings;
-import de.mrjulsen.crn.data.train.TrainStop;
-import de.mrjulsen.crn.data.train.TrainUtils;
-import de.mrjulsen.crn.data.train.portable.StationDisplayData;
+import de.mrjulsen.crn.api.core.snapshot.BoardEntry;
+import de.mrjulsen.crn.api.core.CallDirection;
+import de.mrjulsen.crn.api.core.query.BoardQuery;
+import de.mrjulsen.crn.api.core.RailwayBackendApi;
+import de.mrjulsen.crn.data.settings.GlobalSettings;
 import de.mrjulsen.crn.event.ModCommonEvents;
 import de.mrjulsen.crn.registry.ModDisplayTypes;
-import de.mrjulsen.mcdragonlib.DragonLib;
+import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.data.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -43,13 +38,13 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
 
 public class AdvancedDisplayTarget extends DisplayTarget {
-	
+
 	private static boolean running = false;
 	private static boolean threadRunning = false;
 	private static final Queue<Runnable> workerTasks = new ConcurrentLinkedQueue<>();
 
 	public static void start() {
-		if (running) stop();		
+		if (running) stop();
 		while (running && threadRunning) {
 			try {
 				TimeUnit.SECONDS.sleep(1);
@@ -61,11 +56,11 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 		new Thread(() -> {
 			threadRunning = true;
 			CreateRailwaysNavigator.LOGGER.info("Advanced Display Data Manager has been started.");
-						
+
 			while (running) {
 				while (!workerTasks.isEmpty()) {
-					try {	
-						workerTasks.poll().run();						
+					try {
+						workerTasks.poll().run();
 					} catch (Exception e) {
 						CreateRailwaysNavigator.LOGGER.error("Error while processing Advanced Display Data. " + e.getMessage(), e);
 					}
@@ -99,48 +94,40 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 				return;
 			}
 
-			long dayTime = context.getTargetBlockEntity().getLevel().getDayTime();
-			boolean advancedDisplaySource = context.blockEntity().activeSource instanceof AdvancedDisplaySource;//nbt.contains(AdvancedDisplaySource.NBT_ADVANCED_DISPLAY);
+			long lastRefreshedTime = ModUtils.getTransformedWorldTime();
+			boolean advancedDisplaySource = context.blockEntity().activeSource instanceof AdvancedDisplaySource;
 
 			queueAdvancedDisplayWorkerTask(() -> {
 				if (advancedDisplaySource) {
+					var trainsCount = controller.getDisplayProperties().platformDisplayTrainsCount();
+					if (trainsCount == null) {
+						return;
+					}
+
 					String filter = context.sourceConfig().getString("Filter");
 
-					/*
-					if (controller.getDisplayType().category().getSource() != EDisplayTypeDataSource.PLATFORM) {
-						if (!ModCommonConfig.AUTO_UPDATE_DISPLAY_TYPE.get()) return;
-						if (controller.getDisplayType().category() != EDisplayType.PLATFORM) {
-							AdvancedDisplaysRegistry.DisplayTypeResourceKey displayType;
-							if (filter.contains("*")) {
-								displayType = ModDisplayTypes.DEPARTURE_BOARD_TABLE;
-							} else if (controller.getDisplayProperties().singleLined()) {
-								displayType = ModDisplayTypes.PLATFORM_RUNNING_TEXT;
-							} else {
-								displayType = ModDisplayTypes.PLATFORM_TABLE;
-							}
-							ModCommonEvents.getCurrentServer().ifPresent(server -> server.executeIfPossible(() -> {
-								controller.applyToAll(x -> {
-									x.setDisplayType(displayType, null);
-									x.notifyUpdate();
-								});
-							}));
-						}
-					}
-					 */
+					ITrainStopTypeSetting.ETrainStopType stopType = controller.getSettingsAs(ITrainStopTypeSetting.class)
+							.map(ITrainStopTypeSetting::getTrainStopType)
+							.orElse(ITrainStopTypeSetting.ETrainStopType.DEF_VALUE);
 
-					List<StationDisplayData> preds = prepare(filter, controller.getDisplayProperties().platformDisplayTrainsCount().apply(controller), controller);
+					List<BoardEntry> preds = prepare(filter, trainsCount.apply(controller), controller)
+							.stream()
+							.sorted(Comparator.comparingLong(entry -> {
+								CallDirection direction = ITrainStopTypeSetting.resolveDirection(entry, stopType.showDepartures(entry.originating(), entry.sectionChange()), stopType.showArrivals(entry.terminus(), entry.sectionChange()));
+								return entry.realtimeTime(direction);
+							}))
+							.toList();
+
 					controller.setData(
 							preds,
 							filter,
 							GlobalSettings.getInstance().getOrCreateStationTagFor(filter).getInfoForStation(filter),
-							dayTime
+							lastRefreshedTime
 					);
 					ModCommonEvents.getCurrentServer().ifPresent(x -> x.executeIfPossible(controller::notifyUpdate));
 				} else if (controller.getDisplayType().equals(ModDisplayTypes.SIMPLE_TEXT)) {
-					SimpleStaticTextDisplaySettings settings = controller
-							.getSettingsAs(SimpleStaticTextDisplaySettings.class)
-							.orElse(new SimpleStaticTextDisplaySettings());
-					settings.setStaticText(Component.Serializer.toJson(text.getFirst(), RegistryAccess.EMPTY));
+					SimpleStaticTextDisplaySettings settings = controller.getSettingsAs(SimpleStaticTextDisplaySettings.class).orElse(new SimpleStaticTextDisplaySettings());
+					settings.setStaticText(Component.Serializer.toJson((text.get(0))));
 					CreateRailwaysNavigator.LOGGER.debug(settings.getStaticText());
 					ModCommonEvents.getCurrentServer()
 							.ifPresent(x -> x.executeIfPossible(() -> controller.applyToAll(a -> {
@@ -152,10 +139,7 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 						return;
 					}
 
-					StaticTextDisplaySettings settings = controller.getSettingsAs(StaticTextDisplaySettings.class)
-							.orElse(new StaticTextDisplaySettings());
-					// Loop through the entire available space to make sure any stragglers are taken
-					// care of.
+					StaticTextDisplaySettings settings = controller.getSettingsAs(StaticTextDisplaySettings.class).orElse(new StaticTextDisplaySettings());
 					for (int i = 0; i < controller.getYSize() * 3 - line - 1; i++) {
 						final int componentIndex = i + line;
 						if (i == 0)
@@ -166,14 +150,15 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 						while (componentIndex >= settings.getComponentsCount()) {
 							settings.addComponent(new StaticTextDisplaySettings.TextComponent("{\"text\":\"\"}"));
 						}
-						StaticTextDisplaySettings.TextComponent component = settings.getComponents()
-								.get(componentIndex);
+						StaticTextDisplaySettings.TextComponent component = settings.getComponents().get(componentIndex);
 						if (i >= text.size()) {
 							if (context.blockEntity().activeSource instanceof SingleLineDisplaySource)
 								break;
 							component.setStaticText("{\"text\":\"\"}");
-						} else
-							component.setStaticText(Component.Serializer.toJson(text.get(i), RegistryAccess.EMPTY));
+						} else {
+							component.setStaticText(Component.Serializer.toJson(text.get(i)));
+						}
+
 						if (!component.shouldRetainScaleAndPos()) {
 							component.setTextAlignment(ETextAlignment.LEFT);
 							component.setXScale(0.4f);
@@ -194,40 +179,29 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 		}
 	}
 
-	public static List<StationDisplayData> prepare(String filter, int maxLines, AdvancedDisplayBlockEntity controller) {
-		List<StationDisplayData> result = new ArrayList<>(maxLines);
+	public static List<BoardEntry> prepare(String filter, int maxLines, AdvancedDisplayBlockEntity controller) {
+		ITrainStopTypeSetting.ETrainStopType type = controller.getSettingsAs(ITrainStopTypeSetting.class)
+				.map(ITrainStopTypeSetting::getTrainStopType)
+				.orElse(ITrainStopTypeSetting.ETrainStopType.DEF_VALUE);
+		long now = ModUtils.getTransformedWorldTime();
 
-		int i = 0;
-		for (TrainStop stop : TrainUtils.getDeparturesAtStationName(filter, null, false, controller.getSettingsAs(IShowTrainMultipleTimes.class).map(IShowTrainMultipleTimes::showTrainMultipleTimes).orElse(false))) {
-			StationDisplayData data = StationDisplayData.of(stop);
-			boolean cancelled = data.getTrainData().isCancelled();
-			boolean isStillValid = DragonLib.getCurrentWorldTime() < data.getStationData().getScheduledDepartureTime() + ModCommonConfig.DISPLAY_LEAD_TIME.get();
-			boolean terminus = data.isNextSectionExcluded();
-			boolean start = data.isPrevSectionExcluded();
+		BoardQuery query = BoardQuery.defaults()
+				.withCancelled(true)
+				.withLimit(Math.max(0, maxLines))
+				.matching(entry -> ITrainStopTypeSetting.accepts(entry, type, now));
 
-			ITrainStopTypeSetting.ETrainStopType type = controller.getSettingsAs(ITrainStopTypeSetting.class).map(ITrainStopTypeSetting::getTrainStopType).orElse(ITrainStopTypeSetting.ETrainStopType.DEF_VALUE);
-			boolean showArrival = type.showArrivals(terminus) && !start;
-			boolean showDeparture = type.showDepartures(start) && !terminus;
-
-			boolean allowed = showArrival || showDeparture;
-			if (!allowed && (!cancelled || isStillValid)) {
-				continue;
-			}
-
-			result.add(StationDisplayData.of(stop));
-			if ((i++) >= maxLines) {
-				break;
-			}
+		if (controller.getSettingsAs(IShowTrainMultipleTimes.class).map(IShowTrainMultipleTimes::showTrainMultipleTimes).orElse(false)) {
+			query = query.withDuplicates(true);
 		}
-		return result;
+
+		return RailwayBackendApi.getBoard(filter, query);
 	}
 
 	@Override
 	public boolean isReserved(int line, BlockEntity target, DisplayLinkContext context) {
 		if (target instanceof AdvancedDisplayBlockEntity) {
 			AdvancedDisplayBlockEntity controller = (AdvancedDisplayBlockEntity) target;
-			if (controller.getDisplayType().equals(ModDisplayTypes.SIMPLE_TEXT)
-					|| controller.getDisplayType().equals(ModDisplayTypes.RICH_TEXT))
+			if (controller.getDisplayType().equals(ModDisplayTypes.SIMPLE_TEXT) || controller.getDisplayType().equals(ModDisplayTypes.RICH_TEXT))
 				return super.isReserved(line, target, context);
 			else
 				return true;

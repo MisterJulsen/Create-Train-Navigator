@@ -156,7 +156,7 @@
     "gui.createrailwaysnavigator.route_overview.notification.connection_missed.title": "乗り換えを逃しました",
     "gui.createrailwaysnavigator.route_overview.notification.connection_missed": "接続列車 %s %s行を逃しました",
     "gui.createrailwaysnavigator.route_overview.notification.journey_completed.title": "目的地に到着しました",
-    "gui.createrailwaysnavigator.route_overview.notification.journey_completed": "ご乗車ありがとうございました",
+    "gui.createrailwaysnavigator.route_overview.notification.journey_completed": "ご乗車ありがとうございました。この先もお気をつけて",
     "gui.createrailwaysnavigator.route_overview.date": "%s日目 %s",
     "gui.createrailwaysnavigator.lock.permissions": "編集権限",
     "gui.createrailwaysnavigator.lock.state": "状態: %s",
@@ -286,7 +286,7 @@
     "enum.createrailwaysnavigator.display_info_type.detailed": "詳細",
     "enum.createrailwaysnavigator.display_info_type.info.detailed": "最も重要な情報に加えて、列車の速度や停車駅などの詳細が表示されます",
     "enum.createrailwaysnavigator.display_info_type.informative": "より詳細",
-    "enum.createrailwaysnavigator.display_info_type.info.informative": "興味深い可能性のあるすべての情報を表示し、おしゃれなレイアウトで表示します。テキストが非常に小さくなる可能性があるため、小さなディスプレイにはおすすめしません。",
+    "enum.createrailwaysnavigator.display_info_type.info.informative": "興味深い可能性のあるすべての情報を表示し、洗練されたレイアウトで表示します。テキストが非常に小さくなる可能性があるため、小さなディスプレイにはおすすめできません。",
     "enum.createrailwaysnavigator.display_type": "表示のタイプ",
     "enum.createrailwaysnavigator.display_type.description": "目的に応じた表示のタイプ",
     "enum.createrailwaysnavigator.display_type.train_destination": "列車の行先",
@@ -479,5 +479,7 @@
     "gui.createrailwaysnavigator.global_settings.train_line.description": "路線を作成したら、異なる列車をまとめたり、表示名を上書きしたり、各路線ごとに他の設定を調整することができます。(時刻表内の列車のみ割り当て可能)",
     "create.generic.unit.days": "日",
     "create.generic.unit.hours": "時間",
-    "createrailwaysnavigator.moin": "moin"
+    "createrailwaysnavigator.moin": "moin",
+    "gui.createrailwaysnavigator.advanced_display_settings.retain_scale_pos": "スケールと位置を維持する",
+    "gui.createrailwaysnavigator.advanced_display_settings.retain_scale_pos.description": "スケールと位置をアタッチされたディスプレイリンクで更新するかどうか。"
 }

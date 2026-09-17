@@ -1,5 +1,5 @@
 {
-    "advancement.createrailwaysnavigator.navigator": "Děkujeme, že jste cestovali.",
+    "advancement.createrailwaysnavigator.navigator": "Děkujeme, že jste s námi cestovali",
     "advancement.createrailwaysnavigator.navigator.description": "Vytvořte navigátor a vyhledejte spoj z jedné stanice do druhé.",
     "advancement.createrailwaysnavigator.advanced_display": "Né zrovna 4K",
     "advancement.createrailwaysnavigator.advanced_display.description": "Vylepšete své displeje a zobrazte více informací i ve vlacích.",
@@ -41,7 +41,7 @@
     "block.createrailwaysnavigator.train_station_clock.tooltip.condition2": "Po kliknutí pravého tlačítka na najinou železniční stanici",
     "block.createrailwaysnavigator.train_station_clock.tooltip.behaviour2": "Změní čas na _všech čtyřech stranách_.",
     "block.createrailwaysnavigator.navigator_lectern": "Pult s navigátorem",
-    "block.createrailwaysnavigator.advanced_display.ber.not_in_service": "Mimo provoz!",
+    "block.createrailwaysnavigator.advanced_display.ber.not_in_service": "Služební jízda!",
     "block.createrailwaysnavigator.advanced_display.ber.do_not_board": "Nenastupujte!",
     "block.createrailwaysnavigator.advanced_display.ber.this_train_terminates_there": "Tento vlak v této stanici končí!",
     "block.createrailwaysnavigator.advanced_display.ber.train_terminates": "Tento vlak v zde stanici končí!",
@@ -479,5 +479,7 @@
     "gui.createrailwaysnavigator.global_settings.train_line.description": "Vytvoř vlakové linky pro seskupení různých vlaků, přepište jejich zobrazovaný název a upravte další nastavení pro každou linku. (Lze přiřadit pouze vlakům v jízdním řádu)",
     "create.generic.unit.days": "Dny",
     "create.generic.unit.hours": "Hodiny",
-    "createrailwaysnavigator.moin": "moine"
+    "createrailwaysnavigator.moin": "moine",
+    "gui.createrailwaysnavigator.advanced_display_settings.retain_scale_pos": "Ponechat měřítko a pozici",
+    "gui.createrailwaysnavigator.advanced_display_settings.retain_scale_pos.description": "Zda by měřítko a pozice měly být aktualizovány displejovým vysílačem."
 }

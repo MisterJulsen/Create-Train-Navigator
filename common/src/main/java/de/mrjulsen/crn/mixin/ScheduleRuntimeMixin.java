@@ -1,63 +1,97 @@
 package de.mrjulsen.crn.mixin;
 
-import java.util.Collection;
-import net.minecraft.world.level.Level;
+import java.util.List;
+
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-import com.simibubi.create.content.trains.display.GlobalTrainDisplayData.TrainDeparturePrediction;
+import com.simibubi.create.content.trains.entity.Navigation;
 import com.simibubi.create.content.trains.graph.DiscoveredPath;
+import com.simibubi.create.content.trains.schedule.Schedule;
 import com.simibubi.create.content.trains.schedule.ScheduleEntry;
 import com.simibubi.create.content.trains.schedule.ScheduleRuntime;
-import com.simibubi.create.content.trains.schedule.destination.DestinationInstruction;
-import com.simibubi.create.content.trains.schedule.destination.ScheduleInstruction;
-import de.mrjulsen.crn.event.CRNEventsManager;
-import de.mrjulsen.crn.event.events.ScheduleResetEvent;
-import de.mrjulsen.crn.event.events.SubmitTrainPredictionsEvent;
-import de.mrjulsen.crn.event.events.TrainDestinationChangedEvent;
+import com.simibubi.create.content.trains.schedule.condition.ScheduleWaitCondition;
+
+import de.mrjulsen.crn.data.schedule.condition.TrainSeparationCondition;
+import de.mrjulsen.crn.data.schedule.instruction.PrioritizedDestinationInstruction;
+import net.minecraft.world.level.Level;
 
 @Mixin(ScheduleRuntime.class)
-public class ScheduleRuntimeMixin {
+public abstract class ScheduleRuntimeMixin {
 
-    public ScheduleRuntime self() {
+    @Unique
+    private static final int RECONSIDER_AFTER = 100;
+    @Unique
+    private static final int RECONSIDER_INTERVAL = 100;
+
+    @Unique
+    private ScheduleRuntime crn$self() {
         return (ScheduleRuntime)(Object)this;
     }
 
-    public ScheduleRuntimeAccessor accessor() {
-        return (ScheduleRuntimeAccessor)(Object)this;
-    }
+    @Inject(method = "tick", at = @At("HEAD"), remap = false)
+    private void crn$reconsiderWhileHeld(Level level, CallbackInfo ci) {
+        ScheduleRuntime runtime = crn$self();
+        Schedule schedule = runtime.schedule;
+        Navigation navigation = runtime.train == null ? null : runtime.train.navigation;
 
+        if (schedule == null || runtime.paused || navigation == null || navigation.destination == null) {
+            return;
+        }
+        if (navigation.waitingForSignal == null
+            || navigation.ticksWaitingForSignal < RECONSIDER_AFTER
+            || navigation.ticksWaitingForSignal % RECONSIDER_INTERVAL != 0
+            || !runtime.train.reservedSignalBlocks.isEmpty()) {
+            return;
+        }
+        if (runtime.currentEntry < 0 || runtime.currentEntry >= schedule.entries.size()
+            || !(schedule.entries.get(runtime.currentEntry).instruction instanceof PrioritizedDestinationInstruction)) {
+            return;
+        }
 
-    @Inject(method = "submitPredictions", remap = false, at = @At(value = "RETURN"), locals = LocalCapture.CAPTURE_FAILHARD)
-    public void onSubmitPredictions(CallbackInfoReturnable<Collection<TrainDeparturePrediction>> cir, Collection<TrainDeparturePrediction> predictions, int entryCount, int accumulatedTime, int current) {
-        if (CRNEventsManager.isRegistered(SubmitTrainPredictionsEvent.class)) {
-            CRNEventsManager.getEvent(SubmitTrainPredictionsEvent.class).run(accessor().crn$getTrain(), predictions, entryCount, accumulatedTime, current);
-        }        
-    }
-    
-    @Inject(method = "<init>", remap = false, at = @At(value = "TAIL"))
-    public void onResetWhileInit(CallbackInfo ci) {
-        if (CRNEventsManager.isRegistered(ScheduleResetEvent.class)) {
-            CRNEventsManager.getEvent(ScheduleResetEvent.class).run(accessor().crn$getTrain(), true);
+        ScheduleRuntimeAccessor accessor = (ScheduleRuntimeAccessor)(Object)this;
+        int cooldownBefore = accessor.crn$getCooldown();
+        DiscoveredPath preferred = runtime.startCurrentInstruction(level);
+        accessor.crn$setCooldown(cooldownBefore);
+
+        if (preferred != null && preferred.destination != navigation.destination) {
+            navigation.startNavigation(preferred);
         }
     }
-    
-    @Inject(method = {"setSchedule", "discardSchedule"}, remap = false, at = @At(value = "INVOKE", target = "Lcom/simibubi/create/content/trains/schedule/ScheduleRuntime;reset()V"))
-    public void onReset(CallbackInfo ci) {
-        if (CRNEventsManager.isRegistered(ScheduleResetEvent.class)) {
-            CRNEventsManager.getEvent(ScheduleResetEvent.class).run(accessor().crn$getTrain(), false);
+
+    @Inject(method = "tickConditions", at = @At("HEAD"), remap = false, cancellable = true)
+    private void crn$holdForSeparation(Level level, CallbackInfo ci) {
+        ScheduleRuntime runtime = crn$self();
+        Schedule schedule = runtime.schedule;
+        if (schedule == null || runtime.currentEntry < 0 || runtime.currentEntry >= schedule.entries.size()) {
+            return;
+        }
+
+        ScheduleEntry entry = schedule.entries.get(runtime.currentEntry);
+        if (!entry.instruction.supportsConditions() || !crn$anyConditionGroupComplete(runtime, entry)) {
+            return;
+        }
+
+        if (TrainSeparationCondition.remainingHoldTicks(runtime.train, entry) > 0) {
+            ci.cancel();
         }
     }
 
-    @Inject(method = "startCurrentInstruction", remap = false, at = @At(value = "RETURN", ordinal = 1), locals = LocalCapture.CAPTURE_FAILHARD)
-    public void onStartCurrentInstructionRetForge(Level level, CallbackInfoReturnable<DiscoveredPath> cir, ScheduleEntry entry, ScheduleInstruction instruction) {
-		if (CRNEventsManager.isRegistered(TrainDestinationChangedEvent.class) && cir.getReturnValue() != null && instruction instanceof DestinationInstruction) {
-            CRNEventsManager.getEvent(TrainDestinationChangedEvent.class).run(accessor().crn$getTrain(), accessor().crn$getTrain().getCurrentStation(), cir.getReturnValue().destination, self().currentEntry);
+    @Unique
+    private boolean crn$anyConditionGroupComplete(ScheduleRuntime runtime, ScheduleEntry entry) {
+        List<List<ScheduleWaitCondition>> conditions = entry.conditions;
+        if (conditions == null || runtime.conditionProgress == null) {
+            return false;
         }
+        int groups = Math.min(conditions.size(), runtime.conditionProgress.size());
+        for (int i = 0; i < groups; i++) {
+            if (runtime.conditionProgress.get(i) >= conditions.get(i).size()) {
+                return true;
+            }
+        }
+        return false;
     }
-   
 }

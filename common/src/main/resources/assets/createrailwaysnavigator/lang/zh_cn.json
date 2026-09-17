@@ -34,7 +34,7 @@
     "block.createrailwaysnavigator.advanced_display_slab": "高级显示器台阶",
     "block.createrailwaysnavigator.advanced_display_slab.tooltip.summary": "将其放置在_列车_结构中，用于显示_列车终点站_或_乘客信息_，也可以在_列车站_用作改进版本的_站台信息_显示器，能够显示比普通显示器更多的信息。",
     "block.createrailwaysnavigator.advanced_display_slab.tooltip.condition1": "用扳手右键单击时",
-    "block.createrailwaysnavigator.advanced_display_slab.tooltip.behaviour1": "打开一个用于_配置显示器_的菜单",
+    "block.createrailwaysnavigator.advanced_display_slab.tooltip.behaviour1": "打开_显示器_的_配置_菜单。",
     "block.createrailwaysnavigator.train_station_clock.tooltip.summary": "显示_当前时间_。",
     "block.createrailwaysnavigator.train_station_clock.tooltip.condition1": "右键单击时",
     "block.createrailwaysnavigator.train_station_clock.tooltip.behaviour1": "在_快捷栏_上方显示_当前时间_。",
@@ -159,7 +159,7 @@
     "gui.createrailwaysnavigator.route_overview.notification.journey_completed": "感谢您的乘坐，祝您旅途愉快",
     "gui.createrailwaysnavigator.route_overview.date": "第 %s 天，%s",
     "gui.createrailwaysnavigator.lock.permissions": "修改权限",
-    "gui.createrailwaysnavigator.lock.state": "状态%s",
+    "gui.createrailwaysnavigator.lock.state": "状态：%s",
     "gui.createrailwaysnavigator.lock.owner": "所有者：%s",
     "gui.createrailwaysnavigator.lock.right_click_options": "右键单击以显示更多选项",
     "gui.createrailwaysnavigator.lock.no_owner": "无",
@@ -479,5 +479,7 @@
     "gui.createrailwaysnavigator.global_settings.train_line.description": "创建列车线路以将不同列车分组，覆盖其显示名称，以及调整各线路的其他设置。（仅能通过时刻表分配给列车）",
     "create.generic.unit.days": "天",
     "create.generic.unit.hours": "小时",
-    "createrailwaysnavigator.moin": "你好"
+    "createrailwaysnavigator.moin": "你好",
+    "gui.createrailwaysnavigator.advanced_display_settings.retain_scale_pos": "重置显示位置与缩放",
+    "gui.createrailwaysnavigator.advanced_display_settings.retain_scale_pos.description": "显示的位置与缩放是否会被绑定的显示链接器更新。"
 }

@@ -10,9 +10,6 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import com.simibubi.create.content.trains.schedule.ScheduleEntry;
 import net.minecraft.nbt.CompoundTag;
 
-/**
- * Fixes a crash in Create when a condition got removed from the game
- */
 @Mixin(ScheduleEntry.class)
 public class ScheduleEntryMixin {
 

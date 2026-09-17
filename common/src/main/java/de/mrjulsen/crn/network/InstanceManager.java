@@ -9,8 +9,5 @@ public class InstanceManager {
     }
 
     public static void removeRouteOverlay() {
-        //if (OverlayManager.has(currentRouteOverlayId)) {
-        //    OverlayManager.remove(currentRouteOverlayId);
-        //}
     }
 }

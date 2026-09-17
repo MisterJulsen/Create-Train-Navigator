@@ -44,7 +44,7 @@ public class ModTranslatableComponent implements ComponentContents {
     private final String fallback;
     private final Object[] args;
     @Nullable
-    private Language decomposedWith;
+    private CustomLanguage decomposedWith;
     private List<FormattedText> decomposedParts = ImmutableList.of();
     private static final Pattern FORMAT_PATTERN;
 
@@ -88,16 +88,17 @@ public class ModTranslatableComponent implements ComponentContents {
     }
 
     private void decompose() {
-        Language language = ClientWrapper.getCurrentClientLanguage();;
+        CustomLanguage language = ClientWrapper.getCurrentLanguage();
         if (language != this.decomposedWith) {
             this.decomposedWith = language;
-            Component langComponent = language.getComponent(this.key);
-            if (langComponent != null) {
-                this.decomposedParts = ImmutableList.of(langComponent);
-                return;
-            }
 
-            String s = this.fallback != null ? language.getOrDefault(this.key, this.fallback) : language.getOrDefault(this.key);
+            String s;
+            if (!language.isDefault() && language.has(this.key)) {
+                s = language.getOrDefault(this.key);
+            } else {
+                Language vanilla = Language.getInstance();
+                s = this.fallback != null ? vanilla.getOrDefault(this.key, this.fallback) : vanilla.getOrDefault(this.key);
+            }
 
             try {
                 ImmutableList.Builder<FormattedText> builder = ImmutableList.builder();

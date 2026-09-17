@@ -21,7 +21,7 @@ public abstract class AbstractAdvancedSidedDisplayBlock extends AbstractAdvanced
             .setValue(SIDE, ESide.FRONT)
         );
     }
-    
+
     @Override
     protected void createBlockStateDefinition(Builder<Block, BlockState> pBuilder) {
         super.createBlockStateDefinition(pBuilder);
@@ -40,7 +40,7 @@ public abstract class AbstractAdvancedSidedDisplayBlock extends AbstractAdvanced
 		if ((otherState.getBlock() != this) || (context.getPlayer() != null && context.getPlayer().isShiftKeyDown())) {
 			stateForPlacement = getDefaultPlacementState(context, stateForPlacement, otherState);
 			stateForPlacement = getPropertyFromNeighbours(stateForPlacement, level, clickedPos, SIDE);
-		} else { // Clicked on existing block
+		} else {
 			stateForPlacement = appendOnPlace(context, stateForPlacement, otherState);
 		}
 
@@ -48,7 +48,7 @@ public abstract class AbstractAdvancedSidedDisplayBlock extends AbstractAdvanced
 	}
 
 	public BlockState appendOnPlace(BlockPlaceContext context, BlockState state, BlockState other) {
-		state = super.appendOnPlace(context, state, other)		
+		state = super.appendOnPlace(context, state, other)
 			.setValue(SIDE, other.getValue(SIDE))
 		;
 		return state;

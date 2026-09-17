@@ -5,6 +5,7 @@ import java.util.List;
 
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.flyout.FlyoutColorPickerWidget;
 import de.mrjulsen.crn.client.gui.flyout.FlyoutConfirmDialog;
@@ -24,23 +25,23 @@ import de.mrjulsen.crn.client.gui.widgets.options.OptionEntryHeader;
 import de.mrjulsen.crn.client.gui.widgets.options.OptionsDataView;
 import de.mrjulsen.crn.client.gui.widgets.options.OptionsView;
 import de.mrjulsen.crn.client.gui.widgets.options.TextOptionLabel;
-import de.mrjulsen.crn.data.TrainCategory;
-import de.mrjulsen.crn.data.TrainLine;
-import de.mrjulsen.crn.data.storage.GlobalSettingsClient;
-import de.mrjulsen.crn.network.packets.pain.AddStationToBlacklistPacketData;
-import de.mrjulsen.crn.network.packets.pain.AddTrainToBlacklistPacketData;
-import de.mrjulsen.crn.network.packets.pain.CreateTrainCategoryPacketData;
-import de.mrjulsen.crn.network.packets.pain.CreateTrainLinePacketData;
-import de.mrjulsen.crn.network.packets.pain.DeleteTrainCategoryPacketData;
-import de.mrjulsen.crn.network.packets.pain.DeleteTrainLinePacketData;
-import de.mrjulsen.crn.network.packets.pain.RemoveStationFromBlacklistPacketData;
-import de.mrjulsen.crn.network.packets.pain.RemoveTrainFromBlacklistPacketData;
-import de.mrjulsen.crn.network.packets.pain.TrainCategoryUpdatePermissionsPacketData;
-import de.mrjulsen.crn.network.packets.pain.UpdateTrainCategoryColorPacketData;
-import de.mrjulsen.crn.network.packets.pain.UpdateTrainCategoryNamePacketData;
-import de.mrjulsen.crn.network.packets.pain.UpdateTrainLineColorPacketData;
-import de.mrjulsen.crn.network.packets.pain.UpdateTrainLineNamePacketData;
-import de.mrjulsen.crn.network.packets.pain.UpdateTrainLinePermissionsPacketData;
+import de.mrjulsen.crn.data.settings.TrainCategory;
+import de.mrjulsen.crn.data.settings.TrainLine;
+import de.mrjulsen.crn.data.settings.GlobalSettingsClient;
+import de.mrjulsen.crn.network.packets.AddStationToBlacklistPacketData;
+import de.mrjulsen.crn.network.packets.AddTrainToBlacklistPacketData;
+import de.mrjulsen.crn.network.packets.CreateTrainCategoryPacketData;
+import de.mrjulsen.crn.network.packets.CreateTrainLinePacketData;
+import de.mrjulsen.crn.network.packets.DeleteTrainCategoryPacketData;
+import de.mrjulsen.crn.network.packets.DeleteTrainLinePacketData;
+import de.mrjulsen.crn.network.packets.RemoveStationFromBlacklistPacketData;
+import de.mrjulsen.crn.network.packets.RemoveTrainFromBlacklistPacketData;
+import de.mrjulsen.crn.network.packets.TrainCategoryUpdatePermissionsPacketData;
+import de.mrjulsen.crn.network.packets.UpdateTrainCategoryColorPacketData;
+import de.mrjulsen.crn.network.packets.UpdateTrainCategoryNamePacketData;
+import de.mrjulsen.crn.network.packets.UpdateTrainLineColorPacketData;
+import de.mrjulsen.crn.network.packets.UpdateTrainLineNamePacketData;
+import de.mrjulsen.crn.network.packets.UpdateTrainLinePermissionsPacketData;
 import de.mrjulsen.crn.registry.ModNetworkManager;
 import de.mrjulsen.crn.util.Lock;
 import de.mrjulsen.crn.util.Owner;
@@ -62,6 +63,7 @@ import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 public class GlobalSettingsWindow extends AbstractNavigatorScreen {
@@ -86,7 +88,7 @@ public class GlobalSettingsWindow extends AbstractNavigatorScreen {
         
         CreateButton helpButton = addComponent(new CreateButton(width() - CreateButton.WIDTH - 8, height() - CreateButton.HEIGHT - 6, ModGuiIcons.HELP.getAsCreateIcon()));
         helpButton.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> { 
-            Util.getPlatform().openUri(Constants.HELP_PAGE_GLOBAL_SETTINGS);
+            ClientWrapper.openUrl(Constants.HELP_PAGE_GLOBAL_SETTINGS);
             return false;
         });
         helpButton.tooltip.set(new DLTooltip(List.of(Constants.TEXT_HELP), 200));
@@ -216,7 +218,7 @@ public class GlobalSettingsWindow extends AbstractNavigatorScreen {
         btnHelp.tooltip.set(new DLTooltip(List.of(Constants.TEXT_HELP), 200));
         btnHelp.layoutContraint.set("help");
         btnHelp.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
-            Util.getPlatform().openUri(Constants.HELP_PAGE_TRAIN_BLACKLIST);
+            ClientWrapper.openUrl(Constants.HELP_PAGE_TRAIN_BLACKLIST);
             return false;
         });
         trainLinesEntry.getHeader().addComponent(btnHelp);
@@ -305,7 +307,7 @@ public class GlobalSettingsWindow extends AbstractNavigatorScreen {
         btnHelp.tooltip.set(new DLTooltip(List.of(Constants.TEXT_HELP), 200));
         btnHelp.layoutContraint.set("help");
         btnHelp.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
-            Util.getPlatform().openUri(Constants.HELP_PAGE_STATION_BLACKLIST);
+            ClientWrapper.openUrl(Constants.HELP_PAGE_STATION_BLACKLIST);
             return false;
         });
         trainLinesEntry.getHeader().addComponent(btnHelp);
@@ -468,7 +470,7 @@ public class GlobalSettingsWindow extends AbstractNavigatorScreen {
         btnHelp.tooltip.set(new DLTooltip(List.of(Constants.TEXT_HELP), 200));
         btnHelp.layoutContraint.set("help");
         btnHelp.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
-            Util.getPlatform().openUri(Constants.HELP_PAGE_TRAIN_LINES);
+            ClientWrapper.openUrl(Constants.HELP_PAGE_TRAIN_LINES);
             return false;
         });
         trainLinesEntry.getHeader().addComponent(btnHelp);
@@ -636,7 +638,7 @@ public class GlobalSettingsWindow extends AbstractNavigatorScreen {
         btnHelp.tooltip.set(new DLTooltip(List.of(Constants.TEXT_HELP), 200));
         btnHelp.layoutContraint.set("help");
         btnHelp.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
-            Util.getPlatform().openUri(Constants.HELP_PAGE_TRAIN_CATEGORIES);
+            ClientWrapper.openUrl(Constants.HELP_PAGE_TRAIN_CATEGORIES);
             return false;
         });
         trainLinesEntry.getHeader().addComponent(btnHelp);

@@ -8,6 +8,7 @@
         "createrailwaysnavigator:advanced_display_small",
         "createrailwaysnavigator:advanced_display_sloped",
         "createrailwaysnavigator:advanced_display_slab",
-        "createrailwaysnavigator:train_station_clock"
+        "createrailwaysnavigator:train_station_clock",
+        "createrailwaysnavigator:penalty_anchor"
     ]
 }

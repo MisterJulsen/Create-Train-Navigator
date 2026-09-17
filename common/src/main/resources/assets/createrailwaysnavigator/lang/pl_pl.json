@@ -352,5 +352,8 @@
     "gui.createrailwaysnavigator.global_settings.train_line.color": "Wybierz kolor",
     "gui.createrailwaysnavigator.global_settings.train_line.description": "Utwórz linię pociągową, aby zgrupować różne pociągi razem pod jedną nazwą i zmienić różne ustawienia. (Mogą tylko być ustawione w Rozkładzie Jazdy)",
     "create.generic.unit.days": "Dni",
-    "create.generic.unit.hours": "Godziny"
+    "create.generic.unit.hours": "Godziny",
+    "gui.createrailwaysnavigator.advanced_display_settings.text_min_x_scale.description": "Jeśli tekst jest zbyt szeroki, najpierw jest skalowany z wybranej ilości, zanim jest ucięty albo zaczyna się przewijać.",
+    "enum.createrailwaysnavigator.display_type.info.platform": "Wyświetlacze te powinny być używane na peronach stacji oraz pokazują następne przyjeżdżające pociągi wraz z dodatkowymi szczegółami, jeśli zostaną wybrane. Nie można ich użyć w pociągach!",
+    "enum.createrailwaysnavigator.train_filter.same_category": "Ta sama kategoria"
 }

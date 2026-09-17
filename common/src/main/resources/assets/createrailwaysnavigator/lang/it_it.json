@@ -1,12 +1,12 @@
 {
-    "advancement.createrailwaysnavigator.navigator": "Grazie per il viaggio",
+    "advancement.createrailwaysnavigator.navigator": "Grazie per aver viaggiato con noi",
     "advancement.createrailwaysnavigator.navigator.description": "Abbozza viaggio onde cercare collegamenti ferroviari tra le stazioni.",
     "advancement.createrailwaysnavigator.advanced_display": "Non abbastanza 4k",
     "advancement.createrailwaysnavigator.advanced_display.description": "Aggiorna le schede di visione per vedere più informazioni e posizionarle nei treni.",
     "itemGroup.createrailwaysnavigator.tab": "Create viaggio in ferrovia",
     "item.createrailwaysnavigator.navigator": "Navigatore",
     "item.createrailwaysnavigator.navigator.tooltip.summary": "Il _navigatore_ mostra possibili _collegamenti via treno_ con informazioni aggiuntive come _tappe_, _dati in tempo reale_ e altro ancora.",
-    "block.createrailwaysnavigator.train_station_clock": "Orologio stazione",
+    "block.createrailwaysnavigator.train_station_clock": "Orologio della stazione",
     "block.createrailwaysnavigator.advanced_display_block": "Visione avanzata",
     "block.createrailwaysnavigator.advanced_display_block.tooltip.summary": "Usalo su _treni_, come _schermata di destinazione_ del treno o _schermo informativo per il passeggero_, o alle _stazioni_ come _schermo_ migliorato, che mostra anche più informazioni rispetto alle normali schede di visualizzazione.",
     "block.createrailwaysnavigator.advanced_display_block.tooltip.condition1": "Se cliccato col destro usando chiave inglese",
@@ -479,5 +479,6 @@
     "gui.createrailwaysnavigator.global_settings.train_line.description": "Crea linee ferroviarie per raggruppare diversi treni insieme, sovrascrivere il loro nome visualizzato e regola altre impostazioni per ogni linea. (Può essere assegnato solo ai treni nella pianificazione)",
     "create.generic.unit.days": "Giorni",
     "create.generic.unit.hours": "Ore",
-    "createrailwaysnavigator.moin": "principale"
+    "createrailwaysnavigator.moin": "principale",
+    "gui.createrailwaysnavigator.advanced_display_settings.retain_scale_pos.description": "Indica se la scala e la posizione debbano essere aggiornate tramite un Display Link collegato."
 }

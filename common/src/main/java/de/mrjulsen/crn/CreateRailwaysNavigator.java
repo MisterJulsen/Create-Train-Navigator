@@ -6,10 +6,13 @@ import com.simibubi.create.foundation.item.ItemDescription;
 import com.simibubi.create.foundation.item.KineticStats;
 import com.simibubi.create.foundation.item.TooltipModifier;
 
+import de.mrjulsen.crn.core.RailwayBackend;
 import de.mrjulsen.crn.block.AdvancedDisplayBlock;
+import de.mrjulsen.crn.compat.tramways.TramwaysCompat;
 import de.mrjulsen.crn.event.ModClientEvents;
 import de.mrjulsen.crn.event.ModCommonEvents;
 import de.mrjulsen.crn.registry.*;
+import de.mrjulsen.crn.web.ModWebFeatures;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import dev.architectury.platform.Platform;
 import dev.architectury.utils.Env;
@@ -63,15 +66,22 @@ public final class CreateRailwaysNavigator {
         ModExtras.init();
         ModSchedule.init();
         ModNetworkManager.init();
-        ModTrainStatusInfos.init();
+        ModDelayCauses.init();
+        ModWebFeatures.init();
         ModDisplayTypes.init();
         ModDataComponents.init();
         
         CRNPlatformSpecific.registerConfig();
 
         ModCommonEvents.init();
+        RailwayBackend.init();
+
         if (Platform.getEnvironment() == Env.CLIENT) {
             ModClientEvents.init();
+        }
+
+        if (Platform.isModLoaded("tramways")) {
+            TramwaysCompat.init();
         }
 
     }

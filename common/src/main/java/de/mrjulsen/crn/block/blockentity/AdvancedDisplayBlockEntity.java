@@ -5,9 +5,6 @@ import java.util.List;
 import java.util.Optional;
 
 import com.simibubi.create.content.contraptions.Contraption;
-import com.simibubi.create.content.contraptions.ControlledContraptionEntity;
-import com.simibubi.create.content.contraptions.elevator.ElevatorColumn;
-import com.simibubi.create.content.contraptions.elevator.ElevatorContactBlockEntity;
 import com.simibubi.create.content.contraptions.elevator.ElevatorContraption;
 import com.simibubi.create.content.decoration.copycat.CopycatBlockEntity;
 import com.simibubi.create.content.trains.display.FlapDisplayBlock;
@@ -35,14 +32,18 @@ import de.mrjulsen.crn.data.CarriageData;
 import de.mrjulsen.crn.data.ElevatorData;
 import de.mrjulsen.crn.data.ElevatorMovementType;
 import de.mrjulsen.crn.data.TrainExitSide;
-import de.mrjulsen.crn.data.StationTag.ClientStationTag;
-import de.mrjulsen.crn.data.StationTag.StationInfo;
-import de.mrjulsen.crn.data.train.ETrainStopState;
-import de.mrjulsen.crn.data.train.TrainUtils;
-import de.mrjulsen.crn.data.train.portable.StationDisplayData;
-import de.mrjulsen.crn.data.train.portable.TrainDisplayData;
-import de.mrjulsen.crn.data.train.portable.TrainStopDisplayData;
-import de.mrjulsen.crn.network.packets.pain.GetTrainDisplayDataPacketData;
+import de.mrjulsen.crn.data.settings.StationTag.StationInfo;
+import de.mrjulsen.crn.util.TrainUtils;
+import de.mrjulsen.crn.api.core.snapshot.BoardEntry;
+import de.mrjulsen.crn.api.core.CallDirection;
+import de.mrjulsen.crn.api.core.snapshot.JourneySnapshot;
+import de.mrjulsen.crn.api.core.snapshot.SectionSnapshot;
+import de.mrjulsen.crn.api.core.snapshot.StopSnapshot;
+import de.mrjulsen.crn.api.core.snapshot.TrainSnapshot;
+import de.mrjulsen.crn.core.train.LiveTrainState;
+import de.mrjulsen.crn.data.TrainJourneyStage;
+import de.mrjulsen.crn.api.core.ref.StationRef;
+import de.mrjulsen.crn.network.packets.GetTrainDisplayDataPacketData;
 import de.mrjulsen.crn.registry.ModDisplayTypes;
 import de.mrjulsen.crn.registry.ModNetworkManager;
 import de.mrjulsen.crn.util.ModUtils;
@@ -60,7 +61,6 @@ import dev.architectury.utils.Env;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -88,7 +88,7 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
     public static final String NBT_YSIZE = "YSize";
     public static final String NBT_CONTROLLER = "IsController";
     private static final String NBT_GLOWING = "Glowing";
-    
+
     private static final String NBT_LAST_REFRESH_TIME = "LastRefreshed";
     private static final String NBT_TRAIN_STOPS = "TrainStops";
 
@@ -103,34 +103,36 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
     public static final byte MAX_XSIZE = 16;
     public static final byte MAX_YSIZE = 16;
 
-    // DATA
     private DisplayTypeResourceKey displayTypeId = ModDisplayTypes.TRAIN_DESTINATION_SIMPLE;
     private byte xSize = 1;
 	private byte ySize = 1;
     private boolean isController;
-    private List<StationDisplayData> predictions;
+    private List<BoardEntry> predictions;
     private boolean dataOrderChanged = false;
     private String stationNameFilter;
     private StationInfo stationInfo;
     private boolean glowing = false;
     private IDisplaySettings displayTypeSettings = AdvancedDisplaysRegistry.createSettings(ModDisplayTypes.TRAIN_DESTINATION_SIMPLE);
-    
-    // CLIENT DISPLAY ONLY - this data is not saved!
+
     public boolean assembledOnContraption = false;
     private long lastRefreshedTime;
-    private TrainDisplayData trainData = TrainDisplayData.empty(0);
+    private TrainSnapshot trainSnapshot;
+    private JourneySnapshot journeySnapshot;
+    private final Cache<List<StopSnapshot>> serviceStops = new Cache<>(() ->
+        getJourney().map(x -> x.servedStops(getOperatingSection().orElse(null), isWaitingAtStation())).orElse(List.of()));
+    private final Cache<Integer> currentServiceStopIndex = new Cache<>(() ->
+        getJourney().map(x -> x.servedStopIndex(getOperatingSection().orElse(null), isWaitingAtStation())).orElse(-1));
     private CarriageData carriageData = new CarriageData(0, Direction.NORTH, false);
     private ElevatorData elevatorData = new ElevatorData("", "", "", "", ElevatorMovementType.STANDING_STILL);
-    
-    // OTHER
+
     private int syncTicks = 0;
     private final Cache<IBlockEntityRendererInstance<AdvancedDisplayBlockEntity>> renderer = new Cache<>(() -> new AdvancedDisplayRenderInstance(this), ECachingPriority.ALWAYS);
-    
-    public final Cache<TrainExitSide> relativeExitDirection = new Cache<>(() -> {        
-        if (getCarriageData() == null || !getTrainData().getNextStop().isPresent() || !(getBlockState().getBlock() instanceof AbstractAdvancedDisplayBlock)) {
+
+    public final Cache<TrainExitSide> relativeExitDirection = new Cache<>(() -> {
+        if (getCarriageData() == null || getNextStop().isEmpty() || !(getBlockState().getBlock() instanceof AbstractAdvancedDisplayBlock)) {
             return TrainExitSide.UNKNOWN;
         }
-        TrainExitSide side = getTrainData().getNextStopExitSide();
+        TrainExitSide side = exitSideOf(trainSnapshot);
         Direction blockFacing = getBlockState().getValue(HorizontalDirectionalBlock.FACING);
         if (!carriageData.isOppositeDirection()) {
             blockFacing = blockFacing.getOpposite();
@@ -175,7 +177,7 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
         return Pair.of(1.0F, 1.0F);
     });
 
-    public final Cache<Float> renderScale = new Cache<>(() -> {        
+    public final Cache<Float> renderScale = new Cache<>(() -> {
         return 1.0F / Math.max(this.renderAspectRatio.get().getFirst(), this.renderAspectRatio.get().getSecond());
     });
 
@@ -186,8 +188,99 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
         reset();
     }
 
-    public TrainDisplayData getTrainData() {
-        return trainData;
+    public Optional<TrainSnapshot> getTrain() {
+        return Optional.ofNullable(trainSnapshot);
+    }
+
+    public Optional<JourneySnapshot> getJourney() {
+        return Optional.ofNullable(journeySnapshot);
+    }
+
+    public TrainJourneyStage getStage() {
+        return TrainJourneyStage.of(trainSnapshot, journeySnapshot, ModUtils.getTransformedWorldTime());
+    }
+
+    public boolean isWaitingAtStation() {
+        return trainSnapshot != null && trainSnapshot.liveState() == LiveTrainState.AT_STATION;
+    }
+
+    public CallDirection getCallDirection() {
+        return isWaitingAtStation() ? CallDirection.DEPARTURE : CallDirection.ARRIVAL;
+    }
+
+    public List<StopSnapshot> getServiceStops() {
+        return serviceStops.get();
+    }
+
+    public List<StopSnapshot> getRemainingStops() {
+        List<StopSnapshot> service = getServiceStops();
+        int current = indexOfCurrentStop();
+        return current < 0 ? service : service.subList(current, service.size());
+    }
+
+    public List<StopSnapshot> getStopovers() {
+        List<StopSnapshot> remaining = getRemainingStops();
+        int from = isWaitingAtStation() ? 1 : 0;
+        return remaining.size() > from + 1 ? remaining.subList(from, remaining.size() - 1) : List.of();
+    }
+
+    public Optional<StopSnapshot> getCurrentStop() {
+        return getJourney().flatMap(JourneySnapshot::currentStop);
+    }
+
+    public Optional<StopSnapshot> getNextStop() {
+        List<StopSnapshot> remaining = getRemainingStops();
+        return remaining.isEmpty() ? Optional.empty() : Optional.of(remaining.get(0));
+    }
+
+    public Optional<StopSnapshot> getFinalStop() {
+        List<StopSnapshot> service = getServiceStops();
+        return service.isEmpty() ? Optional.empty() : Optional.of(service.get(service.size() - 1));
+    }
+
+    public String getTrainDisplayName() {
+        return getOperatingSection()
+            .filter(x -> x.line().hasName())
+            .map(x -> x.line().name())
+            .orElseGet(() -> getTrain().map(TrainSnapshot::trainName).orElse(""));
+    }
+
+    public DLColor getTrainDisplayColor() {
+        return getOperatingSection().filter(x -> x.hasLine() || x.hasCategory())
+            .map(SectionSnapshot::displayColor)
+            .orElse(DLColor.TRANSPARENT);
+    }
+
+    public String getDestinationText() {
+        return getCurrentStop().map(StopSnapshot::title).filter(x -> !x.isBlank())
+            .or(() -> getOperatingSection().map(x -> x.destination().displayName()).filter(x -> !x.isBlank()))
+            .or(() -> getFinalStop().map(x -> x.station().displayName()))
+            .orElse("");
+    }
+
+    public double getTrainSpeed() {
+        return getTrain().map(x -> x.position().speed()).orElse(0d);
+    }
+
+    public Optional<SectionSnapshot> getOperatingSection() {
+        return getJourney().flatMap(x -> x.operatingSection(isWaitingAtStation()));
+    }
+
+    private int indexOfCurrentStop() {
+        return currentServiceStopIndex.get();
+    }
+
+    private boolean sameNextStop(JourneySnapshot incoming) {
+        Optional<StopSnapshot> before = getNextStop();
+        Optional<StopSnapshot> after = incoming == null ? Optional.empty() : incoming.currentStop();
+        if (before.isEmpty() || after.isEmpty()) {
+            return before.isEmpty() && after.isEmpty();
+        }
+        return before.get().entryIndex() == after.get().entryIndex();
+    }
+
+    private static TrainExitSide exitSideOf(TrainSnapshot train) {
+        return train == null ? TrainExitSide.UNKNOWN : train.position().exitSide();
     }
 
     public CarriageData getCarriageData() {
@@ -229,7 +322,7 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
     public DisplayTypeResourceKey getDisplayType() {
         return displayTypeId;
     }
-    
+
     @Override
     public byte getMaxWidth() {
         return MAX_XSIZE;
@@ -260,7 +353,7 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
         return AdvancedDisplayBlockEntity.class;
     }
 
-    public List<StationDisplayData> getStops() {
+    public List<BoardEntry> getStops() {
         return predictions;
     }
 
@@ -268,38 +361,23 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
         return !ModUtils.isGlobPattern(stationNameFilter);
     }
 
-    /**
-     * The station info for this display.
-     */
     public StationInfo getStationInfo() {
         return stationInfo;
     }
 
-    /**
-     * The station filter string of this display.
-     */
     public String getStationNameFilter() {
         return stationNameFilter;
     }
 
-    public boolean isAllowedOnDisplay(ClientStationTag tag) {
-        return TrainUtils.stationMatches(tag.stationName(), getStationNameFilter());
-    }
-
-    public ClientStationTag getAllowedDisplayData(TrainStopDisplayData data) {
-        if (isAllowedOnDisplay(data.getRealTimeStation())) {
-            return data.getRealTimeStation();
-        } else if (isAllowedOnDisplay(data.getScheduledStation())) {
-            return data.getScheduledStation();
-        }
-        return ClientStationTag.empty();
+    public boolean isAllowedOnDisplay(StationRef station) {
+        return station != null && TrainUtils.stationMatches(station.name(), getStationNameFilter());
     }
 
 	public boolean isSingleLine() {
 		if (getBlockState().getBlock() instanceof AbstractAdvancedDisplayBlock block) {
 			return block.isSingleLined() || AdvancedDisplaysRegistry.getProperties(displayTypeId).singleLined();
 		}
-        return false;		
+        return false;
 	}
 
     public DisplayProperties getDisplayProperties() {
@@ -314,12 +392,7 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
 
     }
 
-    
-    /**
-     * Updates the display type.
-     * @param key The new display type key.
-     * @param settings Custom display settings or {@code null} for default settings.
-     */
+
     public void setDisplayType(DisplayTypeResourceKey key,  IDisplaySettings settings) {
         setDisplayType(getLevel(), key, settings);
     }
@@ -332,11 +405,11 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
         }
     }
 
-    public void setData(List<StationDisplayData> predictions, String stationNameFilter, StationInfo staionInfo, long lastRefreshedTime) {
-        this.dataOrderChanged = dataOrderChanged || !DLListUtils.compareCollections(this.predictions, predictions, StationDisplayData::equals);
+    public void setData(List<BoardEntry> predictions, String stationNameFilter, StationInfo staionInfo, long lastRefreshedTime) {
+        this.dataOrderChanged = dataOrderChanged || !DLListUtils.compareCollections(this.predictions, predictions, BoardEntry::isSameCall);
 
         boolean clientUpdate = Platform.getEnvironment() == Env.CLIENT && !getStationInfo().equals(staionInfo);
-        
+
         this.predictions = predictions;
         this.stationNameFilter = stationNameFilter;
         this.stationInfo = staionInfo;
@@ -346,7 +419,7 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
             getRenderer().update(level, worldPosition, getBlockState(), this, EUpdateReason.DATA_CHANGED);
         }
     }
-    
+
     @Override
     public boolean connectable(IBlockGetter getter, BlockPos a, BlockPos b) {
         if (getter == null || a == null || b == null) {
@@ -356,13 +429,13 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
         if (getter.getBlockEntity(a) instanceof AdvancedDisplayBlockEntity be1 && getter.getBlockEntity(b) instanceof AdvancedDisplayBlockEntity be2 && be1.getBlockState().getBlock() instanceof AbstractAdvancedDisplayBlock block1 && be2.getBlockState().getBlock() instanceof AbstractAdvancedDisplayBlock block2) {
             return block1 == block2 &&
                 be1.getDisplayType().equals(be2.getDisplayType()) &&
-                block1.canConnectWithBlock(getter, getter.getBlockState(a), getter.getBlockState(b)) && block2.canConnectWithBlock(getter, getter.getBlockState(b), getter.getBlockState(a)) && 
+                block1.canConnectWithBlock(getter, getter.getBlockState(a), getter.getBlockState(b)) && block2.canConnectWithBlock(getter, getter.getBlockState(b), getter.getBlockState(a)) &&
                 (!a.above().equals(b) || (be1.getBlockState().getValue(AbstractAdvancedDisplayBlock.UP) && !be1.isSingleLine())) &&
                 (!a.below().equals(b) || (be1.getBlockState().getValue(AbstractAdvancedDisplayBlock.DOWN) && !be1.isSingleLine()))
             ;
         }
         return false;
-    }    
+    }
 
     public AdvancedDisplayBlockEntity getController(IBlockGetter getter) {
 		if (isController())
@@ -436,7 +509,7 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
 
 		Direction leftDirection = blockState.getValue(AbstractAdvancedDisplayBlock.FACING).getClockWise();
         boolean shouldBeController = !connectable(getter, worldPosition, worldPosition.relative(leftDirection)) && !connectable(getter, worldPosition, worldPosition.above());
-        
+
 
 		byte newXSize = 1;
 		byte newYSize = 1;
@@ -454,7 +527,7 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
             if (!isSingleLine()) {
                 for (int yOffset = 0; yOffset < getMaxHeight(); yOffset++) {
                     BlockPos downPos = worldPosition.relative(Direction.DOWN, yOffset);
-                    
+
                     for (int i = 0; i < newXSize; i++) {
                         BlockPos relPos = downPos.relative(leftDirection.getOpposite(), i);
                         if (getter.getBlockEntity(relPos) instanceof AdvancedDisplayBlockEntity be && be != this) {
@@ -465,7 +538,7 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
 
                     if (!connectable(getter, downPos, downPos.below())) {
                         break;
-                    }    
+                    }
                     newYSize++;
                 }
             }
@@ -473,7 +546,7 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
 
 		if (isController == shouldBeController && newXSize == xSize && newYSize == ySize)
 			return;
-        
+
         isController = shouldBeController;
         xSize = newXSize;
         ySize = newYSize;
@@ -483,7 +556,7 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
         }
         getter.updateBlockEntity(this, worldPosition);
         notifyUpdate();
-	}    
+	}
 
     @Override
     public void tick() {
@@ -512,6 +585,9 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
     public void lazyTick() {
         super.lazyTick();
         if (!level.isClientSide()) {
+            if (getBlockState().getBlock() instanceof AbstractAdvancedDisplayBlock block) {
+                block.refreshConnectionState(getLevel(), worldPosition);
+            }
             updateControllerStatus2(new IBlockGetter.WorldBlockGetter(getLevel()));
         }
     }
@@ -526,13 +602,13 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
         for (var entry : ec.namesList) {
             int contactY = entry.getFirst();
             int distance = Math.abs(contactY - currentFloorY);
-            
+
             if (distance < minDistance) {
                 minDistance = distance;
                 closest = contactY;
             }
         }
-        
+
         return closest;
     }
 
@@ -557,7 +633,7 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
             if (contraption instanceof ElevatorContraption elevator) {
                 int targetY = elevator.clientYTarget;
                 int closestY = getClosestFloor(elevator);
-                
+
                 String shortName = "", longName = "", shortNameDest = "", longNameDest = "";
 
                 for (var entry : elevator.namesList) {
@@ -580,7 +656,7 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
                 }
 
                 ElevatorData newData = new ElevatorData(shortName.toString(), longName.toString(), shortNameDest.toString(), longNameDest.toString(), directionSign);
-                
+
                 if (!newData.equals(this.elevatorData)) {
                     this.elevatorData = newData;
                     getRenderer().update(level, pos, state, this, EUpdateReason.DATA_CHANGED);
@@ -595,128 +671,115 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
             }
 
             ModNetworkManager.GET_TRAIN_DISPLAY_DATA.send(NetworkDirection.toServer(), new GetTrainDisplayDataPacketData.Request(carriageContraption.trainId), (response) -> {
-                TrainDisplayData data = response.getData();
-                int carriagesCount = TrainUtils.getTrain(carriageContraption.trainId).map(x -> x.carriages.size()).orElse(0);
-                this.trainData = TrainDisplayData.empty(carriagesCount);
-                if (data.getState().isOutOfService() && this.trainData.getState().isOutOfService()) {
-                    return;
-                }
+                TrainSnapshot incoming = response.getTrain().orElse(null);
+                JourneySnapshot incomingJourney = response.getJourney().orElse(null);
 
-                boolean shouldUpdate = false;
-                if (this.trainData != null && this.trainData.getNextStop().isPresent() && data.getNextStop().isPresent()) {
-                    TrainStopDisplayData prediction = this.trainData.getNextStop().get();
-                    ETrainStopState stopState = ETrainStopState.beforeArrival(data.isWaitingAtStation());
+                boolean shouldUpdate = getStage() != TrainJourneyStage.of(incoming, incomingJourney, ModUtils.getTransformedWorldTime())
+                    || !sameNextStop(incomingJourney)
+                    || exitSideOf(this.trainSnapshot) != exitSideOf(incoming);
 
-                    shouldUpdate = !this.trainData.getTrainData().getName(stopState).equals(data.getTrainData().getName(stopState)) ||
-                        !prediction.getDestination().equals(data.getNextStop().get().getDestination()) ||
-                        prediction.getStationEntryIndex() != data.getNextStop().get().getStationEntryIndex() ||
-                        this.trainData.getNextStopExitSide() != data.getNextStopExitSide() ||
-                        this.trainData.isWaitingAtStation() != data.isWaitingAtStation()
-                    ;
-                }
-                boolean outOfService = data.getState().isOutOfService();
-                if (outOfService) {
-                    shouldUpdate = true;
-                }
-                this.trainData = outOfService ? TrainDisplayData.empty(carriagesCount) : data;
-                this.carriageData = new CarriageData(carriageContraption.carriageIndex, carriage.getAssemblyDirection(), data.isOppositeDirection());
+                this.trainSnapshot = incoming;
+                this.journeySnapshot = incomingJourney;
+                this.carriageData = new CarriageData(carriageContraption.carriageIndex, carriage.getAssemblyDirection(),
+                    incoming != null && incoming.position().backwards());
                 this.relativeExitDirection.clear();
-                
+                this.serviceStops.clear();
+                this.currentServiceStopIndex.clear();
+
                 getRenderer().update(level, pos, state, this, shouldUpdate ? EUpdateReason.LAYOUT_CHANGED : EUpdateReason.DATA_CHANGED);
             }, () -> {});
         }
     }
 
     @Override
-    protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
-        super.write(tag, registries, clientPacket);
-        tag.putByte(NBT_XSIZE, getXSize());
-        tag.putByte(NBT_YSIZE, getYSize());
-        tag.putBoolean(NBT_CONTROLLER, isController());
-        tag.putString(NBT_FILTER, getStationNameFilter());
-        tag.putBoolean(NBT_GLOWING, isGlowing());
-        tag.putLong(NBT_LAST_REFRESH_TIME, getLastRefreshedTime());
+    protected void write(CompoundTag pTag, boolean clientPacket) {
+        super.write(pTag, clientPacket);
+        pTag.putByte(NBT_XSIZE, getXSize());
+        pTag.putByte(NBT_YSIZE, getYSize());
+        pTag.putBoolean(NBT_CONTROLLER, isController());
+        pTag.putString(NBT_FILTER, getStationNameFilter());
+        pTag.putBoolean(NBT_GLOWING, isGlowing());
+        pTag.putLong(NBT_LAST_REFRESH_TIME, getLastRefreshedTime());
 
-        displayTypeId.toNbt(tag);
-        tag.put(NBT_DISPLAY_TYPE_SETTINGS, displayTypeSettings.serializeNbt());
+        displayTypeId.toNbt(pTag);
+        pTag.put(NBT_DISPLAY_TYPE_SETTINGS, displayTypeSettings.serializeNbt());
 
-        getStationInfo().writeNbt(tag);
+        getStationInfo().writeNbt(pTag);
 
-        if (getStops() != null && !getStops().isEmpty()) {            
+        if (getStops() != null && !getStops().isEmpty()) {
             ListTag list = new ListTag();
-            for (StationDisplayData data : getStops()) {
+            for (BoardEntry data : getStops()) {
                 list.add(data.toNbt());
             }
-            tag.put(NBT_TRAIN_STOPS, list);
+            pTag.put(NBT_TRAIN_STOPS, list);
         }
     }
 
+    @SuppressWarnings("deprecation")
     @Override
-    protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+    public void read(CompoundTag pTag, boolean clientPacket) {
         boolean updateClient = false;
         IDisplaySettings oldDisplayTypeSettings = displayTypeSettings;
-        StationInfo info = StationInfo.fromNbt(tag);
+        StationInfo info = StationInfo.fromNbt(pTag);
         if (level != null && getBlockState() != null && level.isClientSide) {
             if (
-                isController() != tag.getBoolean(NBT_CONTROLLER) ||
-                getXSize() != tag.getByte(NBT_XSIZE) ||
-                getYSize() != tag.getByte(NBT_YSIZE) ||
+                isController() != pTag.getBoolean(NBT_CONTROLLER) ||
+                getXSize() != pTag.getByte(NBT_XSIZE) ||
+                getYSize() != pTag.getByte(NBT_YSIZE) ||
                 !getStationInfo().equals(info) ||
-                (getStops().isEmpty() ^ !tag.contains(NBT_TRAIN_STOPS))
+                (getStops().isEmpty() ^ !pTag.contains(NBT_TRAIN_STOPS))
             ) {
                 updateClient = true;
             }
         }
 
-        super.read(tag, registries, clientPacket);
+        super.read(pTag, clientPacket);
 
 
-        xSize = tag.getByte(NBT_XSIZE);
-        ySize = tag.getByte(NBT_YSIZE);
-        glowing = tag.getBoolean(NBT_GLOWING);
-        isController = tag.getBoolean(NBT_CONTROLLER);
+        xSize = pTag.getByte(NBT_XSIZE);
+        ySize = pTag.getByte(NBT_YSIZE);
+        glowing = pTag.getBoolean(NBT_GLOWING);
+        isController = pTag.getBoolean(NBT_CONTROLLER);
 
         Class<? extends IDisplaySettings> oldDisplaySettings = displayTypeSettings.getClass();
         DisplayTypeResourceKey oldDisplayType = displayTypeId;
-        
-        // ### Convert deprecated data
-        if (tag.contains(LEGACY_NBT_INFO_TYPE) && tag.contains(LEGACY_NBT_DISPLAY_TYPE)) {
-            displayTypeId = ModDisplayTypes.legacy_getKeyForType(EDisplayType.getTypeById(tag.getInt(LEGACY_NBT_DISPLAY_TYPE)), EDisplayInfo.getTypeById(tag.getInt(LEGACY_NBT_INFO_TYPE)));
+
+        if (pTag.contains(LEGACY_NBT_INFO_TYPE) && pTag.contains(LEGACY_NBT_DISPLAY_TYPE)) {
+            displayTypeId = ModDisplayTypes.legacy_getKeyForType(EDisplayType.getTypeById(pTag.getInt(LEGACY_NBT_DISPLAY_TYPE)), EDisplayInfo.getTypeById(pTag.getInt(LEGACY_NBT_INFO_TYPE)));
             displayTypeSettings = AdvancedDisplaysRegistry.createSettings(displayTypeId);
-        } else if (tag.contains(LEGACY_NBT_DISPLAY_TYPE_KEY)) {
-            displayTypeId = DisplayTypeResourceKey.legacy_fromNbt(tag.getCompound(LEGACY_NBT_DISPLAY_TYPE_KEY));
+        } else if (pTag.contains(LEGACY_NBT_DISPLAY_TYPE_KEY)) {
+            displayTypeId = DisplayTypeResourceKey.legacy_fromNbt(pTag.getCompound(LEGACY_NBT_DISPLAY_TYPE_KEY));
             displayTypeSettings = AdvancedDisplaysRegistry.createSettings(displayTypeId);
         } else {
-            displayTypeId = DisplayTypeResourceKey.fromNbt(tag);
+            displayTypeId = DisplayTypeResourceKey.fromNbt(pTag);
             displayTypeSettings = AdvancedDisplaysRegistry.createSettings(displayTypeId);
-            displayTypeSettings.deserializeNbt(tag.getCompound(NBT_DISPLAY_TYPE_SETTINGS));
+            displayTypeSettings.deserializeNbt(pTag.getCompound(NBT_DISPLAY_TYPE_SETTINGS));
         }
 
         if (level != null && level.isClientSide) {
             updateClient = updateClient || !oldDisplayTypeSettings.getClass().equals(displayTypeSettings.getClass());
         }
-        
-        if (tag.contains(LEGACY_NBT_COLOR)) {
-            getSettingsAs(BasicDisplaySettings.class).ifPresent(x -> x.setFontColor(DLColor.fromInt(tag.getInt(LEGACY_NBT_COLOR))));
+
+        if (pTag.contains(LEGACY_NBT_COLOR)) {
+            getSettingsAs(BasicDisplaySettings.class).ifPresent(x -> x.setFontColor(DLColor.fromInt(pTag.getInt(LEGACY_NBT_COLOR))));
         }
-        if (displayTypeId.category().getSource() == EDisplayTypeDataSource.PLATFORM) {            
-            if (tag.contains(LEGACY_NBT_PLATFORM_WIDTH)) {
-                getSettingsAs(IPlatformWidthSetting.class).ifPresent(x -> x.setPlatformWidth(tag.getByte(LEGACY_NBT_PLATFORM_WIDTH)));
+        if (displayTypeId.category().getSource() == EDisplayTypeDataSource.PLATFORM) {
+            if (pTag.contains(LEGACY_NBT_PLATFORM_WIDTH)) {
+                getSettingsAs(IPlatformWidthSetting.class).ifPresent(x -> x.setPlatformWidth(pTag.getByte(LEGACY_NBT_PLATFORM_WIDTH)));
             }
-            if (tag.contains(LEGACY_NBT_TRAIN_NAME_WIDTH)) {
-                getSettingsAs(ITrainNameWidthSetting.class).ifPresent(x -> x.setTrainNameWidth(tag.getByte(LEGACY_NBT_TRAIN_NAME_WIDTH)));
+            if (pTag.contains(LEGACY_NBT_TRAIN_NAME_WIDTH)) {
+                getSettingsAs(ITrainNameWidthSetting.class).ifPresent(x -> x.setTrainNameWidth(pTag.getByte(LEGACY_NBT_TRAIN_NAME_WIDTH)));
             }
-            if (tag.contains(LEGACY_NBT_TIME_DISPLAY)) {
-                getSettingsAs(ITimeDisplaySetting.class).ifPresent(x -> x.setTimeDisplay(ETimeDisplay.getById(tag.getByte(LEGACY_NBT_TIME_DISPLAY))));
+            if (pTag.contains(LEGACY_NBT_TIME_DISPLAY)) {
+                getSettingsAs(ITimeDisplaySetting.class).ifPresent(x -> x.setTimeDisplay(ETimeDisplay.getById(pTag.getByte(LEGACY_NBT_TIME_DISPLAY))));
             }
         }
-        // ###
 
         setData(
-            tag.contains(NBT_TRAIN_STOPS) ? new ArrayList<>(tag.getList(NBT_TRAIN_STOPS, Tag.TAG_COMPOUND).stream().map(x -> StationDisplayData.fromNbt((CompoundTag)x)).toList()) : new ArrayList<>(),
-            tag.getString(NBT_FILTER),
+            pTag.contains(NBT_TRAIN_STOPS) ? new ArrayList<>(pTag.getList(NBT_TRAIN_STOPS, Tag.TAG_COMPOUND).stream().map(x -> BoardEntry.fromNbt((CompoundTag)x)).toList()) : new ArrayList<>(),
+            pTag.getString(NBT_FILTER),
             info,
-            tag.getLong(NBT_LAST_REFRESH_TIME)
+            pTag.getLong(NBT_LAST_REFRESH_TIME)
         );
 
         if (level != null && getBlockState() != null && level.isClientSide && (!oldDisplaySettings.isInstance(displayTypeSettings) || !oldDisplayType.equals(displayTypeId))) {
@@ -774,16 +837,15 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
     }
 
     @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+    public CompoundTag getUpdateTag() {
         CompoundTag nbt = new CompoundTag();
-        this.write(nbt, registries, true);
+        this.write(nbt, true);
         return nbt;
     }
 
     @Override
-    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider registries) {
-        super.onDataPacket(net, pkt, registries);
-        this.loadAdditional(pkt.getTag(), registries);
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
+        this.load(pkt.getTag());
         this.level.sendBlockUpdated(this.worldPosition, this.getBlockState(), this.getBlockState(), 512);
     }
 

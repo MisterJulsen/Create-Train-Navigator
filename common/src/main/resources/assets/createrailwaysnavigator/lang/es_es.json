@@ -75,7 +75,7 @@
     "gui.createrailwaysnavigator.common.false": "No",
     "gui.createrailwaysnavigator.common.search": "Buscar",
     "gui.createrailwaysnavigator.common.auto": "Automático",
-    "gui.createrailwaysnavigator.common.max": "Máx",
+    "gui.createrailwaysnavigator.common.max": "Max",
     "gui.createrailwaysnavigator.common.server_error": "Error del servidor al ejecutar la tarea. Mira la consola para más detalles.",
     "gui.createrailwaysnavigator.common.delete": "Borrar",
     "gui.createrailwaysnavigator.common.add": "Añadir",
@@ -480,5 +480,6 @@
     "gui.createrailwaysnavigator.global_settings.train_line.description": "Crea líneas de tren para agrupar diferentes trenes, reemplazar su nombre en las pantallas y configurar trenes según su línea. Un tren puede ser asignado a una línea a través de su horario.",
     "create.generic.unit.days": "Días",
     "create.generic.unit.hours": "Horas",
-    "createrailwaysnavigator.moin": "moin"
+    "createrailwaysnavigator.moin": "moin",
+    "gui.createrailwaysnavigator.advanced_display_settings.retain_scale_pos.description": "La escala y la posición deben ser actualizadas por un enlace a la pantalla adjunta."
 }

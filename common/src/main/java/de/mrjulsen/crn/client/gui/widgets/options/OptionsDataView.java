@@ -17,13 +17,13 @@ import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
 import de.mrjulsen.mcdragonlib.util.math.Rectangle;
 import de.mrjulsen.mcdragonlib.util.properties.Property;
 
-public class OptionsDataView<T> extends DLAbstractDataView<T, OptionsDataView.DLBasicItem<T>> {    
+public class OptionsDataView<T> extends DLAbstractDataView<T, OptionsDataView.DLBasicItem<T>> {
 
     public final Property<Function<OptionsDataView<T>, CreateEntryItem<T>>> createNewItemBuilder = new Property<Function<OptionsDataView<T>, CreateEntryItem<T>>>(null)
         .withAfterPropertyChangedCallback((a, b) -> {
             createComponents();
         });
-        
+
     public final Property<BiPredicate<T, String>> searchFilter = new Property<BiPredicate<T, String>>(null)
         .withAfterPropertyChangedCallback((a, b) -> {
             createComponents();
@@ -38,10 +38,9 @@ public class OptionsDataView<T> extends DLAbstractDataView<T, OptionsDataView.DL
         layout.fillCrossAxis.set(true);
         layout.flowDirection.set(Direction.VERTICAL);
         layout.verticalGap.set(2);
-        //layout.padding.set(new Padding(5, 5, 5, 15));
         layout.wrap.set(false);
         contentPanel.layout.set(layout);
-        
+
         this.searchBox = new SearchBox(0, 0, 1);
         this.searchBox.acceptAndCancelKeysEnabled.set(true);
         this.searchBox.addEventListener(DLAbstractRichTextInputField.TextAcceptKeyPressedEvent.class, (s, e) -> {
@@ -54,7 +53,7 @@ public class OptionsDataView<T> extends DLAbstractDataView<T, OptionsDataView.DL
     @Override
     protected DLBasicItem<T> defaultItemBuilder(T item) {
         return new DLBasicItem<>(this, item);
-    }    
+    }
 
     @Override
     protected void createComponents() {
@@ -77,7 +76,7 @@ public class OptionsDataView<T> extends DLAbstractDataView<T, OptionsDataView.DL
     @Override
     public void renderMainLayer(DLGuiGraphics graphics, double mouseX, double mouseY, Rectangle renderBounds) {
     }
-    
+
 
     public static class DLBasicItem<T> extends DLAbstractDataView.DLDataViewItem<T, OptionsDataView<T>> {
         public DLBasicItem(OptionsDataView<T> collectionComponentRef, T item) {
@@ -129,6 +128,6 @@ public class OptionsDataView<T> extends DLAbstractDataView<T, OptionsDataView.DL
         public CreateEntryItem(OptionsDataView<T> collectionComponentRef) {
             super(collectionComponentRef, null);
         }
-        
+
     }
 }

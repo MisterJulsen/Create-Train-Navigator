@@ -1,37 +1,24 @@
 package de.mrjulsen.crn.mixin;
 
-import java.util.Optional;
+import java.util.UUID;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
+import org.spongepowered.asm.mixin.injection.Redirect;
 
 import com.simibubi.create.content.trains.entity.Train;
-import com.simibubi.create.content.trains.station.GlobalStation;
+import com.simibubi.create.content.trains.graph.EdgePointType;
+import com.simibubi.create.content.trains.graph.TrackGraph;
+import com.simibubi.create.content.trains.signal.TrackEdgePoint;
 
-import de.mrjulsen.crn.event.CRNEventsManager;
-import de.mrjulsen.crn.event.events.TrainArrivalAndDepartureEvent;
+import de.mrjulsen.crn.registry.ModExtras;
 
 @Mixin(Train.class)
 public class TrainMixin {
-    
-    public Train self() {
-        return (Train)(Object)this;
-    }
-    
-    @Inject(method = "arriveAt", remap = false, at = @At(value = "TAIL"))
-    public void onArriveAt(GlobalStation station, CallbackInfo ci) {
-        if (CRNEventsManager.isRegistered(TrainArrivalAndDepartureEvent.class)) {
-            CRNEventsManager.getEvent(TrainArrivalAndDepartureEvent.class).run(self(), Optional.ofNullable(station), true);
-        }
-    }
 
-    @Inject(method = "leaveStation", remap = false, at = @At(value = "TAIL"), locals = LocalCapture.CAPTURE_FAILHARD)
-    public void onLeaveStation(CallbackInfo ci, GlobalStation currentStation) {
-        if (CRNEventsManager.isRegistered(TrainArrivalAndDepartureEvent.class)) {
-            CRNEventsManager.getEvent(TrainArrivalAndDepartureEvent.class).run(self(), Optional.ofNullable(currentStation), false);
-        }
+    @Redirect(remap = false, method = "tickOccupiedObservers", at = @At(value = "INVOKE", target = "Lcom/simibubi/create/content/trains/graph/TrackGraph;getPoint(Lcom/simibubi/create/content/trains/graph/EdgePointType;Ljava/util/UUID;)Lcom/simibubi/create/content/trains/signal/TrackEdgePoint;"))
+    private TrackEdgePoint crn$resolvePenaltyAnchors(TrackGraph graph, EdgePointType<?> type, UUID id) {
+        TrackEdgePoint point = graph.getPoint(type, id);
+        return point != null ? point : graph.getPoint(ModExtras.PENALTY_ANCHOR, id);
     }
 }
