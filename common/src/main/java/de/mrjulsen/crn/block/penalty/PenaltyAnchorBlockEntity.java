@@ -165,7 +165,7 @@ public class PenaltyAnchorBlockEntity extends SmartBlockEntity implements Transf
 
     @Override
     protected AABB createRenderBoundingBox() {
-        return new AABB(worldPosition, edgePoint.getGlobalPosition()).inflate(2);
+        return new AABB(net.minecraft.world.phys.Vec3.atLowerCornerOf(worldPosition), net.minecraft.world.phys.Vec3.atLowerCornerOf(edgePoint.getGlobalPosition())).inflate(2);
     }
 
     @Override

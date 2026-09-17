@@ -68,6 +68,14 @@ public class ModTranslatableComponent implements ComponentContents {
         return new ModTranslatableComponent(key, (String)fallback.orElse(null), adjustArgs(args));
     }
 
+    public ModTranslatableComponent(String key) {
+        this(key, null, NO_ARGS);
+    }
+
+    public ModTranslatableComponent(String key, Object... args) {
+        this(key, null, args);
+    }
+
     public ModTranslatableComponent(String key, @Nullable String fallback, Object[] args) {
         this.key = key;
         this.fallback = fallback;

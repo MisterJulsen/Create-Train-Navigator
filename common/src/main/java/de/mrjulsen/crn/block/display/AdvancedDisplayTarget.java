@@ -32,12 +32,19 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
+import com.mojang.serialization.JsonOps;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
 
 public class AdvancedDisplayTarget extends DisplayTarget {
+
+    private static String componentToJson(Component component) {
+        return ComponentSerialization.CODEC.encodeStart(JsonOps.INSTANCE, component).getOrThrow().toString();
+    }
+
 
 	private static boolean running = false;
 	private static boolean threadRunning = false;
@@ -127,7 +134,7 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 					ModCommonEvents.getCurrentServer().ifPresent(x -> x.executeIfPossible(controller::notifyUpdate));
 				} else if (controller.getDisplayType().equals(ModDisplayTypes.SIMPLE_TEXT)) {
 					SimpleStaticTextDisplaySettings settings = controller.getSettingsAs(SimpleStaticTextDisplaySettings.class).orElse(new SimpleStaticTextDisplaySettings());
-					settings.setStaticText(Component.Serializer.toJson((text.get(0))));
+					settings.setStaticText(componentToJson((text.get(0))));
 					CreateRailwaysNavigator.LOGGER.debug(settings.getStaticText());
 					ModCommonEvents.getCurrentServer()
 							.ifPresent(x -> x.executeIfPossible(() -> controller.applyToAll(a -> {
@@ -156,7 +163,7 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 								break;
 							component.setStaticText("{\"text\":\"\"}");
 						} else {
-							component.setStaticText(Component.Serializer.toJson(text.get(i)));
+							component.setStaticText(componentToJson(text.get(i)));
 						}
 
 						if (!component.shouldRetainScaleAndPos()) {

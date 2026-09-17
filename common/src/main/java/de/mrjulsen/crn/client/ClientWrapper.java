@@ -34,7 +34,7 @@ import de.mrjulsen.crn.data.schedule.instruction.TravelSectionInstruction;
 import de.mrjulsen.crn.item.NavigatorItem;
 import de.mrjulsen.crn.mixin.ModularGuiLineBuilderAccessor;
 import de.mrjulsen.crn.mixin.ScheduleScreenAccessor;
-import de.mrjulsen.crn.network.packets.stc.ServerErrorPacketData;
+import de.mrjulsen.crn.network.packets.ServerErrorPacketData;
 import de.mrjulsen.crn.registry.ModDataComponents;
 import de.mrjulsen.crn.util.Owner;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLWindow;
@@ -73,7 +73,6 @@ public class ClientWrapper {
     public static final ModelResourceLocation NAVIGATOR_WORLD_MODEL = ModelResourceLocation.inventory(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "navigator_world"));
 
     private static CustomLanguage currentLanguage = CustomLanguage.createDefault();
-    private static Language currentClientLanguage;
 
 
     public static void showNavigatorGui() {

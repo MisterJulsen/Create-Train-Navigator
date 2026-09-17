@@ -57,35 +57,6 @@ public class ModExtras {
 
     public static final EdgePointType<PenaltyAnchor> PENALTY_ANCHOR = EdgePointType.register(DLUtils.resourceLocation(CreateRailwaysNavigator.MOD_ID, "penalty_anchor"), PenaltyAnchor::new);
 
-    private static void checkAndAssignSource(Pair<Block, DisplaySource> pair) {
-        if (pair.getFirst() == null || pair.getSecond() == null) return;
-        DisplaySource.BY_BLOCK.add(pair.getFirst(), pair.getSecond());
-    }
-
-    private static void assignSource(AbstractRegistrate<?> blockReg, ResourceLocation blockId, AbstractRegistrate<?> sourceReg, ResourceLocation sourceId) {
-        Pair<Block, DisplaySource> pair = Pair.of(null, null);
-
-        if (BuiltInRegistries.BLOCK.containsKey(blockId)) {
-            pair.setFirst(BuiltInRegistries.BLOCK.get(blockId));
-        } else {
-            blockReg.addRegisterCallback(blockId.getPath(), Registries.BLOCK, block -> {
-                pair.setFirst(block);
-                checkAndAssignSource(pair);
-            });
-        }
-
-        if (CreateBuiltInRegistries.DISPLAY_SOURCE.containsKey(blockId)) {
-            pair.setSecond(CreateBuiltInRegistries.DISPLAY_SOURCE.get(sourceId));
-        } else {
-            sourceReg.addRegisterCallback(sourceId.getPath(), CreateRegistries.DISPLAY_SOURCE, source -> {
-                pair.setSecond(source);
-                checkAndAssignSource(pair);
-            });
-        }
-
-        checkAndAssignSource(pair);
-    }
-
     public static void init() {
         assignSource(
           CreateAccessor.getRegistrate(), AllBlocks.TRACK_STATION.getId(),

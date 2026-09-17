@@ -8,7 +8,6 @@ import com.simibubi.create.foundation.item.TooltipModifier;
 
 import de.mrjulsen.crn.core.RailwayBackend;
 import de.mrjulsen.crn.block.AdvancedDisplayBlock;
-import de.mrjulsen.crn.compat.tramways.TramwaysCompat;
 import de.mrjulsen.crn.event.ModClientEvents;
 import de.mrjulsen.crn.event.ModCommonEvents;
 import de.mrjulsen.crn.registry.*;
@@ -78,10 +77,6 @@ public final class CreateRailwaysNavigator {
 
         if (Platform.getEnvironment() == Env.CLIENT) {
             ModClientEvents.init();
-        }
-
-        if (Platform.isModLoaded("tramways")) {
-            TramwaysCompat.init();
         }
 
     }

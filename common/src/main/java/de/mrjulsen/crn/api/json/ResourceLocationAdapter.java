@@ -20,6 +20,6 @@ final class ResourceLocationAdapter implements JsonSerializer<ResourceLocation>,
 
     @Override
     public ResourceLocation deserialize(JsonElement element, Type type, JsonDeserializationContext context) {
-        return new ResourceLocation(element.getAsString());
+        return ResourceLocation.parse(element.getAsString());
     }
 }

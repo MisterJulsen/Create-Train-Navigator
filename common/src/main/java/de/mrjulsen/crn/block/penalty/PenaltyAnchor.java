@@ -133,15 +133,15 @@ public class PenaltyAnchor extends TrackObserver implements INavigationPenaltyPr
     }
 
     @Override
-    public void read(CompoundTag nbt, boolean migration, DimensionPalette dimensions) {
-        super.read(nbt, migration, dimensions);
+    public void read(CompoundTag nbt, net.minecraft.core.HolderLookup.Provider provider, boolean migration, DimensionPalette dimensions) {
+        super.read(nbt, provider, migration, dimensions);
         this.penalty = nbt.contains(NBT_PENALTY) ? Mth.clamp(nbt.getInt(NBT_PENALTY), MIN_PENALTY, MAX_PENALTY) : DEFAULT_PENALTY;
         this.activeTicks = Mth.clamp(nbt.getInt(NBT_ACTIVE_TICKS), 0, ACTIVE_DURATION);
     }
 
     @Override
-    public void write(CompoundTag nbt, DimensionPalette dimensions) {
-        super.write(nbt, dimensions);
+    public void write(CompoundTag nbt, net.minecraft.core.HolderLookup.Provider provider, DimensionPalette dimensions) {
+        super.write(nbt, provider, dimensions);
         nbt.putInt(NBT_PENALTY, penalty);
         nbt.putInt(NBT_ACTIVE_TICKS, activeTicks);
     }

@@ -72,7 +72,7 @@ public final class RailwayBackend {
         try {
             File file = getDataFile();
             if (file.exists()) {
-                manager.loadNbt(NbtIo.readCompressed(file));
+                manager.loadNbt(NbtIo.readCompressed(file.toPath(), net.minecraft.nbt.NbtAccounter.unlimitedHeap()));
             }
         } catch (Exception e) {
             CreateRailwaysNavigator.LOGGER.error("[{}] Unable to load backend data.", WORKER_THREAD_NAME, e);
@@ -246,7 +246,7 @@ public final class RailwayBackend {
         long ms = System.currentTimeMillis();
         try {
             File temp = new File(file.getParentFile(), file.getName() + ".tmp");
-            NbtIo.writeCompressed(data, temp);
+            NbtIo.writeCompressed(data, temp.toPath());
             Files.move(temp.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
             CreateRailwaysNavigator.LOGGER.debug("[{}] Saved {} train backend data. Took {}ms.", WORKER_THREAD_NAME, CreateRailwaysNavigator.SHORT_MOD_ID, System.currentTimeMillis() - ms);
         } catch (IOException e) {

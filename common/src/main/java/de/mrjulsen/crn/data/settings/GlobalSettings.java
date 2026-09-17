@@ -2,7 +2,6 @@ package de.mrjulsen.crn.data.settings;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,29 +22,27 @@ import java.util.Map;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.config.ModCommonConfig;
-import de.mrjulsen.crn.data.StationTag;
-import de.mrjulsen.crn.data.TagName;
-import de.mrjulsen.crn.data.TrainCategory;
-import de.mrjulsen.crn.data.TrainLine;
-import de.mrjulsen.crn.data.settings.UserSettings;
-import de.mrjulsen.crn.data.StationTag.StationInfo;
-import de.mrjulsen.crn.data.train.TrainListener;
-import de.mrjulsen.crn.data.train.TrainPrediction;
-import de.mrjulsen.crn.data.train.TrainStop;
-import de.mrjulsen.crn.data.train.TrainUtils;
-import de.mrjulsen.crn.data.train.ScheduleSection;
+import de.mrjulsen.crn.config.ModServerConfig;
+import de.mrjulsen.crn.data.settings.StationTag.StationInfo;
+import de.mrjulsen.crn.util.TrainUtils;
 import de.mrjulsen.crn.event.ModCommonEvents;
 import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.crn.util.Owner;
 import de.mrjulsen.mcdragonlib.data.INBTSerializable;
-import net.minecraft.nbt.*;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtIo;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.storage.LevelResource;
+import net.minecraft.nbt.NbtAccounter;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class GlobalSettings implements INBTSerializable {
 
-    /** @deprecated For data migration only. Use {@code FILENAME} instead. */
     @Deprecated
     public static final String LEGACY_FILENAME = "createrailwaysnavigator_global_settings.dat";
     @Deprecated
@@ -72,13 +69,22 @@ public class GlobalSettings implements INBTSerializable {
 
     private static GlobalSettings instance;
 
-    
+
     private GlobalSettings(MinecraftServer server) {
         this.server = server;
     }
 
     public static boolean modificationsAllowed(Player player) {
-        return player.hasPermissions(ModCommonConfig.GLOBAL_SETTINGS_PERMISSION_LEVEL.get());
+        int level = ModServerConfig.GLOBAL_SETTINGS_PERMISSION_LEVEL.get();
+        if (level < 0) {
+            return false;
+        }
+        return player.hasPermissions(level) || hasAdminPermission(player);
+    }
+
+    public static boolean hasAdminPermission(Player player) {
+        int level = ModServerConfig.GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL.get();
+        return level >= 0 && player.hasPermissions(level);
     }
 
     public synchronized static GlobalSettings getInstance() {
@@ -106,31 +112,31 @@ public class GlobalSettings implements INBTSerializable {
 
     public synchronized void save() {
         CompoundTag nbt = this.serializeNbt();
-    
+
         try {
             NbtIo.writeCompressed(nbt, server.getWorldPath(new LevelResource("data/" + FILENAME)));
             if (ModCommonConfig.ADVANCED_LOGGING.get()) CreateRailwaysNavigator.LOGGER.info("Saved global settings.");
         } catch (IOException e) {
             CreateRailwaysNavigator.LOGGER.error("Unable to save global settings.", e);
-        }    
+        }
     }
-    
-    public synchronized static GlobalSettings open(MinecraftServer server) throws Exception {   
+
+    public synchronized static GlobalSettings open(MinecraftServer server) throws Exception {
         Path legacyPath = server.getWorldPath(new LevelResource("data/" + LEGACY_FILENAME));
         Path settingsPath = server.getWorldPath(new LevelResource("data/" + FILENAME));
 
-        GlobalSettings file = new GlobalSettings(server);  
+        GlobalSettings file = new GlobalSettings(server);
 
-        if (legacyPath.toFile().exists()) {
+        if (Files.exists(legacyPath)) {
             CreateRailwaysNavigator.LOGGER.warn("A legacy global settings file was found. Try to load it.");
             file.deserializeNbtLegacy(NbtIo.readCompressed(legacyPath, NbtAccounter.unlimitedHeap()).getCompound("data"));
-            legacyPath.toFile().delete();
-        } else if (settingsPath.toFile().exists()) {
+            Files.deleteIfExists(legacyPath);
+        } else if (Files.exists(settingsPath)) {
             file.deserializeNbt(NbtIo.readCompressed(settingsPath, NbtAccounter.unlimitedHeap()));
         }
         return file;
     }
-    
+
     public synchronized CompoundTag serializeNbt() {
         CompoundTag nbt = new CompoundTag();
         nbt.putInt(NBT_VERSION, DATA_VERSION);
@@ -138,45 +144,43 @@ public class GlobalSettings implements INBTSerializable {
         CompoundTag stationsComp = new CompoundTag();
         this.stationTags.entrySet().forEach(x -> stationsComp.put(x.getKey().toString(), x.getValue().toNbt()));
         nbt.put(NBT_STATION_TAGS, stationsComp);
-        
+
         CompoundTag trainCategoriesComp = new CompoundTag();
         this.trainCategories.entrySet().forEach(x -> trainCategoriesComp.put(x.getKey().toString(), x.getValue().toNbt()));
         nbt.put(NBT_TRAIN_CATEGORIES, trainCategoriesComp);
-        
+
         ListTag stationsBlacklist = new ListTag();
         this.stationBlacklist.forEach(x -> stationsBlacklist.add(StringTag.valueOf(x)));
         nbt.put(NBT_STATION_BLACKLIST, stationsBlacklist);
-        
+
         ListTag trainsBlacklist = new ListTag();
         this.trainBlacklist.forEach(x -> trainsBlacklist.add(StringTag.valueOf(x)));
         nbt.put(NBT_TRAIN_BLACKLIST, trainsBlacklist);
-        
+
         CompoundTag trainLinesComp = new CompoundTag();
         this.trainLines.entrySet().forEach(x -> trainLinesComp.put(x.getKey().toString(), x.getValue().toNbt()));
         nbt.put(NBT_TRAIN_LINES, trainLinesComp);
 
         return nbt;
     }
-    
+
     public void deserializeNbt(CompoundTag nbt) {
         int version = nbt.getInt(NBT_VERSION);
+        StationTag.markModified();
 
         CompoundTag stationsComp = nbt.getCompound(NBT_STATION_TAGS);
         this.stationTags.putAll(stationsComp.getAllKeys().stream().map(x -> StationTag.fromNbt(stationsComp.getCompound(x), UUID.fromString(x))).collect(Collectors.toMap(x -> x.getId(), x -> x)));
         CompoundTag trainCategoiesComp = version <= 1 ? nbt.getCompound(LEGACY_NBT_TRAIN_GROUPS) :  nbt.getCompound(NBT_TRAIN_CATEGORIES);
         this.trainCategories.putAll(trainCategoiesComp.getAllKeys().stream().map(x -> TrainCategory.fromNbt(trainCategoiesComp.getCompound(x))).collect(Collectors.toMap(x -> x.getId(), x -> x)));
-        this.stationBlacklist.addAll(nbt.getList(NBT_STATION_BLACKLIST, Tag.TAG_STRING).stream().map(x -> ((StringTag)x).getAsString()).toList());        
+        this.stationBlacklist.addAll(nbt.getList(NBT_STATION_BLACKLIST, Tag.TAG_STRING).stream().map(x -> ((StringTag)x).getAsString()).toList());
         this.trainBlacklist.addAll(nbt.getList(NBT_TRAIN_BLACKLIST, Tag.TAG_STRING).stream().map(x -> ((StringTag)x).getAsString()).toList());
         CompoundTag trainLinesComp = nbt.getCompound(NBT_TRAIN_LINES);
         this.trainLines.putAll(trainLinesComp.getAllKeys().stream().map(x -> TrainLine.fromNbt(trainLinesComp.getCompound(x))).collect(Collectors.toMap(x -> x.getId(), x -> x)));
-        
+
     }
 
-    /**
-     * @deprecated For data migration only. Use {@code deserializeNbt} instead.
-     */
     @Deprecated
-    private void deserializeNbtLegacy(CompoundTag nbt) {        
+    private void deserializeNbtLegacy(CompoundTag nbt) {
         final String NBT_ALIAS_REGISTRY = "RegisteredAliasData";
         final String NBT_BLACKLIST = "StationBlacklist";
         final String NBT_TRAIN_BLACKLIST = "TrainBlacklist";
@@ -214,17 +218,15 @@ public class GlobalSettings implements INBTSerializable {
         }).collect(Collectors.toMap(x -> x.getId(), x -> x)));
         usedIds.clear();
         trainCategories.putAll(trainGroupData.stream().map(x -> TrainCategory.fromNbt(x)).collect(Collectors.toMap(x -> x.getId(), x -> x)));
-        stationBlacklist.addAll(blacklistData); 
+        stationBlacklist.addAll(blacklistData);
         trainBlacklist.addAll(trainBlacklistData);
 
         save();
     }
-    
+
     public void close() {
         this.save();
     }
-
-//#region +++ STATION TAGS +++
 
     public boolean hasStationTag(GlobalStation station) {
         return hasStationTag(station.name);
@@ -238,7 +240,7 @@ public class GlobalSettings implements INBTSerializable {
         }
         return false;
     }
-    
+
     public boolean stationTagExists(String tagName) {
         return stationTagExists(TagName.of(tagName));
     }
@@ -258,24 +260,20 @@ public class GlobalSettings implements INBTSerializable {
         }
         return stationTags.containsKey(id);
     }
-        
+
     public StationTag getOrCreateStationTagFor(GlobalStation station) {
         return getOrCreateStationTagFor(station.name);
     }
-    
+
     public StationTag getOrCreateStationTagFor(TagName tagName) {
         return getTagByName(tagName).orElse(getOrCreateStationTagFor(tagName.get()));
     }
 
-    
+
     public StationTag getOrCreateStationTagFor(String stationName) {
         return getOrCreateStationTagFor(stationName, null);
     }
-    
-    /**
-     * @param stationName The name of the train station.
-     * @return Returns the station tag for the given train station.
-     */
+
     public StationTag getOrCreateStationTagFor(String stationName, Owner owner) {
         if (ModUtils.isGlobPattern(stationName)) {
             return getOrCreateTagForWildcard(stationName, owner);
@@ -298,34 +296,18 @@ public class GlobalSettings implements INBTSerializable {
                 }
             }
         }
-        
-        return new StationTag(null, TagName.of(stationName), owner, Map.of(stationName, StationInfo.empty()));        
+
+        return new StationTag(null, TagName.of(stationName), owner, Map.of(stationName, StationInfo.empty()));
     }
-    
-    /**
-     * Get the station tag with the given name or create and register a new one, if no tag exists.
-     * @param name The name of the station tag.
-     * @return The station tag for the name.
-     */
+
     public StationTag createOrGetStationTag(String name) {
         return createOrGetStationTag(TagName.of(name));
     }
-    
-    /**
-     * Get the station tag with the given name or create and register a new one, if no tag exists.
-     * @param name The name of the station tag.
-     * @return The station tag for the name.
-     */
+
     public StationTag createOrGetStationTag(TagName name) {
         return createOrGetStationTag(name, null);
     }
 
-    /**
-     * Get the station tag with the given name or create and register a new one, if no tag exists.
-     * @param name The name of the station tag.
-     * @param owner The owner of the station tag, who has full control over it.
-     * @return The station tag for the name.
-     */
     public StationTag createOrGetStationTag(TagName name, Owner owner) {
         Optional<StationTag> tag = getTagByName(name);
         if (tag.isPresent()) {
@@ -337,6 +319,7 @@ public class GlobalSettings implements INBTSerializable {
         } while (stationTags.containsKey(newId));
         StationTag newTag = new StationTag(newId, name, owner);
         stationTags.put(newId, newTag);
+        StationTag.markModified();
         return newTag;
     }
 
@@ -347,9 +330,10 @@ public class GlobalSettings implements INBTSerializable {
         } while (stationTags.containsKey(newId));
         tag.setId(newId);
         stationTags.put(newId, tag);
+        StationTag.markModified();
         return tag;
     }
-    
+
     public Optional<StationTag> getTagByName(TagName name) {
         for (StationTag tag : stationTags.values()) {
             if (tag.getTagName().equals(name)) {
@@ -358,29 +342,34 @@ public class GlobalSettings implements INBTSerializable {
         }
         return Optional.empty();
     }
-    
+
     public Optional<StationTag> getStationTag(UUID id) {
         return Optional.ofNullable(stationTagExists(id) ? stationTags.get(id) : null);
     }
 
     public boolean removeStationTag(String name) {
         return removeStationTag(TagName.of(name));
-    }    
+    }
 
     public boolean removeStationTag(TagName name) {
-        return stationTags.values().removeIf(x -> x.getTagName().equals(name));
+        boolean removed = stationTags.values().removeIf(x -> x.getTagName().equals(name));
+        if (removed) {
+            StationTag.markModified();
+        }
+        return removed;
     }
 
     public StationTag removeStationTag(UUID id) {
-        return stationTags.remove(id);
+        StationTag removed = stationTags.remove(id);
+        if (removed != null) {
+            StationTag.markModified();
+        }
+        return removed;
     }
 
     public List<StationTag> getAllStationTags() {
         return new ArrayList<>(stationTags.values());
     }
-
-//#endregion
-//#region +++ TRAIN CATEGORIES +++
 
     public boolean trainCategoryExists(UUID id) {
         if (id == null) {
@@ -389,20 +378,10 @@ public class GlobalSettings implements INBTSerializable {
         return trainCategories.containsKey(id);
     }
 
-    /**
-     * Get the train group with the given name or create and register a new one, if no group exists.
-     * @param name The name of the train group.
-     * @return The train group for the name.
-     */
     public TrainCategory createOrGetTrainCategory(String name) {
         return createOrGetTrainCategory(name, null);
     }
 
-    /**
-     * Get the train group with the given name or create and register a new one, if no group exists.
-     * @param name The name of the train group.
-     * @return The train group for the name.
-     */
     public TrainCategory createOrGetTrainCategory(String name, Owner owner) {
         Optional<TrainCategory> tag = getTrainCategoryByName(name);
         if (tag.isPresent()) {
@@ -422,7 +401,7 @@ public class GlobalSettings implements INBTSerializable {
     public Optional<TrainCategory> getTrainCategory(UUID id) {
         return Optional.ofNullable(trainCategoryExists(id) ? trainCategories.get(id) : null);
     }
-    
+
     public Optional<TrainCategory> getTrainCategoryByName(String name) {
         for (TrainCategory category : trainCategories.values()) {
             if (category.getCategoryName().equals(name)) {
@@ -440,35 +419,6 @@ public class GlobalSettings implements INBTSerializable {
         return ImmutableList.copyOf(trainCategories.values());
     }
 
-    public boolean isTrainExcludedByUser(Train train, UserSettings settings) {
-        return TrainListener.getTrainData(train.id).map(data -> {
-            if (data.getSections().isEmpty()) {
-                return false;
-            }
-    
-            for (ScheduleSection section : data.getSections()) {
-                if (section.isUsable() && !(section.getTrainCategory().map(x -> settings.navigationExcludedTrainCategories.getValue().contains(x.getId())).orElse(false))) {
-                    return false;
-                }
-            }
-            return true;
-        }).orElse(false);        
-    }
-
-    public boolean isTrainStationExcludedByUser(Train train, TrainPrediction at, UserSettings settings) {
-        return at.getSection().getTrainCategory().map(x -> !at.getSection().isUsable() || (settings.navigationExcludedTrainCategories.getValue().contains(x.getId()))).orElse(false);
-    }
-
-    public boolean isTrainStationExcludedByUser(Train train, TrainStop at, UserSettings settings) {
-        return TrainListener.getTrainData(train.id).map(data -> {
-            ScheduleSection section = data.getSectionByIndex(at.getSectionIndex());
-            return section.getTrainCategory().map(x -> !section.isUsable() || (settings.navigationExcludedTrainCategories.getValue().contains(x.getId()))).orElse(false);
-        }).orElse(false);        
-    }
-
-//#endregion
-//#region +++ STATION BLACKLIST +++
-
     public boolean isStationBlacklisted(GlobalStation station) {
         return isStationBlacklisted(station.name);
     }
@@ -476,21 +426,15 @@ public class GlobalSettings implements INBTSerializable {
     public boolean isStationBlacklisted(String name) {
         return stationBlacklist.contains(name);
     }
-    
+
     public void blacklistStation(GlobalStation station) {
         blacklistStation(station.name);
     }
 
     public void blacklistStation(String stationName) {
-        /*
-        if (ModUtils.hasWildcards(stationName)) {
-            return;
-        }
-        stationBlacklist.add(stationName);
-         */
         stationBlacklist.addAll(ModUtils.wildcardMatches(stationName, TrainUtils.getAllStationNames()));
     }
-    
+
     public boolean removeStationFromBlacklist(GlobalStation station) {
         return removeStationFromBlacklist(station.name);
     }
@@ -517,9 +461,6 @@ public class GlobalSettings implements INBTSerializable {
         return ImmutableList.copyOf(stationBlacklist);
     }
 
-//#endregion
-//#region +++ TRAIN BLACKLIST +++
-
     public boolean isTrainBlacklisted(Train train) {
         return isTrainBlacklisted(train.name.getString());
     }
@@ -531,15 +472,9 @@ public class GlobalSettings implements INBTSerializable {
     public void blacklistTrain(Train train) {
         blacklistTrain(train.name.getString());
     }
-    
+
     public void blacklistTrain(String trainName) {
-        /*
-        if (ModUtils.hasWildcards(trainName)) {
-            return;
-        }
-        trainBlacklist.add(trainName);
-         */
-        trainBlacklist.addAll(ModUtils.wildcardMatches(trainName, TrainUtils.getTrainNames()));
+        trainBlacklist.addAll(ModUtils.wildcardMatches(trainName, TrainUtils.getAllTrainNames()));
     }
 
     public boolean removeTrainFromBlacklist(Train train) {
@@ -553,10 +488,6 @@ public class GlobalSettings implements INBTSerializable {
     public ImmutableList<String> getAllBlacklistedTrains() {
         return ImmutableList.copyOf(trainBlacklist);
     }
-
-//#endregion
-
-//#region +++ TRAIN LINES +++
 
     public boolean trainLineExists(UUID id) {
         if (id == null) {
@@ -605,7 +536,5 @@ public class GlobalSettings implements INBTSerializable {
     public ImmutableList<TrainLine> getAllTrainLines() {
         return ImmutableList.copyOf(trainLines.values());
     }
-
-//#endregion
 
 }

@@ -106,7 +106,7 @@ public record CarriageSnapshot(
             nbt.getInt(NBT_INDEX),
             nbt.getInt(NBT_LENGTH),
             nbt.getBoolean(NBT_TWO_BOGEYS),
-            nbt.contains(NBT_DIMENSION) ? new ResourceLocation(nbt.getString(NBT_DIMENSION)) : null,
+            nbt.contains(NBT_DIMENSION) ? ResourceLocation.parse(nbt.getString(NBT_DIMENSION)) : null,
             nbt.contains(NBT_POSITION) ? BlockPos.of(nbt.getLong(NBT_POSITION)) : null,
             nbt.getBoolean(NBT_BLOCKED),
             nbt.getBoolean(NBT_STALLED),

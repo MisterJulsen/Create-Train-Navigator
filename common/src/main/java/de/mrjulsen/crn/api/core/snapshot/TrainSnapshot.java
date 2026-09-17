@@ -262,7 +262,7 @@ public record TrainSnapshot(
             NbtHelper.readNullableUUID(nbt, NBT_SESSION_ID),
             nbt.getString(NBT_TRAIN_NAME),
             NbtHelper.readNullableUUID(nbt, NBT_OWNER_ID),
-            nbt.contains(NBT_ICON_ID) ? new ResourceLocation(nbt.getString(NBT_ICON_ID)) : null,
+            nbt.contains(NBT_ICON_ID) ? ResourceLocation.parse(nbt.getString(NBT_ICON_ID)) : null,
             nbt.getInt(NBT_MAP_COLOR),
             LineRef.fromNbt(nbt.getCompound(NBT_LINE)),
             TrainCategoryRef.fromNbt(nbt.getCompound(NBT_CATEGORY)),

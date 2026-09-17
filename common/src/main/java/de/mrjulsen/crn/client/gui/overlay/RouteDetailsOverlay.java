@@ -315,7 +315,7 @@ public class RouteDetailsOverlay extends DLWindow {
         xPos.chase(x, 0.2f, Chaser.EXP);
         yPos.chase(y, 0.2f, Chaser.EXP);
 
-        setPosition(xPos.getValue(Minecraft.getInstance().getFrameTime()), yPos.getValue(Minecraft.getInstance().getFrameTime()));
+        setPosition(xPos.getValue(Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(false)), yPos.getValue(Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(false)));
 
         boolean important = currentPage != null && currentPage.isImportant();
         CreateDynamicWidgets.renderWindow(graphics, 0, 0, width(), height(), important ? ContainerColor.GOLD : ContainerColor.BLUE, important ? BarColor.GOLD : BarColor.GRAY, FooterSize.DEFAULT.size(), FooterSize.DEFAULT.size(), false);

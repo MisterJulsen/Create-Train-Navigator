@@ -24,7 +24,7 @@ public final class DelayCauseRegistry {
      * @return The cause passed in, so the call can be used in a field initialiser.
      */
     public static <T extends DelayCause> T register(String modid, String name, T cause) {
-        ResourceLocation id = new ResourceLocation(modid, name);
+        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(modid, name);
         if (CAUSES.containsKey(id)) {
             throw new IllegalStateException("Duplicate delay cause id: " + id);
         }

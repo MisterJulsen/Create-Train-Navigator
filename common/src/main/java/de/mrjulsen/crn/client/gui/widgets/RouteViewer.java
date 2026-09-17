@@ -290,7 +290,7 @@ public class RouteViewer extends DLGuiComponent {
         graphics.poseStack().pushPose();
         graphics.poseStack().translate(renderOffsetX, 0, 0);
 
-        float frameTime = Minecraft.getInstance().getFrameTime();
+        float frameTime = Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(false);
         angle += 6 * frameTime;
         if (angle > 360) {
             angle = 0;
