@@ -10,6 +10,10 @@ import com.simibubi.create.content.contraptions.Contraption;
 import com.simibubi.create.content.logistics.filter.FilterItemStack;
 import com.simibubi.create.content.trains.entity.Train;
 import com.simibubi.create.content.trains.station.GlobalStation;
+import com.simibubi.create.foundation.data.CreateBlockEntityBuilder;
+import com.simibubi.create.foundation.data.CreateRegistrate;
+
+import de.mrjulsen.crn.block.penalty.PenaltyAnchorBlockEntity;
 
 import net.minecraft.world.level.Level;
 
@@ -55,6 +59,11 @@ public abstract class CRNPlatformSpecific {
 
     @ExpectPlatform
     public static boolean trainCarriesFilteredCargo(Level level, FilterItemStack filter, Train train) {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
+    public static CreateBlockEntityBuilder<PenaltyAnchorBlockEntity, CreateRegistrate> withPenaltyAnchorVisual(CreateBlockEntityBuilder<PenaltyAnchorBlockEntity, CreateRegistrate> builder) {
         throw new AssertionError();
     }
 }

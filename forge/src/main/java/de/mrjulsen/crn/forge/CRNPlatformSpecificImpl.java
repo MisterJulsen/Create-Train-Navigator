@@ -18,6 +18,11 @@ import com.simibubi.create.content.trains.entity.Carriage;
 import com.simibubi.create.content.trains.entity.Train;
 import com.simibubi.create.content.trains.station.GlobalStation;
 import com.simibubi.create.content.trains.station.StationBlockEntity;
+import com.simibubi.create.foundation.data.CreateBlockEntityBuilder;
+import com.simibubi.create.foundation.data.CreateRegistrate;
+
+import de.mrjulsen.crn.block.penalty.PenaltyAnchorBlockEntity;
+import de.mrjulsen.crn.client.ber.PenaltyAnchorVisual;
 
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -95,6 +100,10 @@ public class CRNPlatformSpecificImpl {
             }
         }
         return false;
+    }
+
+    public static CreateBlockEntityBuilder<PenaltyAnchorBlockEntity, CreateRegistrate> withPenaltyAnchorVisual(CreateBlockEntityBuilder<PenaltyAnchorBlockEntity, CreateRegistrate> builder) {
+        return builder.visual(() -> PenaltyAnchorVisual::new);
     }
 }
  
