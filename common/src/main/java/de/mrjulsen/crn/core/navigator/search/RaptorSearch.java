@@ -16,6 +16,8 @@ public final class RaptorSearch {
 
     static final long UNREACHABLE = Long.MAX_VALUE;
 
+    private static final int HARD_ROUND_CAP = 4096;
+
     public record Ride(int fromNode, int trip, int boardCall, int alightCall, int cycles) {}
 
     private final TimetableIndex index;
@@ -43,32 +45,38 @@ public final class RaptorSearch {
             return List.of();
         }
 
-        int maxRounds = query.maxLegs();
+        int roundCap = roundCap();
         long[] best = new long[nodeCount];
-        long[][] roundArrival = new long[maxRounds + 1][nodeCount];
-        Ride[][] rides = new Ride[maxRounds + 1][nodeCount];
-
         Arrays.fill(best, UNREACHABLE);
-        for (long[] round : roundArrival) {
-            Arrays.fill(round, UNREACHABLE);
-        }
+
+        List<long[]> roundArrival = new ArrayList<>();
+        List<Ride[]> rides = new ArrayList<>();
+        long[] initial = new long[nodeCount];
+        Arrays.fill(initial, UNREACHABLE);
+        initial[origin] = departAfter;
+        roundArrival.add(initial);
+        rides.add(null);
 
         boolean[] marked = new boolean[nodeCount];
         int[] markedNodes = new int[nodeCount];
         int markedCount = 1;
         markedNodes[0] = origin;
         marked[origin] = true;
-
         best[origin] = departAfter;
-        roundArrival[0][origin] = departAfter;
 
-        for (int round = 1; round <= maxRounds && markedCount > 0; round++) {
-            List<Ride> boardings = collectBoardings(markedNodes, markedCount, roundArrival[round - 1], round);
+        for (int round = 1; round <= roundCap && markedCount > 0; round++) {
+            List<Ride> boardings = collectBoardings(markedNodes, markedCount, roundArrival.get(round - 1), round);
 
             for (int i = 0; i < markedCount; i++) {
                 marked[markedNodes[i]] = false;
             }
             markedCount = 0;
+
+            long[] arrivals = new long[nodeCount];
+            Arrays.fill(arrivals, UNREACHABLE);
+            Ride[] roundRides = new Ride[nodeCount];
+            roundArrival.add(arrivals);
+            rides.add(roundRides);
 
             for (Ride boarding : boardings) {
                 Trip trip = index.trip(boarding.trip());
@@ -93,8 +101,8 @@ public final class RaptorSearch {
                     }
 
                     best[node] = arrival;
-                    roundArrival[round][node] = arrival;
-                    rides[round][node] = new Ride(boarding.fromNode(), boarding.trip(),
+                    arrivals[node] = arrival;
+                    roundRides[node] = new Ride(boarding.fromNode(), boarding.trip(),
                         boarding.boardCall(), call, boarding.cycles());
                     if (!marked[node]) {
                         marked[node] = true;
@@ -104,7 +112,18 @@ public final class RaptorSearch {
             }
         }
 
-        return collectResults(rides, roundArrival, destination, maxRounds, departAfter);
+        return collectResults(rides, roundArrival, destination, departAfter);
+    }
+
+    private int roundCap() {
+        if (query.directOnly()) {
+            return 1;
+        }
+        int transfers = query.maxTransfers();
+        if (transfers < 0 || transfers >= HARD_ROUND_CAP - 1) {
+            return HARD_ROUND_CAP;
+        }
+        return transfers + 1;
     }
 
     private List<Ride> collectBoardings(int[] markedNodes, int markedCount, long[] previousArrival, int round) {
@@ -146,13 +165,14 @@ public final class RaptorSearch {
         return trip.call(ride.boardCall()).departure() + trip.shiftFor(ride.cycles());
     }
 
-    private List<List<Ride>> collectResults(Ride[][] rides, long[][] roundArrival, int destination, int maxRounds,
+    private List<List<Ride>> collectResults(List<Ride[]> rides, List<long[]> roundArrival, int destination,
                                             long departAfter) {
         List<List<Ride>> results = new ArrayList<>();
         long bestSoFar = UNREACHABLE;
+        int rounds = roundArrival.size() - 1;
 
-        for (int round = 1; round <= maxRounds; round++) {
-            long arrival = roundArrival[round][destination];
+        for (int round = 1; round <= rounds; round++) {
+            long arrival = roundArrival.get(round)[destination];
             if (arrival >= bestSoFar) {
                 continue;
             }
@@ -191,12 +211,12 @@ public final class RaptorSearch {
         return adjusted;
     }
 
-    private List<Ride> reconstruct(Ride[][] rides, int round, int destination) {
+    private List<Ride> reconstruct(List<Ride[]> rides, int round, int destination) {
         Ride[] chain = new Ride[round];
         int node = destination;
 
         for (int k = round; k >= 1; k--) {
-            Ride ride = rides[k][node];
+            Ride ride = rides.get(k)[node];
             if (ride == null) {
                 return null;
             }

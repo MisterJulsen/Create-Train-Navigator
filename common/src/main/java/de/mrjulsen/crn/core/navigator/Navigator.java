@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import de.mrjulsen.crn.api.core.RailwayBackendApi;
+import de.mrjulsen.crn.config.ModServerConfig;
 import de.mrjulsen.crn.core.navigator.index.TimetableIndex;
 import de.mrjulsen.crn.core.navigator.route.RouteJourney;
 import de.mrjulsen.crn.core.navigator.search.WaypointPlanner;
@@ -36,6 +37,8 @@ public final class Navigator {
         if (!query.isComplete()) {
             return NavigationResult.failed(NavigationStatus.INCOMPLETE_QUERY, now, elapsed(startedAt));
         }
+
+        query = query.withMaxTransfers(currentTransferLimit(query.maxTransfers()));
 
         long departAfter = query.resolvedDepartAfter();
         long relevanceUntil = query.searchHorizon() >= Long.MAX_VALUE - departAfter
@@ -118,7 +121,31 @@ public final class Navigator {
     }
 
     private static boolean withinChangeLimit(RouteJourney journey, NavigationQuery query) {
-        return query.directOnly() ? journey.isDirect() : journey.transferCount() <= query.maxTransfers();
+        if (query.directOnly()) {
+            return journey.isDirect();
+        }
+        int limit = query.maxTransfers();
+        return limit < 0 || journey.changeCount() <= limit;
+    }
+
+    private static int currentTransferLimit(int requested) {
+        int cap = configuredTransferCap();
+        if (requested < 0) {
+            return cap;
+        }
+        if (cap < 0) {
+            return requested;
+        }
+        return Math.min(requested, cap);
+    }
+
+    private static int configuredTransferCap() {
+        try {
+            int cap = ModServerConfig.NAVIGATION_MAX_TRANSFERS.get();
+            return cap < 0 ? NavigationQuery.UNLIMITED_TRANSFERS : cap;
+        } catch (Exception e) {
+            return NavigationQuery.DEFAULT_TRANSFER_CAP;
+        }
     }
 
     private static long elapsed(long startedAt) {

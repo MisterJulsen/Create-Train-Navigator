@@ -12,6 +12,7 @@ public class ModServerConfig {
     public static final ForgeConfigSpec.ConfigValue<Integer> REALTIME_PRECISION_THRESHOLD;
     public static final ForgeConfigSpec.ConfigValue<Integer> NEXT_STOP_ANNOUNCEMENT;
     public static final ForgeConfigSpec.ConfigValue<Integer> DISPLAY_LEAD_TIME;
+    public static final ForgeConfigSpec.ConfigValue<Integer> NAVIGATION_MAX_TRANSFERS;
     public static final ForgeConfigSpec.ConfigValue<Boolean> SHOW_UNTAGGED_STATIONS;
     public static final ForgeConfigSpec.ConfigValue<Integer> GLOBAL_SETTINGS_PERMISSION_LEVEL;
     public static final ForgeConfigSpec.ConfigValue<Integer> GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL;
@@ -35,6 +36,8 @@ public class ModServerConfig {
                 .defineInRange("general.display_lead_time", 1200, 100, 24000);
         SHOW_UNTAGGED_STATIONS = BUILDER.comment("Whether stations, that are not part of any station tag, should be shown in the suggestions list of the navigator UI. (Default: ON)")
                 .define("general.show_untagged_stations", true);
+        NAVIGATION_MAX_TRANSFERS = BUILDER.comment("The max number of transfers a searched route may have. The navigator will not return routes that need more transfers than this. Set to -1 for no limit. (Default: 64)")
+                .defineInRange("navigation.max_transfers", 64, -1, 4096);
 
 
         GLOBAL_SETTINGS_PERMISSION_LEVEL = BUILDER.comment("Minimum permission level required to edit the global navigator settings. 0 allows everyone to edit these settings, -1 disables editing for everyone (including admins). (Default: 0)")
