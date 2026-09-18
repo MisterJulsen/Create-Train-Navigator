@@ -27,7 +27,9 @@ import de.mrjulsen.crn.web.annotation.QueryParam;
  * @param departAfter        The earliest departure time, or {@link #NOW} to start from the current
  *                           time.
  * @param minTransferTime    The least time to allow for a transfer, in ticks.
- * @param maxTransfers       The most transfers a journey may have, capped at {@link #TRANSFER_LIMIT}.
+ * @param maxTransfers       The most transfers a journey may have, or {@link #UNLIMITED_TRANSFERS}
+ *                           for no limit. Whatever is requested here, the search additionally
+ *                           respects the server-configured upper cap.
  * @param directOnly         Whether only journeys that need no transfer are accepted.
  * @param optimization       How the found journeys are ordered.
  * @param excludedCategories Categories the journey must avoid.
@@ -62,10 +64,10 @@ public record NavigationQuery(
 
     /** The default minimum transfer time, in ticks. */
     public static final long DEFAULT_TRANSFER_TIME = 1000;
-    /** The default limit on transfers. */
-    public static final int DEFAULT_MAX_TRANSFERS = 4;
-    /** The hard cap on how many transfers a query may ask for. */
-    public static final int TRANSFER_LIMIT = 8;
+    /** Used as the transfer limit to mean no limit at all. */
+    public static final int UNLIMITED_TRANSFERS = -1;
+    /** The upper transfer cap assumed when the server config cannot be read. */
+    public static final int DEFAULT_TRANSFER_CAP = 64;
     /** The default transfer risk buffer, in ticks. */
     public static final long DEFAULT_TRANSFER_RISK_BUFFER = 200;
     /** The default number of journeys to return. */
@@ -80,7 +82,7 @@ public record NavigationQuery(
         destination = destination == null ? "" : destination.trim();
         waypoints = waypoints == null ? List.of() : List.copyOf(waypoints);
         minTransferTime = Math.max(0, minTransferTime);
-        maxTransfers = Math.max(0, Math.min(TRANSFER_LIMIT, maxTransfers));
+        maxTransfers = maxTransfers < 0 ? UNLIMITED_TRANSFERS : maxTransfers;
         optimization = optimization == null ? RoutingStrategy.FASTEST : optimization;
         excludedCategories = copyOf(excludedCategories);
         includedCategories = copyOf(includedCategories);
@@ -97,7 +99,7 @@ public record NavigationQuery(
     @OpenApiDescription(value = "The station the journey starts at.", example = "Central Station")
     public static NavigationQuery from(String origin) {
         return new NavigationQuery(origin, "", List.of(), NOW, DEFAULT_TRANSFER_TIME,
-            DEFAULT_MAX_TRANSFERS, false, RoutingStrategy.FASTEST,
+            UNLIMITED_TRANSFERS, false, RoutingStrategy.FASTEST,
             Set.of(), Set.of(), Set.of(), Set.of(), Set.of(),
             DEFAULT_TRANSFER_RISK_BUFFER, DEFAULT_MAX_RESULTS, DEFAULT_SEARCH_HORIZON);
     }
@@ -160,7 +162,9 @@ public record NavigationQuery(
             excludedLines, includedLines, avoidedStations, transferRiskBuffer, maxResults, searchHorizon);
     }
 
-    /** Sets the most transfers a journey may have. */
+    /** Sets the most transfers a journey may have, or {@link #UNLIMITED_TRANSFERS} for no limit. */
+    @QueryParam(value = "max_transfers")
+    @OpenApiDescription("The max number of transfers a journey may have. -1 means unlimited. The server's configured cap still applies on top of this.")
     public NavigationQuery withMaxTransfers(int maxTransfers) {
         return new NavigationQuery(origin, destination, waypoints, departAfter, minTransferTime,
             maxTransfers, directOnly, optimization, excludedCategories, includedCategories,
@@ -263,9 +267,20 @@ public record NavigationQuery(
         return departAfter < 0 ? RailwayBackendApi.getCurrentTime() : departAfter;
     }
 
-    /** The most legs a journey may have, one more than its transfers, or one when direct only. */
+    /**
+     * The most legs a journey may have, one more than its transfers, one when direct only, or
+     * {@link #UNLIMITED_TRANSFERS} when no transfer limit is set.
+     */
     public int maxLegs() {
-        return directOnly ? 1 : maxTransfers + 1;
+        if (directOnly) {
+            return 1;
+        }
+        return maxTransfers < 0 ? UNLIMITED_TRANSFERS : maxTransfers + 1;
+    }
+
+    /** Whether an explicit finite transfer limit is set. */
+    public boolean hasTransferLimit() {
+        return maxTransfers >= 0;
     }
 
     /** Whether any waypoint is set. */

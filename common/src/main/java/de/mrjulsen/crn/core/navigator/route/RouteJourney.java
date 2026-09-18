@@ -72,9 +72,20 @@ public record RouteJourney(List<RouteLeg> legs, List<RouteTransfer> transfers) {
         return Math.max(0, arrival() - departure());
     }
 
-    /** How many transfers the journey has. */
+    /** How many transfers the journey has, counting through services where travellers stay aboard. */
     public int transferCount() {
         return transfers.size();
+    }
+
+    /** How many real transfers the journey has, i.e. train changes, not counting through services. */
+    public int changeCount() {
+        int count = 0;
+        for (RouteTransfer transfer : transfers) {
+            if (!transfer.staysSeated()) {
+                count++;
+            }
+        }
+        return count;
     }
 
     /** Whether the journey needs no transfer. */
