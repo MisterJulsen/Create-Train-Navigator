@@ -4,6 +4,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -86,7 +87,17 @@ public final class WebServer {
         for (String namespace : NAMESPACES) {
             server.createContext("/" + namespace + "/" + API_SEGMENT, router);
         }
-        server.setExecutor(executor);
+        server.setExecutor(instrument(executor));
+    }
+
+    private static Executor instrument(ExecutorService delegate) {
+        return task -> {
+            long submitNanos = System.nanoTime();
+            delegate.execute(() -> {
+                RequestMetrics.recordQueueWait(submitNanos);
+                task.run();
+            });
+        };
     }
 
     private static String basePathInfo() {

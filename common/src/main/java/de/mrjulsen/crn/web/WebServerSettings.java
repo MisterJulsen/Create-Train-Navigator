@@ -13,6 +13,7 @@ public record WebServerSettings(
     boolean gzipEnabled,
     int gzipMinBytes,
     boolean requestLog,
+    boolean debugTiming,
     List<String> corsOrigins
 ) {
 
@@ -26,6 +27,7 @@ public record WebServerSettings(
             ModCommonConfig.WEB_GZIP_ENABLED.get(),
             ModCommonConfig.WEB_GZIP_MIN_BYTES.get(),
             ModCommonConfig.WEB_REQUEST_LOG.get(),
+            ModCommonConfig.WEB_DEBUG_TIMING.get(),
             List.copyOf(ModCommonConfig.WEB_CORS_ORIGINS.get())
         );
     }
