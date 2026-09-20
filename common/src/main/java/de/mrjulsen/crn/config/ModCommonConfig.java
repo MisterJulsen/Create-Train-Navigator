@@ -19,6 +19,7 @@ public class ModCommonConfig {
     public static final ForgeConfigSpec.ConfigValue<Boolean> WEB_GZIP_ENABLED;
     public static final ForgeConfigSpec.ConfigValue<Integer> WEB_GZIP_MIN_BYTES;
     public static final ForgeConfigSpec.ConfigValue<Boolean> WEB_REQUEST_LOG;
+    public static final ForgeConfigSpec.ConfigValue<Boolean> WEB_DEBUG_TIMING;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> WEB_CORS_ORIGINS;
 
     static {
@@ -43,7 +44,9 @@ public class ModCommonConfig {
         WEB_GZIP_MIN_BYTES = BUILDER.comment("[in Bytes]", "Responses smaller than this are sent uncompressed, because gzipping a tiny payload costs more than it saves. Only used when gzip is enabled. (Default: 512)")
             .defineInRange("web.gzip_min_bytes", 512, 0, 1048576);
         WEB_REQUEST_LOG = BUILDER.comment("Writes one line to the server log for every request the web API handles, showing the method, path and response status. (Default: OFF)")
-            .define("web.request_log", false);
+            .define("web.debug.request_log", false);
+        WEB_DEBUG_TIMING = BUILDER.comment("Logs the timing for every web API request. For debugging only and only takes effect after a restart. (Default: OFF)")
+            .define("web.debug.timing_log", false);
         WEB_CORS_ORIGINS = BUILDER.comment("Which websites hosted elsewhere may read responses from this API in a browser. Use the exact origin including the scheme, for example 'https://trains.example.com'. A single '*' allows every website. (Default: none)")
             .defineList("web.cors_allowed_origins", List.of(), o -> o instanceof String);
 

@@ -12,6 +12,7 @@ import java.util.zip.GZIPOutputStream;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
@@ -43,10 +44,14 @@ final class ApiRouter implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
+        long startNanos = System.nanoTime();
+        RequestMetrics metrics = new RequestMetrics();
+        metrics.queueWaitNanos = RequestMetrics.takeQueueWaitNanos();
+
         String origin = firstHeader(exchange.getRequestHeaders(), HttpHeader.ORIGIN);
         Response response;
         try {
-            response = process(exchange);
+            response = process(exchange, metrics);
         } catch (BadRequestException e) {
             response = Response.error(HttpURLConnection.HTTP_BAD_REQUEST, e.getMessage());
         } catch (NotFoundException e) {
@@ -56,15 +61,14 @@ final class ApiRouter implements HttpHandler {
             response = Response.error(HttpURLConnection.HTTP_INTERNAL_ERROR, "Internal server error");
         }
         Cors.apply(response, settings, origin);
-        if (settings.requestLog()) {
-            CreateRailwaysNavigator.LOGGER.info("CRN web API {} {} -> {}", exchange.getRequestMethod(), exchange.getRequestURI().getPath(), response.status());
-        }
         try (exchange) {
-            write(exchange, response, settings);
+            write(exchange, response, settings, metrics);
+        } finally {
+            logRequest(exchange, response, metrics, System.nanoTime() - startNanos);
         }
     }
 
-    private Response process(HttpExchange exchange) throws Exception {
+    private Response process(HttpExchange exchange, RequestMetrics metrics) throws Exception {
         String origin = firstHeader(exchange.getRequestHeaders(), HttpHeader.ORIGIN);
         String rawMethod = exchange.getRequestMethod();
         if (HttpMethod.OPTIONS.name().equalsIgnoreCase(rawMethod)) {
@@ -112,11 +116,14 @@ final class ApiRouter implements HttpHandler {
             exchange.getRemoteAddress()
         );
 
+        long buildStart = System.nanoTime();
         Response response = match.route().handler().handle(request);
         if (response == null) {
+            metrics.buildNanos = System.nanoTime() - buildStart;
             return Response.noContent();
         }
         ResultShaper.apply(request, response);
+        metrics.buildNanos = System.nanoTime() - buildStart;
         return response;
     }
 
@@ -176,27 +183,77 @@ final class ApiRouter implements HttpHandler {
         return URLDecoder.decode(value, StandardCharsets.UTF_8);
     }
 
-    private static void write(HttpExchange exchange, Response response, WebServerSettings settings) throws IOException {
+    private static void write(HttpExchange exchange, Response response, WebServerSettings settings, RequestMetrics metrics) throws IOException {
         Headers responseHeaders = exchange.getResponseHeaders();
         response.headers().forEach(responseHeaders::set);
         if (response.contentType() != null) {
             responseHeaders.set(HttpHeader.CONTENT_TYPE, response.contentType());
         }
 
+        long serializeStart = System.nanoTime();
         byte[] body = response.body();
+        metrics.serializeNanos = System.nanoTime() - serializeStart;
+        metrics.payloadBytes = body == null ? 0 : body.length;
+
         if (body == null || body.length == 0) {
             exchange.sendResponseHeaders(response.status(), -1);
             return;
         }
         if (settings.gzipEnabled() && body.length >= settings.gzipMinBytes() && acceptsGzip(exchange)) {
+            long gzipStart = System.nanoTime();
             body = gzip(body);
+            metrics.gzipNanos = System.nanoTime() - gzipStart;
+            metrics.gzipped = true;
             responseHeaders.set(HttpHeader.CONTENT_ENCODING, "gzip");
             responseHeaders.add(HttpHeader.VARY, HttpHeader.ACCEPT_ENCODING);
         }
+        metrics.sentBytes = body.length;
         exchange.sendResponseHeaders(response.status(), body.length);
         try (OutputStream out = exchange.getResponseBody()) {
             out.write(body);
         }
+    }
+
+    private void logRequest(HttpExchange exchange, Response response, RequestMetrics metrics, long totalNanos) {
+        if (settings.debugTiming()) {
+            CreateRailwaysNavigator.LOGGER.info("CRN web API {} {} -> {} [wait {}, build {}, serialize {}, gzip {}, total {}, {}]",
+                exchange.getRequestMethod(),
+                exchange.getRequestURI().getPath(),
+                response.status(),
+                formatMillis(metrics.queueWaitNanos),
+                formatMillis(metrics.buildNanos),
+                formatMillis(metrics.serializeNanos),
+                formatMillis(metrics.gzipNanos),
+                formatMillis(totalNanos),
+                formatSize(metrics));
+        } else if (settings.requestLog()) {
+            CreateRailwaysNavigator.LOGGER.info("CRN web API {} {} -> {}",
+                exchange.getRequestMethod(), exchange.getRequestURI().getPath(), response.status());
+        }
+    }
+
+    private static String formatMillis(long nanos) {
+        if (nanos < 0) {
+            return "n/a";
+        }
+        return String.format(Locale.ROOT, "%.1fms", nanos / 1_000_000.0);
+    }
+
+    private static String formatSize(RequestMetrics metrics) {
+        if (metrics.payloadBytes <= 0) {
+            return "empty";
+        }
+        if (metrics.gzipped) {
+            return formatBytes(metrics.payloadBytes) + "->" + formatBytes(metrics.sentBytes) + " gz";
+        }
+        return formatBytes(metrics.payloadBytes);
+    }
+
+    private static String formatBytes(long bytes) {
+        if (bytes < 1024) {
+            return bytes + "B";
+        }
+        return String.format(Locale.ROOT, "%.1fKB", bytes / 1024.0);
     }
 
     private static boolean acceptsGzip(HttpExchange exchange) {
