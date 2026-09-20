@@ -61,6 +61,7 @@ import dev.architectury.utils.Env;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -692,7 +693,7 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
     }
 
     @Override
-    protected void write(CompoundTag pTag, net.minecraft.core.HolderLookup.Provider registries, boolean clientPacket) {
+    protected void write(CompoundTag pTag, HolderLookup.Provider registries, boolean clientPacket) {
         super.write(pTag, registries, clientPacket);
         pTag.putByte(NBT_XSIZE, getXSize());
         pTag.putByte(NBT_YSIZE, getYSize());
@@ -717,7 +718,7 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
 
     @SuppressWarnings("deprecation")
     @Override
-    protected void read(CompoundTag pTag, net.minecraft.core.HolderLookup.Provider registries, boolean clientPacket) {
+    protected void read(CompoundTag pTag, HolderLookup.Provider registries, boolean clientPacket) {
         boolean updateClient = false;
         IDisplaySettings oldDisplayTypeSettings = displayTypeSettings;
         StationInfo info = StationInfo.fromNbt(pTag);
@@ -837,14 +838,14 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
     }
 
     @Override
-    public CompoundTag getUpdateTag(net.minecraft.core.HolderLookup.Provider registries) {
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         CompoundTag nbt = new CompoundTag();
         this.write(nbt, registries, true);
         return nbt;
     }
 
     @Override
-    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, net.minecraft.core.HolderLookup.Provider registries) {
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider registries) {
         this.loadWithComponents(pkt.getTag(), registries);
         this.level.sendBlockUpdated(this.worldPosition, this.getBlockState(), this.getBlockState(), 512);
     }

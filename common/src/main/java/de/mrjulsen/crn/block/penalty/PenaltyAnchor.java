@@ -17,6 +17,7 @@ import com.simibubi.create.content.trains.signal.SignalPropagator;
 import de.mrjulsen.crn.CRNPlatformSpecific;
 import de.mrjulsen.crn.api.core.INavigationPenaltyProvider;
 import de.mrjulsen.crn.event.ModCommonEvents;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.Mth;
@@ -133,14 +134,14 @@ public class PenaltyAnchor extends TrackObserver implements INavigationPenaltyPr
     }
 
     @Override
-    public void read(CompoundTag nbt, net.minecraft.core.HolderLookup.Provider provider, boolean migration, DimensionPalette dimensions) {
+    public void read(CompoundTag nbt, HolderLookup.Provider provider, boolean migration, DimensionPalette dimensions) {
         super.read(nbt, provider, migration, dimensions);
         this.penalty = nbt.contains(NBT_PENALTY) ? Mth.clamp(nbt.getInt(NBT_PENALTY), MIN_PENALTY, MAX_PENALTY) : DEFAULT_PENALTY;
         this.activeTicks = Mth.clamp(nbt.getInt(NBT_ACTIVE_TICKS), 0, ACTIVE_DURATION);
     }
 
     @Override
-    public void write(CompoundTag nbt, net.minecraft.core.HolderLookup.Provider provider, DimensionPalette dimensions) {
+    public void write(CompoundTag nbt, HolderLookup.Provider provider, DimensionPalette dimensions) {
         super.write(nbt, provider, dimensions);
         nbt.putInt(NBT_PENALTY, penalty);
         nbt.putInt(NBT_ACTIVE_TICKS, activeTicks);

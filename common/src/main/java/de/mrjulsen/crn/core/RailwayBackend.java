@@ -19,6 +19,7 @@ import de.mrjulsen.crn.util.ModUtils;
 import dev.architectury.event.events.common.LifecycleEvent;
 import dev.architectury.event.events.common.TickEvent;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.storage.LevelResource;
@@ -72,7 +73,7 @@ public final class RailwayBackend {
         try {
             File file = getDataFile();
             if (file.exists()) {
-                manager.loadNbt(NbtIo.readCompressed(file.toPath(), net.minecraft.nbt.NbtAccounter.unlimitedHeap()));
+                manager.loadNbt(NbtIo.readCompressed(file.toPath(), NbtAccounter.unlimitedHeap()));
             }
         } catch (Exception e) {
             CreateRailwaysNavigator.LOGGER.error("[{}] Unable to load backend data.", WORKER_THREAD_NAME, e);
