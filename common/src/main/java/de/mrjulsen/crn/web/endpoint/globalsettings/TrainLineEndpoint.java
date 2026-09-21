@@ -1,12 +1,14 @@
 package de.mrjulsen.crn.web.endpoint.globalsettings;
 
+import de.mrjulsen.crn.web.api.RequestParams;
+
 import de.mrjulsen.crn.data.settings.GlobalSettings;
 import de.mrjulsen.crn.data.settings.TrainLine;
 import de.mrjulsen.crn.web.ModWebFeatures;
 import de.mrjulsen.crn.web.api.IEndpointHandler;
 import de.mrjulsen.crn.web.api.ParamType;
-import de.mrjulsen.crn.web.api.Request;
-import de.mrjulsen.crn.web.api.Response;
+import org.eclipse.jetty.server.Request;
+import de.mrjulsen.crn.web.api.ApiResult;
 import de.mrjulsen.crn.web.openapi.EndpointDocumentation;
 
 import java.net.HttpURLConnection;
@@ -16,12 +18,12 @@ import java.util.UUID;
 public class TrainLineEndpoint implements IEndpointHandler {
 
     @Override
-    public Response handle(Request request) {
-        UUID id = request.pathParameter("id", ParamType.UUID);
+    public ApiResult handle(Request request) {
+        UUID id = RequestParams.path(request, "id", ParamType.UUID);
         Optional<TrainLine> tag = GlobalSettings.getInstance().getTrainLine(id);
         return tag
-                .map(x -> Response.json(x))
-                .orElseGet(() -> Response.error(HttpURLConnection.HTTP_NOT_FOUND, "No train line with id " + id));
+                .map(x -> ApiResult.json(x))
+                .orElseGet(() -> ApiResult.error(HttpURLConnection.HTTP_NOT_FOUND, "No train line with id " + id));
     }
 
     @Override

@@ -4,8 +4,8 @@ import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.crn.web.ModWebFeatures;
 import de.mrjulsen.crn.web.annotation.OpenApiDescription;
 import de.mrjulsen.crn.web.api.IEndpointHandler;
-import de.mrjulsen.crn.web.api.Request;
-import de.mrjulsen.crn.web.api.Response;
+import org.eclipse.jetty.server.Request;
+import de.mrjulsen.crn.web.api.ApiResult;
 import de.mrjulsen.crn.web.openapi.EndpointDocumentation;
 
 public class TimeNowEndpoint implements IEndpointHandler {
@@ -16,8 +16,8 @@ public class TimeNowEndpoint implements IEndpointHandler {
     ) {}
 
     @Override
-    public Response handle(Request request) {
-        return Response.json(new Data(ModUtils.getTransformedWorldTime()));
+    public ApiResult handle(Request request) {
+        return ApiResult.json(new Data(ModUtils.getTransformedWorldTime()));
     }
 
     @Override

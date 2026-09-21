@@ -34,6 +34,7 @@ subprojects {
     }
 
     repositories {
+        mavenCentral() // Jetty, Swagger (web API)
         maven { url = file("${System.getProperty('user.home')}/.m2/github/modsrepo/maven/") } // Local
         maven { url = "https://maven.mrjulsen.net" } // DragonLib
         maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" } // Forge Config API

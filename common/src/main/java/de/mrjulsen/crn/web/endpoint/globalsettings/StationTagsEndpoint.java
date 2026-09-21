@@ -9,8 +9,8 @@ import de.mrjulsen.crn.web.annotation.QueryModel;
 import de.mrjulsen.crn.web.annotation.QueryParam;
 import de.mrjulsen.crn.web.api.IEndpointHandler;
 import de.mrjulsen.crn.web.api.QueryBinder;
-import de.mrjulsen.crn.web.api.Request;
-import de.mrjulsen.crn.web.api.Response;
+import org.eclipse.jetty.server.Request;
+import de.mrjulsen.crn.web.api.ApiResult;
 import de.mrjulsen.crn.web.openapi.EndpointDocumentation;
 
 import java.util.Set;
@@ -52,9 +52,9 @@ public class StationTagsEndpoint implements IEndpointHandler {
     }
 
     @Override
-    public Response handle(Request request) {
+    public ApiResult handle(Request request) {
         Query query = QueryBinder.bind(request, Query.class);
-        return Response.json(GlobalSettings.getInstance().getAllStationTags().stream().filter(query::accept).toList());
+        return ApiResult.json(GlobalSettings.getInstance().getAllStationTags().stream().filter(query::accept).toList());
     }
 
     @Override

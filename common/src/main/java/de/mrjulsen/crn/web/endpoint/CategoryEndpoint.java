@@ -1,13 +1,15 @@
 package de.mrjulsen.crn.web.endpoint;
 
+import de.mrjulsen.crn.web.api.RequestParams;
+
 import de.mrjulsen.crn.api.core.RailwayBackendApi;
 import de.mrjulsen.crn.api.core.snapshot.CategorySnapshot;
 import de.mrjulsen.crn.web.ModWebFeatures;
 import de.mrjulsen.crn.web.api.IEndpointHandler;
 import de.mrjulsen.crn.web.api.NotFoundException;
 import de.mrjulsen.crn.web.api.ParamType;
-import de.mrjulsen.crn.web.api.Request;
-import de.mrjulsen.crn.web.api.Response;
+import org.eclipse.jetty.server.Request;
+import de.mrjulsen.crn.web.api.ApiResult;
 import de.mrjulsen.crn.web.openapi.EndpointDocumentation;
 
 import java.util.UUID;
@@ -15,9 +17,9 @@ import java.util.UUID;
 public class CategoryEndpoint implements IEndpointHandler {
 
     @Override
-    public Response handle(Request request) {
-        UUID id = request.pathParameter("id", ParamType.UUID);
-        return Response.json(RailwayBackendApi.getCategory(id).orElseThrow(() -> new NotFoundException("No category with id " + id)));
+    public ApiResult handle(Request request) {
+        UUID id = RequestParams.path(request, "id", ParamType.UUID);
+        return ApiResult.json(RailwayBackendApi.getCategory(id).orElseThrow(() -> new NotFoundException("No category with id " + id)));
     }
 
     @Override

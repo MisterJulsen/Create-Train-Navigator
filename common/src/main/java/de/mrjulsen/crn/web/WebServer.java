@@ -1,20 +1,26 @@
 package de.mrjulsen.crn.web;
 
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.*;
+import java.util.stream.Collectors;
 
-import com.sun.net.httpserver.HttpServer;
+import org.eclipse.jetty.http.pathmap.PathMappings;
+import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.HttpConfiguration;
+import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.handler.ContextHandler;
+import org.eclipse.jetty.server.handler.ContextHandlerCollection;
+import org.eclipse.jetty.server.handler.CrossOriginHandler;
+import org.eclipse.jetty.compression.gzip.GzipCompression;
+import org.eclipse.jetty.compression.server.CompressionConfig;
+import org.eclipse.jetty.compression.server.CompressionHandler;
+import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.web.api.ApiVersion;
 import de.mrjulsen.crn.web.api.EndpointRegistry;
-import org.jetbrains.annotations.NotNull;
+import de.mrjulsen.crn.web.api.HttpMethod;
 
 public final class WebServer {
 
@@ -24,14 +30,16 @@ public final class WebServer {
         CreateRailwaysNavigator.SHORT_MOD_ID
     );
 
-    private static final int STOP_DELAY_SECONDS = 0;
+    public static final int MIN_THREADS = 4;
+    private static final long STOP_TIMEOUT_MILLIS = 2000L;
 
     private static WebServer instance;
 
-    private final List<HttpServer> listeners = new ArrayList<>();
-    private ExecutorService executor;
+    private final Server server;
 
-    private WebServer() {}
+    private WebServer(Server server) {
+        this.server = server;
+    }
 
     public static synchronized void start() {
         if (instance != null) {
@@ -44,89 +52,106 @@ public final class WebServer {
             return;
         }
 
-        WebServer server = new WebServer();
+        Server server = build(settings);
         try {
-            server.startListeners(settings);
+            server.start();
         } catch (Exception e) {
             CreateRailwaysNavigator.LOGGER.error("Failed to start the CRN web API.", e);
-            server.shutdown();
+            stopQuietly(server);
             return;
         }
-        if (server.listeners.isEmpty()) {
-            server.shutdown();
-            return;
-        }
-        instance = server;
+        instance = new WebServer(server);
+        CreateRailwaysNavigator.LOGGER.info("CRN web API listening on {}:{}{}", settings.bindAddress(), settings.port(), basePathInfo());
+        CreateRailwaysNavigator.LOGGER.info("CRN web API serving {} endpoint(s).", EndpointRegistry.size());
     }
 
     public static synchronized void stop() {
         if (instance == null) {
             return;
         }
-        instance.shutdown();
+        stopQuietly(instance.server);
         instance = null;
         CreateRailwaysNavigator.LOGGER.info("CRN web API stopped.");
     }
 
+    private static Server build(WebServerSettings settings) {
+        QueuedThreadPool threadPool = new QueuedThreadPool(Math.max(settings.threads(), MIN_THREADS));
+        threadPool.setName("CRN Web");
 
+        Server server = new Server(threadPool);
+        server.setStopAtShutdown(true);
+        server.setStopTimeout(STOP_TIMEOUT_MILLIS);
 
-    private void startListeners(WebServerSettings settings) throws Exception {
-        executor = Executors.newFixedThreadPool(settings.threads(), new WebThreadFactory());
-        ApiRouter router = new ApiRouter(settings);
-        InetAddress bindAddress = InetAddress.getByName(settings.bindAddress());
+        HttpConfiguration httpConfig = new HttpConfiguration();
+        httpConfig.setSendServerVersion(false);
+        httpConfig.setSendXPoweredBy(false);
 
-        HttpServer http = HttpServer.create(new InetSocketAddress(bindAddress, settings.port()), 0);
-        configure(http, router);
-        http.start();
-        listeners.add(http);
-        CreateRailwaysNavigator.LOGGER.info("CRN web API listening on {}:{}{}", settings.bindAddress(), settings.port(), basePathInfo());
-        CreateRailwaysNavigator.LOGGER.info("CRN web API serving {} endpoint(s).", EndpointRegistry.size());
+        ServerConnector connector = new ServerConnector(server, 1, 1, new HttpConnectionFactory(httpConfig));
+        connector.setHost(settings.bindAddress());
+        connector.setPort(settings.port());
+        connector.setIdleTimeout(settings.idleTimeoutMillis());
+        server.addConnector(connector);
+
+        server.setHandler(compression(settings, cors(settings, router(settings))));
+        server.setErrorHandler(new JsonErrorHandler());
+        return server;
     }
 
-    private void configure(HttpServer server, ApiRouter router) {
-        for (String namespace : NAMESPACES) {
-            server.createContext("/" + namespace + "/" + API_SEGMENT, router);
+    private static Handler router(WebServerSettings settings) {
+        List<ContextHandler> contexts = new ArrayList<>();
+        for (ApiVersion version : ApiVersion.values()) {
+            PathMappings<Map<HttpMethod, EndpointRegistry.Route>> mappings = EndpointRegistry.mappingsFor(version);
+            for (String namespace : NAMESPACES) {
+                String contextPath = "/" + namespace + "/" + API_SEGMENT + "/" + version.slug();
+                contexts.add(new ContextHandler(new ApiHandler(settings, mappings), contextPath));
+            }
         }
-        server.setExecutor(instrument(executor));
+        return new ContextHandlerCollection(contexts.toArray(new ContextHandler[0]));
     }
 
-    private static Executor instrument(ExecutorService delegate) {
-        return task -> {
-            long submitNanos = System.nanoTime();
-            delegate.execute(() -> {
-                RequestMetrics.recordQueueWait(submitNanos);
-                task.run();
-            });
-        };
+    private static Handler compression(WebServerSettings settings, Handler next) {
+        if (!settings.gzipEnabled()) {
+            return next;
+        }
+        GzipCompression gzip = new GzipCompression();
+        gzip.setMinCompressSize(settings.gzipMinBytes());
+
+        CompressionConfig config = CompressionConfig.builder()
+            .compressIncludeMethod(HttpMethod.GET.name())
+            .compressIncludeMethod(HttpMethod.POST.name())
+            .compressIncludeMethod(HttpMethod.PUT.name())
+            .compressIncludeMethod(HttpMethod.PATCH.name())
+            .compressIncludeMethod(HttpMethod.DELETE.name())
+            .build();
+
+        CompressionHandler handler = new CompressionHandler(next);
+        handler.putCompression(gzip);
+        handler.putConfiguration("/", config);
+        return handler;
+    }
+
+    private static Handler cors(WebServerSettings settings, Handler next) {
+        List<String> origins = settings.corsOrigins();
+        if (origins.isEmpty()) {
+            return next;
+        }
+        CrossOriginHandler handler = new CrossOriginHandler();
+        handler.setAllowedOriginPatterns(Set.copyOf(origins));
+        handler.setAllowedMethods(Arrays.stream(HttpMethod.values()).map(Enum::name).collect(Collectors.toSet()));
+        handler.setAllowCredentials(false);
+        handler.setHandler(next);
+        return handler;
+    }
+
+    private static void stopQuietly(Server server) {
+        try {
+            server.stop();
+        } catch (Exception e) {
+            CreateRailwaysNavigator.LOGGER.error("Error while stopping the CRN web API.", e);
+        }
     }
 
     private static String basePathInfo() {
         return "/{" + String.join("|", NAMESPACES) + "}/" + API_SEGMENT + "/<version>";
-    }
-
-    private void shutdown() {
-        for (HttpServer listener : listeners) {
-            listener.stop(STOP_DELAY_SECONDS);
-        }
-        listeners.clear();
-        if (executor != null) {
-            executor.shutdownNow();
-            executor = null;
-        }
-    }
-
-
-
-
-    private static final class WebThreadFactory implements ThreadFactory {
-
-        private final AtomicInteger counter = new AtomicInteger(1);
-
-        @Override
-        public Thread newThread(@NotNull Runnable runnable) {
-            Thread thread = new Thread(runnable, "CRN Web #" + counter.getAndIncrement());
-            thread.setDaemon(true);
-            return thread;
-        }
     }
 }

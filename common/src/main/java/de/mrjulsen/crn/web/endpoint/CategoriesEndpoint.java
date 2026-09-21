@@ -6,16 +6,16 @@ import de.mrjulsen.crn.api.core.snapshot.CategorySnapshot;
 import de.mrjulsen.crn.web.ModWebFeatures;
 import de.mrjulsen.crn.web.api.IEndpointHandler;
 import de.mrjulsen.crn.web.api.QueryBinder;
-import de.mrjulsen.crn.web.api.Request;
-import de.mrjulsen.crn.web.api.Response;
+import org.eclipse.jetty.server.Request;
+import de.mrjulsen.crn.web.api.ApiResult;
 import de.mrjulsen.crn.web.openapi.EndpointDocumentation;
 
 public class CategoriesEndpoint implements IEndpointHandler {
 
     @Override
-    public Response handle(Request request) {
+    public ApiResult handle(Request request) {
         CategoryQuery query = QueryBinder.bind(request, CategoryQuery.class);
-        return Response.json(RailwayBackendApi.getAllCategories(query));
+        return ApiResult.json(RailwayBackendApi.getAllCategories(query));
     }
 
     @Override

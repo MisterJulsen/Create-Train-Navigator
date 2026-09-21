@@ -31,4 +31,9 @@ dependencies {
     modCompileOnly("mezz.jei:jei-${rootProject.minecraft_version}-forge-api:${rootProject.jei_version}")
     modRuntimeOnly("mezz.jei:jei-${rootProject.minecraft_version}-forge:${rootProject.jei_version}")
     modImplementation("maven.modrinth:tramways:0.3.3-fabric")
+
+    // Web API on Jetty (compile against it here; bundled as jar-in-jar in :forge).
+    compileOnly("org.eclipse.jetty:jetty-server:${rootProject.jetty_version}")
+    compileOnly("org.eclipse.jetty.compression:jetty-compression-server:${rootProject.jetty_version}")
+    compileOnly("org.eclipse.jetty.compression:jetty-compression-gzip:${rootProject.jetty_version}")
 }

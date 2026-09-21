@@ -1,9 +1,11 @@
 package de.mrjulsen.crn.web.endpoint;
 
+import de.mrjulsen.crn.web.api.RequestParams;
+
 import de.mrjulsen.crn.web.ModWebFeatures;
 import de.mrjulsen.crn.web.api.IEndpointHandler;
-import de.mrjulsen.crn.web.api.Request;
-import de.mrjulsen.crn.web.api.Response;
+import org.eclipse.jetty.server.Request;
+import de.mrjulsen.crn.web.api.ApiResult;
 import de.mrjulsen.crn.web.openapi.EndpointDocumentation;
 
 import java.net.HttpURLConnection;
@@ -11,13 +13,13 @@ import java.net.HttpURLConnection;
 public class PingEndpoint implements IEndpointHandler {
 
     @Override
-    public Response handle(Request request) {
-        if (request.path().endsWith("ping")) {
-            return Response.text("Pong!");
-        } else if (request.path().endsWith("hello")) {
-            return Response.text("World!");
+    public ApiResult handle(Request request) {
+        if (RequestParams.fullPath(request).endsWith("ping")) {
+            return ApiResult.text("Pong!");
+        } else if (RequestParams.fullPath(request).endsWith("hello")) {
+            return ApiResult.text("World!");
         }
-        return Response.text("Hello World!");
+        return ApiResult.text("Hello World!");
     }
 
     @Override

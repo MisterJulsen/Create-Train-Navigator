@@ -1,5 +1,7 @@
 package de.mrjulsen.crn.web.endpoint.globalsettings;
 
+import org.eclipse.jetty.server.Request;
+
 import de.mrjulsen.crn.data.settings.GlobalSettings;
 import de.mrjulsen.crn.data.settings.StationTag;
 import de.mrjulsen.crn.web.ModWebFeatures;
@@ -13,12 +15,12 @@ import java.util.UUID;
 public class StationTagEndpoint implements IEndpointHandler {
 
     @Override
-    public Response handle(Request request) {
-        UUID id = request.pathParameter("id", ParamType.UUID);
+    public ApiResult handle(Request request) {
+        UUID id = RequestParams.path(request, "id", ParamType.UUID);
         Optional<StationTag> tag = GlobalSettings.getInstance().getStationTag(id);
         return tag
-                .map(Response::json)
-                .orElseGet(() -> Response.error(HttpURLConnection.HTTP_NOT_FOUND, "No station tag with id " + id));
+                .map(ApiResult::json)
+                .orElseGet(() -> ApiResult.error(HttpURLConnection.HTTP_NOT_FOUND, "No station tag with id " + id));
     }
 
     @Override

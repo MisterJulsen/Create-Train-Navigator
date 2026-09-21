@@ -6,16 +6,16 @@ import de.mrjulsen.crn.api.core.snapshot.LineSnapshot;
 import de.mrjulsen.crn.web.ModWebFeatures;
 import de.mrjulsen.crn.web.api.IEndpointHandler;
 import de.mrjulsen.crn.web.api.QueryBinder;
-import de.mrjulsen.crn.web.api.Request;
-import de.mrjulsen.crn.web.api.Response;
+import org.eclipse.jetty.server.Request;
+import de.mrjulsen.crn.web.api.ApiResult;
 import de.mrjulsen.crn.web.openapi.EndpointDocumentation;
 
 public class LinesEndpoint implements IEndpointHandler {
 
     @Override
-    public Response handle(Request request) {
+    public ApiResult handle(Request request) {
         LineQuery query = QueryBinder.bind(request, LineQuery.class);
-        return Response.json(RailwayBackendApi.getAllLines(query));
+        return ApiResult.json(RailwayBackendApi.getAllLines(query));
     }
 
     @Override

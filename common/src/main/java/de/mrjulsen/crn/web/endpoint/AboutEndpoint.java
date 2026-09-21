@@ -1,5 +1,7 @@
 package de.mrjulsen.crn.web.endpoint;
 
+import org.eclipse.jetty.server.Request;
+
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.web.ModWebFeatures;
 import de.mrjulsen.crn.web.api.*;
@@ -34,9 +36,9 @@ public class AboutEndpoint implements IEndpointHandler {
     ) {}
 
     @Override
-    public Response handle(Request request) {
+    public ApiResult handle(Request request) {
         Mod mod = Platform.getMod(CreateRailwaysNavigator.MOD_ID);
-        return Response.json(new Data(
+        return ApiResult.json(new Data(
                 Platform.getMinecraftVersion(),
                 CreateRailwaysNavigator.MOD_ID,
                 mod.getName(),

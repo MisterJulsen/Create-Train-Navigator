@@ -1,5 +1,7 @@
 package de.mrjulsen.crn.web.endpoint;
 
+import org.eclipse.jetty.server.Request;
+
 import de.mrjulsen.crn.api.core.RailwayBackendApi;
 import de.mrjulsen.crn.api.core.snapshot.TrainSnapshot;
 import de.mrjulsen.crn.web.ModWebFeatures;
@@ -11,9 +13,9 @@ import java.util.UUID;
 public class TrainEndpoint implements IEndpointHandler {
 
     @Override
-    public Response handle(Request request) {
-        UUID trainId = request.pathParameter("id", ParamType.UUID);
-        return Response.json(RailwayBackendApi.getTrain(trainId).orElseThrow(() -> new NotFoundException("No train with id " + trainId)));
+    public ApiResult handle(Request request) {
+        UUID trainId = RequestParams.path(request, "id", ParamType.UUID);
+        return ApiResult.json(RailwayBackendApi.getTrain(trainId).orElseThrow(() -> new NotFoundException("No train with id " + trainId)));
     }
 
     @Override

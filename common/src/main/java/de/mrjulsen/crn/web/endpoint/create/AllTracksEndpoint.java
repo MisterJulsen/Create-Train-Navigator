@@ -7,8 +7,8 @@ import de.mrjulsen.crn.util.TrainUtils;
 import de.mrjulsen.crn.web.ModWebFeatures;
 import de.mrjulsen.crn.web.api.IEndpointHandler;
 import de.mrjulsen.crn.web.api.QueryBinder;
-import de.mrjulsen.crn.web.api.Request;
-import de.mrjulsen.crn.web.api.Response;
+import org.eclipse.jetty.server.Request;
+import de.mrjulsen.crn.web.api.ApiResult;
 import de.mrjulsen.crn.web.openapi.EndpointDocumentation;
 
 import java.util.ArrayList;
@@ -17,7 +17,7 @@ import java.util.List;
 public class AllTracksEndpoint implements IEndpointHandler {
 
     @Override
-    public Response handle(Request request) {
+    public ApiResult handle(Request request) {
         CreateTrackQuery query = QueryBinder.bind(request, CreateTrackQuery.class);
         List<CreateTrackGraphSnapshot> graphs = new ArrayList<>();
         for (TrackGraph graph : TrainUtils.getRailwayManager().trackNetworks.values()) {
@@ -30,7 +30,7 @@ public class AllTracksEndpoint implements IEndpointHandler {
             }
             graphs.add(snapshot);
         }
-        return Response.json(graphs);
+        return ApiResult.json(graphs);
     }
 
     @Override
