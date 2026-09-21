@@ -2,13 +2,8 @@ architectury {
     common rootProject.enabled_platforms.split(',')
 }
 
-def refmapName = "${rootProject.archives_name}-refmap.json"
-
 loom {
     accessWidenerPath = file("src/main/resources/createrailwaysnavigator.accesswidener")
-    //mixin {
-    //    defaultRefmapName = refmapName
-    //}
 }
 
 dependencies {
@@ -23,4 +18,8 @@ dependencies {
     compileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-${minecraft_version}:${flywheel_neoforge_version}")
     runtimeOnly("dev.engine-room.flywheel:flywheel-neoforge-${minecraft_version}:${flywheel_neoforge_version}")
     implementation("com.tterrag.registrate:Registrate:${registrate_neoforge_version}")
+
+    compileOnly("org.eclipse.jetty:jetty-server:${rootProject.jetty_version}")
+    compileOnly("org.eclipse.jetty.compression:jetty-compression-server:${rootProject.jetty_version}")
+    compileOnly("org.eclipse.jetty.compression:jetty-compression-gzip:${rootProject.jetty_version}")
 }
