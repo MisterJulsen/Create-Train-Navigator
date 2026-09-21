@@ -8,14 +8,14 @@ import de.mrjulsen.crn.web.api.BadRequestException;
 import de.mrjulsen.crn.web.api.IEndpointHandler;
 import de.mrjulsen.crn.web.api.NotFoundException;
 import de.mrjulsen.crn.web.api.QueryBinder;
-import de.mrjulsen.crn.web.api.Request;
-import de.mrjulsen.crn.web.api.Response;
+import org.eclipse.jetty.server.Request;
+import de.mrjulsen.crn.web.api.ApiResult;
 import de.mrjulsen.crn.web.openapi.EndpointDocumentation;
 
 public class NavigateEndpoint implements IEndpointHandler {
 
     @Override
-    public Response handle(Request request) {
+    public ApiResult handle(Request request) {
         NavigationQuery query = QueryBinder.bind(request, NavigationQuery.class);
         NavigationResult result = Navigator.search(query);
         switch (result.status()) {
@@ -23,7 +23,7 @@ public class NavigateEndpoint implements IEndpointHandler {
             case UNKNOWN_STATION -> throw new NotFoundException("An origin, destination or waypoint named a station that does not exist.");
             default -> { }
         }
-        return Response.json(result);
+        return ApiResult.json(result);
     }
 
     @Override

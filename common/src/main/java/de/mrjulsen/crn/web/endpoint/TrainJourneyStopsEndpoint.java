@@ -1,5 +1,7 @@
 package de.mrjulsen.crn.web.endpoint;
 
+import de.mrjulsen.crn.web.api.RequestParams;
+
 import de.mrjulsen.crn.api.core.snapshot.JourneySnapshot;
 import de.mrjulsen.crn.api.core.snapshot.StopSnapshot;
 import de.mrjulsen.crn.core.TrainManager;
@@ -7,8 +9,8 @@ import de.mrjulsen.crn.web.ModWebFeatures;
 import de.mrjulsen.crn.web.api.IEndpointHandler;
 import de.mrjulsen.crn.web.api.NotFoundException;
 import de.mrjulsen.crn.web.api.ParamType;
-import de.mrjulsen.crn.web.api.Request;
-import de.mrjulsen.crn.web.api.Response;
+import org.eclipse.jetty.server.Request;
+import de.mrjulsen.crn.web.api.ApiResult;
 import de.mrjulsen.crn.web.openapi.EndpointDocumentation;
 
 import java.util.List;
@@ -25,16 +27,16 @@ public class TrainJourneyStopsEndpoint implements IEndpointHandler {
     }
 
     @Override
-    public Response handle(Request request) {
-        UUID trainId = request.pathParameter("id", ParamType.UUID);
+    public ApiResult handle(Request request) {
+        UUID trainId = RequestParams.path(request, "id", ParamType.UUID);
         JourneySnapshot journey = TrainManager.getInstance().getTrain(trainId).map(JourneySnapshot::of).orElseThrow(() -> new NotFoundException("No train with id " + trainId));
-        Timeline timeline = request.query("direction", q -> (q == null || q.isEmpty()) ? Timeline.ALL : Timeline.valueOf(q.toUpperCase(Locale.ROOT))).orElse(Timeline.ALL);
+        Timeline timeline = RequestParams.query(request, "direction", q -> (q == null || q.isEmpty()) ? Timeline.ALL : Timeline.valueOf(q.toUpperCase(Locale.ROOT))).orElse(Timeline.ALL);
         List<StopSnapshot> stops = switch (timeline) {
             case PREVIOUS -> journey.recentStops();
             case NEXT -> journey.upcomingStops();
             default -> journey.stops();
         };
-        return Response.json(stops);
+        return ApiResult.json(stops);
     }
 
     @Override

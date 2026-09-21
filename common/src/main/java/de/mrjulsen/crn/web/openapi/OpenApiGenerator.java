@@ -17,7 +17,6 @@ import de.mrjulsen.crn.web.annotation.QueryParam;
 import de.mrjulsen.crn.web.api.ApiTagRegistry;
 import de.mrjulsen.crn.web.api.ApiVersion;
 import de.mrjulsen.crn.web.api.EndpointRegistry;
-import de.mrjulsen.crn.web.api.PathPattern;
 import de.mrjulsen.crn.web.api.GlobalParameters;
 import dev.architectury.platform.Mod;
 import dev.architectury.platform.Platform;
@@ -39,10 +38,10 @@ public final class OpenApiGenerator {
                 continue;
             }
             EndpointDocumentation doc = safeDoc(route.handler());
-            for (PathPattern pattern : route.patterns()) {
-                String path = "/" + pattern.raw();
+            for (String rawPath : route.paths()) {
+                String path = "/" + rawPath;
                 Map<String, Object> operations = paths.computeIfAbsent(path, k -> new LinkedHashMap<>());
-                Map<String, Object> operation = buildOperation(route, pattern, doc, schemas, tags, operationIds);
+                Map<String, Object> operation = buildOperation(route, rawPath, doc, schemas, tags, operationIds);
                 operations.put(route.method().name().toLowerCase(), operation);
             }
         }
@@ -64,9 +63,9 @@ public final class OpenApiGenerator {
         return document;
     }
 
-    private static Map<String, Object> buildOperation(EndpointRegistry.Route route, PathPattern pattern, EndpointDocumentation doc, SchemaGenerator schemas, Set<ApiTagRegistry.ApiTag> tags, Set<String> operationIds) {
+    private static Map<String, Object> buildOperation(EndpointRegistry.Route route, String path, EndpointDocumentation doc, SchemaGenerator schemas, Set<ApiTagRegistry.ApiTag> tags, Set<String> operationIds) {
         Map<String, Object> operation = new LinkedHashMap<>();
-        operation.put(OpenApiKeys.OPERATION_ID, operationId(route.method().name(), pattern, operationIds));
+        operation.put(OpenApiKeys.OPERATION_ID, operationId(route.method().name(), path, operationIds));
 
         List<ApiTagRegistry.ApiTag> operationTags = doc != null ? doc.tags() : List.of();
         tags.addAll(operationTags);
@@ -88,7 +87,7 @@ public final class OpenApiGenerator {
             operation.put(OpenApiKeys.DEPRECATED, true);
         }
 
-        List<Object> parameters = parameters(pattern, doc, schemas);
+        List<Object> parameters = parameters(path, doc, schemas);
         if (!parameters.isEmpty()) {
             operation.put(OpenApiKeys.PARAMETERS, parameters);
         }
@@ -101,9 +100,9 @@ public final class OpenApiGenerator {
         return operation;
     }
 
-    private static List<Object> parameters(PathPattern pattern, EndpointDocumentation doc, SchemaGenerator schemas) {
+    private static List<Object> parameters(String path, EndpointDocumentation doc, SchemaGenerator schemas) {
         List<Object> parameters = new ArrayList<>();
-        for (String name : pathParameters(pattern)) {
+        for (String name : pathParameters(path)) {
             Map<String, Object> parameter = new LinkedHashMap<>();
             parameter.put(OpenApiKeys.NAME, name);
             parameter.put(OpenApiKeys.IN, OpenApiKeys.IN_PATH);
@@ -355,9 +354,19 @@ public final class OpenApiGenerator {
         return list;
     }
 
-    private static List<String> pathParameters(PathPattern pattern) {
+    private static List<String> segments(String path) {
+        List<String> out = new ArrayList<>();
+        for (String part : path.split("/")) {
+            if (!part.isEmpty()) {
+                out.add(part);
+            }
+        }
+        return out;
+    }
+
+    private static List<String> pathParameters(String path) {
         List<String> names = new ArrayList<>();
-        for (String segment : PathPattern.split(pattern.raw())) {
+        for (String segment : segments(path)) {
             if (segment.length() >= 2 && segment.startsWith("{") && segment.endsWith("}")) {
                 names.add(segment.substring(1, segment.length() - 1));
             }
@@ -365,9 +374,9 @@ public final class OpenApiGenerator {
         return names;
     }
 
-    private static String operationId(String method, PathPattern pattern, Set<String> used) {
+    private static String operationId(String method, String path, Set<String> used) {
         StringBuilder builder = new StringBuilder(method.toLowerCase());
-        for (String segment : PathPattern.split(pattern.raw())) {
+        for (String segment : segments(path)) {
             builder.append('_');
             if (segment.length() >= 2 && segment.startsWith("{") && segment.endsWith("}")) {
                 builder.append("by_").append(sanitize(segment.substring(1, segment.length() - 1)));

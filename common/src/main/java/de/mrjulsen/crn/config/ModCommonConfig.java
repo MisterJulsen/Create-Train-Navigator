@@ -1,6 +1,7 @@
 package de.mrjulsen.crn.config;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.web.WebServer;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 import java.util.List;
@@ -36,7 +37,7 @@ public class ModCommonConfig {
         WEB_PORT = BUILDER.comment("The port the web API listens on over plain HTTP. It must not be the Minecraft port and must not be used by another program. Use a reverse proxy for HTTPS. (Default: 25580)")
             .defineInRange("web.port", 25580, 1, 65535);
         WEB_THREADS = BUILDER.comment("How many requests the web API can process at the same time. Higher values do not make the server faster, they only allow more clients to wait in parallel. (Default: 16)")
-            .defineInRange("web.threads", 16, 1, 64);
+            .defineInRange("web.threads", 16, WebServer.MIN_THREADS, 64);
         WEB_MAX_REQUEST_BYTES = BUILDER.comment("[in Bytes]", "The largest request body the web API accepts. Anything above is rejected with 413 before it is read into memory. (Default: 65536, 64 KiB)")
             .defineInRange("web.max_request_bytes", 65536, 1024, 8388608);
         WEB_GZIP_ENABLED = BUILDER.comment("Compresses responses with gzip when the client accepts it. This cuts the size of large responses. (Default: ON)")

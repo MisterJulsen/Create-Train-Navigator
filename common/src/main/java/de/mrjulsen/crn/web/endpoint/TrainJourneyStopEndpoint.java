@@ -1,5 +1,7 @@
 package de.mrjulsen.crn.web.endpoint;
 
+import de.mrjulsen.crn.web.api.RequestParams;
+
 import de.mrjulsen.crn.api.core.RailwayBackendApi;
 import de.mrjulsen.crn.api.core.snapshot.JourneySnapshot;
 import de.mrjulsen.crn.api.core.snapshot.StopSnapshot;
@@ -8,8 +10,8 @@ import de.mrjulsen.crn.web.ModWebFeatures;
 import de.mrjulsen.crn.web.api.IEndpointHandler;
 import de.mrjulsen.crn.web.api.NotFoundException;
 import de.mrjulsen.crn.web.api.ParamType;
-import de.mrjulsen.crn.web.api.Request;
-import de.mrjulsen.crn.web.api.Response;
+import org.eclipse.jetty.server.Request;
+import de.mrjulsen.crn.web.api.ApiResult;
 import de.mrjulsen.crn.web.openapi.EndpointDocumentation;
 
 import java.util.Locale;
@@ -26,10 +28,10 @@ public class TrainJourneyStopEndpoint implements IEndpointHandler {
     }
 
     @Override
-    public Response handle(Request request) {
-        UUID trainId = request.pathParameter("id", ParamType.UUID);
-        Timeline timeline = request.query("direction", q -> (q == null || q.isEmpty()) ? Timeline.CURRENT : Timeline.valueOf(q.toUpperCase(Locale.ROOT))).orElse(Timeline.CURRENT);
-        Optional<String> station = request.query("station", ParamType.STRING);
+    public ApiResult handle(Request request) {
+        UUID trainId = RequestParams.path(request, "id", ParamType.UUID);
+        Timeline timeline = RequestParams.query(request, "direction", q -> (q == null || q.isEmpty()) ? Timeline.CURRENT : Timeline.valueOf(q.toUpperCase(Locale.ROOT))).orElse(Timeline.CURRENT);
+        Optional<String> station = RequestParams.query(request, "station", ParamType.STRING);
 
         JourneySnapshot journey = TrainManager.getInstance().getTrain(trainId).map(JourneySnapshot::of).orElseThrow(() -> new NotFoundException("No train with id " + trainId));
         Optional<StopSnapshot> stop = switch (timeline) {
@@ -37,7 +39,7 @@ public class TrainJourneyStopEndpoint implements IEndpointHandler {
             case NEXT -> station.map(q -> journey.nextCallAt(q, RailwayBackendApi.getCurrentTime())).orElse(journey.nextStop());
             default -> journey.currentStop();
         };
-        return Response.json(stop.orElse(null));
+        return ApiResult.json(stop.orElse(null));
     }
 
     @Override

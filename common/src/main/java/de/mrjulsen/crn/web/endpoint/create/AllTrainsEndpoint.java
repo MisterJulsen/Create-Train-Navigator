@@ -6,16 +6,16 @@ import de.mrjulsen.crn.util.TrainUtils;
 import de.mrjulsen.crn.web.ModWebFeatures;
 import de.mrjulsen.crn.web.api.IEndpointHandler;
 import de.mrjulsen.crn.web.api.QueryBinder;
-import de.mrjulsen.crn.web.api.Request;
-import de.mrjulsen.crn.web.api.Response;
+import org.eclipse.jetty.server.Request;
+import de.mrjulsen.crn.web.api.ApiResult;
 import de.mrjulsen.crn.web.openapi.EndpointDocumentation;
 
 public class AllTrainsEndpoint implements IEndpointHandler {
 
     @Override
-    public Response handle(Request request) {
+    public ApiResult handle(Request request) {
         CreateTrainQuery query = QueryBinder.bind(request, CreateTrainQuery.class);
-        return Response.json(TrainUtils.getAllTrains(false).stream().filter(query::accept).map(CreateTrainSnapshot::of).toList());
+        return ApiResult.json(TrainUtils.getAllTrains(false).stream().filter(query::accept).map(CreateTrainSnapshot::of).toList());
     }
 
     @Override

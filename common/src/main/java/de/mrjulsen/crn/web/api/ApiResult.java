@@ -7,7 +7,7 @@ import java.util.Map;
 
 import de.mrjulsen.crn.api.json.JsonConvert;
 
-public final class Response {
+public final class ApiResult {
 
     private final int status;
     private final Map<String, String> headers = new LinkedHashMap<>();
@@ -15,57 +15,57 @@ public final class Response {
     private Object jsonPayload;
     private String contentType;
 
-    private Response(int status) {
+    private ApiResult(int status) {
         this.status = status;
     }
 
-    public static Response status(int status) {
-        return new Response(status);
+    public static ApiResult status(int status) {
+        return new ApiResult(status);
     }
 
-    public static Response ok() {
-        return new Response(HttpURLConnection.HTTP_OK);
+    public static ApiResult ok() {
+        return new ApiResult(HttpURLConnection.HTTP_OK);
     }
 
-    public static Response noContent() {
-        return new Response(HttpURLConnection.HTTP_NO_CONTENT);
+    public static ApiResult noContent() {
+        return new ApiResult(HttpURLConnection.HTTP_NO_CONTENT);
     }
 
-    public static Response json(Object data) {
+    public static ApiResult json(Object data) {
         return json(HttpURLConnection.HTTP_OK, data);
     }
 
-    public static Response json(int status, Object data) {
-        Response response = new Response(status);
-        response.jsonPayload = data;
-        response.contentType = MediaType.JSON;
-        return response;
+    public static ApiResult json(int status, Object data) {
+        ApiResult result = new ApiResult(status);
+        result.jsonPayload = data;
+        result.contentType = MediaType.JSON;
+        return result;
     }
 
-    public static Response created(Object data) {
+    public static ApiResult created(Object data) {
         return json(HttpURLConnection.HTTP_CREATED, data);
     }
 
-    public static Response text(String text) {
-        return new Response(HttpURLConnection.HTTP_OK)
+    public static ApiResult text(String text) {
+        return new ApiResult(HttpURLConnection.HTTP_OK)
             .rawBody(text.getBytes(StandardCharsets.UTF_8), MediaType.TEXT);
     }
 
-    public static Response error(int status, String message) {
+    public static ApiResult error(int status, String message) {
         return json(status, new ErrorBody(status, message));
     }
 
-    public Response header(String name, String value) {
+    public ApiResult header(String name, String value) {
         headers.put(name, value);
         return this;
     }
 
-    public Response contentType(String contentType) {
+    public ApiResult contentType(String contentType) {
         this.contentType = contentType;
         return this;
     }
 
-    public Response rawBody(byte[] body, String contentType) {
+    public ApiResult rawBody(byte[] body, String contentType) {
         this.body = body;
         this.jsonPayload = null;
         this.contentType = contentType;
@@ -80,7 +80,7 @@ public final class Response {
         return jsonPayload;
     }
 
-    public Response jsonPayload(Object payload) {
+    public ApiResult jsonPayload(Object payload) {
         this.jsonPayload = payload;
         return this;
     }
@@ -103,8 +103,6 @@ public final class Response {
     public String contentType() {
         return contentType;
     }
-
-
 
     private record ErrorBody(int status, String error) {}
 }

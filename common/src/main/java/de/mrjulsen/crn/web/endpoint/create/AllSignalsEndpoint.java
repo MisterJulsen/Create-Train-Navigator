@@ -6,16 +6,16 @@ import de.mrjulsen.crn.util.TrainUtils;
 import de.mrjulsen.crn.web.ModWebFeatures;
 import de.mrjulsen.crn.web.api.IEndpointHandler;
 import de.mrjulsen.crn.web.api.QueryBinder;
-import de.mrjulsen.crn.web.api.Request;
-import de.mrjulsen.crn.web.api.Response;
+import org.eclipse.jetty.server.Request;
+import de.mrjulsen.crn.web.api.ApiResult;
 import de.mrjulsen.crn.web.openapi.EndpointDocumentation;
 
 public class AllSignalsEndpoint implements IEndpointHandler {
 
     @Override
-    public Response handle(Request request) {
+    public ApiResult handle(Request request) {
         CreateSignalQuery query = QueryBinder.bind(request, CreateSignalQuery.class);
-        return Response.json(TrainUtils.getAllSignals().stream().filter(query::accept).map(CreateSignalSnapshot::of).toList());
+        return ApiResult.json(TrainUtils.getAllSignals().stream().filter(query::accept).map(CreateSignalSnapshot::of).toList());
     }
 
     @Override

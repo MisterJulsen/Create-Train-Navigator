@@ -1,5 +1,7 @@
 package de.mrjulsen.crn.web.endpoint;
 
+import de.mrjulsen.crn.web.api.RequestParams;
+
 import de.mrjulsen.crn.api.core.RailwayBackendApi;
 import de.mrjulsen.crn.api.core.snapshot.JourneySnapshot;
 import de.mrjulsen.crn.api.core.snapshot.SectionSnapshot;
@@ -7,8 +9,8 @@ import de.mrjulsen.crn.web.ModWebFeatures;
 import de.mrjulsen.crn.web.api.IEndpointHandler;
 import de.mrjulsen.crn.web.api.NotFoundException;
 import de.mrjulsen.crn.web.api.ParamType;
-import de.mrjulsen.crn.web.api.Request;
-import de.mrjulsen.crn.web.api.Response;
+import org.eclipse.jetty.server.Request;
+import de.mrjulsen.crn.web.api.ApiResult;
 import de.mrjulsen.crn.web.openapi.EndpointDocumentation;
 
 import java.util.UUID;
@@ -16,9 +18,9 @@ import java.util.UUID;
 public class TrainSectionEndpoint implements IEndpointHandler {
 
     @Override
-    public Response handle(Request request) {
-        UUID trainId = request.pathParameter("id", ParamType.UUID);
-        return Response.json(RailwayBackendApi.getJourney(trainId).flatMap(JourneySnapshot::currentSection).orElseThrow(() -> new NotFoundException("No active section for train " + trainId)));
+    public ApiResult handle(Request request) {
+        UUID trainId = RequestParams.path(request, "id", ParamType.UUID);
+        return ApiResult.json(RailwayBackendApi.getJourney(trainId).flatMap(JourneySnapshot::currentSection).orElseThrow(() -> new NotFoundException("No active section for train " + trainId)));
     }
 
     @Override

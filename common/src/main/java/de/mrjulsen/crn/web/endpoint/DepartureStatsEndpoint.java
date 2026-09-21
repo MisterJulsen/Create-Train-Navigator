@@ -1,20 +1,22 @@
 package de.mrjulsen.crn.web.endpoint;
 
+import de.mrjulsen.crn.web.api.RequestParams;
+
 import de.mrjulsen.crn.api.core.RailwayBackendApi;
 import de.mrjulsen.crn.core.history.DepartureStats;
 import de.mrjulsen.crn.web.ModWebFeatures;
 import de.mrjulsen.crn.web.api.IEndpointHandler;
 import de.mrjulsen.crn.web.api.ParamType;
-import de.mrjulsen.crn.web.api.Request;
-import de.mrjulsen.crn.web.api.Response;
+import org.eclipse.jetty.server.Request;
+import de.mrjulsen.crn.web.api.ApiResult;
 import de.mrjulsen.crn.web.openapi.EndpointDocumentation;
 
 public class DepartureStatsEndpoint implements IEndpointHandler {
 
     @Override
-    public Response handle(Request request) {
-        String stationName = request.pathParameter("station", ParamType.STRING);
-        return Response.json(RailwayBackendApi.getDepartureStats(stationName));
+    public ApiResult handle(Request request) {
+        String stationName = RequestParams.path(request, "station", ParamType.STRING);
+        return ApiResult.json(RailwayBackendApi.getDepartureStats(stationName));
     }
 
     @Override

@@ -1,21 +1,23 @@
 package de.mrjulsen.crn.web.endpoint;
 
+import de.mrjulsen.crn.web.api.RequestParams;
+
 import de.mrjulsen.crn.api.core.RailwayBackendApi;
 import de.mrjulsen.crn.api.core.snapshot.StationSnapshot;
 import de.mrjulsen.crn.web.ModWebFeatures;
 import de.mrjulsen.crn.web.api.IEndpointHandler;
 import de.mrjulsen.crn.web.api.NotFoundException;
 import de.mrjulsen.crn.web.api.ParamType;
-import de.mrjulsen.crn.web.api.Request;
-import de.mrjulsen.crn.web.api.Response;
+import org.eclipse.jetty.server.Request;
+import de.mrjulsen.crn.web.api.ApiResult;
 import de.mrjulsen.crn.web.openapi.EndpointDocumentation;
 
 public class StationEndpoint implements IEndpointHandler {
 
     @Override
-    public Response handle(Request request) {
-        String stationName = request.pathParameter("name", ParamType.STRING);
-        return Response.json(RailwayBackendApi.getStation(stationName).orElseThrow(() -> new NotFoundException("No station named " + stationName)));
+    public ApiResult handle(Request request) {
+        String stationName = RequestParams.path(request, "name", ParamType.STRING);
+        return ApiResult.json(RailwayBackendApi.getStation(stationName).orElseThrow(() -> new NotFoundException("No station named " + stationName)));
     }
 
     @Override

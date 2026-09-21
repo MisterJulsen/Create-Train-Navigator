@@ -37,6 +37,11 @@ configurations {
         canBeResolved = true
         canBeConsumed = false
     }
+
+    jettyBundle {
+        canBeResolved = true
+        canBeConsumed = false
+    }
 }
 
 repositories {
@@ -63,6 +68,29 @@ dependencies {
     shadowBundle project(path: ':common', configuration: 'transformProductionNeoForge')
 }
 
+
+dependencies {
+    jettyBundle("org.eclipse.jetty:jetty-server:${rootProject.jetty_version}") {
+        exclude group: "org.slf4j", module: "slf4j-api"
+    }
+    jettyBundle("org.eclipse.jetty.compression:jetty-compression-server:${rootProject.jetty_version}") {
+        exclude group: "org.slf4j", module: "slf4j-api"
+    }
+    jettyBundle("org.eclipse.jetty.compression:jetty-compression-gzip:${rootProject.jetty_version}") {
+        exclude group: "org.slf4j", module: "slf4j-api"
+    }
+}
+
+def jettyRuntimeJars = configurations.jettyBundle.resolvedConfiguration.resolvedArtifacts.collect { art ->
+    def m = art.moduleVersion.id
+    "${m.group}:${m.name}:${m.version}".toString()
+}
+
+dependencies {
+    jettyRuntimeJars.each { notation ->
+        include(forgeRuntimeLibrary(notation))
+    }
+}
 
 processResources {
     inputs.property 'version', project.version
@@ -124,6 +152,8 @@ shadowJar {
     archiveClassifier = 'dev-shadow'
 
     from(rootProject.file('LICENSE'))
+    from(rootProject.file('LICENSE_jetty'))
+    from(rootProject.file('NOTICE.txt'))
 }
 
 remapJar {

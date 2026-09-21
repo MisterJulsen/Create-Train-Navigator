@@ -17,6 +17,10 @@ public record WebServerSettings(
     List<String> corsOrigins
 ) {
 
+    public long idleTimeoutMillis() {
+        return 30000L;
+    }
+
     public static WebServerSettings fromConfig() {
         return new WebServerSettings(
             ModCommonConfig.WEB_ENABLED.get(),

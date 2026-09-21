@@ -1,5 +1,7 @@
 package de.mrjulsen.crn.web.endpoint;
 
+import org.eclipse.jetty.server.Request;
+
 import de.mrjulsen.crn.api.core.RailwayBackendApi;
 import de.mrjulsen.crn.api.core.query.TrainQuery;
 import de.mrjulsen.crn.api.core.snapshot.TrainSnapshot;
@@ -10,9 +12,9 @@ import de.mrjulsen.crn.web.openapi.EndpointDocumentation;
 public class TrainsEndpoint implements IEndpointHandler {
 
     @Override
-    public Response handle(Request request) {
+    public ApiResult handle(Request request) {
         TrainQuery query = QueryBinder.bind(request, TrainQuery.class);
-        return Response.json(RailwayBackendApi.getTrains(query));
+        return ApiResult.json(RailwayBackendApi.getTrains(query));
     }
 
     @Override

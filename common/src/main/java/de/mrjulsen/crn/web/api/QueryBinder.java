@@ -18,6 +18,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import org.eclipse.jetty.server.Request;
+
 import de.mrjulsen.crn.web.annotation.QueryModel;
 import de.mrjulsen.crn.web.annotation.QueryParam;
 
@@ -80,7 +82,7 @@ public final class QueryBinder {
 
     private static Binding analyze(Class<?> model) {
         if (!model.isAnnotationPresent(QueryModel.class)) {
-            throw new IllegalStateException(model.getName() + " is not annotated with @RestQueryModel");
+            throw new IllegalStateException(model.getName() + " is not annotated with @QueryModel");
         }
         Method factory = null;
         List<Method> refiners = new ArrayList<>();
@@ -89,11 +91,11 @@ public final class QueryBinder {
                 continue;
             }
             if (method.getParameterCount() != 1) {
-                throw new IllegalStateException("@RestQueryParam method must take exactly one parameter: " + method);
+                throw new IllegalStateException("@QueryParam method must take exactly one parameter: " + method);
             }
             if (Modifier.isStatic(method.getModifiers())) {
                 if (factory != null) {
-                    throw new IllegalStateException("Multiple @RestQueryParam factories on " + model.getName());
+                    throw new IllegalStateException("Multiple @QueryParam factories on " + model.getName());
                 }
                 factory = method;
             } else {
@@ -150,8 +152,6 @@ public final class QueryBinder {
         return buildInstance(model, types, args);
     }
 
-
-
     private record Applied(Object instance, int count) {}
 
     private static Applied applyRefiners(Request request, Object current, List<Method> refiners) {
@@ -184,7 +184,7 @@ public final class QueryBinder {
 
         if (List.class.isAssignableFrom(type) || Set.class.isAssignableFrom(type)) {
             Function<String, ?> parser = ParamType.forType(getElementType(genericType));
-            List<?> values = param.required() ? request.requireValues(name, parser) : request.queryValues(name, parser);
+            List<?> values = param.required() ? RequestParams.requireValues(request, name, parser) : RequestParams.queryValues(request, name, parser);
             if (values.isEmpty()) {
                 return SKIP;
             }
@@ -193,15 +193,15 @@ public final class QueryBinder {
 
         Function<String, ?> parser = ParamType.forType(type);
         if (param.required()) {
-            return request.requireQuery(name, parser);
+            return RequestParams.requireQuery(request, name, parser);
         }
-        Optional<?> value = request.query(name, parser);
+        Optional<?> value = RequestParams.query(request, name, parser);
         return value.isPresent() ? value.get() : SKIP;
     }
 
     private static <T> T getDefaultInstance(Class<T> model) {
         if (!model.isRecord()) {
-            throw new IllegalStateException("Query model without a static @RestQueryParam factory must be a record: " + model.getName());
+            throw new IllegalStateException("Query model without a static @QueryParam factory must be a record: " + model.getName());
         }
         RecordComponent[] components = model.getRecordComponents();
         Class<?>[] types = new Class<?>[components.length];
