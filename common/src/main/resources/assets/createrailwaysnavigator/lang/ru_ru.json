@@ -348,6 +348,7 @@
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.priority_pos": "Позиция: %s",
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.avoid_signals": "Обходить красные сигналы",
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.avoid_trains": "Обходить другие поезда",
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.detour": "Порог обьезда",
     "goggles.createrailwaysnavigator.train_listener.departures.title": "История отправлений",
     "goggles.createrailwaysnavigator.train_listener.departures.any": "Последнее отправление:",
     "goggles.createrailwaysnavigator.train_listener.departures.line": "Отправления по линиям:",
