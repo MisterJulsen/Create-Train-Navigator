@@ -10,16 +10,18 @@ import de.mrjulsen.crn.registry.ModItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LecternBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 
 import java.util.ArrayList;
 
@@ -46,17 +48,35 @@ public class NavigatorLecternBlock extends LecternBlock implements IBE<Navigator
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        if (!player.isShiftKeyDown() && NavigatorLecternBlockEntity.playerInRange(player, world, pos)) {
-            if (world.isClientSide) {
+    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+        if (!player.isShiftKeyDown() && NavigatorLecternBlockEntity.playerInRange(player, level, pos)) {
+            if (level.isClientSide) {
+                Screens.showNavigatorScreen(null, true);
+            }
+            return ItemInteractionResult.SUCCESS;
+        }
+
+        if (player.isShiftKeyDown()) {
+            if (!level.isClientSide) {
+                replaceWithLectern(state, level, pos);
+            }
+            return ItemInteractionResult.SUCCESS;
+        }
+        return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+    }
+
+    @Override
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
+        if (!player.isShiftKeyDown() && NavigatorLecternBlockEntity.playerInRange(player, level, pos)) {
+            if (level.isClientSide) {
                 Screens.showNavigatorScreen(null, true);
             }
             return InteractionResult.SUCCESS;
         }
 
         if (player.isShiftKeyDown()) {
-            if (!world.isClientSide) {
-                replaceWithLectern(state, world, pos);
+            if (!level.isClientSide) {
+                replaceWithLectern(state, level, pos);
             }
             return InteractionResult.SUCCESS;
         }
@@ -79,12 +99,12 @@ public class NavigatorLecternBlock extends LecternBlock implements IBE<Navigator
         return 15;
     }
 
-    public void replaceLectern(BlockState lecternState, Level world, BlockPos pos, ItemStack navigator) {
+    public void replaceLectern(BlockState lecternState, Level world, BlockPos pos, ItemStack controller) {
         world.setBlockAndUpdate(pos, defaultBlockState()
                 .setValue(FACING, lecternState.getValue(FACING))
                 .setValue(POWERED, lecternState.getValue(POWERED))
         );
-        withBlockEntityDo(world, pos, be -> be.setNavigator(navigator));
+        withBlockEntityDo(world, pos, be -> be.setNavigator(controller));
     }
 
     public void replaceWithLectern(BlockState state, Level world, BlockPos pos) {
@@ -94,8 +114,8 @@ public class NavigatorLecternBlock extends LecternBlock implements IBE<Navigator
     }
 
     @Override
-    public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
-        return Blocks.LECTERN.getCloneItemStack(level, pos, state);
+    public ItemStack getCloneItemStack(BlockState state, HitResult target, LevelReader level, BlockPos pos, Player player) {
+        return Blocks.LECTERN.getCloneItemStack(state, target, level, pos, player);
     }
 
     @Override

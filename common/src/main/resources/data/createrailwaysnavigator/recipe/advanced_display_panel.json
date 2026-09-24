@@ -1,0 +1,18 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+        "BB",
+        "BB"
+    ],
+    "key": {
+        "B": [
+            {
+                "item": "createrailwaysnavigator:advanced_display"
+            }
+        ]
+    },
+    "result": {
+        "id": "createrailwaysnavigator:advanced_display_panel",
+        "count": 8
+    }
+}

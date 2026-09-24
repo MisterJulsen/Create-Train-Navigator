@@ -1,87 +1,116 @@
 package de.mrjulsen.crn.client.lang;
 
-import java.util.Arrays;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import dev.architectury.platform.Platform;
 import dev.architectury.utils.Env;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.language.LanguageInfo;
+import net.minecraft.locale.Language;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.util.StringRepresentable;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.server.packs.resources.ResourceManager;
 
-public enum CustomLanguage implements StringRepresentable {
-    DEFAULT("defaut", "def"),
-    ENGLISH("english", "en_us"),
-    GERMAN("german", "de_de"),
-    DUTCH("dutch", "nl_nl"),
-    POLISH("polish", "pl_pl"),
-    CHINESE_SIMPLIFIED("chinese_simplified", "zh_cn"),
-    SAXON("saxon", "sxu"),
-    BAVARIAN("bavarian", "bar"),
-    SPANISH("spanish", "es_es"),
-    RUSSIAN("russian", "ru_ru"),
-    FRENCH("french", "fr_fr"),
-    KOREAN("korean", "ko_kr"),
-    SWEDISH("swedish", "sv_se"),
-    PORTUGUESE("portuguese", "pt_pt"),
-    BASQUE("basque", "eu_es"),
-    ITALIAN("italian", "it_it"),
-    JAPANESE("japanese", "ja_jp"),
-    PORTUGUESE_BRAZILIAN("portuguese_brazilian", "pt_br"),
-    UKRAINIAN("ukrainian", "uk_ua"),
-    ARABIC("arabic", "ar_sa"),
-    CZECH("czech", "cs_cz"),
-    GERMAN_SWITZERLAND("german_switzerland", "de_ch"),
-    ROMANIAN("romanian", "ro_ro"),
-    TURKISH("turkish", "tr_tr"),
-    HUNGARIAN("hungarian", "hu_hu"),
-    HEBREW("hebrew", "he_il");
+public class CustomLanguage {
 
-    private String name;
-    private String code;
+    public static final String DEFAULT = "";
+    private static final String LANG_PATH_FORMAT = "lang/%s.json";
 
-    private CustomLanguage(String name, String code) {
-        this.name = name;
+    private final String code;
+    private final Map<String, String> translations;
+
+    private CustomLanguage(String code, Map<String, String> translations) {
         this.code = code;
+        this.translations = translations;
     }
 
-    public String getName() {
-        return name;
+    public static CustomLanguage createDefault() {
+        return new CustomLanguage(DEFAULT, Map.of());
+    }
+
+    public static CustomLanguage load(String code) {
+        if (code == null || DEFAULT.equals(code)) {
+            return createDefault();
+        }
+
+        Map<String, String> map = new HashMap<>();
+        ResourceManager resourceManager = Minecraft.getInstance().getResourceManager();
+        String path = String.format(Locale.ROOT, LANG_PATH_FORMAT, code);
+
+        for (String namespace : resourceManager.getNamespaces()) {
+            try {
+                ResourceLocation location = ResourceLocation.fromNamespaceAndPath(namespace, path);
+                for (Resource resource : resourceManager.getResourceStack(location)) {
+                    try (InputStream stream = resource.open()) {
+                        Language.loadFromJson(stream, map::put);
+                    } catch (IOException e) {
+                        CreateRailwaysNavigator.LOGGER.warn("Failed to load CRN translations for {} from pack {}", code, resource.sourcePackId(), e);
+                    }
+                }
+            } catch (Exception e) {
+                CreateRailwaysNavigator.LOGGER.warn("Skipped custom language file: {}:{} ({})", namespace, path, e.toString());
+            }
+        }
+        return new CustomLanguage(code, Map.copyOf(map));
     }
 
     public String getCode() {
         return code;
     }
 
-    public static CustomLanguage getByCode(String code) {
-        return Arrays.stream(values()).filter(x -> x.getCode().equals(code)).findFirst().orElse(DEFAULT);
+    public boolean isDefault() {
+        return DEFAULT.equals(code);
+    }
+
+    public boolean has(String key) {
+        return translations.containsKey(key);
+    }
+
+    public String getOrDefault(String key) {
+        return translations.getOrDefault(key, key);
+    }
+
+    public Optional<LanguageInfo> getLanguageInfo() {
+        try {
+            return Optional.ofNullable(Minecraft.getInstance().getLanguageManager().getLanguage(code));
+        } catch (Exception e) {
+            return Optional.empty();
+        }
     }
 
     public static MutableComponent translate(String key) {
         if (Platform.getEnvironment() == Env.CLIENT) {
-            MutableComponent comp = MutableComponent.create(new ModTranslatableComponent(key));
-            if (comp.getString().equals(key)) {
-                return TextUtils.translate(key);
-            }
-            return comp;
-        } else {
-            return TextUtils.translate(key);
+            return MutableComponent.create(new ModTranslatableComponent(key));
         }
+        return TextUtils.translate(key);
     }
 
     public static MutableComponent translate(String key, Object... args) {
         if (Platform.getEnvironment() == Env.CLIENT) {
-            MutableComponent comp = MutableComponent.create(new ModTranslatableComponent(key, args));
-            if (comp.getString().equals(key)) {
-                return TextUtils.translate(key, args);
-            }
-            return comp;
-        } else {
-            return TextUtils.translate(key, args);
+            return MutableComponent.create(new ModTranslatableComponent(key, args));
         }
+        return TextUtils.translate(key, args);
     }
-    
+
     @Override
-    public String getSerializedName() {
-        return code;
+    public boolean equals(Object obj) {
+        if (obj instanceof CustomLanguage o) {
+            return code.equals(o.code);
+        }
+        return false;
     }
-    
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(code);
+    }
 }

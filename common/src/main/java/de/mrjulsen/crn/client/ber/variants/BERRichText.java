@@ -15,6 +15,7 @@ import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.math.Point;
 import de.mrjulsen.mcdragonlib.util.math.Rectangle;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.level.Level;
@@ -46,7 +47,7 @@ public class BERRichText implements AbstractAdvancedDisplayRenderer<StaticTextDi
         if (staticText != null) {
             try {
                 JsonParser.parseString(staticText);
-                text = Component.Serializer.fromJsonLenient(staticText);
+                text = Component.Serializer.fromJsonLenient(staticText, RegistryAccess.EMPTY);
             } catch (Exception e) {
                 text = TextUtils.text(staticText);
             }

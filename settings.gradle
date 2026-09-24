@@ -2,14 +2,13 @@ pluginManagement {
     repositories {
         maven { url "https://maven.fabricmc.net/" }
         maven { url "https://maven.architectury.dev/" }
-        maven { url "https://maven.minecraftforge.net/" }
+        maven { url "https://files.minecraftforge.net/maven/" }
         maven { url "https://maven.mrjulsen.net/" }
         gradlePluginPortal()
     }
 }
 
-include("common")
-include("fabric")
-include("forge")
+rootProject.name = 'Create Railways Navigator 1.21.1'
 
-rootProject.name = "CRN 1.20.1 - C6-DL3"
+include 'common'
+include 'neoforge'

@@ -5,14 +5,18 @@ import java.util.List;
 import com.simibubi.create.foundation.gui.AllIcons;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.api.core.ref.StationRef;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.BarColor;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.ColorShade;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.ContainerColor;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.FooterSize;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
-import de.mrjulsen.crn.client.gui.flyout.FlyoutDepartureInWidget;
-import de.mrjulsen.crn.client.gui.flyout.FlyoutTrainCategoriesWidget;
+import de.mrjulsen.crn.client.gui.flyout.SettingFlyout;
+import de.mrjulsen.crn.client.gui.flyout.content.BoardFilterContent;
+import de.mrjulsen.crn.client.gui.flyout.content.FlyoutContent;
+import de.mrjulsen.crn.client.gui.flyout.content.TimeSettingContent;
+import de.mrjulsen.crn.client.gui.flyout.content.TrainCategoriesContent;
 import de.mrjulsen.crn.client.gui.widgets.AbstractFlyoutWidget.FlyoutPointer;
 import de.mrjulsen.crn.client.gui.widgets.autocomplete.StationTagsAutocomplete;
 import de.mrjulsen.crn.client.gui.widgets.create.CreateButton;
@@ -20,20 +24,24 @@ import de.mrjulsen.crn.client.gui.widgets.create.CreateTextBox;
 import de.mrjulsen.crn.client.gui.widgets.FlatIconButton;
 import de.mrjulsen.crn.client.gui.widgets.SearchOptionButton;
 import de.mrjulsen.crn.client.gui.widgets.StationDeparturesViewer;
-import de.mrjulsen.crn.data.StationTag;
-import de.mrjulsen.crn.data.StationTag.ClientStationTag;
+import java.util.UUID;
+
+import de.mrjulsen.crn.data.settings.StationTag;
 import de.mrjulsen.crn.registry.ModNetworkManager;
-import de.mrjulsen.crn.data.TagName;
-import de.mrjulsen.crn.data.UserSettings;
-import de.mrjulsen.crn.network.packets.pain.GetNearestStationPacketData;
-import de.mrjulsen.crn.network.packets.pain.GetUserSettingsPacketData;
-import de.mrjulsen.crn.network.packets.pain.StationTagRequestByTagPacketData;
+import de.mrjulsen.crn.data.settings.TagName;
+import de.mrjulsen.crn.data.settings.UserSettings;
+import de.mrjulsen.crn.network.packets.GetNearestStationPacketData;
+import de.mrjulsen.crn.network.packets.GetUserSettingsPacketData;
+import de.mrjulsen.crn.network.packets.StationTagRequestByTagPacketData;
+import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.gui.events.DLGuiStandardEvents;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLGuiComponent;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLWindowManager;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLPanel;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLTooltip;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.layout.TableLayout;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.layout.TableLayout.ColumnSizeMode;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.util.RenderLayer;
 import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import de.mrjulsen.mcdragonlib.data.ETextAlignment;
@@ -42,6 +50,7 @@ import de.mrjulsen.mcdragonlib.util.DLColor;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.math.Rectangle;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.MutableComponent;
 
@@ -53,17 +62,19 @@ public class ScheduleBoardWindow extends AbstractNavigatorScreen {
     private CreateTextBox stationBox;
 
     private String stationTagName;
+    private UUID stationTagId;
     private final boolean fixedStation;
 
     private final MutableComponent tooltipSearch = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.search.tooltip");
     private final MutableComponent tooltipLocation = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.location.tooltip");
     private final MutableComponent tooltipRefresh = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".navigator.refresh.tooltip");
 
-    public ScheduleBoardWindow(DLWindowManager manager, ClientStationTag tag) {
+    public ScheduleBoardWindow(DLWindowManager manager, StationRef tag) {
         super(manager, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".schedule_board.title"), ContainerColor.GOLD, BarColor.GOLD);
         this.fixedStation = tag != null;
         if (fixedStation) {
             this.stationTagName = tag.tagName();
+            this.stationTagId = tag.tagId();
         }
 
         int wY = FooterSize.DEFAULT.size() - 1;
@@ -81,13 +92,15 @@ public class ScheduleBoardWindow extends AbstractNavigatorScreen {
             searchButton.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
                 String stationFrom = stationBox.text.get().getPlainText();
                 if (stationFrom == null || stationFrom.isBlank()) {
-                    viewer.displayDepartures(stationFrom, userSettings);
+                    stationTagId = null;
+                    viewer.displayDepartures(null, userSettings);
                     return false;
                 }
 
                 ModNetworkManager.GET_STATION_TAG_BY_TAG.send(NetworkDirection.toServer(), new StationTagRequestByTagPacketData.Request(TagName.of(stationFrom)), (response) -> {
                     stationTagName = response.getTag().getTagName().get();
-                    viewer.displayDepartures(stationTagName, userSettings);
+                    stationTagId = response.getTag().getId();
+                    viewer.displayDepartures(stationTagId, userSettings);
                 }, () -> {});
                 return false;
             });
@@ -109,41 +122,64 @@ public class ScheduleBoardWindow extends AbstractNavigatorScreen {
         layout.addColumn("departure", 0.3333333f, ColumnSizeMode.PERCENTAGE);
         layout.addColumn("categories", 0.3333333f, ColumnSizeMode.PERCENTAGE);
         layout.addColumn("filter", 0.3333333f, ColumnSizeMode.PERCENTAGE);
-        layout.addColumn("refresh", 18, ColumnSizeMode.FIXED);
+        //layout.addColumn("refresh", 18, ColumnSizeMode.FIXED);
+        layout.columnGap.set(1);
         optionsPanel.layout.set(layout);
         addComponent(optionsPanel);
+        optionsPanel.addEventListener(DLGuiStandardEvents.RenderEvent.class, (s, e) -> {
+            if (e.layer() == RenderLayer.MAIN) {
+                for (int i = 0; i < optionsPanel.componentsCount() - 1; i++) {
+                    try {
+                        DLGuiComponent c = optionsPanel.getComponents().get(i);
+                        if (c != null) {
+                            GuiUtils.fill(e.graphics(), c.x() + c.width(), 2, 1, optionsPanel.height() - 4, DragonLib.VANILLA_BUTTON_DISABLED_FONT_COLOR);
+                        }
+                    } catch (Exception ignored) {}
+                }
+            }
+            return false;
+        });
 
-        SearchOptionButton departureInBtn = new SearchOptionButton(0, 0, 100, 18, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.departure_in"), () -> userSettings.searchDepartureInTicks.toString(), (b) -> {
-            getWindowManager().createModal((mgr) -> new FlyoutDepartureInWidget(mgr, b, FlyoutPointer.UP, ColorShade.DARK, userSettings, () -> userSettings.searchDepartureInTicks));
+        SearchOptionButton departureInBtn = new SearchOptionButton(0, 0, 100, optionLabel("departure_in"), () -> userSettings.searchDepartureInTicks.toString(), (b) -> {
+            openSetting(b, new TimeSettingContent(optionLabel("departure_in").withStyle(ChatFormatting.BOLD), () -> userSettings.searchDepartureInTicks));
         });
         departureInBtn.layoutContraint.set("departure");
         optionsPanel.addComponent(departureInBtn);
-        
-        SearchOptionButton trainCategoriesBtn = new SearchOptionButton(0, 0, 100, 18, TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.train_categories"), () -> userSettings.searchExcludedTrainCaegories.toString(), (b) -> {
-            getWindowManager().createModal((mgr) -> new FlyoutTrainCategoriesWidget(mgr, b, FlyoutPointer.UP, ColorShade.DARK, userSettings, () -> userSettings.searchExcludedTrainCaegories));
+
+        SearchOptionButton trainCategoriesBtn = new SearchOptionButton(0, 0, 100, optionLabel("train_categories"), () -> userSettings.searchExcludedTrainCaegories.toString(), (b) -> {
+            openSetting(b, new TrainCategoriesContent(optionLabel("train_categories").withStyle(ChatFormatting.BOLD), () -> userSettings.searchExcludedTrainCaegories));
         });
         trainCategoriesBtn.layoutContraint.set("categories");
         optionsPanel.addComponent(trainCategoriesBtn);
-                
-        SearchOptionButton trainFilterBtn = new SearchOptionButton(0, 0, 100, 18, userSettings.searchTrainFilter.getValue().getEnumTranslation(), () -> userSettings.searchTrainFilter.toString(), (b) -> {
-            this.userSettings.searchTrainFilter.setValue(this.userSettings.searchTrainFilter.getValue().next());
-            this.userSettings.clientSave(() -> {
-                reloadUserSettings(() -> this.viewer.displayDepartures(stationTagName, userSettings));
-            });
+
+
+        SearchOptionButton trainFilterBtn = new SearchOptionButton(0, 0, 100, userSettings.searchTrainFilter.getValue().getEnumTranslation(), () -> userSettings.searchTrainFilter.toString(), (b) -> {
+            openSetting(b, new BoardFilterContent(TextUtils.empty().append(userSettings.searchTrainFilter.getValue().getEnumTranslation()).withStyle(ChatFormatting.BOLD), () -> userSettings.searchTrainFilter));
         });
         trainFilterBtn.layoutContraint.set("filter");
         optionsPanel.addComponent(trainFilterBtn);
 
+        /*
         FlatIconButton refreshBtn = new FlatIconButton(0, 0, ModGuiIcons.REFRESH.getAsSprite(16, 16));
         refreshBtn.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
-            reloadUserSettings(() -> this.viewer.displayDepartures(stationTagName, userSettings));
+            reloadUserSettings(() -> this.viewer.displayDepartures(stationTagId, userSettings));
             return false;
         });
         refreshBtn.layoutContraint.set("refresh");
         refreshBtn.tooltip.set(new DLTooltip(List.of(tooltipRefresh), 200));
         optionsPanel.addComponent(refreshBtn);
 
-        reloadUserSettings(() -> this.viewer.displayDepartures(stationTagName, userSettings));
+         */
+
+        reloadUserSettings(() -> this.viewer.displayDepartures(stationTagId, userSettings));
+    }
+
+    private MutableComponent optionLabel(String key) {
+        return TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options." + key);
+    }
+
+    private void openSetting(DLGuiComponent anchor, FlyoutContent content) {
+        getWindowManager().createModal((mgr) -> new SettingFlyout(mgr, anchor, FlyoutPointer.UP, ColorShade.DARK, userSettings).open(content));
     }
 
     private void reloadUserSettings(Runnable andThen) {

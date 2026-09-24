@@ -42,7 +42,7 @@ public class AdvancedDisplayRenderInstance extends AbstractBlockEntityRenderInst
 
         if (state.getBlock() instanceof AbstractAdvancedDisplayBlock) {
 
-            renderSubtype.renderTick(Minecraft.getInstance().getDeltaFrameTime());
+            renderSubtype.renderTick(Minecraft.getInstance().getTimer().getGameTimeDeltaTicks());
             
             Tripple<Float, Float, Float> rotation = graphics.blockEntity().renderRotation.get();
             Pair<Float, Float> offset = graphics.blockEntity().renderOffset.get();
@@ -95,4 +95,6 @@ public class AdvancedDisplayRenderInstance extends AbstractBlockEntityRenderInst
 
         renderSubtype.update(level, pos, state, blockEntity, this, reason);
     }
+
+    
 }

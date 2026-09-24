@@ -12,6 +12,7 @@ import de.mrjulsen.mcdragonlib.config.ECachingPriority;
 import de.mrjulsen.mcdragonlib.util.Cache;
 import de.mrjulsen.mcdragonlib.util.DLColor;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -55,16 +56,17 @@ public class TrainStationClockBlockEntity extends SmartBlockEntity implements IB
         this.glowing = glowing;
         notifyUpdate();
     }
-    
+
     @Override
-    protected void write(CompoundTag tag, boolean clientPacket) {
-        super.write(tag, clientPacket);
+    protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+        super.write(tag, registries, clientPacket);
         tag.putInt(NBT_COLOR, getColor().withAlpha(255).getAsARGB());
         tag.putBoolean(NBT_GLOWING, isGlowing());
     }
+
     @Override
-    protected void read(CompoundTag tag, boolean clientPacket) {
-        super.read(tag, clientPacket);
+    protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+        super.read(tag, registries, clientPacket);
         if (tag.contains(NBT_COLOR)) {
             color = DLColor.fromInt(tag.getInt(NBT_COLOR));
         }
@@ -72,5 +74,4 @@ public class TrainStationClockBlockEntity extends SmartBlockEntity implements IB
             glowing = tag.getBoolean(NBT_GLOWING);
         }
     }
-
 }

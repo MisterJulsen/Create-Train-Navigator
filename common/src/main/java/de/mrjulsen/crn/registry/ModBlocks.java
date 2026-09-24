@@ -5,8 +5,11 @@ import java.util.function.Supplier;
 import com.simibubi.create.api.behaviour.display.DisplayTarget;
 import com.simibubi.create.api.behaviour.interaction.MovingInteractionBehaviour;
 import com.simibubi.create.api.behaviour.movement.MovementBehaviour;
+
 import com.simibubi.create.foundation.block.connected.ConnectedTextureBehaviour;
+
 import com.simibubi.create.foundation.data.SharedProperties;
+import com.simibubi.create.content.trains.track.TrackTargetingBlockItem;
 import com.simibubi.create.foundation.data.TagGen;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import com.tterrag.registrate.util.nullness.NonNullConsumer;
@@ -17,27 +20,33 @@ import de.mrjulsen.crn.block.blockentity.AdvancedDisplayInteractionBehaviour;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayMovementBehaviour;
 import de.mrjulsen.crn.block.connected.AdvancedDisplayCTBehaviour;
 import de.mrjulsen.crn.block.connected.AdvancedDisplaySmallCTBehaviour;
+import de.mrjulsen.crn.block.penalty.PenaltyAnchorBlock;
+import de.mrjulsen.mcdragonlib.util.DLUtils;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.material.MapColor;
+
+import static com.simibubi.create.foundation.data.TagGen.pickaxeOnly;
 
 public class ModBlocks {	
+
 
 	public static final BlockEntry<AdvancedDisplayBlock> ADVANCED_DISPLAY_BLOCK = CreateRailwaysNavigator.REGISTRATE.block("advanced_display_block", AdvancedDisplayBlock::new)
 			.initialProperties(SharedProperties::softMetal)
 			.transform(TagGen.pickaxeOnly())
 			.transform(DisplayTarget.displayTarget(ModExtras.ADVANCED_DISPLAY_BOARD_TARGET))
 			.transform(BuilderTransformer.copycatDisplay(
-					new AdvancedDisplayCTBehaviour(ClientWrapper.CT_ADVANCED_DISPLAY_ALL),
-					new AdvancedDisplayCTBehaviour(ClientWrapper.CT_ADVANCED_DISPLAY_ALL_BORDER),
-					new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "block/advanced_display_back")))
+					new AdvancedDisplayCTBehaviour(ConnectedTextures.CT_ADVANCED_DISPLAY_ALL),
+					new AdvancedDisplayCTBehaviour(ConnectedTextures.CT_ADVANCED_DISPLAY_ALL_BORDER),
+					DLUtils.resourceLocation(CreateRailwaysNavigator.MOD_ID, "block/advanced_display_back")))
 			.onRegister(MovementBehaviour.movementBehaviour(new AdvancedDisplayMovementBehaviour()))
 			.onRegister(MovingInteractionBehaviour.interactionBehaviour(new AdvancedDisplayInteractionBehaviour()))
 			.item()
-			.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 			.build()
 			.register();
 	public static final BlockEntry<AdvancedDisplaySlabBlock> ADVANCED_DISPLAY_SLAB = CreateRailwaysNavigator.REGISTRATE.block("advanced_display_slab", AdvancedDisplaySlabBlock::new)
@@ -45,13 +54,12 @@ public class ModBlocks {
 			.transform(TagGen.pickaxeOnly())
 			.transform(DisplayTarget.displayTarget(ModExtras.ADVANCED_DISPLAY_BOARD_TARGET))
 			.transform(BuilderTransformer.copycatDisplay(
-					new AdvancedDisplaySmallCTBehaviour(ClientWrapper.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL),
-					new AdvancedDisplaySmallCTBehaviour(ClientWrapper.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL_BORDER),
-					new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "block/advanced_display_back")))
+					new AdvancedDisplaySmallCTBehaviour(ConnectedTextures.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL),
+					new AdvancedDisplaySmallCTBehaviour(ConnectedTextures.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL_BORDER),
+					DLUtils.resourceLocation(CreateRailwaysNavigator.MOD_ID, "block/advanced_display_back")))
 			.onRegister(MovementBehaviour.movementBehaviour(new AdvancedDisplayMovementBehaviour()))
 			.onRegister(MovingInteractionBehaviour.interactionBehaviour(new AdvancedDisplayInteractionBehaviour()))
 			.item()
-			.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 			.build()
 			.register();
 
@@ -60,13 +68,12 @@ public class ModBlocks {
 			.transform(TagGen.pickaxeOnly())
 			.transform(DisplayTarget.displayTarget(ModExtras.ADVANCED_DISPLAY_BOARD_TARGET))
 			.transform(BuilderTransformer.copycatDisplay(
-					new AdvancedDisplayCTBehaviour(ClientWrapper.CT_ADVANCED_DISPLAY_ALL),
-					new AdvancedDisplayCTBehaviour(ClientWrapper.CT_ADVANCED_DISPLAY_ALL_BORDER),
-					new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "block/advanced_display_back")))
+					new AdvancedDisplayCTBehaviour(ConnectedTextures.CT_ADVANCED_DISPLAY_ALL),
+					new AdvancedDisplayCTBehaviour(ConnectedTextures.CT_ADVANCED_DISPLAY_ALL_BORDER),
+					DLUtils.resourceLocation(CreateRailwaysNavigator.MOD_ID, "block/advanced_display_back")))
 			.onRegister(MovementBehaviour.movementBehaviour(new AdvancedDisplayMovementBehaviour()))
 			.onRegister(MovingInteractionBehaviour.interactionBehaviour(new AdvancedDisplayInteractionBehaviour()))
 			.item()
-			.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 			.build()
 			.register();
 
@@ -75,13 +82,12 @@ public class ModBlocks {
 			.transform(TagGen.pickaxeOnly())
 			.transform(DisplayTarget.displayTarget(ModExtras.ADVANCED_DISPLAY_BOARD_TARGET))
 			.transform(BuilderTransformer.copycatDisplay(
-					new AdvancedDisplaySmallCTBehaviour(ClientWrapper.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL),
-					new AdvancedDisplaySmallCTBehaviour(ClientWrapper.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL_BORDER),
-					new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "block/advanced_display_back")))
+					new AdvancedDisplaySmallCTBehaviour(ConnectedTextures.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL),
+					new AdvancedDisplaySmallCTBehaviour(ConnectedTextures.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL_BORDER),
+					DLUtils.resourceLocation(CreateRailwaysNavigator.MOD_ID, "block/advanced_display_back")))
 			.onRegister(MovementBehaviour.movementBehaviour(new AdvancedDisplayMovementBehaviour()))
 			.onRegister(MovingInteractionBehaviour.interactionBehaviour(new AdvancedDisplayInteractionBehaviour()))
 			.item()
-			.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 			.build()
 			.register();
 
@@ -90,13 +96,12 @@ public class ModBlocks {
 			.transform(TagGen.pickaxeOnly())
 			.transform(DisplayTarget.displayTarget(ModExtras.ADVANCED_DISPLAY_BOARD_TARGET))
 			.transform(BuilderTransformer.copycatDisplay(
-					new AdvancedDisplayCTBehaviour(ClientWrapper.CT_ADVANCED_DISPLAY_ALL),
-					new AdvancedDisplayCTBehaviour(ClientWrapper.CT_ADVANCED_DISPLAY_ALL_BORDER),
-					new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "block/advanced_display_back")))
+					new AdvancedDisplayCTBehaviour(ConnectedTextures.CT_ADVANCED_DISPLAY_ALL),
+					new AdvancedDisplayCTBehaviour(ConnectedTextures.CT_ADVANCED_DISPLAY_ALL_BORDER),
+					DLUtils.resourceLocation(CreateRailwaysNavigator.MOD_ID, "block/advanced_display_back")))
 			.onRegister(MovementBehaviour.movementBehaviour(new AdvancedDisplayMovementBehaviour()))
 			.onRegister(MovingInteractionBehaviour.interactionBehaviour(new AdvancedDisplayInteractionBehaviour()))
 			.item()
-			.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 			.build()
 			.register();
 
@@ -105,19 +110,18 @@ public class ModBlocks {
 			.transform(TagGen.pickaxeOnly())
 			.transform(DisplayTarget.displayTarget(ModExtras.ADVANCED_DISPLAY_BOARD_TARGET))
 			.transform(BuilderTransformer.copycatDisplay(
-					new AdvancedDisplaySmallCTBehaviour(ClientWrapper.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL),
-					new AdvancedDisplaySmallCTBehaviour(ClientWrapper.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL_BORDER),
-					new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "block/advanced_display_back")))
+					new AdvancedDisplaySmallCTBehaviour(ConnectedTextures.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL),
+					new AdvancedDisplaySmallCTBehaviour(ConnectedTextures.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL_BORDER),
+					DLUtils.resourceLocation(CreateRailwaysNavigator.MOD_ID, "block/advanced_display_back")))
 			.onRegister(MovementBehaviour.movementBehaviour(new AdvancedDisplayMovementBehaviour()))
 			.onRegister(MovingInteractionBehaviour.interactionBehaviour(new AdvancedDisplayInteractionBehaviour()))
 			.item()
-			.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 			.build()
 			.register();
 
 	public static final BlockEntry<AdvancedDisplaySlopedBlock> ADVANCED_DISPLAY_SLOPED = CreateRailwaysNavigator.REGISTRATE.block("advanced_display_sloped", AdvancedDisplaySlopedBlock::new)
-			.onRegister(connectedTextures(() -> new AdvancedDisplaySmallCTBehaviour(ClientWrapper.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL, ClientWrapper.CT_ADVANCED_DISPLAY_SMALL)))
-			.onRegister(connectedTextures(() -> new AdvancedDisplaySmallCTBehaviour(ClientWrapper.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL_BORDER, ClientWrapper.CT_ADVANCED_DISPLAY_SMALL_BORDER)))
+			.onRegister(connectedTextures(() -> new AdvancedDisplaySmallCTBehaviour(ConnectedTextures.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL, ConnectedTextures.CT_ADVANCED_DISPLAY_SMALL)))
+			.onRegister(connectedTextures(() -> new AdvancedDisplaySmallCTBehaviour(ConnectedTextures.CT_HORIZONTAL_ADVANCED_DISPLAY_SMALL_BORDER, ConnectedTextures.CT_ADVANCED_DISPLAY_SMALL_BORDER)))
 			.addLayer(() -> RenderType::cutout)
 			.color(() -> AbstractAdvancedDisplayBlock::getDisplayColor)
 			.initialProperties(SharedProperties::softMetal)
@@ -126,7 +130,6 @@ public class ModBlocks {
 			.onRegister(MovementBehaviour.movementBehaviour(new AdvancedDisplayMovementBehaviour()))
 			.onRegister(MovingInteractionBehaviour.interactionBehaviour(new AdvancedDisplayInteractionBehaviour()))
 			.item()
-			.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 			.build()
 			.register();
 	
@@ -135,9 +138,16 @@ public class ModBlocks {
 		.initialProperties(SharedProperties::softMetal)
 		.transform(TagGen.pickaxeOnly())
 		.item()
-		.tab(ModCreativeModeTab.MAIN_TAB.getKey())
 		.build()
 		.register();
+
+	public static final BlockEntry<PenaltyAnchorBlock> PENALTY_BLOCK = CreateRailwaysNavigator.REGISTRATE.block("penalty_anchor", PenaltyAnchorBlock::new)
+			.initialProperties(SharedProperties::softMetal)
+			.properties(properties -> properties.mapColor(MapColor.COLOR_GRAY).sound(SoundType.NETHERITE_BLOCK))
+			.transform(TagGen.pickaxeOnly())
+			.item(TrackTargetingBlockItem.ofType(ModExtras.PENALTY_ANCHOR))
+			.build()
+			.register();
 
 	public static final BlockEntry<NavigatorLecternBlock> NAVIGATOR_LECTERN = CreateRailwaysNavigator.REGISTRATE.block("navigator_lectern", NavigatorLecternBlock::new)
 			.initialProperties(() -> Blocks.LECTERN)
@@ -146,7 +156,7 @@ public class ModBlocks {
 			.register();
 
 	public static <T extends Block> NonNullConsumer<? super T> connectedTextures(Supplier<ConnectedTextureBehaviour> behavior) {
-		return entry -> onClient(() -> () -> ClientWrapper.registerCTBehviour(entry, behavior));
+		return entry -> onClient(() -> () -> ConnectedTextures.registerCTBehviour(entry, behavior));
 	}
 
 	protected static void onClient(Supplier<Runnable> toRun) {

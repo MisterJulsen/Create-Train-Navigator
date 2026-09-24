@@ -6,7 +6,11 @@ import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.block.blockentity.NavigatorLecternBlockEntity;
 import de.mrjulsen.crn.block.blockentity.TrainStationClockBlockEntity;
+import de.mrjulsen.crn.block.penalty.PenaltyAnchorBlockEntity;
+import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.client.ber.NavigatorLecternBlockEntityRenderer;
+import de.mrjulsen.crn.client.ber.PenaltyAnchorRenderer;
+import de.mrjulsen.crn.client.ber.PenaltyAnchorVisual;
 import de.mrjulsen.mcdragonlib.client.ber.StaticBlockEntityRenderer;
 
 public class ModBlockEntities {
@@ -22,7 +26,7 @@ public class ModBlockEntities {
 			ModBlocks.ADVANCED_DISPLAY_SLOPED,
 			ModBlocks.ADVANCED_DISPLAY_SLAB
 		)
-		.renderer(() -> StaticBlockEntityRenderer::new)
+		.renderer(() -> ClientWrapper::createAdvancedDisplayBlockEntityRenderer)
 		.register();
 
 	public static final BlockEntityEntry<TrainStationClockBlockEntity> TRAIN_STATION_CLOCK_BLOCK_ENTITY = CreateRailwaysNavigator.REGISTRATE
@@ -39,6 +43,15 @@ public class ModBlockEntities {
 					ModBlocks.NAVIGATOR_LECTERN
 			)
 			.renderer(() -> NavigatorLecternBlockEntityRenderer::new)
+			.register();
+
+	public static final BlockEntityEntry<PenaltyAnchorBlockEntity> PENALTY_ANCHOR_BLOCK_ENTITY = CreateRailwaysNavigator.REGISTRATE
+			.blockEntity("penalty_anchor_block_entity", PenaltyAnchorBlockEntity::new)
+			.visual(() -> PenaltyAnchorVisual::new)
+			.renderer(() -> PenaltyAnchorRenderer::new)
+			.validBlocks(
+					ModBlocks.PENALTY_BLOCK
+			)
 			.register();
 
     public static void init() {

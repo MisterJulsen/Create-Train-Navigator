@@ -13,10 +13,13 @@ import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.math.Point;
 import de.mrjulsen.mcdragonlib.util.math.Rectangle;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.loot.providers.nbt.NbtProviders;
 
 public class BERStaticText implements AbstractAdvancedDisplayRenderer<SimpleStaticTextDisplaySettings> {
 
@@ -49,7 +52,7 @@ public class BERStaticText implements AbstractAdvancedDisplayRenderer<SimpleStat
         MutableComponent text = TextUtils.empty();
         if (staticText != null) {
             try {
-                text = Component.Serializer.fromJson(staticText);
+                text = Component.Serializer.fromJson(staticText, RegistryAccess.EMPTY);
             } catch (Exception e) {
                 text = TextUtils.text(staticText);
             }

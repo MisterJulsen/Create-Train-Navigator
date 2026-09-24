@@ -1,0 +1,46 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "powered": "false",
+        "enabled": "false"
+      },
+      "apply": {
+        "model": "createrailwaysnavigator:block/penalty_anchor/disabled"
+      }
+    },
+    {
+      "when": {
+        "enabled": "true",
+        "powered": "false"
+      },
+      "apply": {
+        "model": "createrailwaysnavigator:block/penalty_anchor/block"
+      }
+    },
+    {
+      "when": {
+        "powered": "true"
+      },
+      "apply": {
+        "model": "createrailwaysnavigator:block/penalty_anchor/powered"
+      }
+    },
+    {
+      "when": {
+        "has_input": "true"
+      },
+      "apply": {
+        "model": "createrailwaysnavigator:block/penalty_anchor/bottom_powered"
+      }
+    },
+    {
+      "when": {
+        "has_input": "false"
+      },
+      "apply": {
+        "model": "createrailwaysnavigator:block/penalty_anchor/bottom"
+      }
+    }
+  ]
+}

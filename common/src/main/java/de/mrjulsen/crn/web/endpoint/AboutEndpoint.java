@@ -1,0 +1,68 @@
+package de.mrjulsen.crn.web.endpoint;
+
+import org.eclipse.jetty.server.Request;
+
+import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.web.ModWebFeatures;
+import de.mrjulsen.crn.web.api.*;
+import de.mrjulsen.crn.web.openapi.EndpointDocumentation;
+import dev.architectury.platform.Mod;
+import dev.architectury.platform.Platform;
+
+import java.util.*;
+
+public class AboutEndpoint implements IEndpointHandler {
+
+    private record Data(
+            String minecraftVersion,
+            String modId,
+            String modName,
+            String modVersion,
+            String modHomepage,
+            String modSources,
+            String modIssueTracker,
+            Collection<String> modLicense,
+            String platform,
+            String apiVersion,
+            boolean devEnv,
+            String environment,
+            Collection<SimpleModEntry> modlist
+    ) {}
+
+    private record SimpleModEntry(
+            String modId,
+            String modName,
+            String version
+    ) {}
+
+    @Override
+    public ApiResult handle(Request request) {
+        Mod mod = Platform.getMod(CreateRailwaysNavigator.MOD_ID);
+        return ApiResult.json(new Data(
+                Platform.getMinecraftVersion(),
+                CreateRailwaysNavigator.MOD_ID,
+                mod.getName(),
+                mod.getVersion(),
+                mod.getHomepage().orElse(""),
+                mod.getSources().orElse(""),
+                mod.getIssueTracker().orElse(""),
+                mod.getLicense(),
+                (Platform.isForge() ? "Forge" : (Platform.isFabric() ? "Fabric" : "")),
+                ApiVersion.latest().version(),
+                Platform.isDevelopmentEnvironment(),
+                Platform.getEnv().name().toLowerCase(Locale.ROOT),
+                Platform.getMods().stream().map(x -> new SimpleModEntry(x.getModId(), x.getName(), x.getVersion())).toList()
+        ));
+    }
+
+    @Override
+    public EndpointDocumentation getDocumentation() {
+        return EndpointDocumentation.builder()
+            .tag(ModWebFeatures.TAG_COMMON)
+            .summary("About this server")
+            .description("All information about the mod, the running game instance and the loaded mod list.")
+            .returns(Data.class)
+            .shapeable()
+            .build();
+    }
+}

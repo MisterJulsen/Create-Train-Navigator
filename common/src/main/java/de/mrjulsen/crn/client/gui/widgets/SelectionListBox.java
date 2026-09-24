@@ -16,6 +16,7 @@ import de.mrjulsen.mcdragonlib.data.ETextAlignment;
 import de.mrjulsen.mcdragonlib.events.IEvent;
 import de.mrjulsen.mcdragonlib.util.DLColor;
 import de.mrjulsen.mcdragonlib.util.math.Rectangle;
+import de.mrjulsen.mcdragonlib.util.properties.BooleanProperty;
 import net.minecraft.client.Minecraft;
 
 @SupportsEvents({
@@ -24,6 +25,8 @@ import net.minecraft.client.Minecraft;
 public class SelectionListBox<T> extends DLItemSelectionBox<T> { 
     
     public record SelectEvent(DLListBoxItem<?> item) implements IEvent {}
+
+    public final BooleanProperty allowDeselect = new BooleanProperty(true);
 
     public SelectionListBox(int x, int y, int w, int h) {
         super(x, y, w, h);
@@ -58,8 +61,7 @@ public class SelectionListBox<T> extends DLItemSelectionBox<T> {
                 }
             }
         }
-        
-        event.selected().setValue(!isSelected);
+        event.selected().setValue(!allowDeselect.get() || !isSelected);
     }
 
     public void selectIf(Predicate<T> test) {
@@ -78,8 +80,10 @@ public class SelectionListBox<T> extends DLItemSelectionBox<T> {
 
     public static class SelectionBoxItem<T> extends DLItemSelectionBox.DLListBoxItem<T> {
 
+        public static final int HEIGHT = 16;
+
         protected SelectionBoxItem(SelectionListBox<T> collectionComponentRef, T item) {
-            super(collectionComponentRef, item, 100, 16);
+            super(collectionComponentRef, item, 100, HEIGHT);
         }
 
         @Override

@@ -8,8 +8,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import com.simibubi.create.content.trains.schedule.IScheduleInput;
 import com.simibubi.create.content.trains.schedule.ScheduleScreen;
 
-import de.mrjulsen.crn.data.StationTag;
-import de.mrjulsen.crn.data.storage.GlobalSettings;
+import de.mrjulsen.crn.data.settings.StationTag;
+import de.mrjulsen.crn.data.settings.GlobalSettings;
 import de.mrjulsen.crn.data.schedule.instruction.IStationTagInstruction;
 import de.mrjulsen.crn.data.schedule.instruction.ITrainNameInstruction;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -24,7 +24,7 @@ public class ScheduleScreenMixin {
     public ScheduleScreen self() {
         return (ScheduleScreen)(Object)this;
     }
-    
+
     public int getTopPos() {
         return ((AbstractContainerScreen<?>)(Object)this).topPos;
     }
@@ -41,7 +41,6 @@ public class ScheduleScreenMixin {
             return result;
         } else if (field instanceof ITrainNameInstruction) {
             return null; /* TODO */
-            //return ClientTrainStationSnapshot.getInstance().getAllTrainStations().stream().map(station -> IntAttached.with(0, station)).toList();
         }
         return null;
     }

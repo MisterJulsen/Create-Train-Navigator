@@ -14,7 +14,7 @@ import com.google.common.collect.ImmutableSet;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
-import de.mrjulsen.crn.config.ModCommonConfig;
+import de.mrjulsen.crn.config.ModServerConfig;
 import de.mrjulsen.crn.exceptions.RuntimeSideException;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.util.DLSprite;
@@ -31,12 +31,12 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.server.level.ServerPlayer;
 
 public class Lock {
 
     public static enum LockState implements ITranslatableEnum, IIterableEnum<LockState> {
         UNLOCKED("unlocked", (byte)0, ModGuiIcons.UNLOCKED, (key) -> key.withStyle(ChatFormatting.GREEN)),
-        //TRUSTED("trusted", (byte)1, ModGuiIcons.TRUSTED, (key) -> TextUtils.translate(key).withStyle(ChatFormatting.GOLD)),
         LOCKED("locked", Byte.MAX_VALUE, ModGuiIcons.LOCKED, (key) -> key.withStyle(ChatFormatting.RED));
 
         private final String name;
@@ -87,19 +87,18 @@ public class Lock {
 
     public static final String TRANSLATION_KEY_TRUSTED_PLAYERS = "gui." + CreateRailwaysNavigator.MOD_ID + ".lock.trusted_players";
     public static final String TRANSLATION_KEY_TRANSFER_OWNERSHIP = "gui." + CreateRailwaysNavigator.MOD_ID + ".lock.transfer_ownership";
-    
-    private final MutableComponent charAllowed = TextUtils.text("\u2714").withStyle(ChatFormatting.GREEN);
-    private final MutableComponent charTrusted = TextUtils.text("\u2714").withStyle(ChatFormatting.GOLD);
-    private final MutableComponent charLocked = TextUtils.text("\u274C").withStyle(ChatFormatting.RED);
 
-    private final MutableComponent txtPermissions = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".lock.permissions");
-    private final MutableComponent txtRightClickOptions = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".lock.right_click_options").withStyle(ChatFormatting.DARK_GRAY).withStyle(ChatFormatting.ITALIC);
-    private final MutableComponent txtNoOwner = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".lock.no_owner");
-    private final String keyStatus = "gui." + CreateRailwaysNavigator.MOD_ID + ".lock.state";
-    private final String keyOwner = "gui." + CreateRailwaysNavigator.MOD_ID + ".lock.owner";
-    
+    private transient final MutableComponent charAllowed = TextUtils.text("\u2714").withStyle(ChatFormatting.GREEN);
+    private transient final MutableComponent charTrusted = TextUtils.text("\u2714").withStyle(ChatFormatting.GOLD);
+    private transient final MutableComponent charLocked = TextUtils.text("\u274C").withStyle(ChatFormatting.RED);
+    private transient final MutableComponent txtPermissions = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".lock.permissions");
+    private transient final MutableComponent txtRightClickOptions = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".lock.right_click_options").withStyle(ChatFormatting.DARK_GRAY).withStyle(ChatFormatting.ITALIC);
+    private transient final MutableComponent txtNoOwner = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".lock.no_owner");
+    private transient final String keyStatus = "gui." + CreateRailwaysNavigator.MOD_ID + ".lock.state";
+    private transient final String keyOwner = "gui." + CreateRailwaysNavigator.MOD_ID + ".lock.owner";
+
     private Owner owner;
-    private LockState state = LockState.UNLOCKED;
+    private LockState state;
     private final Set<Owner> trusted = new HashSet<>();
 
 
@@ -125,52 +124,62 @@ public class Lock {
         return state;
     }
 
-    /**
-     * @throws RuntimeSideException Server-side only!
-     */
     public boolean isAllowed(Owner target) throws RuntimeSideException {
         if (!DragonLib.hasServer()) {
             throw new RuntimeSideException(false);
         }
-        return this.owner == null || isAdmin(target) || (this.owner.equals(target) || switch (state) {
-            case LOCKED -> isTrusted(target);
+        if (isAdmin(target)) {
+            return true;
+        }
+        return switch (state) {
+            case LOCKED -> (this.owner != null && this.owner.equals(target)) || isTrusted(target);
             default -> true;
-        });
+        };
     }
-    
-    /**
-     * @throws RuntimeSideException Server-side only!
-     */
+
     public boolean isAdmin(Owner target) throws RuntimeSideException {
         if (!DragonLib.hasServer()) {
             throw new RuntimeSideException(false);
         }
-        return this.owner != null && (this.owner.equals(target) || (ModCommonConfig.GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL.get() >= 0 && GameInstance.getServer().getPlayerList().getPlayer(target.uuid()).hasPermissions(ModCommonConfig.GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL.get())));
+        if (this.owner != null && this.owner.equals(target)) {
+            return true;
+        }
+        return hasAdminPermission(target);
     }
 
-    /**
-     * @throws RuntimeSideException Client-side only!
-     */
+    private static boolean hasAdminPermission(Owner target) {
+        int level = ModServerConfig.GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL.get();
+        if (level < 0 || target == null) {
+            return false;
+        }
+        ServerPlayer player = GameInstance.getServer().getPlayerList().getPlayer(target.uuid());
+        return player != null && player.hasPermissions(level);
+    }
+
     public boolean isAllowed() throws RuntimeSideException {
         if (Platform.getEnvironment() != Env.CLIENT) {
             throw new RuntimeSideException(true);
         }
+        if (isAdmin()) {
+            return true;
+        }
         Owner self = ClientWrapper.getMe();
-        return this.owner == null || isAdmin() || (this.owner.equals(self) || switch (state) {
-            case LOCKED -> isTrusted(self);
+        return switch (state) {
+            case LOCKED -> (this.owner != null && this.owner.equals(self)) || isTrusted(self);
             default -> true;
-        });
+        };
     }
-    
-    /**
-     * @throws RuntimeSideException Client-side only!
-     */
+
     public boolean isAdmin() throws RuntimeSideException {
         if (Platform.getEnvironment() != Env.CLIENT) {
             throw new RuntimeSideException(true);
         }
         Owner self = ClientWrapper.getMe();
-        return this.owner != null && (this.owner.equals(self) || (ModCommonConfig.GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL.get() >= 0 && ClientWrapper.getClientPlayer().hasPermissions(ModCommonConfig.GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL.get())));
+        if (this.owner != null && this.owner.equals(self)) {
+            return true;
+        }
+        int level = ModServerConfig.GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL.get();
+        return level >= 0 && ClientWrapper.getClientPlayer().hasPermissions(level);
     }
 
     public Set<Owner> getTrusted() {
@@ -201,12 +210,12 @@ public class Lock {
     public void setOwner(Owner newOwner) {
         this.owner = newOwner;
     }
-    
+
     public List<FormattedText> asText(Owner target) {
         List<FormattedText> texts = new ArrayList<>(4);
         texts.add(TextUtils.empty().append(txtPermissions).append(" ").append(isTrusted(target) ? charTrusted : (isAllowed() ? charAllowed : charLocked)));
         texts.add(TextUtils.translate(keyStatus, get().getFormattedText()).withStyle(ChatFormatting.GRAY));
-        texts.add(TextUtils.translate(keyOwner, getOwner().map(x -> x.name().isBlank() ? txtNoOwner : TextUtils.text(x.name()).withStyle(ChatFormatting.GREEN)).orElse(txtNoOwner)).withStyle(ChatFormatting.GRAY));        
+        texts.add(TextUtils.translate(keyOwner, getOwner().map(x -> x.name().isBlank() ? txtNoOwner : TextUtils.text(x.name()).withStyle(ChatFormatting.GREEN)).orElse(txtNoOwner)).withStyle(ChatFormatting.GRAY));
         if (isAdmin()) {
             texts.add(txtRightClickOptions);
         }
