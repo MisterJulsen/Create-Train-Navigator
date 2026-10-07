@@ -2,8 +2,8 @@ package de.mrjulsen.crn.data.settings;
 
 import java.util.*;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
+import com.simibubi.create.content.trains.station.GlobalStation;
 import de.mrjulsen.crn.util.TrainUtils;
 import de.mrjulsen.crn.util.Lock;
 import de.mrjulsen.crn.util.ModUtils;
@@ -224,7 +224,9 @@ public class StationTag {
     }
 
     public void add(String station, StationInfo info) {
-        Set<String> stationNames = TrainUtils.getAllStations().stream().map(x -> x.name).collect(Collectors.toSet());
+		Set<String> stationNames = new HashSet<>();
+		for (GlobalStation globalStation : TrainUtils.getAllStations())
+			stationNames.add(globalStation.name);
         for (Map.Entry<String, List<String>> entry : ModUtils.mapWildcards2(station, List.of(info.platform()), stationNames).entrySet()) {
             if (stations.containsKey(entry.getKey())) {
                 continue;

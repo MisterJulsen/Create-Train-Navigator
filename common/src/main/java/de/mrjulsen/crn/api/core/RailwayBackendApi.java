@@ -2,7 +2,6 @@ package de.mrjulsen.crn.api.core;
 
 import java.util.*;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.api.core.query.*;
@@ -85,7 +84,10 @@ public final class RailwayBackendApi {
 
     /** Every train fit to be shown publicly. */
     public static List<TrainSnapshot> getAllTrains() {
-        return getTrackedTrains().map(TrainSnapshot::of).toList();
+		List<TrainSnapshot> out = new ArrayList<>();
+		for (TrackedTrain train : getTrackedTrains())
+			out.add(TrainSnapshot.of(train));
+		return out;
     }
 
     /** The trains matching the given query. */
@@ -146,10 +148,12 @@ public final class RailwayBackendApi {
 
     /** The positions of the trains matching the given query. */
     public static List<TrainPositionSnapshot> getAllPositions(TrainPositionQuery query) {
-        return getTrackedTrains()
-                .map(x -> TrainPositionSnapshot.of(x.getTrain(), x.getExitSide()))
-                .filter(query::accept)
-                .toList();
+        List<TrainPositionSnapshot> out = new ArrayList<>();
+		for (TrackedTrain train : getTrackedTrains()) {
+			TrainPositionSnapshot snapshot = TrainPositionSnapshot.of(train.getTrain(), train.getExitSide());
+			if (query.accept(snapshot)) out.add(snapshot);
+		}
+		return out;
     }
 
     /** What one train is made of, carriage by carriage, if it is being tracked. */
@@ -181,10 +185,12 @@ public final class RailwayBackendApi {
 
     /** A report for every train that is currently running late or out of service. */
     public static List<DelayReport> getDisruptions() {
-        return getTrackedTrains()
-            .filter(x -> x.isDelayed() || x.isCancelled())
-            .map(DelayReport::of)
-            .toList();
+        List<DelayReport> out = new ArrayList<>();
+		for (TrackedTrain train : getTrackedTrains()) {
+			if (!train.isDelayed() && !train.isCancelled()) continue;
+			out.add(DelayReport.of(train));
+		}
+		return out;
     }
 
     /**
@@ -223,16 +229,16 @@ public final class RailwayBackendApi {
 
     /** The next train to arrive at a station, if any is expected. */
     public static Optional<BoardEntry> getNextArrival(String stationName, BoardQuery query) {
-        return buildBoard(TrainManager.getInstance().getCallIndex().callsAt(stationName, query.includeDivertedAway()), query.withLimit(1), Comparator.comparingLong(x -> x.realtime().arrival()))
-                .stream()
-                .findFirst();
+        List<BoardEntry> board = buildBoard(TrainManager.getInstance().getCallIndex().callsAt(stationName, query.includeDivertedAway()), query.withLimit(1), Comparator.comparingLong(x -> x.realtime().arrival()));
+		if (board.isEmpty()) return Optional.empty();
+		return Optional.of(board.getFirst());
     }
 
     /** The next train to depart from a station, if any is expected. */
     public static Optional<BoardEntry> getNextDeparture(String stationName, BoardQuery query) {
-        return buildBoard(TrainManager.getInstance().getCallIndex().callsAt(stationName, query.includeDivertedAway()), query.withLimit(1), Comparator.comparingLong(x -> x.realtime().departure()))
-                .stream()
-                .findFirst();
+        List<BoardEntry> board =  buildBoard(TrainManager.getInstance().getCallIndex().callsAt(stationName, query.includeDivertedAway()), query.withLimit(1), Comparator.comparingLong(x -> x.realtime().departure()));
+	    if (board.isEmpty()) return Optional.empty();
+		return Optional.of(board.getFirst());
     }
 
     /** The names of every station the backend knows about. */
@@ -288,11 +294,12 @@ public final class RailwayBackendApi {
 
     /** The lines matching the given query. */
     public static List<LineSnapshot> getAllLines(LineQuery query) {
-        return GlobalSettings.getInstance().getAllTrainLines()
-                .stream()
-                .map(RailwayBackendApi::buildLine)
-                .filter(query::accept)
-                .toList();
+        List<LineSnapshot> out = new ArrayList<>();
+		for (TrainLine trainLine : GlobalSettings.getInstance().getAllTrainLines()) {
+			LineSnapshot snapshot = RailwayBackendApi.buildLine(trainLine);
+			if (query.accept(snapshot)) out.add(snapshot);
+		}
+		return out;
     }
 
     /** One category together with the trains running under it, if a category with that id exists. */
@@ -307,11 +314,12 @@ public final class RailwayBackendApi {
 
     /** The categories matching the given query. */
     public static List<CategorySnapshot> getAllCategories(CategoryQuery query) {
-        return GlobalSettings.getInstance().getAllTrainCategories()
-                .stream()
-                .map(RailwayBackendApi::buildCategory)
-                .filter(query::accept)
-                .toList();
+        List<CategorySnapshot> out = new ArrayList<>();
+		for (TrainCategory category : GlobalSettings.getInstance().getAllTrainCategories()) {
+			CategorySnapshot snapshot = RailwayBackendApi.buildCategory(category);
+			if (query.accept(snapshot)) out.add(snapshot);
+		}
+		return out;
     }
 
     /**
@@ -379,9 +387,15 @@ public final class RailwayBackendApi {
     }
 
 
-    private static Stream<TrackedTrain> getTrackedTrains() {
-        return TrainManager.getInstance().getAllTrains().stream()
-            .filter(x -> x.isReportable() && !x.isBlacklisted());
+    private static List<TrackedTrain> getTrackedTrains() {
+        List<TrackedTrain> out = new ArrayList<>();
+		for (TrackedTrain train : TrainManager.getInstance().getAllTrains()) {
+			if (!train.isReportable()) continue;
+			if (train.isBlacklisted()) continue;
+
+			out.add(train);
+		}
+		return out;
     }
 
     private static List<BoardEntry> buildBoard(List<StationCallIndex.Call> calls, BoardQuery query, Comparator<BoardEntry> order) {
@@ -471,9 +485,13 @@ public final class RailwayBackendApi {
             }
         }
 
+		List<StationTagRef> tagRefs = new ArrayList<>();
+		for (StationTag tag : tags)
+			tagRefs.add(StationTagRef.of(tag));
+
         return new StationSnapshot(
-            StationRef.of(stationName, tags.isEmpty() ? null : tags.get(0)),
-            tags.stream().map(StationTagRef::of).toList(),
+            StationRef.of(stationName, tags.isEmpty() ? null : tags.getFirst()),
+            tagRefs,
             resolveLines(lineIds),
             resolveCategories(categoryIds),
             trainIds,
@@ -486,7 +504,7 @@ public final class RailwayBackendApi {
         Set<String> stations = new LinkedHashSet<>();
         int delayed = 0;
 
-        for (TrackedTrain train : getTrackedTrains().toList()) {
+        for (TrackedTrain train : getTrackedTrains()) {
             if (!operatesOn(train, line.getId())) {
                 continue;
             }
@@ -504,7 +522,11 @@ public final class RailwayBackendApi {
             }
         }
 
-        return new LineSnapshot(LineRef.of(line), trainIds, stations.stream().map(StationRef::of).toList(), delayed);
+		List<StationRef> stationRefs = new ArrayList<>();
+		for (String station : stations)
+			stationRefs.add(StationRef.of(station));
+
+        return new LineSnapshot(LineRef.of(line), trainIds, stationRefs, delayed);
     }
 
     private static CategorySnapshot buildCategory(TrainCategory category) {
@@ -512,7 +534,7 @@ public final class RailwayBackendApi {
         Set<UUID> lineIds = new LinkedHashSet<>();
         int delayed = 0;
 
-        for (TrackedTrain train : getTrackedTrains().toList()) {
+        for (TrackedTrain train : getTrackedTrains()) {
             boolean carries = false;
             for (JourneySection section : train.getJourney().getSections()) {
                 if (category.getId().equals(section.getTrainCategoryId())) {

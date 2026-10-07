@@ -79,7 +79,9 @@ public final class JourneyTracker implements AutoCloseable {
     }
 
     public boolean isOutdated() {
-        return journey.legs().stream().anyMatch(this::isOutdated);
+		for (RouteLeg leg : journey.legs())
+			if (this.isOutdated(leg)) return true;
+		return false;
     }
 
     private boolean isOutdated(RouteLeg leg) {
@@ -167,13 +169,16 @@ public final class JourneyTracker implements AutoCloseable {
     }
 
     private void applyTo(RouteLeg leg, RouteCall call, JourneySnapshot snapshot) {
-        Optional<StopSnapshot> stop = snapshot.stops().stream()
-            .filter(x -> x.entryIndex() == call.entryIndex())
-            .findFirst();
-        if (stop.isEmpty()) {
-            return;
-        }
-        if (stop.get().completedVisits() > call.cycle()) {
+		StopSnapshot stop = null;
+		for (StopSnapshot stopSnapshot : snapshot.stops()) {
+			if (stopSnapshot.entryIndex() != call.entryIndex()) continue;
+
+			stop = stopSnapshot;
+			break;
+		}
+        if (stop == null) return;
+
+        if (stop.completedVisits() > call.cycle()) {
             call.markPassed();
             return;
         }

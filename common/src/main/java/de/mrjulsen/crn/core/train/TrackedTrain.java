@@ -1,11 +1,6 @@
 package de.mrjulsen.crn.core.train;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -433,7 +428,11 @@ public final class TrackedTrain implements RealtimeTracker.Listener {
         if (scheduleReplaced) {
             discardLearnedData();
         } else {
-            timingsByEntry.keySet().retainAll(journey.getStops().stream().map(JourneyStop::entryIndex).toList());
+			List<Integer> toKeep = new ArrayList<>();
+			for (JourneyStop journeyStop : journey.getStops())
+				toKeep.add(journeyStop.entryIndex());
+
+            timingsByEntry.keySet().retainAll(toKeep);
         }
         realtime.sync(train);
 
@@ -510,8 +509,7 @@ public final class TrackedTrain implements RealtimeTracker.Listener {
         }
 
         TrainLifecycleState previous = this.lifecycle;
-        boolean allLegsKnown = journey.getStops().stream()
-            .allMatch(stop -> getTimings(stop) != null && getTimings(stop).legDuration().isInitialized());
+        boolean allLegsKnown = legsKnown(journey.getStops());
         this.lifecycle = allLegsKnown ? TrainLifecycleState.READY : TrainLifecycleState.LEARNING;
 
         if (this.lifecycle == TrainLifecycleState.READY && previous != TrainLifecycleState.READY) {
@@ -521,6 +519,13 @@ public final class TrackedTrain implements RealtimeTracker.Listener {
             }
         }
     }
+	private boolean legsKnown(List<JourneyStop> journeyStops) {
+		for (JourneyStop journeyStop : journeyStops) {
+			if (getTimings(journeyStop) == null) return false;
+			if (!getTimings(journeyStop).legDuration().isInitialized()) return false;
+		}
+		return true;
+	}
 
     private void updateTimetable(long now) {
         if (lifecycle != TrainLifecycleState.READY) {
@@ -788,7 +793,14 @@ public final class TrackedTrain implements RealtimeTracker.Listener {
                 CreateRailwaysNavigator.LOGGER.warn("[Backend] Skipping invalid stop data '{}' of train '{}'.", key, getTrainName());
             }
         }
-        this.hasArrivedOnce = timingsByEntry.values().stream().anyMatch(x -> x.getCompletedVisits() > 0 || x.getLastActualArrival() >= 0);
+        this.hasArrivedOnce = anyMatch(timingsByEntry.values());
         this.realtime.sync(train);
     }
+	private static boolean anyMatch(Collection<StopTimings> stopTimings) {
+		for (StopTimings stopTiming : stopTimings) {
+			if (stopTiming.getCompletedVisits() > 0) return true;
+			if (stopTiming.getLastActualArrival() >= 0) return true;
+		}
+		return false;
+	}
 }

@@ -3,7 +3,6 @@ package de.mrjulsen.crn.util;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import de.mrjulsen.mcdragonlib.util.MapCache;
 import org.joml.Vector3f;
@@ -34,6 +33,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
+import org.openjdk.nashorn.internal.objects.Global;
 
 public final class TrainUtils {
     private TrainUtils() {}
@@ -69,7 +69,10 @@ public final class TrainUtils {
 
 
     private static final Cache<Set<String>> allStationNamesCache = new Cache<>(() -> {
-        return getAllStations().stream().map(x -> x.name).collect(Collectors.toSet());
+		Set<String> names = new HashSet<>();
+		for (GlobalStation station : getAllStations())
+			names.add(station.name);
+		return names;
     }, ECachingPriority.LOWEST);
     public static Set<String> getAllStationNames() {
         return allStationNamesCache.get();
@@ -107,7 +110,10 @@ public final class TrainUtils {
     }
 
     private static final Cache<Set<String>> allTrainNames = new Cache<>(() -> {
-        return getAllTrains(false).stream().map(x -> x.name.getString()).collect(Collectors.toSet());
+		Set<String> names = new HashSet<>();
+		for (Train train : getAllTrains(false))
+			names.add(train.name.getString());
+		return names;
     }, ECachingPriority.LOWEST);
     public static Set<String> getAllTrainNames() {
         return allTrainNames.get();
@@ -187,13 +193,21 @@ public final class TrainUtils {
     public static NearestTrackStationResult getNearestTrackStation(Level level, Vec3i pos) {
         Objects.requireNonNull(level);
         Objects.requireNonNull(pos);
-        Optional<GlobalStation> station = getAllStations().stream().filter(x ->
-            x.getBlockEntityDimension().equals(level.dimension()) &&
-            !GlobalSettings.getInstance().isStationBlacklisted(x.name)
-        ).min(Comparator.comparingDouble(a -> a.getBlockEntityPos().distSqr(pos)));
 
-        double distance = station.map(globalStation -> globalStation.getBlockEntityPos().distSqr(pos)).orElse(0D);
-        return new NearestTrackStationResult(station, distance);
+		GlobalStation minimal = null;
+		double minDist = Double.MAX_VALUE;
+		for (GlobalStation station : getAllStations()) {
+			if (GlobalSettings.getInstance().isStationBlacklisted(station.name)) continue;
+			if (!station.getBlockEntityDimension().equals(level.dimension())) continue;
+
+			double dist = station.getBlockEntityPos().distSqr(pos);
+			if (dist < minDist) {
+				minimal = station;
+				minDist = dist;
+			}
+		}
+		Optional<GlobalStation> station = minimal == null ? Optional.empty() : Optional.of(minimal);
+        return new NearestTrackStationResult(station, minimal == null ? 0D : minDist);
     }
 
     public static TrainExitSide getTrainStationExit(GlobalStation station, Direction stationDirection, Level level) {

@@ -70,13 +70,44 @@ public class BERPlatformSimple implements AbstractAdvancedDisplayRenderer<Platfo
         label.render(graphics, light);
     }
 
+	private Component buildComponent(BoardEntry entry, AdvancedDisplayBlockEntity blockEntity) {
+		String timeString = ModUtils.formatTime(entry.scheduled().departure(), getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA);
+		String platform = entry.station().platform();
+		MutableComponent text = TextUtils.empty();
+		if (platform == null || platform.isBlank()) {
+			text.append(CustomLanguage.translate(keyTrainDeparture, entry.displayName(CallDirection.DEPARTURE), entry.destinationText(), timeString));
+		} else {
+			text.append(CustomLanguage.translate(keyTrainDepartureWithPlatform, entry.displayName(CallDirection.DEPARTURE), entry.destinationText(), timeString, platform));
+		}
+
+		if (entry.isCancelled()) {
+			text.append(", ").append(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.cancelled2").getString());
+		} else if (entry.isDelayed(CallDirection.DEPARTURE)) {
+			String delay = getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA ? ModUtils.timeRemainingString(entry.departureDeviation()) : String.valueOf((long)DLTime.fromGameTicks(entry.departureDeviation(), DLTime.defaultTimeSystem()).toGameMinutes(DLTime.defaultTimeSystem()));
+			String timeUnitSuffix = getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ABS ?
+					" " + CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.delay_abs_suffix").getString() :
+					"";
+
+			text.append(", ").append(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.delayed2", delay, timeUnitSuffix).getString());
+
+			entry.primaryDelay().ifPresent(cause -> text
+					.append(" ")
+					.append(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.reason").getString())
+					.append(CustomLanguage.translate(cause.translationKey())));
+		}
+		return text;
+	}
+
     @Override
     public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason) {
         long now = ModUtils.getTransformedWorldTime();
-        List<BoardEntry> preds = blockEntity.getStops().stream()
-            .filter(x -> x.realtime().arrival() < now + ModServerConfig.DISPLAY_LEAD_TIME.get())
-            .filter(x -> ITrainStopTypeSetting.accepts(x, ETrainStopType.DEPARTURES_ONLY, now))
-            .toList();
+		List<BoardEntry> preds = new ArrayList<>();
+		for (BoardEntry entry : blockEntity.getStops()) {
+			if (entry.realtime().arrival() >= now + ModServerConfig.DISPLAY_LEAD_TIME.get()) continue;
+			if (!ITrainStopTypeSetting.accepts(entry, ETrainStopType.DEPARTURES_ONLY, now)) continue;
+
+			preds.add(entry);
+		}
 
         label.clippingArea.set(Rectangle.withSize(3, 3, blockEntity.getXSizeScaled() * 16 - 6, blockEntity.getYSizeScaled() * 16 - 6));
         label.glowing.set(blockEntity.isGlowing());
@@ -85,32 +116,6 @@ public class BERPlatformSimple implements AbstractAdvancedDisplayRenderer<Platfo
         label.horizontalScrollMode.set(EScrollMode.WHEN_NEEDED);
 
         texts = new ArrayList<>();
-        texts.addAll(preds.stream().map(x -> {
-            String timeString = ModUtils.formatTime(x.scheduled().departure(), getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA);
-            String platform = x.station().platform();
-            MutableComponent text = TextUtils.empty();
-            if (platform == null || platform.isBlank()) {
-                text.append(CustomLanguage.translate(keyTrainDeparture, x.displayName(CallDirection.DEPARTURE), x.destinationText(), timeString));
-            } else {
-                text.append(CustomLanguage.translate(keyTrainDepartureWithPlatform, x.displayName(CallDirection.DEPARTURE), x.destinationText(), timeString, platform));
-            }
-
-            if (x.isCancelled()) {
-                text.append(", ").append(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.cancelled2").getString());
-            } else if (x.isDelayed(CallDirection.DEPARTURE)) {
-                String delay = getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA ? ModUtils.timeRemainingString(x.departureDeviation()) : String.valueOf((long)DLTime.fromGameTicks(x.departureDeviation(), DLTime.defaultTimeSystem()).toGameMinutes(DLTime.defaultTimeSystem()));
-                String timeUnitSuffix = getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ABS ?
-                    " " + CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.delay_abs_suffix").getString() :
-                    "";
-
-                text.append(", ").append(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.delayed2", delay, timeUnitSuffix).getString());
-
-                x.primaryDelay().ifPresent(cause -> text
-                    .append(" ")
-                    .append(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.reason").getString())
-                    .append(CustomLanguage.translate(cause.translationKey())));
-            }
-            return text;
-        }).toList());
+		for (BoardEntry entry : preds) texts.add(buildComponent(entry, blockEntity));
     }
 }

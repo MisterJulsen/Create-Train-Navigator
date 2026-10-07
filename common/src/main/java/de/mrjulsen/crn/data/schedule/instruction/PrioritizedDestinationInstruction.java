@@ -1,5 +1,6 @@
 package de.mrjulsen.crn.data.schedule.instruction;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -163,7 +164,7 @@ public class PrioritizedDestinationInstruction extends DestinationInstruction {
 
 		if (result.waiting()) {
 			RailwayBackendApi.getTrackedTrain(train.id).ifPresent(x -> x.markWaitingForPlatform(blockingTrainName(result)));
-		} else if (result.passed().stream().anyMatch(x -> x.reason() != PriorityChoice.Skip.NO_STATION)) {
+		} else if (anyMatch(result.passed())) {
 			train.status.failedNavigation();
 		} else {
 			train.status.failedNavigationNoTarget(String.join(", ", getFilters()));
@@ -172,12 +173,49 @@ public class PrioritizedDestinationInstruction extends DestinationInstruction {
 		return null;
 	}
 
-	private static String blockingTrainName(PriorityChoice.Result result) {
-		return result.passed().stream()
-			.map(PriorityChoice.Passed::blockedBy)
-			.filter(x -> x != null && !x.isBlank())
-			.findFirst()
-			.orElse("");
+	private static boolean anyMatch(List<PriorityChoice.Passed> passedList) {
+		for (PriorityChoice.Passed passed : passedList)
+			if (passed.reason() != PriorityChoice.Skip.NO_STATION) return true;
+		return false;
 	}
 
+	private static String blockingTrainName(PriorityChoice.Result result) {
+		for (PriorityChoice.Passed passed : result.passed()) {
+			String blocker = passed.blockedBy();
+
+			if (blocker == null) continue;
+			if (blocker.isBlank()) continue;
+
+			return blocker;
+		}
+		return "";
+	}
+
+	private static boolean shouldExplain() {
+		return ModCommonConfig.ADVANCED_LOGGING.get()
+			|| CreateRailwaysNavigator.isDebug()
+			|| BackendDiagnosticsRecorder.isActive();
+	}
+
+	private void reportChoice(Train train, PriorityChoice.Result result) {
+		boolean logging = ModCommonConfig.ADVANCED_LOGGING.get() || CreateRailwaysNavigator.isDebug();
+		List<String> filters = getFilters();
+		List<String> passed = new ArrayList<>();
+		for (PriorityChoice.Passed prioPassed : result.passed())
+			passed.add(String.format("%d (%s): %s", prioPassed.index() + 1, prioPassed.filter(), prioPassed.reason()));
+
+		String chosen = result.hasPath() ? result.path().destination.name : "";
+
+		BackendDiagnosticsRecorder.recordRouteChoice(train.id, train.name.getString(), chosen, result.index(), result.waiting(), passed, result.notes());
+
+		if (logging) {
+			CreateRailwaysNavigator.LOGGER.info("[Route] '{}' -> {} | passed over: {} | {}",
+				train.name.getString(),
+				result.hasPath()
+					? (result.index() < 0 ? "fallback " + chosen : "priority " + (result.index() + 1) + " " + chosen)
+					: result.waiting() ? "waiting, nothing free of " + filters.size() + " entries" : "no route",
+				passed.isEmpty() ? "-" : String.join("; ", passed),
+				String.join(" | ", result.notes()));
+		}
+	}
 }

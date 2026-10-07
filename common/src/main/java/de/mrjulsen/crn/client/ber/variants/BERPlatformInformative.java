@@ -1,7 +1,9 @@
 package de.mrjulsen.crn.client.ber.variants;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import de.mrjulsen.crn.api.core.ref.StationRef;
 import de.mrjulsen.crn.block.display.properties.components.ITrainStopTypeSetting;
 import org.joml.Vector3f;
 
@@ -379,10 +381,16 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
         destinationLabel.horizontalScrollMode.set(EScrollMode.WHEN_NEEDED);
 
         BERLabel stopoversLabel = focusArea[LineComponent.STOPOVERS.i()];
-        stopoversLabel.text.set(
+
+		List<Component> components = new ArrayList<>();
+		if (direction.isArrival())
+			for (StationRef stationRef : stop.stopovers())
+				components.add(TextUtils.text(stationRef.displayName()));
+
+		stopoversLabel.text.set(
                 direction.isArrival() ?
                 CustomLanguage.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".schedule_board.train_from", stop.origin().displayName()) :
-                TextUtils.concat(TextUtils.text(" \u25CF "), stop.stopovers().stream().map(a -> (Component)TextUtils.text(a.displayName())).toList())
+                TextUtils.concat(TextUtils.text(" \u25CF "), components)
         );
         stopoversLabel.position.set(Point.of(x, 6.5f));
         stopoversLabel.preferredWidth.set(w);

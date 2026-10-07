@@ -1,5 +1,6 @@
 package de.mrjulsen.crn.core.navigator;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -53,22 +54,29 @@ public record NavigationResult(
 
     /** The journey that arrives earliest, or empty. */
     public Optional<RouteJourney> fastest() {
+		// Fair
         return journeys.stream().min(RoutingStrategy.FASTEST.comparator());
     }
 
     /** The journey with the fewest transfers, or empty. */
     public Optional<RouteJourney> mostComfortable() {
-        return journeys.stream().min(RoutingStrategy.FEWEST_TRANSFERS.comparator());
+		// Fair
+		return journeys.stream().min(RoutingStrategy.FEWEST_TRANSFERS.comparator());
     }
 
     /** The found journeys ordered by departure time. */
     public List<RouteJourney> byDeparture() {
-        return journeys.stream().sorted(Comparator.comparingLong(RouteJourney::departure)).toList();
+		List<RouteJourney> out = new ArrayList<>(journeys);
+		out.sort(Comparator.comparingLong(RouteJourney::departure));
+		return out;
     }
 
     /** Only the found journeys that need no transfer. */
     public List<RouteJourney> directOnly() {
-        return journeys.stream().filter(RouteJourney::isDirect).toList();
+		List<RouteJourney> out = new ArrayList<>();
+		for (RouteJourney journey : journeys)
+			if (journey.isDirect()) out.add(journey);
+		return out;
     }
 
     /** How many journeys were found. */

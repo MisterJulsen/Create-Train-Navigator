@@ -1,6 +1,8 @@
 package de.mrjulsen.crn.network.packets;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import de.mrjulsen.crn.CRNPlatformSpecific;
 import de.mrjulsen.crn.util.Owner;
@@ -36,7 +38,10 @@ public class GetOnlinePlayersPacketData extends NetworkPacketData {
 
     @Override
     protected void read(CompoundTag nbt) {
-        this.players = nbt.getList(NBT_DATA, Tag.TAG_COMPOUND).stream().map(x -> Owner.fromNbt((CompoundTag)x)).sorted((a, b) -> a.name().compareToIgnoreCase(b.name())).toList();
+		this.players = new ArrayList<>();
+		for (Tag tag : nbt.getList(NBT_DATA, Tag.TAG_COMPOUND))
+			this.players.add(Owner.fromNbt((CompoundTag) tag));
+		this.players.sort((a, b) -> a.name().compareToIgnoreCase(b.name()));
     }
     
     public List<Owner> getPlayers() {
@@ -44,6 +49,10 @@ public class GetOnlinePlayersPacketData extends NetworkPacketData {
     }
 
     public static GetOnlinePlayersPacketData handle(NetworkPacketContext context) {
-        return new GetOnlinePlayersPacketData(CRNPlatformSpecific.getAllKnownPlayers().entrySet().stream().map(e -> new Owner(e.getKey())).toList());
+		List<Owner> owners = new ArrayList<>();
+		for (UUID uuid : CRNPlatformSpecific.getAllKnownPlayers().keySet())
+			owners.add(new Owner(uuid));
+
+        return new GetOnlinePlayersPacketData(owners);
     }
 }

@@ -1,12 +1,12 @@
 package de.mrjulsen.crn.client.ber.variants;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.api.core.snapshot.StopSnapshot;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity.EUpdateReason;
 import de.mrjulsen.crn.block.display.properties.TrainDestinationExtendedSettings;
 import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
-import de.mrjulsen.crn.data.train.portable.TrainStopDisplayData;
 import de.mrjulsen.mcdragonlib.client.ber.BERGraphics;
 import de.mrjulsen.mcdragonlib.client.ber.BERLabel;
 import de.mrjulsen.mcdragonlib.client.ber.BERLabel.EScrollMode;
@@ -134,7 +134,12 @@ public class BERTrainDestinationDetailed implements AbstractAdvancedDisplayRende
         
         stopoversLabel.position.set(Point.of(viaLabel.getRenderedWidth() + 5, 10));
         stopoversLabel.preferredWidth.set(blockEntity.getXSizeScaled() * 16 - stopoversLabel.x.get() - 3);
-        stopoversLabel.text.set(TextUtils.concat(TextUtils.text(" \u25CF "), blockEntity.getStopovers().stream().map(x -> (Component)TextUtils.text(x.station().displayName())).toList()));
+
+		List<Component> components = new ArrayList<>();
+		for (StopSnapshot stopSnapshot : blockEntity.getStopovers())
+			components.add(TextUtils.text(stopSnapshot.station().displayName()));
+
+        stopoversLabel.text.set(TextUtils.concat(TextUtils.text(" \u25CF "), components));
         stopoversLabel.color.set(getDisplaySettings(blockEntity).getFontColor());
     }
 }

@@ -59,8 +59,9 @@ public class CopycatDisplayModel extends CopycatModel {
             return originalModel.getQuads(state, side, rand, data, renderType);
         }
 
-        List<BakedQuad> quads = super.getQuads(state, side, rand, data, renderType);
-        quads = quads.stream().filter(q -> !q.getSprite().contents().name().equals(copycatTexture)).toList();
+        List<BakedQuad> quads = new ArrayList<>();
+		for (BakedQuad quad : super.getQuads(state, side, rand, data, renderType))
+			if (quad.getSprite().contents().name().equals(copycatTexture)) quads.add(quad);
         return quads;
     }
 
@@ -80,7 +81,10 @@ public class CopycatDisplayModel extends CopycatModel {
         }
 
         List<BakedQuad> originalQuads = new ArrayList<>(originalModel.getQuads(material, side, rand, wrappedData, renderType));
-        originalQuads.addAll(originalModel.getQuads(material, null, rand, wrappedData, renderType).stream().filter(x -> x.getDirection() == side).toList());
+
+		for (BakedQuad quad : originalModel.getQuads(material, null, rand, wrappedData, renderType))
+			if (quad.getDirection() == side) originalQuads.add(quad);
+
         List<BakedQuad> resultQuads = new ArrayList<>();
 
         for (BakedQuad quad : originalQuads) {

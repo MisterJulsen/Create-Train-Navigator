@@ -13,6 +13,8 @@ import org.eclipse.jetty.server.Request;
 import de.mrjulsen.crn.web.api.ApiResult;
 import de.mrjulsen.crn.web.openapi.EndpointDocumentation;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -52,7 +54,12 @@ public class TrainLinesEndpoint implements IEndpointHandler {
     @Override
     public ApiResult handle(Request request) {
         Query query = QueryBinder.bind(request, Query.class);
-        return ApiResult.json(GlobalSettings.getInstance().getAllTrainLines().stream().filter(query::accept).toList());
+
+		List<TrainLine> acceptedLines = new ArrayList<>();
+		for (TrainLine trainLine : GlobalSettings.getInstance().getAllTrainLines())
+			if (query.accept(trainLine)) acceptedLines.add(trainLine);
+
+        return ApiResult.json(acceptedLines);
     }
 
     @Override
