@@ -73,7 +73,9 @@ public class PrioritizedDestinationInstruction extends DestinationInstruction {
 	@Override
 	protected String getLabelText() {
 		if (data.contains(NBT_FILTERS)) {
-			return data.getList(NBT_FILTERS, Tag.TAG_STRING).stream().findFirst().map(Tag::getAsString).orElse("");
+			ListTag listTag = data.getList(NBT_FILTERS, Tag.TAG_STRING);
+			if (listTag.isEmpty()) return "";
+			return listTag.getFirst().getAsString();
 		}
 		return "";
 	}
@@ -112,7 +114,9 @@ public class PrioritizedDestinationInstruction extends DestinationInstruction {
 
 	public List<String> getFilters() {
 		if (data.contains(NBT_FILTERS)) {
-			return data.getList(NBT_FILTERS, Tag.TAG_STRING).stream().map(Tag::getAsString).toList();
+			List<String> out = new ArrayList<>();
+			for (Tag tag : data.getList(NBT_FILTERS, Tag.TAG_STRING)) out.add(tag.getAsString());
+			return out;
 		}
 		return List.of();
 	}
@@ -120,7 +124,9 @@ public class PrioritizedDestinationInstruction extends DestinationInstruction {
 	@Override
 	public String getFilter() {
 		if (data.contains(NBT_FILTERS)) {
-			return data.getList(NBT_FILTERS, Tag.TAG_STRING).stream().map(Tag::getAsString).findFirst().orElse("");
+			ListTag listTag = data.getList(NBT_FILTERS, Tag.TAG_STRING);
+			if (listTag.isEmpty()) return "";
+			return listTag.getFirst().getAsString();
 		}
 		return "";
 	}
