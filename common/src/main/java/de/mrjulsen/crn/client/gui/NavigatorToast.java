@@ -64,10 +64,6 @@ public class NavigatorToast implements Toast {
         return this.width;
     }
 
-    /**
-     * 
-     * @param pTimeSinceLastVisible time in milliseconds
-     */
     @SuppressWarnings("resource")
     public Toast.Visibility render(GuiGraphics guiGraphics, ToastComponent pToastComponent, long pTimeSinceLastVisible) {
         if (this.changed) {
@@ -81,7 +77,7 @@ public class NavigatorToast implements Toast {
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         int lineWidth = width;
         int lineHeight = 10;
-        
+
         int toastHeight = this.height() + Math.max(0, this.messageLines.size() - 1) * lineHeight + 3;
         GuiUtils.fill(graphics, 0, 0, lineWidth, toastHeight, COLOR_BORDER);
         GuiUtils.fill(graphics, 1, 1, lineWidth - 2, toastHeight - 2, COLOR_INNER_BORDER);

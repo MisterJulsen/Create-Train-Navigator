@@ -1,12 +1,13 @@
 package de.mrjulsen.crn.client.gui.widgets;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.client.gui.widgets.skins.ModernScrollbarComponentRenderer;
-import de.mrjulsen.crn.data.ISavableNavigatorData;
+import de.mrjulsen.crn.data.settings.ISavableNavigatorData;
 import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.client.gui.events.DLGuiStandardEvents;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLGuiComponent;
@@ -24,6 +25,7 @@ import de.mrjulsen.mcdragonlib.util.DLColor;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.math.Rectangle;
 import de.mrjulsen.mcdragonlib.util.time.DLTime;
+import de.mrjulsen.mcdragonlib.util.time.VanillaTimeSystem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
@@ -78,17 +80,19 @@ public class SavedRoutesViewer extends DLGuiComponent {
 
     public void displaySavedRoutes(List<? extends ISavableNavigatorData> data) {
         contentPanel.clearComponents();
-        this.data = data;
-        Collections.sort(data, Comparator
-            .comparing(x -> ((ISavableNavigatorData)x).customGroup() == null ? null : ((ISavableNavigatorData)x).customGroup().getFirst(), Comparator.nullsLast(Comparator.naturalOrder()))
-            .thenComparingLong(x -> ((ISavableNavigatorData)x).dayOrderValue())
-            .thenComparingLong(x -> ((ISavableNavigatorData)x).timeOrderValue()));
-        
-        ISavableNavigatorData lastData = null;
-        for (int i = 0; i < data.size(); i++) {
-            ISavableNavigatorData d = data.get(i);
 
-            if (lastData != null && lastData.customGroup() != d.customGroup()) {
+        List<ISavableNavigatorData> sorted = new ArrayList<>(data);
+        sorted.sort(Comparator
+            .comparing((ISavableNavigatorData x) -> x.customGroup() == null ? null : x.customGroup().getFirst(), Comparator.nullsLast(Comparator.naturalOrder()))
+            .thenComparingLong(ISavableNavigatorData::dayOrderValue)
+            .thenComparingLong(ISavableNavigatorData::timeOrderValue));
+        this.data = sorted;
+
+        ISavableNavigatorData lastData = null;
+        for (int i = 0; i < sorted.size(); i++) {
+            ISavableNavigatorData d = sorted.get(i);
+
+            if (lastData != null && !Objects.equals(lastData.customGroup(), d.customGroup())) {
                 contentPanel.addComponent(new GroupingHeader((d.customGroup() == null ? TextUtils.empty() : d.customGroup().getSecond()).withStyle(ChatFormatting.BOLD)));
             }
             if (lastData == null || lastData.dayOrderValue() != d.dayOrderValue()) {
@@ -96,7 +100,7 @@ public class SavedRoutesViewer extends DLGuiComponent {
                 DLTime worldTime = new DLTime(Minecraft.getInstance().level, DLTime.defaultTimeSystem());
                 long dayDiff = d.dayOrderValue() - (long)worldTime.toGameDays(DLTime.defaultTimeSystem());
 
-                if (d.timeOrderValue() < (long)worldTime.toTicks(DLTime.defaultTimeSystem())) text = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".saved_routes.in_the_past");
+                if (d.timeOrderValue() < (long)worldTime.toTicks(VanillaTimeSystem.INSTANCE)) text = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".saved_routes.in_the_past");
                 else if (dayDiff == 0) text = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".saved_routes.today");
                 else if (dayDiff == 1) text = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".saved_routes.tomorrow");
                 else text = TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".saved_routes.in_days", dayDiff);

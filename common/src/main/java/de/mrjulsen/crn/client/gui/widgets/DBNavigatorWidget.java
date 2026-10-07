@@ -14,9 +14,6 @@ import de.mrjulsen.mcdragonlib.util.DLUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.math.Rectangle;
 
-/*
- * DB = Database, not Deutsche Bahn!
- */
 public class DBNavigatorWidget extends DLGuiComponent {
 
     public static final int WIDTH = 54;
@@ -50,5 +47,5 @@ public class DBNavigatorWidget extends DLGuiComponent {
         DLTextureSheet.DRAGONLIB_UI.getSprite("button_gray_normal").render(graphics, 10, 0, width() - 20, height());
         GuiUtils.drawString(graphics, graphics.defaultFont(), width() / 2, height() / 2 - graphics.defaultFont().lineHeight / 2, txt, DragonLib.VANILLA_UI_FONT_COLOR, ETextAlignment.CENTER, false);
     }
-    
+
 }

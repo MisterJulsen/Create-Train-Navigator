@@ -86,7 +86,8 @@ public enum ModGuiIcons {
     SPEED("speed", 11, 4),
     SETTINGS_SMALL("settings_small", 12, 4),
     X_SMALL("x_small", 13, 4),
-    POP_OUT("pop_out", 14, 4);
+    POP_OUT("pop_out", 14, 4),
+    MORE_OPTIONS("more_options", 15, 4);
 
     private String id;
     private int u;

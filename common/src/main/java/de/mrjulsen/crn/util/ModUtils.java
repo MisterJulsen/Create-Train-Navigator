@@ -1,6 +1,7 @@
 package de.mrjulsen.crn.util;
 
 import java.util.*;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
@@ -9,6 +10,7 @@ import java.util.regex.PatternSyntaxException;
 
 import com.simibubi.create.foundation.utility.CreateLang;
 
+import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.crn.exceptions.RuntimeSideException;
@@ -31,7 +33,7 @@ import net.minecraft.world.item.DyeColor;
 public class ModUtils {
 
     private static final Cache<DLColor[]> dyeColorsCache = new Cache<>(() -> Arrays.stream(DyeColor.values()).map(x -> DLColor.fromInt(x == DyeColor.ORANGE ? 0xFFFF9900 : (0xFF << 24) | (x.getTextColor() & 0x00FFFFFF))).toArray(DLColor[]::new), ECachingPriority.LOW);
-    
+
     public static float clockHandDegrees(double value, double unitsPerRevolution) {
         double normalized = value % unitsPerRevolution;
         return (float) (normalized / unitsPerRevolution * 360.0);
@@ -43,7 +45,7 @@ public class ModUtils {
 
     public static MutableComponent calcSpeedString(double metersPerTick, ESpeedUnit unit) {
         return TextUtils.text((int) Math.abs(Math.round(calcSpeed(metersPerTick, unit))) + " " + unit.getUnit());
-    }    
+    }
 
     public static int calculateMedian(Queue<Integer> history, int smoothingThreshold, Predicate<Integer> filter) {
         if (history.isEmpty()) {
@@ -52,7 +54,7 @@ public class ModUtils {
 
         List<Integer> values = new LinkedList<>();
         for (int i : history) {
-            if (!filter.test(i)) 
+            if (!filter.test(i))
                 continue;
 
             values.add(i);
@@ -109,13 +111,9 @@ public class ModUtils {
         } while (exists.test(id));
         return id;
     }
-    
+
     public static DLColor[] getDyeColors() {
         return dyeColorsCache.get();
-    }
-
-    public static long convertToTimeTicks(int hours, int minutes) {
-        return (long)((double)hours * 1000D + (1000D / 60D * (double)minutes));
     }
 
     public static Pattern buildPattern(String src) {
@@ -384,7 +382,18 @@ public class ModUtils {
     }
 
     public static long getTransformedWorldTime() {
-        return Math.round(DLTime.fromGameTicks(DragonLib.getCurrentWorldTime(), DLTime.defaultTimeSystem()).toTicks(VanillaTimeSystem.INSTANCE));
+        return transformWorldTime(DragonLib.getCurrentWorldTime());
+    }
+
+    public static String formatDuration(long durationTicks) {
+        if (ModClientConfig.REALTIME_DURATIONS.get()) {
+            return new DLTime(durationTicks, VanillaTimeSystem.INSTANCE).format(Constants.DEFAULT_VERBOSE_REAL_DURATION_FORMAT, TimeContext.REAL, VanillaTimeSystem.INSTANCE);
+        }
+        return new DLTime(durationTicks, VanillaTimeSystem.INSTANCE).format(Constants.DEFAULT_VERBOSE_GAME_DURATION_FORMAT, TimeContext.INGAME, DLTime.defaultTimeSystem());
+    }
+
+    public static long transformWorldTime(long rawWorldTime) {
+        return Math.round(DLTime.fromGameTicks(rawWorldTime, DLTime.defaultTimeSystem()).toTicks(VanillaTimeSystem.INSTANCE));
     }
 
 
@@ -404,5 +413,45 @@ public class ModUtils {
             map.put(keyDeserializer.apply(k), valueDeserializer.apply(mapNbt.getCompound(k)));
         }
         return map;
+    }
+
+
+    public static <T, S> boolean listContainsAny(Collection<T> searchFor, Collection<S> searchIn, BiPredicate<T, S> test) {
+        return listContainsAny(searchFor, searchIn, true, false, test);
+    }
+
+    public static <T, S> boolean listContainsAny(Collection<T> searchFor, Collection<S> searchIn, boolean ifSearchEmpty, boolean ifTargetEmpty, BiPredicate<T, S> test) {
+        if (searchFor.isEmpty()) {
+            return ifSearchEmpty;
+        }
+        if (searchIn.isEmpty()) {
+            return ifTargetEmpty;
+        }
+
+        for (S s : searchIn) {
+            for (T t : searchFor) {
+                if (test.test(t, s)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public static <T, S> boolean listContainsElement(T searchFor, Collection<S> searchIn, BiPredicate<T, S> test) {
+        return listContainsElement(searchFor, searchIn, false, test);
+    }
+
+    public static <T, S> boolean listContainsElement(T searchFor, Collection<S> searchIn, boolean ifTargetEmpty, BiPredicate<T, S> test) {
+        if (searchIn.isEmpty()) {
+            return ifTargetEmpty;
+        }
+
+        for (S s : searchIn) {
+            if (test.test(searchFor, s)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

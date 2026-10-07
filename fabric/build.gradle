@@ -19,6 +19,11 @@ configurations {
         canBeResolved = true
         canBeConsumed = false
     }
+
+    jettyBundle {
+        canBeResolved = true
+        canBeConsumed = false
+    }
 }
 
 dependencies {
@@ -31,12 +36,38 @@ dependencies {
     modImplementation("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${rootProject.forge_config_api_port_version}")
     modImplementation("de.mrjulsen.mcdragonlib:dragonlib-fabric:${rootProject.minecraft_version}-${rootProject.dragonlib_version}")
      
-    modImplementation("com.simibubi.create:create-fabric-${rootProject.minecraft_version}:${rootProject.create_fabric_version}")
+    modImplementation("com.simibubi.create:create-fabric:${rootProject.create_fabric_version}")
 
     modCompileOnly("maven.modrinth:indium:1.0.34+mc1.20.1")
+    modCompileOnly("mezz.jei:jei-${rootProject.minecraft_version}-fabric-api:${rootProject.jei_version}")
+    modRuntimeOnly("mezz.jei:jei-${rootProject.minecraft_version}-fabric:${rootProject.jei_version}")
     
     common(project(path: ':common', configuration: 'namedElements')) { transitive false }
     shadowBundle project(path: ':common', configuration: 'transformProductionFabric')
+}
+
+dependencies {
+    jettyBundle("org.eclipse.jetty:jetty-server:${rootProject.jetty_version}") {
+        exclude group: "org.slf4j", module: "slf4j-api"
+    }
+    jettyBundle("org.eclipse.jetty.compression:jetty-compression-server:${rootProject.jetty_version}") {
+        exclude group: "org.slf4j", module: "slf4j-api"
+    }
+    jettyBundle("org.eclipse.jetty.compression:jetty-compression-gzip:${rootProject.jetty_version}") {
+        exclude group: "org.slf4j", module: "slf4j-api"
+    }
+}
+
+def jettyRuntimeJars = configurations.jettyBundle.resolvedConfiguration.resolvedArtifacts.collect { art ->
+    def m = art.moduleVersion.id
+    "${m.group}:${m.name}:${m.version}".toString()
+}
+
+dependencies {
+    jettyRuntimeJars.each { notation ->
+        include(notation)
+        runtimeOnly(notation)
+    }
 }
 
 processResources {
@@ -50,6 +81,12 @@ processResources {
 shadowJar {
     configurations = [project.configurations.shadowBundle]
     archiveClassifier = 'dev-shadow'
+
+    from(rootProject.file('LICENSE'))
+
+    from(rootProject.file('LICENSE'))
+    from(rootProject.file('LICENSE_jetty'))
+    from(rootProject.file('NOTICE.txt'))
 }
 
 remapJar {

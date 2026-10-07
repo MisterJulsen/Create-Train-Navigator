@@ -2,16 +2,21 @@ architectury {
     common rootProject.enabled_platforms.split(',')
 }
 
+def refmapName = "${rootProject.archives_name}-refmap.json"
+
 loom {
     accessWidenerPath = file("src/main/resources/createrailwaysnavigator.accesswidener")
+    mixin {
+        defaultRefmapName = refmapName
+    }
 }
 
 dependencies {
     modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
     modCompileOnly "net.fabricmc.fabric-api:fabric-api:$rootProject.fabric_api_version"
 
-    compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:0.4.1"))
-    implementation("io.github.llamalad7:mixinextras-forge:0.4.1")
+    compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:0.5.3"))
+    implementation("io.github.llamalad7:mixinextras-forge:0.5.3")
     
 
     modImplementation("dev.architectury:architectury-fabric:${rootProject.architectury_api_version}")
@@ -20,5 +25,15 @@ dependencies {
     modImplementation("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${rootProject.forge_config_api_port_version}")
     modImplementation("de.mrjulsen.mcdragonlib:dragonlib-fabric:${rootProject.minecraft_version}-${rootProject.dragonlib_version}")
     
-    modImplementation("com.simibubi.create:create-fabric-${rootProject.minecraft_version}:${rootProject.create_fabric_version}")
+    modImplementation("com.simibubi.create:create-fabric:${rootProject.create_fabric_version}")
+
+
+    modCompileOnly("mezz.jei:jei-${rootProject.minecraft_version}-forge-api:${rootProject.jei_version}")
+    modRuntimeOnly("mezz.jei:jei-${rootProject.minecraft_version}-forge:${rootProject.jei_version}")
+    modImplementation("maven.modrinth:tramways:0.3.3-fabric")
+
+    // Web API on Jetty (compile against it here; bundled as jar-in-jar in :forge).
+    compileOnly("org.eclipse.jetty:jetty-server:${rootProject.jetty_version}")
+    compileOnly("org.eclipse.jetty.compression:jetty-compression-server:${rootProject.jetty_version}")
+    compileOnly("org.eclipse.jetty.compression:jetty-compression-gzip:${rootProject.jetty_version}")
 }

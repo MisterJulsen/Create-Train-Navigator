@@ -2,11 +2,14 @@ package de.mrjulsen.crn.registry;
 
 import com.tterrag.registrate.util.entry.BlockEntityEntry;
 
+import de.mrjulsen.crn.CRNPlatformSpecific;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.block.blockentity.NavigatorLecternBlockEntity;
 import de.mrjulsen.crn.block.blockentity.TrainStationClockBlockEntity;
+import de.mrjulsen.crn.block.penalty.PenaltyAnchorBlockEntity;
 import de.mrjulsen.crn.client.ber.NavigatorLecternBlockEntityRenderer;
+import de.mrjulsen.crn.client.ber.PenaltyAnchorRenderer;
 import de.mrjulsen.mcdragonlib.client.ber.StaticBlockEntityRenderer;
 
 public class ModBlockEntities {
@@ -39,6 +42,14 @@ public class ModBlockEntities {
 					ModBlocks.NAVIGATOR_LECTERN
 			)
 			.renderer(() -> NavigatorLecternBlockEntityRenderer::new)
+			.register();
+
+	public static final BlockEntityEntry<PenaltyAnchorBlockEntity> PENALTY_ANCHOR_BLOCK_ENTITY = CRNPlatformSpecific.withPenaltyAnchorVisual(CreateRailwaysNavigator.REGISTRATE
+			.blockEntity("penalty_anchor_block_entity", PenaltyAnchorBlockEntity::new))
+			.renderer(() -> PenaltyAnchorRenderer::new)
+			.validBlocks(
+					ModBlocks.PENALTY_BLOCK
+			)
 			.register();
 
     public static void init() {

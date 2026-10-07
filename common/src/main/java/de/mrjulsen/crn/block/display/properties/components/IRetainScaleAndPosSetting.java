@@ -6,12 +6,6 @@ import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.minecraft.network.chat.MutableComponent;
 
-/**
- * For data conversion: Indicates that this class adopts the original
- * property {@code timeDisplay} from the Advanced Displays.
- * If the class should adopt this property, this interface must be
- * implemented or the value will not be converted!
- */
 public interface IRetainScaleAndPosSetting {
   String GUI_LINE_RETAIN_NAME = "retain_scale_pos";
 

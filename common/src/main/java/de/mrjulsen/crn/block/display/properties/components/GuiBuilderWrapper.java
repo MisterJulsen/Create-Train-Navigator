@@ -56,7 +56,7 @@ public class GuiBuilderWrapper {
         );
         fontColor.tooltip.set(new DLTooltip(List.of(IColorSetting.textFontColor, IColorSetting.textClickToEdit), 200));
         line.addComponent(fontColor);
-        
+
         ColorSlotWidget backColor = new ColorSlotWidget(
             0, 0,
             setting.getBackColor(),
@@ -123,27 +123,6 @@ public class GuiBuilderWrapper {
         line.addComponent(platformWidthBox);
     }
 
-    /*
-    static void buildShowArrivalGui(IShowArrivalSetting setting, GuiBuilderContext context) {
-        DLPanel line = context.container().addLine(IShowArrivalSetting.GUI_LINE_SHOW_ARRIVAL_NAME);
-
-        IconSlotWidget icon = line.addComponent(new IconSlotWidget(0, 0));
-        icon.icon.set(ModGuiIcons.TARGET.getAsSprite(16, 16));
-
-        DLCheckBox showArrivalsBox = new DLCheckBox(0, 0, 0, CreateButton.HEIGHT);
-        showArrivalsBox.text.set(IShowArrivalSetting.textShowArrival);
-        showArrivalsBox.checked.set(setting.showArrival());
-        showArrivalsBox.layoutContraint.set(FlowLayout.FlowConstraint.FILL);
-        showArrivalsBox.addEventListener(DLToggleButton.CheckedChangedEvent.class, (s, e) -> {
-            setting.setShowArrival(e.checked());
-            return false;
-        });
-        showArrivalsBox.tooltip.set(new DLTooltip(List.of(IShowArrivalSetting.textShowArrivalDescription), 200));
-        line.addComponent(showArrivalsBox);
-    }
-
-     */
-
     static void buildShowDoNotBoardTextGui(IShowDoNotBoardText setting, GuiBuilderContext context) {
         DLPanel line = context.container().addLine(IShowDoNotBoardText.GUI_LINE_SHOW_DO_NOT_BOARD_TEXT_NAME);
 
@@ -179,7 +158,7 @@ public class GuiBuilderWrapper {
         line.addComponent(showLineColorBox);
     }
 
-    static void buildShowLineColorGui(IShowLineColorSetting setting, GuiBuilderContext context) {        
+    static void buildShowLineColorGui(IShowLineColorSetting setting, GuiBuilderContext context) {
         DLPanel line = context.container().addLine(IShowLineColorSetting.GUI_LINE_SHOW_LINE_COLOR_NAME);
 
         IconSlotWidget icon = line.addComponent(new IconSlotWidget(0, 0));
@@ -197,7 +176,7 @@ public class GuiBuilderWrapper {
         line.addComponent(showDoNotBoardBox);
     }
 
-    static void buildShowConnectionGui(IShowNextConnections setting, GuiBuilderContext context) {            
+    static void buildShowConnectionGui(IShowNextConnections setting, GuiBuilderContext context) {
         DLPanel line = context.container().addLine(IShowNextConnections.GUI_LINE_SHOW_CONNECTIONS_NAME);
 
         IconSlotWidget icon = line.addComponent(new IconSlotWidget(0, 0));
@@ -363,7 +342,7 @@ public class GuiBuilderWrapper {
             return false;
         });
         line.addComponent(trainNameWidthBox);
-        
+
         CreateScrollNumberInput platformWidthBox = new CreateScrollNumberInput(0, 0, 32);
         platformWidthBox.title.set(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".advanced_display_settings.platform_width_table"));
         platformWidthBox.hint.set(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".advanced_display_settings.platform_width.description"));
@@ -377,7 +356,7 @@ public class GuiBuilderWrapper {
             return false;
         });
         line.addComponent(platformWidthBox);
-        
+
         CreateScrollNumberInput trainNameWidthNextBox = new CreateScrollNumberInput(0, 0, 32);
         trainNameWidthNextBox.title.set(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".advanced_display_settings.train_name_width_next"));
         trainNameWidthNextBox.hint.set(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".advanced_display_settings.train_name_width.description"));
@@ -391,7 +370,7 @@ public class GuiBuilderWrapper {
             return false;
         });
         line.addComponent(trainNameWidthNextBox);
-        
+
         CreateScrollNumberInput platformWidthNextBox = new CreateScrollNumberInput(0, 0, 32);
         platformWidthNextBox.title.set(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".advanced_display_settings.platform_width_next"));
         platformWidthNextBox.hint.set(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".advanced_display_settings.platform_width.description"));
@@ -409,12 +388,12 @@ public class GuiBuilderWrapper {
 
     public static void buildDepartureBoardTableGui(DepartureBoardDisplayTableSettings setting, GuiBuilderContext context) {
         DLPanel line = context.container().addLine(DepartureBoardDisplayTableSettings.GUI_LINE_TEXT_SIZE_NAME);
-        
+
         MutableHolder<CreateScrollNumberInput> stopovers = new MutableHolder<CreateScrollNumberInput>(null);
         MutableHolder<CreateScrollNumberInput> info = new MutableHolder<CreateScrollNumberInput>(null);
 
-        CreateScrollNumberInput stopoversWidthBox = new CreateScrollNumberInput(0, 0, 32); 
-        stopovers.set(stopoversWidthBox);   
+        CreateScrollNumberInput stopoversWidthBox = new CreateScrollNumberInput(0, 0, 32);
+        stopovers.set(stopoversWidthBox);
         stopoversWidthBox.title.set(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".advanced_display_settings.stopovers_width"));
         stopoversWidthBox.hint.set(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".advanced_display_settings.stopovers_width.description"));
         stopoversWidthBox.min.set(0D);
@@ -438,8 +417,8 @@ public class GuiBuilderWrapper {
             info.get().max.set(MathUtils.clamp(101 - stopovers.get().value.get(), 0, 101));
         }
 
-        CreateScrollNumberInput infoWidthBox = new CreateScrollNumberInput(0, 0, 32); 
-        info.set(infoWidthBox);   
+        CreateScrollNumberInput infoWidthBox = new CreateScrollNumberInput(0, 0, 32);
+        info.set(infoWidthBox);
         infoWidthBox.title.set(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".advanced_display_settings.info_width"));
         infoWidthBox.hint.set(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".advanced_display_settings.info_width.description"));
         infoWidthBox.min.set(0D);
@@ -466,10 +445,10 @@ public class GuiBuilderWrapper {
     }
 
     public static void buildStaticTextBaseGui(StaticTextDisplaySettings setting, GuiBuilderContext context) {
-        DLPanel line = context.container().addLine(IColorSetting.GUI_LINE_COLORS_NAME);  
+        DLPanel line = context.container().addLine(IColorSetting.GUI_LINE_COLORS_NAME);
 
         DBNavigatorWidget dbwidget = new DBNavigatorWidget(0, 0, CreateButton.HEIGHT, setting.getSelectedComponentIndex(), StaticTextDisplaySettings.MAX_COMPONENTS,
-        (/* next */) -> {
+        () -> {
             if (setting.getSelectedComponentIndex() >= setting.getComponentsCount() - 1) {
                 setting.verifyComponents();
                 setting.createNewComponent();
@@ -477,7 +456,7 @@ public class GuiBuilderWrapper {
             setting.setSelectedComponentIndex(setting.getSelectedComponentIndex() + 1);
             context.container().clearLines();
             setting.buildGui(context);
-        }, (/* previous */) -> {
+        }, () -> {
             setting.setSelectedComponentIndex(setting.getSelectedComponentIndex() - 1);
             setting.verifyComponents();
             context.container().clearLines();
@@ -489,7 +468,7 @@ public class GuiBuilderWrapper {
 
     static void buildStaticTextGui(IStaticTextSetting setting, GuiBuilderContext context) {
         DLPanel line = context.container().addLine(IStaticTextSetting.GUI_STATIC_TEXT_NAME);
-        
+
         IconSlotWidget icon = line.addComponent(new IconSlotWidget(0, 0));
         icon.icon.set(ModGuiIcons.TEXT.getAsSprite(16, 16));
         icon.tooltip.set(new DLTooltip(List.of(
@@ -510,15 +489,15 @@ public class GuiBuilderWrapper {
 
     static void buildTextScaleGui(ITextScaleSetting setting, GuiBuilderContext context) {
         DLPanel line = context.container().addLine(ITextScaleSetting.GUI_LINE_TEXT_SIZE_NAME);
-        
+
         IconSlotWidget icon = line.addComponent(new IconSlotWidget(0, 0));
         icon.icon.set(ModGuiIcons.SCALE.getAsSprite(16, 16));
 
         MutableHolder<CreateScrollNumberInput> scaleInput = new MutableHolder<CreateScrollNumberInput>(null);
         MutableHolder<CreateScrollNumberInput> minScaleInput = new MutableHolder<CreateScrollNumberInput>(null);
-        
-        CreateScrollNumberInput textMinScaleXBox = new CreateScrollNumberInput(0, 0, 32); 
-        minScaleInput.set(textMinScaleXBox);   
+
+        CreateScrollNumberInput textMinScaleXBox = new CreateScrollNumberInput(0, 0, 32);
+        minScaleInput.set(textMinScaleXBox);
         textMinScaleXBox.title.set(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".advanced_display_settings.text_min_x_scale"));
         textMinScaleXBox.hint.set(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".advanced_display_settings.text_min_x_scale.description"));
         textMinScaleXBox.min.set(10D);
@@ -542,9 +521,9 @@ public class GuiBuilderWrapper {
             minScaleInput.get().max.set(MathUtils.clamp(scaleInput.get().value.get(), 10, 100));
         }
 
-        
-        CreateScrollNumberInput textScaleXBox = new CreateScrollNumberInput(0, 0, 32); 
-        scaleInput.set(textScaleXBox);   
+
+        CreateScrollNumberInput textScaleXBox = new CreateScrollNumberInput(0, 0, 32);
+        scaleInput.set(textScaleXBox);
         textScaleXBox.title.set(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".advanced_display_settings.text_x_scale"));
         textScaleXBox.hint.set(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".advanced_display_settings.text_x_scale.description"));
         textScaleXBox.min.set(10D);
@@ -567,7 +546,7 @@ public class GuiBuilderWrapper {
             minScaleInput.get().min.set(10D);
             minScaleInput.get().max.set(MathUtils.clamp(scaleInput.get().value.get(), 10, 100));
         }
-        
+
         CreateScrollNumberInput textScaleYBox = new CreateScrollNumberInput(0, 0, 32);
         textScaleYBox.title.set(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".advanced_display_settings.text_y_scale"));
         textScaleYBox.hint.set(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".advanced_display_settings.text_y_scale.description"));
@@ -585,18 +564,18 @@ public class GuiBuilderWrapper {
 
     static void buildTextPosGui(ITextPosSetting setting, GuiBuilderContext context) {
         DLPanel line = context.container().addLine(ITextPosSetting.GUI_LINE_TEXT_POS_NAME);
-        
+
         MutableHolder<CreateScrollNumberInput> posYInput = new MutableHolder<CreateScrollNumberInput>(null);
         MutableHolder<CreateScrollNumberInput> posXInput = new MutableHolder<CreateScrollNumberInput>(null);
         MutableHolder<CreateButton> leftAlignBtn = new MutableHolder<CreateButton>(null);
         MutableHolder<CreateButton> centerAlignBtn = new MutableHolder<CreateButton>(null);
         MutableHolder<CreateButton> rightAlignBtn = new MutableHolder<CreateButton>(null);
-        
+
         IconSlotWidget icon = line.addComponent(new IconSlotWidget(0, 0));
         icon.icon.set(ModGuiIcons.TEXT_LEFT_ALIGNED.getAsSprite(16, 16));
-        
-        CreateScrollNumberInput textPosXBox = new CreateScrollNumberInput(0, 0, 45); 
-        posXInput.set(textPosXBox);   
+
+        CreateScrollNumberInput textPosXBox = new CreateScrollNumberInput(0, 0, 45);
+        posXInput.set(textPosXBox);
         textPosXBox.title.set(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".advanced_display_settings.text_pos_x"));
         textPosXBox.hint.set(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".advanced_display_settings.text_pos_x.description"));
         textPosXBox.min.set(0D);
@@ -610,9 +589,9 @@ public class GuiBuilderWrapper {
             return false;
         });
         line.addComponent(textPosXBox);
-        
-        CreateScrollNumberInput textPosYBox = new CreateScrollNumberInput(0, 0, 45); 
-        posYInput.set(textPosYBox);   
+
+        CreateScrollNumberInput textPosYBox = new CreateScrollNumberInput(0, 0, 45);
+        posYInput.set(textPosYBox);
         textPosYBox.title.set(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".advanced_display_settings.text_pos_y"));
         textPosYBox.hint.set(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".advanced_display_settings.text_pos_y.description"));
         textPosYBox.min.set(0D);
@@ -632,8 +611,8 @@ public class GuiBuilderWrapper {
         FlowLayout layout = new FlowLayout();
         layout.flowDirection.set(Direction.HORIZONTAL);
         alignPanel.layout.set(layout);
-        
-        
+
+
         CreateButton leftAlignButton = new CreateButton(0, 0, ModGuiIcons.TEXT_LEFT_ALIGNED.getAsCreateIcon());
         leftAlignBtn.set(leftAlignButton);
         leftAlignButton.tooltip.set(new DLTooltip(List.of(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".advanced_display_settings.text_left_aligned")), 200));
@@ -652,23 +631,23 @@ public class GuiBuilderWrapper {
         alignPanel.layoutContraint.set(FlowLayout.FlowConstraint.END);
         line.addComponent(alignPanel);
 
-        leftAlignButton.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {            
+        leftAlignButton.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
             leftAlignBtn.get().enabled.set(false);
             centerAlignBtn.get().enabled.set(true);
             rightAlignBtn.get().enabled.set(true);
             setting.setTextAlignment(ETextAlignment.LEFT);
             return false;
         });
-        
-        centerAlignButton.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {            
+
+        centerAlignButton.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
             leftAlignBtn.get().enabled.set(true);
             centerAlignBtn.get().enabled.set(false);
             rightAlignBtn.get().enabled.set(true);
             setting.setTextAlignment(ETextAlignment.CENTER);
             return false;
         });
-        
-        rightAlignButton.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {            
+
+        rightAlignButton.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
             leftAlignBtn.get().enabled.set(true);
             centerAlignBtn.get().enabled.set(true);
             rightAlignBtn.get().enabled.set(false);
@@ -683,11 +662,11 @@ public class GuiBuilderWrapper {
 
     static void buildTextMaxWidthGui(ITextWidthSetting setting, GuiBuilderContext context) {
         DLPanel line = context.container().addLine(ITextWidthSetting.GUI_LINE_TEXT_MAX_WIDTH_NAME);
-        
+
         IconSlotWidget icon = line.addComponent(new IconSlotWidget(0, 0));
         icon.icon.set(ModGuiIcons.WIDTH.getAsSprite(16, 16));
 
-        CreateScrollNumberInput textMaxWidthBox = new CreateScrollNumberInput(0, 0, 45); 
+        CreateScrollNumberInput textMaxWidthBox = new CreateScrollNumberInput(0, 0, 45);
         textMaxWidthBox.title.set(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".advanced_display_settings.text_max_width"));
         textMaxWidthBox.hint.set(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".advanced_display_settings.text_max_width.description"));
         textMaxWidthBox.min.set((double)ITextWidthSetting.MIN_VALUE);
@@ -700,7 +679,7 @@ public class GuiBuilderWrapper {
             setting.setTextMaxWidth((float)e.value());
             return false;
         });
-        line.addComponent(textMaxWidthBox);        
+        line.addComponent(textMaxWidthBox);
 
         CreateItemPicker<TextScaleBounds> scaleBoundsBox = new CreateItemPicker<>(0, 0, 0);
         scaleBoundsBox.title.set(TextScaleBounds.CUT_OFF.getEnumTranslation());
@@ -716,12 +695,12 @@ public class GuiBuilderWrapper {
         line.addComponent(scaleBoundsBox);
     }
 
-    static void buildTextBackgroundColorGui(ITextBackgroundColorSetting setting, GuiBuilderContext context) {        
+    static void buildTextBackgroundColorGui(ITextBackgroundColorSetting setting, GuiBuilderContext context) {
         DLPanel line = context.container().addLine(ITextBackgroundColorSetting.GUI_BG_COLOR_NAME);
 
         IconSlotWidget icon = line.addComponent(new IconSlotWidget(0, 0));
         icon.icon.set(ModGuiIcons.COLOR_PALETTE.getAsSprite(16, 16));
-        
+
         ColorSlotWidget backgroundColor = new ColorSlotWidget(
             0, 0,
             setting.getTextBackgroundColor(),
@@ -761,5 +740,5 @@ public class GuiBuilderWrapper {
         retainBox.tooltip.set(new DLTooltip(List.of(IRetainScaleAndPosSetting.txtRetainDescription), 200));
         line.addComponent(retainBox);
     }
-    
+
 }

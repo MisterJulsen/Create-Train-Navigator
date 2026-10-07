@@ -23,10 +23,6 @@ public class IntermediateMutableQuadView extends MutableQuadViewImpl {
         throw new NotImplementedException("IntermediateMutableQuadView.emitDirectly() is not implemented");
     }
 
-    /**
-     * Embeddium registers a stub for Indium but does not provide Indium classes,
-     * so classes need to be checked for existence at runtime.
-     */
     private static final AtomicBoolean indiumAvailable = new AtomicBoolean(true);
 
     public static MutableQuadView create() {

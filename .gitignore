@@ -19,3 +19,4 @@ classes/
 .settings
 *.launch
 .vscode/settings.json
+CLAUDE.md

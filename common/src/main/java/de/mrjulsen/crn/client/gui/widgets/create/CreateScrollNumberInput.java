@@ -22,6 +22,8 @@ import net.minecraft.network.chat.FormattedText;
 
 public class CreateScrollNumberInput extends DLNumberPicker {
 
+    public static final int HEIGHT = 18;
+
 	protected final Component scrollToModify = CreateLang.translateDirect("gui.scrollInput.scrollToModify").withStyle(ChatFormatting.ITALIC, ChatFormatting.DARK_GRAY);
 	protected final Component shiftScrollsFaster = CreateLang.translateDirect("gui.scrollInput.shiftScrollsFaster").withStyle(ChatFormatting.ITALIC, ChatFormatting.DARK_GRAY);
 
@@ -30,7 +32,7 @@ public class CreateScrollNumberInput extends DLNumberPicker {
     public final Property<Function<Double, Component>> formatter = new Property<>(t -> TextUtils.text(String.valueOf(t.intValue())));
 
     public CreateScrollNumberInput(int x, int y, int w) {
-        super(x, y, w, 18);
+        super(x, y, w, HEIGHT);
         this.textboxComponentRenderer.set(CreateTextBoxComponentRenderer.INSTANCE);
         this.showButtons.set(false);
 

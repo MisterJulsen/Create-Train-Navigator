@@ -6,7 +6,9 @@ import com.simibubi.create.foundation.item.ItemDescription;
 import com.simibubi.create.foundation.item.KineticStats;
 import com.simibubi.create.foundation.item.TooltipModifier;
 
+import de.mrjulsen.crn.core.RailwayBackend;
 import de.mrjulsen.crn.block.AdvancedDisplayBlock;
+import de.mrjulsen.crn.compat.tramways.TramwaysCompat;
 import de.mrjulsen.crn.event.ModClientEvents;
 import de.mrjulsen.crn.event.ModCommonEvents;
 import de.mrjulsen.crn.registry.ModBlockEntities;
@@ -16,8 +18,9 @@ import de.mrjulsen.crn.registry.ModDisplayTypes;
 import de.mrjulsen.crn.registry.ModExtras;
 import de.mrjulsen.crn.registry.ModItems;
 import de.mrjulsen.crn.registry.ModNetworkManager;
+import de.mrjulsen.crn.registry.ModDelayCauses;
 import de.mrjulsen.crn.registry.ModSchedule;
-import de.mrjulsen.crn.registry.ModTrainStatusInfos;
+import de.mrjulsen.crn.web.ModWebFeatures;
 import dev.architectury.platform.Platform;
 import dev.architectury.utils.Env;
 import net.createmod.catnip.lang.FontHelper;
@@ -66,15 +69,22 @@ public final class CreateRailwaysNavigator {
         ModExtras.init();
         ModSchedule.init();
         ModNetworkManager.init();
-        ModTrainStatusInfos.init();
+        ModDelayCauses.init();
+        ModWebFeatures.init();
         ModDisplayTypes.init();
         ModCreativeModeTab.setup();
         
         CRNPlatformSpecific.registerConfig();
 
         ModCommonEvents.init();
+        RailwayBackend.init();
+
         if (Platform.getEnvironment() == Env.CLIENT) {
             ModClientEvents.init();
+        }
+
+        if (Platform.isModLoaded("tramways")) {
+            TramwaysCompat.init();
         }
 
     }

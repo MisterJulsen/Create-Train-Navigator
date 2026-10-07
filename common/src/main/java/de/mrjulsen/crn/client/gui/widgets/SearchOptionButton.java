@@ -19,10 +19,12 @@ import net.minecraft.network.chat.Component;
 
 public class SearchOptionButton extends DLButton {
 
+    public static final int HEIGHT = 18;
+
     private final Supplier<String> value;
 
-    public SearchOptionButton(int pX, int pY, int pWidth, int pHeight, Component text, Supplier<String> value, Consumer<SearchOptionButton> clickAction) {
-        super(pX, pY, pWidth, pHeight);
+    public SearchOptionButton(int pX, int pY, int pWidth, Component text, Supplier<String> value, Consumer<SearchOptionButton> clickAction) {
+        super(pX, pY, pWidth, HEIGHT);
         this.text.set(text);
         this.value = value;
         addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
@@ -40,8 +42,6 @@ public class SearchOptionButton extends DLButton {
         }
 
         DLColor j = enabled.get() ? textColor.get() : DragonLib.VANILLA_BUTTON_DISABLED_FONT_COLOR;
-        
-        GuiUtils.fill(graphics, width() - 1, 2, 1, height() - 4, DragonLib.VANILLA_BUTTON_DISABLED_FONT_COLOR);
         
         final float scale = 0.75f;
         graphics.poseStack().pushPose();

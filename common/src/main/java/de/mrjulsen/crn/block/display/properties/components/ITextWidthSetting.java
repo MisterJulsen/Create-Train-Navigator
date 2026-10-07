@@ -9,12 +9,6 @@ import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
 import de.mrjulsen.mcdragonlib.client.ber.BERLabel.EScrollMode;
 import de.mrjulsen.mcdragonlib.data.ITranslatableEnum;
 
-/**
- * For data conversion: Indicates that this class adopts the original
- * property {@code timeDisplay} from the Advanced Displays.
- * If the class should adopt this property, this interface must be
- * implemented or the value will not be converted!
- */
 public interface ITextWidthSetting {
 
     public static final int USED_LINE_SPACE = 18 + 4;
@@ -27,7 +21,7 @@ public interface ITextWidthSetting {
 
     public static final String NBT_TEXT_MAX_WIDTH = "TextMaxWidth";
     public static final String NBT_BOUNDS_ACTION = "BoundsAction";
-    
+
     float getTextMaxWidth();
     void setTextMaxWidth(float s);
     TextScaleBounds getBoundsAction();
@@ -36,7 +30,7 @@ public interface ITextWidthSetting {
     default void buildTextMaxWidthGui(GuiBuilderContext context) {
         GuiBuilderWrapper.buildTextMaxWidthGui(this, context);
     }
-    
+
     default void copyTextMaxWidthSetting(IDisplaySettings oldSettings) {
         if (oldSettings instanceof ITextWidthSetting o) {
             setTextMaxWidth(o.getTextMaxWidth());
@@ -76,7 +70,7 @@ public interface ITextWidthSetting {
         public static TextScaleBounds getByIndex(int b) {
             return Arrays.stream(values()).filter(x -> x.getIndex() == b).findFirst().orElse(SCALE_SCROLL);
         }
-        
+
         @Override
         public Data getTranslationData() {
             return new Data(CreateRailwaysNavigator.MOD_ID, "text_scale_bounds", name);

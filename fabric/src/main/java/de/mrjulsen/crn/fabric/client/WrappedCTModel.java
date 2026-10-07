@@ -9,17 +9,4 @@ public class WrappedCTModel extends CTModel {
         super(originalModel, behaviour);
     }
 
-    /*
-    @Override
-    protected ModelData.Builder gatherModelData(ModelData.Builder builder, BlockAndTintGetter world, BlockPos pos, BlockState state, ModelData blockEntityData) {
-        ModelData.Builder b = super.gatherModelData(builder, world, pos, state, blockEntityData);
-        for (ModelProperty<?> v : blockEntityData.getProperties()) {
-            b.with((ModelProperty<? super Object>) v, (Object)blockEntityData.get(v));
-        }
-        return b;
-    }
-
-     */
-
-
 }

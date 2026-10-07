@@ -32,7 +32,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 21
+          java-version: 17
 
       - name: Cache Gradle & Loom
         uses: actions/cache@v4
@@ -40,7 +40,6 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-            **/.gradle/loom-cache
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle.properties', '**/libs.versions.toml') }}
           restore-keys: ${{ runner.os }}-gradle-
 

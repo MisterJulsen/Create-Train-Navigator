@@ -137,13 +137,9 @@ public class CopycatDisplayModel extends CopycatModel {
         double remW = worldW - splitW;
         double remH = worldH - splitH;
 
-        // BL
         emitQuadrant(emitter, geoQuad, sourceMaterial, materialSprite, 0.0, 0.0, ratioW, ratioH, 0.0, 0.0, splitW, splitH);
-        // BR
         emitQuadrant(emitter, geoQuad, sourceMaterial, materialSprite, ratioW, 0.0, 1.0, ratioH, 1.0 - remW, 0.0, 1.0, splitH);
-        // TL
         emitQuadrant(emitter, geoQuad, sourceMaterial, materialSprite, 0.0, ratioH, ratioW, 1.0, 0.0, 1.0 - remH, splitW, 1.0);
-        // TR
         emitQuadrant(emitter, geoQuad, sourceMaterial, materialSprite, ratioW, ratioH, 1.0, 1.0, 1.0 - remW, 1.0 - remH, 1.0, 1.0);
     }
 
