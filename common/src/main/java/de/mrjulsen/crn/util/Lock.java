@@ -1,7 +1,6 @@
 package de.mrjulsen.crn.util;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -68,7 +67,8 @@ public class Lock {
         }
 
         public static LockState getByIndex(int i) {
-            return Arrays.stream(values()).filter(x -> x.getIndex() == i).findFirst().orElse(UNLOCKED);
+			for (LockState ls : values()) if (ls.getIndex() == i) return ls;
+			return UNLOCKED;
         }
 
         @Override
@@ -235,10 +235,14 @@ public class Lock {
     }
 
     public static Lock fromNbt(CompoundTag nbt) {
-        return new Lock(
+        Set<Owner> owners = new HashSet<>();
+		for (Tag tag : nbt.getList(NBT_TRUSTED, Tag.TAG_COMPOUND))
+			owners.add(Owner.fromNbt((CompoundTag) tag));
+
+		return new Lock(
             LockState.getByIndex(nbt.getByte(NBT_STATE)),
             Owner.fromNbt(nbt),
-            nbt.getList(NBT_TRUSTED, Tag.TAG_COMPOUND).stream().map(x -> Owner.fromNbt((CompoundTag)x)).collect(Collectors.toSet())
+            owners
         );
     }
 }
