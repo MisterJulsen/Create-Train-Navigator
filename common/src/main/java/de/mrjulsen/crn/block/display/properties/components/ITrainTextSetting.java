@@ -27,7 +27,9 @@ public interface ITrainTextSetting {
         }	
 
         public static ETrainTextComponents getById(int id) {
-            return Arrays.stream(values()).filter(x -> x.getId() == (byte)id).findFirst().orElse(ETrainTextComponents.ALL);
+			for (ETrainTextComponents components : values())
+				if (components.getId() == (byte)id) return components;
+			return ETrainTextComponents.ALL;
         }
 
         @Override

@@ -35,7 +35,9 @@ public enum EDisplayInfo implements ITranslatableEnum {
 	}
 
 	public static EDisplayInfo getTypeById(int id) {
-		return Arrays.stream(values()).filter(x -> x.getId() == id).findFirst().orElse(EDisplayInfo.SIMPLE);
+		for (EDisplayInfo displayInfo : values())
+			if (displayInfo.getId() == id) return displayInfo;
+		return EDisplayInfo.SIMPLE;
 	}
 
     @Override
