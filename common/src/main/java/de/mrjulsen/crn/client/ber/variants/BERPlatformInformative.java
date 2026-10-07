@@ -140,9 +140,9 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
     public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason) {
         long now = ModUtils.getTransformedWorldTime();
         ITrainStopTypeSetting.ETrainStopType stopType = getDisplaySettings(blockEntity).getTrainStopType();
-        List<BoardEntry> preds = blockEntity.getStops().stream()
-            .filter(x -> ITrainStopTypeSetting.accepts(x, stopType, now))
-            .toList();
+        List<BoardEntry> preds = new ArrayList<>();
+        for (BoardEntry entry : blockEntity.getStops())
+            if (ITrainStopTypeSetting.accepts(entry, stopType, now)) preds.add(entry);
 
         if (preds.isEmpty()) {
             lines = null;

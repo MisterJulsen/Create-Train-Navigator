@@ -35,7 +35,9 @@ public enum ESpeedUnit implements StringRepresentable {
     }
 
     public static ESpeedUnit getByIndex(int index) {
-        return Arrays.stream(values()).filter(x -> x.getIndex() == index).findFirst().orElse(MS);
+		for (ESpeedUnit unit : values())
+			if (unit.getIndex() == index) return unit;
+		return MS;
     }
 
     @Override

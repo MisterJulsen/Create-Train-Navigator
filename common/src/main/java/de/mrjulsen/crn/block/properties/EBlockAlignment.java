@@ -27,7 +27,9 @@ public enum EBlockAlignment implements ITranslatableEnum {
 	}	
 
 	public static EBlockAlignment getSideById(int index) {
-		return Arrays.stream(values()).filter(x -> x.getId() == index).findFirst().orElse(CENTER);
+		for (EBlockAlignment alignment : values())
+			if (alignment.getId() == index) return alignment;
+		return CENTER;
 	}
 
     @Override
