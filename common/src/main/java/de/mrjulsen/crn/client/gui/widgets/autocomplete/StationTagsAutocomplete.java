@@ -23,7 +23,11 @@ public class StationTagsAutocomplete implements IAutocompletionManager<StationTa
         ModNetworkManager.GET_ALL_STATIONS_AS_STATION_TAGS.send(NetworkDirection.toServer(), new GetAllStationsAsTagsPacketData.Request(true), (result) -> {            
             Minecraft.getInstance().execute(() -> {
                 tags.clear();
-                tags.addAll(result.getTags().stream().sorted((a, b) -> a.getTagName().get().compareToIgnoreCase(b.getTagName().get())).toList());
+
+				List<StationTag> stationTags = new ArrayList<>(result.getTags());
+				stationTags.sort((a, b) -> a.getTagName().get().compareToIgnoreCase(b.getTagName().get()));
+
+                tags.addAll(stationTags);
                 configureWindow(window, textBox);
             });
         }, () -> {});

@@ -34,7 +34,9 @@ public interface ITrainStopTypeSetting {
         }
 
         public static ETrainStopType getById(int id) {
-            return Arrays.stream(values()).filter(x -> x.getId() == (byte)id).findFirst().orElse(DEF_VALUE);
+			for (ETrainStopType trainStopType : values())
+				if (trainStopType.getId() == (byte) id) return trainStopType;
+			return DEF_VALUE;
         }
 
         @Override

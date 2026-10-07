@@ -1,5 +1,6 @@
 package de.mrjulsen.crn.data.schedule.instruction;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -166,7 +167,7 @@ public class PrioritizedDestinationInstruction extends DestinationInstruction {
 
 		if (result.waiting()) {
 			RailwayBackendApi.getTrackedTrain(train.id).ifPresent(x -> x.markWaitingForPlatform(blockingTrainName(result)));
-		} else if (result.passed().stream().anyMatch(x -> x.reason() != PriorityChoice.Skip.NO_STATION)) {
+		} else if (anyMatch(result.passed())) {
 			train.status.failedNavigation();
 		} else {
 			train.status.failedNavigationNoTarget(String.join(", ", getFilters()));
@@ -175,12 +176,22 @@ public class PrioritizedDestinationInstruction extends DestinationInstruction {
 		return null;
 	}
 
+	private static boolean anyMatch(List<PriorityChoice.Passed> passedList) {
+		for (PriorityChoice.Passed passed : passedList)
+			if (passed.reason() != PriorityChoice.Skip.NO_STATION) return true;
+		return false;
+	}
+
 	private static String blockingTrainName(PriorityChoice.Result result) {
-		return result.passed().stream()
-			.map(PriorityChoice.Passed::blockedBy)
-			.filter(x -> x != null && !x.isBlank())
-			.findFirst()
-			.orElse("");
+		for (PriorityChoice.Passed passed : result.passed()) {
+			String blocker = passed.blockedBy();
+
+			if (blocker == null) continue;
+			if (blocker.isBlank()) continue;
+
+			return blocker;
+		}
+		return "";
 	}
 
 	private static boolean shouldExplain() {
@@ -192,9 +203,10 @@ public class PrioritizedDestinationInstruction extends DestinationInstruction {
 	private void reportChoice(Train train, PriorityChoice.Result result) {
 		boolean logging = ModCommonConfig.ADVANCED_LOGGING.get() || CreateRailwaysNavigator.isDebug();
 		List<String> filters = getFilters();
-		List<String> passed = result.passed().stream()
-			.map(x -> String.format("%d (%s): %s", x.index() + 1, x.filter(), x.reason()))
-			.toList();
+		List<String> passed = new ArrayList<>();
+		for (PriorityChoice.Passed prioPassed : result.passed())
+			passed.add(String.format("%d (%s): %s", prioPassed.index() + 1, prioPassed.filter(), prioPassed.reason()));
+
 		String chosen = result.hasPath() ? result.path().destination.name : "";
 
 		BackendDiagnosticsRecorder.recordRouteChoice(train.id, train.name.getString(), chosen, result.index(), result.waiting(), passed, result.notes());

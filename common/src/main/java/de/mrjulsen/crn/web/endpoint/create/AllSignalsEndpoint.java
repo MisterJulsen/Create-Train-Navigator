@@ -1,5 +1,6 @@
 package de.mrjulsen.crn.web.endpoint.create;
 
+import com.simibubi.create.content.trains.signal.SignalBoundary;
 import de.mrjulsen.crn.api.core.query.CreateSignalQuery;
 import de.mrjulsen.crn.api.core.snapshot.CreateSignalSnapshot;
 import de.mrjulsen.crn.util.TrainUtils;
@@ -10,12 +11,20 @@ import org.eclipse.jetty.server.Request;
 import de.mrjulsen.crn.web.api.ApiResult;
 import de.mrjulsen.crn.web.openapi.EndpointDocumentation;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class AllSignalsEndpoint implements IEndpointHandler {
 
     @Override
     public ApiResult handle(Request request) {
         CreateSignalQuery query = QueryBinder.bind(request, CreateSignalQuery.class);
-        return ApiResult.json(TrainUtils.getAllSignals().stream().filter(query::accept).map(CreateSignalSnapshot::of).toList());
+
+	    List<CreateSignalSnapshot> acceptedSignals = new ArrayList<>();
+		for (SignalBoundary signal : TrainUtils.getAllSignals())
+			if (query.accept(signal)) acceptedSignals.add(CreateSignalSnapshot.of(signal));
+
+        return ApiResult.json(acceptedSignals);
     }
 
     @Override

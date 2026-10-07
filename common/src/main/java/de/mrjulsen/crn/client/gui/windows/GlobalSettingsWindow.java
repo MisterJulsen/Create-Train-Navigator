@@ -104,25 +104,33 @@ public class GlobalSettingsWindow extends AbstractNavigatorScreen {
 
     private void reloadBlacklistedTrains(OptionsDataView<String> dataView) {
         ModNetworkManager.GET_ALL_BLACKLISTED_TRAINS.send(NetworkDirection.toServer(), (response) -> {
-            dataView.items.setAll(response.getNames().stream().sorted((a, b) -> a.compareToIgnoreCase(b)).toList());
+            List<String> names = response.getNames();
+			names.sort(String::compareToIgnoreCase);
+			dataView.items.setAll(names);
         }, () -> {});
     }
 
     private void reloadBlacklistedStations(OptionsDataView<String> dataView) {
         ModNetworkManager.GET_ALL_BLACKLISTED_STATIONS.send(NetworkDirection.toServer(), (response) -> {
-            dataView.items.setAll(response.getNames().stream().sorted((a, b) -> a.compareToIgnoreCase(b)).toList());
+            List<String> names = response.getNames();
+			names.sort(String::compareToIgnoreCase);
+			dataView.items.setAll(names);
         }, () -> {});
     }
 
     private void reloadTrainLines(OptionsDataView<TrainLine> dataView) {
         ModNetworkManager.GET_ALL_TRAIN_LINES.send(NetworkDirection.toServer(), (response) -> {
-            dataView.items.setAll(response.getLines().stream().sorted((a, b) -> a.getLineName().compareToIgnoreCase(b.getLineName())).toList());
+            List<TrainLine> lines = response.getLines();
+			lines.sort((a, b) -> a.getLineName().compareToIgnoreCase(b.getLineName()));
+			dataView.items.setAll(lines);
         }, () -> {});
     }
     
     private void reloadTrainCategories(OptionsDataView<TrainCategory> dataView) {
         ModNetworkManager.GET_ALL_TRAIN_CATEGORIES.send(NetworkDirection.toServer(), (response) -> {
-            dataView.items.setAll(response.getCategories().stream().sorted((a, b) -> a.getCategoryName().compareToIgnoreCase(b.getCategoryName())).toList());
+            List<TrainCategory> categories = response.getCategories();
+			categories.sort((a, b) -> a.getCategoryName().compareToIgnoreCase(b.getCategoryName()));
+			dataView.items.setAll(categories);
         }, () -> {});
     }
 

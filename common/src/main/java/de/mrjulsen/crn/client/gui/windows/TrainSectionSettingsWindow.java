@@ -1,9 +1,6 @@
 package de.mrjulsen.crn.client.gui.windows;
 
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import java.util.*;
 
 import com.simibubi.create.AllItems;
 import com.simibubi.create.foundation.gui.AllIcons;
@@ -152,13 +149,20 @@ public class TrainSectionSettingsWindow extends DLWindow {
         commonSettingsContainer.clearLines();
 
         GlobalSettingsClient.getTrainCategories((trainCategories) -> {
-            List<TrainCategory> orderedCategories = trainCategories.stream().sorted((a, b) -> a.getCategoryName().compareToIgnoreCase(b.getCategoryName())).toList();
-            this.categoriesById = orderedCategories.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
+            List<TrainCategory> orderedCategories = new ArrayList<>(trainCategories);
+			orderedCategories.sort((a, b) -> a.getCategoryName().compareToIgnoreCase(b.getCategoryName()));
+
+			this.categoriesById = new HashMap<>();
+			for (TrainCategory trainCategory : orderedCategories)
+				this.categoriesById.put(trainCategory.getId(), trainCategory);
 
             GlobalSettingsClient.getTrainLines((trainLines) -> {
-                List<TrainLine> orderedLines = trainLines.stream().sorted((a, b) -> a.getLineName().compareToIgnoreCase(b.getLineName())).toList();
-                this.linesById = orderedLines.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
+                List<TrainLine> orderedLines = new ArrayList<>(trainLines);
+				orderedLines.sort((a, b) -> a.getLineName().compareToIgnoreCase(b.getLineName()));
 
+				this.linesById = new HashMap<>();
+				for (TrainLine trainLine : orderedLines)
+					linesById.put(trainLine.getId(), trainLine);
 
                 DLPanel lineTrainCategory = commonSettingsContainer.addLine("category");
                 IconSlotWidget trainCategoryIcon = lineTrainCategory.addComponent(new IconSlotWidget(0, 0));
@@ -168,7 +172,10 @@ public class TrainSectionSettingsWindow extends DLWindow {
                 trainCategoryPicker.title.set(tooltipTrainCatrgory);
                 trainCategoryPicker.formatter.set(item -> item == null ? textNone : TextUtils.text(item));
                 trainCategoryPicker.items.add(textNone.getString());
-                trainCategoryPicker.items.addAll(orderedCategories.stream().map(x -> x.getCategoryName()).toList());
+
+				for (TrainCategory trainCategory : orderedCategories)
+					trainCategoryPicker.items.add(trainCategory.getCategoryName());
+
                 trainCategoryPicker.selectedIndex.set(trainCategoryId != null && categoriesById.containsKey(trainCategoryId) ? orderedCategories.indexOf(categoriesById.get(trainCategoryId)) + 1 : 0);
                 trainCategoryPicker.addEventListener(DLCycleButton.SelectedItemChanged.class, (s, e) -> {
                     int idx = trainCategoryPicker.selectedIndex.get() - 1;
@@ -184,7 +191,10 @@ public class TrainSectionSettingsWindow extends DLWindow {
                 trainLinePicker.title.set(tooltipTrainLine);
                 trainLinePicker.formatter.set(item -> item == null ? textNone : TextUtils.text(item));
                 trainLinePicker.items.add(textNone.getString());
-                trainLinePicker.items.addAll(orderedLines.stream().map(x -> x.getLineName()).toList());
+
+				for (TrainLine trainLine : orderedLines)
+					trainLinePicker.items.add(trainLine.getLineName());
+
                 trainLinePicker.selectedIndex.set(trainLineId != null && linesById.containsKey(trainLineId) ? orderedLines.indexOf(linesById.get(trainLineId)) + 1 : 0);
                 trainLinePicker.addEventListener(DLCycleButton.SelectedItemChanged.class, (s, e) -> {
                     int idx = trainLinePicker.selectedIndex.get() - 1;

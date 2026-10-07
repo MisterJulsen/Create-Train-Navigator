@@ -1,5 +1,6 @@
 package de.mrjulsen.crn.network.packets;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import de.mrjulsen.crn.data.settings.GlobalSettings;
@@ -36,7 +37,9 @@ public class GetAllBlacklistedTrainsPacketData extends NetworkPacketData {
 
     @Override
     protected void read(CompoundTag nbt) {
-        this.names = nbt.getList(NBT_DATA, Tag.TAG_STRING).stream().map(x -> ((StringTag)x).getAsString()).toList();
+		this.names = new ArrayList<>();
+		for (Tag tag : nbt.getList(NBT_DATA, Tag.TAG_STRING))
+			names.add(tag.getAsString());
     }
 
     public List<String> getNames() {

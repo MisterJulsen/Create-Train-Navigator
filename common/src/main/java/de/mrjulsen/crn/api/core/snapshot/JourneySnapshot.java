@@ -135,7 +135,9 @@ public record JourneySnapshot(
 
     /** The section the train is working now. */
     public Optional<SectionSnapshot> currentSection() {
-        return sections.stream().filter(SectionSnapshot::current).findFirst();
+		for (SectionSnapshot snapshot : sections)
+			if (snapshot.current()) return Optional.of(snapshot);
+		return Optional.empty();
     }
 
     /**
@@ -320,9 +322,13 @@ public record JourneySnapshot(
         List<StopSnapshot> own = section.stops();
         List<StopSnapshot> served = new ArrayList<>(own.size() + 1);
         served.addAll(own);
-        nextSection(section).flatMap(next -> next.stops().stream().findFirst())
-            .map(onward -> closesItsOwnRun(own, onward, arrived) ? onward.advancedBy(1, totalDuration) : onward)
-            .ifPresent(served::add);
+	    Optional<SectionSnapshot> next = nextSection(section);
+	    if (next.isPresent() && !next.get().stops().isEmpty()) {
+		    StopSnapshot onward = next.get().stops().getFirst();
+		    served.add(closesItsOwnRun(own, onward, arrived)
+				    ? onward.advancedBy(1, totalDuration)
+				    : onward);
+	    }
         return List.copyOf(served);
     }
 
@@ -333,11 +339,16 @@ public record JourneySnapshot(
      * of the run the reported call is already the closing one.
      */
     private boolean closesItsOwnRun(List<StopSnapshot> own, StopSnapshot onward, boolean arrived) {
-        if (!arrived || own.stream().noneMatch(x -> x.entryIndex() == onward.entryIndex())) {
+        if (!arrived || noneMatch(own, onward)) {
             return false;
         }
         return currentStop().map(x -> x.entryIndex() == onward.entryIndex()).orElse(false);
     }
+	private static boolean noneMatch(List<StopSnapshot> stopSnapshots, StopSnapshot toMatch) {
+		for (StopSnapshot stopSnapshot : stopSnapshots)
+			if (stopSnapshot.entryIndex() == toMatch.entryIndex()) return false;
+		return true;
+	}
 
     /**
      * Where the train stands within {@link #servedStops(SectionSnapshot, boolean)}, or {@code -1} where it

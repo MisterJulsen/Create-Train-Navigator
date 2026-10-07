@@ -32,11 +32,11 @@ import net.minecraft.world.item.DyeColor;
 
 public class ModUtils {
 
-    private static final Cache<int[]> dyeColorsCache = new Cache<>(ModUtils::generateCache, ECachingPriority.LOW);
-    private static int[] generateCache() {
-		int[] out = new int[DyeColor.values().length];
+	private static final Cache<DLColor[]> dyeColorsCache = new Cache<>(ModUtils::generateCache, ECachingPriority.LOW);
+    private static DLColor[] generateCache() {
+	    DLColor[] out = new DLColor[DyeColor.values().length];
 		for (int index = 0; index < DyeColor.values().length; index++)
-			out[index] = DyeColor.values()[index] == DyeColor.ORANGE ? 0xFFFF9900 : (0xFF << 24) | DyeColor.values()[index].getTextColor() & 0x00FFFFFF;
+			out[index] = DLColor.fromInt(DyeColor.values()[index] == DyeColor.ORANGE ? 0xFFFF9900 : (0xFF << 24) | DyeColor.values()[index].getTextColor() & 0x00FFFFFF);
 		return out;
     }
 

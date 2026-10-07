@@ -1,5 +1,6 @@
 package de.mrjulsen.crn.network.packets;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
@@ -81,7 +82,9 @@ public class NavigatePacketData {
 
         @Override
         protected void read(CompoundTag nbt) {
-            this.data = nbt.getList(NBT_DATA, Tag.TAG_COMPOUND).stream().map(x -> RouteJourney.fromNbt((CompoundTag)x)).toList();
+			this.data = new ArrayList<>();
+			for (Tag tag : nbt.getList(NBT_DATA, Tag.TAG_COMPOUND))
+				data.add(RouteJourney.fromNbt((CompoundTag) tag));
         }
 
         public List<RouteJourney> getData() {

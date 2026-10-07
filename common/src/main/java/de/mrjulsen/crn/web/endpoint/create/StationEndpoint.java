@@ -21,7 +21,14 @@ public class StationEndpoint implements IEndpointHandler {
     @Override
     public ApiResult handle(Request request) {
         UUID id = RequestParams.path(request, "id", ParamType.UUID);
-        Optional<GlobalStation> station = TrainUtils.getAllStations().stream().filter(x -> x.id.equals(id)).findFirst();
+
+		Optional<GlobalStation> station = Optional.empty();
+		for (GlobalStation globalStation : TrainUtils.getAllStations())
+			if (globalStation.id.equals(id)) {
+				station = Optional.of(globalStation);
+				break;
+			}
+
         return station
                 .map(globalStation -> ApiResult.json(CreateStationSnapshot.of(globalStation)))
                 .orElseGet(() -> ApiResult.error(HttpURLConnection.HTTP_NOT_FOUND, "No station with id " + id));

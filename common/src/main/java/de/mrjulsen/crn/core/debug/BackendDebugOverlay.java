@@ -1,5 +1,6 @@
 package de.mrjulsen.crn.core.debug;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -89,9 +90,8 @@ public class BackendDebugOverlay extends DLWindow {
             return;
         }
 
-        List<TrackedTrain> trains = TrainManager.getInstance().getAllTrains().stream()
-            .sorted((a, b) -> a.getTrainName().compareToIgnoreCase(b.getTrainName()))
-            .toList();
+	    List<TrackedTrain> trains = (List<TrackedTrain>) TrainManager.getInstance().getAllTrains();
+		trains.sort((a, b) -> a.getTrainName().compareToIgnoreCase(b.getTrainName()));
 
         if (trains.isEmpty()) {
             drawLine(graphics, TextUtils.text("CRN Backend: no tracked trains.").withStyle(ChatFormatting.YELLOW));
@@ -194,8 +194,13 @@ public class BackendDebugOverlay extends DLWindow {
             String sched = "S: " + (timing == null ? "?" : String.format("%,d", timing.getScheduled().arrival()) + "/" + String.format("%,d", timing.getScheduled().departure()));
             String real = "R: " + (timing == null ? "?" : String.format("%,d", timing.getRealtime().arrival()) + "/" + String.format("%,d", timing.getRealtime().departure()));
             String dev = "D: " + (timing == null ? "?" : String.format("%+,d", timing.getArrivalDeviation()) + "/" + String.format("%+,d", timing.getDepartureDeviation()));
-            String leg = timing == null ? "?" : timing.legDuration().get() + " (" + timing.legDuration().lastMeasurement() + " | "
-                + String.join(",", timing.legDuration().getHistory().stream().map(String::valueOf).toList()) + ")";
+
+			List<String> values = new ArrayList<>();
+			for (Integer integer : timing.legDuration().getHistory())
+				values.add(String.valueOf(integer));
+
+			String leg = timing == null ? "?" : timing.legDuration().get() + " (" + timing.legDuration().lastMeasurement() + " | "
+                + String.join(",", values) + ")";
             String visits = timing == null ? "?" : "x" + timing.getCompletedVisits();
             String residual = timing == null || timing.dwellResidualTicks() <= 0 ? "" : " +" + timing.dwellResidualTicks() + "t";
 

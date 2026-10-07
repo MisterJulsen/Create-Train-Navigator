@@ -117,13 +117,11 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 							.map(ITrainStopTypeSetting::getTrainStopType)
 							.orElse(ITrainStopTypeSetting.ETrainStopType.DEF_VALUE);
 
-					List<BoardEntry> preds = prepare(filter, trainsCount.apply(controller), controller)
-							.stream()
-							.sorted(Comparator.comparingLong(entry -> {
-								CallDirection direction = ITrainStopTypeSetting.resolveDirection(entry, stopType.showDepartures(entry.originating(), entry.sectionChange()), stopType.showArrivals(entry.terminus(), entry.sectionChange()));
-								return entry.realtimeTime(direction);
-							}))
-							.toList();
+					List<BoardEntry> preds = prepare(filter, trainsCount.apply(controller), controller);
+					preds.sort(Comparator.comparingLong(entry -> {
+						CallDirection direction = ITrainStopTypeSetting.resolveDirection(entry, stopType.showDepartures(entry.originating(), entry.sectionChange()), stopType.showArrivals(entry.terminus(), entry.sectionChange()));
+						return entry.realtimeTime(direction);
+					}));
 
 					controller.setData(
 							preds,

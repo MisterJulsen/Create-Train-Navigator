@@ -1,13 +1,10 @@
 package de.mrjulsen.crn.data.settings;
 
 import java.io.IOException;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.ArrayList;
 
 import com.google.common.collect.ImmutableList;
 import com.simibubi.create.content.trains.entity.Train;

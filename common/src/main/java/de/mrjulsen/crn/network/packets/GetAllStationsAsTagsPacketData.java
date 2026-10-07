@@ -1,7 +1,8 @@
 package de.mrjulsen.crn.network.packets;
 
-import java.util.Collection;
+import java.util.*;
 
+import com.simibubi.create.content.trains.station.GlobalStation;
 import de.mrjulsen.crn.config.ModServerConfig;
 import de.mrjulsen.crn.data.settings.StationTag;
 import de.mrjulsen.crn.data.settings.GlobalSettings;
@@ -66,7 +67,9 @@ public class GetAllStationsAsTagsPacketData {
 
         @Override
         protected void read(CompoundTag nbt) {
-            this.tags = nbt.getList(NBT_DATA, Tag.TAG_COMPOUND).stream().map(x -> StationTag.fromNbt((CompoundTag)x, null)).toList();
+			this.tags = new ArrayList<>();
+			for (Tag tag : nbt.getList(NBT_DATA, Tag.TAG_COMPOUND))
+				tags.add(StationTag.fromNbt((CompoundTag) tag, null));
         }
 
         public Collection<StationTag> getTags() {
@@ -76,10 +79,17 @@ public class GetAllStationsAsTagsPacketData {
 
     public static Response handle(Request packet, NetworkPacketContext context) {
         GlobalSettings settings = GlobalSettings.getInstance();
-        return new Response(TrainUtils.getAllStations().stream()
-                .filter(x -> !(packet.excludeBlacklisted && settings.isStationBlacklisted(x)) && (ModServerConfig.SHOW_UNTAGGED_STATIONS.get() || settings.hasStationTag(x.name)))
-                .map(x -> GlobalSettings.getInstance().getOrCreateStationTagFor(x)).distinct()
-                .sorted((a, b) -> a.getTagName().get().compareToIgnoreCase(b.getTagName().get())).toList());
+
+		Set<StationTag> tags = new HashSet<>();
+		for (GlobalStation station : TrainUtils.getAllStations()) {
+			if (((packet.excludeBlacklisted && settings.isStationBlacklisted(station)) || !ModServerConfig.SHOW_UNTAGGED_STATIONS.get()) && !settings.hasStationTag(station.name)) continue;
+
+			tags.add(GlobalSettings.getInstance().getOrCreateStationTagFor(station));
+		}
+		ArrayList<StationTag> sortedTags = new ArrayList<>(tags);
+		sortedTags.sort((a, b) -> a.getTagName().get().compareToIgnoreCase(b.getTagName().get()));
+
+        return new Response(sortedTags);
     }
 
 }
