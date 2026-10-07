@@ -1,6 +1,6 @@
 {
   "pack": {
-    "description": "${display_name}",
+    "description": "${description}",
     "forge:data_pack_format": 9,
     "pack_format": 9
   }

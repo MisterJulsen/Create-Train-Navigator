@@ -127,13 +127,9 @@ public class CopycatDisplayModel extends CopycatModel {
         double ratioW = (worldW > 1e-6) ? splitW / worldW : 0.5;
         double ratioH = (worldH > 1e-6) ? splitH / worldH : 0.5;
 
-        // BL
         quadrants.add(createQuadrantScaled(geo, material, 0.0, 0.0, ratioW, ratioH, 0.0, 0.0, splitW, splitH));
-        // BR
         quadrants.add(createQuadrantScaled(geo, material, ratioW, 0.0, 1.0, ratioH, 1.0 - remainW, 0.0, 1.0, splitH));
-        // TL
         quadrants.add(createQuadrantScaled(geo, material, 0.0, ratioH, ratioW, 1.0, 0.0, 1.0 - remainH, splitW, 1.0));
-        // TR
         quadrants.add(createQuadrantScaled(geo, material, ratioW, ratioH, 1.0, 1.0, 1.0 - remainW, 1.0 - remainH, 1.0, 1.0));
         return quadrants;
     }
@@ -169,10 +165,10 @@ public class CopycatDisplayModel extends CopycatModel {
 
         double uvEps = 0.01;
         double[][] safeCorners = {
-                {u0 + uvEps, v0 + uvEps}, // BL
-                {u0 + uvEps, v1 - uvEps}, // TL
-                {u1 - uvEps, v1 - uvEps}, // TR
-                {u1 - uvEps, v0 + uvEps}  // BR
+                {u0 + uvEps, v0 + uvEps},
+                {u0 + uvEps, v1 - uvEps},
+                {u1 - uvEps, v1 - uvEps},
+                {u1 - uvEps, v0 + uvEps}
         };
 
         for (int i = 0; i < 4; i++) {

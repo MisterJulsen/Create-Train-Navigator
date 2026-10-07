@@ -3,13 +3,7 @@ package de.mrjulsen.crn.util;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import de.mrjulsen.crn.Constants;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.util.INumberFormatAdapter;
-import de.mrjulsen.mcdragonlib.util.time.ConfiguredTimeSystem;
-import de.mrjulsen.mcdragonlib.util.time.DLTime;
-import de.mrjulsen.mcdragonlib.util.time.DLTimeUnit;
-import de.mrjulsen.mcdragonlib.util.time.TimeContext;
-import de.mrjulsen.mcdragonlib.util.time.format.TimeFormaturVerboseDuration;
 
 public class IngameTimeNumberFormatter implements INumberFormatAdapter {
 
@@ -17,7 +11,7 @@ public class IngameTimeNumberFormatter implements INumberFormatAdapter {
 
     @Override
     public String format(double value) {
-        return new DLTime(value, DLTime.defaultTimeSystem()).format(new TimeFormaturVerboseDuration(Constants.NULL_TIME, false, false, true, true, true), TimeContext.INGAME);
+        return ModUtils.formatDuration((long) value);
     }
 
     @Override

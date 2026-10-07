@@ -6,7 +6,12 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 
 import java.nio.file.Path;
 
+import com.simibubi.create.content.logistics.filter.FilterItemStack;
+import com.simibubi.create.content.trains.entity.Train;
 import com.simibubi.create.content.trains.station.GlobalStation;
+
+import net.minecraft.world.level.Level;
+
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -39,6 +44,11 @@ public abstract class CRNPlatformSpecific {
 
     @ExpectPlatform
     public static Map<UUID, String> getAllKnownPlayers() {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
+    public static boolean trainCarriesFilteredCargo(Level level, FilterItemStack filter, Train train) {
         throw new AssertionError();
     }
 }

@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.client.gui.ModGuiIcons;
 import de.mrjulsen.crn.client.gui.flyout.FlyoutConfirmDialog;
 import de.mrjulsen.crn.client.gui.flyout.FlyoutTrustedPlayersWidget;
@@ -25,16 +26,16 @@ import de.mrjulsen.crn.client.gui.widgets.options.OptionEntry;
 import de.mrjulsen.crn.client.gui.widgets.options.OptionsDataView;
 import de.mrjulsen.crn.client.gui.widgets.options.OptionsView;
 import de.mrjulsen.crn.client.gui.widgets.options.TextOptionLabel;
-import de.mrjulsen.crn.data.StationTag;
-import de.mrjulsen.crn.data.StationTag.StationInfo;
-import de.mrjulsen.crn.data.storage.GlobalSettingsClient;
-import de.mrjulsen.crn.network.packets.pain.AddStationTagEntryPacketData;
-import de.mrjulsen.crn.network.packets.pain.CreateStationTagPacketData;
-import de.mrjulsen.crn.network.packets.pain.RemoveStationTagEntryPacketData;
-import de.mrjulsen.crn.network.packets.pain.StationTagRequestByTagPacketData;
-import de.mrjulsen.crn.network.packets.pain.StationTagUpdatePermissionsPacketData;
-import de.mrjulsen.crn.network.packets.pain.UpdateStationTagEntryPacketData;
-import de.mrjulsen.crn.network.packets.pain.UpdateStationTagNamePacketData;
+import de.mrjulsen.crn.data.settings.StationTag;
+import de.mrjulsen.crn.data.settings.StationTag.StationInfo;
+import de.mrjulsen.crn.data.settings.GlobalSettingsClient;
+import de.mrjulsen.crn.network.packets.AddStationTagEntryPacketData;
+import de.mrjulsen.crn.network.packets.CreateStationTagPacketData;
+import de.mrjulsen.crn.network.packets.RemoveStationTagEntryPacketData;
+import de.mrjulsen.crn.network.packets.StationTagRequestByTagPacketData;
+import de.mrjulsen.crn.network.packets.StationTagUpdatePermissionsPacketData;
+import de.mrjulsen.crn.network.packets.UpdateStationTagEntryPacketData;
+import de.mrjulsen.crn.network.packets.UpdateStationTagNamePacketData;
 import de.mrjulsen.crn.registry.ModNetworkManager;
 import de.mrjulsen.crn.util.Lock;
 import de.mrjulsen.crn.util.Owner;
@@ -75,7 +76,7 @@ public class StationTagSettingsWindow extends AbstractNavigatorScreen {
         
         CreateButton helpButton = addComponent(new CreateButton(width() - CreateButton.WIDTH - 8, height() - CreateButton.HEIGHT - 6, ModGuiIcons.HELP.getAsCreateIcon()));
         helpButton.addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> { 
-            Util.getPlatform().openUri(Constants.HELP_PAGE_STATION_TAGS);
+            ClientWrapper.openUrl(Constants.HELP_PAGE_STATION_TAGS);
             return false;
         });
         helpButton.tooltip.set(new DLTooltip(List.of(Constants.TEXT_HELP), 200));

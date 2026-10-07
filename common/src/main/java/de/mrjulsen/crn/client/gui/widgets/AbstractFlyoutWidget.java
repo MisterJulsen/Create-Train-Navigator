@@ -58,26 +58,7 @@ public abstract class AbstractFlyoutWidget extends DLWindow {
         addEventListener(DLWindow.WindowCreatedEvent.class, (s, e) -> {
             enabled.set(false);
             onOpen();
-            Point componentPos = parentComponent.toScreenCoordinates();
-            switch (pointer) {
-                case UP -> {
-                    setX(MathUtils.clamp(xOffset + (int)componentPos.x() + parentComponent.width() / 2 - width() / 2, 0, Minecraft.getInstance().screen.width - width()));
-                    setY(MathUtils.clamp(yOffset + (int)componentPos.y() + parentComponent.height() + distanceToParent, 0, Minecraft.getInstance().screen.height - height() - distanceToParent));
-                }
-                case DOWN -> {
-                    setX(MathUtils.clamp(xOffset + (int)componentPos.x() + parentComponent.width() / 2 - width() / 2, 0, Minecraft.getInstance().screen.width - width()));
-                    setY(MathUtils.clamp(yOffset + (int)componentPos.y() - height() - distanceToParent, 0, Minecraft.getInstance().screen.height - height() - distanceToParent));
-                }
-                case RIGHT -> {
-                    setX(MathUtils.clamp(xOffset + (int)componentPos.x() - width() - distanceToParent, 0, Minecraft.getInstance().screen.width - width() - distanceToParent));
-                    setY(MathUtils.clamp(yOffset + (int)componentPos.y() + parentComponent.height() / 2 - height() / 2, 0, Minecraft.getInstance().screen.height - height()));
-                }
-                case LEFT -> {
-                    setX(MathUtils.clamp(xOffset + (int)componentPos.x() + parentComponent.width() + distanceToParent, 0, Minecraft.getInstance().screen.width - width() - distanceToParent));
-                    setY(MathUtils.clamp(yOffset + (int)componentPos.y() + parentComponent.height() / 2 - height() / 2, 0, Minecraft.getInstance().screen.height - height()));
-                }
-            }
-            contentArea.clear();
+            setPos();
             animator.start(3, null, null, () -> {
                 enabled.set(true);
             });
@@ -100,6 +81,29 @@ public abstract class AbstractFlyoutWidget extends DLWindow {
             renderBasePost(e.graphics(), e.mouseX(), e.mouseY(), e.renderBounds());
             return false;
         }, -100);
+    }
+
+    public void setPos() {
+        Point componentPos = parentComponent.toScreenCoordinates();
+        switch (pointer) {
+            case UP -> {
+                setX(MathUtils.clamp(xOffset + (int)componentPos.x() + parentComponent.width() / 2 - width() / 2, 0, Minecraft.getInstance().screen.width - width()));
+                setY(MathUtils.clamp(yOffset + (int)componentPos.y() + parentComponent.height() + distanceToParent, 0, Minecraft.getInstance().screen.height - height() - distanceToParent));
+            }
+            case DOWN -> {
+                setX(MathUtils.clamp(xOffset + (int)componentPos.x() + parentComponent.width() / 2 - width() / 2, 0, Minecraft.getInstance().screen.width - width()));
+                setY(MathUtils.clamp(yOffset + (int)componentPos.y() - height() - distanceToParent, 0, Minecraft.getInstance().screen.height - height() - distanceToParent));
+            }
+            case RIGHT -> {
+                setX(MathUtils.clamp(xOffset + (int)componentPos.x() - width() - distanceToParent, 0, Minecraft.getInstance().screen.width - width() - distanceToParent));
+                setY(MathUtils.clamp(yOffset + (int)componentPos.y() + parentComponent.height() / 2 - height() / 2, 0, Minecraft.getInstance().screen.height - height()));
+            }
+            case LEFT -> {
+                setX(MathUtils.clamp(xOffset + (int)componentPos.x() + parentComponent.width() + distanceToParent, 0, Minecraft.getInstance().screen.width - width() - distanceToParent));
+                setY(MathUtils.clamp(yOffset + (int)componentPos.y() + parentComponent.height() / 2 - height() / 2, 0, Minecraft.getInstance().screen.height - height()));
+            }
+        }
+        contentArea.clear();
     }
 
     public boolean isClosed() {

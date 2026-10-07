@@ -1,25 +1,19 @@
 package de.mrjulsen.crn.client.ber.variants;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import de.mrjulsen.crn.block.display.properties.components.ITrainStopTypeSetting;
-import de.mrjulsen.crn.config.ModCommonConfig;
-import de.mrjulsen.crn.data.train.ETrainStopState;
 import org.joml.Vector3f;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
+import de.mrjulsen.crn.api.core.snapshot.BoardEntry;
+import de.mrjulsen.crn.api.core.CallDirection;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity.EUpdateReason;
 import de.mrjulsen.crn.block.properties.ETimeDisplay;
 import de.mrjulsen.crn.block.display.properties.PlatformDisplayFocusSettings;
 import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
 import de.mrjulsen.crn.client.lang.CustomLanguage;
-import de.mrjulsen.crn.config.ModClientConfig;
-import de.mrjulsen.crn.data.train.TrainStatus.CompiledTrainStatus;
-import de.mrjulsen.crn.data.train.portable.StationDisplayData;
-import de.mrjulsen.crn.data.train.portable.TrainStopDisplayData;
 import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.mcdragonlib.client.ber.BERGraphics;
 import de.mrjulsen.mcdragonlib.client.ber.BERLabel;
@@ -33,21 +27,18 @@ import de.mrjulsen.mcdragonlib.util.Pair;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.math.Point;
 import de.mrjulsen.mcdragonlib.util.math.Rectangle;
-import de.mrjulsen.mcdragonlib.util.time.DLTime;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<PlatformDisplayFocusSettings> {
-   
+
     private static final String keyFollowingTrains = "gui.createrailwaysnavigator.following_trains";
-    private final MutableComponent textTrainTerminatesHere = CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.train_terminates");
 
     private static final float LINE_HEIGHT = 5.4f;
 
@@ -60,11 +51,11 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
     private BERLabel[][] lines;
     private final BERLabel platformLabel = new BERLabel();
     private final BERLabel followingTrainsLabel = new BERLabel();
-    
+
     public BERPlatformInformative() {
         platformLabel.verticalScale.set(Pair.of(0.8f, 0.8f));
         platformLabel.horizontalScale.set(Pair.of(0.4f, 0.6f));
-        
+
         followingTrainsLabel.text.set(CustomLanguage.translate(keyFollowingTrains));
         followingTrainsLabel.position.set(Point.of(3, 16));
         followingTrainsLabel.verticalScale.set(Pair.of(0.2f, 0.2f));
@@ -74,7 +65,7 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
     private boolean isExtendedDisplay(AdvancedDisplayBlockEntity blockEntity) {
         return blockEntity.getYSize() > 1;
     }
-    
+
     @Override
     public void render(BERGraphics<AdvancedDisplayBlockEntity> graphics, float pPartialTicks, AdvancedDisplayRenderInstance parent, int light, boolean backSide) {
         if (isExtendedDisplay(graphics.blockEntity())) {
@@ -129,16 +120,16 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
         });
 
         graphics.poseStack().pushPose();
-        
+
         if (statusLabel != null && !statusLabel.text.get().getString().isBlank()) {
             graphics.poseStack().pushPose();
-            if (backSide) {           
+            if (backSide) {
                 graphics.poseStack().translate(-statusLabel.x.get() + 5 + platformLabel.preferredWidth.get(), 0, 0);
             }
             DLUtils.doIfNotNull(statusLabel, x -> x.render(graphics, light));
             graphics.poseStack().popPose();
         }
-        if (backSide && platformLabel != null) {                
+        if (backSide && platformLabel != null) {
             graphics.poseStack().translate(-graphics.blockEntity().getXSizeScaled() * 16 + 6 + platformLabel.getRenderedWidth(), 0, 0);
         }
         platformLabel.render(graphics, light);
@@ -147,26 +138,18 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
 
     @Override
     public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason) {
-        List<StationDisplayData> preds = blockEntity.getStops().stream().filter(x -> {
-            boolean cancelled = x.getTrainData().isCancelled();
-            boolean isStillValid = ModUtils.getTransformedWorldTime() < x.getStationData().getScheduledDepartureTime() + ModCommonConfig.DISPLAY_LEAD_TIME.get();
-            boolean terminus = x.isNextSectionExcluded();
-            boolean start = x.isPrevSectionExcluded();
-
-            ITrainStopTypeSetting.ETrainStopType type = getDisplaySettings(blockEntity).getTrainStopType();
-            boolean showArrival = type.showArrivals(terminus) && !start;
-            boolean showDeparture = type.showDepartures(start) && !terminus;
-
-            boolean allowed = showArrival || showDeparture;
-            return allowed && (!cancelled || isStillValid);
-        }).toList();
+        long now = ModUtils.getTransformedWorldTime();
+        ITrainStopTypeSetting.ETrainStopType stopType = getDisplaySettings(blockEntity).getTrainStopType();
+        List<BoardEntry> preds = blockEntity.getStops().stream()
+            .filter(x -> ITrainStopTypeSetting.accepts(x, stopType, now))
+            .toList();
 
         if (preds.isEmpty()) {
             lines = null;
             focusArea = null;
             statusLabel = null;
 
-            
+
             platformLabel.text.set(TextUtils.text(blockEntity.isPlatformFixed() && blockEntity.getStationInfo() != null ? blockEntity.getStationInfo().platform() : "").withStyle(ChatFormatting.BOLD));
             float platformWidth = getDisplaySettings(blockEntity).isAutoPlatformWidthNextStop() ? (float)platformLabel.getRenderedWidth() : getDisplaySettings(blockEntity).getPlatformWidthNextStop();
             platformLabel.position.set(Point.of(blockEntity.getXSizeScaled() * 16 - 3 - platformWidth, 3));
@@ -175,63 +158,28 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
             platformLabel.color.set(getDisplaySettings(blockEntity).getFontColor());
             return;
         }
-            
+
         if (reason == EUpdateReason.LAYOUT_CHANGED || this.lines == null || this.focusArea == null) {
             updateLayout(blockEntity, preds);
         }
 
-        // STATUS
-        showInfoLine = (preds.get(0).getStationData().isDepartureDelayed() && preds.get(0).getTrainData().hasStatusInfo()) || preds.get(0).getStationData().isStationChanged() || preds.get(0).isNextSectionExcluded();
-        if (showInfoLine) {
-            // Update status label
-            Collection<Component> content = new ArrayList<>();
-            if (preds.get(0).getTrainData().isCancelled()) {
-                content.add(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.cancelled"));
-            } else {
-                TrainStopDisplayData displayData = preds.get(0).getStationData();
-                String delay = getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA ? ModUtils.timeRemainingString(displayData.getDepartureTimeDeviation()) : String.valueOf((long)DLTime.fromGameTicks(displayData.getDepartureTimeDeviation(), DLTime.defaultTimeSystem()).toGameMinutes(DLTime.defaultTimeSystem()));
-                
-                // TRAIN TERMINATES
-                if (preds.get(0).isNextSectionExcluded()) {
-                    content.add(textTrainTerminatesHere);
-                }
-                // DELAYED
-                if (displayData.isDepartureDelayed()) {
-                    MutableComponent delayComponent = CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.delayed", delay);
-                    if (getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ABS) {
-                        delayComponent.append(" ").append(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.delay_abs_suffix"));
-                    }
-                    content.add(delayComponent);
-                }
-                // PLATFORM CHANGED
-                if (displayData.isStationChanged() && !blockEntity.isAllowedOnDisplay(displayData.getRealTimeStation())) {
-                    if (!displayData.getScheduledStation().tagId().equals(displayData.getRealTimeStation().tagId())) {
-                        content.add(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.platform_and_station_changed", displayData.getRealTimeStation().tagName(), displayData.getRealTimeStation().info().platform()));
-                    } else {
-                        content.add(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.platform_changed", displayData.getRealTimeStation().info().platform()));
-                    }
-                }
-                // STATUS
-                for (CompiledTrainStatus status : preds.get(0).getTrainData().getStatus()) {
-                    content.add(status.text());
-                }
-            }
-            this.infoLineText = TextUtils.concat(TextUtils.text("  +++  "), content);
-        } else {
-            infoLineText = TextUtils.empty();
-        }
+        BoardEntry focus = preds.get(0);
+        CallDirection focusDirection = ITrainStopTypeSetting.resolveDirection(focus, getDisplaySettings(blockEntity));
 
-        updateFocusContent(blockEntity, preds.get(0));
+        List<Component> content = announcements(blockEntity, focus, focusDirection);
+        showInfoLine = !content.isEmpty();
+        infoLineText = showInfoLine ? TextUtils.concat(TextUtils.text("  +++  "), content) : TextUtils.empty();
+
+        updateFocusContent(blockEntity, focus, focusDirection);
         for (int i = 1; i < this.lines.length && i < preds.size(); i++) {
-            StationDisplayData stop = preds.get(i);
-            updateTableContent(blockEntity, stop, i);
+            updateTableContent(blockEntity, preds.get(i), i);
         }
     }
 
-    private void updateLayout(AdvancedDisplayBlockEntity blockEntity, List<StationDisplayData> preds) {
+    private void updateLayout(AdvancedDisplayBlockEntity blockEntity, List<BoardEntry> preds) {
         this.focusArea = new BERLabel[7];
         this.lines = new BERLabel[0][];
-        
+
         platformLabel.clippingArea.set(Rectangle.withSize(2, 2, blockEntity.getXSizeScaled() * 16 - 4, blockEntity.getYSizeScaled() * 16 - 4));
         platformLabel.glowing.set(blockEntity.isGlowing());
         followingTrainsLabel.clippingArea.set(Rectangle.withSize(2, 2, blockEntity.getXSizeScaled() * 16 - 4, blockEntity.getYSizeScaled() * 16 - 4));
@@ -262,14 +210,14 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
         trainNameLabel.horizontalScrollMode.set(EScrollMode.FLEX_FIT);
         trainNameLabel.backgroundPadding.set(new PaddingF(0.5f));
         trainNameLabel.color.set(getDisplaySettings(blockEntity).getFontColor());
-        
+
         BERLabel destinationLabel = focusArea[LineComponent.DESTINATION.i()] = new BERLabel();
         destinationLabel.verticalScale.set(Pair.of(0.6f, 0.6f));
         destinationLabel.horizontalScale.set(Pair.of(0.4f, 0.6f));
         destinationLabel.horizontalScrollingSpeed.set(SCROLLING_SPEED);
         destinationLabel.horizontalScrollMode.set(EScrollMode.WHEN_NEEDED);
         destinationLabel.color.set(getDisplaySettings(blockEntity).getFontColor());
-        
+
         BERLabel stopoversLabel = focusArea[LineComponent.STOPOVERS.i()] = new BERLabel();
         stopoversLabel.verticalScale.set(Pair.of(0.2f, 0.2f));
         stopoversLabel.horizontalScale.set(Pair.of(0.1f, 0.2f));
@@ -289,12 +237,12 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
         statusLabel.fullBackground.set(true);
         statusLabel.color.set(DARK_FONT_COLOR);
 
-        if (isExtendedDisplay(blockEntity)) {            
+        if (isExtendedDisplay(blockEntity)) {
             maxLines = (blockEntity.getYSizeScaled() - 1) * 3;
             int maxIndices = Math.min(this.maxLines, preds.size());
             this.lines = new BERLabel[Math.max(maxIndices, 0)][];
             for (int i = 1; i < this.lines.length; i++) {
-                StationDisplayData stop = preds.get(i);
+                BoardEntry stop = preds.get(i);
                 this.lines[i] = createTableLine(blockEntity, stop, i);
             }
         }
@@ -325,7 +273,7 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
         });
     }
 
-    private BERLabel[] createTableLine(AdvancedDisplayBlockEntity blockEntity, StationDisplayData stop, int index) {
+    private BERLabel[] createTableLine(AdvancedDisplayBlockEntity blockEntity, BoardEntry stop, int index) {
         BERLabel[] components = new BERLabel[5];
 
         BERLabel timeLabel = components[LineComponent.TIME.i()] = new BERLabel();
@@ -335,7 +283,7 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
         timeLabel.horizontalScrollMode.set(EScrollMode.WHEN_NEEDED);
         timeLabel.preferredWidth.set(12f);
         timeLabel.color.set(getDisplaySettings(blockEntity).getFontColor());
-        
+
         BERLabel realTimeLabel = components[LineComponent.REAL_TIME.i()] = new BERLabel();
         realTimeLabel.verticalScale.set(Pair.of(0.4f, 0.4f));
         realTimeLabel.horizontalScale.set(Pair.of(0.2f, 0.4f));
@@ -345,7 +293,7 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
         realTimeLabel.backgroundColor.set(getDisplaySettings(blockEntity).getFontColor());
         realTimeLabel.backgroundPadding.set(new PaddingF(0.5f));
         realTimeLabel.color.set(DARK_FONT_COLOR);
-        
+
         BERLabel trainNameLabel = components[LineComponent.TRAIN_NAME.i()] = new BERLabel();
         trainNameLabel.verticalScale.set(Pair.of(0.4f, 0.4f));
         trainNameLabel.horizontalScale.set(Pair.of(0.2f, 0.4f));
@@ -353,13 +301,13 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
         trainNameLabel.horizontalScrollMode.set(EScrollMode.WHEN_NEEDED);
         trainNameLabel.color.set(getDisplaySettings(blockEntity).getFontColor());
         trainNameLabel.backgroundPadding.set(new PaddingF(0.5f));
-        
+
         BERLabel platformLabel = components[LineComponent.PLATFORM.i()] = new BERLabel();
         platformLabel.verticalScale.set(Pair.of(0.4f, 0.4f));
         platformLabel.horizontalScale.set(Pair.of(0.2f, 0.4f));
         platformLabel.color.set(getDisplaySettings(blockEntity).getFontColor());
         platformLabel.backgroundPadding.set(new PaddingF(0.5f));
-        
+
         BERLabel destinationLabel = components[LineComponent.DESTINATION.i()] = new BERLabel();
         destinationLabel.verticalScale.set(Pair.of(0.4f, 0.4f));
         destinationLabel.horizontalScale.set(Pair.of(0.2f, 0.4f));
@@ -370,32 +318,23 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
         return components;
     }
 
-    private void updateFocusContent(AdvancedDisplayBlockEntity blockEntity, StationDisplayData stop) {
+    private void updateFocusContent(AdvancedDisplayBlockEntity blockEntity, BoardEntry stop, CallDirection direction) {
         PlatformDisplayFocusSettings settings = getDisplaySettings(blockEntity);
-        ETrainStopState stopState = ITrainStopTypeSetting.resolveStopState(stop, settings);
 
         followingTrainsLabel.color.set(getDisplaySettings(blockEntity).getFontColor());
 
         Component scheduledTimeFormatted = TextUtils.text(ModUtils.formatTime(
-                stopState == ETrainStopState.ARRIVAL ?
-                        stop.getStationData().getScheduledArrivalTime() :
-                        stop.getStationData().getScheduledDepartureTime(),
-                settings.getTimeDisplay() == ETimeDisplay.ETA
-        ));
+                stop.scheduledTime(direction), settings.getTimeDisplay() == ETimeDisplay.ETA));
         Component realTimeFormatted = TextUtils.text(ModUtils.formatTime(
-                stopState == ETrainStopState.ARRIVAL ?
-                        stop.getStationData().getRealTimeArrivalTime() :
-                        stop.getStationData().getRealTimeDepartureTime(),
-                settings.getTimeDisplay() == ETimeDisplay.ETA
-        ));
+                stop.realtimeTime(direction), settings.getTimeDisplay() == ETimeDisplay.ETA));
 
         BERLabel timeLabel = focusArea[LineComponent.TIME.i()];
         timeLabel.text.set(scheduledTimeFormatted);
 
         BERLabel realTimeLabel = focusArea[LineComponent.REAL_TIME.i()];
-        if (stop.getTrainData().isCancelled()) {
-            realTimeLabel.text.set(TextUtils.text(" \u274C ")); // X
-        } else if (stop.getStationData().isDepartureDelayed()) {
+        if (stop.isCancelled()) {
+            realTimeLabel.text.set(TextUtils.text(" \u274C "));
+        } else if (stop.isDelayed(direction)) {
             realTimeLabel.text.set(realTimeFormatted);
         } else {
             realTimeLabel.text.set(TextUtils.empty());
@@ -404,28 +343,24 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
 
         int trainNameWidth = settings.getTrainNameWidthNextStop();
         BERLabel trainNameLabel = focusArea[LineComponent.TRAIN_NAME.i()];
-        trainNameLabel.text.set(TextUtils.text(stop.getTrainData().getName(stopState)));
-        trainNameLabel.position.set(Point.of(3, 7 + (stop.isDelayed() ? 4.5f : 0)));
+        trainNameLabel.text.set(TextUtils.text(stop.displayName(direction)));
+        trainNameLabel.position.set(Point.of(3, 7 + (stop.isDelayed(direction) ? 4.5f : 0)));
         trainNameLabel.preferredWidth.set(settings.isAutoTrainNameWidthNextStop() ? (float)trainNameLabel.clippingArea.get().width() : trainNameWidth);
         trainNameLabel.horizontalScrollMode.set(EScrollMode.WHEN_NEEDED);
-        
-        if (settings.showLineColor() && stop.getTrainData().hasColor(stopState)) {
-            trainNameLabel.backgroundColor.set(stop.getTrainData().getColor(stopState));
-            trainNameLabel.color.set(DLColor.pickBasedOnBrightness(stop.getTrainData().getColor(stopState), LIGHT_FONT_COLOR, DARK_FONT_COLOR, 0.5f));
+
+        if (settings.showLineColor() && stop.hasColor(direction)) {
+            trainNameLabel.backgroundColor.set(stop.displayColor(direction));
+            trainNameLabel.color.set(DLColor.pickBasedOnBrightness(stop.displayColor(direction), LIGHT_FONT_COLOR, DARK_FONT_COLOR, 0.5f));
         } else {
             trainNameLabel.backgroundColor.set(DLColor.TRANSPARENT);
             trainNameLabel.color.set(getDisplaySettings(blockEntity).getFontColor());
         }
 
-        platformLabel.text.set(TextUtils.text(
-            blockEntity.isPlatformFixed() ?
-                blockEntity.getStationInfo().platform() :
-                    ((stop.getStationData().isStationChanged() && !blockEntity.isAllowedOnDisplay(stop.getStationData().getRealTimeStation())) ? stop.getStationData().getScheduledStation() : stop.getStationData().getRealTimeStation()).info().platform()).withStyle(ChatFormatting.BOLD)
-        );
-        
+        platformLabel.text.set(TextUtils.text(getFocusPlatformLabelText(blockEntity, stop)).withStyle(ChatFormatting.BOLD));
+
 
         float x = 5 + Math.max(trainNameLabel.getRenderedWidth(), Math.max(timeLabel.getRenderedWidth(), realTimeLabel.getRenderedWidth()));
-        
+
         float platformWidth = getDisplaySettings(blockEntity).isAutoPlatformWidthNextStop() ? (float)platformLabel.getRenderedWidth() : getDisplaySettings(blockEntity).getPlatformWidthNextStop();
         platformLabel.position.set(Point.of(blockEntity.getXSizeScaled() * 16 - 3 - platformWidth, 3));
         platformLabel.preferredWidth.set(platformWidth);
@@ -435,9 +370,9 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
         float w = blockEntity.getXSizeScaled() * 16 - 5 - platformLabel.getRenderedWidth() - x;
         BERLabel destinationLabel = focusArea[LineComponent.DESTINATION.i()];
         destinationLabel.text.set(
-                stopState == ETrainStopState.ARRIVAL ?
+                direction.isArrival() ?
                 CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.arrival") :
-                TextUtils.text(stop.getStationData().getDestination())
+                TextUtils.text(stop.destinationText())
         );
         destinationLabel.position.set(Point.of(x, 9f));
         destinationLabel.preferredWidth.set(w);
@@ -445,9 +380,9 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
 
         BERLabel stopoversLabel = focusArea[LineComponent.STOPOVERS.i()];
         stopoversLabel.text.set(
-                stopState == ETrainStopState.ARRIVAL ?
-                CustomLanguage.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".schedule_board.train_from", stop.getFirstStopName()) :
-                TextUtils.concat(TextUtils.text(" \u25CF "), stop.getStopovers().stream().map(a -> (Component)TextUtils.text(a)).toList())
+                direction.isArrival() ?
+                CustomLanguage.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".schedule_board.train_from", stop.origin().displayName()) :
+                TextUtils.concat(TextUtils.text(" \u25CF "), stop.stopovers().stream().map(a -> (Component)TextUtils.text(a.displayName())).toList())
         );
         stopoversLabel.position.set(Point.of(x, 6.5f));
         stopoversLabel.preferredWidth.set(w);
@@ -460,73 +395,63 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
         statusLabel.color.set(DLColor.pickBasedOnBrightness(getDisplaySettings(blockEntity).getFontColor(), LIGHT_FONT_COLOR, DARK_FONT_COLOR, 0.5f));
     }
 
-    private void updateTableContent(AdvancedDisplayBlockEntity blockEntity, StationDisplayData stop, int index) {
+    private String getFocusPlatformLabelText(AdvancedDisplayBlockEntity blockEntity, BoardEntry stop) {
+        if (blockEntity.isPlatformFixed()) {
+            return blockEntity.getStationInfo().platform();
+        }
+        return blockEntity.isAllowedOnDisplay(stop.station())
+            ? stop.station().platform()
+            : stop.scheduledStation().platform();
+    }
+
+    private void updateTableContent(AdvancedDisplayBlockEntity blockEntity, BoardEntry stop, int index) {
         PlatformDisplayFocusSettings settings = getDisplaySettings(blockEntity);
-        ETrainStopState stopState = ITrainStopTypeSetting.resolveStopState(stop, settings);
+        CallDirection direction = ITrainStopTypeSetting.resolveDirection(stop, settings);
 
         BERLabel[] components = lines[index];
         Component scheduledTimeFormatted = TextUtils.text(ModUtils.formatTime(
-                stopState ==  ETrainStopState.ARRIVAL ?
-                        stop.getStationData().getScheduledArrivalTime() :
-                        stop.getStationData().getScheduledDepartureTime(),
-                settings.getTimeDisplay() == ETimeDisplay.ETA
-        ));
+                stop.scheduledTime(direction), settings.getTimeDisplay() == ETimeDisplay.ETA));
         Component realTimeFormatted = TextUtils.text(ModUtils.formatTime(
-                stopState ==  ETrainStopState.ARRIVAL ?
-                        stop.getStationData().getRealTimeArrivalTime() :
-                        stop.getStationData().getRealTimeDepartureTime(),
-                settings.getTimeDisplay() == ETimeDisplay.ETA
-        ));
+                stop.realtimeTime(direction), settings.getTimeDisplay() == ETimeDisplay.ETA));
 
         BERLabel timeLabel = components[LineComponent.TIME.i()];
         timeLabel.text.set(scheduledTimeFormatted);
 
         BERLabel realTimeLabel = components[LineComponent.REAL_TIME.i()];
-        if (stop.getTrainData().isCancelled()) {
-            realTimeLabel.text.set(TextUtils.text(" \u274C ")); // X
-        } else if (stop.getStationData().isDepartureDelayed()) {
+        if (stop.isCancelled()) {
+            realTimeLabel.text.set(TextUtils.text(" \u274C "));
+        } else if (stop.isDelayed(direction)) {
             realTimeLabel.text.set(realTimeFormatted);
         } else {
             realTimeLabel.text.set(TextUtils.empty());
         }
-        /*
-        realTimeLabel.text.set(TextUtils.text(stop.getTrainData().isCancelled() ?
-            " \u274C " : // X
-            (stop.getStationData().isDepartureDelayed() ?
-                (ModUtils.formatTime(isLast ? stop.getStationData().getRealTimeArrivalTime() : stop.getStationData().getRealTimeDepartureTime(), getDisplaySettings(blockEntity).getTimeDisplay() == ETimeDisplay.ETA)) :
-                "")) // Nothing (not delayed)
-        );
-
-         */
         realTimeLabel.color.set(DLColor.pickBasedOnBrightness(getDisplaySettings(blockEntity).getFontColor(), LIGHT_FONT_COLOR, DARK_FONT_COLOR, 0.5f));
-        
-        BERLabel trainNameLabel = components[LineComponent.TRAIN_NAME.i()];
-        trainNameLabel.text.set(TextUtils.text(stop.getTrainData().getName(stopState)));
 
-        if (settings.showLineColor() && stop.getTrainData().hasColor(stopState)) {
-            trainNameLabel.backgroundColor.set(stop.getTrainData().getColor(stopState));
-            trainNameLabel.color.set(DLColor.pickBasedOnBrightness(stop.getTrainData().getColor(stopState), LIGHT_FONT_COLOR, DARK_FONT_COLOR, 0.5f));
+        BERLabel trainNameLabel = components[LineComponent.TRAIN_NAME.i()];
+        trainNameLabel.text.set(TextUtils.text(stop.displayName(direction)));
+
+        if (settings.showLineColor() && stop.hasColor(direction)) {
+            trainNameLabel.backgroundColor.set(stop.displayColor(direction));
+            trainNameLabel.color.set(DLColor.pickBasedOnBrightness(stop.displayColor(direction), LIGHT_FONT_COLOR, DARK_FONT_COLOR, 0.5f));
         } else {
             trainNameLabel.backgroundColor.set(DLColor.TRANSPARENT);
             trainNameLabel.color.set(getDisplaySettings(blockEntity).getFontColor());
         }
-        
+
         BERLabel platformLabel = components[LineComponent.PLATFORM.i()];
         platformLabel.text.set(
-            blockEntity.isPlatformFixed() ?
-                TextUtils.empty() :
-                TextUtils.text(stop.getStationData().getRealTimeStation().info().platform())
+            blockEntity.isPlatformFixed() ? TextUtils.empty() : TextUtils.text(stop.station().platform())
         );
-        
+
         BERLabel destinationLabel = components[LineComponent.DESTINATION.i()];
         destinationLabel.text.set(
-                stopState ==  ETrainStopState.ARRIVAL ?
-                CustomLanguage.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".schedule_board.train_from", stop.getFirstStopName()) :
-                TextUtils.text(stop.getStationData().getDestination())
+                direction.isArrival() ?
+                CustomLanguage.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".schedule_board.train_from", stop.origin().displayName()) :
+                TextUtils.text(stop.destinationText())
         );
 
         int x = 3;
-        timeLabel.position.set(Point.of(x, 11 + 3 + index * LINE_HEIGHT));        
+        timeLabel.position.set(Point.of(x, 11 + 3 + index * LINE_HEIGHT));
         x += timeLabel.getRenderedWidth() + 2;
         realTimeLabel.position.set(Point.of(x, 11 + 3 + index * LINE_HEIGHT));
         x += realTimeLabel.getRenderedWidth() + 2 + (!realTimeLabel.text.get().getString().isEmpty() ? 2 : 0);
@@ -536,16 +461,16 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
         trainNameLabel.preferredWidth.set(trainNameWidth);
         trainNameLabel.horizontalScrollMode.set(EScrollMode.WHEN_NEEDED);
         x += trainNameWidth + 2;
-        
-        
+
+
         float platformWidth = settings.isAutoPlatformWidth() ? platformLabel.getRenderedWidth() : settings.getPlatformWidth();
         platformLabel.position.set(Point.of(blockEntity.getXSizeScaled() * 16 - 3 - platformWidth, 11 + 3 + index * LINE_HEIGHT));
         platformLabel.horizontalAlign.set(ETextAlignment.RIGHT);
         platformLabel.preferredWidth.set(platformWidth);
         platformLabel.horizontalScrollMode.set(EScrollMode.WHEN_NEEDED);
         platformLabel.backgroundPadding.set(new PaddingF(0.5f));
-        
-        if (stop.getStationData().isStationChanged()) {
+
+        if (stop.isDiverted()) {
             platformLabel.backgroundColor.set(getDisplaySettings(blockEntity).getFontColor());
             platformLabel.color.set(DARK_FONT_COLOR);
         } else {

@@ -24,7 +24,7 @@ import de.mrjulsen.crn.block.display.properties.StaticTextDisplaySettings;
 import de.mrjulsen.crn.block.display.properties.StaticTextDisplaySettings.TextComponent;
 import de.mrjulsen.crn.block.properties.ESide;
 import de.mrjulsen.crn.client.ClientWrapper;
-import de.mrjulsen.crn.network.packets.cts.AdvancedDisplayUpdatePacketData;
+import de.mrjulsen.crn.network.packets.AdvancedDisplayUpdatePacketData;
 import de.mrjulsen.crn.registry.ModBlockEntities;
 import de.mrjulsen.crn.registry.ModDisplayTypes;
 import de.mrjulsen.crn.registry.ModNetworkManager;
@@ -194,6 +194,15 @@ public abstract class AbstractAdvancedDisplayBlock extends CopycatBlock implemen
 	public BlockState getDefaultPlacementState(BlockPlaceContext context, BlockState state, BlockState other) {
 		return super.getStateForPlacement(context).setValue(FACING, context.getHorizontalDirection().getOpposite());
 	}
+
+    public void refreshConnectionState(Level level, BlockPos pos) {
+        BlockState state = level.getBlockState(pos);
+        if (state.getBlock() != this)
+            return;
+        BlockState updated = updateColumn(level, pos, state, true);
+        if (updated != state)
+            level.setBlock(pos, updated, Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
+    }
 
     protected BlockState updateColumn(Level level, BlockPos pos, BlockState state, boolean present) {
 		MutableBlockPos currentPos = new MutableBlockPos();

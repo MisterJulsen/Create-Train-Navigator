@@ -2,6 +2,7 @@ package de.mrjulsen.crn.client.gui.windows;
 
 import com.simibubi.create.foundation.gui.AllIcons;
 
+import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.BarColor;
 import de.mrjulsen.crn.client.gui.CreateDynamicWidgets.ContainerColor;
@@ -11,6 +12,7 @@ import de.mrjulsen.crn.config.ModClientConfig;
 import de.mrjulsen.mcdragonlib.client.gui.events.DLGuiStandardEvents;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLWindow;
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLWindowManager;
+import de.mrjulsen.mcdragonlib.client.gui.widgets.components.DLTooltip;
 import de.mrjulsen.mcdragonlib.client.util.DLGuiGraphics;
 import de.mrjulsen.mcdragonlib.client.util.GuiUtils;
 import de.mrjulsen.mcdragonlib.data.ETextAlignment;
@@ -21,6 +23,8 @@ import de.mrjulsen.mcdragonlib.util.time.DLTime;
 import de.mrjulsen.mcdragonlib.util.time.TimeContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
+
+import java.util.List;
 
 public abstract class AbstractNavigatorScreen extends DLWindow {
 
@@ -45,17 +49,17 @@ public abstract class AbstractNavigatorScreen extends DLWindow {
             getWindowManager().closeWindow(this);
             return false;
         });
+        backButton.tooltip.set(new DLTooltip(List.of(Constants.TOOLTIP_GO_BACK), 256));
 
         addEventListener(DLGuiStandardEvents.ScreenLayoutUpdatedEvent.class, (s, e) -> {
-            //setPosition(getWindowManager().getScreenWidth() / 2 - width() / 2, getWindowManager().getScreenHeight() / 2 - height() / 2);
             return false;
         });
 
     }
-    
+
     @Override
     public void renderMainLayer(DLGuiGraphics graphics, double mouseX, double mouseY, Rectangle renderBounds) {
-        CreateDynamicWidgets.renderWindow(graphics, 0, 0, GUI_WIDTH, GUI_HEIGHT, containerColor, primaryColoring, FooterSize.DEFAULT.size(), FooterSize.SMALL.size(), true);        
+        CreateDynamicWidgets.renderWindow(graphics, 0, 0, GUI_WIDTH, GUI_HEIGHT, containerColor, primaryColoring, FooterSize.DEFAULT.size(), FooterSize.SMALL.size(), true);
         GuiUtils.drawString(graphics, graphics.defaultFont(), 6, 4, title, DLColor.fromInt(0xFF4F4F4F), ETextAlignment.LEFT, false);
         String timeString = new DLTime(Minecraft.getInstance().level, DLTime.defaultTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem());
         GuiUtils.drawString(graphics, graphics.defaultFont(), GUI_WIDTH - 6, 4, TextUtils.text(timeString), DLColor.fromInt(0xFF4F4F4F), ETextAlignment.RIGHT, false);
