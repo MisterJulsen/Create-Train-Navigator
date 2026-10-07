@@ -4,8 +4,8 @@ import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.mcdragonlib.data.DLStatus;
 import de.mrjulsen.mcdragonlib.network.NetworkPacketContext;
 import de.mrjulsen.mcdragonlib.network.NetworkPacketData;
+import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
-import net.fabricmc.api.EnvType;
 import net.minecraft.nbt.CompoundTag;
 
 public class ServerErrorPacketData extends NetworkPacketData {
@@ -34,7 +34,7 @@ public class ServerErrorPacketData extends NetworkPacketData {
     }
 
     public static void handle(ServerErrorPacketData packet, NetworkPacketContext context) {
-        EnvExecutor.runInEnv(EnvType.CLIENT, () -> () -> {
+        EnvExecutor.runInEnv(Env.CLIENT, () -> () -> {
             context.queue(() -> {
                 ClientWrapper.handleErrorMessagePacket(packet, context);
             });

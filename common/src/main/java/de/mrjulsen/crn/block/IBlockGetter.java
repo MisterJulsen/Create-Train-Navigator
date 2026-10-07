@@ -7,7 +7,6 @@ import com.simibubi.create.content.contraptions.Contraption;
 import com.simibubi.create.content.contraptions.behaviour.MovementContext;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 
-import de.mrjulsen.crn.CRNPlatformSpecific;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.BlockGetter;
@@ -39,7 +38,7 @@ public interface IBlockGetter {
         @Override
         public BlockEntity getBlockEntity(BlockPos pos) {
             Contraption contraption = contraptionEntity.getContraption();
-            return CRNPlatformSpecific.getClientContraptionBlockEntity(contraption, pos);
+            return contraption.getBlockEntityClientSide(pos);
         }
 
         @Override
@@ -56,7 +55,7 @@ public interface IBlockGetter {
                 return;
 
             MovementContext ctx = actor.getRight();
-            be.saveAdditional(ctx.blockEntityData);
+            be.saveAdditional(ctx.blockEntityData, contraption.getContraptionWorld().registryAccess());
         }
 
         @Override

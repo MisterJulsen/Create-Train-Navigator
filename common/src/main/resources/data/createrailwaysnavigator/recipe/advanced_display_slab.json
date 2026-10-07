@@ -1,0 +1,17 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+        "BBB"
+    ],
+    "key": {
+        "B": [
+            {
+                "item": "createrailwaysnavigator:advanced_display_block"
+            }
+        ]
+    },
+    "result": {
+        "id": "createrailwaysnavigator:advanced_display_slab",
+        "count": 6
+    }
+}

@@ -1,5 +1,6 @@
 package de.mrjulsen.crn.client.gui.widgets.modular;
 
+import java.util.List;
 import java.util.function.BiConsumer;
 
 import de.mrjulsen.mcdragonlib.client.gui.widgets.base.DLGuiComponent;

@@ -34,7 +34,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class BERPassengerInfoSimple implements AbstractAdvancedDisplayRenderer<PassengerInformationScrollingTextSettings> {
 
-    private static final ResourceLocation ICONS = new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/icons.png");  
+    private static final ResourceLocation ICONS = ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "textures/gui/icons.png");  
     private final MutableComponent textTrainTerminatesHere = CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.this_train_terminates_there")
         .append(" ")
         .append(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.passengers_leave_train"));

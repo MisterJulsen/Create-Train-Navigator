@@ -37,6 +37,9 @@ import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.world.level.storage.LevelResource;
+import net.minecraft.nbt.NbtAccounter;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class UserSettings {
 
@@ -189,7 +192,7 @@ public class UserSettings {
         UserSettings.update(this);
         CompoundTag nbt = this.toNbt();
         try {
-            NbtIo.writeCompressed(nbt, new File(ModCommonEvents.getCurrentServer().get().getWorldPath(new LevelResource("data/" + FILENAME + getOwnerId() + ".nbt")).toString()));
+            NbtIo.writeCompressed(nbt, ModCommonEvents.getCurrentServer().get().getWorldPath(new LevelResource("data/" + FILENAME + getOwnerId() + ".nbt")));
             if (ModCommonConfig.ADVANCED_LOGGING.get()) CreateRailwaysNavigator.LOGGER.info("Saved user settings.");
         } catch (IOException e) {
             CreateRailwaysNavigator.LOGGER.error("Unable to save user settings.", e);
@@ -201,11 +204,11 @@ public class UserSettings {
             throw new RuntimeSideException(false);
         }
 
-        File settingsFile = new File(ModCommonEvents.getCurrentServer().get().getWorldPath(new LevelResource("data/" + FILENAME + playerId + ".nbt")).toString());
+        Path settingsPath = ModCommonEvents.getCurrentServer().get().getWorldPath(new LevelResource("data/" + FILENAME + playerId + ".nbt"));
 
-        if (settingsFile.exists()) {
+        if (Files.exists(settingsPath)) {
             try {
-                return UserSettings.fromNbt(NbtIo.readCompressed(settingsFile), playerId, readOnly);
+                return UserSettings.fromNbt(NbtIo.readCompressed(settingsPath, NbtAccounter.unlimitedHeap()), playerId, readOnly);
             } catch (IOException e) {
                 CreateRailwaysNavigator.LOGGER.error("Cannot load user settings for player: " + playerId, e);
             }

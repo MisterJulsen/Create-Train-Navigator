@@ -37,6 +37,9 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.storage.LevelResource;
+import net.minecraft.nbt.NbtAccounter;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class GlobalSettings implements INBTSerializable {
 
@@ -111,7 +114,7 @@ public class GlobalSettings implements INBTSerializable {
         CompoundTag nbt = this.serializeNbt();
 
         try {
-            NbtIo.writeCompressed(nbt, new File(server.getWorldPath(new LevelResource("data/" + FILENAME)).toString()));
+            NbtIo.writeCompressed(nbt, server.getWorldPath(new LevelResource("data/" + FILENAME)));
             if (ModCommonConfig.ADVANCED_LOGGING.get()) CreateRailwaysNavigator.LOGGER.info("Saved global settings.");
         } catch (IOException e) {
             CreateRailwaysNavigator.LOGGER.error("Unable to save global settings.", e);
@@ -119,17 +122,17 @@ public class GlobalSettings implements INBTSerializable {
     }
 
     public synchronized static GlobalSettings open(MinecraftServer server) throws Exception {
-        File legacyFile = new File(server.getWorldPath(new LevelResource("data/" + LEGACY_FILENAME)).toString());
-        File settingsFile = new File(server.getWorldPath(new LevelResource("data/" + FILENAME)).toString());
+        Path legacyPath = server.getWorldPath(new LevelResource("data/" + LEGACY_FILENAME));
+        Path settingsPath = server.getWorldPath(new LevelResource("data/" + FILENAME));
 
         GlobalSettings file = new GlobalSettings(server);
 
-        if (legacyFile.exists()) {
+        if (Files.exists(legacyPath)) {
             CreateRailwaysNavigator.LOGGER.warn("A legacy global settings file was found. Try to load it.");
-            file.deserializeNbtLegacy(NbtIo.readCompressed(legacyFile).getCompound("data"));
-            legacyFile.delete();
-        } else if (settingsFile.exists()) {
-            file.deserializeNbt(NbtIo.readCompressed(settingsFile));
+            file.deserializeNbtLegacy(NbtIo.readCompressed(legacyPath, NbtAccounter.unlimitedHeap()).getCompound("data"));
+            Files.deleteIfExists(legacyPath);
+        } else if (Files.exists(settingsPath)) {
+            file.deserializeNbt(NbtIo.readCompressed(settingsPath, NbtAccounter.unlimitedHeap()));
         }
         return file;
     }

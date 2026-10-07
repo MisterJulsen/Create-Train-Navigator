@@ -53,8 +53,8 @@ public class TravelSectionInstruction extends ScheduleInstruction {
     }
 
     @Override
-    protected void readAdditional(CompoundTag tag) {
-        super.readAdditional(tag);
+    protected void readAdditional(net.minecraft.core.HolderLookup.Provider provider, CompoundTag tag) {
+        super.readAdditional(provider, tag);
         if (!tag.contains(NBT_INCLUDE_PREVIOUS_STATION)) tag.putBoolean(NBT_INCLUDE_PREVIOUS_STATION, false);
         if (!tag.contains(NBT_USABLE)) tag.putBoolean(NBT_USABLE, true);
     }
@@ -66,7 +66,7 @@ public class TravelSectionInstruction extends ScheduleInstruction {
 
     @Override
     public ResourceLocation getId() {
-        return new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "travel_section");
+        return ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "travel_section");
     }
 
     @Override

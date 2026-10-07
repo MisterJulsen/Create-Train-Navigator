@@ -151,7 +151,7 @@ public record DelayInstance(
         }
 
         return new DelayInstance(
-            new ResourceLocation(nbt.getString(NBT_CAUSE)),
+            ResourceLocation.parse(nbt.getString(NBT_CAUSE)),
             severities[Math.floorMod(severityIndex, severities.length)],
             nbt.getLong(NBT_SINCE),
             nbt.contains(NBT_ESTIMATED_DELAY) ? nbt.getLong(NBT_ESTIMATED_DELAY) : UNKNOWN_DELAY,

@@ -273,7 +273,7 @@ public record RouteLeg(
             NbtHelper.readNullableUUID(nbt, NBT_TRAIN_ID),
             NbtHelper.readNullableUUID(nbt, NBT_SESSION_ID),
             nbt.getString(NBT_TRAIN_NAME),
-            nbt.contains(NBT_ICON_ID) ? new ResourceLocation(nbt.getString(NBT_ICON_ID)) : null,
+            nbt.contains(NBT_ICON_ID) ? ResourceLocation.parse(nbt.getString(NBT_ICON_ID)) : null,
             LineRef.fromNbt(nbt.getCompound(NBT_LINE)),
             TrainCategoryRef.fromNbt(nbt.getCompound(NBT_CATEGORY)),
             nbt.getString(NBT_DESTINATION_TEXT),

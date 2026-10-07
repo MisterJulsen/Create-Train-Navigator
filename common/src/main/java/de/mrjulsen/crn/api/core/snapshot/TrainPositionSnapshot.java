@@ -144,12 +144,12 @@ public record TrainPositionSnapshot(
         ListTag dimensionsTag = nbt.getList(NBT_DIMENSIONS, Tag.TAG_STRING);
         List<ResourceLocation> dimensions = new ArrayList<>(dimensionsTag.size());
         for (int i = 0; i < dimensionsTag.size(); i++) {
-            dimensions.add(new ResourceLocation(dimensionsTag.getString(i)));
+            dimensions.add(ResourceLocation.parse(dimensionsTag.getString(i)));
         }
 
         return new TrainPositionSnapshot(
             NbtHelper.readNullableUUID(nbt, NBT_TRAIN_ID),
-            nbt.contains(NBT_DIMENSION) ? new ResourceLocation(nbt.getString(NBT_DIMENSION)) : null,
+            nbt.contains(NBT_DIMENSION) ? ResourceLocation.parse(nbt.getString(NBT_DIMENSION)) : null,
             nbt.contains(NBT_POSITION) ? BlockPos.of(nbt.getLong(NBT_POSITION)) : null,
             dimensions,
             nbt.getDouble(NBT_SPEED),

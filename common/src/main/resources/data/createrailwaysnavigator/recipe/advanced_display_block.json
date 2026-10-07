@@ -1,0 +1,24 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+        "BBB",
+        "BZB",
+        "BBB"
+    ],
+    "key": {
+        "B": [
+            {
+                "item": "createrailwaysnavigator:advanced_display"
+            }
+        ],
+        "Z": [
+            {
+                "tag": "c:ingots/zinc"
+            }
+        ]
+    },
+    "result": {
+        "id": "createrailwaysnavigator:advanced_display_block",
+        "count": 6
+    }
+}

@@ -8,6 +8,7 @@ import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.block.blockentity.NavigatorLecternBlockEntity;
 import de.mrjulsen.crn.block.blockentity.TrainStationClockBlockEntity;
 import de.mrjulsen.crn.block.penalty.PenaltyAnchorBlockEntity;
+import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.client.ber.NavigatorLecternBlockEntityRenderer;
 import de.mrjulsen.crn.client.ber.PenaltyAnchorRenderer;
 import de.mrjulsen.mcdragonlib.client.ber.StaticBlockEntityRenderer;
@@ -25,7 +26,7 @@ public class ModBlockEntities {
 			ModBlocks.ADVANCED_DISPLAY_SLOPED,
 			ModBlocks.ADVANCED_DISPLAY_SLAB
 		)
-		.renderer(() -> StaticBlockEntityRenderer::new)
+		.renderer(() -> ClientWrapper::createAdvancedDisplayBlockEntityRenderer)
 		.register();
 
 	public static final BlockEntityEntry<TrainStationClockBlockEntity> TRAIN_STATION_CLOCK_BLOCK_ENTITY = CreateRailwaysNavigator.REGISTRATE

@@ -61,6 +61,7 @@ import dev.architectury.utils.Env;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -692,8 +693,8 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
     }
 
     @Override
-    protected void write(CompoundTag pTag, boolean clientPacket) {
-        super.write(pTag, clientPacket);
+    protected void write(CompoundTag pTag, HolderLookup.Provider registries, boolean clientPacket) {
+        super.write(pTag, registries, clientPacket);
         pTag.putByte(NBT_XSIZE, getXSize());
         pTag.putByte(NBT_YSIZE, getYSize());
         pTag.putBoolean(NBT_CONTROLLER, isController());
@@ -717,7 +718,7 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
 
     @SuppressWarnings("deprecation")
     @Override
-    public void read(CompoundTag pTag, boolean clientPacket) {
+    protected void read(CompoundTag pTag, HolderLookup.Provider registries, boolean clientPacket) {
         boolean updateClient = false;
         IDisplaySettings oldDisplayTypeSettings = displayTypeSettings;
         StationInfo info = StationInfo.fromNbt(pTag);
@@ -733,7 +734,7 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
             }
         }
 
-        super.read(pTag, clientPacket);
+        super.read(pTag, registries, clientPacket);
 
 
         xSize = pTag.getByte(NBT_XSIZE);
@@ -837,15 +838,15 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
     }
 
     @Override
-    public CompoundTag getUpdateTag() {
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         CompoundTag nbt = new CompoundTag();
-        this.write(nbt, true);
+        this.write(nbt, registries, true);
         return nbt;
     }
 
     @Override
-    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
-        this.load(pkt.getTag());
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider registries) {
+        this.loadWithComponents(pkt.getTag(), registries);
         this.level.sendBlockUpdated(this.worldPosition, this.getBlockState(), this.getBlockState(), 512);
     }
 

@@ -119,18 +119,16 @@ public class CreateDynamicWidgets {
     }
 
     public static void renderContainerBackground(DLGuiGraphics graphics, int x, int y, int w, int h, ContainerColor color) {
-        Tesselator tesselator = Tesselator.getInstance();
-        BufferBuilder bufferbuilder = tesselator.getBuilder();
         RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
         RenderSystem.setShaderTexture(0, color.res);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         float f = 2f;
-        bufferbuilder.begin(Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-        bufferbuilder.vertex(x, y + (double)h, 0.0).uv(0.0F, (float)h / f).color(1f, 1f, 1f, 1f).endVertex();
-        bufferbuilder.vertex(x + (double)w, y + (double)h, 0.0).uv((float)w / f, (float)h / f).color(1f, 1f, 1f, 1f).endVertex();
-        bufferbuilder.vertex(x + (double)w, y, 0.0).uv((float)w / f, 0).color(1f, 1f, 1f, 1f).endVertex();
-        bufferbuilder.vertex(x, y, 0.0).uv(0.0F, 0).color(1f, 1f, 1f, 1f).endVertex();
-        tesselator.end();
+        BufferBuilder bufferbuilder = Tesselator.getInstance().begin(Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+        bufferbuilder.addVertex((float) x, (float) (y + h), 0.0F).setUv(0.0F, (float) h / f).setColor(1f, 1f, 1f, 1f);
+        bufferbuilder.addVertex((float) (x + w), (float) (y + h), 0.0F).setUv((float) w / f, (float) h / f).setColor(1f, 1f, 1f, 1f);
+        bufferbuilder.addVertex((float) (x + w), (float) y, 0.0F).setUv((float) w / f, 0).setColor(1f, 1f, 1f, 1f);
+        bufferbuilder.addVertex((float) x, (float) y, 0.0F).setUv(0.0F, 0).setColor(1f, 1f, 1f, 1f);
+        com.mojang.blaze3d.vertex.BufferUploader.drawWithShader(bufferbuilder.buildOrThrow());
     }
 
     protected static void renderNineSliced(DLGuiGraphics graphics, int x, int y, int w, int h, int u, int v, int textureWidth, int textureHeight, int cornerSliceSize, ResourceLocation location, boolean renderCenter) {
@@ -181,7 +179,7 @@ public class CreateDynamicWidgets {
     }
 
     public static void renderShadow(DLGuiGraphics graphics, int x, int y, int w, int h) {
-        renderNineSliced(graphics, x - 5, y - 5, w + 10, h + 10, 0, 0, 11, 11, 5, new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/shadow.png"), true);
+        renderNineSliced(graphics, x - 5, y - 5, w + 10, h + 10, 0, 0, 11, 11, 5, ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "textures/gui/shadow.png"), true);
     }
 
     public static void renderTextHighlighted(DLGuiGraphics graphics, int x, int y, Font font, Component text, DLColor color) {
@@ -224,10 +222,10 @@ public class CreateDynamicWidgets {
 
 
     public static enum ContainerColor {
-        GRAY(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/container_gray.png")),
-        PURPLE(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/container_purple.png")),
-        BLUE(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/container_blue.png")),
-        GOLD(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/container_gold.png"));
+        GRAY(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "textures/gui/container_gray.png")),
+        PURPLE(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "textures/gui/container_purple.png")),
+        BLUE(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "textures/gui/container_blue.png")),
+        GOLD(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "textures/gui/container_gold.png"));
 
         private final ResourceLocation res;
 

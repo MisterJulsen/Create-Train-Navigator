@@ -48,7 +48,7 @@ public class CustomLanguage {
 
         for (String namespace : resourceManager.getNamespaces()) {
             try {
-                ResourceLocation location = new ResourceLocation(namespace, path);
+                ResourceLocation location = ResourceLocation.fromNamespaceAndPath(namespace, path);
                 for (Resource resource : resourceManager.getResourceStack(location)) {
                     try (InputStream stream = resource.open()) {
                         Language.loadFromJson(stream, map::put);

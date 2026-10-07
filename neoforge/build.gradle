@@ -1,0 +1,173 @@
+plugins {
+    id 'com.gradleup.shadow'
+}
+
+architectury {
+    platformSetupLoomIde()
+    neoForge()
+}
+
+loom {
+    accessWidenerPath = project(":common").loom.accessWidenerPath
+}
+
+tasks {
+    processResources {
+        from(project(":common").file("src/main/resources/createrailwaysnavigator.accesswidener")) {
+            into("/assets/")
+        }
+    }
+
+    remapJar {
+        dependsOn(processResources)
+        atAccessWideners.add("createrailwaysnavigator.accesswidener")
+    }
+}
+
+configurations {
+    common {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+    compileClasspath.extendsFrom common
+    runtimeClasspath.extendsFrom common
+    developmentNeoForge.extendsFrom common
+
+    shadowBundle {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+
+    jettyBundle {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+}
+
+repositories {
+    maven {
+        name = 'NeoForged'
+        url = 'https://maven.neoforged.net/releases'
+    }
+}
+
+dependencies {
+    neoForge "net.neoforged:neoforge:$rootProject.neoforge_version"
+
+    modImplementation "dev.architectury:architectury-neoforge:$rootProject.architectury_api_version"
+    modImplementation("de.mrjulsen.mcdragonlib:dragonlib-neoforge:${rootProject.minecraft_version}-${rootProject.dragonlib_version}")
+
+    implementation("com.simibubi.create:create-${minecraft_version}:${create_neoforge_version}:slim") { transitive = false }
+    implementation("net.createmod.ponder:ponder-neoforge:${ponder_neoforge_version}+mc${minecraft_version}")
+    compileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-${minecraft_version}:${flywheel_neoforge_version}")
+    runtimeOnly("dev.engine-room.flywheel:flywheel-neoforge-${minecraft_version}:${flywheel_neoforge_version}")
+    implementation("com.tterrag.registrate:Registrate:${registrate_neoforge_version}")
+
+
+    common(project(path: ':common', configuration: 'namedElements')) { transitive false }
+    shadowBundle project(path: ':common', configuration: 'transformProductionNeoForge')
+}
+
+
+dependencies {
+    jettyBundle("org.eclipse.jetty:jetty-server:${rootProject.jetty_version}") {
+        exclude group: "org.slf4j", module: "slf4j-api"
+    }
+    jettyBundle("org.eclipse.jetty.compression:jetty-compression-server:${rootProject.jetty_version}") {
+        exclude group: "org.slf4j", module: "slf4j-api"
+    }
+    jettyBundle("org.eclipse.jetty.compression:jetty-compression-gzip:${rootProject.jetty_version}") {
+        exclude group: "org.slf4j", module: "slf4j-api"
+    }
+}
+
+def jettyRuntimeJars = configurations.jettyBundle.resolvedConfiguration.resolvedArtifacts.collect { art ->
+    def m = art.moduleVersion.id
+    "${m.group}:${m.name}:${m.version}".toString()
+}
+
+dependencies {
+    jettyRuntimeJars.each { notation ->
+        include(forgeRuntimeLibrary(notation))
+    }
+}
+
+processResources {
+    inputs.property 'version', project.version
+
+    filesMatching('META-INF/neoforge.mods.toml') {
+        expand version: project.version
+    }
+}
+
+afterEvaluate {
+    if (!rootProject.hasProperty("lwjgl_version")) return
+
+    tasks.named("configureLaunch").configure { task ->
+        task.doLast {
+            def classpathFile = file(".gradle/loom-cache/forge_minecraft_classpath.txt")
+            if (!classpathFile.exists()) return
+
+            def targetVersion = rootProject.lwjgl_version
+            def lwjglPaths = [:]
+            configurations.runtimeClasspath.resolvedConfiguration.resolvedArtifacts
+                    .findAll { it.moduleVersion.id.group == "org.lwjgl" && it.moduleVersion.id.version == targetVersion }
+                    .each { a ->
+                        def key = a.moduleVersion.id.name + (a.classifier ? "-${a.classifier}" : "")
+                        lwjglPaths[key] = a.file.absolutePath
+                    }
+
+            // Detect the LWJGL version Minecraft actually ships from the classpath file itself
+            // (1.20.1 -> 3.3.1, 1.21.1 -> 3.3.3, ...) so this never has to be hardcoded per MC version.
+            def bundledMatcher = (classpathFile.text =~ /[\\\/]org\.lwjgl[\\\/]lwjgl[\\\/]([^\\\/]+)[\\\/]/)
+            if (!bundledMatcher) {
+                println "⚠ LWJGL swap: could not detect bundled LWJGL version in forge_minecraft_classpath.txt"
+                return
+            }
+            def bundledLwjglVersion = bundledMatcher[0][1]
+            if (bundledLwjglVersion == targetVersion) return // already the target version, nothing to swap
+
+            def newContent = lwjglPaths.inject(classpathFile.text) { content, key, newPath ->
+                def modName = key.replaceAll(/-(natives-.+)$/, "")
+                def classifier = key == modName ? "" : key.substring(modName.length() + 1)
+                def oldSuffix = classifier ? "${modName}-${bundledLwjglVersion}-${classifier}.jar" : "${modName}-${bundledLwjglVersion}.jar"
+                content.readLines().collect { line ->
+                    line.contains(oldSuffix) ? newPath : line
+                }.join(System.lineSeparator())
+            }
+
+            if (newContent != classpathFile.text) {
+                classpathFile.text = newContent
+                println "✔ forge_minecraft_classpath.txt: LWJGL → ${targetVersion}"
+            }
+        }
+    }
+}
+
+
+shadowJar {
+    exclude "fabric.mod.json"
+    exclude "architectury.common.json"
+    configurations = [project.configurations.shadowBundle]
+    archiveClassifier = 'dev-shadow'
+
+    from(rootProject.file('LICENSE'))
+    from(rootProject.file('LICENSE_jetty'))
+    from(rootProject.file('NOTICE.txt'))
+}
+
+remapJar {
+    input.set shadowJar.archiveFile
+}
+
+sourcesJar {
+    def commonSources = project(":common").sourcesJar
+    dependsOn commonSources
+    from commonSources.archiveFile.map { zipTree(it) }
+}
+
+components.java {
+    withVariantsFromConfiguration(project.configurations.shadowRuntimeElements) {
+        skip()
+    }
+}

@@ -88,7 +88,7 @@ public class PrioritizedDestinationInstruction extends DestinationInstruction {
 
 	@Override
 	public ResourceLocation getId() {
-		return new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "prioritized_destination_instruction");
+		return ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "prioritized_destination_instruction");
 	}
 
 	@Override

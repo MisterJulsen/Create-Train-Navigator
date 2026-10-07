@@ -17,6 +17,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
@@ -61,41 +62,41 @@ public class TrainStationClockBlock extends Block implements IWrenchable, IBE<Tr
     }
 
     @Override
-    public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHit) {
-        
-        ItemStack heldItem = pPlayer.getItemInHand(pHand);
-        TrainStationClockBlockEntity blockEntity = ((TrainStationClockBlockEntity)pLevel.getBlockEntity(pPos));
-
-		if (heldItem.getItem() instanceof DyeItem dyeItem) {
-			DyeColor dye = dyeItem.getDyeColor();        
-			if (dye != null) {
-				pLevel.playSound(null, pPos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
-				blockEntity.setColor(DLColor.fromInt(dye == DyeColor.ORANGE ? 0xFFFF9900 : dye.getMapColor().col));
-
-				if (pLevel.isClientSide) {
-					blockEntity.getRenderer().update(pLevel, pPos, pState, blockEntity, null);
-				}
-
-				return InteractionResult.SUCCESS;
-			}
-		}
-       
-		if (heldItem.is(Items.GLOW_INK_SAC)) {
-			pLevel.playSound(null, pPos, SoundEvents.GLOW_INK_SAC_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
-			blockEntity.setGlowing(true);
-			
-			if (pLevel.isClientSide) {
-				blockEntity.getRenderer().update(pLevel, pPos, pState, blockEntity, null);
-			}
-
-            return InteractionResult.SUCCESS;
-		}
-
-		if (!pPlayer.getItemInHand(pHand).is(this.asItem()) && pLevel.isClientSide) {
-            pPlayer.displayClientMessage(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".time", new DLTime(pLevel, DLTime.defaultTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem())), true);
-            return InteractionResult.SUCCESS;
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
+        if (level.isClientSide()) {
+            player.displayClientMessage(TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".time", new DLTime(level, DLTime.defaultTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem())), true);
         }
-        return InteractionResult.PASS;
+        return InteractionResult.SUCCESS;
+    }
+
+    @Override
+    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+        TrainStationClockBlockEntity blockEntity = ((TrainStationClockBlockEntity)level.getBlockEntity(pos));
+        if (stack.getItem() instanceof DyeItem dyeItem) {
+            DyeColor dye = dyeItem.getDyeColor();
+            if (dye != null) {
+                level.playSound(null, pos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
+                blockEntity.setColor(DLColor.fromInt(dye == DyeColor.ORANGE ? 0xFFFF9900 : dye.getMapColor().col));
+
+                if (level.isClientSide) {
+                    blockEntity.getRenderer().update(level, pos, state, blockEntity, null);
+                }
+
+                return ItemInteractionResult.SUCCESS;
+            }
+        }
+
+        if (stack.is(Items.GLOW_INK_SAC)) {
+            level.playSound(null, pos, SoundEvents.GLOW_INK_SAC_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
+            blockEntity.setGlowing(true);
+
+            if (level.isClientSide) {
+                blockEntity.getRenderer().update(level, pos, state, blockEntity, null);
+            }
+
+            return ItemInteractionResult.SUCCESS;
+		}
+        return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
 
 	@Override

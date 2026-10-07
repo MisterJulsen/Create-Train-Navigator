@@ -51,7 +51,7 @@ import java.util.List;
 
 public class NavigatorWindow extends AbstractNavigatorScreen {
 
-    private static final DLTextureSheet GUI_SHEET = new DLTextureSheet(new ResourceLocation(CreateRailwaysNavigator.MOD_ID, "textures/gui/gui.png"));
+    private static final DLTextureSheet GUI_SHEET = new DLTextureSheet(ResourceLocation.fromNamespaceAndPath(CreateRailwaysNavigator.MOD_ID, "textures/gui/gui.png"));
 
     private UserSettings userSettings = new UserSettings(Minecraft.getInstance().player.getUUID(), false);
 

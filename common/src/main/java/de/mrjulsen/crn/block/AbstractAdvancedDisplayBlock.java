@@ -9,9 +9,13 @@ import com.simibubi.create.content.decoration.copycat.CopycatBlockEntity;
 import com.simibubi.create.content.equipment.clipboard.ClipboardEntry;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
+import com.simibubi.create.foundation.block.IBE;
 
+import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntityTicker;
 import com.simibubi.create.foundation.utility.AdventureUtil;
+
+import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity.EUpdateReason;
 import de.mrjulsen.crn.block.display.properties.BasicDisplaySettings;
@@ -37,12 +41,16 @@ import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.Direction.AxisDirection;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -67,7 +75,7 @@ public abstract class AbstractAdvancedDisplayBlock extends CopycatBlock implemen
 	public static final DLColor DEFAULT_DISPLAY_COLOR = DLColor.fromInt(0xFF404040);
 
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
-
+    
 	public static final BooleanProperty UP = BooleanProperty.create("up");
 	public static final BooleanProperty DOWN = BooleanProperty.create("down");
 
@@ -144,13 +152,13 @@ public abstract class AbstractAdvancedDisplayBlock extends CopycatBlock implemen
     @Override
     public BlockState rotate(BlockState pState, Rotation pRotation) {
         return pState.setValue(FACING, pRotation.rotate(pState.getValue(FACING)));
-    }
+    }    
 
     @Override
     public BlockState mirror(BlockState pState, Mirror pMirror) {
         return pState.rotate(pMirror.getRotation(pState.getValue(FACING)));
     }
-
+    
     @Override
     protected void createBlockStateDefinition(Builder<Block, BlockState> pBuilder) {
         super.createBlockStateDefinition(pBuilder);
@@ -168,7 +176,7 @@ public abstract class AbstractAdvancedDisplayBlock extends CopycatBlock implemen
 
 		if ((otherState.getBlock() != this) || (context.getPlayer() != null && context.getPlayer().isShiftKeyDown())) {
 			stateForPlacement = getDefaultPlacementState(context, stateForPlacement, otherState);
-		} else {
+		} else { // Clicked on existing block
 			stateForPlacement = appendOnPlace(context, stateForPlacement, otherState);
 		}
 
@@ -186,6 +194,15 @@ public abstract class AbstractAdvancedDisplayBlock extends CopycatBlock implemen
 	public BlockState getDefaultPlacementState(BlockPlaceContext context, BlockState state, BlockState other) {
 		return super.getStateForPlacement(context).setValue(FACING, context.getHorizontalDirection().getOpposite());
 	}
+
+    public void refreshConnectionState(Level level, BlockPos pos) {
+        BlockState state = level.getBlockState(pos);
+        if (state.getBlock() != this)
+            return;
+        BlockState updated = updateColumn(level, pos, state, true);
+        if (updated != state)
+            level.setBlock(pos, updated, Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
+    }
 
     protected BlockState updateColumn(Level level, BlockPos pos, BlockState state, boolean present) {
 		MutableBlockPos currentPos = new MutableBlockPos();
@@ -221,15 +238,6 @@ public abstract class AbstractAdvancedDisplayBlock extends CopycatBlock implemen
 		return state;
 	}
 
-	public void refreshConnectionState(Level level, BlockPos pos) {
-		BlockState state = level.getBlockState(pos);
-		if (state.getBlock() != this)
-			return;
-		BlockState updated = updateColumn(level, pos, state, true);
-		if (updated != state)
-			level.setBlock(pos, updated, Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
-	}
-
 	@Override
 	public void onPlace(BlockState pState, Level pLevel, BlockPos pPos, BlockState pOldState, boolean pIsMoving) {
 		if (pOldState.getBlock() == this)
@@ -256,7 +264,7 @@ public abstract class AbstractAdvancedDisplayBlock extends CopycatBlock implemen
 		if ((newState = getPropertyFromNeighbour(pState, pLevel, pPos, relPos, property)) != null) {
 			return newState;
 		}
-		relPos = pPos.relative(Direction.UP);
+		relPos = pPos.relative(Direction.UP);        
 		if ((newState = getPropertyFromNeighbour(pState, pLevel, pPos, relPos, property)) != null) {
 			return newState;
 		}
@@ -264,7 +272,7 @@ public abstract class AbstractAdvancedDisplayBlock extends CopycatBlock implemen
 		if ((newState = getPropertyFromNeighbour(pState, pLevel, pPos, relPos, property)) != null) {
 			return newState;
 		}
-		relPos = pPos.relative(Direction.DOWN);
+		relPos = pPos.relative(Direction.DOWN);        
 		if ((newState = getPropertyFromNeighbour(pState, pLevel, pPos, relPos, property)) != null) {
 			return newState;
 		}
@@ -284,7 +292,7 @@ public abstract class AbstractAdvancedDisplayBlock extends CopycatBlock implemen
 		if (updateNeighbour(pState, pLevel, pPos, relPos)) {
 			return;
 		}
-		relPos = pPos.relative(Direction.UP);
+		relPos = pPos.relative(Direction.UP);        
 		if (updateNeighbour(pState, pLevel, pPos, relPos)) {
 			return;
 		}
@@ -292,7 +300,7 @@ public abstract class AbstractAdvancedDisplayBlock extends CopycatBlock implemen
 		if (updateNeighbour(pState, pLevel, pPos, relPos)) {
 			return;
 		}
-		relPos = pPos.relative(Direction.DOWN);
+		relPos = pPos.relative(Direction.DOWN);        
 		if (updateNeighbour(pState, pLevel, pPos, relPos)) {
 			return;
 		}
@@ -331,7 +339,7 @@ public abstract class AbstractAdvancedDisplayBlock extends CopycatBlock implemen
 				blockState = copyPropertyOf(current, blockState, property);
 				continue;
 			}
-
+			
             blockState = copyPropertyOf(state, blockState, property);
         }
         return blockState;
@@ -365,7 +373,7 @@ public abstract class AbstractAdvancedDisplayBlock extends CopycatBlock implemen
 		BooleanProperty property = side == Direction.DOWN ? DOWN : side == Direction.UP ? UP : null;
 		if (property != null)
 			state = state.setValue(property, connect);
-
+			
 		return state;
 	}
 
@@ -383,20 +391,21 @@ public abstract class AbstractAdvancedDisplayBlock extends CopycatBlock implemen
 		}
 	}
 
-    @Override
-    public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHit) {
-        ItemStack heldItem = pPlayer.getItemInHand(pHand);
-        AdvancedDisplayBlockEntity blockEntity = ((AdvancedDisplayBlockEntity)pLevel.getBlockEntity(pPos)).getController(new IBlockGetter.WorldBlockGetter(pLevel));
+@Override
+    public ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+
+        ItemStack heldItem = player.getItemInHand(hand);
+        AdvancedDisplayBlockEntity blockEntity = ((AdvancedDisplayBlockEntity)level.getBlockEntity(pos)).getController(new IBlockGetter.WorldBlockGetter(level));
 
 		if (heldItem.getItem() instanceof DyeItem dyeItem) {
-			DyeColor dye = dyeItem.getDyeColor();
+			DyeColor dye = dyeItem.getDyeColor();        
 			if (dye != null) {
-				pLevel.playSound(null, pPos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
+				level.playSound(null, pos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
 				DLColor dyeColor = DLColor.fromInt(dye == DyeColor.ORANGE ? 0xFFFF9900 : dye.getTextColor());
-
+				
 				blockEntity.applyToAll(be -> {
 					be.getSettingsAs(BasicDisplaySettings.class).ifPresent(x -> {
-						if (pPlayer.isShiftKeyDown()) {
+						if (player.isShiftKeyDown()) {
 							x.setBackColor(dyeColor);
 						} else {
 							x.setFontColor(dyeColor);
@@ -405,41 +414,41 @@ public abstract class AbstractAdvancedDisplayBlock extends CopycatBlock implemen
 					});
 				});
 
-				if (pLevel.isClientSide) {
-					blockEntity.getRenderer().update(pLevel, pPos, pState, blockEntity, EUpdateReason.LAYOUT_CHANGED);
+				if (level.isClientSide) {
+					blockEntity.getRenderer().update(level, pos, state, blockEntity, EUpdateReason.LAYOUT_CHANGED);
 				}
 
-				return InteractionResult.SUCCESS;
+				return ItemInteractionResult.SUCCESS;
 			}
 		} else if (heldItem.is(Items.GLOW_INK_SAC)) {
-			pLevel.playSound(null, pPos, SoundEvents.GLOW_INK_SAC_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
+			level.playSound(null, pos, SoundEvents.GLOW_INK_SAC_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
 			blockEntity.applyToAll(be -> {
-                be.setGlowing(true);
+				be.setGlowing(true);
 				be.notifyUpdate();
-            });
+			});
 
-			if (pLevel.isClientSide) {
-				blockEntity.getRenderer().update(pLevel, pPos, pState, blockEntity, EUpdateReason.LAYOUT_CHANGED);
+			if (level.isClientSide) {
+				blockEntity.getRenderer().update(level, pos, state, blockEntity, EUpdateReason.LAYOUT_CHANGED);
 			}
 
-            return InteractionResult.SUCCESS;
-		} else if (heldItem.getItem() == Items.NAME_TAG && heldItem.hasCustomHoverName() && pLevel.isClientSide) {
-			AdvancedDisplayBlockEntity controller = blockEntity.getController(new IBlockGetter.WorldBlockGetter(pLevel));
+            return ItemInteractionResult.SUCCESS;
+		} else if (heldItem.getItem() == Items.NAME_TAG && stack.has(DataComponents.CUSTOM_NAME) && level.isClientSide) {
+			AdvancedDisplayBlockEntity controller = blockEntity.getController(new IBlockGetter.WorldBlockGetter(level));
             if (controller != null) {
-				SimpleStaticTextDisplaySettings settings = new SimpleStaticTextDisplaySettings();
+				SimpleStaticTextDisplaySettings settings = new SimpleStaticTextDisplaySettings();				
 				settings.setStaticText(heldItem.getHoverName().getString());
 				boolean doubleSided = false;
 				if (controller.getBlockState().getBlock() instanceof AbstractAdvancedSidedDisplayBlock) {
 					doubleSided = controller.getBlockState().getValue(AbstractAdvancedSidedDisplayBlock.SIDE) == ESide.BOTH;
 				}
-
+				
 				ModNetworkManager.ADVANCED_DISPLAY_UPDATE_PACKET.send(NetworkDirection.toServer(), new AdvancedDisplayUpdatePacketData(controller.getLevel(), controller.getBlockPos(), null, ModDisplayTypes.SIMPLE_TEXT, doubleSided, settings));
-				return InteractionResult.SUCCESS;
+				return ItemInteractionResult.SUCCESS;
             }
-		} else if (AllBlocks.CLIPBOARD.isIn(heldItem) && pLevel.isClientSide) {
-			AdvancedDisplayBlockEntity controller = blockEntity.getController(new IBlockGetter.WorldBlockGetter(pLevel));
+		} else if (AllBlocks.CLIPBOARD.isIn(heldItem) && level.isClientSide) {
+			AdvancedDisplayBlockEntity controller = blockEntity.getController(new IBlockGetter.WorldBlockGetter(level));
             if (controller != null) {
-				StaticTextDisplaySettings settings = new StaticTextDisplaySettings();
+				StaticTextDisplaySettings settings = new StaticTextDisplaySettings();			
 				List<ClipboardEntry> entries = ClipboardEntry.getLastViewedEntries(heldItem);
 				int line = 0;
 				entryLoop: for (ClipboardEntry entry : entries) {
@@ -467,16 +476,16 @@ public abstract class AbstractAdvancedDisplayBlock extends CopycatBlock implemen
 				}
 
 				ModNetworkManager.ADVANCED_DISPLAY_UPDATE_PACKET.send(NetworkDirection.toServer(), new AdvancedDisplayUpdatePacketData(controller.getLevel(), controller.getBlockPos(), null, ModDisplayTypes.RICH_TEXT, doubleSided, settings));
-				return InteractionResult.SUCCESS;
+				return ItemInteractionResult.SUCCESS;
             }
 		}
 
-		return useCopycat(pState, pLevel, pPos, pPlayer, pHand, pHit);
+		return useCopycat(state, level, pos, player, hand, hitResult);
     }
 
-	public InteractionResult useCopycat(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHit) {
+	public ItemInteractionResult useCopycat(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHit) {
 		if (pPlayer == null || AdventureUtil.isAdventure(pPlayer))
-			return InteractionResult.PASS;
+			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 
 		Direction face = pHit.getDirection();
 		ItemStack itemInHand = pPlayer.getItemInHand(pHand);
@@ -485,10 +494,10 @@ public abstract class AbstractAdvancedDisplayBlock extends CopycatBlock implemen
 		if (materialIn != null)
 			materialIn = prepareMaterial(pLevel, pPos, pState, pPlayer, pHand, pHit, materialIn);
 		if (materialIn == null)
-			return InteractionResult.PASS;
+			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 
 		BlockState material = materialIn;
-		return onBlockEntityUse(pLevel, pPos, ufte -> {
+		InteractionResult res = onBlockEntityUse(pLevel, pPos, ufte -> {
 			if (ufte.getMaterial().is(material.getBlock())) {
 				if (!ufte.cycleMaterial())
 					return InteractionResult.PASS;
@@ -510,8 +519,9 @@ public abstract class AbstractAdvancedDisplayBlock extends CopycatBlock implemen
 				pPlayer.setItemInHand(pHand, ItemStack.EMPTY);
 			return InteractionResult.SUCCESS;
 		});
+		return ItemInteractionResult.SUCCESS;
 	}
-
+	
     protected boolean updateNeighbour(BlockState pState, Level pLevel, BlockPos pPos, BlockPos neighbourPos) {
         if (pLevel.getBlockState(neighbourPos).is(this) && pLevel.getBlockEntity(neighbourPos) instanceof AdvancedDisplayBlockEntity otherBe && pLevel.getBlockEntity(pPos) instanceof AdvancedDisplayBlockEntity be) {
 	    	be.copyFrom(otherBe);
@@ -564,10 +574,11 @@ public abstract class AbstractAdvancedDisplayBlock extends CopycatBlock implemen
 
     public abstract Tripple<Float, Float, Float> getRenderRotation(Level level, BlockState blockState, BlockPos pos);
     public abstract Pair<Float, Float> getRenderOffset(Level level, BlockState blockState, BlockPos pos);
-     public abstract Pair<Float, Float> getRenderZOffset(Level level, BlockState blockState, BlockPos pos);
+    /** First value: Front side, Second value: Back side */ public abstract Pair<Float, Float> getRenderZOffset(Level level, BlockState blockState, BlockPos pos);
     public abstract Pair<Float, Float> getRenderAspectRatio(Level level, BlockState blockState, BlockPos pos);
 
 	public Collection<Property<?>> getExcludedProperties() {
 		return List.of();
 	}
+
 }

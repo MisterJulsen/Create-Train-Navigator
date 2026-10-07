@@ -73,7 +73,7 @@ public record SpeedLimitSegment(
             nbt.getDouble(NBT_START_DISTANCE),
             nbt.getDouble(NBT_SPEED_LIMIT),
             NbtHelper.readEnum(nbt.getString(NBT_KIND), SpeedLimitKind.class, SpeedLimitKind.OTHER),
-            nbt.contains(NBT_SOURCE) ? new ResourceLocation(nbt.getString(NBT_SOURCE)) : null,
+            nbt.contains(NBT_SOURCE) ? ResourceLocation.parse(nbt.getString(NBT_SOURCE)) : null,
             nbt.contains(NBT_DESCRIPTION_KEY) ? nbt.getString(NBT_DESCRIPTION_KEY) : null
         );
     }

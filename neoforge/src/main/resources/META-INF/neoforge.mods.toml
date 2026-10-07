@@ -1,0 +1,45 @@
+modLoader = "javafml"
+loaderVersion = "[${neoforge_loader_version},)"
+issueTrackerURL = "${issues}"
+license = "${license}"
+
+[[mods]]
+modId = "${modid}"
+version = "${version}"
+displayName = "${display_name}"
+displayURL = "${homepage}"
+authors = "${authors}"
+description = "${description}"
+logoFile = "${icon}"
+
+[[dependencies.${modid}]]
+modId = "neoforge"
+type = "required"
+versionRange = "[${neoforge_dependency_version},)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.${modid}]]
+modId = "minecraft"
+type = "required"
+versionRange = "[${minecraft_version},${next_unsupported_minecraft_version})"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.${modid}]]
+modId = "dragonlib"
+type = "required"
+versionRange = "[${dragonlib_version},)"
+ordering = "BEFORE"
+side = "BOTH"
+
+
+[[dependencies.${modid}]]
+modId = "create"
+type = "required"
+versionRange = "[${create_neoforge_dependency_version},)"
+ordering = "BEFORE"
+side = "BOTH"
+
+[[mixins]]
+config = "${modid}.mixins.json"

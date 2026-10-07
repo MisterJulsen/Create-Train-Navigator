@@ -2,16 +2,21 @@ package de.mrjulsen.crn.config;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.web.WebServer;
+<<<<<<< HEAD
 import net.minecraftforge.common.ForgeConfigSpec;
+=======
+import net.neoforged.neoforge.common.ModConfigSpec;
+>>>>>>> 7a4d4744e512376b05978e64fcb43ee24da673fa
 
 import java.util.List;
 
 public class ModCommonConfig {
-    public static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
-    public static final ForgeConfigSpec SPEC;
+    public static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
+    public static final ModConfigSpec SPEC;
 
-    public static final ForgeConfigSpec.ConfigValue<Boolean> ADVANCED_LOGGING;
+    public static final ModConfigSpec.ConfigValue<Boolean> ADVANCED_LOGGING;
 
+<<<<<<< HEAD
     public static final ForgeConfigSpec.ConfigValue<Boolean> WEB_ENABLED;
     public static final ForgeConfigSpec.ConfigValue<String> WEB_BIND_ADDRESS;
     public static final ForgeConfigSpec.ConfigValue<Integer> WEB_PORT;
@@ -22,6 +27,18 @@ public class ModCommonConfig {
     public static final ForgeConfigSpec.ConfigValue<Boolean> WEB_REQUEST_LOG;
     public static final ForgeConfigSpec.ConfigValue<Boolean> WEB_DEBUG_TIMING;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> WEB_CORS_ORIGINS;
+=======
+    public static final ModConfigSpec.ConfigValue<Boolean> WEB_ENABLED;
+    public static final ModConfigSpec.ConfigValue<String> WEB_BIND_ADDRESS;
+    public static final ModConfigSpec.ConfigValue<Integer> WEB_PORT;
+    public static final ModConfigSpec.ConfigValue<Integer> WEB_THREADS;
+    public static final ModConfigSpec.ConfigValue<Integer> WEB_MAX_REQUEST_BYTES;
+    public static final ModConfigSpec.ConfigValue<Boolean> WEB_GZIP_ENABLED;
+    public static final ModConfigSpec.ConfigValue<Integer> WEB_GZIP_MIN_BYTES;
+    public static final ModConfigSpec.ConfigValue<Boolean> WEB_REQUEST_LOG;
+    public static final ModConfigSpec.ConfigValue<Boolean> WEB_DEBUG_TIMING;
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> WEB_CORS_ORIGINS;
+>>>>>>> 7a4d4744e512376b05978e64fcb43ee24da673fa
 
     static {
         BUILDER.push(CreateRailwaysNavigator.MOD_ID + "_common_config");
