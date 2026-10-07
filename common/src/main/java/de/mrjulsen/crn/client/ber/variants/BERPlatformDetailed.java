@@ -105,6 +105,58 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
         }
     }
 
+	private static Component buildComponent(StationDisplayData displayData,
+												   Component textTrainTerminatesHere,
+	                                               PlatformDisplayTableSettings displaySettings) {
+		Collection<Component> content = new ArrayList<>();
+		if (displayData.getTrainData().isCancelled()) {
+			return CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.cancelled");
+		}
+
+		// TRAIN TERMINATES
+		if (displayData.isNextSectionExcluded()) content.add(textTrainTerminatesHere);
+
+		// DELAYED
+		if (displayData.getStationData().isDepartureDelayed()) {
+			String delay = displaySettings.getTimeDisplay() == ETimeDisplay.ETA ? ModUtils.timeRemainingString(displayData.getStationData().getDepartureTimeDeviation()) : String.valueOf(TimeUtils.formatToMinutes(displayData.getStationData().getDepartureTimeDeviation()));
+			MutableComponent delayComponent = CustomLanguage.translate(
+					"block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.delayed",
+					delay
+			);
+			if (displaySettings.getTimeDisplay() == ETimeDisplay.ABS) {
+				delayComponent.append(" ").append(CustomLanguage.translate(
+						"block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.delay_abs_suffix")
+				);
+			}
+			content.add(delayComponent);
+		}
+
+		// PLATFORM CHANGED
+		if (displayData.getStationData().isStationChanged()) {
+			if (!displayData.getStationData().getScheduledStation().tagId().equals(displayData.getStationData().getRealTimeStation().tagId())) {
+				content.add(CustomLanguage.translate(
+						"block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.platform_and_station_changed",
+						displayData.getStationData().getRealTimeStation().tagName(),
+						displayData.getStationData().getRealTimeStation().info().platform()
+				));
+			} else {
+				content.add(CustomLanguage.translate(
+						"block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.platform_changed",
+						displayData.getStationData().getRealTimeStation().info().platform()
+				));
+			}
+		}
+
+		// STATUS
+		for (CompiledTrainStatus status : displayData.getTrainData().getStatus()) content.add(status.text());
+		return CustomLanguage.translate(
+				"block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.information_about_train",
+				displayData.getTrainData().getName()
+				)
+				.append(TextUtils.text(": "))
+				.append(TextUtils.concat(TextUtils.text(" - "), content));
+	}
+
     @Override
     public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason) {
         long now = ModUtils.getTransformedWorldTime();
