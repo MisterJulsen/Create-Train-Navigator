@@ -212,8 +212,20 @@ public class RecentSearchQueries {
 
     public static RecentSearchQueries fromNbt(CompoundTag nbt) {
         RecentSearchQueries queries = new RecentSearchQueries();
-        queries.queries.addAll(nbt.getList(NBT_QUERIES, Tag.TAG_COMPOUND).stream().map(x -> RecentSearchQuery.fromNbt((CompoundTag)x)).limit(MAX).toList());
-        queries.pinned.addAll(nbt.getList(NBT_PINNED, Tag.TAG_COMPOUND).stream().map(x -> RecentSearchQuery.fromNbt((CompoundTag)x)).limit(MAX_PINS).toList());
+        int queryAmount = 0;
+        for (Tag tag : nbt.getList(NBT_QUERIES, Tag.TAG_COMPOUND)) {
+            if (queryAmount >= MAX) break;
+            queries.queries.add(RecentSearchQuery.fromNbt((CompoundTag) tag));
+            queryAmount++;
+        }
+
+        int pinAmount = 0;
+        for (Tag tag : nbt.getList(NBT_PINNED, Tag.TAG_COMPOUND)) {
+            if (pinAmount >= MAX_PINS) break;
+            queries.pinned.add(RecentSearchQuery.fromNbt((CompoundTag) tag));
+            pinAmount++;
+        }
+        
         queries.sort();
         return queries;
     }

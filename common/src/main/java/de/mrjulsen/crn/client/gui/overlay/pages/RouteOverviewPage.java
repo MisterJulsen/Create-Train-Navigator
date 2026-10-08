@@ -140,7 +140,9 @@ public class RouteOverviewPage extends AbstractRouteDetailsPage {
         }
 
         public static RoutePathIcons getByIndex(int index) {
-            return Arrays.stream(values()).filter(x -> x.getIndex() == index).findFirst().orElse(START);
+			for (RoutePathIcons routePathIcons : values())
+				if (routePathIcons.getIndex() == index) return routePathIcons;
+			return START;
         }
 
         public DLSprite getAsSprite() {

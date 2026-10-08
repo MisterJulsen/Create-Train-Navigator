@@ -776,8 +776,13 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
             }
         }
 
+	    List<BoardEntry> trainStops = new ArrayList<>();
+		if (pTag.contains(NBT_TRAIN_STOPS))
+			for (Tag tag : pTag.getList(NBT_TRAIN_STOPS, Tag.TAG_COMPOUND))
+				trainStops.add(BoardEntry.fromNbt((CompoundTag) tag));
+
         setData(
-            pTag.contains(NBT_TRAIN_STOPS) ? new ArrayList<>(pTag.getList(NBT_TRAIN_STOPS, Tag.TAG_COMPOUND).stream().map(x -> BoardEntry.fromNbt((CompoundTag)x)).toList()) : new ArrayList<>(),
+            trainStops,
             pTag.getString(NBT_FILTER),
             info,
             pTag.getLong(NBT_LAST_REFRESH_TIME)

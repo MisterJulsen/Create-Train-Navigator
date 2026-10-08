@@ -48,7 +48,13 @@ public class NavigatorToast implements Toast {
     public static NavigatorToast multiline(Component pTitle, Component pMessage) {
         Font font = Minecraft.getInstance().font;
         List<FormattedCharSequence> list = font.split(pMessage, MAX_LINE_SIZE);
-        int lineWidth = Math.max(Math.max(MAX_LINE_SIZE, font.width(pTitle)), list.stream().mapToInt(font::width).max().orElse(MAX_LINE_SIZE));
+		int maxWidth = 0;
+		for (FormattedCharSequence charSequence : list) {
+			int width = font.width(charSequence);
+			if (width > maxWidth) maxWidth = width;
+		}
+		if (list.isEmpty()) maxWidth = MAX_LINE_SIZE;
+        int lineWidth = Math.max(Math.max(MAX_LINE_SIZE, font.width(pTitle)), maxWidth);
         return new NavigatorToast(pTitle, list, lineWidth + 48);
     }
 

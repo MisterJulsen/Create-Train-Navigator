@@ -1,8 +1,6 @@
 package de.mrjulsen.crn.core.navigator.route;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import de.mrjulsen.crn.api.core.ref.StationRef;
 import de.mrjulsen.crn.util.NbtHelper;
@@ -95,7 +93,10 @@ public record RouteJourney(List<RouteLeg> legs, List<RouteTransfer> transfers) {
 
     /** The total time spent transferring, in ticks. */
     public long totalTransferTime() {
-        return transfers.stream().mapToLong(RouteTransfer::duration).sum();
+		long sum = 0;
+		for (RouteTransfer transfer : transfers)
+			sum += transfer.duration();
+		return sum;
     }
 
     /** The riskiest of the journey's transfers, or {@link TransferState#SAFE} where there are none. */
@@ -122,13 +123,16 @@ public record RouteJourney(List<RouteLeg> legs, List<RouteTransfer> transfers) {
         if (legIndex <= 0) {
             return true;
         }
-        return transfers.subList(0, Math.min(legIndex, transfers.size())).stream()
-            .allMatch(transfer -> transfer.state().isReachable());
+		for (RouteTransfer transfer : transfers.subList(0, Math.min(legIndex, transfers.size())))
+			if (!transfer.state().isReachable()) return false;
+		return true;
     }
 
     /** Whether any leg of the journey is cancelled. */
     public boolean isAnyCancelled() {
-        return legs.stream().anyMatch(RouteLeg::cancelled);
+		for (RouteLeg leg : legs)
+			if (leg.cancelled()) return true;
+		return false;
     }
 
     /** Whether the journey has already departed by the given time. */
@@ -151,12 +155,20 @@ public record RouteJourney(List<RouteLeg> legs, List<RouteTransfer> transfers) {
 
     /** Whether the journey calls at the given station. */
     public boolean callsAt(String stationName) {
-        return legs.stream().anyMatch(leg -> leg.calls().stream().anyMatch(x -> x.stationName().equals(stationName)));
+		for (RouteLeg leg : legs) {
+			for (RouteCall call : leg.calls()) {
+				if (call.stationName().equals(stationName)) return true;
+			}
+		}
+		return false;
     }
 
     /** The distinct trains the journey uses, in the order they are boarded. */
     public List<UUID> trainIds() {
-        return legs.stream().map(RouteLeg::trainId).distinct().toList();
+		Set<UUID> out = new HashSet<>();
+		for (RouteLeg leg : legs)
+			out.add(leg.trainId());
+        return new ArrayList<>(out);
     }
 
     /** A key identifying the journey by its trains and their times, used to recognise duplicates. */

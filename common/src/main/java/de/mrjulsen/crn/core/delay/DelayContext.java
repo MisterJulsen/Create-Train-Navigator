@@ -144,12 +144,13 @@ public final class DelayContext {
 
     /** The name of a train in the way, if any. */
     public Optional<String> anyBlockingTrainName() {
-        return blockingTrainNames().stream().findFirst();
+		if (blockingTrainNames().isEmpty()) return Optional.empty();
+		return Optional.of(blockingTrainNames().iterator().next());
     }
 
     /** The name of a train in the way that is itself running late, if any. */
     public Optional<String> delayedBlockingTrainName() {
-        if (delayedBlockingTrainName == null) {
+        if (delayedBlockingTrainName.isEmpty()) {
             delayedBlockingTrainName = resolveDelayedBlockingTrainName();
         }
         return delayedBlockingTrainName;

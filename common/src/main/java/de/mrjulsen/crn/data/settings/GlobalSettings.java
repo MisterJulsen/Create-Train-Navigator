@@ -1,24 +1,14 @@
 package de.mrjulsen.crn.data.settings;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.ArrayList;
 
 import com.google.common.collect.ImmutableList;
 import com.simibubi.create.content.trains.entity.Train;
 import com.simibubi.create.content.trains.station.GlobalStation;
-
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Map;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.config.ModCommonConfig;
@@ -169,14 +159,28 @@ public class GlobalSettings implements INBTSerializable {
         StationTag.markModified();
 
         CompoundTag stationsComp = nbt.getCompound(NBT_STATION_TAGS);
-        this.stationTags.putAll(stationsComp.getAllKeys().stream().map(x -> StationTag.fromNbt(stationsComp.getCompound(x), UUID.fromString(x))).collect(Collectors.toMap(x -> x.getId(), x -> x)));
-        CompoundTag trainCategoiesComp = version <= 1 ? nbt.getCompound(LEGACY_NBT_TRAIN_GROUPS) :  nbt.getCompound(NBT_TRAIN_CATEGORIES);
-        this.trainCategories.putAll(trainCategoiesComp.getAllKeys().stream().map(x -> TrainCategory.fromNbt(trainCategoiesComp.getCompound(x))).collect(Collectors.toMap(x -> x.getId(), x -> x)));
-        this.stationBlacklist.addAll(nbt.getList(NBT_STATION_BLACKLIST, Tag.TAG_STRING).stream().map(x -> ((StringTag)x).getAsString()).toList());
-        this.trainBlacklist.addAll(nbt.getList(NBT_TRAIN_BLACKLIST, Tag.TAG_STRING).stream().map(x -> ((StringTag)x).getAsString()).toList());
-        CompoundTag trainLinesComp = nbt.getCompound(NBT_TRAIN_LINES);
-        this.trainLines.putAll(trainLinesComp.getAllKeys().stream().map(x -> TrainLine.fromNbt(trainLinesComp.getCompound(x))).collect(Collectors.toMap(x -> x.getId(), x -> x)));
 
+        for (String string : stationsComp.getAllKeys()) {
+			StationTag sTag = StationTag.fromNbt(stationsComp.getCompound(string), UUID.fromString(string));
+			this.stationTags.put(sTag.getId(), sTag);
+        }
+
+		CompoundTag trainCategoiesComp = version <= 1 ? nbt.getCompound(LEGACY_NBT_TRAIN_GROUPS) :  nbt.getCompound(NBT_TRAIN_CATEGORIES);
+
+		for (String string : trainCategoiesComp.getAllKeys()) {
+			TrainCategory category = TrainCategory.fromNbt(trainCategoiesComp.getCompound(string));
+			this.trainCategories.put(category.getId(), category);
+		}
+		for (Tag tag : nbt.getList(NBT_STATION_BLACKLIST, Tag.TAG_STRING)) this.stationBlacklist.add(tag.getAsString());
+		for (Tag tag : nbt.getList(NBT_TRAIN_BLACKLIST, Tag.TAG_STRING)) this.trainBlacklist.add(tag.getAsString());
+
+		CompoundTag trainLinesComp = nbt.getCompound(NBT_TRAIN_LINES);
+
+		for (String string : trainLinesComp.getAllKeys()) {
+			TrainLine trainLine = TrainLine.fromNbt(trainLinesComp.getCompound(string));
+			this.trainLines.put(trainLine.getId(), trainLine);
+		}
+        
     }
 
     @Deprecated
@@ -192,33 +196,42 @@ public class GlobalSettings implements INBTSerializable {
         Collection<String> trainBlacklistData = new ArrayList<>();
 
         if (nbt.contains(NBT_ALIAS_REGISTRY)) {
-            aliasData = nbt.getList(NBT_ALIAS_REGISTRY, Tag.TAG_COMPOUND).stream().map(x -> (CompoundTag)x).toList();
+			for (Tag tag : nbt.getList(NBT_ALIAS_REGISTRY, Tag.TAG_COMPOUND)) aliasData.add((CompoundTag) tag);
         }
 
         if (nbt.contains(NBT_TRAIN_GROUP_REGISTRY)) {
-            trainGroupData = nbt.getList(NBT_TRAIN_GROUP_REGISTRY, Tag.TAG_COMPOUND).stream().map(x -> (CompoundTag)x).toList();
+			for (Tag tag : nbt.getList(NBT_TRAIN_GROUP_REGISTRY, Tag.TAG_COMPOUND)) trainGroupData.add((CompoundTag) tag);
         }
 
         if (nbt.contains(NBT_BLACKLIST)) {
-            blacklistData = nbt.getList(NBT_BLACKLIST, Tag.TAG_STRING).stream().map(x -> ((StringTag)x).getAsString()).toList();
+			for (Tag tag : nbt.getList(NBT_BLACKLIST, Tag.TAG_STRING)) blacklistData.add(tag.getAsString());
         }
 
         if (nbt.contains(NBT_TRAIN_BLACKLIST)) {
-            trainBlacklistData = nbt.getList(NBT_TRAIN_BLACKLIST, Tag.TAG_STRING).stream().map(x -> ((StringTag)x).getAsString()).toList();
+			for (Tag tag : nbt.getList(NBT_TRAIN_BLACKLIST, Tag.TAG_STRING)) trainBlacklistData.add(tag.getAsString());
         }
 
         Set<UUID> usedIds = new LinkedHashSet<>();
-        stationTags.putAll(aliasData.stream().map(x -> {
-            UUID id;
-            do {
-                id = UUID.randomUUID();
-            } while (usedIds.contains(id));
-            usedIds.add(id);
-            return StationTag.fromNbt(x, id);
-        }).collect(Collectors.toMap(x -> x.getId(), x -> x)));
+		Map<UUID, StationTag> stationTagMap = new HashMap<>();
+		for (CompoundTag tag : aliasData) {
+			UUID id;
+			do {
+				id = UUID.randomUUID();
+			} while (usedIds.contains(id));
+			usedIds.add(id);
+
+			StationTag sTag = StationTag.fromNbt(tag, id);
+			stationTagMap.put(sTag.getId(), sTag);
+		}
+        stationTags.putAll(stationTagMap);
         usedIds.clear();
-        trainCategories.putAll(trainGroupData.stream().map(x -> TrainCategory.fromNbt(x)).collect(Collectors.toMap(x -> x.getId(), x -> x)));
-        stationBlacklist.addAll(blacklistData);
+		Map<UUID, TrainCategory> trainCategoryMap = new HashMap<>();
+		for (CompoundTag tag : trainGroupData) {
+			TrainCategory category = TrainCategory.fromNbt(tag);
+			trainCategoryMap.put(category.getId(), category);
+		}
+        trainCategories.putAll(trainCategoryMap);
+        stationBlacklist.addAll(blacklistData); 
         trainBlacklist.addAll(trainBlacklistData);
 
         save();

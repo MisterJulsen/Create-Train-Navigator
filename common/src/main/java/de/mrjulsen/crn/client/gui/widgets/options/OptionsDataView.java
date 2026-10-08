@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.client.gui.widgets.SearchBox;
@@ -86,12 +85,24 @@ public class OptionsDataView<T> extends DLAbstractDataView<T, OptionsDataView.DL
         @Override
         protected void refresh() {
             this.contentPanel.clearComponents();
-            Map<String, DLGuiComponent> content = subComponents.stream().collect(Collectors.toMap(x -> x.name(), x -> x.component()));
+			Map<String, DLGuiComponent> content = new HashMap<>();
+			for (DataSlotComponent component : subComponents)
+				content.put(component.name(), component.component());
 
             int totalWidth = collectionComponentRef.width();
-            int fixedWidthSum = collectionComponentRef.dataSlots.stream().filter(s -> s.mode() == SizeMode.FIXED).mapToInt(s -> (int)(s.size() + 2)).sum();
+            int fixedWidthSum = 0;
+	        for (DLAbstractDataView.DataSlot dataSlot : collectionComponentRef.dataSlots) {
+		        if (dataSlot.mode() != SizeMode.FIXED) continue;
+		        fixedWidthSum += (int) dataSlot.size() + 2;
+	        }
+
             int remainingWidth = Math.max(totalWidth - fixedWidthSum, 0);
-            double percentTotal = collectionComponentRef.dataSlots.stream().filter(s -> s.mode() == SizeMode.PERCENTAGE).mapToDouble(s -> (s.size() + 2)).sum();
+
+			double percentTotal = 0;
+			for (DLAbstractDataView.DataSlot dataSlot : collectionComponentRef.dataSlots) {
+				if (dataSlot.mode() != SizeMode.PERCENTAGE) continue;
+				percentTotal += dataSlot.size() + 2;
+			}
 
             Map<String, Integer> widths = new HashMap<>();
 
