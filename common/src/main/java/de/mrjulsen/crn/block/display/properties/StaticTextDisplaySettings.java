@@ -191,7 +191,8 @@ public class StaticTextDisplaySettings extends BasicDisplaySettings implements I
         super.deserializeNbt(nbt);
         if (nbt.contains(NBT_COMPONENTS)) {
             this.components.clear();
-            this.components.addAll(nbt.getList(NBT_COMPONENTS, Tag.TAG_COMPOUND).stream().map(x -> TextComponent.fromNbt((CompoundTag)x)).toList());
+			for (Tag tag : nbt.getList(NBT_COMPONENTS, Tag.TAG_COMPOUND))
+				this.components.add(TextComponent.fromNbt((CompoundTag) tag));
         }
         if (nbt.contains(NBT_SELECTED_COMPONENT)) this.selectedComponent = nbt.getByte(NBT_SELECTED_COMPONENT);
 

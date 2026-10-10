@@ -18,7 +18,9 @@ public enum TrainExitSide {
     }
 
     public static TrainExitSide getFromByte(byte side) {
-        return Arrays.stream(values()).filter(x -> x.getAsByte() == side).findFirst().orElse(UNKNOWN);
+		for (TrainExitSide exitSide : values())
+			if (exitSide.getAsByte() == side) return exitSide;
+		return UNKNOWN;
     }
 
     public TrainExitSide getOpposite() {

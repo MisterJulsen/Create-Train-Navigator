@@ -30,7 +30,9 @@ public enum OverlayPosition implements ITranslatableEnum {
     }
 
     public static OverlayPosition getPositionByName(String name) {
-        return Arrays.stream(OverlayPosition.values()).filter(x -> x.getName().equals(name)).findFirst().orElse(TOP_LEFT);
+		for (OverlayPosition overlayPosition : OverlayPosition.values())
+			if (overlayPosition.getName().equals(name)) return overlayPosition;
+		return TOP_LEFT;
     }
 
     @Override

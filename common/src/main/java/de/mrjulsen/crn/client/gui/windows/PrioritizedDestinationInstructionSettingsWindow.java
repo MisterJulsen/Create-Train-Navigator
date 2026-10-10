@@ -1,9 +1,6 @@
 package de.mrjulsen.crn.client.gui.windows;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -119,9 +116,11 @@ public class PrioritizedDestinationInstructionSettingsWindow extends DLWindow {
         this.instruction = instruction;
         this.nbt = nbt;
 
-        this.stationFilters.addAll(nbt.getList(PrioritizedDestinationInstruction.NBT_FILTERS, Tag.TAG_STRING).stream().map(x -> x.getAsString()).toList());
-        this.shouldAvoidSignals = nbt.contains(PrioritizedDestinationInstruction.NBT_AVOID_RED_SIGNAL) ? nbt.getBoolean(PrioritizedDestinationInstruction.NBT_AVOID_RED_SIGNAL) : true;
-        this.shouldAvoidTrains = nbt.contains(PrioritizedDestinationInstruction.NBT_AVOID_TRAINS) ? nbt.getBoolean(PrioritizedDestinationInstruction.NBT_AVOID_TRAINS) : true;
+		for (Tag tag : nbt.getList(PrioritizedDestinationInstruction.NBT_FILTERS, Tag.TAG_STRING))
+			this.stationFilters.add(tag.getAsString());
+
+        this.shouldAvoidSignals = !nbt.contains(PrioritizedDestinationInstruction.NBT_AVOID_RED_SIGNAL) || nbt.getBoolean(PrioritizedDestinationInstruction.NBT_AVOID_RED_SIGNAL);
+        this.shouldAvoidTrains = !nbt.contains(PrioritizedDestinationInstruction.NBT_AVOID_TRAINS) || nbt.getBoolean(PrioritizedDestinationInstruction.NBT_AVOID_TRAINS);
         this.shouldWaitInstead = nbt.getBoolean(PrioritizedDestinationInstruction.NBT_WAIT_INSTEAD);
         this.detourMaxPenalty = nbt.contains(PrioritizedDestinationInstruction.NBT_DETOUR_ALLOWANCE)
             ? nbt.getInt(PrioritizedDestinationInstruction.NBT_DETOUR_ALLOWANCE)
@@ -149,7 +148,8 @@ public class PrioritizedDestinationInstructionSettingsWindow extends DLWindow {
             addBtn.enabled.set(canAddMore() && e.text().getPlainText() != null && !e.text().getPlainText().isBlank());
             return false;
         });
-        addTextBox.tooltip.set(new DLTooltip(instruction.getSecondLineTooltip(0).stream().map(x -> (FormattedText)x).toList(), 200));
+
+        addTextBox.tooltip.set(new DLTooltip(new ArrayList<>(Objects.requireNonNull(instruction.getSecondLineTooltip(0))), 200));
 
         addBtn = addComponent(new CreateButton((int)workingArea.x() + 185, (int)workingArea.y() + 9, ModGuiIcons.ADD.getAsCreateIcon()));
         addBtn.enabled.set(false);
@@ -220,7 +220,7 @@ public class PrioritizedDestinationInstructionSettingsWindow extends DLWindow {
     @Override
     public void close() {
         ListTag list = new ListTag();
-        Iterator<String> i = stationFilters.stream().limit(PrioritizedDestinationInstruction.MAX_ENTRIES).iterator();
+		Iterator<String> i = stationFilters.subList(0, Math.min(stationFilters.size(), PrioritizedDestinationInstruction.MAX_ENTRIES)).iterator();
         while (i.hasNext()) {
             list.add(StringTag.valueOf(i.next()));
         }

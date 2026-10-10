@@ -1,7 +1,9 @@
 package de.mrjulsen.crn.network.packets;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import com.simibubi.create.content.trains.entity.Train;
 import de.mrjulsen.crn.util.TrainUtils;
 import de.mrjulsen.mcdragonlib.data.DLStatus;
 import de.mrjulsen.mcdragonlib.network.NetworkPacketContext;
@@ -36,7 +38,9 @@ public class GetAllTrainNamesPacketData extends NetworkPacketData {
 
     @Override
     protected void read(CompoundTag nbt) {
-        this.names = nbt.getList(NBT_DATA, Tag.TAG_STRING).stream().map(x -> ((StringTag)x).getAsString()).toList();
+		this.names = new ArrayList<>();
+		for (Tag tag : nbt.getList(NBT_DATA, Tag.TAG_STRING))
+			names.add(tag.getAsString());
     }
 
     public List<String> getTrainsNames() {
@@ -45,6 +49,10 @@ public class GetAllTrainNamesPacketData extends NetworkPacketData {
     
 
     public static GetAllTrainNamesPacketData handle(NetworkPacketContext context) {
-        return new GetAllTrainNamesPacketData(TrainUtils.getAllTrains(false).stream().map(x -> x.name.getString()).toList());
+		List<String> names = new ArrayList<>();
+		for (Train train : TrainUtils.getAllTrains(false))
+			names.add(train.name.getString());
+
+        return new GetAllTrainNamesPacketData(names);
     }
 }

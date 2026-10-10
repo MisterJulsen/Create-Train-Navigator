@@ -1,6 +1,9 @@
 package de.mrjulsen.crn.network.packets;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+
 import de.mrjulsen.crn.data.settings.StationTag;
 import de.mrjulsen.crn.data.settings.GlobalSettings;
 import de.mrjulsen.mcdragonlib.data.DLStatus;
@@ -36,7 +39,9 @@ public class GetAllStationTagsPacketData extends NetworkPacketData {
 
     @Override
     protected void read(CompoundTag nbt) {
-        this.tags = nbt.getList(NBT_DATA, Tag.TAG_COMPOUND).stream().map(x -> StationTag.fromNbt((CompoundTag)x, null)).toList();
+		this.tags = new ArrayList<>();
+		for (Tag tag : nbt.getList(NBT_DATA, Tag.TAG_COMPOUND))
+			tags.add(StationTag.fromNbt((CompoundTag) tag, null));
     }
 
     public Collection<StationTag> getTags() {
@@ -44,7 +49,10 @@ public class GetAllStationTagsPacketData extends NetworkPacketData {
     }
 
     public static GetAllStationTagsPacketData handle(NetworkPacketContext context) {
-        return new GetAllStationTagsPacketData(GlobalSettings.getInstance().getAllStationTags().stream().sorted((a, b) -> a.getTagName().get().compareToIgnoreCase(b.getTagName().get())).toList());
+		List<StationTag> tags = new ArrayList<>(GlobalSettings.getInstance().getAllStationTags());
+		tags.sort((a, b) -> a.getTagName().get().compareToIgnoreCase(b.getTagName().get()));
+
+        return new GetAllStationTagsPacketData(tags);
     }
     
 }

@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import de.mrjulsen.crn.client.journey.JourneyTracker;
 import de.mrjulsen.crn.core.navigator.route.RouteJourney;
@@ -72,7 +71,10 @@ public final class SavedRoutesManager {
         ModNetworkManager.GET_USER_SETTINGS.send(NetworkDirection.toServer(), new GetUserSettingsPacketData.Request(Minecraft.getInstance().player.getUUID()), (response) -> {
             response.getData().ifPresent(settings -> {
                 Set<CompoundTag> currentValue = clear ? new HashSet<>() : settings.savedRoutes.getValue();
-                currentValue.addAll(savedRoutes.stream().map(RouteJourney::toNbt).toList());
+
+				for (RouteJourney routeJourney : savedRoutes)
+					currentValue.add(routeJourney.toNbt());
+
                 settings.savedRoutes.setValue(currentValue);
                 settings.clientSave(() -> {
                     isSynchronizing.set(false);
@@ -87,7 +89,10 @@ public final class SavedRoutesManager {
         isSynchronizing.set(true);
         ModNetworkManager.GET_USER_SETTINGS.send(NetworkDirection.toServer(), new GetUserSettingsPacketData.Request(Minecraft.getInstance().player.getUUID()), (response) -> {
             response.getData().ifPresent(settings -> {
-                Set<RouteJourney> currentValue = settings.savedRoutes.getValue().stream().map(RouteJourney::fromNbt).collect(Collectors.toSet());
+				Set<RouteJourney> currentValue = new HashSet<>();
+				for (CompoundTag compoundTag : settings.savedRoutes.getValue())
+					currentValue.add(RouteJourney.fromNbt(compoundTag));
+
                 if (clear) {
                     removeAllRoutes();
                 }

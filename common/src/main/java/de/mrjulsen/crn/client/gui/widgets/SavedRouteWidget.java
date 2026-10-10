@@ -41,7 +41,12 @@ public class SavedRouteWidget extends DLButton {
     public SavedRouteWidget(SavedRoutesViewer parent, int x, int y, ISavableNavigatorData data) {
         super(x, y, WIDTH, 50);
         this.data = data;
-        setHeight(HEADER_HEIGHT + 10 + data.getOverviewData().stream().mapToInt(a -> (int)(Math.max(DEFAULT_LINE_HEIGHT, ClientWrapper.getTextBlockHeight(Minecraft.getInstance().font, a.text(), (int)(DISPLAY_WIDTH / DEFAULT_SCALE))) * DEFAULT_SCALE)).sum());
+
+		float height = 0;
+		for (SavableNavigatorDataLine dataLine : data.getOverviewData()) {
+			height += Math.max(DEFAULT_LINE_HEIGHT, ClientWrapper.getTextBlockHeight(Minecraft.getInstance().font, dataLine.text(), (int)(DISPLAY_WIDTH / DEFAULT_SCALE))) * DEFAULT_SCALE;
+		}
+        setHeight((int) (HEADER_HEIGHT + 10 + height));
 
         addEventListener(DLGuiStandardEvents.ClickEvent.class, (s, e) -> {
             if (data instanceof SavedRouteData saved) {

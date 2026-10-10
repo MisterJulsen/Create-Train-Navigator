@@ -123,9 +123,10 @@ public class DebugCommand {
     }
 
     private static Optional<TrackedTrain> findTrain(String trainName) {
-        return TrainManager.getInstance().getAllTrains().stream()
-            .filter(x -> x.getTrainName().equalsIgnoreCase(trainName))
-            .findFirst();
+		for (TrackedTrain train : TrainManager.getInstance().getAllTrains())
+			if (train.getTrainName().equalsIgnoreCase(trainName))
+				return Optional.of(train);
+		return Optional.empty();
     }
 
     private static int clearDepartureHistory(CommandSourceStack cmd) throws CommandSyntaxException {

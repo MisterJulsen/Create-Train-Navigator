@@ -1,8 +1,10 @@
 package de.mrjulsen.crn.client.ber.variants;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import de.mrjulsen.crn.api.core.ref.StationRef;
 import de.mrjulsen.crn.block.display.properties.components.ITrainStopTypeSetting;
 import de.mrjulsen.crn.api.core.snapshot.BoardEntry;
 import de.mrjulsen.crn.api.core.CallDirection;
@@ -189,16 +191,25 @@ public class BERDepartureBoardTable implements AbstractAdvancedDisplayRenderer<D
     public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason) {
         long now = ModUtils.getTransformedWorldTime();
         ITrainStopTypeSetting.ETrainStopType stopType = getDisplaySettings(blockEntity).getTrainStopType();
-        List<BoardEntry> preds = blockEntity.getStops().stream()
-            .filter(x -> ITrainStopTypeSetting.accepts(x, stopType, now))
-            .toList();
+        List<BoardEntry> preds = new ArrayList<>();
+        for (BoardEntry entry : blockEntity.getStops())
+            if (ITrainStopTypeSetting.accepts(entry, stopType, now)) preds.add(entry);
 
         MutableBoolean shouldShowLine = new MutableBoolean(false);
-        this.infoLineText = TextUtils.concat(TextUtils.text("  +++  "), preds.stream().limit(maxLines).flatMap(x -> {
-            Optional<Component> info = getStatusInfo(blockEntity, x, false);
-            info.ifPresent(y -> shouldShowLine.setTrue());
-            return info.stream();
-        }).toArray(Component[]::new));
+
+		List<Component> components = new ArrayList<>();
+		int count = 0;
+		for (BoardEntry entry : preds) {
+			if (count >= maxLines) break;
+
+			Optional<Component> info = getStatusInfo(blockEntity, entry, false);
+			info.ifPresent(c -> {
+				shouldShowLine.setTrue();
+				components.add(c);
+			});
+			count++;
+		}
+		this.infoLineText = TextUtils.concat(TextUtils.text("  +++  "), components);
 
         this.showInfoLine = shouldShowLine.isTrue();
         if (!showInfoLine) {
@@ -361,10 +372,15 @@ public class BERDepartureBoardTable implements AbstractAdvancedDisplayRenderer<D
         boolean hasInfo = infoLabel != null;
 
         if (hasTransfers) {
+			List<Component> componentList = new ArrayList<>();
+			if (direction.isArrival())
+				for (StationRef stationRef : stop.stopovers())
+					componentList.add(TextUtils.text(stationRef.displayName()));
+
             stopoversLabel.text.set(
                     direction.isArrival() ?
                     TextUtils.empty() :
-                    TextUtils.concat(TextUtils.text(" \u25CF "), stop.stopovers().stream().map(a -> (Component)TextUtils.text(a.displayName())).toList())
+                    TextUtils.concat(TextUtils.text(" \u25CF "), componentList)
             );
         }
         if (hasInfo) {

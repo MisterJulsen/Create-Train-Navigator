@@ -1,5 +1,6 @@
 package de.mrjulsen.crn.client.gui.widgets.routedetails;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -78,7 +79,11 @@ public class RouteDetailsViewer extends DLGuiComponent {
     }    
 
     public void displayPart(RouteJourney route, Predicate<RouteLeg> verifiedSelector) {
-        displayRouteInternal(route, route.legs().stream().filter(verifiedSelector).toList(), false);
+        List<RouteLeg> legs = new ArrayList<>();
+		for (RouteLeg leg : route.legs())
+			if (verifiedSelector.test(leg)) legs.add(leg);
+
+		displayRouteInternal(route, legs, false);
     }
 
     public void displayRouteInternal(RouteJourney route, List<RouteLeg> parts, boolean showTransfers) {

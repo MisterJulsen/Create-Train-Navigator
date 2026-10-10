@@ -70,17 +70,23 @@ public record TrainCompositionSnapshot(
 
     /** Whether any carriage cannot move, which holds the whole train up. */
     public boolean hasStalledCarriage() {
-        return carriages.stream().anyMatch(CarriageSnapshot::stalled);
+		for (CarriageSnapshot snapshot : carriages)
+			if (snapshot.stalled()) return true;
+		return false;
     }
 
     /** Whether any carriage provides storage. */
     public boolean hasStorage() {
-        return carriages.stream().anyMatch(CarriageSnapshot::hasStorage);
+		for (CarriageSnapshot snapshot : carriages)
+			if (snapshot.hasStorage()) return true;
+		return false;
     }
 
     /** Whether the train currently reaches across a portal into more than one dimension. */
     public boolean spansDimensions() {
-        return carriages.stream().anyMatch(CarriageSnapshot::inMultipleDimensions);
+		for (CarriageSnapshot snapshot : carriages)
+			if (snapshot.inMultipleDimensions()) return true;
+		return false;
     }
 
     public CompoundTag toNbt() {

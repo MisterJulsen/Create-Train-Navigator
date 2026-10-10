@@ -1,5 +1,6 @@
 package de.mrjulsen.crn.network.packets;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import de.mrjulsen.crn.data.settings.TrainLine;
@@ -37,7 +38,9 @@ public class GetAllTrainLinesPacketData extends NetworkPacketData {
 
     @Override
     protected void read(CompoundTag nbt) {
-        this.lines = nbt.getList(NBT_DATA, Tag.TAG_COMPOUND).stream().map(x -> TrainLine.fromNbt((CompoundTag)x)).toList();
+		this.lines = new ArrayList<>();
+		for (Tag tag : nbt.getList(NBT_DATA, Tag.TAG_COMPOUND))
+			lines.add(TrainLine.fromNbt((CompoundTag) tag));
     }
 
     public List<TrainLine> getLines() {

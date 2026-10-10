@@ -1,5 +1,6 @@
 package de.mrjulsen.crn.api.core.snapshot;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -106,12 +107,18 @@ public record DelayReport(
      * Reasons worth reporting whether or not they cost time, such as a train being out of service.
      */
     public List<DelayInstance> operationalCauses() {
-        return causes.stream().filter(x -> x.severity() == DelaySeverity.IMPORTANT).toList();
+		List<DelayInstance> out = new ArrayList<>();
+		for (DelayInstance delayInstance : causes)
+			if (delayInstance.severity() == DelaySeverity.IMPORTANT) out.add(delayInstance);
+		return out;
     }
 
     /** Reasons that account for lost time. */
     public List<DelayInstance> delayCauses() {
-        return causes.stream().filter(x -> x.severity() == DelaySeverity.DELAY).toList();
+		List<DelayInstance> out = new ArrayList<>();
+		for (DelayInstance delayInstance : causes)
+			if (delayInstance.severity() == DelaySeverity.DELAY) out.add(delayInstance);
+		return out;
     }
 
     /**
@@ -120,7 +127,13 @@ public record DelayReport(
      * substitute for it.
      */
     public long attributedDelay() {
-        return causes.stream().filter(DelayInstance::hasEstimatedDelay).mapToLong(DelayInstance::estimatedDelayTicks).sum();
+		long sum = 0;
+		for (DelayInstance delayInstance : causes) {
+			if (!delayInstance.hasEstimatedDelay()) continue;
+
+			sum += delayInstance.estimatedDelayTicks();
+		}
+		return sum;
     }
 
     public CompoundTag toNbt() {

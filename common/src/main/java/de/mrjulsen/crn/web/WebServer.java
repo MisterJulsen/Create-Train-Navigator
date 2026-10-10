@@ -1,7 +1,6 @@
 package de.mrjulsen.crn.web;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import org.eclipse.jetty.http.pathmap.PathMappings;
 import org.eclipse.jetty.server.Handler;
@@ -137,7 +136,12 @@ public final class WebServer {
         }
         CrossOriginHandler handler = new CrossOriginHandler();
         handler.setAllowedOriginPatterns(Set.copyOf(origins));
-        handler.setAllowedMethods(Arrays.stream(HttpMethod.values()).map(Enum::name).collect(Collectors.toSet()));
+
+		Set<String> names = new HashSet<>();
+		for (HttpMethod httpMethod : HttpMethod.values())
+			names.add(httpMethod.name());
+
+        handler.setAllowedMethods(names);
         handler.setAllowCredentials(false);
         handler.setHandler(next);
         return handler;

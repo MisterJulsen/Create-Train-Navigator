@@ -76,7 +76,10 @@ public record DelayInstance(
 
     /** The values to fill into the description, in order. */
     public List<String> argValues() {
-        return args.stream().map(DelayArgument::value).toList();
+		List<String> out = new ArrayList<>();
+		for (DelayArgument delayArgument : args)
+			out.add(delayArgument.value());
+		return out;
     }
 
     /** Whether an estimate of the time this cause accounts for is known. */

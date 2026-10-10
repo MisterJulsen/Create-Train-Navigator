@@ -86,11 +86,15 @@ public record TrainPositionSnapshot(
         ResourceLocation dimension = present.isEmpty() ? null : present.get(0).location();
         BlockPos position = present.isEmpty() ? null : leading.getPositionInDimension(present.get(0)).orElse(null);
 
+		List<ResourceLocation> resourceLocations = new ArrayList<>();
+		for (ResourceKey<Level> resourceKey : present)
+			resourceLocations.add(resourceKey.location());
+
         return new TrainPositionSnapshot(
             train.id,
             dimension,
             position,
-            present.stream().map(ResourceKey::location).toList(),
+            resourceLocations,
             train.speed,
             train.targetSpeed,
             train.maxSpeed(),

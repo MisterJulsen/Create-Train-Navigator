@@ -136,7 +136,14 @@ public final class MedianDurationTracker {
     public CompoundTag toNbt() {
         CompoundTag nbt = new CompoundTag();
         nbt.putInt(NBT_REFERENCE, reference);
-        nbt.putIntArray(NBT_HISTORY, history.stream().mapToInt(Integer::intValue).toArray());
+
+		int[] historyInts = new int[history.size()];
+		int index = 0;
+		for (Integer integer : history) {
+			historyInts[index] = integer;
+			index++;
+		}
+        nbt.putIntArray(NBT_HISTORY, historyInts);
         nbt.putBoolean(NBT_SEEDED, seeded);
         return nbt;
     }

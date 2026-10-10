@@ -1,9 +1,9 @@
 package de.mrjulsen.crn.client.gui.windows;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import com.simibubi.create.foundation.gui.AllIcons;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
@@ -90,7 +90,7 @@ public class TransferOwnershipWindow extends DLWindow {
 
         ModNetworkManager.GET_ONLINE_PLAYERS.send(NetworkDirection.toServer(), (response) -> {
             this.playerList.add(new Owner());
-            this.playerList.addAll(response.getPlayers().stream().collect(Collectors.toSet()));
+            this.playerList.addAll(new HashSet<>(response.getPlayers()));
             this.selectionBox.items.set(playerList);
             this.selectionBox.selectedIndex.set(MathUtils.clamp(current == null ? 0 : playerList.indexOf(current), 0, playerList.size() - 1));
             okBtn.enabled.set(true);

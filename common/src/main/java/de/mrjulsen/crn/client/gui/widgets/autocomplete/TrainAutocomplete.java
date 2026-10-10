@@ -1,7 +1,9 @@
 package de.mrjulsen.crn.client.gui.widgets.autocomplete;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import de.mrjulsen.crn.registry.ModNetworkManager;
@@ -28,12 +30,11 @@ public class TrainAutocomplete implements IAutocompletionManager<String> {
             Minecraft.getInstance().execute(() -> {
                 List<String> filteredNames = new ArrayList<>(result.getTrainsNames());
                 filteredNames.removeAll(ignoreList.get());
-                names.clear();
-                names.addAll(filteredNames
-                        .stream()
-                        .distinct()
-                        .sorted(String::compareToIgnoreCase)
-                        .toList());
+
+				names.clear();
+				names.addAll(new HashSet<>(filteredNames));
+				names.sort(String::compareToIgnoreCase);
+
                 configureWindow(window, textBox);
             });
         }, () -> {});

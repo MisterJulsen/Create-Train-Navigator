@@ -123,7 +123,9 @@ public enum ModGuiIcons {
     }
 
     public static ModGuiIcons getByStringId(String id) {
-        return Arrays.stream(values()).filter(x -> x.getId().equals(id)).findFirst().orElse(ModGuiIcons.EMPTY);
+		for (ModGuiIcons icons : values())
+			if (icons.getId().equals(id)) return icons;
+		return ModGuiIcons.EMPTY;
     }
 
     public AllIcons getAsCreateIcon() {

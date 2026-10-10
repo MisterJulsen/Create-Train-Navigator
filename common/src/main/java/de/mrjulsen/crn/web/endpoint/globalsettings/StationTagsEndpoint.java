@@ -13,6 +13,8 @@ import org.eclipse.jetty.server.Request;
 import de.mrjulsen.crn.web.api.ApiResult;
 import de.mrjulsen.crn.web.openapi.EndpointDocumentation;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -54,7 +56,12 @@ public class StationTagsEndpoint implements IEndpointHandler {
     @Override
     public ApiResult handle(Request request) {
         Query query = QueryBinder.bind(request, Query.class);
-        return ApiResult.json(GlobalSettings.getInstance().getAllStationTags().stream().filter(query::accept).toList());
+
+		List<StationTag> acceptedTags = new ArrayList<>();
+		for (StationTag tag : GlobalSettings.getInstance().getAllStationTags())
+			if (query.accept(tag)) acceptedTags.add(tag);
+
+        return ApiResult.json(acceptedTags);
     }
 
     @Override

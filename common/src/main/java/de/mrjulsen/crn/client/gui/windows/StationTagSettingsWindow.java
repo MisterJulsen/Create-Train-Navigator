@@ -2,6 +2,7 @@ package de.mrjulsen.crn.client.gui.windows;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import de.mrjulsen.crn.Constants;
@@ -116,11 +117,12 @@ public class StationTagSettingsWindow extends AbstractNavigatorScreen {
     
     private void reloadTag(StationTag tag, OptionsDataView<Pair<String, StationInfo>> dataView) {
         ModNetworkManager.GET_STATION_TAG_BY_TAG.send(NetworkDirection.toServer(), new StationTagRequestByTagPacketData.Request(tag.getTagName()), (response) -> {
-            dataView.items.setAll(response.getTag().getAllStations().entrySet().stream()
-                .sorted((a, b) -> a.getKey().compareToIgnoreCase(b.getKey()))
-                .map(x -> new Pair<>(x.getKey(), x.getValue()))
-                .toList()
-            );
+            List<Pair<String, StationInfo>> stuff = new ArrayList<>();
+			for (Map.Entry<String, StationInfo> entry : response.getTag().getAllStations().entrySet())
+				stuff.add(new Pair<>(entry.getKey(), entry.getValue()));
+			stuff.sort((a, b) -> a.getFirst().compareToIgnoreCase(b.getFirst()));
+
+			dataView.items.setAll(stuff);
         }, () -> {});
     }
 

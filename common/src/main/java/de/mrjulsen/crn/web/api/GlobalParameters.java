@@ -51,6 +51,8 @@ public enum GlobalParameters {
     }
 
     public static Optional<GlobalParameters> fromKey(String key) {
-        return Arrays.stream(GlobalParameters.values()).filter(x -> x.key.equals(key)).findFirst();
+		for (GlobalParameters parameter : GlobalParameters.values())
+			if (parameter.key.equals(key)) return Optional.of(parameter);
+		return Optional.empty();
     }
 }

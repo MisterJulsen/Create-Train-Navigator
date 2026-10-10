@@ -89,15 +89,15 @@ public final class RealtimeTrains {
         if (snapshot == null) {
             return call;
         }
-        return snapshot.stops().stream()
-            .filter(stop -> stop.entryIndex() == call.entryIndex())
-            .findFirst()
-            .map(stop -> {
-                StopSnapshot projected = stop.advancedBy(call.cycle() - stop.completedVisits(), snapshot.totalDuration());
-                return new RouteCall(projected.scheduledStation(), projected.station(),
-                    projected.entryIndex(), call.cycle(), projected.scheduled(), projected.realtime());
-            })
-            .orElse(call);
+
+		for (StopSnapshot stopSnapshot : snapshot.stops()) {
+			if (stopSnapshot.entryIndex() != call.entryIndex()) continue;
+
+			StopSnapshot projected = stopSnapshot.advancedBy(call.cycle() - stopSnapshot.completedVisits(), snapshot.totalDuration());
+			return new RouteCall(projected.scheduledStation(), projected.station(),
+					projected.entryIndex(), call.cycle(), projected.scheduled(), projected.realtime());
+		}
+		return call;
     }
 
     public static void tick() {

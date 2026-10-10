@@ -1,12 +1,8 @@
 package de.mrjulsen.crn.client;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
@@ -110,14 +106,21 @@ public final class AdvancedDisplaysRegistry {
     }
 
     public static Map<String, DisplayProperties> getAllOfType(EDisplayType type) {
-        return newDisplayTypes.get(type).entrySet().stream().collect(Collectors.toMap(a -> a.getKey(), b -> b.getValue().properties()));
+	    Map<String, DisplayProperties> out = new HashMap<>();
+		for (Map.Entry<String, DisplayRegistrationData<?, ?>> entry : newDisplayTypes.get(type).entrySet())
+			out.put(entry.getKey(), entry.getValue().properties());
+		return out;
     }
 
     public static List<DisplayTypeResourceKey> getAllOfTypeAsKey(EDisplayType type) {
-        return newDisplayTypes.get(type).entrySet().stream().map(x -> new DisplayTypeResourceKey(type, x.getKey())).toList();
+	    List<DisplayTypeResourceKey> out = new ArrayList<>();
+		for (String string : newDisplayTypes.get(type).keySet()) {
+			out.add(new DisplayTypeResourceKey(type, string));
+		}
+		return out;
     }
 
     public static List<String> getAllNamesOfType(EDisplayType type) {
-        return newDisplayTypes.get(type).entrySet().stream().map(x -> x.getKey()).toList();
+		return List.copyOf(newDisplayTypes.get(type).keySet());
     }
 }

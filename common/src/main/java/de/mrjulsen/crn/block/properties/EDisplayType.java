@@ -42,11 +42,15 @@ public enum EDisplayType implements ITranslatableEnum {
 	}
 
 	public static EDisplayType getTypeById(int id) {
-		return Arrays.stream(values()).filter(x -> x.getId() == (byte)id).findFirst().orElse(EDisplayType.TRAIN_DESTINATION);
+		for (EDisplayType displayType : values())
+			if (displayType.getId() == (byte)id) return displayType;
+		return EDisplayType.TRAIN_DESTINATION;
 	}
 
 	public static EDisplayType getTypeByName(String name) {
-		return Arrays.stream(values()).filter(x -> x.name.equals(name)).findFirst().orElse(EDisplayType.TRAIN_DESTINATION);
+		for (EDisplayType displayType : values())
+			if (displayType.name.equals(name)) return displayType;
+		return EDisplayType.TRAIN_DESTINATION;
 	}
 
     @Override
@@ -75,7 +79,9 @@ public enum EDisplayType implements ITranslatableEnum {
 		}
 
 		public static EDisplayTypeDataSource getByIndex(int index) {
-			return Arrays.stream(EDisplayTypeDataSource.values()).filter(x -> x.getIndex() == index).findFirst().orElse(PLATFORM);
+			for (EDisplayTypeDataSource dataSource : EDisplayTypeDataSource.values())
+				if (dataSource.getIndex() == index) return dataSource;
+			return PLATFORM;
 		}
 	}
 }

@@ -38,7 +38,9 @@ public class GetAllTrainCategoriesPacketData extends NetworkPacketData {
 
     @Override
     protected void read(CompoundTag nbt) {
-        this.categories = nbt.getList(NBT_DATA, Tag.TAG_COMPOUND).stream().map(x -> TrainCategory.fromNbt((CompoundTag)x)).toList();
+		this.categories = new ArrayList<>();
+		for (Tag tag : nbt.getList(NBT_DATA, Tag.TAG_COMPOUND))
+			this.categories.add(TrainCategory.fromNbt((CompoundTag) tag));
     }
     
 

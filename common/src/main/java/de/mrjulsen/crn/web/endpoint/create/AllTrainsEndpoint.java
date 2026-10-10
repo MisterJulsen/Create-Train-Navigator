@@ -1,5 +1,6 @@
 package de.mrjulsen.crn.web.endpoint.create;
 
+import com.simibubi.create.content.trains.entity.Train;
 import de.mrjulsen.crn.api.core.query.CreateTrainQuery;
 import de.mrjulsen.crn.api.core.snapshot.CreateTrainSnapshot;
 import de.mrjulsen.crn.util.TrainUtils;
@@ -10,12 +11,20 @@ import org.eclipse.jetty.server.Request;
 import de.mrjulsen.crn.web.api.ApiResult;
 import de.mrjulsen.crn.web.openapi.EndpointDocumentation;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class AllTrainsEndpoint implements IEndpointHandler {
 
     @Override
     public ApiResult handle(Request request) {
         CreateTrainQuery query = QueryBinder.bind(request, CreateTrainQuery.class);
-        return ApiResult.json(TrainUtils.getAllTrains(false).stream().filter(query::accept).map(CreateTrainSnapshot::of).toList());
+
+	    List<CreateTrainSnapshot> acceptedTrains = new ArrayList<>();
+		for (Train train : TrainUtils.getAllTrains(false))
+			if (query.accept(train)) acceptedTrains.add(CreateTrainSnapshot.of(train));
+
+        return ApiResult.json(acceptedTrains);
     }
 
     @Override

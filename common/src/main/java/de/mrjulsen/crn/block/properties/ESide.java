@@ -26,7 +26,9 @@ public enum ESide implements ITranslatableEnum {
 	}	
 
 	public static ESide getSideById(int index) {
-		return Arrays.stream(values()).filter(x -> x.getId() == index).findFirst().orElse(FRONT);
+		for (ESide eSide : values())
+			if (eSide.getId() == index) return eSide;
+		return FRONT;
 	}
 
     @Override

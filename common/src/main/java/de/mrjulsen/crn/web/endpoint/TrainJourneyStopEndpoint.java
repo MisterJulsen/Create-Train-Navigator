@@ -14,10 +14,7 @@ import org.eclipse.jetty.server.Request;
 import de.mrjulsen.crn.web.api.ApiResult;
 import de.mrjulsen.crn.web.openapi.EndpointDocumentation;
 
-import java.util.Locale;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Stream;
+import java.util.*;
 
 public class TrainJourneyStopEndpoint implements IEndpointHandler {
 
@@ -44,11 +41,15 @@ public class TrainJourneyStopEndpoint implements IEndpointHandler {
 
     @Override
     public EndpointDocumentation getDocumentation() {
+		List<String> names = new ArrayList<>();
+		for (Timeline timeline : Timeline.values())
+			names.add(timeline.name());
+
         return EndpointDocumentation.builder()
             .tag(ModWebFeatures.TAG_TRAINS)
             .summary("Get one train stop")
             .description("A single stop of a train.")
-            .queryParam("direction", "string", "The stop to return (PREVIOUS, CURRENT (default) or NEXT).", Stream.of(Timeline.values()).map(Enum::name).toList(), Timeline.CURRENT.name())
+            .queryParam("direction", "string", "The stop to return (PREVIOUS, CURRENT (default) or NEXT).", names, Timeline.CURRENT.name())
             .queryParam("station", "string", "The stop to be searched for in the selected direction, instead of the next one.")
             .returns(StopSnapshot.class)
             .shapeable()

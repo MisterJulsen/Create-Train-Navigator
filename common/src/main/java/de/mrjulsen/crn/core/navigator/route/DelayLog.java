@@ -62,7 +62,10 @@ public final class DelayLog {
 
     /** The recorded reasons themselves, in the order first seen. */
     public List<DelayInstance> instances() {
-        return entries.values().stream().map(RecordedDelay::instance).toList();
+		List<DelayInstance> out = new ArrayList<>();
+		for (RecordedDelay recordedDelay : entries.values())
+			out.add(recordedDelay.instance());
+		return out;
     }
 
     /** The recorded reasons collapsed so that each cause appears only once. */
@@ -72,7 +75,10 @@ public final class DelayLog {
 
     /** Only the reasons that still apply. */
     public List<RecordedDelay> active() {
-        return entries.values().stream().filter(RecordedDelay::isActive).toList();
+		List<RecordedDelay> out = new ArrayList<>();
+		for (RecordedDelay recordedDelay : entries.values())
+			if (recordedDelay.isActive()) out.add(recordedDelay);
+		return out;
     }
 
     /** Whether nothing has been recorded. */

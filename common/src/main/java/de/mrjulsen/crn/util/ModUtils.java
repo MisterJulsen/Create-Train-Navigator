@@ -32,7 +32,13 @@ import net.minecraft.world.item.DyeColor;
 
 public class ModUtils {
 
-    private static final Cache<DLColor[]> dyeColorsCache = new Cache<>(() -> Arrays.stream(DyeColor.values()).map(x -> DLColor.fromInt(x == DyeColor.ORANGE ? 0xFFFF9900 : (0xFF << 24) | (x.getTextColor() & 0x00FFFFFF))).toArray(DLColor[]::new), ECachingPriority.LOW);
+	private static final Cache<DLColor[]> dyeColorsCache = new Cache<>(ModUtils::generateCache, ECachingPriority.LOW);
+    private static DLColor[] generateCache() {
+	    DLColor[] out = new DLColor[DyeColor.values().length];
+		for (int index = 0; index < DyeColor.values().length; index++)
+			out[index] = DLColor.fromInt(DyeColor.values()[index] == DyeColor.ORANGE ? 0xFFFF9900 : (0xFF << 24) | DyeColor.values()[index].getTextColor() & 0x00FFFFFF);
+		return out;
+    }
 
     public static float clockHandDegrees(double value, double unitsPerRevolution) {
         double normalized = value % unitsPerRevolution;
@@ -74,7 +80,17 @@ public class ModUtils {
         median = values.get(values.size() / 2);
 
         final int med = median;
-        return (int)history.stream().mapToInt(x -> x).filter(x -> Math.abs(med - x) <= smoothingThreshold).average().orElse(0);
+		int sum = 0;
+		int count = 0;
+		for (Integer integer : history) {
+			if (Math.abs(med - integer) > smoothingThreshold) continue;
+
+			sum += integer;
+			count += 1;
+		}
+
+		if (count == 0) return 0;
+		return sum/count;
     }
 
     public static String timeRemainingString(long ticks) {

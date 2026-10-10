@@ -2,8 +2,8 @@ package de.mrjulsen.crn.data.settings;
 
 import java.util.*;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
+import com.simibubi.create.content.trains.station.GlobalStation;
 import de.mrjulsen.crn.util.TrainUtils;
 import de.mrjulsen.crn.util.Lock;
 import de.mrjulsen.crn.util.ModUtils;
@@ -12,7 +12,6 @@ import de.mrjulsen.mcdragonlib.DragonLib;
 import de.mrjulsen.mcdragonlib.util.DLUtils;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.entity.player.Player;
 
@@ -173,13 +172,17 @@ public class StationTag {
         Lock owner = nbt.contains(NBT_OWNER) && nbt.getTagType(NBT_OWNER) == Tag.TAG_COMPOUND ? Lock.fromNbt(nbt.getCompound(NBT_OWNER)) : new Lock(new Owner((UUID)null));
         Map<String, StationInfo> stations;
         if (nbt.contains(NBT_STATION_LIST)) {
-            stations = new HashMap<>(nbt.getList(NBT_STATION_LIST, Tag.TAG_STRING).stream().map(x -> ((StringTag)x).getAsString()).collect(Collectors.toMap(x -> x, x -> StationInfo.empty())));
+			stations = new HashMap<>();
+			for (Tag tag : nbt.getList(NBT_STATION_LIST, Tag.TAG_STRING)) {
+				String string = tag.getAsString();
+				stations.put(string, StationInfo.empty());
+			}
         } else if (nbt.contains(NBT_STATION_MAP)) {
-            stations = new HashMap<>(nbt.getList(NBT_STATION_MAP, Tag.TAG_COMPOUND).stream().map(x -> (CompoundTag)x).collect(Collectors.toMap(x -> {
-                return x.getString(NBT_STATION_ENTRY_NAME);
-            }, x -> {
-                return StationInfo.fromNbt(x);
-            })));
+            stations = new HashMap<>();
+			for (Tag tag : nbt.getList(NBT_STATION_MAP, Tag.TAG_COMPOUND)) {
+				CompoundTag cTag = (CompoundTag) tag;
+				stations.put(cTag.getString(NBT_STATION_ENTRY_NAME), StationInfo.fromNbt(cTag));
+			}
         } else {
             stations = new IdentityHashMap<>();
         }
@@ -221,7 +224,9 @@ public class StationTag {
     }
 
     public void add(String station, StationInfo info) {
-        Set<String> stationNames = TrainUtils.getAllStations().stream().map(x -> x.name).collect(Collectors.toSet());
+		Set<String> stationNames = new HashSet<>();
+		for (GlobalStation globalStation : TrainUtils.getAllStations())
+			stationNames.add(globalStation.name);
         for (Map.Entry<String, List<String>> entry : ModUtils.mapWildcards2(station, List.of(info.platform()), stationNames).entrySet()) {
             if (stations.containsKey(entry.getKey())) {
                 continue;
