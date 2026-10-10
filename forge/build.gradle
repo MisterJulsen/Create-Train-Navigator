@@ -75,14 +75,13 @@ dependencies {
     }
 }
 
-def jettyRuntimeJars = configurations.jettyBundle.resolvedConfiguration.resolvedArtifacts.collect { art ->
-    def m = art.moduleVersion.id
-    "${m.group}:${m.name}:${m.version}".toString()
-}
-
-dependencies {
-    jettyRuntimeJars.each { notation ->
-        include(forgeRuntimeLibrary(notation))
+afterEvaluate {
+    configurations.jettyBundle.resolvedConfiguration.resolvedArtifacts.each { art ->
+        def m = art.moduleVersion.id
+        def notation = "${m.group}:${m.name}:${m.version}".toString()
+        dependencies {
+            include(forgeRuntimeLibrary(notation))
+        }
     }
 }
 
