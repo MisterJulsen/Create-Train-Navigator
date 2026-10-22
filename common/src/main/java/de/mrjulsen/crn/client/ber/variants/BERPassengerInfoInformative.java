@@ -41,6 +41,7 @@ import de.mrjulsen.mcdragonlib.util.math.Point;
 import de.mrjulsen.mcdragonlib.util.math.Rectangle;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
@@ -421,6 +422,10 @@ public class BERPassengerInfoInformative implements AbstractAdvancedDisplayRende
             if (showTrainName && showDestination) sb.append(" ");
             if (showDestination) sb.append(blockEntity.getDestinationText());
             labelText = TextUtils.text(sb.toString()).withStyle(ChatFormatting.BOLD);
+            // Notices of the train run after its line and destination.
+            for (Component notice : trainNotices(blockEntity)) {
+                labelText.append(TextUtils.text("  +++  ")).append(notice);
+            }
         }
 
         trainLineLabel.text.set(labelText);

@@ -108,9 +108,10 @@ public class BERPlatformSimple implements AbstractAdvancedDisplayRenderer<Platfo
                 x.primaryDelay().ifPresent(cause -> text
                     .append(" ")
                     .append(CustomLanguage.translate("block." + CreateRailwaysNavigator.MOD_ID + ".advanced_display.ber.reason").getString())
-                    .append(CustomLanguage.translate(cause.translationKey())));
+                    .append(CustomLanguage.translate(cause.translationKey(), cause.displayArgs())));
             }
             return text;
         }).toList());
+        texts.addAll(stationNotices(blockEntity));
     }
 }

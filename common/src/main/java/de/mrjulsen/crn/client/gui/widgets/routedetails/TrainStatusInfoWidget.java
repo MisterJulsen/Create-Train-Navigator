@@ -24,7 +24,7 @@ public class TrainStatusInfoWidget extends DLGuiComponent {
 
     public TrainStatusInfoWidget(int x, int y, int w, DelayInstance delay) {
         super(x, y, w, 1);
-        this.text = TextUtils.translate(delay.translationKey());
+        this.text = TextUtils.translate(delay.translationKey(), delay.displayArgs());
         this.color = delay.severity().color();
 
         addEventListener(DLGuiStandardEvents.ComponentPosAndSizeChanged.class, (s, e) -> {
