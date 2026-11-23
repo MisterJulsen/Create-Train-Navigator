@@ -1,11 +1,11 @@
 package de.mrjulsen.crn.config;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
-import net.neoforged.neoforge.common.ModConfigSpec;
+import net.minecraftforge.common.ForgeConfigSpec;
 
 public class ModServerConfig {
-    public static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
-    public static final ModConfigSpec SPEC;
+    public static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
+    public static final ForgeConfigSpec SPEC;
 
     public static final ModConfigSpec.ConfigValue<Integer> REALTIME_PRECISION_THRESHOLD;
     public static final ModConfigSpec.ConfigValue<Integer> NEXT_STOP_ANNOUNCEMENT;
@@ -22,6 +22,7 @@ public class ModServerConfig {
     public static final ModConfigSpec.ConfigValue<Integer> DISRUPTION_DISPLAY_DURATION_DERAILED;
     public static final ModConfigSpec.ConfigValue<Integer> TOTAL_DURATION_DEVIATION_THRESHOLD;
     public static final ModConfigSpec.ConfigValue<Boolean> SCHEDULE_INCLUDES_WAITING;
+    public static final ModConfigSpec.ConfigValue<Boolean> FIX_CREATE_PATH_COST;
 
     static {
         BUILDER.push(CreateRailwaysNavigator.MOD_ID + "_server_config");
@@ -38,14 +39,21 @@ public class ModServerConfig {
                 .defineInRange("navigation.max_transfers", 64, -1, 4096);
 
 
+        FIX_CREATE_PATH_COST = BUILDER.comment(
+                "Create reports the cost of a discovered path without its length, because the station test that ends the path search receives only the accumulated penalty. A train that can be driven from both ends therefore chooses its direction by 'which way passes fewer stations and signals' instead of by actual travel cost, and may reverse and drive thousands of blocks the wrong way around a loop.",
+                "CRN always corrects this for its own Prioritized Destination lookups, no matter what this option says. Turning it on applies the correction to every path search instead, which also covers Create's own 'Travel to Station', 'Fetch Packages' and 'Deliver Packages' instructions.",
+                "This only changes which direction a train with conductors at both ends sets off in. It has no effect on single-ended trains or on where a route leads. (Default: OFF)")
+                .define("pathfinding.fix_create_path_cost", false);
+
+
         GLOBAL_SETTINGS_PERMISSION_LEVEL = BUILDER.comment("Minimum permission level required to edit the global navigator settings. 0 allows everyone to edit these settings, -1 disables editing for everyone (including admins). (Default: 0)")
             .defineInRange("permissions.global_settings_permission_level", 0, -1, 4);
         GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL = BUILDER.comment("Minimum permission level required to use admin features in CRN. 0 gives everybody admin permissions in CRN (not recommended), -1 disables admin features. (Default: 3)")
             .defineInRange("permissions.admin_mode_permission_level", 3, -1, 4);
-
+        
 
         TOTAL_DURATION_BUFFER_SIZE = BUILDER.comment("[in Cycles]", "How often the calculated time for a route section between two stations must deviate from the current reference value before the reference value is updated. (Default: 3)")
-            .defineInRange("train_data_calculation.total_duration_deviation_buffer_size", 3, 1, 16);
+            .defineInRange("train_data_calculation.total_duration_deviation_buffer_size", 3, 1, 16);            
         TOTAL_DURATION_DEVIATION_THRESHOLD = BUILDER.comment("[in Ticks]", "Deviations of the calculated time for a route section between two stations from the reference value that are smaller than the threshold value are not taken into account. (Default: 50)")
             .defineInRange("train_data_calculation.total_duration_deviation_threshold", 50, 0, 1000);
         SCHEDULE_DEVIATION_THRESHOLD = BUILDER.comment("[in Ticks]", "How many ticks the real-time can deviate from the scheduled time before the train is considered delayed. (Default: 500)")
