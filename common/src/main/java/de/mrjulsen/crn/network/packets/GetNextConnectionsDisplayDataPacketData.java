@@ -5,6 +5,8 @@ import java.util.List;
 import de.mrjulsen.crn.api.core.snapshot.BoardEntry;
 import de.mrjulsen.crn.api.core.query.BoardQuery;
 import de.mrjulsen.crn.api.core.RailwayBackendApi;
+import de.mrjulsen.crn.data.settings.GlobalSettings;
+import de.mrjulsen.crn.data.settings.StationTag;
 import de.mrjulsen.crn.util.NbtHelper;
 import de.mrjulsen.crn.registry.data.NextConnectionsRequestData;
 import de.mrjulsen.mcdragonlib.data.DLStatus;
@@ -68,12 +70,12 @@ public class GetNextConnectionsDisplayDataPacketData {
     }
 
     public static Response handle(Request packet, NetworkPacketContext context) {
-        BoardQuery query = BoardQuery.defaults()
-            .matching(x -> !x.trainId().equals(packet.data.selfTrainId()));
+        BoardQuery query = BoardQuery.defaults().matching(x -> !x.trainId().equals(packet.data.selfTrainId()));
         if (packet.data.allowDuplicates()) {
             query = query.withDuplicates(true);
         }
-        return new Response(RailwayBackendApi.getBoard(packet.data.stationName(), query));
+        StationTag tag = GlobalSettings.getInstance().getOrCreateStationTagFor(packet.data.stationName());
+        return new Response(RailwayBackendApi.getBoard(tag, query));
     }
 
 }
