@@ -416,7 +416,7 @@
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.wait_instead": "Wait Instead Of Diverting",
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.wait_instead_description": "If no entry is free, stay at the station before and wait instead of taking the least bad one.",
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.detour": "Detour Threshold",
-    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.detour_description": "How much longer an alternative route may be. Stops a train from circling the network to reach the desired track station.",
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.detour_description": "How much longer the next priority route may be. Stops a train from circling the network to reach the desired track station.",
 
     "goggles.createrailwaysnavigator.train_listener.departures.title": "Departure History",
     "goggles.createrailwaysnavigator.train_listener.departures.any": "Last departure:",

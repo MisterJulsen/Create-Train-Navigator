@@ -13,9 +13,6 @@ import com.simibubi.create.foundation.gui.ModularGuiLineBuilder;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.api.core.RailwayBackendApi;
 import de.mrjulsen.crn.client.ClientWrapper;
-import de.mrjulsen.crn.config.ModCommonConfig;
-import de.mrjulsen.crn.config.ModServerConfig;
-import de.mrjulsen.crn.core.debug.BackendDiagnosticsRecorder;
 import de.mrjulsen.crn.mixin.ScheduleRuntimeAccessor;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import net.createmod.catnip.data.Pair;
@@ -148,14 +145,14 @@ public class PrioritizedDestinationInstruction extends DestinationInstruction {
 			return null;
 		}
 
-		boolean explain = shouldExplain();
-		PriorityChoice.Result result = PriorityChoice.select(train, this, explain);
-		if (explain) {
-			reportChoice(train, result);
-		}
+		PriorityChoice.Result result = PriorityChoice.select(train, this);
 
 		if (result.hasPath()) {
 			return result.path();
+		}
+
+		if (train.navigation.destination != null) {
+			return null;
 		}
 
 		if (result.waiting()) {
@@ -177,30 +174,4 @@ public class PrioritizedDestinationInstruction extends DestinationInstruction {
 			.orElse("");
 	}
 
-	private static boolean shouldExplain() {
-		return ModCommonConfig.ADVANCED_LOGGING.get()
-			|| CreateRailwaysNavigator.isDebug()
-			|| BackendDiagnosticsRecorder.isActive();
-	}
-
-	private void reportChoice(Train train, PriorityChoice.Result result) {
-		boolean logging = ModCommonConfig.ADVANCED_LOGGING.get() || CreateRailwaysNavigator.isDebug();
-		List<String> filters = getFilters();
-		List<String> passed = result.passed().stream()
-			.map(x -> String.format("%d (%s): %s", x.index() + 1, x.filter(), x.reason()))
-			.toList();
-		String chosen = result.hasPath() ? result.path().destination.name : "";
-
-		BackendDiagnosticsRecorder.recordRouteChoice(train.id, train.name.getString(), chosen, result.index(), result.waiting(), passed, result.notes());
-
-		if (logging) {
-			CreateRailwaysNavigator.LOGGER.info("[Route] '{}' -> {} | passed over: {} | {}",
-				train.name.getString(),
-				result.hasPath()
-					? (result.index() < 0 ? "fallback " + chosen : "priority " + (result.index() + 1) + " " + chosen)
-					: result.waiting() ? "waiting, nothing free of " + filters.size() + " entries" : "no route",
-				passed.isEmpty() ? "-" : String.join("; ", passed),
-				String.join(" | ", result.notes()));
-		}
-	}
 }
