@@ -90,9 +90,13 @@ public record JourneySnapshot(
                 currentStopIndex = 0;
             }
 
+            JourneyStop visibleCurrent = currentStop == null || JourneyDisplayNames.isPublic(train, currentStop)
+                ? currentStop
+                : JourneyDisplayNames.getNextPublicStop(journey, currentStop, train).orElse(null);
+
             List<SectionSnapshot> sections = new ArrayList<>(journey.getSections().size());
             for (JourneySection section : journey.getSections()) {
-                sections.add(SectionSnapshot.of(train, section, currentStop));
+                sections.add(SectionSnapshot.of(train, section, visibleCurrent));
             }
 
             return new JourneySnapshot(

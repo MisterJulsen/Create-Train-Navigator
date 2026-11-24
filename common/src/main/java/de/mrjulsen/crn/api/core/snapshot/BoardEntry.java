@@ -162,8 +162,8 @@ public record BoardEntry(
             visitStateOf(train, stop),
             stop.entryIndex(),
             snapshot.sectionIndex(),
-            journey.isTerminus(stop),
-            journey.isOrigin(stop),
+            JourneyDisplayNames.isPublicTerminus(train, journey, stop),
+            JourneyDisplayNames.isPublicOrigin(train, journey, stop),
             arrivalSection != null && arrivalSection != section,
             collectStopovers(train, stop, section),
             train.getActiveDelays()
