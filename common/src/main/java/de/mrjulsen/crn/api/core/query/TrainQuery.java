@@ -155,6 +155,6 @@ public record TrainQuery(
                 (state == null || train.getLifecycleState() == state) &&
                 (serviceState == null || train.getServiceState() == serviceState) &&
                 (liveState == null || train.getLiveState() == liveState) &&
-                (!hideBlacklisted || !GlobalSettings.getInstance().isTrainBlacklisted(train.getTrainName()));
+                (!hideBlacklisted || !train.isBlacklisted());
     }
 }
