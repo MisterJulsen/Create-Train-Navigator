@@ -15,6 +15,7 @@ import de.mrjulsen.crn.core.train.ServiceState;
 import de.mrjulsen.crn.core.train.TrackedTrain;
 import de.mrjulsen.crn.core.train.TrainLifecycleState;
 import de.mrjulsen.crn.core.delay.DelayInstance;
+import de.mrjulsen.crn.core.schedule.JourneyDisplayNames;
 import de.mrjulsen.crn.core.schedule.JourneySection;
 import de.mrjulsen.crn.core.schedule.JourneyStop;
 import de.mrjulsen.crn.config.ModServerConfig;
@@ -126,7 +127,14 @@ public record TrainSnapshot(
         JourneySection section = tracked.getCurrentSection().orElse(null);
         JourneyStop currentStop = tracked.getCurrentStop().orElse(null);
 
-        StationRef nextStation = currentStop == null ? StationRef.NONE : tracked.getJourney().getNextStop(currentStop)
+        boolean currentHidden = currentStop != null && !JourneyDisplayNames.isPublic(tracked, currentStop);
+        JourneyStop visibleCurrent = !currentHidden ? currentStop
+            : JourneyDisplayNames.getNextPublicStop(tracked.getJourney(), currentStop, tracked).orElse(null);
+        LiveTrainState liveState = currentHidden && tracked.getLiveState() == LiveTrainState.AT_STATION
+            ? LiveTrainState.EN_ROUTE
+            : tracked.getLiveState();
+
+        StationRef nextStation = visibleCurrent == null ? StationRef.NONE : JourneyDisplayNames.getNextPublicStop(tracked.getJourney(), visibleCurrent, tracked)
             .map(x -> StationRef.of(tracked.getDisplayStationName(x)))
             .orElse(StationRef.NONE);
 
@@ -140,14 +148,14 @@ public record TrainSnapshot(
             LineRef.of(section == null ? null : section.getTrainLine().orElse(null)),
             TrainCategoryRef.of(section == null ? null : section.getTrainCategory().orElse(null)),
             tracked.getLifecycleState(),
-            tracked.getLiveState(),
+            liveState,
             tracked.getServiceState(),
             tracked.getMaxDeviation(),
             tracked.getDelayOffset(),
             tracked.getTotalDuration(),
             currentStop == null || currentStop.getTitle() == null ? "" : currentStop.getTitle(),
             resolveDestination(tracked, currentStop, nextStation),
-            currentStop == null ? StationRef.NONE : StationRef.of(tracked.getDisplayStationName(currentStop)),
+            visibleCurrent == null ? StationRef.NONE : StationRef.of(tracked.getDisplayStationName(visibleCurrent)),
             nextStation,
             section == null ? -1 : section.getSectionIndex(),
             tracked.getJourney().getStopCount(),
