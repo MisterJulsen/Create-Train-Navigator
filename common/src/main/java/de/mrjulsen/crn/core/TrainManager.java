@@ -16,7 +16,9 @@ import de.mrjulsen.crn.core.train.ServiceState;
 import de.mrjulsen.crn.core.train.TrackedTrain;
 import de.mrjulsen.crn.core.history.DepartureLog;
 import de.mrjulsen.crn.core.index.StationCallIndex;
+import de.mrjulsen.crn.core.schedule.JourneySection;
 import de.mrjulsen.crn.core.schedule.JourneyStop;
+import de.mrjulsen.crn.data.schedule.condition.TrainSeparationCondition;
 import de.mrjulsen.crn.util.TrainUtils;
 import de.mrjulsen.crn.config.ModServerConfig;
 import de.mrjulsen.crn.event.ModCommonEvents;
@@ -196,6 +198,9 @@ public final class TrainManager {
     }
 
     public void recordDeparture(TrackedTrain train, JourneyStop stop) {
+        if (TrainSeparationCondition.isPresentIn(stop.getScheduleEntry())) {
+            return;
+        }
         long now = ModCommonEvents.getCurrentServer().map(server -> server.overworld().getGameTime()).orElse(-1L);
         if (now < 0) {
             return;
@@ -206,6 +211,21 @@ public final class TrainManager {
             stop.getSection() == null ? null : stop.getSection().getTrainLineId(),
             stop.getSection() == null ? null : stop.getSection().getTrainCategoryId(),
             train.getTrainName()
+        );
+    }
+
+    public void claimSeparatedDeparture(Train train, String stationName) {
+        long now = ModCommonEvents.getCurrentServer().map(server -> server.overworld().getGameTime()).orElse(-1L);
+        if (now < 0 || train == null) {
+            return;
+        }
+        JourneySection section = getTrain(train.id).flatMap(TrackedTrain::getCurrentSection).orElse(null);
+        departureLog.record(
+            stationName,
+            now,
+            section == null ? null : section.getTrainLineId(),
+            section == null ? null : section.getTrainCategoryId(),
+            train.name.getString()
         );
     }
 

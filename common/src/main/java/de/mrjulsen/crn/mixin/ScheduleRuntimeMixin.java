@@ -12,7 +12,9 @@ import com.simibubi.create.content.trains.schedule.Schedule;
 import com.simibubi.create.content.trains.schedule.ScheduleEntry;
 import com.simibubi.create.content.trains.schedule.ScheduleRuntime;
 import com.simibubi.create.content.trains.schedule.condition.ScheduleWaitCondition;
+import com.simibubi.create.content.trains.station.GlobalStation;
 
+import de.mrjulsen.crn.core.TrainManager;
 import de.mrjulsen.crn.data.schedule.condition.TrainSeparationCondition;
 import net.minecraft.world.level.Level;
 
@@ -37,8 +39,18 @@ public abstract class ScheduleRuntimeMixin {
             return;
         }
 
+        if (!TrainSeparationCondition.isPresentIn(entry)) {
+            return;
+        }
+
         if (TrainSeparationCondition.remainingHoldTicks(runtime.train, entry) > 0) {
             ci.cancel();
+            return;
+        }
+
+        GlobalStation station = runtime.train.getCurrentStation();
+        if (station != null && station.name != null) {
+            TrainManager.getInstance().claimSeparatedDeparture(runtime.train, station.name);
         }
     }
 
