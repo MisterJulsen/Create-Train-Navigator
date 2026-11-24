@@ -615,6 +615,7 @@ public final class TrackedTrain implements RealtimeTracker.Listener {
         synchronized (updateLock) {
             journey.getStopAtEntry(entryIndex).ifPresent(stop -> {
                 stop.unresolveStation();
+                owner.recordDeparture(this, stop);
 
                 StopTimings timing = getTimings(stop);
                 if (timing == null) {
@@ -623,7 +624,6 @@ public final class TrackedTrain implements RealtimeTracker.Listener {
 
                 recordDwellResidual(stop, timing, now);
                 timing.recordDeparture(now, dwellTicks);
-                owner.recordDeparture(this, stop);
                 BackendDiagnosticsRecorder.recordDeparture(this, now, entryIndex, dwellTicks);
 
                 if (journey.isCyclic() && totalDuration > 0) {

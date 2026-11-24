@@ -2,6 +2,7 @@ package de.mrjulsen.crn.data.schedule.condition;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
 
 import com.simibubi.create.content.trains.entity.Train;
@@ -140,12 +141,12 @@ public class TrainSeparationCondition extends ScheduledDelay {
 		if (train == null) {
 			return 0;
 		}
-		long[] remaining = { 0 };
+		AtomicLong l = new AtomicLong(0);
 		forEachIn(entry, condition -> {
-			remaining[0] = Math.max(remaining[0], condition.remainingHold(train, entry));
+			l.set(Math.max(l.get(), condition.remainingHold(train, entry)));
 			return false;
 		});
-		return remaining[0];
+		return l.get();
 	}
 
 	private static boolean forEachIn(ScheduleEntry entry, Predicate<TrainSeparationCondition> action) {
