@@ -73,14 +73,21 @@ public record JourneySnapshot(
 
             List<StopSnapshot> stops = new ArrayList<>(journey.getStopCount());
             int currentStopIndex = -1;
+            boolean passedCurrent = false;
             for (JourneyStop stop : journey.getStops()) {
-                if (!isPublic(train, stop, currentStop)) {
+                if (stop == currentStop) {
+                    passedCurrent = true;
+                }
+                if (!JourneyDisplayNames.isPublic(train, stop)) {
                     continue;
                 }
-                if (stop == currentStop) {
+                if (passedCurrent && currentStopIndex < 0) {
                     currentStopIndex = stops.size();
                 }
                 stops.add(StopSnapshot.of(train, stop));
+            }
+            if (currentStop != null && currentStopIndex < 0 && journey.isCyclic() && !stops.isEmpty()) {
+                currentStopIndex = 0;
             }
 
             List<SectionSnapshot> sections = new ArrayList<>(journey.getSections().size());
@@ -100,10 +107,6 @@ public record JourneySnapshot(
                 currentSection == null ? -1 : currentSection.getSectionIndex()
             );
         });
-    }
-
-    static boolean isPublic(TrackedTrain train, JourneyStop stop, JourneyStop currentStop) {
-        return stop == currentStop || JourneyDisplayNames.isPublic(train, stop);
     }
 
     /** The name to show for this train: its line name where it has one, otherwise its own name. */

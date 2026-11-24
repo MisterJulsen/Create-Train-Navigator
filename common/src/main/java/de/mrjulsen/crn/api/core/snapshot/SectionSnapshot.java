@@ -80,11 +80,16 @@ public record SectionSnapshot(
     public static SectionSnapshot of(TrackedTrain train, JourneySection section, JourneyStop currentStop) {
         List<StopSnapshot> stops = new ArrayList<>(section.getStops().size());
         int currentStopIndex = -1;
+        boolean passedCurrent = false;
         for (JourneyStop stop : section.getStops()) {
-            if (!JourneySnapshot.isPublic(train, stop, currentStop)) {
+            if (currentStop != null && stop.getOrderIndex() == currentStop.getOrderIndex()) {
+                passedCurrent = true;
+            }
+            if (!JourneyDisplayNames.isPublic(train, stop)) {
                 continue;
             }
-            if (currentStop != null && stop.getOrderIndex() == currentStop.getOrderIndex()) {
+
+            if (passedCurrent && currentStopIndex < 0) {
                 currentStopIndex = stops.size();
             }
             stops.add(StopSnapshot.of(train, stop));
