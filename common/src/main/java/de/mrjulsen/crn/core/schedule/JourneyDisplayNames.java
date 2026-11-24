@@ -88,6 +88,34 @@ public final class JourneyDisplayNames {
         return Optional.empty();
     }
 
+    public static boolean isPublicTerminus(TrackedTrain train, TrainJourney journey, JourneyStop stop) {
+        if (journey.isTerminus(stop)) {
+            return true;
+        }
+        JourneySection section = stop.getSection();
+        if (section == null || journey.carriesPassengersOnward(section)) {
+            return false;
+        }
+        return getLastPublicStop(train, section).map(x -> x == stop).orElse(false);
+    }
+
+    public static boolean isPublicOrigin(TrackedTrain train, TrainJourney journey, JourneyStop stop) {
+        if (journey.isOrigin(stop)) {
+            return true;
+        }
+        JourneySection section = stop.getSection();
+        if (section == null || !section.isUsable()) {
+            return false;
+        }
+        boolean carriedIn = journey.previousSectionOf(section)
+            .map(previous -> previous.isUsable() && journey.carriesPassengersOnward(previous))
+            .orElse(false);
+        if (carriedIn) {
+            return false;
+        }
+        return getFirstPublicStop(train, section).map(x -> x == stop).orElse(false);
+    }
+
     public static Optional<JourneyStop> getNextPublicStop(TrainJourney journey, JourneyStop stop, TrackedTrain train) {
         JourneyStop current = stop;
         for (int i = 0; i < journey.getStopCount(); i++) {
