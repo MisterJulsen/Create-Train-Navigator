@@ -204,10 +204,15 @@ public final class TrainJourney {
     }
 
     public Optional<JourneyStop> getOriginOf(JourneyStop stop) {
+        return getOriginSectionOf(stop).flatMap(JourneySection::getFirstStop);
+    }
+
+    public Optional<JourneySection> getOriginSectionOf(JourneyStop stop) {
         JourneySection section = stop == null ? null : stop.getSection();
         if (section == null) {
             return Optional.empty();
         }
+
         JourneySection origin = section;
         if (section.isFirstStop(stop) || !section.isUsable()) {
             JourneySection previous = previousSectionOf(section).orElse(null);
@@ -215,7 +220,7 @@ public final class TrainJourney {
                 origin = previous;
             }
         }
-        return origin.getFirstStop();
+        return Optional.of(origin);
     }
 
     public Optional<JourneySection> getSectionAtEntry(int entryIndex) {

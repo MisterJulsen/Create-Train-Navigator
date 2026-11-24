@@ -215,11 +215,11 @@ public final class TrackedTrain implements RealtimeTracker.Listener {
     }
 
     public String getSectionDestination(JourneyStop stop) {
-        return JourneyDisplayNames.sectionDestination(journey, stop, this::getTimings);
+        return JourneyDisplayNames.sectionDestination(journey, stop, this);
     }
 
     public Optional<String> getSectionTerminus(JourneySection section) {
-        return JourneyDisplayNames.terminusStop(journey, section).map(this::getDisplayStationName);
+        return JourneyDisplayNames.terminusStop(journey, section, this).map(this::getDisplayStationName);
     }
 
     public String getDisplayName() {
