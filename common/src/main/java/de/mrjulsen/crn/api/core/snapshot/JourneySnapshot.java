@@ -8,10 +8,10 @@ import java.util.UUID;
 import de.mrjulsen.crn.api.core.*;
 import de.mrjulsen.crn.api.core.ref.LineRef;
 import de.mrjulsen.crn.core.train.TrackedTrain;
+import de.mrjulsen.crn.core.schedule.JourneyDisplayNames;
 import de.mrjulsen.crn.core.schedule.JourneySection;
 import de.mrjulsen.crn.core.schedule.JourneyStop;
 import de.mrjulsen.crn.core.schedule.TrainJourney;
-import de.mrjulsen.crn.data.settings.GlobalSettings;
 import de.mrjulsen.crn.util.NbtHelper;
 import de.mrjulsen.crn.web.annotation.ResponseAlwaysInclude;
 import net.minecraft.nbt.CompoundTag;
@@ -74,7 +74,7 @@ public record JourneySnapshot(
             List<StopSnapshot> stops = new ArrayList<>(journey.getStopCount());
             int currentStopIndex = -1;
             for (JourneyStop stop : journey.getStops()) {
-                if (!isPublic(stop, currentStop)) {
+                if (!isPublic(train, stop, currentStop)) {
                     continue;
                 }
                 if (stop == currentStop) {
@@ -102,8 +102,8 @@ public record JourneySnapshot(
         });
     }
 
-    static boolean isPublic(JourneyStop stop, JourneyStop currentStop) {
-        return stop == currentStop || !GlobalSettings.getInstance().isStationBlacklisted(stop.getStationName());
+    static boolean isPublic(TrackedTrain train, JourneyStop stop, JourneyStop currentStop) {
+        return stop == currentStop || JourneyDisplayNames.isPublic(train, stop);
     }
 
     /** The name to show for this train: its line name where it has one, otherwise its own name. */

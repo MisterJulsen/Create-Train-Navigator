@@ -1,10 +1,11 @@
 package de.mrjulsen.crn.core.schedule;
 
 import java.util.Optional;
-import java.util.function.Function;
 
 import de.mrjulsen.crn.core.timing.StopTimings;
+import de.mrjulsen.crn.core.train.TrackedTrain;
 import de.mrjulsen.crn.core.util.StationLookup;
+import de.mrjulsen.crn.data.settings.GlobalSettings;
 import de.mrjulsen.crn.data.settings.TrainLine;
 
 public final class JourneyDisplayNames {
@@ -35,26 +36,24 @@ public final class JourneyDisplayNames {
         return live != null && !live.isBlank() ? live : stop.getStationFilter();
     }
 
-    public static String sectionDestination(TrainJourney journey, JourneyStop stop, Function<JourneyStop, StopTimings> timings) {
+    public static String sectionDestination(TrainJourney journey, JourneyStop stop, TrackedTrain train) {
         JourneySection section = stop.getSection();
         if (section == null) {
             return "";
         }
-        JourneySection destinationSection = section.isLastStop(stop) && !section.includesNextSectionStart()
-            ? journey.nextSectionOf(section).orElse(section)
-            : section;
-        return terminusStop(journey, destinationSection)
-            .map(terminus -> realtimeStationName(terminus, timings.apply(terminus)))
+        JourneySection destinationSection = section.isLastStop(stop) && !section.includesNextSectionStart() ? journey.nextSectionOf(section).orElse(section) : section;
+        return terminusStop(journey, destinationSection, train)
+            .map(train::getDisplayStationName)
             .orElse("");
     }
 
-    public static Optional<JourneyStop> terminusStop(TrainJourney journey, JourneySection section) {
+    public static Optional<JourneyStop> terminusStop(TrainJourney journey, JourneySection section, TrackedTrain train) {
         if (section.includesNextSectionStart()) {
             return journey.nextSectionOf(section)
-                .flatMap(JourneySection::getFirstStop)
-                .or(section::getLastStop);
+                .flatMap(sec -> getFirstPublicStop(train, sec))
+                .or(() -> getLastPublicStop(train, section));
         }
-        return section.getLastStop();
+        return getLastPublicStop(train, section);
     }
 
     public static String displayName(JourneySection section, String trainName) {
@@ -64,4 +63,47 @@ public final class JourneyDisplayNames {
             .filter(name -> !name.isEmpty())
             .orElse(trainName);
     }
+
+    public static boolean isPublic(TrackedTrain train, JourneyStop stop) {
+        return !GlobalSettings.getInstance().isStationBlacklisted(train.getDisplayStationName(stop));
+    }
+
+    public static Optional<JourneyStop> getFirstPublicStop(TrackedTrain train, JourneySection section) {
+        for (JourneyStop stop : section.getStops()) {
+            if (isPublic(train, stop)) {
+                return Optional.of(stop);
+            }
+        }
+        return Optional.empty();
+    }
+
+    public static Optional<JourneyStop> getLastPublicStop(TrackedTrain train, JourneySection section) {
+        JourneyStop stop;
+        for (int i = section.getStops().size() - 1; i >= 0; i--) {
+            stop = section.getStops().get(i);
+            if (isPublic(train, stop)) {
+                return Optional.of(stop);
+            }
+        }
+        return Optional.empty();
+    }
+
+    public static Optional<JourneyStop> getNextPublicStop(TrainJourney journey, JourneyStop stop, TrackedTrain train) {
+        JourneyStop current = stop;
+        for (int i = 0; i < journey.getStopCount(); i++) {
+            Optional<JourneyStop> next = journey.getNextStop(current);
+            if (next.isEmpty()) {
+                return Optional.empty();
+            }
+            current = next.get();
+            if (current == stop) {
+                return Optional.empty();
+            }
+            if (isPublic(train, current)) {
+                return Optional.of(current);
+            }
+        }
+        return Optional.empty();
+    }
+
 }

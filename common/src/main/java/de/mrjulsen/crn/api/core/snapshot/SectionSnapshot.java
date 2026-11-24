@@ -8,6 +8,7 @@ import de.mrjulsen.crn.api.core.*;
 import de.mrjulsen.crn.api.core.ref.TrainCategoryRef;
 import de.mrjulsen.crn.api.core.ref.LineRef;
 import de.mrjulsen.crn.api.core.ref.StationRef;
+import de.mrjulsen.crn.core.schedule.JourneyDisplayNames;
 import de.mrjulsen.crn.core.train.TrackedTrain;
 import de.mrjulsen.crn.core.schedule.JourneySection;
 import de.mrjulsen.crn.core.schedule.JourneyStop;
@@ -80,7 +81,7 @@ public record SectionSnapshot(
         List<StopSnapshot> stops = new ArrayList<>(section.getStops().size());
         int currentStopIndex = -1;
         for (JourneyStop stop : section.getStops()) {
-            if (!JourneySnapshot.isPublic(stop, currentStop)) {
+            if (!JourneySnapshot.isPublic(train, stop, currentStop)) {
                 continue;
             }
             if (currentStop != null && stop.getOrderIndex() == currentStop.getOrderIndex()) {
@@ -94,7 +95,7 @@ public record SectionSnapshot(
             section.entryIndex(),
             LineRef.of(section.getTrainLine().orElse(null)),
             TrainCategoryRef.of(section.getTrainCategory().orElse(null)),
-            section.getFirstStop().map(x -> StationRef.of(train.getDisplayStationName(x))).orElse(StationRef.NONE),
+            JourneyDisplayNames.getFirstPublicStop(train, section).map(x -> StationRef.of(train.getDisplayStationName(x))).orElse(StationRef.NONE),
             train.getSectionTerminus(section).map(StationRef::of).orElse(StationRef.NONE),
             stops,
             currentStopIndex,

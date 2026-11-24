@@ -19,7 +19,6 @@ import de.mrjulsen.crn.core.schedule.JourneyStop;
 import de.mrjulsen.crn.core.schedule.TrainJourney;
 import de.mrjulsen.crn.core.timing.CycleProjector;
 import de.mrjulsen.crn.core.timing.StopTimes;
-import de.mrjulsen.crn.data.settings.GlobalSettings;
 import de.mrjulsen.crn.util.NbtHelper;
 import de.mrjulsen.crn.web.annotation.ResponseAlwaysInclude;
 import de.mrjulsen.mcdragonlib.util.DLColor;
@@ -154,7 +153,7 @@ public record BoardEntry(
             TrainCategoryRef.of(arrivalSection == null ? null : arrivalSection.getTrainCategory().orElse(null)),
             snapshot.station(),
             snapshot.scheduledStation(),
-            journey.getOriginOf(stop).map(x -> StationRef.of(train.getDisplayStationName(x))).orElse(StationRef.NONE),
+            journey.getOriginSectionOf(stop).flatMap(x -> JourneyDisplayNames.getFirstPublicStop(train, x)).map(x -> StationRef.of(train.getDisplayStationName(x))).orElse(StationRef.NONE),
             stop.getTitle() == null ? "" : stop.getTitle(),
             resolveDestination(train, stop, snapshot),
             snapshot.scheduled(),
@@ -198,7 +197,8 @@ public record BoardEntry(
         if (!sectionDestination.isBlank()) {
             return StationRef.of(sectionDestination);
         }
-        return train.getJourney().getNextStop(stop)
+
+        return JourneyDisplayNames.getNextPublicStop(train.getJourney(), stop, train)
             .map(x -> StationRef.of(train.getDisplayStationName(x)))
             .orElse(snapshot.station());
     }
@@ -207,7 +207,7 @@ public record BoardEntry(
         if (section == null) {
             return List.of();
         }
-        JourneyStop terminus = JourneyDisplayNames.terminusStop(train.getJourney(), section).orElse(null);
+        JourneyStop terminus = JourneyDisplayNames.terminusStop(train.getJourney(), section, train).orElse(null);
         List<StationRef> stopovers = new ArrayList<>();
         boolean reached = false;
         for (JourneyStop other : section.getStops()) {
@@ -215,7 +215,7 @@ public record BoardEntry(
                 reached = true;
                 continue;
             }
-            if (!reached || other == terminus || GlobalSettings.getInstance().isStationBlacklisted(other.getStationName())) {
+            if (!reached || other == terminus || !JourneyDisplayNames.isPublic(train, other)) {
                 continue;
             }
             stopovers.add(StationRef.of(train.getDisplayStationName(other)));
