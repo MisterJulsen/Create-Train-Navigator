@@ -2,25 +2,37 @@ package de.mrjulsen.crn.data.schedule.condition;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
+import com.simibubi.create.Create;
 import com.simibubi.create.content.trains.entity.Train;
+import com.simibubi.create.content.trains.schedule.Schedule;
+import com.simibubi.create.content.trains.schedule.ScheduleRuntime;
+import com.simibubi.create.content.trains.station.GlobalStation;
 import com.simibubi.create.content.trains.schedule.ScheduleEntry;
 import com.simibubi.create.content.trains.schedule.condition.ScheduleWaitCondition;
 import com.simibubi.create.content.trains.schedule.condition.ScheduledDelay;
-import com.simibubi.create.content.trains.schedule.condition.TimedWaitCondition.TimeUnit;
 import com.simibubi.create.content.trains.schedule.destination.DestinationInstruction;
 import com.simibubi.create.foundation.gui.ModularGuiLineBuilder;
 
 import de.mrjulsen.crn.Constants;
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.api.core.RailwayBackendApi;
+import de.mrjulsen.crn.core.TrainManager;
 import de.mrjulsen.crn.core.history.DepartureLog;
+import de.mrjulsen.crn.core.schedule.JourneySection;
+import de.mrjulsen.crn.core.timing.StopTimings;
+import de.mrjulsen.crn.core.train.TrackedTrain;
 import de.mrjulsen.crn.client.ClientWrapper;
 import de.mrjulsen.crn.data.ETimeSource;
 import de.mrjulsen.crn.data.schedule.instruction.PrioritizedDestinationInstruction;
 import de.mrjulsen.crn.event.ModCommonEvents;
+import de.mrjulsen.crn.util.ModUtils;
+import de.mrjulsen.crn.util.TrainUtils;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.time.DLTime;
 import de.mrjulsen.mcdragonlib.util.time.TimeContext;
@@ -149,6 +161,77 @@ public class TrainSeparationCondition extends ScheduledDelay {
 		return l.get();
 	}
 
+	public static ScheduleEntry readyEntry(Train train) {
+		ScheduleRuntime runtime = train.runtime;
+		Schedule schedule = runtime.schedule;
+		if (schedule == null || runtime.paused || train.derailed || runtime.state != ScheduleRuntime.State.POST_TRANSIT || train.navigation.destination != null || runtime.conditionProgress == null || runtime.currentEntry < 0 || runtime.currentEntry >= schedule.entries.size()) {
+			return null;
+		}
+		ScheduleEntry entry = schedule.entries.get(runtime.currentEntry);
+		if (!entry.instruction.supportsConditions() || !isPresentIn(entry)) {
+			return null;
+		}
+		int groups = Math.min(entry.conditions.size(), runtime.conditionProgress.size());
+		for (int i = 0; i < groups; i++) {
+			if (runtime.conditionProgress.get(i) >= entry.conditions.get(i).size()) {
+				return entry;
+			}
+		}
+		return null;
+	}
+
+	public static boolean mustGiveWay(Train train, ScheduleEntry entry) {
+		long now = ModUtils.getTransformedWorldTime();
+		long own = arrivalTime(train, now);
+		for (Train other : Create.RAILWAYS.trains.values()) {
+			if (other == train || !isAffectedBy(train, entry, other)) {
+				continue;
+			}
+			ScheduleEntry otherEntry = readyEntry(other);
+			if (otherEntry == null || remainingHoldTicks(other, otherEntry) > 0) {
+				continue;
+			}
+			long theirs = arrivalTime(other, now);
+			if (theirs < own || (theirs == own && other.id.compareTo(train.id) < 0)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private static boolean isAffectedBy(Train train, ScheduleEntry entry, Train other) {
+		GlobalStation station = other.getCurrentStation();
+		return station != null && forEachIn(entry, condition -> condition.getSeparationTime() > 0
+				&& condition.stationFilters(entry).stream().anyMatch(filter -> TrainUtils.stationMatches(station.name, filter))
+				&& condition.sharesTrainFilter(train, other));
+	}
+
+	private boolean sharesTrainFilter(Train train, Train other) {
+		return switch (getTrainFilter()) {
+			case SAME_NAME -> train.name.getString().equals(other.name.getString());
+			case SAME_LINE -> sameSectionId(train, other, JourneySection::getTrainLineId);
+			case SAME_CATEGORY -> sameSectionId(train, other, JourneySection::getTrainCategoryId);
+			default -> true;
+		};
+	}
+
+	private static boolean sameSectionId(Train train, Train other, Function<JourneySection, UUID> id) {
+		UUID own = sectionOf(train).map(id).orElse(null);
+		return own != null && own.equals(sectionOf(other).map(id).orElse(null));
+	}
+
+	private static Optional<JourneySection> sectionOf(Train train) {
+		return TrainManager.getInstance().getTrain(train.id).flatMap(TrackedTrain::getCurrentSection);
+	}
+
+	private static long arrivalTime(Train train, long now) {
+		return TrainManager.getInstance().getTrain(train.id)
+			.flatMap(tracked -> tracked.getCurrentStop().map(tracked::getTimings))
+			.map(StopTimings::getLastActualArrival)
+			.filter(time -> time >= 0)
+			.orElse(now);
+	}
+
 	private static boolean forEachIn(ScheduleEntry entry, Predicate<TrainSeparationCondition> action) {
 		if (entry == null || entry.conditions == null) {
 			return false;
@@ -179,17 +262,21 @@ public class TrainSeparationCondition extends ScheduledDelay {
 	}
 
 	private long lastRelevantDeparture(Train train, ScheduleEntry entry) {
+		return stationFilters(entry).stream().mapToLong(x -> lastDepartureAt(x, train)).max().orElse(DepartureLog.NEVER);
+	}
+
+	private List<String> stationFilters(ScheduleEntry entry) {
 		String customStationFilter = getCustomStationFilter();
 		if (customStationFilter != null && !customStationFilter.isBlank()) {
-			return lastDepartureAt(customStationFilter, train);
+			return List.of(customStationFilter);
 		}
 		if (entry.instruction instanceof PrioritizedDestinationInstruction instruction) {
-			return instruction.getFilters().stream().mapToLong(x -> lastDepartureAt(x, train)).max().orElse(DepartureLog.NEVER);
+			return instruction.getFilters();
 		}
 		if (entry.instruction instanceof DestinationInstruction instruction) {
-			return lastDepartureAt(instruction.getFilter(), train);
+			return List.of(instruction.getFilter());
 		}
-		return DepartureLog.NEVER;
+		return List.of();
 	}
 
 	private long lastDepartureAt(String stationFilter, Train train) {
