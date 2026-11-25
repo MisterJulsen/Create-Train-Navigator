@@ -165,37 +165,68 @@ public class VariableManager {
     }
 
     public static String replacePlaceholders(String text, AdvancedDisplayBlockEntity blockEntity) {
-        StringBuilder result = new StringBuilder();
+        return processPlaceholders(text, name -> getReplacement(blockEntity, name));
+    }
+
+    public static boolean hasVariables(String text) {
+        boolean[] found = { false };
+        processPlaceholders(text, name -> {
+            found[0] = true;
+            return null;
+        });
+        return found[0];
+    }
+
+    public static String unescapePlaceholders(String text) {
+        return processPlaceholders(text, name -> null);
+    }
+
+    private static String processPlaceholders(String text, Function<String, String> resolver) {
+        if (text == null || text.indexOf('%') < 0) {
+            return text;
+        }
+
+        StringBuilder result = new StringBuilder(text.length());
         int length = text.length();
-
-        for (int i = 0; i < length; i++) {
+        int i = 0;
+        while (i < length) {
             char c = text.charAt(i);
-
-            if (c == '\\' && i + 1 < length && text.charAt(i + 1) == '%') {
-                result.append('%');
-                i++;
-                continue;
-            }
-
-            if (c == '%') {
-                int end = text.indexOf('%', i + 1);
-                if (end > i + 1) {
-                    String key = text.substring(i + 1, end);
-                    String replacement = getReplacement(blockEntity, key);
-                    if (replacement != null) {
-                        result.append(replacement);
-                    } else {
-                        result.append('%').append(key).append('%');
+            boolean openEscaped = c == '\\' && i + 1 < length && text.charAt(i + 1) == '%';
+            if (c == '%' || openEscaped) {
+                int nameStart = i + (openEscaped ? 2 : 1);
+                int close = text.indexOf('%', nameStart);
+                if (close >= 0) {
+                    boolean closeEscaped = close > nameStart && text.charAt(close - 1) == '\\';
+                    int nameEnd = closeEscaped ? close - 1 : close;
+                    if (isVariableName(text, nameStart, nameEnd)) {
+                        String name = text.substring(nameStart, nameEnd);
+                        String replacement = openEscaped || closeEscaped ? null : resolver.apply(name);
+                        result.append(replacement != null ? replacement : "%" + name + "%");
+                        i = close + 1;
+                        continue;
                     }
-                    i = end;
-                    continue;
                 }
             }
             result.append(c);
+            i++;
         }
-
         return result.toString();
     }
 
+    private static boolean isVariableName(String text, int start, int end) {
+        if (end <= start) {
+            return false;
+        }
+        for (int i = start; i < end; i++) {
+            char c = text.charAt(i);
+            if (c == ':') {
+                return i > start;
+            }
+            if (!Character.isLetterOrDigit(c) && c != '_' && c != '.') {
+                return false;
+            }
+        }
+        return true;
+    }
 
 }

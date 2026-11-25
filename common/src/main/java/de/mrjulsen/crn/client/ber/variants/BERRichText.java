@@ -2,16 +2,14 @@ package de.mrjulsen.crn.client.ber.variants;
 
 import java.util.List;
 
-import com.google.gson.JsonParser;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity.EUpdateReason;
 import de.mrjulsen.crn.block.display.properties.StaticTextDisplaySettings;
 import de.mrjulsen.crn.block.display.properties.StaticTextDisplaySettings.TextComponent;
 import de.mrjulsen.crn.client.ber.AdvancedDisplayRenderInstance;
-import de.mrjulsen.crn.util.VariableManager;
+import de.mrjulsen.crn.client.ber.CachedDisplayText;
 import de.mrjulsen.mcdragonlib.client.ber.BERGraphics;
 import de.mrjulsen.mcdragonlib.client.ber.BERLabel;
-import de.mrjulsen.mcdragonlib.util.TextUtils;
 import de.mrjulsen.mcdragonlib.util.math.Point;
 import de.mrjulsen.mcdragonlib.util.math.Rectangle;
 import net.minecraft.core.BlockPos;
@@ -24,16 +22,16 @@ import net.minecraft.world.level.block.state.BlockState;
 public class BERRichText implements AbstractAdvancedDisplayRenderer<StaticTextDisplaySettings> {
 
     private BERLabel[] labels = new BERLabel[0];
+    private CachedDisplayText[] texts = new CachedDisplayText[0];
 
     @Override
     public void tick(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent) {
-        for (int i = 0; i < labels.length && i < getDisplaySettings(blockEntity).getComponents().size(); i++) {
-            TextComponent component = getDisplaySettings(blockEntity).getComponents().get(i);
-            MutableComponent text = getText(component.getStaticText(), blockEntity);
-            labels[i].text.set(text);
+        List<TextComponent> components = getDisplaySettings(blockEntity).getComponents();
+        for (int i = 0; i < labels.length && i < components.size(); i++) {
+            texts[i].applyTo(labels[i], components.get(i).getStaticText(), blockEntity);
         }
     }
-    
+
     @Override
     public void render(BERGraphics<AdvancedDisplayBlockEntity> graphics, float pPartialTicks, AdvancedDisplayRenderInstance parent, int light, boolean backSide) {
         for (int i = 0; i < labels.length; i++) {
@@ -62,17 +60,18 @@ public class BERRichText implements AbstractAdvancedDisplayRenderer<StaticTextDi
     public void update(Level level, BlockPos pos, BlockState state, AdvancedDisplayBlockEntity blockEntity, AdvancedDisplayRenderInstance parent, EUpdateReason reason) {
         if (!blockEntity.isController()) {
             this.labels = new BERLabel[0];
+            this.texts = new CachedDisplayText[0];
             return;
         }
         getDisplaySettings(blockEntity).verifyComponents();
         List<TextComponent> components = getDisplaySettings(blockEntity).getComponents();
         BERLabel[] labels = new BERLabel[components.size()];
+        CachedDisplayText[] texts = new CachedDisplayText[components.size()];
 
         for (int i = 0; i < components.size(); i++) {
             TextComponent component = components.get(i);
             BERLabel label = new BERLabel();
-
-            MutableComponent text = getText(component.getStaticText(), blockEntity);
+            CachedDisplayText text = new CachedDisplayText();
 
             label.clippingArea.set(Rectangle.withSize(3, 3, blockEntity.getXSizeScaled() * 16 - 6, blockEntity.getYSizeScaled() * 16 - 6));
             label.horizontalScrollingSpeed.set(SCROLLING_SPEED);
@@ -81,7 +80,7 @@ public class BERRichText implements AbstractAdvancedDisplayRenderer<StaticTextDi
             label.horizontalMaxScale.set(component.getXScale());
             label.verticalMinScale.set(component.getYScale());
             label.verticalMaxScale.set(component.getYScale());
-            label.text.set(text);
+            text.applyTo(label, component.getStaticText(), blockEntity);
             label.color.set(getDisplaySettings(blockEntity).getFontColor());
             label.position.set(Point.of(3 + component.getX(), 3 + component.getY()));
             label.horizontalAlign.set(component.getTextAlignment());
@@ -91,8 +90,10 @@ public class BERRichText implements AbstractAdvancedDisplayRenderer<StaticTextDi
             label.glowing.set(blockEntity.isGlowing());
 
             labels[i] = label;
+            texts[i] = text;
         }
 
+        this.texts = texts;
         this.labels = labels;
     }
 }
