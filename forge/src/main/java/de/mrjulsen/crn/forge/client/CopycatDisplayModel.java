@@ -61,7 +61,7 @@ public class CopycatDisplayModel extends CopycatModel {
 
         List<BakedQuad> quads = new ArrayList<>();
 		for (BakedQuad quad : super.getQuads(state, side, rand, data, renderType))
-			if (quad.getSprite().contents().name().equals(copycatTexture)) quads.add(quad);
+			if (!quad.getSprite().contents().name().equals(copycatTexture)) quads.add(quad);
         return quads;
     }
 
