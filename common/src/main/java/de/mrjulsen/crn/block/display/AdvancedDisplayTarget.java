@@ -1,5 +1,6 @@
 package de.mrjulsen.crn.block.display;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Queue;
@@ -117,7 +118,7 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 					}));
 
 					controller.setData(
-							preds,
+							Collections.unmodifiableList(preds),
 							filter,
 							GlobalSettings.getInstance().getOrCreateStationTagFor(filter).getInfoForStation(filter),
 							lastRefreshedTime
