@@ -198,17 +198,15 @@ public class BERDepartureBoardTable implements AbstractAdvancedDisplayRenderer<D
         MutableBoolean shouldShowLine = new MutableBoolean(false);
 
 		List<Component> components = new ArrayList<>();
-		int count = 0;
-		for (BoardEntry entry : preds) {
-			if (count >= maxLines) break;
 
-			Optional<Component> info = getStatusInfo(blockEntity, entry, false);
-			info.ifPresent(c -> {
-				shouldShowLine.setTrue();
-				components.add(c);
-			});
-			count++;
-		}
+        for (int i = 0; i < preds.size() && i < maxLines; i++) {
+            BoardEntry entry = preds.get(i);
+            Optional<Component> info = getStatusInfo(blockEntity, entry, false);
+            info.ifPresent(c -> {
+                shouldShowLine.setTrue();
+                components.add(c);
+            });
+        }
 		this.infoLineText = TextUtils.concat(TextUtils.text("  +++  "), components);
 
         this.showInfoLine = shouldShowLine.isTrue();
