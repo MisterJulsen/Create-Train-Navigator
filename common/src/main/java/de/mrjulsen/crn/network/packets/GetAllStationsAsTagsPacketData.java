@@ -80,15 +80,16 @@ public class GetAllStationsAsTagsPacketData {
     public static Response handle(Request packet, NetworkPacketContext context) {
         GlobalSettings settings = GlobalSettings.getInstance();
 
-		Set<StationTag> tags = new HashSet<>();
-		for (GlobalStation station : TrainUtils.getAllStations()) {
-			if (((packet.excludeBlacklisted && settings.isStationBlacklisted(station)) || !ModServerConfig.SHOW_UNTAGGED_STATIONS.get()) && !settings.hasStationTag(station.name)) continue;
+        Set<StationTag> tags = new LinkedHashSet<>();
+        for (GlobalStation station : TrainUtils.getAllStations()) {
+            if (packet.excludeBlacklisted && settings.isStationBlacklisted(station)) continue;
+            if (!ModServerConfig.SHOW_UNTAGGED_STATIONS.get() && !settings.hasStationTag(station.name)) continue;
 
-			tags.add(GlobalSettings.getInstance().getOrCreateStationTagFor(station));
-		}
-		ArrayList<StationTag> sortedTags = new ArrayList<>(tags);
-		sortedTags.sort((a, b) -> a.getTagName().get().compareToIgnoreCase(b.getTagName().get()));
+            tags.add(settings.getOrCreateStationTagFor(station));
+        }
 
+        List<StationTag> sortedTags = new ArrayList<>(tags);
+        sortedTags.sort((a, b) -> a.getTagName().get().compareToIgnoreCase(b.getTagName().get()));
         return new Response(sortedTags);
     }
 
