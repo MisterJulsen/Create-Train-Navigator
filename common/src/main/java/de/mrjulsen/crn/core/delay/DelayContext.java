@@ -150,7 +150,7 @@ public final class DelayContext {
 
     /** The name of a train in the way that is itself running late, if any. */
     public Optional<String> delayedBlockingTrainName() {
-        if (delayedBlockingTrainName.isEmpty()) {
+        if (delayedBlockingTrainName == null) {
             delayedBlockingTrainName = resolveDelayedBlockingTrainName();
         }
         return delayedBlockingTrainName;
