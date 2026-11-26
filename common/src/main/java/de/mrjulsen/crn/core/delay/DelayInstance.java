@@ -1,10 +1,6 @@
 package de.mrjulsen.crn.core.delay;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -76,10 +72,10 @@ public record DelayInstance(
 
     /** The values to fill into the description, in order. */
     public List<String> argValues() {
-		List<String> out = new ArrayList<>();
+		List<String> out = new ArrayList<>(args.size());
 		for (DelayArgument delayArgument : args)
 			out.add(delayArgument.value());
-		return out;
+		return Collections.unmodifiableList(out);
     }
 
     /** Whether an estimate of the time this cause accounts for is known. */
