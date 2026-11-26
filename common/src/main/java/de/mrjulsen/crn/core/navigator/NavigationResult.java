@@ -1,9 +1,6 @@
 package de.mrjulsen.crn.core.navigator;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import de.mrjulsen.crn.core.navigator.route.RouteJourney;
 import de.mrjulsen.crn.util.NbtHelper;
@@ -68,7 +65,7 @@ public record NavigationResult(
     public List<RouteJourney> byDeparture() {
 		List<RouteJourney> out = new ArrayList<>(journeys);
 		out.sort(Comparator.comparingLong(RouteJourney::departure));
-		return out;
+		return Collections.unmodifiableList(out);
     }
 
     /** Only the found journeys that need no transfer. */
@@ -76,7 +73,7 @@ public record NavigationResult(
 		List<RouteJourney> out = new ArrayList<>();
 		for (RouteJourney journey : journeys)
 			if (journey.isDirect()) out.add(journey);
-		return out;
+		return Collections.unmodifiableList(out);
     }
 
     /** How many journeys were found. */
