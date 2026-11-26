@@ -104,7 +104,7 @@ public class GlobalSettingsWindow extends AbstractNavigatorScreen {
 
     private void reloadBlacklistedTrains(OptionsDataView<String> dataView) {
         ModNetworkManager.GET_ALL_BLACKLISTED_TRAINS.send(NetworkDirection.toServer(), (response) -> {
-            List<String> names = response.getNames();
+            List<String> names = new ArrayList<>(response.getNames());
 			names.sort(String::compareToIgnoreCase);
 			dataView.items.setAll(names);
         }, () -> {});
@@ -112,7 +112,7 @@ public class GlobalSettingsWindow extends AbstractNavigatorScreen {
 
     private void reloadBlacklistedStations(OptionsDataView<String> dataView) {
         ModNetworkManager.GET_ALL_BLACKLISTED_STATIONS.send(NetworkDirection.toServer(), (response) -> {
-            List<String> names = response.getNames();
+            List<String> names = new ArrayList<>(response.getNames());
 			names.sort(String::compareToIgnoreCase);
 			dataView.items.setAll(names);
         }, () -> {});
@@ -120,7 +120,7 @@ public class GlobalSettingsWindow extends AbstractNavigatorScreen {
 
     private void reloadTrainLines(OptionsDataView<TrainLine> dataView) {
         ModNetworkManager.GET_ALL_TRAIN_LINES.send(NetworkDirection.toServer(), (response) -> {
-            List<TrainLine> lines = response.getLines();
+            List<TrainLine> lines = new ArrayList<>(response.getLines());
 			lines.sort((a, b) -> a.getLineName().compareToIgnoreCase(b.getLineName()));
 			dataView.items.setAll(lines);
         }, () -> {});
@@ -128,7 +128,7 @@ public class GlobalSettingsWindow extends AbstractNavigatorScreen {
     
     private void reloadTrainCategories(OptionsDataView<TrainCategory> dataView) {
         ModNetworkManager.GET_ALL_TRAIN_CATEGORIES.send(NetworkDirection.toServer(), (response) -> {
-            List<TrainCategory> categories = response.getCategories();
+            List<TrainCategory> categories = new ArrayList<>(response.getCategories());
 			categories.sort((a, b) -> a.getCategoryName().compareToIgnoreCase(b.getCategoryName()));
 			dataView.items.setAll(categories);
         }, () -> {});

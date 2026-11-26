@@ -80,7 +80,7 @@ public class ModUtils {
         median = values.get(values.size() / 2);
 
         final int med = median;
-		int sum = 0;
+		long sum = 0;
 		int count = 0;
 		for (Integer integer : history) {
 			if (Math.abs(med - integer) > smoothingThreshold) continue;
@@ -90,7 +90,7 @@ public class ModUtils {
 		}
 
 		if (count == 0) return 0;
-		return sum/count;
+		return (int)(sum / count);
     }
 
     public static String timeRemainingString(long ticks) {

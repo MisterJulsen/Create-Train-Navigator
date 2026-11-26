@@ -1,9 +1,6 @@
 package de.mrjulsen.crn.block.display;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import com.simibubi.create.api.behaviour.display.DisplayTarget;
@@ -118,7 +115,7 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 							.map(ITrainStopTypeSetting::getTrainStopType)
 							.orElse(ITrainStopTypeSetting.ETrainStopType.DEF_VALUE);
 
-					List<BoardEntry> preds = prepare(filter, trainsCount.apply(controller), controller);
+					List<BoardEntry> preds = new ArrayList<>(prepare(filter, trainsCount.apply(controller), controller));
 					preds.sort(Comparator.comparingLong(entry -> {
 						CallDirection direction = ITrainStopTypeSetting.resolveDirection(entry, stopType.showDepartures(entry.originating(), entry.sectionChange()), stopType.showArrivals(entry.terminus(), entry.sectionChange()));
 						return entry.realtimeTime(direction);

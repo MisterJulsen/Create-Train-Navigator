@@ -165,7 +165,7 @@ public record RouteJourney(List<RouteLeg> legs, List<RouteTransfer> transfers) {
 
     /** The distinct trains the journey uses, in the order they are boarded. */
     public List<UUID> trainIds() {
-		Set<UUID> out = new HashSet<>();
+		Set<UUID> out = new LinkedHashSet<>();
 		for (RouteLeg leg : legs)
 			out.add(leg.trainId());
         return new ArrayList<>(out);
