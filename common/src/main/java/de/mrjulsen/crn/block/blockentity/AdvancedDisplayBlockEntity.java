@@ -1,6 +1,7 @@
 package de.mrjulsen.crn.block.blockentity;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -781,7 +782,7 @@ public class AdvancedDisplayBlockEntity extends CopycatBlockEntity implements
 				trainStops.add(BoardEntry.fromNbt((CompoundTag) tag));
 
         setData(
-            trainStops,
+                Collections.unmodifiableList(trainStops),
             pTag.getString(NBT_FILTER),
             info,
             pTag.getLong(NBT_LAST_REFRESH_TIME)
