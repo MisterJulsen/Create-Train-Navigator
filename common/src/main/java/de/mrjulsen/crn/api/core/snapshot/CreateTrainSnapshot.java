@@ -9,6 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -46,7 +47,7 @@ public record CreateTrainSnapshot(
     public static CreateTrainSnapshot of(Train train) {
         GlobalStation currentStation = train.getCurrentStation();
 
-		List<CreateCarriageSnapshot> snapshots = new ArrayList<>();
+		List<CreateCarriageSnapshot> snapshots = new ArrayList<>(train.carriages.size());
 		for (Carriage carriage : train.carriages)
 			snapshots.add(CreateCarriageSnapshot.of(carriage, train.graph));
 
@@ -61,7 +62,7 @@ public record CreateTrainSnapshot(
                 train.currentlyBackwards,
                 train.derailed,
                 CreateTrainStatusSnapshot.of(train),
-                snapshots,
+                Collections.unmodifiableList(snapshots),
                 currentStation == null ? null : currentStation.id
         );
     }
