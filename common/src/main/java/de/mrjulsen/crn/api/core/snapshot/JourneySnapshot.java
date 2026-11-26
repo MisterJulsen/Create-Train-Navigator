@@ -324,7 +324,7 @@ public record JourneySnapshot(
         served.addAll(own);
 	    Optional<SectionSnapshot> next = nextSection(section);
 	    if (next.isPresent() && !next.get().stops().isEmpty()) {
-		    StopSnapshot onward = next.get().stops().getFirst();
+		    StopSnapshot onward = next.get().stops().get(0);
 		    served.add(closesItsOwnRun(own, onward, arrived)
 				    ? onward.advancedBy(1, totalDuration)
 				    : onward);
@@ -344,6 +344,7 @@ public record JourneySnapshot(
         }
         return currentStop().map(x -> x.entryIndex() == onward.entryIndex()).orElse(false);
     }
+
 	private static boolean noneMatch(List<StopSnapshot> stopSnapshots, StopSnapshot toMatch) {
 		for (StopSnapshot stopSnapshot : stopSnapshots)
 			if (stopSnapshot.entryIndex() == toMatch.entryIndex()) return false;
