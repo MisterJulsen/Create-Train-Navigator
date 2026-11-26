@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import de.mrjulsen.mcdragonlib.util.time.DLTime;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -77,6 +78,21 @@ public record DelayInstance(
     /** The values to fill into the description, in order. */
     public List<String> argValues() {
         return args.stream().map(DelayArgument::value).toList();
+    }
+
+    /**
+     * The values to fill into the description, ready for display: durations in game minutes, everything else as it
+     * is. Pass these to the translation of {@link #translationKey()}.
+     */
+    public Object[] displayArgs() {
+        Object[] values = new Object[args.size()];
+        for (int i = 0; i < values.length; i++) {
+            DelayArgument arg = args.get(i);
+            values[i] = arg.type() == DelayArgumentType.DURATION_TICKS
+                ? String.valueOf((long) DLTime.fromGameTicks(arg.asLong(0), DLTime.defaultTimeSystem()).toGameMinutes(DLTime.defaultTimeSystem()))
+                : arg.value();
+        }
+        return values;
     }
 
     /** Whether an estimate of the time this cause accounts for is known. */

@@ -18,6 +18,7 @@ import de.mrjulsen.crn.block.display.properties.SimpleStaticTextDisplaySettings;
 import de.mrjulsen.crn.block.display.properties.StaticTextDisplaySettings;
 import de.mrjulsen.crn.block.display.properties.components.IShowTrainMultipleTimes;
 import de.mrjulsen.crn.block.display.properties.components.ITrainStopTypeSetting;
+import de.mrjulsen.crn.api.core.notice.StationNoticeProviderRegistry;
 import de.mrjulsen.crn.api.core.snapshot.BoardEntry;
 import de.mrjulsen.crn.api.core.CallDirection;
 import de.mrjulsen.crn.api.core.query.BoardQuery;
@@ -124,6 +125,7 @@ public class AdvancedDisplayTarget extends DisplayTarget {
 							GlobalSettings.getInstance().getOrCreateStationTagFor(filter).getInfoForStation(filter),
 							lastRefreshedTime
 					);
+					controller.setStationNotices(StationNoticeProviderRegistry.collect(filter));
 					ModCommonEvents.getCurrentServer().ifPresent(x -> x.executeIfPossible(controller::notifyUpdate));
 				} else if (controller.getDisplayType().equals(ModDisplayTypes.SIMPLE_TEXT)) {
 					SimpleStaticTextDisplaySettings settings = controller.getSettingsAs(SimpleStaticTextDisplaySettings.class).orElse(new SimpleStaticTextDisplaySettings());

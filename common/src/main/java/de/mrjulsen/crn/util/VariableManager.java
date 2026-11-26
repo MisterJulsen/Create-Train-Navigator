@@ -73,7 +73,7 @@ public class VariableManager {
             case "destination" -> data == null ? "" : data.destinationText();
             case "carriages" -> data == null ? "" : "" + data.carriageCount();
             case "delay_reason" -> data == null ? "" : data.primaryDelay()
-                .map(x -> CustomLanguage.translate(x.translationKey()).getString())
+                .map(x -> CustomLanguage.translate(x.translationKey(), x.displayArgs()).getString())
                 .filter(s -> !s.isBlank())
                 .orElse("");
             default -> null;

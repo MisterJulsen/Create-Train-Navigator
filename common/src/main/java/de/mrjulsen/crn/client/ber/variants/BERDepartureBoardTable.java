@@ -193,12 +193,13 @@ public class BERDepartureBoardTable implements AbstractAdvancedDisplayRenderer<D
             .filter(x -> ITrainStopTypeSetting.accepts(x, stopType, now))
             .toList();
 
-        MutableBoolean shouldShowLine = new MutableBoolean(false);
-        this.infoLineText = TextUtils.concat(TextUtils.text("  +++  "), preds.stream().limit(maxLines).flatMap(x -> {
+        List<Component> notices = stationNotices(blockEntity);
+        MutableBoolean shouldShowLine = new MutableBoolean(!notices.isEmpty());
+        this.infoLineText = TextUtils.concat(TextUtils.text("  +++  "), java.util.stream.Stream.concat(notices.stream(), preds.stream().limit(maxLines).flatMap(x -> {
             Optional<Component> info = getStatusInfo(blockEntity, x, false);
             info.ifPresent(y -> shouldShowLine.setTrue());
             return info.stream();
-        }).toArray(Component[]::new));
+        })).toArray(Component[]::new));
 
         this.showInfoLine = shouldShowLine.isTrue();
         if (!showInfoLine) {

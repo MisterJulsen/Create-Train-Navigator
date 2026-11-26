@@ -26,6 +26,9 @@ import de.mrjulsen.mcdragonlib.util.math.Rectangle;
 import de.mrjulsen.mcdragonlib.util.time.DLTime;
 import de.mrjulsen.mcdragonlib.util.time.TimeContext;
 import net.minecraft.core.BlockPos;
+import java.util.List;
+
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
@@ -136,13 +139,17 @@ public class BERPassengerInfoSimple implements AbstractAdvancedDisplayRenderer<P
             }
             label.text.set(txt);
         } else {
-            final int slides = 3;
+            final int slides = 4;
             int slide = (int)(ModUtils.getTransformedWorldTime() % (TICKS_PER_SLIDE * slides)) / TICKS_PER_SLIDE;
+            List<Component> notices = trainNotices(blockEntity);
             
             if ((slide == 1 && !settings.showTimeAndDate())) {
                 slide++;
             }
             if ((slide == 2 && !settings.showStats())) {
+                slide++;
+            }
+            if ((slide == 3 && notices.isEmpty())) {
                 slide++;
             }
             
@@ -159,6 +166,7 @@ public class BERPassengerInfoSimple implements AbstractAdvancedDisplayRenderer<P
                                 new DLTime(level, DLTime.defaultTimeSystem()).format(ModClientConfig.TIME_FORMAT.get().getFormat(), TimeContext.INGAME, DLTime.defaultTimeSystem())));
                 case 2 -> label.text.set(ModUtils.calcSpeedString(blockEntity.getTrainSpeed(),
                         ModClientConfig.SPEED_UNIT.get()));
+                case 3 -> label.text.set(TextUtils.concat(TextUtils.text("  +++  "), notices));
             }            
             this.exitSide = TrainExitSide.UNKNOWN;
         }

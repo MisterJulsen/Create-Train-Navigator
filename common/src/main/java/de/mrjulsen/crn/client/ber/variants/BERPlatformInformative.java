@@ -1,5 +1,6 @@
 package de.mrjulsen.crn.client.ber.variants;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import de.mrjulsen.crn.block.display.properties.components.ITrainStopTypeSetting;
@@ -156,6 +157,23 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
             platformLabel.horizontalAlign.set(ETextAlignment.RIGHT);
             platformLabel.preferredWidth.set(platformWidth);
             platformLabel.color.set(getDisplaySettings(blockEntity).getFontColor());
+
+            // Without trains, the notices about the station take the place of the next train.
+            List<Component> notices = stationNotices(blockEntity);
+            if (!notices.isEmpty()) {
+                statusLabel = new BERLabel();
+                statusLabel.text.set(TextUtils.concat(TextUtils.text("  +++  "), notices));
+                statusLabel.position.set(Point.of(3, 3));
+                statusLabel.verticalScale.set(Pair.of(0.4f, 0.4f));
+                statusLabel.horizontalScale.set(Pair.of(0.4f, 0.4f));
+                statusLabel.preferredWidth.set(blockEntity.getXSizeScaled() * 16 - 8 - platformWidth);
+                statusLabel.preferredHeight.set(Minecraft.getInstance().font.lineHeight * statusLabel.verticalMaxScale.get());
+                statusLabel.horizontalScrollingSpeed.set(SCROLLING_SPEED);
+                statusLabel.horizontalScrollMode.set(EScrollMode.WHEN_NEEDED);
+                statusLabel.clippingArea.set(Rectangle.withSize(2, 2, blockEntity.getXSizeScaled() * 16 - 4, blockEntity.getYSizeScaled() * 16 - 4));
+                statusLabel.glowing.set(blockEntity.isGlowing());
+                statusLabel.color.set(getDisplaySettings(blockEntity).getFontColor());
+            }
             return;
         }
 
@@ -166,7 +184,8 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
         BoardEntry focus = preds.get(0);
         CallDirection focusDirection = ITrainStopTypeSetting.resolveDirection(focus, getDisplaySettings(blockEntity));
 
-        List<Component> content = announcements(blockEntity, focus, focusDirection);
+        List<Component> content = new ArrayList<>(stationNotices(blockEntity));
+        content.addAll(announcements(blockEntity, focus, focusDirection));
         showInfoLine = !content.isEmpty();
         infoLineText = showInfoLine ? TextUtils.concat(TextUtils.text("  +++  "), content) : TextUtils.empty();
 

@@ -119,7 +119,7 @@ public class BERPlatformDetailed implements AbstractAdvancedDisplayRenderer<Plat
             }
         }
 
-        List<Component> lineTexts = new ArrayList<>();
+        List<Component> lineTexts = new ArrayList<>(stationNotices(blockEntity));
         for (BoardEntry entry : preds.stream().limit(Math.max(0, maxLines)).toList()) {
             List<Component> content = announcements(blockEntity, entry, ITrainStopTypeSetting.resolveDirection(entry, getDisplaySettings(blockEntity)));
             if (content.isEmpty()) {
