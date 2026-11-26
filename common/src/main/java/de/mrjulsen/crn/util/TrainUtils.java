@@ -33,7 +33,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
-import org.openjdk.nashorn.internal.objects.Global;
 
 public final class TrainUtils {
     private TrainUtils() {}
@@ -72,7 +71,7 @@ public final class TrainUtils {
 		Set<String> names = new HashSet<>();
 		for (GlobalStation station : getAllStations())
 			names.add(station.name);
-		return names;
+		return Collections.unmodifiableSet(names);
     }, ECachingPriority.LOWEST);
     public static Set<String> getAllStationNames() {
         return allStationNamesCache.get();
@@ -113,7 +112,7 @@ public final class TrainUtils {
 		Set<String> names = new HashSet<>();
 		for (Train train : getAllTrains(false))
 			names.add(train.name.getString());
-		return names;
+		return Collections.unmodifiableSet(names);
     }, ECachingPriority.LOWEST);
     public static Set<String> getAllTrainNames() {
         return allTrainNames.get();
