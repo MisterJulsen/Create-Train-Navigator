@@ -371,7 +371,7 @@ public class BERDepartureBoardTable implements AbstractAdvancedDisplayRenderer<D
 
         if (hasTransfers) {
 			List<Component> componentList = new ArrayList<>();
-			if (direction.isArrival())
+			if (!direction.isArrival())
 				for (StationRef stationRef : stop.stopovers())
 					componentList.add(TextUtils.text(stationRef.displayName()));
 

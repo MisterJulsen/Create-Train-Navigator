@@ -383,7 +383,7 @@ public class BERPlatformInformative implements AbstractAdvancedDisplayRenderer<P
         BERLabel stopoversLabel = focusArea[LineComponent.STOPOVERS.i()];
 
 		List<Component> components = new ArrayList<>();
-		if (direction.isArrival())
+		if (!direction.isArrival())
 			for (StationRef stationRef : stop.stopovers())
 				components.add(TextUtils.text(stationRef.displayName()));
 

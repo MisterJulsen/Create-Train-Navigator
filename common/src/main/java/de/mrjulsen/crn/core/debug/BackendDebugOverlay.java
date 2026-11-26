@@ -90,7 +90,7 @@ public class BackendDebugOverlay extends DLWindow {
             return;
         }
 
-	    List<TrackedTrain> trains = (List<TrackedTrain>) TrainManager.getInstance().getAllTrains();
+	    List<TrackedTrain> trains = new ArrayList<>(TrainManager.getInstance().getAllTrains());
 		trains.sort((a, b) -> a.getTrainName().compareToIgnoreCase(b.getTrainName()));
 
         if (trains.isEmpty()) {
