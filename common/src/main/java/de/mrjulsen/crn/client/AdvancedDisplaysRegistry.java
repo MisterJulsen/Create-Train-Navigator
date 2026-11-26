@@ -109,7 +109,7 @@ public final class AdvancedDisplaysRegistry {
 	    Map<String, DisplayProperties> out = new HashMap<>();
 		for (Map.Entry<String, DisplayRegistrationData<?, ?>> entry : newDisplayTypes.get(type).entrySet())
 			out.put(entry.getKey(), entry.getValue().properties());
-		return out;
+		return Collections.unmodifiableMap(out);
     }
 
     public static List<DisplayTypeResourceKey> getAllOfTypeAsKey(EDisplayType type) {
@@ -117,7 +117,7 @@ public final class AdvancedDisplaysRegistry {
 		for (String string : newDisplayTypes.get(type).keySet()) {
 			out.add(new DisplayTypeResourceKey(type, string));
 		}
-		return out;
+		return Collections.unmodifiableList(out);
     }
 
     public static List<String> getAllNamesOfType(EDisplayType type) {
