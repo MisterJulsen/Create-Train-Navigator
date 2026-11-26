@@ -47,11 +47,20 @@ public record CreateTrainStatusSnapshot(
         boolean hasSchedule = runtime != null && runtime.schedule != null;
         GlobalStation destination = navigation == null ? null : navigation.destination;
         String title = runtime != null && runtime.currentTitle != null && !runtime.currentTitle.isEmpty() ? runtime.currentTitle : null;
+
+        boolean stalled = false;
+        for (Carriage carriage : train.carriages) {
+            if (carriage.stalled) {
+                stalled = true;
+                break;
+            }
+        }
+
         return new CreateTrainStatusSnapshot(
                 status != null && status.navigation,
                 status != null && status.track,
                 status != null && status.conductor,
-                anyStalled(train.carriages),
+                stalled,
                 hasSchedule,
                 runtime != null && runtime.paused,
                 runtime != null && runtime.completed,
@@ -62,9 +71,4 @@ public record CreateTrainStatusSnapshot(
                 navigation != null && navigation.waitingForSignal != null
         );
     }
-	private static boolean anyStalled(List<Carriage> carriages) {
-		for (Carriage carriage : carriages)
-			if (carriage.stalled) return true;
-		return false;
-	}
 }
