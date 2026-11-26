@@ -485,13 +485,13 @@ public final class RailwayBackendApi {
             }
         }
 
-		List<StationTagRef> tagRefs = new ArrayList<>();
+		List<StationTagRef> tagRefs = new ArrayList<>(tags.size());
 		for (StationTag tag : tags)
 			tagRefs.add(StationTagRef.of(tag));
 
         return new StationSnapshot(
             StationRef.of(stationName, tags.isEmpty() ? null : tags.getFirst()),
-            tagRefs,
+            Collections.unmodifiableList(tagRefs),
             resolveLines(lineIds),
             resolveCategories(categoryIds),
             trainIds,
@@ -522,11 +522,11 @@ public final class RailwayBackendApi {
             }
         }
 
-		List<StationRef> stationRefs = new ArrayList<>();
+		List<StationRef> stationRefs = new ArrayList<>(stations.size());
 		for (String station : stations)
 			stationRefs.add(StationRef.of(station));
 
-        return new LineSnapshot(LineRef.of(line), trainIds, stationRefs, delayed);
+        return new LineSnapshot(LineRef.of(line), trainIds, Collections.unmodifiableList(stationRefs), delayed);
     }
 
     private static CategorySnapshot buildCategory(TrainCategory category) {
