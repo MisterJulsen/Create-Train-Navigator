@@ -1,5 +1,6 @@
 package de.mrjulsen.crn.client.ber.variants;
 
+import de.mrjulsen.crn.api.core.snapshot.StopSnapshot;
 import org.joml.Vector3f;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
@@ -27,6 +28,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class BERTrainDestinationInformative implements AbstractAdvancedDisplayRenderer<TrainDestinationDetailedSettings> {
 
@@ -174,7 +178,12 @@ public class BERTrainDestinationInformative implements AbstractAdvancedDisplayRe
         
         stopoversLabel.position.set(Point.of(6, 8.75f));
         stopoversLabel.preferredWidth.set((float)(blockEntity.getXSizeScaled() * 16 - 9));
-        stopoversLabel.text.set(TextUtils.concat(TextUtils.text(" \u25CF "), blockEntity.getStopovers().stream().map(x -> (Component)TextUtils.text(x.station().displayName())).toList()));
+
+		List<Component> componentList = new ArrayList<>();
+		for (StopSnapshot snapshot : blockEntity.getStopovers())
+			componentList.add(TextUtils.text(snapshot.station().displayName()));
+
+        stopoversLabel.text.set(TextUtils.concat(TextUtils.text(" \u25CF "), componentList));
         stopoversLabel.horizontalScrollMode.set(EScrollMode.WHEN_NEEDED);
         stopoversLabel.color.set(getDisplaySettings(blockEntity).getFontColor());
         

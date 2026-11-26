@@ -36,7 +36,9 @@ public enum RoutingStrategy implements ITranslatableEnum {
     }
 
     public static RoutingStrategy fromId(String id) {
-        return Arrays.stream(RoutingStrategy.values()).filter(rs -> rs.id.equals(id)).findFirst().orElse(RoutingStrategy.FASTEST);
+		for (RoutingStrategy strategy : RoutingStrategy.values())
+			if (strategy.id.equals(id)) return strategy;
+		return RoutingStrategy.FASTEST;
     }
 
     /** The ordering this optimization applies, putting the best journey first. */

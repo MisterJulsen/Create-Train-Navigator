@@ -38,6 +38,14 @@ public class AboutEndpoint implements IEndpointHandler {
     @Override
     public ApiResult handle(Request request) {
         Mod mod = Platform.getMod(CreateRailwaysNavigator.MOD_ID);
+		List<SimpleModEntry> modInfo = new ArrayList<>();
+		for (Mod modEntry : Platform.getMods())
+			modInfo.add(new SimpleModEntry(
+					modEntry.getModId(),
+					modEntry.getName(),
+					modEntry.getVersion()
+			));
+
         return ApiResult.json(new Data(
                 Platform.getMinecraftVersion(),
                 CreateRailwaysNavigator.MOD_ID,
@@ -51,7 +59,7 @@ public class AboutEndpoint implements IEndpointHandler {
                 ApiVersion.latest().version(),
                 Platform.isDevelopmentEnvironment(),
                 Platform.getEnv().name().toLowerCase(Locale.ROOT),
-                Platform.getMods().stream().map(x -> new SimpleModEntry(x.getModId(), x.getName(), x.getVersion())).toList()
+                modInfo
         ));
     }
 

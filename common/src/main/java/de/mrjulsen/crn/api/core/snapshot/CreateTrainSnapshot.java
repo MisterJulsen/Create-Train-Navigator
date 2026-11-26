@@ -1,5 +1,6 @@
 package de.mrjulsen.crn.api.core.snapshot;
 
+import com.simibubi.create.content.trains.entity.Carriage;
 import com.simibubi.create.content.trains.entity.Train;
 import com.simibubi.create.content.trains.entity.TravellingPoint;
 import com.simibubi.create.content.trains.station.GlobalStation;
@@ -7,6 +8,8 @@ import de.mrjulsen.crn.web.annotation.ResponseAlwaysInclude;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -43,6 +46,11 @@ public record CreateTrainSnapshot(
 
     public static CreateTrainSnapshot of(Train train) {
         GlobalStation currentStation = train.getCurrentStation();
+
+		List<CreateCarriageSnapshot> snapshots = new ArrayList<>(train.carriages.size());
+		for (Carriage carriage : train.carriages)
+			snapshots.add(CreateCarriageSnapshot.of(carriage, train.graph));
+
         return new CreateTrainSnapshot(
                 train.id,
                 train.name.getString(),
@@ -54,7 +62,7 @@ public record CreateTrainSnapshot(
                 train.currentlyBackwards,
                 train.derailed,
                 CreateTrainStatusSnapshot.of(train),
-                train.carriages.stream().map(carriage -> CreateCarriageSnapshot.of(carriage, train.graph)).toList(),
+                Collections.unmodifiableList(snapshots),
                 currentStation == null ? null : currentStation.id
         );
     }

@@ -1,12 +1,6 @@
 package de.mrjulsen.crn.core.navigator.route;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import de.mrjulsen.crn.core.delay.DelayInstance;
 import de.mrjulsen.crn.util.NbtHelper;
@@ -62,7 +56,10 @@ public final class DelayLog {
 
     /** The recorded reasons themselves, in the order first seen. */
     public List<DelayInstance> instances() {
-        return entries.values().stream().map(RecordedDelay::instance).toList();
+		List<DelayInstance> out = new ArrayList<>(entries.size());
+		for (RecordedDelay recordedDelay : entries.values())
+			out.add(recordedDelay.instance());
+		return Collections.unmodifiableList(out);
     }
 
     /** The recorded reasons collapsed so that each cause appears only once. */
@@ -72,7 +69,10 @@ public final class DelayLog {
 
     /** Only the reasons that still apply. */
     public List<RecordedDelay> active() {
-        return entries.values().stream().filter(RecordedDelay::isActive).toList();
+		List<RecordedDelay> out = new ArrayList<>(entries.size());
+		for (RecordedDelay recordedDelay : entries.values())
+			if (recordedDelay.isActive()) out.add(recordedDelay);
+		return Collections.unmodifiableList(out);
     }
 
     /** Whether nothing has been recorded. */

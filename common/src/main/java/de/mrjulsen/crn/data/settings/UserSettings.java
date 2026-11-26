@@ -1,6 +1,5 @@
 package de.mrjulsen.crn.data.settings;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,7 +12,6 @@ import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
 import de.mrjulsen.crn.config.ModCommonConfig;
@@ -98,29 +96,23 @@ public class UserSettings {
     public final UserSetting<Set<UUID>> navigationExcludedTrainCategories = registerSetting(new UserSetting<>(HashSet::new, NBT_TRAIN_CATEGORIES,
     (nbt, val, name) -> {
         ListTag list = new ListTag();
-        list.addAll(val.stream().map(x -> StringTag.valueOf(x.toString())).toList());
+		list.addAll(uuidToStringTag(val));
         nbt.put(name, list);
-    }, (nbt, name) -> {
-        return nbt.getList(name, Tag.TAG_STRING).stream().filter(x -> GlobalSettings.hasInstance() ? GlobalSettings.getInstance().trainCategoryExists(deserializeUuidString(x.getAsString())) : true).map(x -> deserializeUuidString(x.getAsString())).collect(Collectors.toSet());
-    },(val) -> val.isEmpty() ? TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.train_categories.all").getString() : TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.train_categories.excluded", val.size()).getString()));
+    }, (nbt, name) -> getTrainUuidOrSomething(nbt.getList(name, Tag.TAG_STRING)),(val) -> val.isEmpty() ? TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.train_categories.all").getString() : TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.train_categories.excluded", val.size()).getString()));
 
     public final UserSetting<Set<CompoundTag>> savedRoutes = registerSetting(new UserSetting<>(HashSet::new, NBT_SAVED_ROUTES, (nbt, val, name) -> {
         ListTag list = new ListTag();
         list.addAll(val);
         nbt.put(name, list);
-    }, (nbt, name) -> {
-        return nbt.getList(name, Tag.TAG_COMPOUND).stream().map(x -> (CompoundTag)x).collect(Collectors.toSet());
-    },(val) -> TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".saved_routes.saved", val.size()).getString()));
+    }, (nbt, name) -> listTagToCompoundTagSet(nbt.getList(name, Tag.TAG_COMPOUND)),(val) -> TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".saved_routes.saved", val.size()).getString()));
 
     public final UserSetting<Integer> searchDepartureInTicks = registerSetting(new UserSetting<>(() -> 0, NBT_SEARCH_DEPARTURE_TIME, (nbt, val, name) -> nbt.putInt(name, val), (nbt, name) -> nbt.getInt(name), (val) -> ModUtils.formatDuration(val)));
     public final UserSetting<Set<UUID>> searchExcludedTrainCaegories = registerSetting(new UserSetting<>(HashSet::new, NBT_SEARCH_TRAIN_CATEGORIES,
     (nbt, val, name) -> {
         ListTag list = new ListTag();
-        list.addAll(val.stream().map(x -> StringTag.valueOf(x.toString())).toList());
+		list.addAll(uuidToStringTag(val));
         nbt.put(name, list);
-    }, (nbt, name) -> {
-        return nbt.getList(name, Tag.TAG_STRING).stream().filter(x -> !GlobalSettings.hasInstance() || GlobalSettings.getInstance().trainCategoryExists(deserializeUuidString(x.getAsString()))).map(x -> deserializeUuidString(x.getAsString())).collect(Collectors.toSet());
-    },(val) -> val.isEmpty() ? TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.train_categories.all").getString() : TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.train_categories.excluded", val.size()).getString()));
+    }, (nbt, name) -> getTrainUuidOrSomething(nbt.getList(name, Tag.TAG_STRING)),(val) -> val.isEmpty() ? TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.train_categories.all").getString() : TextUtils.translate("gui." + CreateRailwaysNavigator.MOD_ID + ".search_options.train_categories.excluded", val.size()).getString()));
 
     public final UserSetting<EDepartureBoardTrainFilter> searchTrainFilter = registerSetting(new UserSetting<>(() -> EDepartureBoardTrainFilter.ARRIVAL_AND_DEPARTURE, NBT_DEPARTURE_TRAIN_FILTER, (nbt, val, name) -> nbt.putByte(name, val.getIndex()), (nbt, name) -> EDepartureBoardTrainFilter.getByIndex(nbt.getByte(name)), (val) -> val.getValueTranslation().getString()));
 
@@ -285,4 +277,25 @@ public class UserSettings {
     private static interface ISerializationContext<T> {
         void execute(CompoundTag nbt, T value, String serializationName);
     }
+
+	private static Set<UUID> getTrainUuidOrSomething(ListTag tags) {
+		Set<UUID> out = new HashSet<>();
+		for (Tag tag : tags) {
+			UUID uuid = deserializeUuidString(tag.getAsString());
+			if (!GlobalSettings.hasInstance() || GlobalSettings.getInstance().trainCategoryExists(uuid)) out.add(uuid);
+		}
+		return out;
+	}
+
+	private static ListTag uuidToStringTag(Set<UUID> uuids) {
+		ListTag out = new ListTag();
+		for (UUID uuid : uuids) out.add(StringTag.valueOf(uuid.toString()));
+		return out;
+	}
+
+	private static Set<CompoundTag> listTagToCompoundTagSet(ListTag listTag) {
+		Set<CompoundTag> out = new HashSet<>();
+		for (Tag tag : listTag) out.add((CompoundTag) tag);
+		return out;
+	}
 }

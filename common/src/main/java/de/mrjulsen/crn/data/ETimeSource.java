@@ -26,7 +26,9 @@ public enum ETimeSource implements ITranslatableEnum {
     }
 
     public static ETimeSource getByIndex(int index) {
-        return Arrays.stream(values()).filter(x -> x.getIndex() == index).findFirst().orElse(REAL_LIFE);
+		for (ETimeSource source : values())
+			if (source.getIndex() == index) return source;
+		return REAL_LIFE;
     }
 
     @Override

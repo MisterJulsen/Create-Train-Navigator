@@ -26,7 +26,9 @@ public enum ETimeDisplay implements ITranslatableEnum {
     }
 
     public static ETimeDisplay getById(int id) {
-        return Arrays.stream(values()).filter(x -> x.getId() == id).findFirst().orElse(ABS);
+		for (ETimeDisplay timeDisplay : values())
+			if (timeDisplay.getId() == id) return timeDisplay;
+		return ABS;
     }
 
     @Override

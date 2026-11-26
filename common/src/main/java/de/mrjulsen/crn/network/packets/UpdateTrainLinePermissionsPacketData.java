@@ -1,9 +1,9 @@
 package de.mrjulsen.crn.network.packets;
 
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import de.mrjulsen.crn.data.settings.TrainLine;
 import de.mrjulsen.crn.data.settings.GlobalSettings;
@@ -65,7 +65,14 @@ public class UpdateTrainLinePermissionsPacketData {
             this.id = nbt.getUUID(NBT_ID);
             this.newOwner = nbt.contains(NBT_NEW_OWNER) ? Owner.fromNbt(nbt.getCompound(NBT_NEW_OWNER)) : null;
             this.state = nbt.contains(NBT_STATE) ? LockState.getByIndex(nbt.getByte(NBT_STATE)) : null;
-            this.trusted = nbt.contains(NBT_TRUSTED) ? nbt.getList(NBT_TRUSTED, Tag.TAG_COMPOUND).stream().map(x -> Owner.fromNbt((CompoundTag)x)).collect(Collectors.toSet()) : null;
+
+	        Set<Owner> trusteds = new HashSet<>();
+			if (nbt.contains(NBT_TRUSTED)) {
+				for (Tag tag : nbt.getList(NBT_TRUSTED, Tag.TAG_COMPOUND))
+					trusteds.add(Owner.fromNbt((CompoundTag) tag));
+			}
+
+	        this.trusted = nbt.contains(NBT_TRUSTED) ? trusteds : null;
         }
     }
 

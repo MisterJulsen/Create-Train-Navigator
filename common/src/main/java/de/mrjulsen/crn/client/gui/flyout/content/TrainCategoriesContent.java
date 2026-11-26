@@ -1,11 +1,7 @@
 package de.mrjulsen.crn.client.gui.flyout.content;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import de.mrjulsen.crn.client.gui.widgets.SearchBox;
 import de.mrjulsen.crn.client.gui.widgets.SelectionListBox;
@@ -56,18 +52,28 @@ public class TrainCategoriesContent extends FlyoutContent {
     @Override
     public void onShow() {
         trainCategories.enabled.set(false);
-        ModNetworkManager.GET_ALL_TRAIN_CATEGORIES.send(NetworkDirection.toServer(), (response) -> {
-            trainCategories.items.set(new ArrayList<>(response.getCategories().stream().sorted((a, b) -> a.getCategoryName().compareToIgnoreCase(b.getCategoryName())).toList()));
-            trainCategories.selectIf(x -> !getUserSetting.get().getValue().contains(x.getId()));
+		ModNetworkManager.GET_ALL_TRAIN_CATEGORIES.send(NetworkDirection.toServer(), (response) -> {
+			List<TrainCategory> sortedCategories = new ArrayList<>(response.getCategories());
+			sortedCategories.sort((a, b) -> a.getCategoryName().compareToIgnoreCase(b.getCategoryName()));
+
+			trainCategories.items.set(sortedCategories);
+			trainCategories.selectIf(x -> !getUserSetting.get().getValue().contains(x.getId()));
             trainCategories.enabled.set(true);
         }, () -> {});
     }
 
     @Override
     public void onHide() {
-        getUserSetting.get().setValue(new HashSet<>(trainCategories.items.get().stream()
-            .filter(a -> !trainCategories.selectedItems.get().contains(a) && trainCategories.filter.get().test(a))
-            .map(TrainCategory::getId).collect(Collectors.toSet())));
+		Set<UUID> uuids = new HashSet<>();
+		for (TrainCategory category : trainCategories.items.get()) {
+			if (trainCategories.selectedItems.get().contains(category)) continue;
+			if (!trainCategories.filter.get().test(category)) continue;
+
+			uuids.add(category.getId());
+		}
+
+
+        getUserSetting.get().setValue(uuids);
     }
 
     @Override

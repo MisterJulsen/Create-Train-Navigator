@@ -1,5 +1,6 @@
 package de.mrjulsen.crn.api.core.query;
 
+import de.mrjulsen.crn.api.core.ref.StationRef;
 import de.mrjulsen.crn.api.core.snapshot.LineSnapshot;
 import de.mrjulsen.crn.util.ModUtils;
 import de.mrjulsen.crn.util.TrainUtils;
@@ -7,6 +8,7 @@ import de.mrjulsen.crn.web.annotation.OpenApiDescription;
 import de.mrjulsen.crn.web.annotation.QueryModel;
 import de.mrjulsen.crn.web.annotation.QueryParam;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -57,8 +59,14 @@ public record LineQuery(
 
     /** Whether the given line passes this query. */
     public boolean accept(LineSnapshot line) {
-        return (stationFilter.isEmpty() || line.stations().stream().anyMatch(station -> TrainUtils.stationMatches(station.name(), stationFilter))) &&
+        return (stationFilter.isEmpty() || anyMatch(line.stations(), stationFilter)) &&
                 ModUtils.listContainsAny(stationTags, line.stations(), (id, v) -> v.tagId().equals(id)) &&
                 ModUtils.listContainsAny(trains, line.trainIds(), (id, v) -> v.equals(id));
     }
+
+	private boolean anyMatch(List<StationRef> stations, String stationFilter) {
+		for (StationRef ref : stations)
+			if (TrainUtils.stationMatches(ref.name(), stationFilter)) return true;
+		return false;
+	}
 }

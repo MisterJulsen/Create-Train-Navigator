@@ -68,7 +68,9 @@ public interface ITextWidthSetting {
         }
 
         public static TextScaleBounds getByIndex(int b) {
-            return Arrays.stream(values()).filter(x -> x.getIndex() == b).findFirst().orElse(SCALE_SCROLL);
+			for (TextScaleBounds bounds : values())
+				if (bounds.getIndex() == b) return bounds;
+			return SCALE_SCROLL;
         }
 
         @Override

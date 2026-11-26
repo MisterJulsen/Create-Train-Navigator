@@ -28,7 +28,9 @@ public enum EDepartureBoardTrainFilter implements ITranslatableEnum, IIterableEn
     }
 
     public static EDepartureBoardTrainFilter getByIndex(int index) {
-        return Arrays.stream(values()).filter(x -> x.getIndex() == index).findFirst().orElse(ARRIVAL_AND_DEPARTURE);
+		for (EDepartureBoardTrainFilter trainFilter : values())
+			if (trainFilter.getIndex() == index) return trainFilter;
+		return ARRIVAL_AND_DEPARTURE;
     }
 
     @Override

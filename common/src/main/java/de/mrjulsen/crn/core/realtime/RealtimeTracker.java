@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import com.simibubi.create.content.trains.entity.Carriage;
 import com.simibubi.create.content.trains.entity.Train;
@@ -161,8 +160,16 @@ public final class RealtimeTracker {
     private void resolveCurrentSignalOccupants(Train train) {
         occupantsResolved = true;
         Set<Train> occupying = TrainUtils.isSignalOccupied(currentSignalId, Set.of(train.id));
-        currentSignalOccupiedBy = occupying.stream().map(x -> x.name.getString()).collect(Collectors.toUnmodifiableSet());
-        currentSignalOccupiedByIds = occupying.stream().map(x -> x.id).collect(Collectors.toUnmodifiableSet());
+
+		Set<String> occupantNames = new HashSet<>();
+	    Set<UUID> occupantIds = new HashSet<>();
+	    for (Train occupant : occupying) {
+			occupantNames.add(occupant.name.getString());
+		    occupantIds.add(occupant.id);
+	    }
+
+        currentSignalOccupiedBy = Set.copyOf(occupantNames);
+		currentSignalOccupiedByIds = Set.copyOf(occupantIds);
     }
 
     private void finishSignalWait() {

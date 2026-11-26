@@ -28,7 +28,9 @@ public enum ETrainFilter implements ITranslatableEnum {
     }
 
     public static ETrainFilter getByIndex(byte i) {
-        return Arrays.stream(values()).filter(x -> x.getIndex() == i).findFirst().orElse(ANY);
+		for (ETrainFilter trainFilter : values())
+			if (trainFilter.getIndex() == i) return trainFilter;
+		return ANY;
     }
 
     @Override

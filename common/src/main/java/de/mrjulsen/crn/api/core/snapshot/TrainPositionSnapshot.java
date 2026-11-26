@@ -1,6 +1,7 @@
 package de.mrjulsen.crn.api.core.snapshot;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -86,11 +87,15 @@ public record TrainPositionSnapshot(
         ResourceLocation dimension = present.isEmpty() ? null : present.get(0).location();
         BlockPos position = present.isEmpty() ? null : leading.getPositionInDimension(present.get(0)).orElse(null);
 
+		List<ResourceLocation> resourceLocations = new ArrayList<>(present.size());
+		for (ResourceKey<Level> resourceKey : present)
+			resourceLocations.add(resourceKey.location());
+
         return new TrainPositionSnapshot(
             train.id,
             dimension,
             position,
-            present.stream().map(ResourceKey::location).toList(),
+            Collections.unmodifiableList(resourceLocations),
             train.speed,
             train.targetSpeed,
             train.maxSpeed(),

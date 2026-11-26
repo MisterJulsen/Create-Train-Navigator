@@ -183,7 +183,12 @@ public class TrainSeparationCondition extends ScheduledDelay {
 			return lastDepartureAt(customStationFilter, train);
 		}
 		if (entry.instruction instanceof PrioritizedDestinationInstruction instruction) {
-			return instruction.getFilters().stream().mapToLong(x -> lastDepartureAt(x, train)).max().orElse(DepartureLog.NEVER);
+			long max = Long.MIN_VALUE;
+			for (String filter : instruction.getFilters()) {
+				long val = lastDepartureAt(filter, train);
+				if (val > max) max = val;
+			}
+			return max;
 		}
 		if (entry.instruction instanceof DestinationInstruction instruction) {
 			return lastDepartureAt(instruction.getFilter(), train);

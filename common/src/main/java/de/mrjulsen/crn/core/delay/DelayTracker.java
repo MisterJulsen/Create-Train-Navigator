@@ -142,9 +142,15 @@ public final class DelayTracker {
 
     public record DisruptionOutcome(boolean visible, boolean discardWhenExpired) {}
 
+	private boolean anyMatch(List<DelayInstance> delayInstances) {
+		for (DelayInstance delayInstance : delayInstances)
+			if (delayInstance.severity() == DelaySeverity.IMPORTANT &&
+				handlingOf(delayInstance) == DisruptionHandling.DELIBERATE) return true;
+		return false;
+	}
     public DisruptionOutcome evaluateDisruption(long now) {
         int fallback = ModServerConfig.DISRUPTION_DISPLAY_DURATION.get();
-        boolean deliberate = active.stream().anyMatch(x -> x.severity() == DelaySeverity.IMPORTANT && handlingOf(x) == DisruptionHandling.DELIBERATE);
+        boolean deliberate = anyMatch(active);
         boolean anyReason = false;
 
         for (DelayInstance instance : active) {

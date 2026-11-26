@@ -1,10 +1,13 @@
 package de.mrjulsen.crn.api.core.snapshot;
 
+import com.simibubi.create.content.trains.entity.Carriage;
 import com.simibubi.create.content.trains.entity.Navigation;
 import com.simibubi.create.content.trains.entity.Train;
 import com.simibubi.create.content.trains.entity.TrainStatus;
 import com.simibubi.create.content.trains.schedule.ScheduleRuntime;
 import com.simibubi.create.content.trains.station.GlobalStation;
+
+import java.util.List;
 
 /**
  * A plain data view of the status Create keeps for a train: its schedule, navigation and problems.
@@ -44,11 +47,20 @@ public record CreateTrainStatusSnapshot(
         boolean hasSchedule = runtime != null && runtime.schedule != null;
         GlobalStation destination = navigation == null ? null : navigation.destination;
         String title = runtime != null && runtime.currentTitle != null && !runtime.currentTitle.isEmpty() ? runtime.currentTitle : null;
+
+        boolean stalled = false;
+        for (Carriage carriage : train.carriages) {
+            if (carriage.stalled) {
+                stalled = true;
+                break;
+            }
+        }
+
         return new CreateTrainStatusSnapshot(
                 status != null && status.navigation,
                 status != null && status.track,
                 status != null && status.conductor,
-                train.carriages.stream().anyMatch(carriage -> carriage.stalled),
+                stalled,
                 hasSchedule,
                 runtime != null && runtime.paused,
                 runtime != null && runtime.completed,
