@@ -43,7 +43,7 @@ public class ModServerConfig {
                 "Create reports the cost of a discovered path without its length, because the station test that ends the path search receives only the accumulated penalty. A train that can be driven from both ends therefore chooses its direction by 'which way passes fewer stations and signals' instead of by actual travel cost, and may reverse and drive thousands of blocks the wrong way around a loop.",
                 "CRN always corrects this for its own Prioritized Destination lookups, no matter what this option says. Turning it on applies the correction to every path search instead, which also covers Create's own 'Travel to Station', 'Fetch Packages' and 'Deliver Packages' instructions.",
                 "This only changes which direction a train with conductors at both ends sets off in. It has no effect on single-ended trains or on where a route leads. (Default: OFF)")
-                .define("pathfinding.fix_create_path_cost", false);
+                .define("experimental.fix_create_path_cost", false);
 
 
         GLOBAL_SETTINGS_PERMISSION_LEVEL = BUILDER.comment("Minimum permission level required to edit the global navigator settings. 0 allows everyone to edit these settings, -1 disables editing for everyone (including admins). (Default: 0)")
