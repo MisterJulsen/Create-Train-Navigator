@@ -34,7 +34,6 @@ import de.mrjulsen.crn.client.gui.widgets.create.CreateItemPicker;
 import de.mrjulsen.crn.client.gui.widgets.modular.GuiBuilderContext;
 import de.mrjulsen.crn.client.gui.widgets.skins.CRNFlatButtonRenderer;
 import de.mrjulsen.crn.config.ModClientConfig;
-import de.mrjulsen.crn.network.packets.cts.AdvancedDisplayUpdatePacketData;
 import de.mrjulsen.crn.network.packets.AdvancedDisplayUpdatePacketData;
 import de.mrjulsen.crn.registry.ModNetworkManager;
 import de.mrjulsen.mcdragonlib.DragonLib;
