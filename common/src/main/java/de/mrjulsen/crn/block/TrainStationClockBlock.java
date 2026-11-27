@@ -108,6 +108,11 @@ public class TrainStationClockBlock extends Block implements IWrenchable, IBE<Tr
     }
 
     @Override
+    public VoxelShape getOcclusionShape(BlockState state, BlockGetter level, BlockPos pos) {
+        return Shapes.empty();
+    }
+
+    @Override
     public BlockState rotate(BlockState pState, Rotation pRotation) {
         return pState.setValue(FACING, pRotation.rotate(pState.getValue(FACING)));
     }    
