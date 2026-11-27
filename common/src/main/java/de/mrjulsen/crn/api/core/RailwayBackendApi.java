@@ -231,14 +231,14 @@ public final class RailwayBackendApi {
     public static Optional<BoardEntry> getNextArrival(String stationName, BoardQuery query) {
         List<BoardEntry> board = buildBoard(TrainManager.getInstance().getCallIndex().callsAt(stationName, query.includeDivertedAway()), query.withLimit(1), Comparator.comparingLong(x -> x.realtime().arrival()));
 		if (board.isEmpty()) return Optional.empty();
-		return Optional.of(board.getFirst());
+		return Optional.of(board.get(0));
     }
 
     /** The next train to depart from a station, if any is expected. */
     public static Optional<BoardEntry> getNextDeparture(String stationName, BoardQuery query) {
         List<BoardEntry> board =  buildBoard(TrainManager.getInstance().getCallIndex().callsAt(stationName, query.includeDivertedAway()), query.withLimit(1), Comparator.comparingLong(x -> x.realtime().departure()));
 	    if (board.isEmpty()) return Optional.empty();
-		return Optional.of(board.getFirst());
+		return Optional.of(board.get(0));
     }
 
     /** The names of every station the backend knows about. */
@@ -490,7 +490,7 @@ public final class RailwayBackendApi {
 			tagRefs.add(StationTagRef.of(tag));
 
         return new StationSnapshot(
-            StationRef.of(stationName, tags.isEmpty() ? null : tags.getFirst()),
+            StationRef.of(stationName, tags.isEmpty() ? null : tags.get(0)),
             Collections.unmodifiableList(tagRefs),
             resolveLines(lineIds),
             resolveCategories(categoryIds),

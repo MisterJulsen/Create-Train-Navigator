@@ -76,7 +76,7 @@ public class PrioritizedDestinationInstruction extends DestinationInstruction {
 		if (data.contains(NBT_FILTERS)) {
 			ListTag listTag = data.getList(NBT_FILTERS, Tag.TAG_STRING);
 			if (listTag.isEmpty()) return "";
-			return listTag.getFirst().getAsString();
+			return listTag.get(0).getAsString();
 		}
 		return "";
 	}
@@ -127,7 +127,7 @@ public class PrioritizedDestinationInstruction extends DestinationInstruction {
 		if (data.contains(NBT_FILTERS)) {
 			ListTag listTag = data.getList(NBT_FILTERS, Tag.TAG_STRING);
 			if (listTag.isEmpty()) return "";
-			return listTag.getFirst().getAsString();
+			return listTag.get(0).getAsString();
 		}
 		return "";
 	}
@@ -189,33 +189,5 @@ public class PrioritizedDestinationInstruction extends DestinationInstruction {
 			return blocker;
 		}
 		return "";
-	}
-
-	private static boolean shouldExplain() {
-		return ModCommonConfig.ADVANCED_LOGGING.get()
-			|| CreateRailwaysNavigator.isDebug()
-			|| BackendDiagnosticsRecorder.isActive();
-	}
-
-	private void reportChoice(Train train, PriorityChoice.Result result) {
-		boolean logging = ModCommonConfig.ADVANCED_LOGGING.get() || CreateRailwaysNavigator.isDebug();
-		List<String> filters = getFilters();
-		List<String> passed = new ArrayList<>();
-		for (PriorityChoice.Passed prioPassed : result.passed())
-			passed.add(String.format("%d (%s): %s", prioPassed.index() + 1, prioPassed.filter(), prioPassed.reason()));
-
-		String chosen = result.hasPath() ? result.path().destination.name : "";
-
-		BackendDiagnosticsRecorder.recordRouteChoice(train.id, train.name.getString(), chosen, result.index(), result.waiting(), passed, result.notes());
-
-		if (logging) {
-			CreateRailwaysNavigator.LOGGER.info("[Route] '{}' -> {} | passed over: {} | {}",
-				train.name.getString(),
-				result.hasPath()
-					? (result.index() < 0 ? "fallback " + chosen : "priority " + (result.index() + 1) + " " + chosen)
-					: result.waiting() ? "waiting, nothing free of " + filters.size() + " entries" : "no route",
-				passed.isEmpty() ? "-" : String.join("; ", passed),
-				String.join(" | ", result.notes()));
-		}
 	}
 }
