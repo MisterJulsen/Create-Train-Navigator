@@ -395,7 +395,6 @@
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.avoid_signals_description": "The train avoids signals set to red via Redstone and then selects a different priority. If this option is disabled, the train waits at the signal until it turns green again.",
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.avoid_trains": "Avoid Other Trains",
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.avoid_trains_description": "If a station is occupied or reserved by another train, a different priority is selected. If this option is disabled, the train waits for other trains to leave the station.",
-
     "goggles.createrailwaysnavigator.train_listener.departures.title": "Departure History",
     "goggles.createrailwaysnavigator.train_listener.departures.any": "Last departure:",
     "goggles.createrailwaysnavigator.train_listener.departures.line": "Departures by Train Line:",
@@ -507,7 +506,7 @@
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.wait_instead": "Wait Instead Of Diverting",
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.wait_instead_description": "If no entry is free, stay at the station before and wait instead of taking the least bad one.",
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.detour": "Detour Threshold",
-    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.detour_description": "How much longer an alternative route may be. Stops a train from circling the network to reach the desired track station.",
+    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.detour_description": "How much longer the next priority route may be. Stops a train from circling the network to reach the desired track station.",
     "gui.createrailwaysnavigator.search_options.direct_connection": "Direct Connections Only",
     "gui.createrailwaysnavigator.search_options.direct_connection.description": "Shows only connections that are accessible without any transfers.",
     "gui.createrailwaysnavigator.search_options.waypoints": "Waypoints",

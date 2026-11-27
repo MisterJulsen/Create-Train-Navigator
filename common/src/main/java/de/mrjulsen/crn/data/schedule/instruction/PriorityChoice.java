@@ -306,7 +306,9 @@ final class PriorityChoice {
     }
 
     private static List<ArrayList<GlobalStation>> groupStations(TrackGraph graph, List<String> filters) {
-        List<Pattern> patterns = filters.stream().map(ModUtils::buildPattern).toList();
+        List<Pattern> patterns = new ArrayList<>();
+		for (String filter : filters)
+			patterns.add(ModUtils.buildPattern(filter));
         List<ArrayList<GlobalStation>> byPriority = new ArrayList<>(patterns.size());
         for (int i = 0; i < patterns.size(); i++) {
             byPriority.add(new ArrayList<>());

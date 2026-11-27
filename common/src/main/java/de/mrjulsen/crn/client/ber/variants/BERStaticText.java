@@ -12,13 +12,8 @@ import de.mrjulsen.mcdragonlib.data.ETextAlignment;
 import de.mrjulsen.mcdragonlib.util.math.Point;
 import de.mrjulsen.mcdragonlib.util.math.Rectangle;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.loot.providers.nbt.NbtProviders;
 
 public class BERStaticText implements AbstractAdvancedDisplayRenderer<SimpleStaticTextDisplaySettings> {
 
@@ -47,22 +42,6 @@ public class BERStaticText implements AbstractAdvancedDisplayRenderer<SimpleStat
     @Override
     public void render(BERGraphics<AdvancedDisplayBlockEntity> graphics, float pPartialTicks, AdvancedDisplayRenderInstance parent, int light, boolean backSide) {
         label.render(graphics, light);
-    }
-
-    private MutableComponent getText(String input, AdvancedDisplayBlockEntity blockEntity) {
-        String staticText = VariableManager.replacePlaceholders(input, blockEntity);
-        MutableComponent text = TextUtils.empty();
-        if (staticText != null) {
-            try {
-                text = Component.Serializer.fromJson(staticText, RegistryAccess.EMPTY);
-            } catch (Exception e) {
-                text = TextUtils.text(staticText);
-            }
-        }
-        if (text == null) {
-            text = TextUtils.empty();
-        }
-        return text;
     }
 
     @Override

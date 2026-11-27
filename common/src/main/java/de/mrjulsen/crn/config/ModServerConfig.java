@@ -1,11 +1,11 @@
 package de.mrjulsen.crn.config;
 
 import de.mrjulsen.crn.CreateRailwaysNavigator;
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class ModServerConfig {
-    public static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
-    public static final ForgeConfigSpec SPEC;
+    public static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
+    public static final ModConfigSpec SPEC;
 
     public static final ModConfigSpec.ConfigValue<Integer> REALTIME_PRECISION_THRESHOLD;
     public static final ModConfigSpec.ConfigValue<Integer> NEXT_STOP_ANNOUNCEMENT;
@@ -50,10 +50,10 @@ public class ModServerConfig {
             .defineInRange("permissions.global_settings_permission_level", 0, -1, 4);
         GLOBAL_SETTINGS_ADMIN_PERMISSION_LEVEL = BUILDER.comment("Minimum permission level required to use admin features in CRN. 0 gives everybody admin permissions in CRN (not recommended), -1 disables admin features. (Default: 3)")
             .defineInRange("permissions.admin_mode_permission_level", 3, -1, 4);
-        
+
 
         TOTAL_DURATION_BUFFER_SIZE = BUILDER.comment("[in Cycles]", "How often the calculated time for a route section between two stations must deviate from the current reference value before the reference value is updated. (Default: 3)")
-            .defineInRange("train_data_calculation.total_duration_deviation_buffer_size", 3, 1, 16);            
+            .defineInRange("train_data_calculation.total_duration_deviation_buffer_size", 3, 1, 16);
         TOTAL_DURATION_DEVIATION_THRESHOLD = BUILDER.comment("[in Ticks]", "Deviations of the calculated time for a route section between two stations from the reference value that are smaller than the threshold value are not taken into account. (Default: 50)")
             .defineInRange("train_data_calculation.total_duration_deviation_threshold", 50, 0, 1000);
         SCHEDULE_DEVIATION_THRESHOLD = BUILDER.comment("[in Ticks]", "How many ticks the real-time can deviate from the scheduled time before the train is considered delayed. (Default: 500)")

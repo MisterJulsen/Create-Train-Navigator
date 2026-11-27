@@ -13,9 +13,6 @@ import de.mrjulsen.mcdragonlib.client.ber.BERLabel;
 import de.mrjulsen.mcdragonlib.util.math.Point;
 import de.mrjulsen.mcdragonlib.util.math.Rectangle;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -37,23 +34,6 @@ public class BERRichText implements AbstractAdvancedDisplayRenderer<StaticTextDi
         for (int i = 0; i < labels.length; i++) {
             labels[i].render(graphics);
         }
-    }
-
-    private MutableComponent getText(String input, AdvancedDisplayBlockEntity blockEntity) {
-        String staticText = VariableManager.replacePlaceholders(input, blockEntity);
-        MutableComponent text = TextUtils.empty();
-        if (staticText != null) {
-            try {
-                JsonParser.parseString(staticText);
-                text = Component.Serializer.fromJsonLenient(staticText, RegistryAccess.EMPTY);
-            } catch (Exception e) {
-                text = TextUtils.text(staticText);
-            }
-        }
-        if (text == null) {
-            text = TextUtils.empty();
-        }
-        return text;
     }
 
     @Override

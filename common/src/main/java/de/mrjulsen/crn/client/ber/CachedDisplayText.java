@@ -7,6 +7,8 @@ import de.mrjulsen.crn.block.blockentity.AdvancedDisplayBlockEntity;
 import de.mrjulsen.crn.util.VariableManager;
 import de.mrjulsen.mcdragonlib.client.ber.BERLabel;
 import de.mrjulsen.mcdragonlib.util.TextUtils;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
@@ -46,18 +48,18 @@ public final class CachedDisplayText {
         String resolved = VariableManager.replacePlaceholders(input, blockEntity);
         if (component == null || !resolved.equals(this.resolved)) {
             this.resolved = resolved;
-            this.component = parse(resolved);
+            this.component = parse(resolved, blockEntity);
         }
         return component;
     }
 
-    private MutableComponent parse(String text) {
+    private MutableComponent parse(String text, AdvancedDisplayBlockEntity blockEntity) {
         if (text.isBlank()) {
             return TextUtils.empty();
         }
         if (isJson) {
             try {
-                MutableComponent component = Component.Serializer.fromJson(JsonParser.parseString(text));
+                MutableComponent component = Component.Serializer.fromJson(JsonParser.parseString(text), registries(blockEntity));
                 if (component != null) {
                     return component;
                 }
@@ -65,6 +67,10 @@ public final class CachedDisplayText {
             }
         }
         return TextUtils.text(text);
+    }
+
+    private static HolderLookup.Provider registries(AdvancedDisplayBlockEntity blockEntity) {
+        return blockEntity != null && blockEntity.getLevel() != null ? blockEntity.getLevel().registryAccess() : RegistryAccess.EMPTY;
     }
 
     private static boolean isJson(String text) {

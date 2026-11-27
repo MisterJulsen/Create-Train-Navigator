@@ -202,8 +202,15 @@ public class TrainSeparationCondition extends ScheduledDelay {
 	private static boolean isAffectedBy(Train train, ScheduleEntry entry, Train other) {
 		GlobalStation station = other.getCurrentStation();
 		return station != null && forEachIn(entry, condition -> condition.getSeparationTime() > 0
-				&& condition.stationFilters(entry).stream().anyMatch(filter -> TrainUtils.stationMatches(station.name, filter))
+				&& matchesAnyFilter(station.name, condition.stationFilters(entry))
 				&& condition.sharesTrainFilter(train, other));
+	}
+
+	private static boolean matchesAnyFilter(String stationName, List<String> filters) {
+		for (String filter : filters) {
+			if (TrainUtils.stationMatches(stationName, filter)) return true;
+		}
+		return false;
 	}
 
 	private boolean sharesTrainFilter(Train train, Train other) {
@@ -262,7 +269,16 @@ public class TrainSeparationCondition extends ScheduledDelay {
 	}
 
 	private long lastRelevantDeparture(Train train, ScheduleEntry entry) {
-		return stationFilters(entry).stream().mapToLong(x -> lastDepartureAt(x, train)).max().orElse(DepartureLog.NEVER);
+		List<String> filters = stationFilters(entry);
+		if (filters.isEmpty()) {
+			return DepartureLog.NEVER;
+		}
+		long max = Long.MIN_VALUE;
+		for (String filter : filters) {
+			long val = lastDepartureAt(filter, train);
+			if (val > max) max = val;
+		}
+		return max;
 	}
 
 	private List<String> stationFilters(ScheduleEntry entry) {
@@ -271,12 +287,7 @@ public class TrainSeparationCondition extends ScheduledDelay {
 			return List.of(customStationFilter);
 		}
 		if (entry.instruction instanceof PrioritizedDestinationInstruction instruction) {
-			long max = Long.MIN_VALUE;
-			for (String filter : instruction.getFilters()) {
-				long val = lastDepartureAt(filter, train);
-				if (val > max) max = val;
-			}
-			return max;
+			return instruction.getFilters();
 		}
 		if (entry.instruction instanceof DestinationInstruction instruction) {
 			return List.of(instruction.getFilter());
