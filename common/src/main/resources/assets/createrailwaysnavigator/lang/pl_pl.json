@@ -376,7 +376,6 @@
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.wait_instead": "Zaczekaj, Zamiast Przekierowywać",
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.wait_instead_description": "Jeżeli żaden wpis nie jest wolny, pozostań na stacji wcześniej i zaczekaj, zamiast wybierania najmniej złego.",
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.detour": "Maksymalny Czas Objazdu",
-    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.detour_description": "Jak dużo dłuższa może być trasa objazdu. Zapobiega pociągi od objeżdżania całej trasy, by dojechać do pożądanej stacji.",
     "goggles.createrailwaysnavigator.train_listener.departures.title": "Historia Odjazdów",
     "goggles.createrailwaysnavigator.train_listener.departures.any": "Ostatni odjazd:",
     "goggles.createrailwaysnavigator.train_listener.departures.line": "Odjazdy według Linii Pociągu:",
