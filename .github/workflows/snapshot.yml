@@ -1,17 +1,58 @@
 name: Snapshot Build
 
 on:
-  pull_request:
-    types: [closed]
+  push:
+    branches-ignore:
+      - "auto-port/**"
+      - "l10n/**"
+  workflow_dispatch:
+
+concurrency:
+  group: snapshot-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build:
+  config:
     runs-on: ubuntu-latest
+    outputs:
+      enabled: ${{ steps.read.outputs.enabled }}
+      version_branch: ${{ steps.read.outputs.version_branch }}
+      retention_days: ${{ steps.read.outputs.retention_days }}
+      java_versions: ${{ steps.read.outputs.java_versions }}
+    steps:
+      - uses: actions/checkout@v4
 
-    # Only run when the PR was actually merged, not just closed.
-    # Branch pattern check happens inside the steps since we need
-    # to read it from .mod-build-config.json first.
-    if: github.event.pull_request.merged == true
+      - name: Read build_tools.config
+        id: read
+        run: |
+          CONFIG=build_tools.config
+          if [ ! -f "$CONFIG" ]; then
+            echo "::error::$CONFIG not found in the repository root"
+            exit 1
+          fi
+          {
+            echo "enabled=$(jq -r '.snapshot.enabled // true' "$CONFIG")"
+            echo "retention_days=$(jq -r '.snapshot.retention_days // 30' "$CONFIG")"
+            echo "version_branch=$(jq -r --arg b "$GITHUB_REF_NAME" 'any(.version_branches[]?; . == $b)' "$CONFIG")"
+            echo "java_versions<<EOF"
+            jq -r '(.java_versions // [17, 21])[]' "$CONFIG"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Report skip reason
+        run: |
+          if [ "${{ steps.read.outputs.enabled }}" != "true" ]; then
+            echo "Snapshot builds are disabled in build_tools.config."
+          elif [ "${{ steps.read.outputs.version_branch }}" != "true" ]; then
+            echo "Branch '$GITHUB_REF_NAME' is not listed in version_branches - nothing to do."
+          fi
+
+  build:
+    needs: config
+    if: needs.config.outputs.enabled == 'true' && needs.config.outputs.version_branch == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout repository
@@ -20,27 +61,20 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
-      - name: Check base branch matches main pattern
-        id: branchcheck
-        run: |
-          PATTERN=$(jq -r '.main_branch_pattern' .mod-build-config.json)
-          BASE="${{ github.event.pull_request.base.ref }}"
-          if [[ "$BASE" =~ $PATTERN ]]; then
-            echo "valid=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "valid=false" >> "$GITHUB_OUTPUT"
-            echo "Base branch '$BASE' does not match pattern '$PATTERN' – skipping snapshot build."
-          fi
-
       - name: Setup Java
-        if: steps.branchcheck.outputs.valid == 'true'
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 21
+          java-version: ${{ needs.config.outputs.java_versions }}
+
+      - name: Register Java toolchains
+        run: |
+          mkdir -p ~/.gradle
+          INSTALLATIONS=$(env | grep -o '^JAVA_HOME_[0-9]*_[A-Z0-9]*' | sort -u | paste -sd,)
+          echo "org.gradle.java.installations.fromEnv=${INSTALLATIONS}" >> ~/.gradle/gradle.properties
+          echo "Toolchains: ${INSTALLATIONS}"
 
       - name: Cache Gradle & Loom
-        if: steps.branchcheck.outputs.valid == 'true'
         uses: actions/cache@v4
         with:
           path: |
@@ -51,48 +85,64 @@ jobs:
           restore-keys: ${{ runner.os }}-gradle-
 
       - name: Setup Gradle
-        if: steps.branchcheck.outputs.valid == 'true'
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-home-cache-cleanup: true
           gradle-version: wrapper
 
-      # SNAPSHOT_BUILD is picked up by the versioning plugin and produces a
-      # version string like "1.21.1-beta-2.0.0-SNAPSHOT+build.7890123456".
-      # Using run_id (not run_number) guarantees uniqueness across all branches.
       - name: Build
-        if: steps.branchcheck.outputs.valid == 'true'
+        env:
+          SNAPSHOT_BUILD: ${{ github.run_number }}
         run: |
           chmod +x gradlew
-          export SNAPSHOT_BUILD="${{ github.run_id }}"
-          echo "Using SNAPSHOT_BUILD=$SNAPSHOT_BUILD"
           ./gradlew buildWithMetadata
 
-      - name: Collect JARs
-        if: steps.branchcheck.outputs.valid == 'true'
+      - name: Collect artifacts
         id: collect
         run: |
-          {
-            echo "files<<EOF"
-            for STEM in $(jq -r '.artifacts[].filename' metadata.json); do
-              MAIN=$(find . -type f -name "${STEM}.jar" ! -path "*/.gradle/*" | head -n1)
-              if [ -z "$MAIN" ]; then
-                echo "ERROR: Artifact not found: ${STEM}.jar" >&2
-                exit 1
-              fi
-              echo "$MAIN"
-              DIR=$(dirname "$MAIN")
-              find "$DIR" -maxdepth 1 \
-                \( -name "*sources.jar" -o -name "*javadoc.jar" \) \
-                2>/dev/null || true
-            done
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
+          mkdir -p snapshot-dist
 
-      - name: Upload snapshot artifact
-        if: steps.branchcheck.outputs.valid == 'true'
-        uses: actions/upload-artifact@v4
+          for LOADER in $(jq -r '.artifacts | keys[]' metadata.json); do
+            for KIND in main_jar sources_jar javadoc_jar; do
+              NAME=$(jq -r --arg l "$LOADER" --arg k "$KIND" '.artifacts[$l][$k]' metadata.json)
+              [ -n "$NAME" ] && [ "$NAME" != "null" ] || continue
+
+              FOUND=$(find . -type f -name "$NAME" ! -path "*/.gradle/*" ! -path "./snapshot-dist/*" | head -n1)
+              if [ -z "$FOUND" ]; then
+                if [ "$KIND" = "main_jar" ]; then
+                  echo "::error::Missing $KIND for $LOADER: $NAME"
+                  exit 1
+                fi
+                echo "::warning::Missing $KIND for $LOADER: $NAME"
+                continue
+              fi
+              cp "$FOUND" snapshot-dist/
+            done
+          done
+
+          cp metadata.json snapshot-dist/
+          ls -1 snapshot-dist
+          echo "version=$(jq -r '.full_version' metadata.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v5
         with:
-          name: snapshot-${{ github.run_id }}
-          path: ${{ steps.collect.outputs.files }}
-          retention-days: 30
+          name: snapshot-${{ steps.collect.outputs.version }}
+          path: snapshot-dist/*
+          retention-days: ${{ needs.config.outputs.retention_days }}
+
+      - name: Summary
+        run: |
+          {
+            echo "### Snapshot ${{ steps.collect.outputs.version }}"
+            echo ""
+            echo "Branch \`$GITHUB_REF_NAME\` at \`${GITHUB_SHA:0:7}\`."
+            echo ""
+            echo "Download: artifact \`snapshot-${{ steps.collect.outputs.version }}\` on this run."
+            echo ""
+            echo "| File |"
+            echo "|---|"
+            for FILE in $(ls -1 snapshot-dist); do
+              echo "| \`$FILE\` |"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -2,7 +2,7 @@ plugins {
     id 'dev.architectury.loom' version '1.9-SNAPSHOT' apply false
     id 'architectury-plugin' version '3.4-SNAPSHOT'
     id 'com.gradleup.shadow' version '9.0.0' apply false
-    id "net.mrjulsen.mod-build-tools" version "1.0.15"
+    id "net.mrjulsen.mod-build-tools" version "2.1.4"
 }
 
 architectury {
@@ -11,7 +11,6 @@ architectury {
 
 allprojects {
     group = rootProject.maven_group
-    version = "$rootProject.minecraft_version${rootProject.release_channel != "release" ? "-$rootProject.release_channel" : ""}-$rootProject.mod_version"
 }
 
 subprojects {
@@ -133,19 +132,11 @@ subprojects {
 }
 
 modBuildTools {
+    modId = project.mod_id
+    displayName = project.display_name
+
     publish {
-        localRepoDir = "${System.getProperty('user.home')}/.m2/github/modsrepo/maven"
-        publishCommon = false
-    }
-    javadoc {
-        title = "Create Railways Navigator ${release_channel}-${mod_version}"
-        tags = [
-                "apiNote:a:API Note:",
-                "implNote:a:Impl Note:",
-                "implSpec:a:Impl Spec:",
-                "related:a:Related:",
-                "example:a:Examples:",
-                "side:a:Valid on side:"
-        ]
+        localRepoDir = file("${System.getProperty('user.home')}/.m2/github/modsrepo/maven/")
+        mavenGroup = project.maven_group
     }
 }

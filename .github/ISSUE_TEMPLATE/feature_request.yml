@@ -1,0 +1,38 @@
+name: Suggestions & Ideas
+description: Suggest ideas for new features and improvements
+projects: []
+labels:
+  - suggestion
+body:
+  - type: textarea
+    id: textarea-0
+    attributes:
+      label: Description
+      description: Please describe your suggestion in as much detail as possible so
+        that we fully understand what you have in mind. Add screenshots or
+        concept sketches to show how the new feature should look like.
+    validations:
+      required: true
+  - type: dropdown
+    id: dropdown-1
+    attributes:
+      label: Category
+      description: Please specify the category of this compatibility issue.
+      options:
+        - Other/Unknown
+        - Gameplay
+        - Performance
+        - User Experience
+        - Quality of Life
+        - Compatibility
+        - API
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: >-
+        Thanks for your suggestion and for helping to improve the mod!
+
+        Please understand that we cannot implement every suggestion. But we will
+        consider your suggestion for future updates and look into whether and
+        how we might implement it.

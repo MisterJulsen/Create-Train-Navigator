@@ -2,6 +2,10 @@ name: Build Test
 
 on: [pull_request]
 
+concurrency:
+  group: build-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -13,11 +17,32 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
+      - name: Read build_tools.config
+        id: cfg
+        run: |
+          CONFIG=build_tools.config
+          if [ ! -f "$CONFIG" ]; then
+            echo "::error::$CONFIG not found in the repository root"
+            exit 1
+          fi
+          {
+            echo "java_versions<<EOF"
+            jq -r '(.java_versions // [17, 21])[]' "$CONFIG"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 21
+          java-version: ${{ steps.cfg.outputs.java_versions }}
+
+      - name: Register Java toolchains
+        run: |
+          mkdir -p ~/.gradle
+          INSTALLATIONS=$(env | grep -o '^JAVA_HOME_[0-9]*_[A-Z0-9]*' | sort -u | paste -sd,)
+          echo "org.gradle.java.installations.fromEnv=${INSTALLATIONS}" >> ~/.gradle/gradle.properties
+          echo "Toolchains: ${INSTALLATIONS}"
 
       - name: Cache Gradle & Loom
         uses: actions/cache@v4
@@ -35,38 +60,30 @@ jobs:
           gradle-home-cache-cleanup: true
           gradle-version: wrapper
 
-      # TEST_BUILD is picked up by the versioning plugin and appended to the
-      # version string, e.g. "1.21.1-beta-2.0.0-TEST+pr.42".
-      # Pull request number is always available here since this workflow only
-      # triggers on pull_request events.
       - name: Build
+        env:
+          TEST_BUILD: ${{ github.event.pull_request.number }}
         run: |
           chmod +x gradlew
-          export TEST_BUILD="pr.${{ github.event.pull_request.number }}"
-          echo "Using TEST_BUILD=$TEST_BUILD"
           ./gradlew buildWithMetadata
 
-      # Collect only the main JARs for the test artifact – no sources/javadoc
-      # needed here since this is purely a build verification artifact.
       - name: Collect JARs
-        id: collect
         run: |
-          {
-            echo "files<<EOF"
-            for STEM in $(jq -r '.artifacts[].filename' metadata.json); do
-              MAIN=$(find . -type f -name "${STEM}.jar" ! -path "*/.gradle/*" | head -n1)
-              if [ -z "$MAIN" ]; then
-                echo "ERROR: Artifact not found: ${STEM}.jar" >&2
-                exit 1
-              fi
-              echo "$MAIN"
-            done
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
+          mkdir -p pr-dist
+          for LOADER in $(jq -r '.artifacts | keys[]' metadata.json); do
+            NAME=$(jq -r --arg l "$LOADER" '.artifacts[$l].main_jar' metadata.json)
+            FOUND=$(find . -type f -name "$NAME" ! -path "*/.gradle/*" ! -path "./pr-dist/*" | head -n1)
+            if [ -z "$FOUND" ]; then
+              echo "::error::Artifact not found: $NAME"
+              exit 1
+            fi
+            cp "$FOUND" pr-dist/
+          done
+          ls -1 pr-dist
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: test-pr${{ github.event.pull_request.number }}
-          path: ${{ steps.collect.outputs.files }}
+          path: pr-dist/*
           retention-days: 14
