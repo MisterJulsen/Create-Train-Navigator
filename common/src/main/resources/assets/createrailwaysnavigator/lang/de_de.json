@@ -376,7 +376,6 @@
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.wait_instead": "Warten statt Umleiten",
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.wait_instead_description": "Ist keiner der Einträge frei, wartet der Zug an der Station vorher anstatt die schlecht möglichste Option zu wählen.",
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.detour": "Umweg Schwellwert",
-    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.detour_description": "Um wie viel länger eine alternative Route sein darf. Dies soll verhindern, dass ein Zug willkürlich durch das gesamte Netzwerk navigiert, um seine Zielstation zu erreichen.",
     "goggles.createrailwaysnavigator.train_listener.departures.title": "Abfahrtverlauf",
     "goggles.createrailwaysnavigator.train_listener.departures.any": "Letzte Abfahrt:",
     "goggles.createrailwaysnavigator.train_listener.departures.line": "Abfahrten nach Zuglinie:",
