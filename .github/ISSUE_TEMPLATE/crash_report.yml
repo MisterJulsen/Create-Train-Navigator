@@ -1,0 +1,61 @@
+name: Crash Report
+description: Did your game crash? You can report a crash here.
+projects: []
+labels:
+  - crash
+body:
+  - type: input
+    id: input-0
+    attributes:
+      label: Minecraft Version
+      description: "Details about your game instance, such as the Minecraft version, modloader and modloader version. (Example: `Forge 1.20.1-47.4.10`)"
+      placeholder: Forge 1.20.1-47.4.10
+    validations:
+      required: true
+  - type: input
+    id: input-1
+    attributes:
+      label: Mod Version
+      description: The mod version which caused the bug.
+      placeholder: 3.0.29+mc1.20.1-forge
+    validations:
+      required: true
+  - type: input
+    id: input-2
+    attributes:
+      label: Crash Log
+      description: Please share your crash log for additional information about the
+        crash. The crash log can be found in the `crash-reports` folder of your
+        Minecraft installation. Please upload the file to https://mclo.gs/ and
+        put the link here.
+      placeholder: https://mclo.gs/AaBbCcDd
+    validations:
+      required: true
+  - type: textarea
+    id: textarea-3
+    attributes:
+      label: Description
+      description: Please describe the crash in as much detail as possible. When did
+        the problem occur? What were you doing when the crash happened? Please
+        also send screenshots or video clips so we can better understand what is
+        going wrong, explain how to reproduce the problem and tell what other mods you
+        used.
+    validations:
+      required: true
+  - type: dropdown
+    id: dropdown-4
+    attributes:
+      label: Category
+      description: Please specify the category of this crash.
+      options:
+        - Other/Unknown
+        - Gameplay
+        - Rendering
+        - Performance
+        - Compatibility
+        - Random
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time to help improve my mods!

@@ -1,0 +1,26 @@
+name: Language request
+description: Suggest a language that is not available for translation on Crowdin.
+projects: []
+labels:
+  - language
+body:
+  - type: input
+    id: input-0
+    attributes:
+      label: Language Label
+      description: "The name of the language and the region (English only). (Example:
+        `English (USA)`, `German (Germany)`)"
+      placeholder: German (Germany)
+    validations:
+      required: true
+  - type: input
+    id: input-1
+    attributes:
+      label: Locale Code
+      description: "The locale code of this language. (Example: `en_us`, `de_de`)"
+      placeholder: en_us
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: Thanks for your help in translating my mods!

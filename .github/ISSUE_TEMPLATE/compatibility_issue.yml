@@ -1,0 +1,69 @@
+name: Compatibility Issue
+description: Report compatibility issues with other mods.
+projects: []
+labels:
+  - compatibility
+body:
+  - type: input
+    id: input-0
+    attributes:
+      label: Minecraft Version
+      description: "Details about your game instance, such as the Minecraft version,
+        modloader and modloader version. (Example: `Forge 1.20.1-47.4.10`)"
+      placeholder: Forge 1.20.1-47.4.10
+    validations:
+      required: true
+  - type: input
+    id: input-1
+    attributes:
+      label: Mod Version
+      description: The mod version which caused the bug.
+      placeholder: 3.0.29+mc1.20.1-forge
+    validations:
+      required: true      
+  - type: input
+    id: input-10
+    attributes:
+      label: Affected mods
+      description: "The other mod(s) causing the incompatibility. Write the full name of the mod and the version used (Example: `Just Enough Items, 15.62.0.219, Forge, 1.20.1`)"
+      placeholder: Just Enough Items, 15.62.0.219, Forge, 1.20.1
+    validations:
+      required: true
+  - type: input
+    id: input-2
+    attributes:
+      label: Game Log
+      description: Please share your game or crash log for additional information
+        about the issue. The crash log can be found in the `crash-reports`
+        folder of your Minecraft installation and the game log can be found in
+        the `logs` folder. Please upload the file to https://mclo.gs/ and put
+        the link here.
+      placeholder: https://mclo.gs/AaBbCcDd
+    validations:
+      required: true
+  - type: textarea
+    id: textarea-3
+    attributes:
+      label: Description
+      description: Please describe the issue in as much detail as possible. What
+        happened when the incompatibility occurred? What have you tested or
+        discovered so far? Please also send screenshots or video clips so we can
+        better understand what is going wrong, explain how to reproduce the
+        problem and tell what other mods you used.
+    validations:
+      required: true
+  - type: dropdown
+    id: dropdown-4
+    attributes:
+      label: Category
+      description: Please specify the category of this compatibility issue.
+      options:
+        - Other/Unknown
+        - Mod incompatibility
+        - Version
+        - Mixins
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time to help improve my mods!
