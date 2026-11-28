@@ -376,7 +376,6 @@
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.wait_instead": "优先直达路线，不绕道",
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.wait_instead_description": "若无空闲进站通道，则停留在前一站等待，而不是选择次优路线。",
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.detour": "绕行阈值",
-    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.detour_description": "备选路线允许多出的最长时长。防止列车在轨道网络内绕圈前往目标轨道车站。",
     "goggles.createrailwaysnavigator.train_listener.departures.title": "发车历史",
     "goggles.createrailwaysnavigator.train_listener.departures.any": "上次发车：",
     "goggles.createrailwaysnavigator.train_listener.departures.line": "按线路：",

@@ -376,7 +376,6 @@
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.wait_instead": "Čekat, neobjíždět",
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.wait_instead_description": "Pokud není žádný vjezd dostupný, počkej na předchozí stanici místo okamžitého jetí nejméně špatnou cestou.",
     "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.detour": "Prahová hodnota objížděk",
-    "createrailwaysnavigator.schedule.instruction.prioritized_destination_instruction.settings.detour_description": "Jak dlouhá může být alternativní cesta. Zamezuje objíždění celé sítě k dosažení cílové stanice.",
     "goggles.createrailwaysnavigator.train_listener.departures.title": "Historie odjezdů",
     "goggles.createrailwaysnavigator.train_listener.departures.any": "Poslední odjezd:",
     "goggles.createrailwaysnavigator.train_listener.departures.line": "Odjezdy podle vlakových linek:",
